@@ -1,0 +1,4 @@
+-r base.txt
+
+boto==2.43.0
+django-storages==1.5.1

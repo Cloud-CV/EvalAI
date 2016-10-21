@@ -6,7 +6,7 @@
 [![Code Health](https://landscape.io/github/Cloud-CV/EvalAI/master/landscape.svg?style=flat)](https://landscape.io/github/Cloud-CV/EvalAI/master)
 
 
-EvalAI is an open source web application that helps researchers, students and data-scientists to connect, collaborate and participate in various AI challenges organized round the globe. 
+EvalAI is an open source web application that helps researchers, students and data-scientists to create, collaborate and participate in various AI challenges organized round the globe. 
 
 ## How to setup
 
