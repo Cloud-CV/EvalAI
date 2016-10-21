@@ -1,0 +1,6 @@
+[run]
+omit = '*tests/*,*commands*,*migrations*,*admin*,*wsgi*'
+source = evalai/
+
+[report]
+skip_covered = True

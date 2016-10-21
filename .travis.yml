@@ -1,0 +1,35 @@
+language: python
+sudo: false
+python:
+- '2.7'
+
+addons:
+  postgresql: "9.4"
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.pip-accel
+
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
+
+before_script:
+- psql -c "CREATE DATABASE evalai" -U postgres
+
+install:
+- pip-accel install -r requirements/dev.txt
+- pip-accel install python-coveralls
+
+script:
+- flake8
+# - py.test --cov --fail-on-template-vars --splinter-webdriver=phantomjs -v --tb=native
+
+after_script:
+- coveralls
+
+notifications:
+  email:
+    on_success: change  # [always|never|change]
+    on_failure: always  # [always|never|change]
+    slack: cloudcv:gy3CGQGNXLwXOqVyzXGZfdea
