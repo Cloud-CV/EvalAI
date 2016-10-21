@@ -18,10 +18,10 @@ before_script:
 
 install:
 - pip install -r requirements/dev.txt
-- pip install python-coveralls
+- pip install coveralls
 
 script:
-- flake8
+- flake8 evalai/
 # - py.test --cov --fail-on-template-vars --splinter-webdriver=phantomjs -v --tb=native
 
 after_script:
