@@ -9,7 +9,6 @@ addons:
 cache:
   directories:
     - $HOME/.cache/pip
-    - $HOME/.pip-accel
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
@@ -18,8 +17,8 @@ before_script:
 - psql -c "CREATE DATABASE evalai" -U postgres
 
 install:
-- pip-accel install -r requirements/dev.txt
-- pip-accel install python-coveralls
+- pip install -r requirements/dev.txt
+- pip install python-coveralls
 
 script:
 - flake8
