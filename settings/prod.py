@@ -1,3 +1,7 @@
+from .common import *
+
+import os
+
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 

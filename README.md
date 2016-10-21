@@ -30,13 +30,7 @@ Follow this guide to setup your development machine.
     pip install -r requirements/dev.txt
     ```
 
-4. Copy over `settings/dev.sample.py` to `settings/dev.py`.
-
-    ```
-    cp settings/dev.sample.py settings/dev.py
-    ```
-    
-5. Change credential in setting/dev.py
+4. Change credential in setting/dev.py
     
     ```
     nano settings/dev.py
@@ -45,7 +39,7 @@ Follow this guide to setup your development machine.
     
     USER: "postgres";PASSWORD: ""
 
-6. Create an empty postgres database and run database migration.
+5. Create an empty postgres database and run database migration.
 
     ```
     createdb evalai
@@ -53,10 +47,10 @@ Follow this guide to setup your development machine.
     python manage.py sample_data
     ```
 
-7. That's it. Now you can run development server at http://127.0.0.1:8000
+6. That's it. Now you can run development server at http://127.0.0.1:8000
 
     ```
-    python manage.py runserver
+    python manage.py runserver --settings=settings.dev
     ```
 
 ## Contribution guidelines
