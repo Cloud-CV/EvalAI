@@ -1,4 +1,4 @@
-from .common import *
+from .common import *  # noqa
 
 import os
 
@@ -25,6 +25,7 @@ AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
 
 # Amazon S3 Configurations
 AWS_STORAGE_BUCKET_NAME = "evalai-static"
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 
 STATICFILES_STORAGE = 'custom_storages.StaticStorage'
 STATICFILES_LOCATION = 'static'
