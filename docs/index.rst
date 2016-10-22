@@ -6,7 +6,7 @@
 Welcome to EvalAI's documentation!
 ==================================
 
-|Build Status| |Coverage Status| |Requirements Status| |Code Health|
+|Build Status| |Coverage Status| |Requirements Status| |Code Health| |Code Climate|
 
 EvalAI is an open source web application that helps researchers,
 students and data-scientists to create, collaborate and participate in
@@ -73,6 +73,8 @@ How to setup
    :target: https://requires.io/github/Cloud-CV/EvalAI/requirements/?branch=master
 .. |Code Health| image:: https://landscape.io/github/Cloud-CV/EvalAI/master/landscape.svg?style=flat
    :target: https://landscape.io/github/Cloud-CV/EvalAI/master
+.. |Code Climate| image:: https://codeclimate.com/github/Cloud-CV/EvalAI/badges/gpa.svg
+   :target: https://codeclimate.com/github/Cloud-CV/EvalAI/
 
 .. toctree::
    :maxdepth: 2
