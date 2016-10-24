@@ -21,12 +21,12 @@ then
     echo "Running the image and starting nginx server"
     sudo docker $1 -d -p $2:80 -p $3:443 --volumes-from evalai_code --name evalai_nginx --link evalai_node:node --link evalai_redis:redis --link evalai_django:django evalai/nginx
 else
-    echo "Running the image and starting redis server"
+    echo "Restarting redis server"
     sudo docker restart evalai_redis
-    echo "Running the image and starting celery server"
+    echo "Restarting celery server"
     sudo docker restart evalai_celery
-    echo "Running the image and starting django server"
+    echo "Restarting django server"
     sudo docker restart evalai_django
-    echo "Running the image and starting nginx server"
+    echo "Restarting nginx server"
     sudo docker restart evalai_nginx 
 fi
