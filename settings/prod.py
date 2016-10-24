@@ -2,25 +2,36 @@ from .common import *  # noqa
 
 import os
 
-# Database
-# https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-# DATABASES = {    
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': 'db.sqlite3',
-#         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         # 'NAME': os.environ.get('RDS_NAME', ''),
-#         # 'USER' : os.environ.get('RDS_USER', ''),
-#         # 'PASSWORD' : os.environ.get('RDS_PASSWORD', ''),
-#         # 'HOST' : os.environ.get('RDS_HOST', ''),
-#         # 'PORT' : '5432',
-#     }
-# }
+# Database
+# https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
+
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['RDS_DB_NAME'],
+            'USER': os.environ['RDS_USERNAME'],
+            'PASSWORD': os.environ['RDS_PASSWORD'],
+            'HOST': os.environ['RDS_HOSTNAME'],
+            'PORT': os.environ['RDS_PORT'],
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'iotd',
+            'USER': 'iotd',
+            'PASSWORD': 'iotd',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 INSTALLED_APPS += ('storages',)
 
