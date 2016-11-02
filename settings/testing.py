@@ -2,8 +2,6 @@ from .common import *  # noqa
 
 DEBUG = True
 
-SECRET_KEY = 'secret_key'
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
