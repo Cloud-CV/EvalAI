@@ -5,9 +5,11 @@ import os
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 
+
 DEBUG = False
 
-DATABASES = { 
+
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('RDS_NAME', ''),
