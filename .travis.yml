@@ -22,7 +22,7 @@ install:
 
 script:
   - flake8 ./
-  - py.test -n 2 --cov . --cov-config .coveragec
+  - py.test --cov . --cov-config .coveragec
 
 after_script:
   - coverage report --rcfile=.coveragerc
