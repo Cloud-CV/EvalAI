@@ -7,18 +7,18 @@ import os
 
 DEBUG = False
 
-DATABASES = {    
+DATABASES = { 
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('RDS_NAME', ''),
-        'USER' : os.environ.get('RDS_USER', ''),
-        'PASSWORD' : os.environ.get('RDS_PASSWORD', ''),
-        'HOST' : os.environ.get('RDS_HOST', ''),
-        'PORT' : '5432',
+        'USER': os.environ.get('RDS_USER', ''),
+        'PASSWORD': os.environ.get('RDS_PASSWORD', ''),
+        'HOST': os.environ.get('RDS_HOST', ''),
+        'PORT': '5432',
     }
 }
 
-INSTALLED_APPS += ('storages',)
+INSTALLED_APPS = ('storages',)
 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
