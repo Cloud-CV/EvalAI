@@ -5,7 +5,7 @@ coverage==4.2
 coveralls==1.1
 flake8==3.0.4
 psycopg2==2.6.2
-pytest-cov-2.4.0
+pytest-cov==2.4.0
 pytest==3.0.3
 sphinx==1.4.8 
 sphinx-autobuild==0.6.0
