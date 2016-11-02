@@ -10,6 +10,8 @@ from rest_framework import status
 import requests
 
 # Create your views here.
+
+
 class ConfirmEmailView(APIView):
 
     permission_classes = (AllowAny,)
@@ -20,5 +22,6 @@ class ConfirmEmailView(APIView):
             'key': kwargs['key'],
         }
 
-        requests.post(request.build_absolute_uri(reverse("rest_verify_email")), data=post_data)
+        requests.post(request.build_absolute_uri(
+            reverse("rest_verify_email")), data=post_data)
         return Response({'message': "Email verified successfully"}, status=status.HTTP_200_OK)

@@ -1,5 +1,6 @@
 -r base.txt
 
+autopep8==1.2.4
 coveralls==1.1
 flake8==3.0.4
 psycopg2==2.6.2
