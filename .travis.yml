@@ -1,7 +1,7 @@
 language: python
 sudo: false
 python:
-- '2.7'
+  - '2.7'
 
 addons:
   postgresql: "9.4"
@@ -14,18 +14,19 @@ before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
 
 before_script:
-- psql -c "CREATE DATABASE evalai" -U postgres
+  - psql -c "CREATE DATABASE evalai" -U postgres
 
 install:
-- pip install -r requirements/dev.txt
-- pip install coveralls
+  - pip install -r requirements/dev.txt
+  - pip install coveralls
 
 script:
-- flake8 evalai/
-# - py.test --cov --fail-on-template-vars --splinter-webdriver=phantomjs -v --tb=native
+  - flake8 ./
+  - py.test --cov . --cov-config .coveragec
 
 after_script:
-- coveralls
+  - coverage report --rcfile=.coveragerc
+  - coveralls -y ../.coveralls.yml -c .coveragerc
 
 notifications:
   email:
