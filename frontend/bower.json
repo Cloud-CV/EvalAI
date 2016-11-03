@@ -1,0 +1,23 @@
+{
+  "name": "evalai",
+  "description": "",
+  "main": "index.js",
+  "license": "ISC",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.5.8",
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.1.1",
+    "animate.css": "^3.5.2",
+    "font-awesome": "^4.7.0",
+    "angular-ui-router": "^0.3.1",
+    "angular-animate": "^1.5.8"
+  }
+}

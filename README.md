@@ -61,3 +61,26 @@ If you are interested in contributing to EvalAI, follow your [contribution guide
 [git]: https://git-scm.com/downloads
 [virtualenv]: https://virtualenv.pypa.io/
 [postgresql]: http://www.postgresql.org/download/
+
+
+# EvalAI UI
+
+## How to set up
+
+1. Install node in your computer, if you don't have it already.
+2. Go to the frontend directory and Run 
+    ```npm install```
+    this will install all gulp dependencies
+3. Now run 
+    ``` bower install```
+    this will install all bower based dependencies
+4. Run 
+    ```gulp default```
+    this will build the static files and start the server at localhost:8888
+5. Run
+    ```gulp watch``` in new terminal
+    this will listen to all changes to static files
+
+## How to contribute to EvalAI frontend
+
+All dev source is present in src/ directory. Just change code in /src directory and start gulp watch to listen all the static files changes.
