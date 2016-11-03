@@ -10,7 +10,6 @@ ALLOWED_HOSTS = ['*']
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 
-
 if 'RDS_DB_NAME' in os.environ:
     DATABASES = {
         'default': {
@@ -33,7 +32,6 @@ else:
             'PORT': '5432',
         }
     }
-
 
 INSTALLED_APPS += ('storages',) # noqa  
 
