@@ -1,4 +1,4 @@
--r base.txt
+-r common.txt
 
 autopep8==1.2.4
 coverage==4.2
