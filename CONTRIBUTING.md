@@ -32,7 +32,9 @@ Our central development branch is development. Coding is done on feature branche
     - Commits should be self-contained and contain a descriptive commit message.
     - Please make sure your code is well-formatted and adheres to PEP8 conventions (for Python) and the airbnb style guide (for JavaScript). For others (Lua, prototxt etc.) please ensure that the code is well-formatted and the style consistent.
     - Please ensure that your code is well tested.
-        
+    - We highly encourage to use `autopep8` to follow the PEP8 styling. Run the following command before creating the pull request:
+
+            autopep8 --in-place --exclude env,docs --recursive .     
             git commit -a -m “{{commit_message}}”
             git push origin {{branch_name}}
 

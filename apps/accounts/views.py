@@ -9,11 +9,11 @@ from rest_framework import status
 
 import requests
 
-# Create your views here.
-
 
 class ConfirmEmailView(APIView):
-
+    """
+    APIView for confirming email after registration
+    """
     permission_classes = (AllowAny,)
     allowed_methods = ('GET', 'OPTIONS', 'HEAD')
 
