@@ -31,21 +31,18 @@ Follow this guide to setup your development machine.
     pip install -r requirements/dev.txt
     ```
 
-4. Change credential in setting/dev.py
+4. Rename `settings/dev.sample.py` as `dev.py` and change credential in `setting/dev.py`
     
     ```
-    nano settings/dev.py
+    cp settings/dev.sample.py settings/dev.py
     ```
-    For new postgresql user  
-    
-    USER: "postgres";PASSWORD: ""
+    Use your linux system username and password for fields `USER` and `PASSWORD` in `dev.py` file.
 
 5. Create an empty postgres database and run database migration.
 
     ```
     createdb evalai
-    python manage.py migrate
-    python manage.py sample_data
+    python manage.py migrate --settings=settings.dev
     ```
 
 6. That's it. Now you can run development server at http://127.0.0.1:8000
