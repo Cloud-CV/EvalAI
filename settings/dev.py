@@ -9,11 +9,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'evalai',
-        'USER': '',
-        'PASSWORD': '',
+        'USER': 'deshraj',
+        'PASSWORD': 'deshraj123',
         'HOST': 'localhost',
         'PORT': '5432',
-	}
+    }
 }
 
 # E-Mail Settings
