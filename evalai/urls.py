@@ -15,10 +15,12 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from apps.accounts.views import ConfirmEmailView
+from apps.participants.views import ConfirmEmailView
 from django.views.generic.base import TemplateView
 
 urlpatterns = [url(r'^',
+                   include('apps.web.urls')),
+               url(r'^',
                    include('django.contrib.auth.urls')),
                url(r'^admin/',
                    admin.site.urls),
