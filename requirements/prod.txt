@@ -1,4 +1,4 @@
--r base.txt
+-r common.txt
 
 boto==2.43.0
 django-storages==1.5.1
