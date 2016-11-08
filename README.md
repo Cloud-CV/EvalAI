@@ -36,16 +36,13 @@ Follow this guide to setup your development machine.
     ```
     nano settings/dev.py
     ```
-    For new postgresql user  
-    
-    USER: "postgres";PASSWORD: ""
+    Use your linux system username and password for fields `USER` and `PASSWORD` in `dev.py` file.
 
 5. Create an empty postgres database and run database migration.
 
     ```
     createdb evalai
-    python manage.py migrate
-    python manage.py sample_data
+    python manage.py migrate --settings=settings.dev
     ```
 
 6. That's it. Now you can run development server at http://127.0.0.1:8000
