@@ -4,5 +4,6 @@ from .views import (
 )
 
 urlpatterns = [
-    url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$', ConfirmEmailView.as_view(), name='account_confirm_email'),
+    url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',
+        ConfirmEmailView.as_view(), name='account_confirm_email'),
 ]
