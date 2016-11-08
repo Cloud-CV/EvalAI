@@ -31,10 +31,10 @@ Follow this guide to setup your development machine.
     pip install -r requirements/dev.txt
     ```
 
-4. Change credential in setting/dev.py
+4. Rename `settings/dev.sample.py` as `dev.py` and change credential in `setting/dev.py`
     
     ```
-    nano settings/dev.py
+    cp settings/dev.sample.py settings/dev.py
     ```
     Use your linux system username and password for fields `USER` and `PASSWORD` in `dev.py` file.
 
