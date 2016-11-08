@@ -40,7 +40,15 @@ DEFAULT_APPS = [
     'django.contrib.sites',
 ]
 
-OUR_APPS = []
+OUR_APPS = [
+    'apps.analytics',
+    'apps.challenges',
+    'apps.hosts',
+    'apps.jobs',
+    'apps.participants',
+    'apps.teams',
+    'apps.web',
+]
 
 THIRD_PARTY_APPS = [
     'allauth',
