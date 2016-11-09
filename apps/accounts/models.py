@@ -30,7 +30,7 @@ class UserStatus(TimeStampedModel):
     ACCEPTED = 'accepted'
     PENDING = 'pending'
     name = models.CharField(max_length=30)
-    status = models.CharField(max_length=30,unique=True)
+    status = models.CharField(max_length=30, unique=True)
 
     def __unicode__(self):
         return self.name
