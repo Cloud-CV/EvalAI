@@ -2,9 +2,10 @@ from __future__ import unicode_literals
 
 from accounts.models import (TimeStampedModel, UserStatus)
 from challenges.models import (Challenge,)
-from participants.models import(Participant,)
+from participants.models import (Participant,)
 
 from django.db import models
+
 
 class Team(TimeStampedModel):
     """
@@ -12,7 +13,7 @@ class Team(TimeStampedModel):
     """
     challenge = models.ForeignKey(Challenge)
     team_name = models.CharField(max_length=64, null=False, blank=False)
-    
+
 
 class TeamMember(TimeStampedModel):
     """
