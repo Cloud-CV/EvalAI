@@ -1,11 +1,12 @@
 from __future__ import unicode_literals
 
 from accounts.models import (TimeStampedModel)
+from hosts.models import (ChallengeOrganizerTeams)
 from django.db import models
 
 
 class Challenge(TimeStampedModel):
-    """ 
+    """
     Model representing a hosted Challenge
     """
     title = models.CharField(max_length=100)
