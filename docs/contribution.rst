@@ -37,9 +37,11 @@ branches based off of development and merged into it once stable and
 reviewed. To submit code, follow these steps:
 
 1. Create a new branch off of development. Select a descriptive branch
-   name.
+   name. We highly encourage to use `autopep8` to follow the PEP8 styling. Run the following command before creating the pull request:
 
    ::
+
+       autopep8 --in-place --exclude venv,docs --recursive .
 
        git fetch upstream
        git checkout master
@@ -81,7 +83,6 @@ reviewed. To submit code, follow these steps:
       it as “Done”. Feel free to use the thread to have a discussion
       about comments that you don’t understand completely or don’t agree
       with.
-
-    - Once all comments are addressed, the reviewer will give an LGTM (‘looks good to me’) and merge the PR.
+   -  Once all comments are addressed, the reviewer will give an LGTM (‘looks good to me’) and merge the PR.
 
 Congratulations, you have successfully contributed to Project EvalAI!

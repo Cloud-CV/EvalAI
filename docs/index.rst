@@ -6,7 +6,8 @@
 Welcome to EvalAI's documentation!
 ==================================
 
-|Build Status| |Coverage Status| |Requirements Status| |Code Health| |Code Climate|
+|Build Status| |Coverage Status| |Requirements Status| |Code Health|
+|Code Climate|
 
 EvalAI is an open source web application that helps researchers,
 students and data-scientists to create, collaborate and participate in
@@ -15,18 +16,19 @@ various AI challenges organized round the globe.
 How to setup
 ------------
 
-| Setting up EvalAI on your local machine is really easy. Follow this guide to setup your development machine.
+Setting up EvalAI on your local machine is really easy. Follow this
+guide to setup your development machine.
 
-#. Install `git`_, `postgresql`_ and `virtualenv`_, in your computer, if
+1. Install `git`_, `postgresql`_ and `virtualenv`_, in your computer, if
    you don’t have it already.
 
-#. Get the source code on your machine via git.
+2. Get the source code on your machine via git.
 
    .. code:: shell
 
        git clone https://github.com/Cloud-CV/EvalAI.git evalai
 
-#. Create a python virtual environment and install python dependencies.
+3. Create a python virtual environment and install python dependencies.
 
    .. code:: shell
 
@@ -35,31 +37,29 @@ How to setup
        source venv/bin/activate  # run this command everytime before working on project
        pip install -r requirements/dev.txt
 
-#. Change credential in setting/dev.py
+4. Rename ``settings/dev.sample.py`` as ``dev.py`` and change credential
+   in ``setting/dev.py``
 
    ::
 
-       nano settings/dev.py
+       cp settings/dev.sample.py settings/dev.py
 
-   For new postgresql user
+   Use your linux system username and password for fields ``USER`` and
+   ``PASSWORD`` in ``dev.py`` file.
 
-   USER: “postgres”;PASSWORD: “”
-
-#. Create an empty postgres database and run database migration.
+5. Create an empty postgres database and run database migration.
 
    ::
 
        createdb evalai
-       python manage.py migrate
-       python manage.py sample_data
+       python manage.py migrate --settings=settings.dev
 
-#. That’s it. Now you can run development server at
+6. That’s it. Now you can run development server at
    http://127.0.0.1:8000
 
    ::
 
        python manage.py runserver --settings=settings.dev
-
 
 .. _git: https://git-scm.com/downloads
 .. _postgresql: http://www.postgresql.org/download/
@@ -74,7 +74,7 @@ How to setup
 .. |Code Health| image:: https://landscape.io/github/Cloud-CV/EvalAI/master/landscape.svg?style=flat
    :target: https://landscape.io/github/Cloud-CV/EvalAI/master
 .. |Code Climate| image:: https://codeclimate.com/github/Cloud-CV/EvalAI/badges/gpa.svg
-   :target: https://codeclimate.com/github/Cloud-CV/EvalAI/
+   :target: https://codeclimate.com/github/Cloud-CV/EvalAI
 
 .. toctree::
    :maxdepth: 2
