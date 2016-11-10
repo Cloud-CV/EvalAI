@@ -1,5 +1,5 @@
 from .common import *  # noqa
-from .custom_storages import MediaStorage
+from settings import custom_storages
 
 import os
 
