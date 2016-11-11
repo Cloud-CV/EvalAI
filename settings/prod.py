@@ -1,4 +1,5 @@
 from .common import *  # noqa
+from settings import custom_storages
 
 import os
 
@@ -31,3 +32,6 @@ AWS_STORAGE_BUCKET_NAME = "evalai-static"
 STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
 STATIC_URL = S3_URL
+MEDIAFILES_LOCATION = 'media'
+MEDIA_URL = 'http://%s.s3.amazonaws.com/%s/' % (AWS_STORAGE_BUCKET_NAME, MEDIAFILES_LOCATION)
+DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
