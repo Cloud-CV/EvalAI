@@ -4,7 +4,7 @@ from settings import custom_storages
 import os
 
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -24,14 +24,19 @@ DATABASES = {
 
 INSTALLED_APPS += ('storages',)  # noqa
 
+AWS_STORAGE_BUCKET_NAME = "evalai"
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
 
 # Amazon S3 Configurations
-AWS_STORAGE_BUCKET_NAME = "evalai-static"
-STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
-STATIC_URL = S3_URL
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+
+# static files configuration on S3
+STATICFILES_LOCATION = 'static'
+STATICFILES_STORAGE = 'settings.custom_storages.StaticStorage'
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
+
+# Media files configuration on S3
 MEDIAFILES_LOCATION = 'media'
-MEDIA_URL = 'http://%s.s3.amazonaws.com/%s/' % (AWS_STORAGE_BUCKET_NAME, MEDIAFILES_LOCATION)
-DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+DEFAULT_FILE_STORAGE = 'settings.custom_storages.MediaStorage'
