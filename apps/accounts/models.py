@@ -13,11 +13,13 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract = True
+        app_label = 'accounts'
 
 
 class UserStatus(TimeStampedModel):
     """
-    Model representing the status of a user being invited by other user to host/participate in a competition
+    Model representing the status of a user being invited by
+    other user to host/participate in a competition
     .. note::
         There are four different status:
             - Unknown.
@@ -34,3 +36,6 @@ class UserStatus(TimeStampedModel):
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        app_label = 'accounts'
