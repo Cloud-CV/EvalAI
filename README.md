@@ -53,6 +53,27 @@ Follow this guide to setup your development machine.
     python manage.py runserver --settings=settings.dev
     ```
 
+
+7. Open a new terminal window with node install on your machine and type
+    
+    ```
+    cd frontend
+    npm install
+    bower install
+    ```
+
+8. That's it, Now to build static files and listening to server at http://127.0.0.1:8888
+
+    ```
+    gulp default 
+    ``` 
+
+9. To check for static files change run gulp watch task in new terminal window
+
+    ```
+    gulp watch 
+    ``` 
+
 ## Contribution guidelines
 
 If you are interested in contributing to EvalAI, follow your [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/development/CONTRIBUTING.md).
