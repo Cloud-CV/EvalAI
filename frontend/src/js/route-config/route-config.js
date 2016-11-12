@@ -30,7 +30,7 @@
 		}
 
 		var login = {
-			name: "home.login",
+			name: "login",
 			url:"/login",
 	    	templateUrl: baseUrl + "/web/login.html",
 	    	controller: 'AuthCtrl',

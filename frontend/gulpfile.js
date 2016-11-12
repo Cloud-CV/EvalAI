@@ -199,3 +199,4 @@ gulp.task('connect', function(){
 gulp.task('default', ['clean', 'connect'], function() {
     gulp.start('css', 'js', 'html', 'images', 'vendorjs', 'vendorcss');
 });
+
