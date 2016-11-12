@@ -1,0 +1,24 @@
+{
+  "chunks": {
+    "vendor": [
+      "angular",
+      "angular-animate",
+      "angular-ui-router",
+      "angular-aria",
+      "angular-message",
+      "angular-material"
+
+
+
+    ]
+  },
+  "paths": {
+       "angular" : "bower_components/angular/angular.min.js",
+       "angular-animate" : "bower_components/angular-animate/angular-animate.min.js",
+       "angular-ui-router" : "bower_components/angular-ui-router/release/angular-ui-router.min.js",
+       "angular-aria" : "bower_components/angular-aria/angular-aria.min.js",
+       "angular-message": "bower_components/angular-messages/angular-messages.min.js",
+       "angular-material" : "bower_components/angular-material/angular-material.min.js"
+
+      }
+}
