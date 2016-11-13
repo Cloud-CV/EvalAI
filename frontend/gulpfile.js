@@ -22,9 +22,10 @@ var gulp = require('gulp'),
 var scripts = require('./app.scripts.json');
 var styles = require('./app.styles.json');
 
-//include all bower scripts files
 
+//include all bower scripts files
 gulp.task('vendorjs', function(){
+
     _.forIn(scripts.chunks, function(chunkScripts, chunkName){
         var paths = [];
         chunkScripts.forEach(function(script){
@@ -44,9 +45,10 @@ gulp.task('vendorjs', function(){
 
 });
 
-//include all bower  styles files
 
+//include all bower  styles files
 gulp.task('vendorcss', function(){
+
     _.forIn(styles.chunks, function(chunkStyles, chunkName){
         var paths = [];
         chunkStyles.forEach(function(style){
@@ -67,7 +69,6 @@ gulp.task('vendorcss', function(){
 });
 
 
-
 // minify and compress CSS files
 gulp.task('css', function(){
      return sass('src/css/main.scss', { style: 'expanded' })
@@ -78,8 +79,10 @@ gulp.task('css', function(){
         .pipe(gulp.dest('./dist/css'));
 })
 
+
 // minify angular scripts
 gulp.task('js', function() {
+
   var app = gulp.src('src/js/app.js')
             .pipe(jshint.reporter('default'))
             .pipe(concat('app.js'))
@@ -123,13 +126,13 @@ gulp.task('js', function() {
     return merge(app, configs, controllers, directives, services)              
 });
 
+
 // minify and compress html files
 gulp.task('html', function() {
 
     var webViews = gulp.src('src/views/web/*.html')
         .pipe(htmlmin({collapseWhitespace: true }))
         .pipe(gulp.dest('./dist/views/web'));
-
 
     return merge(webViews);
 });
@@ -150,36 +153,31 @@ gulp.task('clean', function() {
 });
 
 
-
 // watch function
 gulp.task('watch', function() {
 
-  // Watch .scss files
-  gulp.watch('src/css/**/*.scss', ['css']);
+    // Watch .scss files
+    gulp.watch('src/css/**/*.scss', ['css']);
 
-  // Watch .js files
-  gulp.watch('src/js/**/*.js', ['js']);
+    // Watch .js files
+    gulp.watch('src/js/**/*.js', ['js']);
 
+    // Watch html files
+    gulp.watch('src/views/**/*.html', ['html']);
 
+    // Watch image files
+    gulp.watch('src/images/**/*', ['images']);
 
-   // Watch html files
-  gulp.watch('src/views/**/*.html', ['html']);
+    // Create LiveReload server
+    livereload.listen();
 
-  // Watch image files
-  gulp.watch('src/images/**/*', ['images']);
-
-
-  // Create LiveReload server
-  livereload.listen();
-
-  // Watch any files in dist/, reload on change
-  gulp.watch(['./dist/**']).on('change', livereload.changed);
+    // Watch any files in dist/, reload on change
+    gulp.watch(['./dist/**']).on('change', livereload.changed);
 
 });
 
 
 // connect to server
-
 gulp.task('connect', function(){
     connect.server({
         root: './',

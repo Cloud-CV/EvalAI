@@ -12,7 +12,7 @@
 
     	var vm =this;
 
-    	vm.check = "HI there!"
+    	vm.check = "HI there!";
     }
 
 })();

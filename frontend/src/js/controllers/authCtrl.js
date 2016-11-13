@@ -12,7 +12,7 @@
 
     	var vm =this;
     	
-    	vm.check = "Login UI"
+    	vm.check = "Login UI";
     }
 
 })();
