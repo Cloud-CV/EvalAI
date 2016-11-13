@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from accounts.models import (TimeStampedModel, UserStatus)
 from challenges.models import (Challenge,)
-from participants.models import (Participant,)
+# from participants.models import (Participant,)
 
 from django.db import models
 
@@ -19,6 +19,6 @@ class TeamMember(TimeStampedModel):
     """
     Model representing members associated with a particular team
     """
-    participant = models.ForeignKey(Participant)
+    # participant = models.ForeignKey(Participant)
     team = models.ForeignKey(Team)
     status = models.ForeignKey(UserStatus)

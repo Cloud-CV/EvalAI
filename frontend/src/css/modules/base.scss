@@ -1,0 +1,23 @@
+/*font installation*/
+
+@font-face {
+	font-family: 'rob-lig';
+	src: url('../fonts/Roboto-Light.ttf');
+}
+@font-face {
+	font-family: 'rob-reg';
+	src: url('../fonts/Roboto-Regular.ttf');
+}
+@font-face {
+	font-family: 'rob-line';
+	src: url('../fonts/Roboto-Thin.ttf');
+}
+@font-face {
+	font-family: 'rob-med';
+	src: url('../fonts/Roboto-Medium.ttf');
+}
+
+/*ng cloak default styling*/
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+    display: none !important;
+}
