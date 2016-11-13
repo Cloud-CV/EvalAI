@@ -112,7 +112,7 @@ gulp.task('js', function() {
                     .pipe(concat('directives.js'))
                     .pipe(gulp.dest('./dist/js'))
                     .pipe(rename({ suffix: '.min' }))
-                    .pipe(uglify())
+                    .pipe(uglify())                  
                     .pipe(gulp.dest('./dist/js'));
 
   var services = gulp.src('src/js/services/*.js')
@@ -120,7 +120,7 @@ gulp.task('js', function() {
                 .pipe(concat('services.js'))
                 .pipe(gulp.dest('./dist/js'))
                 .pipe(rename({ suffix: '.min' }))
-                .pipe(uglify())
+                .pipe(uglify())             
                 .pipe(gulp.dest('./dist/js'));    
 
     return merge(app, configs, controllers, directives, services)              
@@ -134,7 +134,11 @@ gulp.task('html', function() {
         .pipe(htmlmin({collapseWhitespace: true }))
         .pipe(gulp.dest('./dist/views/web'));
 
-    return merge(webViews);
+    var webPartials = gulp.src('src/views/web/partials/*.html')
+        .pipe(htmlmin({collapseWhitespace: true }))
+        .pipe(gulp.dest('./dist/views/web/partials'));
+
+    return merge(webViews, webPartials);
 });
 
 
@@ -144,6 +148,20 @@ gulp.task('images', function() {
     .pipe(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true }))
     .pipe(gulp.dest('./dist/images'))
     .pipe(notify({ message: 'Images task complete' }));
+});
+
+
+// Fonts
+gulp.task('fonts', function() {
+    var font = gulp.src([
+                    'bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*'])
+            .pipe(gulp.dest('dist/fonts/'));
+
+    var fontCss = gulp.src([
+                    'bower_components/font-awesome/css/font-awesome.css'])
+            .pipe(gulp.dest('dist/css/'));
+
+    return merge(font, fontCss);
 });
 
 
@@ -186,9 +204,8 @@ gulp.task('connect', function(){
         middleware: function (connect) {
         return [
           connectModRewrite([
-            '!\\.html|\\.js|\\.css|\\.ico|\\.png|\\.gif|\\.jpg|\\.jpeg|\\.swf.*$ /index.html [NC,L]'
-          ]),
-          connect.static('./app')
+            '!\\.html|\\.js|\\.css|\\.ico|\\.png|\\.gif|\\.jpg|\\.woff|.\\.ttf|.\\otf|\\.jpeg|\\.swf.*$ /index.html [NC,L]'
+          ])
         ];
       }
     });
@@ -196,5 +213,5 @@ gulp.task('connect', function(){
 
 // run by default
 gulp.task('default', ['clean', 'connect'], function() {
-    gulp.start('css', 'js', 'html', 'images', 'vendorjs', 'vendorcss');
+    gulp.start('css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts');
 });

@@ -2,13 +2,13 @@
   "chunks": {
     "vendor": [
       "animate",
-      "font-awesome",
-      "angular-material"
+      "angular-material",
+      "materialize"
     ]
   },
   "paths": { 
        "animate": "bower_components/animate.css/animate.css",
-       "font-awesome":"bower_components/font-awesome/css/font-awesome.css",
-       "angular-material" : "bower_components/angular-material/angular-material.css"
+       "angular-material": "bower_components/angular-material/angular-material.css",
+       "materialize": "bower_components/materialize/dist/css/materialize.css"
       }
 }

@@ -2,8 +2,8 @@
  * Config for the router
  */
 
- (function(){
- 	angular
+(function(){
+	angular
 	.module('evalai')
 	.config(configure);
 
@@ -42,4 +42,4 @@
 
 	}
 
- })();
+})();
