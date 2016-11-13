@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from accounts.models import (TimeStampedModel, UserStatus)
-from challenges.models import (Challenge)
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -21,7 +20,7 @@ class HostPermission(TimeStampedModel):
     WRITE = 'Write'
     READ = 'Read'
     RESTRICTED = 'Restricted'
-    name = models.Chaield(max_length=30)
+    name = models.CharField(max_length=30)
     status = models.CharField(max_length=30, unique=True)
 
     def __unicode__(self):
@@ -29,8 +28,10 @@ class HostPermission(TimeStampedModel):
 
 
 class ChallengeHostTeams(TimeStampedModel):
-    challenge = models.ForeignKey(Challenge)
     team_name = models.CharField(max_length=64, null=False, blank=False)
+
+    class Meta:
+        app_label = 'hosts'
 
 
 class ChallengeHost(TimeStampedModel):
