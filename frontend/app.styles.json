@@ -4,18 +4,11 @@
       "animate",
       "font-awesome",
       "angular-material"
-
-
     ]
   },
-  "paths": {
-       
+  "paths": { 
        "animate": "bower_components/animate.css/animate.css",
        "font-awesome":"bower_components/font-awesome/css/font-awesome.css",
        "angular-material" : "bower_components/angular-material/angular-material.css"
-
-   
-
       }
 }
-

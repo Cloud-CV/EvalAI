@@ -2,7 +2,6 @@
 
 (function(){
 
-
 	'use strict';
 
 	angular
@@ -16,6 +15,4 @@
     	vm.check = "Login UI"
     }
 
-
 })();
-

@@ -7,9 +7,6 @@
       "angular-aria",
       "angular-message",
       "angular-material"
-
-
-
     ]
   },
   "paths": {
@@ -19,9 +16,5 @@
        "angular-aria" : "bower_components/angular-aria/angular-aria.min.js",
        "angular-message": "bower_components/angular-messages/angular-messages.min.js",
        "angular-material" : "bower_components/angular-material/angular-material.min.js"
-
-      }
+     }
 }
-
-
-

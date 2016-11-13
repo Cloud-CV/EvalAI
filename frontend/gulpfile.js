@@ -111,14 +111,14 @@ gulp.task('js', function() {
                     .pipe(rename({ suffix: '.min' }))
                     .pipe(uglify())
                     .pipe(gulp.dest('./dist/js'));
-  
+
   var services = gulp.src('src/js/services/*.js')
-                    .pipe(jshint.reporter('default'))
-                    .pipe(concat('services.js'))
-                    .pipe(gulp.dest('./dist/js'))
-                    .pipe(rename({ suffix: '.min' }))
-                    .pipe(uglify())
-                    .pipe(gulp.dest('./dist/js'));    
+                .pipe(jshint.reporter('default'))
+                .pipe(concat('services.js'))
+                .pipe(gulp.dest('./dist/js'))
+                .pipe(rename({ suffix: '.min' }))
+                .pipe(uglify())
+                .pipe(gulp.dest('./dist/js'));    
 
     return merge(app, configs, controllers, directives, services)              
 });
@@ -126,11 +126,12 @@ gulp.task('js', function() {
 // minify and compress html files
 gulp.task('html', function() {
 
-  var landing_html = gulp.src('src/views/web/*.html')
-    .pipe(htmlmin({collapseWhitespace: true }))
-    .pipe(gulp.dest('./dist/views/web'));
+    var webViews = gulp.src('src/views/web/*.html')
+        .pipe(htmlmin({collapseWhitespace: true }))
+        .pipe(gulp.dest('./dist/views/web'));
 
-    return merge(landing_html);
+
+    return merge(webViews);
 });
 
 
@@ -199,4 +200,3 @@ gulp.task('connect', function(){
 gulp.task('default', ['clean', 'connect'], function() {
     gulp.start('css', 'js', 'html', 'images', 'vendorjs', 'vendorcss');
 });
-

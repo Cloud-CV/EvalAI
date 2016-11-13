@@ -4,5 +4,5 @@ angular
 	.module('evalai', [
 		'ui.router', 
 		'ngMaterial',
-		'ngAnimate']);
-
+		'ngAnimate',
+	]);
