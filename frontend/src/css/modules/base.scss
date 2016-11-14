@@ -1,0 +1,128 @@
+/*ng cloak default styling*/
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+    display: none !important;
+}
+
+/*scrollbar customization*/
+::-webkit-scrollbar {
+	width: 5px;
+}
+
+::-webkit-scrollbar-track-piece  {
+	background-color: $dark-gray;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+	background-color: $light-gray;
+}
+
+/*main intro page*/
+.ev-container{
+	padding:20px 40px;
+}
+
+.ev-sm-container{
+	padding:10px 20px;
+}
+
+.ev-big-container{
+	padding:30px 60px;
+}
+
+.padding-lr-header{
+	padding: 0px 100px;
+}
+
+nav{
+	ul{
+		li{
+			a{
+				transition:all 0.2s ease-in-out;
+			}
+		}
+	}
+}
+
+.ev-container{
+	width: 100%;
+	padding:20px 40px;
+	position: relative;
+	color: #fff;
+}
+
+.w-200{
+	font-weight: 200;
+}
+
+.w-300{
+	font-weight: 300;
+}
+
+.w-400{
+	font-weight: 400;
+}
+
+.w-500{
+	font-weight: 500;
+}
+
+.w-600{
+	font-weight: 600;
+}
+
+.text-white{
+	color: #fff;
+}
+
+.text-light-black{
+	color: $light-black;
+}
+
+.text-med-black{
+	color: $med-black;
+}
+
+.text-light-gray{
+	color: #9ca3be;
+}
+
+.text-med-gray{
+	color: #3c3e49;
+}
+
+.text-dark-gray{
+	color: #252833;
+}
+
+.ev-btn-dark{
+	background: $dark-gray;
+}
+
+.ev-btn-dark:hover{
+	background: $med-gray;
+}
+
+.btn{
+	text-transform: none;
+}
+
+i.icon{
+	font-size: 15px;
+}
+
+.side-nav li > a > i{
+	margin:0px;
+}
+
+/*media queries*/
+@media only screen and (max-width: 992px){
+
+	.padding-lr-header{
+		padding:0px 20px;
+	}
+
+	.ev-container{
+		padding: 20px;
+	}	
+
+}

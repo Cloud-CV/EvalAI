@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from apps.accounts.views import ConfirmEmailView
+from accounts.views import ConfirmEmailView
 from django.views.generic.base import TemplateView
 
 urlpatterns = [url(r'^',
@@ -26,7 +26,7 @@ urlpatterns = [url(r'^',
                    admin.site.urls),
                url(r'^api/auth/',
                    include('rest_auth.urls')),
-               url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',
+               url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',   # noqa
                    ConfirmEmailView.as_view(),
                    name='account_confirm_email'),
                url(r'^api/auth/registration/',

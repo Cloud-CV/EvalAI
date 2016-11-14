@@ -1,0 +1,8 @@
+# files/directories to be ignored
+
+.sass-cache/
+
+node_modules/
+bower_components/
+
+dist/
