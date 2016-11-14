@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from accounts.models import (TimeStampedModel, )
-from challenge.models import (Challenge,)
+# from challenges.models import (Challenge, )
 
 
 class ChallengeHostPermission(TimeStampedModel):
@@ -27,7 +27,7 @@ class ChallengeHostPermission(TimeStampedModel):
         return self.name
 
     class Meta:
-        app_label = 'challenges'
+        app_label = 'hosts'
         db_table = 'challenge_host_permission'
 
 
@@ -55,7 +55,7 @@ class ChallengeHostStatus(TimeStampedModel):
         return '{} - {}'.format(self.id, self.status)
 
     class Meta:
-        app_label = 'challenges'
+        app_label = 'hosts'
         db_table = 'challenge_host_status'
 
 
@@ -63,20 +63,20 @@ class ChallengeHostTeams(TimeStampedModel):
     """
     Model representing the Host Team for a partiuclar challenge
     """
-    challenge = models.ForeignKey(Challenge, related_name='host_teams')
+    challenge = models.ForeignKey('challenges.Challenge', related_name='host_teams')
     team_name = models.CharField(max_length=100,)
 
     class Meta:
-        app_label = 'challenges'
+        app_label = 'hosts'
         db_table = 'challenge_host_teams'
 
 
 class ChallengeHost(TimeStampedModel):
     user = models.ForeignKey(User)
-    team_name = models.ForeignKey(ChallengeHostTeams)
-    status = models.ForeignKey(ChallengeHostStatus)
-    permissions = models.ForeignKey(ChallengeHostPermission)
+    team_name = models.ForeignKey('ChallengeHostTeams')
+    status = models.ForeignKey('ChallengeHostStatus')
+    permissions = models.ForeignKey('ChallengeHostPermission')
 
     class Meta:
-        app_label = 'challenges'
+        app_label = 'hosts'
         db_table = 'challenge_host'
