@@ -1,8 +1,9 @@
 from __future__ import unicode_literals
 
+from django.db import models
+
 from accounts.models import (TimeStampedModel)
 from hosts.models import (ChallengeHostTeams)
-from django.db import models
 
 
 class Challenge(TimeStampedModel):
@@ -11,6 +12,9 @@ class Challenge(TimeStampedModel):
     """
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
+    terms_and_conditions = models.TextField(null=True, blank=True)
+    submission_guidelines = models.TextField(null=True, blank=True)
+    evaluation_details = models.TextField(null=True, blank=True)
     image = models.ImageField(
         upload_to='logos', null=True, blank=True, verbose_name="Logo")
     start_date = models.DateTimeField(
@@ -26,3 +30,15 @@ class Challenge(TimeStampedModel):
 
     class Meta:
         app_label = 'challenges'
+        db_table = 'challenge'
+
+
+class Phase(TimeStampedModel):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    leaderboard_public = models.BooleanField(default=False)
+    challenge = models.ForeignKey(Challenge)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'challenge_phase'
