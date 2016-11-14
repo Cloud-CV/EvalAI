@@ -2,8 +2,8 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-from accounts.models import (TimeStampedModel)
-from hosts.models import (ChallengeHostTeams)
+from accounts.models import (TimeStampedModel, )
+# from hosts.models import (ChallengeHostTeams, )
 
 
 class Challenge(TimeStampedModel):
@@ -22,7 +22,7 @@ class Challenge(TimeStampedModel):
     end_date = models.DateTimeField(
         null=True, blank=True, verbose_name="End Date (UTC)")
     creator = models.ForeignKey(
-        ChallengeHostTeams, related_name='challenge_creator')
+        'hosts.ChallengeHostTeams', related_name='challenge_creator')
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available")
     enable_forum = models.BooleanField(default=True)
@@ -37,7 +37,7 @@ class Phase(TimeStampedModel):
     name = models.CharField(max_length=100)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
-    challenge = models.ForeignKey(Challenge)
+    challenge = models.ForeignKey('Challenge')
 
     class Meta:
         app_label = 'challenges'
