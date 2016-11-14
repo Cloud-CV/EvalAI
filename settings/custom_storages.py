@@ -1,6 +1,6 @@
 from storages.backends.s3boto import S3BotoStorage
 
-from settings.prod import STATICFILES_LOCATION, MEDIAFILES_LOCATION
+from .prod import STATICFILES_LOCATION, MEDIAFILES_LOCATION
 
 # In order to make sure that both static and media files are stored in
 # different directories
