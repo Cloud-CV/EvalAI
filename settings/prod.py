@@ -1,5 +1,4 @@
 from .common import *  # noqa
-from settings import custom_storages
 
 import os
 
@@ -39,7 +38,7 @@ STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
 # Media files configuration on S3
 MEDIAFILES_LOCATION = 'media'
 MEDIA_URL = 'http://%s.s3.amazonaws.com/%s/' % (AWS_STORAGE_BUCKET_NAME, MEDIAFILES_LOCATION)
-DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
+DEFAULT_FILE_STORAGE = 'settings.custom_storages.MediaStorage'
 
 # Setup Email Bacend related settings
 DEFAULT_FROM_EMAIL = "noreply@cloudcv.org"
