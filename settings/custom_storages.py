@@ -6,8 +6,8 @@ from settings.prod import STATICFILES_LOCATION, MEDIAFILES_LOCATION
 
 
 class StaticStorage(S3BotoStorage):
-    location = STATICFILES_LOCATION
+    location = settings.STATICFILES_LOCATION
 
 
 class MediaStorage(S3BotoStorage):
-    location = MEDIAFILES_LOCATION
+    location = settings.MEDIAFILES_LOCATION
