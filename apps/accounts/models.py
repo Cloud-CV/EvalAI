@@ -1,12 +1,13 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class TimeStampedModel(models.Model):
-    """ TimeStampedModel
-    An abstract base class model that provides self-managed "created" and
-    "modified" fields.
+    """
+    An abstract base class model that provides self-managed `created` and
+    `modified` fields.
     """
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -39,3 +40,26 @@ class UserStatus(TimeStampedModel):
 
     class Meta:
         app_label = 'accounts'
+
+
+class Affiliation(TimeStampedModel):
+    """
+    Model to store the Affiliations
+    """
+    name = models.TextField()
+
+    class Meta:
+        app_label = 'accounts'
+        db_table = 'affliation'
+
+
+class UserAffliation(TimeStampedModel):
+    """
+    Model to relate the affiliations to a particular user
+    """
+    affiliation = models.ForeignKey(Affiliation)
+    user = models.ForeignKey(User)
+
+    class Meta:
+        app_label = 'accounts'
+        db_table = 'user_affiliation'
