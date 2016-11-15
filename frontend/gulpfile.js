@@ -146,8 +146,7 @@ gulp.task('html', function() {
 gulp.task('images', function() {
   return gulp.src('src/images/**/*')
     .pipe(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true }))
-    .pipe(gulp.dest('./dist/images'))
-    .pipe(notify({ message: 'Images task complete' }));
+    .pipe(gulp.dest('./dist/images'));
 });
 
 
@@ -200,6 +199,7 @@ gulp.task('connect', function(){
     connect.server({
         root: './',
         port: 8888,
+        livereload: true,
 
         middleware: function (connect) {
         return [
@@ -212,6 +212,6 @@ gulp.task('connect', function(){
 })
 
 // run by default
-gulp.task('default', ['clean', 'connect'], function() {
+gulp.task('dev', ['clean'], function() {
     gulp.start('css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts');
 });
