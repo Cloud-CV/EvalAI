@@ -61,13 +61,19 @@ Follow this guide to setup your development machine.
     bower install
     ```
 
-8. That's it, Now to build static files and listening to server at http://127.0.0.1:8888
+8. To build static files(develpoment) type
 
     ```
-    gulp default 
+    gulp dev 
     ``` 
 
-9. To check for static files change run gulp watch task in new terminal window
+9. That's it, Now to connect to dev server at http://127.0.0.1:8000
+
+    ```
+    gulp connect 
+    ``` 
+
+10. To check for static files change run gulp watch task in new terminal window
 
     ```
     gulp watch 
