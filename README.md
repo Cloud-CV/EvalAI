@@ -67,7 +67,7 @@ Follow this guide to setup your development machine.
     gulp dev 
     ``` 
 
-9. That's it, Now to connect to dev server
+9. That's it, Now to connect to dev server at http://127.0.0.1:8000
 
     ```
     gulp connect 
