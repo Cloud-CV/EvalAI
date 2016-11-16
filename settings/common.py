@@ -56,6 +56,7 @@ OUR_APPS = [
 THIRD_PARTY_APPS = [
     'allauth',
     'allauth.account',
+    'corsheaders',
     'rest_auth',
     'rest_auth.registration',
     'rest_framework.authtoken',
@@ -65,6 +66,7 @@ THIRD_PARTY_APPS = [
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -147,3 +149,9 @@ REST_FRAMEWORK = {
 }
 
 # ALLAUTH SETTINGS
+
+CORS_ORIGIN_WHITELIST = [
+    'localhost',
+    '127.0.0.1',
+    'ec2-54-242-225-49.compute-1.amazonaws.com',
+]
