@@ -12,6 +12,7 @@ class ChallengeHostTeam(TimeStampedModel):
     Model representing the Host Team for a partiuclar challenge
     """
     team_name = models.CharField(max_length=100,)
+    created_by = models.ForeignKey(User, related_name='challenge_host_team_creator')
 
     class Meta:
         app_label = 'hosts'
