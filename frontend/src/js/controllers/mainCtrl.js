@@ -8,7 +8,7 @@
     .module('evalai')
     .controller('MainCtrl', MainCtrl);
 
-    function MainCtrl (){
+    function MainCtrl(){
 
     	var vm =this;
 
