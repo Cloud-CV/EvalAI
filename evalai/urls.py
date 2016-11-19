@@ -15,18 +15,18 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from apps.accounts.views import ConfirmEmailView
+from accounts.views import ConfirmEmailView
 from django.views.generic.base import TemplateView
 
 urlpatterns = [url(r'^',
-                   include('apps.web.urls')),
+                   include('web.urls')),
                url(r'^',
                    include('django.contrib.auth.urls')),
                url(r'^admin/',
                    admin.site.urls),
                url(r'^api/auth/',
                    include('rest_auth.urls')),
-               url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',
+               url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',   # noqa
                    ConfirmEmailView.as_view(),
                    name='account_confirm_email'),
                url(r'^api/auth/registration/',
@@ -38,4 +38,22 @@ urlpatterns = [url(r'^',
                url(r'^api/admin-auth/',
                    include('rest_framework.urls',
                            namespace='rest_framework')),
+               url(r'^api/challenges/',
+                   include('challenges.urls',
+                           namespace='challenges')),
+               url(r'^api/analytics/',
+                   include('analytics.urls',
+                           namespace='analytics')),
+               url(r'^api/hosts/',
+                   include('hosts.urls',
+                           namespace='hosts')),
+               url(r'^api/jobs/',
+                   include('jobs.urls',
+                           namespace='jobs')),
+               url(r'^api/participants/',
+                   include('participants.urls',
+                           namespace='participants')),
+               url(r'^api/challenges/(?P<challenge_pk>[0-9]+)/teams/',
+                   include('teams.urls',
+                           namespace='teams')),
                ]

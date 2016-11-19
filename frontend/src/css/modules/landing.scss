@@ -1,0 +1,114 @@
+/*dynamic header style*/
+.dyn-header{
+	position: relative;
+	z-index: 999;
+	nav{
+		background-color: rgba(0,0,0,0);
+		box-shadow: 0 0 0 0 #000;
+		a{
+			color: $light-link;
+			font-weight: $rob-med;
+		}
+		a:hover{
+			color: $link-hover-dark;
+		}
+		a.light-link{
+			color: $med-link;
+			transition:all 0.2s ease-in-out;
+		}
+		a.light-link:hover{
+			color: $light-link;
+		}
+		a.active{
+			color:$link-hover-dark;
+			background-color: rgba(0,0,0,0.1);
+		}
+	}
+}
+
+/*main intor*/
+section.bg-section{
+	width: 100%;
+	height: 100vh;
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	background-color: $med-gray;
+	.bg-image{
+		width: 100%;
+		height: 100%;
+		opacity: 0.2;
+		background-image:url('../images/background.png');
+		background-size: cover;
+		background-repeat: no-repeat;
+		background-position: right;
+	}
+}
+
+.ev-head{
+	margin-top: 100px;
+}
+
+.ev-head-small{
+	margin-top:80px;
+}
+
+.ev-intro{
+	margin-top: -10px;
+}
+
+.ev-insight{
+	position: absolute;
+	bottom: 0px;
+	color: $light-gray;
+}
+
+#mobile-demo{
+	li{
+		a{
+			color: $med-black;
+		}
+	}
+}
+
+.background{
+	background-color: $dark-gray;
+}
+
+.ev-details{
+	position: absolute;
+	top: 100vh;
+	left: 0;
+	height: 100vh;
+	background-color: #fff;
+}
+
+.full-view{
+	min-height: 100vh;
+}
+/*media queries*/
+@media only screen and (max-width: 992px){
+
+	.dyn-header{
+		nav{
+			a.org-link{
+				float: right;
+				padding-right: 20px;
+			}
+		}
+	}
+
+	.ev-head{
+		margin-top: 40px;
+	}
+
+	.ev-head-small{
+		margin-top:20px;
+	}
+
+
+	.ev-insight{
+		bottom: 0px;
+	}
+
+}

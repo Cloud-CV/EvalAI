@@ -1,5 +1,6 @@
 # EvalAI
 
+[![Join the chat at https://gitter.im/Cloud-CV/EvalAI](https://badges.gitter.im/Cloud-CV/EvalAI.svg)](https://gitter.im/Cloud-CV/EvalAI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/Cloud-CV/EvalAI.svg?branch=master)](https://travis-ci.org/Cloud-CV/EvalAI)
 [![Coverage Status](https://coveralls.io/repos/github/Cloud-CV/EvalAI/badge.svg)](https://coveralls.io/github/Cloud-CV/EvalAI)
 [![Requirements Status](https://requires.io/github/Cloud-CV/EvalAI/requirements.svg?branch=master)](https://requires.io/github/Cloud-CV/EvalAI/requirements/?branch=master)
@@ -50,6 +51,33 @@ Follow this guide to setup your development machine.
     ```
     python manage.py runserver --settings=settings.dev
     ```
+
+
+7. Open a new terminal window with node install on your machine and type
+    
+    ```
+    cd frontend
+    npm install
+    bower install
+    ```
+
+8. To build static files(develpoment) type
+
+    ```
+    gulp dev 
+    ``` 
+
+9. That's it, Now to connect to dev server at http://127.0.0.1:8000
+
+    ```
+    gulp connect 
+    ``` 
+
+10. To check for static files change run gulp watch task in new terminal window
+
+    ```
+    gulp watch 
+    ``` 
 
 ## Contribution guidelines
 

@@ -11,10 +11,12 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
-
+import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+APPS_DIR = os.path.join(BASE_DIR, 'apps')
 
+sys.path.append(APPS_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -41,18 +43,21 @@ DEFAULT_APPS = [
 ]
 
 OUR_APPS = [
-    'apps.analytics',
-    'apps.challenges',
-    'apps.hosts',
-    'apps.jobs',
-    'apps.participants',
-    'apps.teams',
-    'apps.web',
+    'accounts',
+    'analytics',
+    'base',
+    'challenges',
+    'hosts',
+    'jobs',
+    'participants',
+    'teams',
+    'web',
 ]
 
 THIRD_PARTY_APPS = [
     'allauth',
     'allauth.account',
+    'corsheaders',
     'rest_auth',
     'rest_auth.registration',
     'rest_framework.authtoken',
@@ -61,8 +66,8 @@ THIRD_PARTY_APPS = [
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
 
-
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -98,16 +103,16 @@ WSGI_APPLICATION = 'evalai.wsgi.application'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',  # noqa
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',  # noqa
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',  # noqa
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',  # noqa
     },
 ]
 
@@ -133,6 +138,9 @@ STATIC_URL = '/static/'
 SITE_ID = 1
 
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': (
+        'rest_framework.pagination.LimitOffsetPagination'),
+    'PAGE_SIZE': 100,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ],
@@ -142,3 +150,9 @@ REST_FRAMEWORK = {
 }
 
 # ALLAUTH SETTINGS
+
+CORS_ORIGIN_WHITELIST = [
+    'localhost',
+    '127.0.0.1',
+    'ec2-54-242-225-49.compute-1.amazonaws.com',
+]
