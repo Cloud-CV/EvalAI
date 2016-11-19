@@ -19,6 +19,10 @@
 		a.light-link:hover{
 			color: $light-link;
 		}
+		a.active{
+			color:$link-hover-dark;
+			background-color: rgba(0,0,0,0.1);
+		}
 	}
 }
 
@@ -45,6 +49,10 @@ section.bg-section{
 	margin-top: 100px;
 }
 
+.ev-head-small{
+	margin-top:80px;
+}
+
 .ev-intro{
 	margin-top: -10px;
 }
@@ -53,24 +61,6 @@ section.bg-section{
 	position: absolute;
 	bottom: 0px;
 	color: $light-gray;
-}
-
-a.light-link{
-	color: $med-link;
-	transition:all 0.2s ease-in-out;
-}
-
-a.light-link:hover{
-	color: $light-link;
-}
-
-a.dark-link{
-	color: $med-link;
-	transition:all 0.2s ease-in-out;
-}
-
-a.dark-link:hover{
-	color: $med-link;
 }
 
 #mobile-demo{
@@ -93,6 +83,9 @@ a.dark-link:hover{
 	background-color: #fff;
 }
 
+.full-view{
+	min-height: 100vh;
+}
 /*media queries*/
 @media only screen and (max-width: 992px){
 
@@ -108,6 +101,11 @@ a.dark-link:hover{
 	.ev-head{
 		margin-top: 40px;
 	}
+
+	.ev-head-small{
+		margin-top:20px;
+	}
+
 
 	.ev-insight{
 		bottom: 0px;
