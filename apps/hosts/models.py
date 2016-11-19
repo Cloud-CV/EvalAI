@@ -63,7 +63,6 @@ class ChallengeHostTeam(TimeStampedModel):
     """
     Model representing the Host Team for a partiuclar challenge
     """
-    challenge = models.ForeignKey('challenges.Challenge', related_name='host_teams')
     team_name = models.CharField(max_length=100,)
 
     class Meta:
