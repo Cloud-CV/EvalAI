@@ -26,16 +26,27 @@
 			controllerAs : 'main'
 		}
 
+		var auth = {
+			name: "auth",
+			url:"/auth",
+			templateUrl: baseUrl + "/web/auth.html",
+			controller: 'AuthCtrl',
+			controllerAs : 'auth',
+			abstract: true
+		}
+
 		var login = {
-			name: "login",
+			name: "auth.login",
+			parent: "auth",
 			url:"/login",
 			templateUrl: baseUrl + "/web/login.html",
-			controller: 'AuthCtrl',
-			controllerAs : 'auth'
 		}
 
 		// call all states here
 		$stateProvider.state(home);
+
+		// auth configs
+		$stateProvider.state(auth);
 		$stateProvider.state(login);
 
 		$urlRouterProvider.otherwise("/");
