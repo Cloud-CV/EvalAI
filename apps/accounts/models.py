@@ -6,11 +6,11 @@ from django.contrib.auth.models import User
 
 class TimeStampedModel(models.Model):
     """
-    An abstract base class model that provides self-managed `created` and
-    `modified` fields.
+    An abstract base class model that provides self-managed `created_at` and
+    `modified_at` fields.
     """
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
