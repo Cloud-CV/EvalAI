@@ -41,8 +41,8 @@ def team_list(request, challenge_pk):
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
-            return Response(response_data, status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
