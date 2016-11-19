@@ -45,6 +45,7 @@ DEFAULT_APPS = [
 OUR_APPS = [
     'accounts',
     'analytics',
+    'base',
     'challenges',
     'hosts',
     'jobs',
