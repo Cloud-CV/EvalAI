@@ -7,3 +7,4 @@ angular
 		'ngAnimate',
 		'ngMessages'
 	]);
+	
