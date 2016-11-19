@@ -72,7 +72,7 @@ class ChallengeHostTeam(TimeStampedModel):
 
 class ChallengeHost(TimeStampedModel):
     user = models.ForeignKey(User)
-    team_name = models.ForeignKey('ChallengeHostTeams')
+    team_name = models.ForeignKey('ChallengeHostTeam')
     status = models.ForeignKey('ChallengeHostStatus')
     permissions = models.ForeignKey('ChallengeHostPermission')
 
