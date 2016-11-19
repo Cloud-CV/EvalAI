@@ -5,14 +5,34 @@
 	'use strict';
 
 	angular
-    .module('evalai')
-    .controller('AuthCtrl', AuthCtrl);
+	    .module('evalai')
+	    .controller('AuthCtrl', AuthCtrl);
 
-    function AuthCtrl (){
+	AuthCtrl.$inject = ['utilities'];
 
-    	var vm =this;
+    function AuthCtrl(utilities){
+
+    	var vm = this;
+
+		var parameters = {};
+		parameters.url = 'auth/login/';
+		parameters.method = 'POST';
+		parameters.data = {
+			"email": "Akash",
+            "password": "check",
+		}
+		parameters.callback = {
+			onSuccess: function(response){
+				
+				console.log(response + "sdsd");
+			},
+			onError : function(error){
+				
+			}
+		};
+
+		utilities.sendRequest(parameters);
     	
-    	vm.check = "Login UI";
     }
 
 })();
