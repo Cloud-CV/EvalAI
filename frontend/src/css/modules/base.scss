@@ -33,6 +33,16 @@
 	padding: 0px 100px;
 }
 
+a.active{
+	color:$link-hover-dark;
+	background-color: rgba(0,0,0,0.1);
+}
+
+.btn:focus,
+button:focus{
+	background-color: none;
+}
+
 nav{
 	ul{
 		li{
@@ -112,6 +122,139 @@ i.icon{
 
 .side-nav li > a > i{
 	margin:0px;
+}
+
+a.white-link{
+	color: $light-link;
+}
+
+a.white-link:hover{
+	color: $link-hover-dark;
+}
+
+a.light-link{
+	color: $med-link;
+}
+
+a.light-link:hover{
+	color: $light-link;
+}
+
+a.med-link,
+a.med-link:hover{
+	color: $med-link;
+}
+
+a.dark-link,
+a.dark-link:hover{
+	color: $dark-link;
+}
+.align-left{
+	text-align:left;
+}
+
+.align-right{
+	text-align:right;
+}
+
+/*to remove gutter from col*/
+.rm-gut{
+	margin-left:-10px !important;
+	margin-right: -10px !important;
+}
+
+.form-icon{
+	i{
+		position: absolute;
+		right: 0;
+		top: 15px;
+		color: $light-gray;
+		font-size: 0.9em;
+		transition:all 0.2s ease-in-out;
+	}
+}
+
+/* label color */
+.input-field label,
+input[type=checkbox] + label{
+	color: $light-gray;
+	font-size: 0.8em;
+	font-weight: 400;
+}
+
+input[type="checkbox"].filled-in:checked + label:after{
+    width: 17px;
+    height: 17px;
+    border: 1px solid $link-hover-dark;
+    background-color: $link-hover-dark;
+}
+
+input[type="checkbox"] + label{
+    padding-left: 24px;
+    line-height: 20px;
+}
+
+input[type="checkbox"].filled-in:checked + label:before {
+    top: 0;
+    left: 2px;
+    width: 5px;
+    height: 11px;
+}
+
+input[type="checkbox"].filled-in:not(:checked) + label:after{
+	width: 17px;
+    height: 17px;
+    border: 1px solid $light-gray;
+    background-color: transparent;	
+}
+
+/* label focus color */
+.input-field input[type=email]:focus + label,
+.input-field input[type=password]:focus + label {
+	color: $light-gray;
+}
+
+/* label underline focus color */
+.input-field input[type=email]:focus,
+.input-field input[type=password]:focus
+ {
+	border-bottom: 1px solid $link-hover-dark;
+	box-shadow: 0 0px 0 0 $link-hover-dark;
+	
+}
+
+/* valid color */
+.input-field input[type=email].valid,
+.input-field input[type=password].valid {
+	border-bottom: 1px solid $link-hover-dark;
+	box-shadow: 0 0px 0 0 #000;
+}
+
+/* invalid color */
+.input-field input[type=email].invalid,
+.input-field input[type=password].invalid {
+	border-bottom: 1px solid $link-hover-dark;
+	box-shadow: 0 0px 0 0 #000;
+}
+
+/* icon prefix focus color */	
+.input-field .prefix.active {
+	color: #000;
+}
+
+input[type=password], input[type=email]{
+	border-bottom: 1px solid $light-gray;
+}
+
+input{
+	font-weight: 300;
+}
+
+.input-field input[type=email]:focus + .form-icon,
+.input-field input[type=password]:focus + .form-icon{
+	i{
+		color: $light-link;
+	}
 }
 
 /*media queries*/

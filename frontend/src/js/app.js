@@ -5,4 +5,5 @@ angular
 		'ui.router', 
 		'ngMaterial',
 		'ngAnimate',
+		'ngMessages'
 	]);
