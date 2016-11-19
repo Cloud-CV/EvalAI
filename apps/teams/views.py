@@ -45,12 +45,12 @@ def team_list(request, challenge_pk):
         return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((TokenAuthentication,))
 def team_detail(request, challenge_pk, pk):
     try:
-        Challenge.objects.get(pk=challenge_pk)
+        challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -61,6 +61,20 @@ def team_detail(request, challenge_pk, pk):
         response_data = {'error': 'Team does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    serializer = TeamChallengeSerializer(team)
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
+    if request.method == 'GET':
+        serializer = TeamChallengeSerializer(team)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    elif request.method in ['PUT', 'PATCH']:
+
+        if request.method == 'PATCH':
+            serializer = TeamSerializer(team, data=request.data, context={'challenge': challenge}, partial=True)
+        else:
+            serializer = TeamSerializer(team, data=request.data, context={'challenge': challenge})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
