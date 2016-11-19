@@ -7,58 +7,6 @@ from accounts.models import (TimeStampedModel, )
 # from challenges.models import (Challenge, )
 
 
-class ChallengeHostPermission(TimeStampedModel):
-    """
-    Model representing the permissions for a Challenge Hosting Member
-    .. note::
-        There are four different status:
-            - Admin (Includes CRUD).
-            - Write (Includes CRU).
-            - Read (Includes R)
-            - Restricted (Default).
-    """
-    ADMIN = 'Admin'
-    WRITE = 'Write'
-    READ = 'Read'
-    RESTRICTED = 'Restricted'
-    status = models.CharField(max_length=30, unique=True)
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        app_label = 'hosts'
-        db_table = 'challenge_host_permission'
-
-
-class ChallengeHostStatus(TimeStampedModel):
-    """
-    Model representing the status of a challenge's host
-    .. note::
-        There are five different status:
-            - Unknown.
-            - Denied.
-            - self.
-            - Approved.
-            - Pending.
-    """
-
-    UNKNOWN = 'unknown'
-    SELF = 'self'
-    DENIED = 'denied'
-    ACCEPTED = 'accepted'
-    PENDING = 'pending'
-
-    status = models.CharField(max_length=30, unique=True)
-
-    def __str__(self):
-        return '{} - {}'.format(self.id, self.status)
-
-    class Meta:
-        app_label = 'hosts'
-        db_table = 'challenge_host_status'
-
-
 class ChallengeHostTeam(TimeStampedModel):
     """
     Model representing the Host Team for a partiuclar challenge
@@ -71,10 +19,39 @@ class ChallengeHostTeam(TimeStampedModel):
 
 
 class ChallengeHost(TimeStampedModel):
+
+    # permission options
+    ADMIN = 'Admin'
+    READ = 'Read'
+    RESTRICTED = 'Restricted'
+    WRITE = 'Write'
+
+    # status options
+    ACCEPTED = 'Accepted'
+    DENIED = 'Denied'
+    PENDING = 'Pending'
+    SELF = 'Self'
+    UNKNOWN = 'Unknown'
+
+    PERMISSION_OPTIONS = (
+        (ADMIN, ADMIN),
+        (READ, READ),
+        (RESTRICTED, RESTRICTED),
+        (WRITE, WRITE),
+    )
+
+    STATUS_OPTIONS = (
+        (ACCEPTED, ACCEPTED),
+        (DENIED, DENIED),
+        (PENDING, PENDING),
+        (SELF, SELF),
+        (UNKNOWN, UNKNOWN),
+    )
+
     user = models.ForeignKey(User)
     team_name = models.ForeignKey('ChallengeHostTeam')
-    status = models.ForeignKey('ChallengeHostStatus')
-    permissions = models.ForeignKey('ChallengeHostPermission')
+    status = models.CharField(max_length=30, choices=PERMISSION_OPTIONS)
+    permissions = models.CharField(max_length=30, choices=STATUS_OPTIONS)
 
     class Meta:
         app_label = 'hosts'
