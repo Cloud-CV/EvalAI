@@ -59,7 +59,7 @@ class ChallengeHostStatus(TimeStampedModel):
         db_table = 'challenge_host_status'
 
 
-class ChallengeHostTeams(TimeStampedModel):
+class ChallengeHostTeam(TimeStampedModel):
     """
     Model representing the Host Team for a partiuclar challenge
     """
