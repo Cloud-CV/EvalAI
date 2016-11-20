@@ -10,3 +10,16 @@ a.active-auth{
 .fg-pass{
 	font-size:0.8em;
 }
+
+.auth-container{
+	transition:all 0.2s ease-in-out;
+}
+
+.wrn-msg{
+    font-size: 0.8em;
+    margin-top: -16px;
+}
+
+.reg-control{
+	margin-top:15px;
+}

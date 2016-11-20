@@ -1,9 +1,9 @@
 <!-- login form -->
 <form ng-submit="userLogin()">
     <div class="input-field align-left">
-		<input id="email" type="email" class="validate" required>
+		<input id="email" type="text" class="validate" required>
 		<span class="form-icon"><i class="fa fa-envelope"></i></span>
-		<label for="email" data-error="wrong" data-success="right">Email *</label>
+		<label for="email" data-error="wrong" data-success="right">Username / Email *</label>
     </div>
     <div class="input-field align-left">
 		<input id="password" type="password" class="validate" required>
@@ -20,12 +20,11 @@
 		</div>	
     </div>
     <div class="align-left">
-    	<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">Submit</button>
+    	<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">LogIn</button>
     </div>
     <div>
     	<p class="text-light-gray">
-    		Or start with a new account <a class="white-link" >SignUp</a>
+    		Or start with a new account <a class="white-link" ui-sref="auth.signup">SignUp</a>
     	</p>
-    </div>
-    
+    </div>  
 </form>
