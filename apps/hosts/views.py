@@ -35,3 +35,18 @@ def challenge_host_team_list(request):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((TokenAuthentication,))
+def challenge_host_team_detail(request, pk):
+    try:
+        challenge_host_team = ChallengeHostTeam.objects.get(pk=pk)
+    except ChallengeHostTeam.DoesNotExist:
+        response_data = {'error': 'ChallengeHostTeam does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    serializer = ChallengeHostTeamSerializer(challenge_host_team)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
