@@ -37,7 +37,7 @@ def challenge_host_team_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((TokenAuthentication,))
 def challenge_host_team_detail(request, pk):
@@ -47,6 +47,25 @@ def challenge_host_team_detail(request, pk):
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    serializer = ChallengeHostTeamSerializer(challenge_host_team)
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
+    if request.method == 'GET':
+        serializer = ChallengeHostTeamSerializer(challenge_host_team)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    elif request.method in ['PUT', 'PATCH']:
+
+        if request.method == 'PATCH':
+            serializer = ChallengeHostTeamSerializer(challenge_host_team,
+                                                     data=request.data,
+                                                     context={'request': request},
+                                                     partial=True)
+        else:
+            serializer = ChallengeHostTeamSerializer(challenge_host_team,
+                                                     data=request.data,
+                                                     context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
