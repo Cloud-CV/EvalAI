@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import ChallengeHostTeam
+from .models import (ChallengeHost,
+                     ChallengeHostTeam,)
 
 
 class ChallengeHostTeamSerializer(serializers.ModelSerializer):
@@ -15,3 +16,13 @@ class ChallengeHostTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChallengeHostTeam
         fields = ('id', 'team_name', 'created_by',)
+
+
+class ChallengeHostSerializer(serializers.ModelSerializer):
+
+    status = serializers.ChoiceField(choices=ChallengeHost.STATUS_OPTIONS)
+    permissions = serializers.ChoiceField(choices=ChallengeHost.PERMISSION_OPTIONS)
+
+    class Meta:
+        model = ChallengeHost
+        fields = ('id', 'user', 'team_name', 'status', 'permissions',)

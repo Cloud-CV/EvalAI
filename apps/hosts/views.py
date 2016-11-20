@@ -9,8 +9,10 @@ from rest_framework.decorators import (api_view,
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from .models import (ChallengeHostTeam,)
-from .serializers import (ChallengeHostTeamSerializer,)
+from .models import (ChallengeHost,
+                     ChallengeHostTeam,)
+from .serializers import (ChallengeHostSerializer,
+                          ChallengeHostTeamSerializer,)
 
 
 @api_view(['GET', 'POST'])
@@ -73,3 +75,24 @@ def challenge_host_team_detail(request, pk):
     elif request.method == 'DELETE':
         challenge_host_team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((TokenAuthentication,))
+def challenge_host_list(request, challenge_host_team_pk):
+
+    try:
+        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+    except ChallengeHostTeam.DoesNotExist:
+        response_data = {'error': 'ChallengeHostTeam does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    challenge_host = ChallengeHost.objects.filter(team_name=challenge_host_team,
+                                                  user=request.user)
+    paginator = PageNumberPagination()
+    paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+    result_page = paginator.paginate_queryset(challenge_host, request)
+    serializer = ChallengeHostSerializer(result_page, many=True)
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
