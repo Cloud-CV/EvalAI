@@ -42,12 +42,20 @@
 			templateUrl: baseUrl + "/web/login.html",
 		}
 
+		var signup = {
+			name: "auth.signup",
+			parent: "auth",
+			url:"/signup",
+			templateUrl: baseUrl + "/web/signup.html",
+		}
+
 		// call all states here
 		$stateProvider.state(home);
 
 		// auth configs
 		$stateProvider.state(auth);
 		$stateProvider.state(login);
+		$stateProvider.state(signup);
 
 		$urlRouterProvider.otherwise("/");
 

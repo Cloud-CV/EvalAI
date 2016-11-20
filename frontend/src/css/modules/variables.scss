@@ -10,6 +10,7 @@ $med-gray: #3c3e49;
 $dark-gray: #252833;
 $light-black: #9d9d9d;
 $med-black: #4d4d4d;
+$highlight: #ffaf4b;;
 
 /*link colors*/
 $light-link: #fff;
@@ -17,5 +18,11 @@ $med-link: #9ca3be;
 $dark-link: #252833;
 
 /*link hover colors*/
-$link-hover-dark: #d18e3b;
+$link-hover-dark: #ffaf4b;;
 $link-hover-light: #fff;
+
+/*loader variable*/
+$loader-size: 70px;
+$loader-dot-size: ($loader-size / 5); 
+$loader-height: $loader-dot-size; 
+$loader-dot-color: #ffaf4b;

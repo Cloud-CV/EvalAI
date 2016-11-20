@@ -10,10 +10,9 @@
 	utilities.$inject = ['$http'];
 
 	function utilities ($http){
-		
 
 		// factory for API calls
-		this.sendRequest = function(parameters){
+		this.sendRequest = function(parameters, header ){
 			var url='http://localhost:8000/api/' + parameters.url;
 			var data = parameters.data;
 			var token = parameters.token;
@@ -24,12 +23,26 @@
 					'Authorization': "Token "+token
 				};
 
-			if (method == "POST") {
+			// function to check for applying header
+			function pick(arg, def) {
+			   return (typeof arg == 'undefined' ? def : arg);
+			};
+
+			header = pick(header, 'header');
+
+			if (method == "POST" && header == 'header') {
 		        var req = {
 		            method: parameters.method,
 		            url: url,
 		            data: data,
 		            headers: headers
+		        };
+		    }
+		    else if (method == "POST" && header == 'no-header') {
+		        var req = {
+		            method: parameters.method,
+		            url: url,
+		            data: data
 		        };
 		    } else if (method == "GET") {
 		        var req = {
