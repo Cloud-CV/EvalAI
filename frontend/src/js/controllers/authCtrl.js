@@ -1,4 +1,4 @@
-// Invoking IIFE
+// Invoking IIFE for auth
 
 (function(){
 
@@ -41,6 +41,7 @@
 			vm.loginContainer.removeClass('low-screen');
     	}
 
+    	// getting signup
     	vm.userSignUp = function(){
     		vm.isValid = {};
     		var msg = "Setting up your details!"
@@ -88,6 +89,63 @@
 							if(key=='password2' || key=='non_field_errors'){
 								vm.isValid.confirm=true;
 								vm.wrnMsg.confirm = value[0];
+							}
+							if(key=='username'){
+								vm.isValid.username=true;
+								vm.wrnMsg.username = value[0];
+							}
+						})
+					}
+				}
+			};
+
+			utilities.sendRequest(parameters, "no-header");
+    	}
+
+    	// login user
+    	vm.userLogin = function(){
+    		vm.isValid = {};
+    		var msg = "Taking you to EvalAI!"
+			vm.startLoader(msg);
+
+			// call utility service
+    		var parameters = {};
+			parameters.url = 'auth/login/';
+			parameters.method = 'POST';
+			parameters.data = {
+				"username": vm.getUser.name,
+	  		 	"password": vm.getUser.password,
+			}
+			parameters.callback = {
+				onSuccess: function(response, status){
+					if(status == 200){
+						vm.getUser= {};
+						vm.wrnMsg = {};
+    					vm.isValid = {};
+						vm.confirmMsg=''
+						vm.regMsg = "";
+						utilities.storeData('userKey', response);
+						$state.go('dashboard');
+						vm.stopLoader();
+					}
+					else{
+						alert("Something went wrong");
+						vm.stopLoader();
+					}
+				},
+				onError : function(error, status){
+					if(status == 400){
+						vm.stopLoader();
+						vm.isConfirm = false;
+						vm.wrnMsg.cred = "Please correct above marked fields!"
+						angular.forEach(error, function(value, key){
+							if(key=='non_field_errors'){
+								vm.isValid.cred=true;
+								vm.wrnMsg.cred = value[0]
+							}
+							if(key=='password'){
+								vm.isValid.password=true;
+								vm.wrnMsg.password = value[0];
 							}
 							if(key=='username'){
 								vm.isValid.username=true;

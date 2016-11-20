@@ -49,6 +49,14 @@
 			templateUrl: baseUrl + "/web/signup.html",
 		}
 
+		var dashboard = {
+			name: "dashboard",
+			url:"/dashboard",
+			templateUrl: baseUrl + "/web/dashboard.html",
+			controller: 'DashCtrl',
+			controllerAs : 'dash',
+		}
+
 		// call all states here
 		$stateProvider.state(home);
 
@@ -56,6 +64,9 @@
 		$stateProvider.state(auth);
 		$stateProvider.state(login);
 		$stateProvider.state(signup);
+
+		// dashboard
+		$stateProvider.state(dashboard);
 
 		$urlRouterProvider.otherwise("/");
 
