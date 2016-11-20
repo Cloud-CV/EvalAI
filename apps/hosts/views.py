@@ -77,7 +77,7 @@ def challenge_host_team_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((TokenAuthentication,))
 def challenge_host_list(request, challenge_host_team_pk):
@@ -88,11 +88,22 @@ def challenge_host_list(request, challenge_host_team_pk):
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    challenge_host = ChallengeHost.objects.filter(team_name=challenge_host_team,
-                                                  user=request.user)
-    paginator = PageNumberPagination()
-    paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-    result_page = paginator.paginate_queryset(challenge_host, request)
-    serializer = ChallengeHostSerializer(result_page, many=True)
-    response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
+    if request.method == 'GET':
+        challenge_host = ChallengeHost.objects.filter(team_name=challenge_host_team,
+                                                      user=request.user)
+        paginator = PageNumberPagination()
+        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+        result_page = paginator.paginate_queryset(challenge_host, request)
+        serializer = ChallengeHostSerializer(result_page, many=True)
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+
+    elif request.method == 'POST':
+        serializer = ChallengeHostSerializer(data=request.data,
+                                             context={'challenge_host_team': challenge_host_team,
+                                                      'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
