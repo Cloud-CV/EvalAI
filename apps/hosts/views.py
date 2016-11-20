@@ -13,14 +13,25 @@ from .models import (ChallengeHostTeam,)
 from .serializers import (ChallengeHostTeamSerializer,)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((TokenAuthentication,))
 def challenge_host_team_list(request):
-    challenge_host_teams = ChallengeHostTeam.objects.filter(created_by=request.user)
-    paginator = PageNumberPagination()
-    paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-    result_page = paginator.paginate_queryset(challenge_host_teams, request)
-    serializer = ChallengeHostTeamSerializer(result_page, many=True)
-    response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
+
+    if request.method == 'GET':
+        challenge_host_teams = ChallengeHostTeam.objects.filter(created_by=request.user)
+        paginator = PageNumberPagination()
+        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+        result_page = paginator.paginate_queryset(challenge_host_teams, request)
+        serializer = ChallengeHostTeamSerializer(result_page, many=True)
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+
+    elif request.method == 'POST':
+        serializer = ChallengeHostTeamSerializer(data=request.data,
+                                                 context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
