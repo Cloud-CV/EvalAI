@@ -1,18 +1,23 @@
 <!-- login form -->
-<form ng-submit="userLogin()">
+<form ng-submit="auth.userLogin()" id="log-in">
+    <!-- username -->
     <div class="input-field align-left">
-		<input id="email" type="text" class="validate" required>
-		<span class="form-icon"><i class="fa fa-envelope"></i></span>
-		<label for="email" data-error="wrong" data-success="right">Username / Email *</label>
+        <input id="name" type="text" class="validate" ng-model="auth.getUser.name" >
+        <span class="form-icon"><i class="fa fa-user"></i></span>
+        <label for="name" data-error="wrong" data-success="right">User Name (no space)*</label>
+        <div class="wrn-msg text-highlight" ng-show="auth.isValid.username">{{auth.wrnMsg.username}}</div>
+
     </div>
+    <!-- password -->
     <div class="input-field align-left">
-		<input id="password" type="password" class="validate" required>
-		<span class="form-icon"><i class="fa fa-key"></i></span>
-		<label for="password" >Password *</label>
+        <input id="password" type="password" class="validate" ng-model="auth.getUser.password" >
+        <span class="form-icon"><i class="fa fa-key"></i></span>
+        <label for="password" >Password (min 8 characters) *</label>
+        <div class="wrn-msg text-highlight" ng-show="auth.isValid.password">{{auth.wrnMsg.password}}</div>
     </div>
     <div class="row">
     	<div class="col s6 align-left rm-gut">
-	    	<input type="checkbox" class="filled-in" id="remeb">
+	    	<input type="checkbox" class="filled-in" ng-model="isRem" id="remeb">
 			<label for="remeb">Remember Me</label>
 		</div>
 		<div class="col s6 align-right right rm-gut">
@@ -21,7 +26,9 @@
     </div>
     <div class="align-left">
     	<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">LogIn</button>
+        <span ng-hide="auth.isConfirm" class="fade"> &nbsp;{{auth.wrnMsg.cred}}</span>
     </div>
+
     <div>
     	<p class="text-light-gray">
     		Or start with a new account <a class="white-link" ui-sref="auth.signup">SignUp</a>

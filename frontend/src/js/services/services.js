@@ -63,7 +63,23 @@
 		    $http(req)
 		    	.success(success)
 		    	.error(error);
-		}
+		};
+
+		this.storeData = function(key, value) {
+	        localStorage.setItem(key, JSON.stringify(value));
+	    };
+
+	    this.getData = function(key) {
+	        if (localStorage.getItem(key) == null) {
+	            return false;
+	        } else {
+	            return JSON.parse(localStorage.getItem(key));
+	        }
+	    };
+	    
+	    this.deleteData = function(key) {
+	        localStorage.removeItem(key);
+	    };
 	}
 
 })();
