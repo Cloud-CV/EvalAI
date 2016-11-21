@@ -7,8 +7,8 @@
 
       <ul class="right hide-on-med-and-down">
         <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active">Home</a></li>
-        <li><a class="waves-effect waves-dark" ui-sref="competitions" ui-sref-active="active">Competitions</a></li>
-        <li><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active">LogIn</a></li>
+        <li><a class="waves-effect waves-dark" ui-sref="dashboard" ui-sref-active="active">Dashboard</a></li>
+        <li><a class="waves-effect waves-dark" ng-hide="isAuth" ui-sref="auth.login" ui-sref-active="active">LogIn</a></li>
         <li><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active">SignUp</a></li>
       </ul>
 
@@ -21,7 +21,7 @@
           </div>
         </li>
         <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active"><i class="fa fa-home"></i>Home</a></li>
-        <li><a class="waves-effect waves-dark" ui-sref="competitions" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Competitions</a></li>
+        <li><a class="waves-effect waves-dark" ui-sref="dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
         <li><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>LogIn</a></li>
         <li><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>SignUp</a></li>
       </ul>

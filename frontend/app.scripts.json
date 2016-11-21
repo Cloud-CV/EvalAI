@@ -8,7 +8,8 @@
       "angular-aria",
       "angular-message",
       "angular-material",
-      "materialize"
+      "materialize",
+      "lodash"
     ]
   },
   "paths": {
@@ -19,6 +20,7 @@
        "angular-aria" : "bower_components/angular-aria/angular-aria.min.js",
        "angular-message": "bower_components/angular-messages/angular-messages.min.js",
        "angular-material" : "bower_components/angular-material/angular-material.min.js",
-       "materialize": "bower_components/materialize/dist/js/materialize.min.js"
+       "materialize": "bower_components/materialize/dist/js/materialize.min.js",
+       "lodash":"bower_components/lodash/dist/lodash.min.js"
      }
 }
