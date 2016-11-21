@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 
-from accounts.models import (TimeStampedModel, )
+from base.models import (TimeStampedModel, )
 # from challenges.models import (Challenge, )
 
 

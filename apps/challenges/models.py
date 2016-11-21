@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-from accounts.models import (TimeStampedModel, )
+from base.models import (TimeStampedModel, )
 from hosts.models import (ChallengeHostTeam, )
 
 
