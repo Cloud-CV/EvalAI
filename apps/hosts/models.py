@@ -51,8 +51,8 @@ class ChallengeHost(TimeStampedModel):
 
     user = models.ForeignKey(User)
     team_name = models.ForeignKey('ChallengeHostTeam')
-    status = models.CharField(max_length=30, choices=PERMISSION_OPTIONS)
-    permissions = models.CharField(max_length=30, choices=STATUS_OPTIONS)
+    status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
+    permissions = models.CharField(max_length=30, choices=PERMISSION_OPTIONS)
 
     class Meta:
         app_label = 'hosts'
