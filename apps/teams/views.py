@@ -15,7 +15,7 @@ from rest_framework import response, schemas
 from challenges.models import Challenge
 
 from .models import Team
-from .serializers import TeamSerializer, TeamChallengeSerializer
+from .serializers import TeamSerializer
 
 
 @api_view(['GET', 'POST'])
@@ -34,7 +34,7 @@ def team_list(request, challenge_pk):
         paginator = PageNumberPagination()
         paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
         result_page = paginator.paginate_queryset(teams, request)
-        serializer = TeamChallengeSerializer(result_page, many=True)
+        serializer = TeamSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
@@ -65,7 +65,7 @@ def team_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        serializer = TeamChallengeSerializer(team)
+        serializer = TeamSerializer(team)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
