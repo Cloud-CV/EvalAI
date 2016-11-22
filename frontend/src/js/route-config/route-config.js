@@ -112,7 +112,6 @@
             // restrict authorized user too access login/signup page
             else if (!toState.authenticate && utilities.isAuthenticated()){
                 $rootScope.isAuth = true;
-                // User isn’t authenticated
                 $state.transitionTo("home");
                 event.preventDefault(); 
                 return false;
