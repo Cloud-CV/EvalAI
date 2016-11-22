@@ -8,11 +8,35 @@
     .module('evalai')
     .controller('MainCtrl', MainCtrl);
 
-    function MainCtrl(){
+    MainCtrl.$inject = ['utilities'];
+
+    function MainCtrl(utilities){
 
     	var vm =this;
 
-    	vm.check = "HI there!";
+    	vm.user = {};
+
+    	// get token
+    	var userKey = utilities.getData('userKey');
+    	
+
+    	var parameters = {};
+			parameters.url = 'auth/user/';
+			parameters.method = 'GET';
+			parameters.token = userKey;
+			parameters.callback = {
+				onSuccess: function(response, status){
+					if(status == 200){
+						vm.user.name = response.username;
+					}
+				},
+				onError: function(){
+
+				}
+			};
+
+			utilities.sendRequest(parameters);	
+
     }
 
 })();

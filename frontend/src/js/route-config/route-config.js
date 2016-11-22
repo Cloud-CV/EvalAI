@@ -52,14 +52,27 @@
             authenticate: false
         }
 
+        // main app 'web'
+        var web = {
+            name: "web",
+            url: "/web",
+            templateUrl: baseUrl + "/web/web.html",
+            controller: 'WebCtrl',
+            controllerAs: 'web',
+            authenticate: true,
+            abstract: true
+        }
+
         var dashboard = {
-            name: "dashboard",
+            name: "web.dashboard",
+            parent: "web",
             url: "/dashboard",
             templateUrl: baseUrl + "/web/dashboard.html",
             controller: 'DashCtrl',
             controllerAs: 'dash',
-            authenticate: true
+            authenticate: true  
         }
+
 
         // call all states here
         $stateProvider.state(home);
@@ -70,6 +83,7 @@
         $stateProvider.state(signup);
 
         // dashboard
+        $stateProvider.state(web);
         $stateProvider.state(dashboard);
 
         $urlRouterProvider.otherwise("/");
@@ -86,20 +100,31 @@
         .run(runFunc);
 
     function runFunc($rootScope, $state, utilities, $window) {
-
+        $rootScope.isAuth = false;
     	// check for valid user
         $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         	if (toState.authenticate && !utilities.isAuthenticated()){
-			  // User isn’t authenticated
-			  $state.transitionTo("auth.login");
-			  event.preventDefault(); 
+                $rootScope.isAuth = false;
+                // User isn’t authenticated
+                $state.transitionTo("auth.login");
+                event.preventDefault(); 
 			}
+            // restrict authorized user too access login/signup page
+            else if (!toState.authenticate && utilities.isAuthenticated()){
+                $rootScope.isAuth = true;
+                $state.transitionTo("home");
+                event.preventDefault(); 
+                return false;
+            }
+            else if(utilities.isAuthenticated()) {
+                $rootScope.isAuth = true;
+            }
         });
 
         // global function for logout
         $rootScope.onLogout = function() {
+            $rootScope.isAuth = false;
             utilities.deleteData('userKey');
-            utilities.storeData('isRem', false)
             $state.go('home');
         };
     }

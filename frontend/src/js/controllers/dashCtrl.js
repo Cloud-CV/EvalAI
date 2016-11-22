@@ -15,7 +15,6 @@
     	
     	// get token
     	var userKey = utilities.getData('userKey');
-    		userKey = userKey.key;
 
     	var parameters = {};
 			parameters.url = 'auth/user/';
