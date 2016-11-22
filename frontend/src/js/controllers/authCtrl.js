@@ -127,11 +127,11 @@
     					vm.isValid = {};
 						vm.confirmMsg=''
 						vm.regMsg = "";
-						utilities.storeData('userKey', response);
+						utilities.storeData('userKey', response.key);
 						utilities.storeData('isRem', vm.isRem);
 						token = response.key;
 						utilities.isAuthenticated();
-						$state.go('dashboard');
+						$state.go('web.dashboard');
 
 						vm.stopLoader();
 					}
