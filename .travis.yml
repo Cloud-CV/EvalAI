@@ -22,11 +22,11 @@ install:
 
 script:
   - flake8 ./
-  - py.test --cov . --cov-config .coveragec
+  - py.test --cov . --cov-config .coveragerc
 
 after_script:
   - coverage report --rcfile=.coveragerc
-  - coveralls -y ../.coveralls.yml -c .coveragerc
+  - coveralls -y .coveralls.yml -c .coveragerc
 
 notifications:
   email:
