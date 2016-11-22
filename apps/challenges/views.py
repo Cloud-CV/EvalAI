@@ -44,12 +44,12 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((TokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, pk):
     try:
-        ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -60,6 +60,24 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    serializer = ChallengeSerializer(challenge)
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
+    if request.method == 'GET':
+        serializer = ChallengeSerializer(challenge)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    elif request.method in ['PUT', 'PATCH']:
+        if request.method == 'PATCH':
+            serializer = ChallengeSerializer(challenge,
+                                             data=request.data,
+                                             context={'challenge_host_team': challenge_host_team},
+                                             partial=True)
+        else:
+            serializer = ChallengeSerializer(challenge,
+                                             data=request.data,
+                                             context={'challenge_host_team': challenge_host_team})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
