@@ -1,4 +1,6 @@
 // define services here
+
+// Basic utilities
 (function (){
 
 	'use strict';
@@ -80,6 +82,16 @@
 	    this.deleteData = function(key) {
 	        localStorage.removeItem(key);
 	    };
+
+	    // user verification auth service
+	    this.isAuthenticated = function(){
+	    	if(this.getData('userKey')){
+	    		return true;
+	    	}
+	    	else{
+	    		return false;
+	    	}
+	    }
 	}
 
 })();

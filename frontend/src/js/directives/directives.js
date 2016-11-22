@@ -13,6 +13,7 @@
 		var directive = {
 			link: link,
 			templateUrl: 'dist/views/web/partials/dyn-header.html',
+			transclude:true,
 			restrict: 'EA'
 		};
 		return directive;

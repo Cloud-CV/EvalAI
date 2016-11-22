@@ -13,6 +13,7 @@
     function AuthCtrl(utilities, $state){
     	var vm = this;
     	
+    	vm.isRem = false;
     	// getUser for signup
     	vm.regUser={};
     	// useDetails for login
@@ -105,6 +106,8 @@
     	// login user
     	vm.userLogin = function(){
     		vm.isValid = {};
+    		var token = null;
+    		console.log(vm.isRem);
     		var msg = "Taking you to EvalAI!"
 			vm.startLoader(msg);
 
@@ -125,7 +128,11 @@
 						vm.confirmMsg=''
 						vm.regMsg = "";
 						utilities.storeData('userKey', response);
+						utilities.storeData('isRem', vm.isRem);
+						token = response.key;
+						utilities.isAuthenticated();
 						$state.go('dashboard');
+
 						vm.stopLoader();
 					}
 					else{
