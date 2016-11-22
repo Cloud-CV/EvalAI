@@ -1,9 +1,13 @@
 from rest_framework import serializers
 
+from hosts.serializers import ChallengeHostTeamSerializer
+
 from .models import Challenge
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
+
+    creator = ChallengeHostTeamSerializer()
 
     class Meta:
         model = Challenge
