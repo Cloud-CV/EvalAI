@@ -2,6 +2,7 @@ from django.contrib import admin
 from base.admin import TimeStampedAdmin
 from .models import Team, TeamMember
 
+
 class TeamAdmin(TimeStampedAdmin):
     list_display = ('challenge', 'team_name',)
     search_fields = ('challenge',)
