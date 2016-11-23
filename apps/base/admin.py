@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+
+class TimeStampedAdmin(admin.ModelAdmin):
+    exclude = ('created_at', 'modified_at',)
