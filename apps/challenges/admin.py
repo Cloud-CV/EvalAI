@@ -7,7 +7,7 @@ class challengesAD(admin.ModelAdmin):
   list_filter = ['start_date']
   class Meta:
     models = Challenge
-admin.site.register(challenge, challengesAD)
+admin.site.register(Challenge, challengesAD)
 
 class phaseAD(admin.ModelAdmin):
   list_display = ['name', 'description', 'leaderboard_public', 'challenge']
