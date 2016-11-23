@@ -14,5 +14,5 @@ class TeamMemberAdmin(TimeStampedAdmin):
     list_filter = ('participant', 'team',)
 
 
-admin.site.register(Team ,TeamAdmin)
+admin.site.register(Team, TeamAdmin)
 admin.site.register(TeamMember, TeamMemberAdmin)
