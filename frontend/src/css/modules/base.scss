@@ -38,9 +38,8 @@ a.active{
 	background-color: rgba(0,0,0,0.1);
 }
 
-.btn:focus,
-button:focus{
-	background-color: none;
+.ev-btn-dark:focus{
+	background-color: $dark-gray !important;
 }
 
 nav{
@@ -80,6 +79,10 @@ nav{
 	font-weight: 600;
 }
 
+.text-highlight{
+	color: $link-hover-dark;
+}
+
 .text-white{
 	color: #fff;
 }
@@ -114,6 +117,19 @@ nav{
 
 .btn{
 	text-transform: none;
+}
+
+.fade {
+    transition: all linear 500ms;
+    opacity: 1;
+}
+
+.fade.ng-hide {
+    opacity: 0;
+}
+
+.fade.ng-show {
+    opacity: 1;
 }
 
 i.icon{
@@ -210,13 +226,16 @@ input[type="checkbox"].filled-in:not(:checked) + label:after{
 
 /* label focus color */
 .input-field input[type=email]:focus + label,
-.input-field input[type=password]:focus + label {
+.input-field input[type=password]:focus + label,
+.input-field input[type=text]:focus + label
+ {
 	color: $light-gray;
 }
 
 /* label underline focus color */
 .input-field input[type=email]:focus,
-.input-field input[type=password]:focus
+.input-field input[type=password]:focus,
+.input-field input[type=text]:focus
  {
 	border-bottom: 1px solid $link-hover-dark;
 	box-shadow: 0 0px 0 0 $link-hover-dark;
@@ -225,14 +244,16 @@ input[type="checkbox"].filled-in:not(:checked) + label:after{
 
 /* valid color */
 .input-field input[type=email].valid,
-.input-field input[type=password].valid {
+.input-field input[type=password].valid,
+.input-field input[type=text].valid {
 	border-bottom: 1px solid $link-hover-dark;
 	box-shadow: 0 0px 0 0 #000;
 }
 
 /* invalid color */
 .input-field input[type=email].invalid,
-.input-field input[type=password].invalid {
+.input-field input[type=password].invalid,
+.input-field input[type=text].invalid {
 	border-bottom: 1px solid $link-hover-dark;
 	box-shadow: 0 0px 0 0 #000;
 }
@@ -251,11 +272,106 @@ input{
 }
 
 .input-field input[type=email]:focus + .form-icon,
-.input-field input[type=password]:focus + .form-icon{
+.input-field input[type=password]:focus + .form-icon,
+.input-field input[type=text]:focus + .form-icon{
 	i{
 		color: $light-link;
 	}
 }
+
+.ev-spinner-dark{
+	border-color:$light-link;
+}
+
+.ev-spinner-light{
+	border-color: $highlight;
+}
+
+/*loader*/
+.show-loader{
+	display: block;
+}
+
+.hide-loader{
+	display: none;
+}
+
+.low-screen{
+	transition:all 0.2s ease-in-out;
+	opacity: 0.2;
+}
+
+.loader-title{
+	margin-top: 39vh;
+}
+
+.loader-container{
+	position: fixed;
+	width: 100vw;
+	height: 100vh;
+	left: 0;
+	top: 0;
+	z-index: 5;
+	background-color: transparent;
+
+}
+.loader{
+  width: $loader-size;
+  height: $loader-height;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  > div {
+    content: " ";
+    width: $loader-dot-size;
+    height: $loader-dot-size;
+    background: $loader-dot-color;
+    border-radius: 100%;
+    position: absolute;
+    animation: shift 2s linear infinite;
+    &:nth-of-type(1) { animation-delay: -.4s; }
+    &:nth-of-type(2) { animation-delay: -.8s; }
+    &:nth-of-type(3) { animation-delay: -1.2s; }
+    &:nth-of-type(4) { animation-delay: -1.6s; }
+  }
+}
+
+@keyframes shift {
+  0%{
+    left: -3*$loader-dot-size;
+    opacity: 0;
+    background-color: $loader-dot-color;
+  }
+  10% { 
+    left: 0; 
+    opacity: 1;
+  }
+  90% { 
+    left: $loader-size; 
+    opacity: 1;
+  }
+  100%{
+    left: ($loader-size + 3*$loader-dot-size);
+    background-color: $light-gray;
+    opacity: 0;
+  }
+}
+
+.info{
+  position: absolute;
+  bottom: 0;
+  color: crimson;
+  .info-text{
+    display: none;
+  }
+  input:checked + .info-text{
+    display: block;
+  }
+}
+
+
+
 
 /*media queries*/
 @media only screen and (max-width: 992px){

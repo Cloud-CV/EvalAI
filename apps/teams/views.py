@@ -5,14 +5,17 @@ from rest_framework import permissions, status
 from rest_framework.authentication import (TokenAuthentication,)
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
-                                       permission_classes,)
+                                       permission_classes,
+                                       renderer_classes,)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework_swagger.renderers import OpenAPIRenderer, SwaggerUIRenderer
+from rest_framework import response, schemas
 
 from challenges.models import Challenge
 
 from .models import Team
-from .serializers import TeamSerializer, TeamChallengeSerializer
+from .serializers import TeamSerializer
 
 
 @api_view(['GET', 'POST'])
@@ -31,7 +34,7 @@ def team_list(request, challenge_pk):
         paginator = PageNumberPagination()
         paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
         result_page = paginator.paginate_queryset(teams, request)
-        serializer = TeamChallengeSerializer(result_page, many=True)
+        serializer = TeamSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
@@ -62,7 +65,7 @@ def team_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        serializer = TeamChallengeSerializer(team)
+        serializer = TeamSerializer(team)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -82,3 +85,11 @@ def team_detail(request, challenge_pk, pk):
     elif request.method == 'DELETE':
         team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view()
+@renderer_classes([SwaggerUIRenderer, OpenAPIRenderer])
+@permission_classes((permissions.AllowAny,))
+def schema_view(request, challenge_pk):
+    generator = schemas.SchemaGenerator(title='Teams API')
+    return response.Response(generator.get_schema(request=request))

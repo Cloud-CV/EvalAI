@@ -2,7 +2,8 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-from accounts.models import (TimeStampedModel, UserStatus)
+from accounts.models import (UserStatus,)
+from base.models import (TimeStampedModel,)
 from challenges.models import (Challenge,)
 from participants.models import (Participant,)
 

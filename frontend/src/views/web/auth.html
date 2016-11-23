@@ -11,9 +11,24 @@
 	<div class="bg-image"></div>
 </section>
 
-<section class="ev-container center">
+<!-- loader -->
+<div class="loader-container" id="loader" ng-show="auth.isLoader" class="fade">
+<div class="text-white center w-300 loader-title">{{auth.loaderTitle}}</div>
+    <div class="loader">
+
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+</div>
+
+<!--auth container -->
+<section class="ev-container auth-container center">
 	<div class="ev-head-small">
 		<div class="row">
+			<div class="reg-alert col s12 m4 offset-m4 align-left text-highlight w-300">{{auth.regMsg}}</div>
 			<div class="col s12 m4 offset-m4 left">
 				<ul class="left">
 					<li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth">LogIn</a></li>

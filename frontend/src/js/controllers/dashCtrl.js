@@ -1,24 +1,20 @@
-// Invoking IIFE
+// Invoking IIFE for dashboard
 
 (function(){
 
 	'use strict';
 
 	angular
-    .module('evalai')
-    .controller('MainCtrl', MainCtrl);
+	    .module('evalai')
+	    .controller('DashCtrl', DashCtrl);
 
-    MainCtrl.$inject = ['utilities'];
+	DashCtrl.$inject = ['utilities', '$state'];
 
-    function MainCtrl(utilities){
-
-    	var vm =this;
-
-    	vm.user = {};
-
+    function DashCtrl(utilities, $state){
+    	var vm = this;
+    	
     	// get token
     	var userKey = utilities.getData('userKey');
-    	
 
     	var parameters = {};
 			parameters.url = 'auth/user/';
@@ -27,7 +23,7 @@
 			parameters.callback = {
 				onSuccess: function(response, status){
 					if(status == 200){
-						vm.user.name = response.username;
+						vm.name = response.username;
 					}
 				},
 				onError: function(){
@@ -35,8 +31,7 @@
 				}
 			};
 
-			utilities.sendRequest(parameters);	
-
+			utilities.sendRequest(parameters);				
     }
 
 })();

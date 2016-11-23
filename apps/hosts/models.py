@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 
-from accounts.models import (TimeStampedModel, )
+from base.models import (TimeStampedModel, )
 # from challenges.models import (Challenge, )
 
 
@@ -51,8 +51,8 @@ class ChallengeHost(TimeStampedModel):
 
     user = models.ForeignKey(User)
     team_name = models.ForeignKey('ChallengeHostTeam')
-    status = models.CharField(max_length=30, choices=PERMISSION_OPTIONS)
-    permissions = models.CharField(max_length=30, choices=STATUS_OPTIONS)
+    status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
+    permissions = models.CharField(max_length=30, choices=PERMISSION_OPTIONS)
 
     class Meta:
         app_label = 'hosts'
