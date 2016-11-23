@@ -44,15 +44,9 @@ class ChallengeModelAdmin(TimeStampedAdmin):
                      "enable_forum",
                      "anonymous_leaderboard")
 
-    class Meta:
-        model = Challenge
-
 
 @admin.register(Phase)
 class PhaseModelAdmin(TimeStampedAdmin):
     list_display = ("name", "description", "leaderboard_public", "challenge")
     list_filter = ("name", "description", "leaderboard_public", "challenge")
     search_fields = ("name", "description", "leaderboard_public", "challenge")
-
-    class Meta:
-        model = Phase
