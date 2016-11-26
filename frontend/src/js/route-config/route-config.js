@@ -23,7 +23,8 @@
             url: "/",
             templateUrl: baseUrl + "/web/landing.html",
             controller: 'MainCtrl',
-            controllerAs: 'main'
+            controllerAs: 'main',
+            title: "Welcome"
         }
 
         var auth = {
@@ -33,7 +34,8 @@
             controller: 'AuthCtrl',
             controllerAs: 'auth',
             abstract: true,
-            authenticate: false
+            authenticate: false,
+            title: 'Auth'
         }
 
         var login = {
@@ -41,7 +43,8 @@
             parent: "auth",
             url: "/login",
             templateUrl: baseUrl + "/web/login.html",
-            authenticate: false
+            authenticate: false,
+            title: 'Login'
         }
 
         var signup = {
@@ -49,7 +52,16 @@
             parent: "auth",
             url: "/signup",
             templateUrl: baseUrl + "/web/signup.html",
-            authenticate: false
+            authenticate: false,
+            title: 'SignUp'
+        }
+
+        var logout = {
+            name: "auth.logout",
+            parent: "auth",
+            url: "/logout",
+            authenticate: false,
+            title: 'Logout'
         }
 
         // main app 'web'
@@ -70,7 +82,19 @@
             templateUrl: baseUrl + "/web/dashboard.html",
             controller: 'DashCtrl',
             controllerAs: 'dash',
-            authenticate: true  
+            title: 'Dashboard',
+            authenticate: true
+        }
+
+        var profile = {
+            name: "web.profile",
+            parent: "web",
+            url: "/profile",
+            templateUrl: baseUrl + "/web/profile.html",
+            title: "Profile",
+            controller: 'ProfileCtrl',
+            controllerAs: 'profile',
+            authenticate: true
         }
 
 
@@ -81,10 +105,12 @@
         $stateProvider.state(auth);
         $stateProvider.state(login);
         $stateProvider.state(signup);
+        $stateProvider.state(logout);
 
-        // dashboard
+        // web main configs.
         $stateProvider.state(web);
         $stateProvider.state(dashboard);
+        $stateProvider.state(profile);
 
         $urlRouterProvider.otherwise("/");
 
@@ -101,32 +127,51 @@
 
     function runFunc($rootScope, $state, utilities, $window) {
         $rootScope.isAuth = false;
-    	// check for valid user
+        // check for valid user
         $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
-        	if (toState.authenticate && !utilities.isAuthenticated()){
+            if (toState.authenticate && !utilities.isAuthenticated()) {
                 $rootScope.isAuth = false;
                 // User isn’t authenticated
                 $state.transitionTo("auth.login");
-                event.preventDefault(); 
-			}
+                event.preventDefault();
+            }
             // restrict authorized user too access login/signup page
-            else if (!toState.authenticate && utilities.isAuthenticated()){
+            else if (toState.authenticate == false && utilities.isAuthenticated()) {
+                // alert("")
                 $rootScope.isAuth = true;
                 $state.transitionTo("home");
-                event.preventDefault(); 
+                event.preventDefault();
                 return false;
-            }
-            else if(utilities.isAuthenticated()) {
+            } else if (utilities.isAuthenticated()) {
                 $rootScope.isAuth = true;
             }
         });
 
-        // global function for logout
-        $rootScope.onLogout = function() {
-            $rootScope.isAuth = false;
-            utilities.deleteData('userKey');
-            $state.go('home');
-        };
-    }
+        $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+            // Save the route title
+            $rootScope.pageTitle = $state.current.title;
+            // alert($rootScope.pageTitle)
 
+        });
+
+        $rootScope.logout = function() {
+            var userKey = utilities.getData('userKey');
+            var parameters = {};
+            parameters.url = 'auth/logout/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response, status) {
+                    utilities.resetStorage();
+                    $state.go("home");
+                    $rootScope.isAuth=false;
+                },
+                onError: function() {
+
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        }
+    };
 })();

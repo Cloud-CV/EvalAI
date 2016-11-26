@@ -1,0 +1,57 @@
+.ev-sidebar {
+    display: block;
+    height: 100vh;
+    width: 220px;
+    background-color: $dark-gray;
+    color: #fff;
+    z-index: 10;
+}
+
+.side-logo {
+    font-size: 20px;
+}
+
+.side-intro {
+    /*border-bottom: 1px solid $med-gray;*/
+}
+
+.links-section-outer {
+    overflow: auto;
+    height: calc(100% - 100px);
+}
+
+.links-section {
+    ul {
+        margin: 0px;
+    }
+    li {
+        a {
+            padding: 15px 40px 15px 30px;
+            word-wrap: break-word;
+            position: relative;
+            display: block;
+            width: 100%;
+            height: 100%;
+            font-size: 14px;
+        }
+        a:hover {
+            color: #fff;
+        }
+    }
+}
+
+.side-active-link {
+    background-color: $dust-gray;
+    color: #fff;
+}
+
+.side-link-icon {
+    position: absolute;
+    right: 20px;
+    margin-top: 2px;
+}
+
+.side-title {
+    padding: 20px 20px 10px 30px;
+    font-size: 12px;
+}
