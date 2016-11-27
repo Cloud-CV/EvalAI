@@ -160,3 +160,23 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
     elif request.method == 'DELETE':
         challenge_host.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((TokenAuthentication,))
+def create_challenge_host_team(request):
+
+    serializer = ChallengeHostTeamSerializer(data=request.data,
+                                             context={'request': request})
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        challenge_host_team = serializer.instance
+        challenge_host = ChallengeHost(user=request.user,
+                                       status=ChallengeHost.SELF,
+                                       permissions=ChallengeHost.ADMIN,
+                                       team_name=challenge_host_team)
+        challenge_host.save()
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
