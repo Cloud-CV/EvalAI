@@ -89,8 +89,16 @@ def challenge_host_list(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge_host = ChallengeHost.objects.filter(team_name=challenge_host_team,
-                                                      user=request.user)
+        challenge_host_status = request.query_params.get('status', None)
+        filter_condition = {
+            'team_name': challenge_host_team,
+            'user': request.user
+        }
+        if challenge_host_status:
+            challenge_host_status = challenge_host_status.split(',')
+            filter_condition.update({'status__in': challenge_host_status})
+
+        challenge_host = ChallengeHost.objects.filter(**filter_condition)
         paginator = PageNumberPagination()
         paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
         result_page = paginator.paginate_queryset(challenge_host, request)
