@@ -1,21 +1,4 @@
 // Invoking IIFE for dashboard
-
-<<<<<<< HEAD
-(function(){
-
-	'use strict';
-
-	angular
-	    .module('evalai')
-	    .controller('WebCtrl', WebCtrl);
-
-	WebCtrl.$inject = ['utilities', '$state'];
-
-    function WebCtrl(utilities, $state){
-    	var vm = this;
-    	
-    	// vm.name = "check"				
-=======
 (function() {
 
     'use strict';
@@ -69,9 +52,7 @@
         };
 
         utilities.sendRequest(parameters);
-
-        // vm.name = "check"				
->>>>>>> aj-dashboard-old-copy
+	    
     }
 
 })();
