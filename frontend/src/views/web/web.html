@@ -1,1 +1,8 @@
-<ui-view></ui-view>
+<!-- include sidebar -->
+<ng-include src=" 'src/views/web/partials/sidebar.html' "></ng-include>
+<div class="web-container">
+    <ng-include src=" 'src/views/web/partials/sim-header.html' "></ng-include>
+    <ui-view></ui-view>
+</div>
+<div class="clearfix"></div>
+

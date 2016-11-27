@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="evalai">
 <head>
-	<title>EvalAI</title>
+	<title ng-bind="pageTitle + ' - EvalAI'"></title>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -16,7 +16,7 @@
 	<base href="/"></base>
 
 </head>
-<body ng-app="evalai" ng-cloak>
+<body ng-cloak>
 
 	<!-- render all view here -->
 	<div ui-view></div>
@@ -30,12 +30,11 @@
 
 	<!-- evalAI main scripts -->
 	<script type="text/javascript" src="dist/js/app.js"></script>
+	<script type="text/javascript" src="dist/js/config.js"></script>
 	<script type="text/javascript" src="dist/js/route-config.js"></script>
 	<script type="text/javascript" src="dist/js/services.js"></script>
 	<script type="text/javascript" src="dist/js/directives.js"></script>
 	<script type="text/javascript" src="dist/js/controllers.js"></script>
-	
-
 
 </body>
 </html>
