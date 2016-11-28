@@ -25,7 +25,7 @@ script:
   - py.test --cov . --cov-config .coveragerc
 
 after_success:
-  - coveralls --rcfile=.coveragerc -v
+  - coveralls --rcfile=.coveragerc
 
 
 notifications:
