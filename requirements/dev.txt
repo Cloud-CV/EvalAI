@@ -9,3 +9,4 @@ pytest==3.0.3
 sphinx==1.4.8
 sphinx-autobuild==0.6.0
 sphinx-rtd-theme==0.1.9
+pytest-django==3.1.2
