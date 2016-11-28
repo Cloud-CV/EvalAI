@@ -62,7 +62,7 @@ THIRD_PARTY_APPS = [
     'rest_auth.registration',
     'rest_framework.authtoken',
     'rest_framework',
-    'rest_framework_swagger',
+    'rest_framework_docs',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
