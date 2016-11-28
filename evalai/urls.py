@@ -20,6 +20,8 @@ from django.views.generic.base import TemplateView
 
 urlpatterns = [url(r'^',
                    include('web.urls')),
+               url(r'^docs/',
+                   include('rest_framework_docs.urls')),
                url(r'^',
                    include('django.contrib.auth.urls')),
                url(r'^admin/',
