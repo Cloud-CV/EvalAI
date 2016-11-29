@@ -319,3 +319,23 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
     def test_particular_challenge_host_delete(self):
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class CreateChallengeHostAndTeam(BaseAPITestClass):
+
+    url = reverse_lazy('hosts:create_challenge_host_team')
+
+    def setUp(self):
+        super(CreateChallengeHostAndTeam, self).setUp()
+        self.data = {
+            'team_name': 'Test Challenge Host and Team'
+        }
+
+    def test_create_challenge_host_and_team_with_all_data(self):
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_challenge_host_and_team_with_no_data(self):
+        del self.data['team_name']
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
