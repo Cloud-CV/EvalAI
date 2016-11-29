@@ -9,7 +9,6 @@ from rest_framework.decorators import (api_view,
                                        renderer_classes,)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework_swagger.renderers import OpenAPIRenderer, SwaggerUIRenderer
 from rest_framework import response, schemas
 
 from challenges.models import Challenge
@@ -85,11 +84,3 @@ def team_detail(request, challenge_pk, pk):
     elif request.method == 'DELETE':
         team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-@api_view()
-@renderer_classes([SwaggerUIRenderer, OpenAPIRenderer])
-@permission_classes((permissions.AllowAny,))
-def schema_view(request, challenge_pk):
-    generator = schemas.SchemaGenerator(title='Teams API')
-    return response.Response(generator.get_schema(request=request))
