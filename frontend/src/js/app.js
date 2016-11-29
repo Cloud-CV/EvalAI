@@ -1,9 +1,10 @@
 // declare app and related dependencies here
 angular
 	.module('evalai', [
-		'ui.router', 
+		'ui.router',
 		'ngMaterial',
 		'ngAnimate',
 		'ngMessages',
-		'evalai-config'
+		'evalai-config',
+		'smoothScroll'
 	]);
