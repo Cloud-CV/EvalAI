@@ -50,7 +50,6 @@ OUR_APPS = [
     'hosts',
     'jobs',
     'participants',
-    'teams',
     'web',
 ]
 
