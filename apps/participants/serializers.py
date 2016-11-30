@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
 from challenges.serializers import ChallengeSerializer
-from .models import Team
+from .models import ParticipantTeam
 
 
-class TeamSerializer(serializers.ModelSerializer):
+class ParticipantTeamSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
-        super(TeamSerializer, self).__init__(*args, **kwargs)
+        super(ParticipantTeamSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get('context')
         if context:
             challenge = context.get('challenge')
@@ -16,5 +16,5 @@ class TeamSerializer(serializers.ModelSerializer):
             self.fields['challenge'] = ChallengeSerializer()
 
     class Meta:
-        model = Team
+        model = ParticipantTeam
         fields = ('id', 'team_name', 'challenge',)
