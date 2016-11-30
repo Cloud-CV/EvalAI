@@ -55,7 +55,4 @@ urlpatterns = [url(r'^',
                url(r'^api/participants/',
                    include('participants.urls',
                            namespace='participants')),
-               url(r'^api/challenges/(?P<challenge_pk>[0-9]+)/teams/',
-                   include('teams.urls',
-                           namespace='teams')),
                ]
