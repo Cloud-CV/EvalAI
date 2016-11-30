@@ -40,7 +40,7 @@ MEDIAFILES_LOCATION = 'media'
 MEDIA_URL = 'http://%s.s3.amazonaws.com/%s/' % (AWS_STORAGE_BUCKET_NAME, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = 'settings.custom_storages.MediaStorage'
 
-# Setup Email Bacend related settings
+# Setup Email Backend related settings
 DEFAULT_FROM_EMAIL = "noreply@cloudcv.org"
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
