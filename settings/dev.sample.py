@@ -22,3 +22,9 @@ EMAIL_PORT = 1025
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+
+# DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
+SPAGHETTI_SAUCE = {
+    'apps': ['auth', 'accounts', 'analytics', 'base', 'challenges', 'hosts', 'jobs', 'participants', 'web'],
+    'show_fields': True,
+}

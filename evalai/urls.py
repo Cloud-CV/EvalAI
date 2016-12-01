@@ -17,6 +17,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from accounts.views import ConfirmEmailView
 from django.views.generic.base import TemplateView
+from settings.dev import DEBUG
 
 urlpatterns = [url(r'^',
                    include('web.urls')),
@@ -57,8 +58,8 @@ urlpatterns = [url(r'^',
                            namespace='participants')),
                ]
 
-#DJANGO-SPAGHETTI-AND-MEATBALLS URLs
-urlpatterns += [
-  url(r'^dbschema/',
-   include('django_spaghetti.urls')),
+# DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
+if DEBUG:
+  urlpatterns += [url(r'^dbschema/',
+                    include('django_spaghetti.urls')),
 ]

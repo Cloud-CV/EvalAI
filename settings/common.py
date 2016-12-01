@@ -156,9 +156,3 @@ ACCOUNT_EMAIL_REQUIRED = True
 
 
 CORS_ORIGIN_ALLOW_ALL = True
-
-#DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
-SPAGHETTI_SAUCE = {
-    'apps': ['auth', 'accounts', 'analytics', 'base', 'challenges', 'hosts', 'jobs', 'participants', 'web'],
-    'show_fields': True,
-}
