@@ -56,3 +56,9 @@ urlpatterns = [url(r'^',
                    include('participants.urls',
                            namespace='participants')),
                ]
+
+#DJANGO-SPAGHETTI-AND-MEATBALLS URLs
+urlpatterns += [
+  url(r'^dbschema/',
+   include('django_spaghetti.urls')),
+]

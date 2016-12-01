@@ -62,6 +62,7 @@ THIRD_PARTY_APPS = [
     'rest_framework.authtoken',
     'rest_framework',
     'rest_framework_docs',
+    'django_spaghetti',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -155,3 +156,9 @@ ACCOUNT_EMAIL_REQUIRED = True
 
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+#DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
+SPAGHETTI_SAUCE = {
+    'apps': ['auth', 'accounts', 'analytics', 'base', 'challenges', 'hosts', 'jobs', 'participants', 'web'],
+    'show_fields': True,
+}
