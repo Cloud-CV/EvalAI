@@ -52,6 +52,7 @@ class ParticipantTeam(TimeStampedModel):
     Model representing the Teams associated with different challenges
     """
     challenge = models.ForeignKey(Challenge)
+    created_by = models.ForeignKey(Participant)
     team_name = models.CharField(max_length=100)
 
     def __str__(self):
