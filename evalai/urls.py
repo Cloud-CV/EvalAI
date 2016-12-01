@@ -60,4 +60,4 @@ urlpatterns = [url(r'^',
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
 if DEBUG:
-    urlpatterns += [url(r'^dbschema/',include('django_spaghetti.urls')),]
+    urlpatterns += [url(r'^dbschema/', include('django_spaghetti.urls')), ]
