@@ -37,7 +37,6 @@ class ParticipantStatus(TimeStampedModel):
 
 class Participant(TimeStampedModel):
     user = models.ForeignKey(User, related_name='participation')
-    challenge = models.ForeignKey(Challenge, related_name='participants')
     status = models.ForeignKey(ParticipantStatus)
 
     def __str__(self):

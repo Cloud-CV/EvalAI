@@ -16,9 +16,9 @@ class ParticipantStatusAdmin(TimeStampedAdmin):
 
 @admin.register(Participant)
 class ParticipantAdmin(TimeStampedAdmin):
-    list_display = ('user', 'challenge', 'status',)
-    search_fields = ('user', 'challenge', 'status',)
-    list_filter = ('user', 'challenge', 'status',)
+    list_display = ('user', 'status',)
+    search_fields = ('user', 'status',)
+    list_filter = ('user', 'status',)
 
 
 @admin.register(ParticipantTeam)
