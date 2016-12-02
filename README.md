@@ -8,17 +8,17 @@
 [![Code Climate](https://codeclimate.com/github/Cloud-CV/EvalAI/badges/gpa.svg)](https://codeclimate.com/github/Cloud-CV/EvalAI)
 
 
-EvalAI is an open source web application that helps researchers, students and data-scientists to create, collaborate and participate in various AI challenges organized round the globe. 
+EvalAI is an open source web application that helps researchers, students and data-scientists to create, collaborate and participate in various AI challenges organized round the globe.
 
 ## How to setup
 
-Setting up EvalAI on your local machine is really easy. 
+Setting up EvalAI on your local machine is really easy.
 Follow this guide to setup your development machine.
 
 1. Install [git], [postgresql] and [virtualenv], in your computer, if you don't have it already.
 
 2. Get the source code on your machine via git.
-    
+
     ```shell
     git clone https://github.com/Cloud-CV/EvalAI.git evalai
     ```
@@ -33,7 +33,7 @@ Follow this guide to setup your development machine.
     ```
 
 4. Rename `settings/dev.sample.py` as `dev.py` and change credential in `setting/dev.py`
-    
+
     ```
     cp settings/dev.sample.py settings/dev.py
     ```
@@ -54,7 +54,7 @@ Follow this guide to setup your development machine.
 
 
 7. Open a new terminal window with node install on your machine and type
-    
+
     ```
     cd frontend
     npm install
@@ -64,20 +64,20 @@ Follow this guide to setup your development machine.
 8. To build static files(develpoment) type
 
     ```
-    gulp dev 
-    ``` 
+    gulp dev
+    ```
 
-9. That's it, Now to connect to dev server at http://127.0.0.1:8000
+9. That's it, Now to connect to dev server at http://127.0.0.1:8888
 
     ```
-    gulp connect 
-    ``` 
+    gulp connect
+    ```
 
 10. To check for static files change run gulp watch task in new terminal window
 
     ```
-    gulp watch 
-    ``` 
+    gulp watch
+    ```
 
 ## Contribution guidelines
 

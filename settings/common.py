@@ -50,7 +50,6 @@ OUR_APPS = [
     'hosts',
     'jobs',
     'participants',
-    'teams',
     'web',
 ]
 
@@ -62,7 +61,7 @@ THIRD_PARTY_APPS = [
     'rest_auth.registration',
     'rest_framework.authtoken',
     'rest_framework',
-    'rest_framework_swagger',
+    'rest_framework_docs',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -147,13 +146,12 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ]
+    ],
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
 
 # ALLAUTH SETTINGS
+ACCOUNT_EMAIL_REQUIRED = True
 
-CORS_ORIGIN_WHITELIST = [
-    'localhost',
-    '127.0.0.1',
-    'ec2-54-242-225-49.compute-1.amazonaws.com',
-]
+
+CORS_ORIGIN_ALLOW_ALL = True

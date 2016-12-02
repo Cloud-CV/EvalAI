@@ -24,9 +24,9 @@ script:
   - flake8 ./
   - py.test --cov . --cov-config .coveragerc
 
-after_script:
-  - coverage report --rcfile=.coveragerc
-  - coveralls -y .coveralls.yml -c .coveragerc
+after_success:
+  - coveralls --rcfile=.coveragerc
+
 
 notifications:
   email:

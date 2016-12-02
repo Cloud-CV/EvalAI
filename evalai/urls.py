@@ -20,6 +20,8 @@ from django.views.generic.base import TemplateView
 
 urlpatterns = [url(r'^',
                    include('web.urls')),
+               url(r'^docs/',
+                   include('rest_framework_docs.urls')),
                url(r'^',
                    include('django.contrib.auth.urls')),
                url(r'^admin/',
@@ -53,7 +55,4 @@ urlpatterns = [url(r'^',
                url(r'^api/participants/',
                    include('participants.urls',
                            namespace='participants')),
-               url(r'^api/challenges/(?P<challenge_pk>[0-9]+)/teams/',
-                   include('teams.urls',
-                           namespace='teams')),
                ]

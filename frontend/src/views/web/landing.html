@@ -1,4 +1,5 @@
 <!-- dynamic header for home page-->
+
 <dyn-header></dyn-header>
 
 <!-- background hero section -->
@@ -16,11 +17,13 @@
 
 <!-- Scroll direction -->
 <section class="ev-container center ev-insight">
-	<a href="javascript:void(0)" class="light-link">Get Insights<br>
+	<a href="#" scroll-to="ev-scroll-down"  duration="2000" class="light-link">Get Insights<br>
 	<i class="fa fa-chevron-circle-down dark-link"></i></a>
 </section>
 
 <!-- details section -->
-<section class="ev-container ev-details text-med-black">
+<section class="ev-container ev-details text-med-black" id="ev-scroll-down">
 	Details Comes Here!
+	<ng-include src=" 'src/views/web/partials/footer.html' "></ng-include>
 </section>
+
