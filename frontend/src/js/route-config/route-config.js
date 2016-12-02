@@ -139,6 +139,16 @@
         .run(runFunc);
 
     function runFunc($rootScope, $state, utilities, $window) {
+
+        // setting timout for token (7days)
+        var getTokenTime = utilities.getData('tokenTime');
+        var timeNow = (new Date()).getTime();
+        // .getTime() returns milliseconds, so for 7 days 1000 * 60 * 60 * 7 = 7 days
+        var tokenExpTime = 1000 * 60 * 60 * 7;
+        if ((timeNow - getTokenTime) > tokenExpTime) {
+            utilities.resetStorage();
+        }
+
         $rootScope.isAuth = false;
         // check for valid user
         $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
@@ -178,7 +188,7 @@
                 onSuccess: function(response, status) {
                     utilities.resetStorage();
                     $state.go("home");
-                    $rootScope.isAuth=false;
+                    $rootScope.isAuth = false;
                 },
                 onError: function() {
 
