@@ -34,7 +34,8 @@ class BaseAPITestClass(APITestCase):
 
         self.participant_team = ParticipantTeam.objects.create(
             team_name='Participant Team',
-            challenge=self.challenge)
+            challenge=self.challenge,
+            created_by=self.user)
 
         self.client.force_authenticate(user=self.user)
 
@@ -69,7 +70,8 @@ class GetParticipantTeamTest(BaseAPITestClass):
                     "published": self.challenge.published,
                     "enable_forum": self.challenge.enable_forum,
                     "anonymous_leaderboard": self.challenge.anonymous_leaderboard
-                }
+                },
+                "created_by": self.user.pk
             }
         ]
 
@@ -138,7 +140,8 @@ class GetParticularParticipantTeam(BaseAPITestClass):
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard
-            }
+            },
+            "created_by": self.user.pk
         }
 
         response = self.client.get(self.url, {})
@@ -189,7 +192,8 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
         expected = {
             "id": self.participant_team.pk,
             "team_name": self.partial_update_participant_team_name,
-            "challenge": self.challenge.pk
+            "challenge": self.challenge.pk,
+            "created_by": self.user.pk
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -199,7 +203,8 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
         expected = {
             "id": self.participant_team.pk,
             "team_name": self.update_participant_team_name,
-            "challenge": self.challenge.pk
+            "challenge": self.challenge.pk,
+            "created_by": self.user.pk
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
