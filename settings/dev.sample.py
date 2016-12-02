@@ -1,4 +1,4 @@
-from .common import *  # noqa: F405
+from .common import *  # noqa: ignore=F405
 
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
