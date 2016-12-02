@@ -62,7 +62,6 @@ THIRD_PARTY_APPS = [
     'rest_framework.authtoken',
     'rest_framework',
     'rest_framework_docs',
-    'django_spaghetti',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
