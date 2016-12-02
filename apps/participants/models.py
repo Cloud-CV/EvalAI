@@ -53,6 +53,7 @@ class ParticipantTeam(TimeStampedModel):
     """
     challenge = models.ForeignKey(Challenge)
     team_name = models.CharField(max_length=100)
+    created_by = models.ForeignKey(User, null=True)
 
     def __str__(self):
         return '{}'.format(self.team_name)
