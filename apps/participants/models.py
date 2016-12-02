@@ -4,7 +4,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from base.models import (TimeStampedModel,)
-from challenges.models import (Challenge,)
 
 
 class ParticipantStatus(TimeStampedModel):

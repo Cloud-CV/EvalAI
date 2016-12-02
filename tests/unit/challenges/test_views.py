@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge
+from participants.models import ParticipantTeam
 from hosts.models import ChallengeHostTeam
 
 
@@ -30,6 +31,10 @@ class BaseAPITestClass(APITestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False)
+
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name='Participant Team for Challenge',
+            created_by=self.user)
 
         self.client.force_authenticate(user=self.user)
 
@@ -239,3 +244,38 @@ class DeleteParticularChallenge(BaseAPITestClass):
     def test_particular_challenge_delete(self):
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class MapChallengeAndParticipantTeam(BaseAPITestClass):
+
+    def setUp(self):
+        super(MapChallengeAndParticipantTeam, self).setUp()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'participant_team_pk': self.participant_team.pk})
+
+    def test_map_challenge_and_participant_team_together(self):
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_particular_challenge_for_mapping_with_participant_team_does_not_exist(self):
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk + 1,
+                                        'participant_team_pk': self.participant_team.pk})
+        expected = {
+            'error': 'Challenge does not exist'
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_particular_participant_team_for_mapping_with_challenge_does_not_exist(self):
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'participant_team_pk': self.participant_team.pk + 1})
+        expected = {
+            'error': 'ParticipantTeam does not exist'
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)

@@ -4,6 +4,7 @@ from django.db import models
 
 from base.models import (TimeStampedModel, )
 from hosts.models import (ChallengeHostTeam, )
+from participants.models import (ParticipantTeam, )
 
 
 class Challenge(TimeStampedModel):
@@ -27,6 +28,7 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Publicly Available")
     enable_forum = models.BooleanField(default=True)
     anonymous_leaderboard = models.BooleanField(default=False)
+    participant_teams = models.ManyToManyField(ParticipantTeam)
 
     class Meta:
         app_label = 'challenges'
