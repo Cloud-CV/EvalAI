@@ -23,7 +23,7 @@
     "materialize": "^0.97.8",
     "jquery": "^3.1.1",
     "lodash": "^4.17.2",
-    "ngSmoothScroll":"master",
-    "ng-focus-if":"master"
+    "ngSmoothScroll": "master",
+    "ng-focus-if": "master"
   }
 }

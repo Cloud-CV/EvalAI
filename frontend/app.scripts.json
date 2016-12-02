@@ -24,9 +24,9 @@
        "angular-message": "bower_components/angular-messages/angular-messages.min.js",
        "angular-material" : "bower_components/angular-material/angular-material.min.js",
        "materialize": "bower_components/materialize/dist/js/materialize.min.js",
-       "lodash":"bower_components/lodash/dist/lodash.min.js",
-       "ngSmoothScroll":"bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js",
-       "ng-focus-if":"bower_components/ng-focus-if/focusIf.min.js"
+       "lodash": "bower_components/lodash/dist/lodash.min.js",
+       "ngSmoothScroll": "bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js",
+       "ng-focus-if": "bower_components/ng-focus-if/focusIf.min.js"
 
      }
 }
