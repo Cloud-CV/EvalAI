@@ -74,8 +74,3 @@ ENV/
 
 # Fabric Files
 fabfile/
-
-# Frontend Modules
-node_modules
-frontend/bower_components
-frontend/node_modules
