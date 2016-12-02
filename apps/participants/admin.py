@@ -23,9 +23,9 @@ class ParticipantAdmin(TimeStampedAdmin):
 
 @admin.register(ParticipantTeam)
 class ParticipantTeamAdmin(TimeStampedAdmin):
-    list_display = ('challenge', 'team_name',)
+    list_display = ('challenge', 'created_by', 'team_name',)
     search_fields = ('challenge',)
-    list_filter = ('team_name', 'challenge',)
+    list_filter = ('team_name', 'created_by', 'challenge',)
 
 
 @admin.register(ParticipantTeamMember)
