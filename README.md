@@ -16,6 +16,7 @@ Setting up EvalAI on your local machine is really easy.
 Follow this guide to setup your development machine.
 
 1. Install [git], [postgresql] and [virtualenv], in your computer, if you don't have it already.
+*If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
 
@@ -32,7 +33,7 @@ Follow this guide to setup your development machine.
     pip install -r requirements/dev.txt
     ```
 
-4. Rename `settings/dev.sample.py` as `dev.py` and change credential in `setting/dev.py`
+4. Rename `settings/dev.sample.py` as `dev.py` and change credential in `settings/dev.py`
 
     ```
     cp settings/dev.sample.py settings/dev.py
@@ -46,7 +47,7 @@ Follow this guide to setup your development machine.
     python manage.py migrate --settings=settings.dev
     ```
 
-6. That's it. Now you can run development server at http://127.0.0.1:8000
+6. That's it. Now you can run development server at http://127.0.0.1:8000 (for serving backend)
 
     ```
     python manage.py runserver --settings=settings.dev
@@ -61,13 +62,13 @@ Follow this guide to setup your development machine.
     bower install
     ```
 
-8. To build static files(develpoment) type
+8. To build static files(development) type
 
     ```
     gulp dev
     ```
 
-9. That's it, Now to connect to dev server at http://127.0.0.1:8888
+9. That's it, Now to connect to dev server at http://127.0.0.1:8888 (for serving frontend)
 
     ```
     gulp connect
@@ -86,3 +87,4 @@ If you are interested in contributing to EvalAI, follow your [contribution guide
 [git]: https://git-scm.com/downloads
 [virtualenv]: https://virtualenv.pypa.io/
 [postgresql]: http://www.postgresql.org/download/
+[postgresqlhelp]: http://bobbyong.com/blog/installing-postgresql-on-windoes/
