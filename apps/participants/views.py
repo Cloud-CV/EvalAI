@@ -39,7 +39,8 @@ def participant_team_list(request, challenge_pk):
 
     elif request.method == 'POST':
         serializer = ParticipantTeamSerializer(data=request.data,
-                                               context={'challenge': challenge})
+                                               context={'challenge': challenge,
+                                                        'request': request})
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
@@ -72,10 +73,13 @@ def participant_team_detail(request, challenge_pk, pk):
 
         if request.method == 'PATCH':
             serializer = ParticipantTeamSerializer(participant_team, data=request.data,
-                                                   context={'challenge': challenge}, partial=True)
+                                                   context={'challenge': challenge,
+                                                            'request': request},
+                                                   partial=True)
         else:
             serializer = ParticipantTeamSerializer(participant_team, data=request.data,
-                                                   context={'challenge': challenge})
+                                                   context={'challenge': challenge,
+                                                            'request': request})
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
