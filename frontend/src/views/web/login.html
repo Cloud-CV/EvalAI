@@ -2,7 +2,7 @@
 <form ng-submit="auth.userLogin()" id="log-in">
     <!-- username -->
     <div class="input-field align-left">
-        <input id="name" type="text" class="validate" ng-model="auth.getUser.name" autofocus>
+        <input id="name" type="text" class="validate" ng-model="auth.getUser.name" focus-if>
         <span class="form-icon"><i class="fa fa-user"></i></span>
         <label for="name" data-error="wrong" data-success="right">User Name (no space)*</label>
         <div class="wrn-msg text-highlight" ng-show="auth.isValid.username">{{auth.wrnMsg.username}}</div>
