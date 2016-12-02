@@ -10,6 +10,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from hosts.models import ChallengeHostTeam
+from participants.models import ParticipantTeam
 
 from .models import Challenge
 from .serializers import ChallengeSerializer
@@ -85,3 +86,24 @@ def challenge_detail(request, challenge_host_team_pk, pk):
     elif request.method == 'DELETE':
         challenge.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((TokenAuthentication,))
+def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk):
+
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'ParticipantTeam does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    challenge.participant_teams.add(participant_team)
+    return Response(status=status.HTTP_201_CREATED)
