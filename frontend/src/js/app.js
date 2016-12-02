@@ -6,5 +6,6 @@ angular
 		'ngAnimate',
 		'ngMessages',
 		'evalai-config',
-		'smoothScroll'
+		'smoothScroll',
+		'focus-if'
 	]);
