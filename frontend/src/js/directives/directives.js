@@ -92,31 +92,6 @@
     
 })();
 
-//Sidebar in Dashboard
-
-(function() {
-
-    'use strict'
-
-    // dynamic header directive
-    angular
-        .module('evalai')
-        .directive('sideBar', sideBar);
-
-    function sideBar() {
-        var directive = {
-            link:function(){
-                //do nothing
-            },
-            templateUrl: 'dist/views/web/partials/sidebar.html',
-            transclude: true,
-            restrict: 'EA'
-        };
-        return directive;
-    }
-    
-})();
-
 // scroll directive
 
 (function() {
