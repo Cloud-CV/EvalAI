@@ -13,7 +13,7 @@ from rest_framework import response, schemas
 
 from challenges.models import Challenge
 
-from .models import ParticipantTeam
+from .models import (Participant, ParticipantTeam)
 from .serializers import ParticipantTeamSerializer
 
 
@@ -37,6 +37,11 @@ def participant_team_list(request):
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
+            participant_team = serializer.instance
+            participant = Participant(user=request.user,
+                                      status=Participant.SELF,
+                                      team=participant_team)
+            participant.save()
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
