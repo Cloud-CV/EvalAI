@@ -24,6 +24,7 @@ class Participant(TimeStampedModel):
 
     user = models.ForeignKey(User, related_name='participation')
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
+    team = models.ForeignKey('ParticipantTeam', related_name='participants', null=True)
 
     def __str__(self):
         return '{}'.format(self.user)
@@ -46,15 +47,3 @@ class ParticipantTeam(TimeStampedModel):
     class Meta:
         app_label = 'participants'
         db_table = 'participant_team'
-
-
-class ParticipantTeamMember(TimeStampedModel):
-    """
-    Model representing participants associated with a particular team
-    """
-    participant = models.ForeignKey(Participant)
-    team = models.ForeignKey(ParticipantTeam)
-
-    class Meta:
-        app_label = 'participants'
-        db_table = 'participant_team_member'
