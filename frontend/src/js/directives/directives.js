@@ -42,7 +42,7 @@
             var headerObj = new headerComp();
         }
     }
-    
+
 })();
 
 
