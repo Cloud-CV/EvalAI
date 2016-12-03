@@ -14,7 +14,8 @@ from rest_framework import response, schemas
 from challenges.models import Challenge
 
 from .models import (Participant, ParticipantTeam)
-from .serializers import ParticipantTeamSerializer
+from .serializers import (InviteParticipantToTeamSerializer,
+                          ParticipantTeamSerializer,)
 
 
 @api_view(['GET', 'POST'])
@@ -81,3 +82,24 @@ def participant_team_detail(request, pk):
     elif request.method == 'DELETE':
         participant_team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((TokenAuthentication,))
+def invite_participant_to_team(request, pk):
+
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'ParticipantTeam does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    serializer = InviteParticipantToTeamSerializer(data=request.data,
+                                                   context={'participant_team': participant_team,
+                                                            'request': request})
+    if serializer.is_valid():
+        serializer.save()
+        response_data = {'message': 'User has been added successfully to the team'}
+        return Response(response_data, status=status.HTTP_202_ACCEPTED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
