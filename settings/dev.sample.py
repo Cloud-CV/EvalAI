@@ -1,4 +1,4 @@
-from .common import *  # noqa
+from .common import *  # noqa: ignore=F405
 
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
@@ -22,3 +22,11 @@ EMAIL_PORT = 1025
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+
+# DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
+INSTALLED_APPS += ['django_spaghetti', ] # noqa: ignore=F405
+
+SPAGHETTI_SAUCE = {
+    'apps': ['auth', 'accounts', 'analytics', 'base', 'challenges', 'hosts', 'jobs', 'participants', 'web'],
+    'show_fields': True,
+}
