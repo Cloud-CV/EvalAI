@@ -9,6 +9,11 @@
         a {
             color: $light-link;
             font-weight: $rob-med;
+            img.cloudcv-logo {
+                height:50px;
+                width:50px;
+                vertical-align:middle;
+            }
         }
         a:hover {
             color: $link-hover-dark;

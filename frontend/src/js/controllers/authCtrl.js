@@ -127,7 +127,12 @@
                         utilities.storeData('userKey', response.key);
                         utilities.storeData('isRem', vm.isRem);
                         token = response.key;
+
+                        // setting timout for token (7days)
+                        var timeNow  = (new Date()).getTime();
+                        utilities.storeData('tokenTime', timeNow);
                         utilities.isAuthenticated();
+                        
                         $state.go('web.dashboard');
 
                         vm.stopLoader();

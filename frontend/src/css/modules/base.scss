@@ -48,6 +48,13 @@ input:-webkit-autofill:active {
     cursor: pointer;
 }
 
+/*inline list*/
+ul.inline-list{
+    li{
+        display: inline-block;
+        margin-right: 20px;
+    }
+}
 
 /*clearfix*/
 
@@ -67,6 +74,18 @@ input:-webkit-autofill:active {
     position: absolute;
 }
 
+/*bg color*/
+.ev-dark-bg{
+    background-color: $dark-gray;
+}
+
+.ev-dust-bg{
+    background-color: $dust-gray;
+}
+
+.ev-light-bg{
+    background-color: $light-gray;
+}
 
 /*main intro page*/
 

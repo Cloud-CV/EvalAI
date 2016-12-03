@@ -20,16 +20,10 @@ from .serializers import ParticipantTeamSerializer
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((TokenAuthentication,))
-def participant_team_list(request, challenge_pk):
-
-    try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
-    except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+def participant_team_list(request):
 
     if request.method == 'GET':
-        participant_teams = ParticipantTeam.objects.filter(challenge=challenge)
+        participant_teams = ParticipantTeam.objects.filter(created_by=request.user)
         paginator = PageNumberPagination()
         paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
         result_page = paginator.paginate_queryset(participant_teams, request)
@@ -39,7 +33,7 @@ def participant_team_list(request, challenge_pk):
 
     elif request.method == 'POST':
         serializer = ParticipantTeamSerializer(data=request.data,
-                                               context={'challenge': challenge})
+                                               context={'request': request})
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
@@ -50,12 +44,7 @@ def participant_team_list(request, challenge_pk):
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((TokenAuthentication,))
-def participant_team_detail(request, challenge_pk, pk):
-    try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
-    except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+def participant_team_detail(request, pk):
 
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
@@ -72,10 +61,11 @@ def participant_team_detail(request, challenge_pk, pk):
 
         if request.method == 'PATCH':
             serializer = ParticipantTeamSerializer(participant_team, data=request.data,
-                                                   context={'challenge': challenge}, partial=True)
+                                                   context={'request': request},
+                                                   partial=True)
         else:
             serializer = ParticipantTeamSerializer(participant_team, data=request.data,
-                                                   context={'challenge': challenge})
+                                                   context={'request': request})
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
