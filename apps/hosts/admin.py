@@ -7,7 +7,7 @@ from .models import (ChallengeHost,
 
 
 @admin.register(ChallengeHostTeam)
-class HostTeamModelAdmin(TimeStampedAdmin):
+class ChallengeHostTeamModelAdmin(TimeStampedAdmin):
     list_display = ("team_name", "created_by")
     list_filter = ("created_by", )
     search_fields = ("team_name", "created_by")
