@@ -2,16 +2,10 @@ from django.contrib import admin
 
 from base.admin import TimeStampedAdmin
 from .models import (
-    ParticipantStatus,
     Participant,
     ParticipantTeam,
     ParticipantTeamMember,
 )
-
-
-@admin.register(ParticipantStatus)
-class ParticipantStatusAdmin(TimeStampedAdmin):
-    list_display = ('status',)
 
 
 @admin.register(Participant)
