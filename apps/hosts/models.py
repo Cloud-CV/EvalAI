@@ -14,6 +14,9 @@ class ChallengeHostTeam(TimeStampedModel):
     team_name = models.CharField(max_length=100,)
     created_by = models.ForeignKey(User, related_name='challenge_host_team_creator')
 
+    def __unicode__(self):
+        return "%s: %s" % (self.team_name, self.created_by)
+
     class Meta:
         app_label = 'hosts'
         db_table = 'challenge_host_teams'
@@ -53,6 +56,9 @@ class ChallengeHost(TimeStampedModel):
     team_name = models.ForeignKey('ChallengeHostTeam')
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
     permissions = models.CharField(max_length=30, choices=PERMISSION_OPTIONS)
+
+    def __unicode__(self):
+        return "%s:%s:%s" % (self.team_name, self.user, self.permissions)
 
     class Meta:
         app_label = 'hosts'
