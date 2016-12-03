@@ -4,7 +4,6 @@ from base.admin import TimeStampedAdmin
 from .models import (
     Participant,
     ParticipantTeam,
-    ParticipantTeamMember,
 )
 
 
@@ -19,10 +18,3 @@ class ParticipantAdmin(TimeStampedAdmin):
 class ParticipantTeamAdmin(TimeStampedAdmin):
     list_display = ('team_name',)
     list_filter = ('team_name',)
-
-
-@admin.register(ParticipantTeamMember)
-class ParticipantTeamMemberAdmin(TimeStampedAdmin):
-    list_display = ('participant', 'team',)
-    search_fields = ('participant',)
-    list_filter = ('participant', 'team',)
