@@ -14,7 +14,7 @@ class HostTeamModelAdmin(TimeStampedAdmin):
 
 
 @admin.register(ChallengeHost)
-class HostModelAdmin(TimeStampedAdmin):
+class ChallengeHostAdmin(TimeStampedAdmin):
     list_display = ("user", "team_name", "status", "permissions")
     list_filter = ("status", "permissions")
     search_fields = ("user", "team_name")
