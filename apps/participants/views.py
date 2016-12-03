@@ -103,3 +103,35 @@ def invite_participant_to_team(request, pk):
         response_data = {'message': 'User has been added successfully to the team'}
         return Response(response_data, status=status.HTTP_202_ACCEPTED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((TokenAuthentication,))
+def delete_participant_from_team(request, participant_team_pk, participant_pk):
+    """
+    Deletes a participant from a Participant Team
+    """
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'ParticipantTeam does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        participant = Participant.objects.get(pk=participant_pk)
+    except Participant.DoesNotExist:
+        response_data = {'error': 'Participant does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if participant_team.created_by == request.user:
+
+        if participant.user == request.user: # when the user tries to remove himself
+            response_data = {'error': 'You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            participant.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+        response_data = {'error': 'Sorry, you do not have permissions to remove this participant'}
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
