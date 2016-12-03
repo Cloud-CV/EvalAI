@@ -22,6 +22,8 @@
     "angular-material": "master",
     "materialize": "^0.97.8",
     "jquery": "^3.1.1",
-    "lodash": "^4.17.2"
+    "lodash": "^4.17.2",
+    "ngSmoothScroll": "master",
+    "ng-focus-if": "master"
   }
 }
