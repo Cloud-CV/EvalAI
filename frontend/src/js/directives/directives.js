@@ -44,7 +44,77 @@
     }
 
 })();
+//Sidebar in Dashboard      
+       
+ (function() {     
+       
+     'use strict'      
+       
+     // dynamic header directive       
+     angular       
+         .module('evalai')     
+         .directive('sideBar', sideBar);       
+       
+     function sideBar() {      
+         var directive = {     
+             link:function(){      
+                 //do nothing      
+             },        
+             templateUrl: 'dist/views/web/partials/sidebar.html',      
+             transclude: true,     
+             restrict: 'EA'        
+         };        
+         return directive;     
+     }     
+           
+ })();
 
+
+//Dashboard header
+(function() {
+
+    'use strict'
+
+    // dynamic header directive
+    angular
+        .module('evalai')
+        .directive('simHeader', simHeader);
+
+    function simHeader() {
+        var directive = {
+            link: link,
+            templateUrl: 'dist/views/web/partials/sim-header.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+
+        function link(scope, element, attrs) {
+
+            function headerComp() {
+                var self = this;
+                this.init();
+            };
+
+            headerComp.prototype = {
+                init: function() {
+                    var self = this;
+
+                    // initialized mobile sidebar
+                    angular.element(".button-collapse").sideNav({
+                        menuWidth: 200,
+                        closeOnClick: true,
+                        draggable: true
+                    });
+
+                }
+            };
+
+            var headerObj = new headerComp();
+        }
+    }
+    
+})();
 
 // scroll directive
 
