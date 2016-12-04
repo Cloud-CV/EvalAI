@@ -279,3 +279,50 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class DisableChallengeTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(DisableChallengeTest, self).setUp()
+
+        self.user1 = User.objects.create(
+            username='otheruser',
+            password='other_secret_password')
+
+        self.challenge_host_team1 = ChallengeHostTeam.objects.create(
+            team_name='Other Test Challenge Host Team',
+            created_by=self.user1)
+
+        self.challenge2 = Challenge.objects.create(
+            title='Other Test Challenge',
+            description='Description for other test challenge',
+            terms_and_conditions='Terms and conditions for other test challenge',
+            submission_guidelines='Submission guidelines for other test challenge',
+            creator=self.challenge_host_team1,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False)
+
+        self.url = reverse_lazy('challenges:disable_challenge',
+                                kwargs={'pk': self.challenge.pk})
+
+    def test_disable_a_challenge(self):
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_particular_challenge_for_disable_does_not_exist(self):
+        self.url = reverse_lazy('challenges:disable_challenge',
+                                kwargs={'pk': self.challenge.pk + 2})
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_when_user_does_not_have_permission_to_disable_particular_challenge(self):
+        self.url = reverse_lazy('challenges:disable_challenge',
+                                kwargs={'pk': self.challenge2.pk})
+        expected = {
+            'error': 'Sorry, you do not have permission to disable this challenge'
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
