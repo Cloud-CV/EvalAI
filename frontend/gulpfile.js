@@ -21,7 +21,7 @@ var gulp = require('gulp'),
     connectModRewrite = require('connect-modrewrite'),
     ngConfig = require('gulp-ng-config'),
     prettyError = require('gulp-prettyerror'),
-        // path = require('gulp-path'),
+    // path = require('gulp-path'),
     // conf = require('./conf')(gulp),
     _ = require('lodash');
 
