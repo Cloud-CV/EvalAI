@@ -20,6 +20,7 @@ var gulp = require('gulp'),
     fs = require('fs'),
     connectModRewrite = require('connect-modrewrite'),
     ngConfig = require('gulp-ng-config'),
+    prettyError = require('gulp-prettyerror'),
     // path = require('gulp-path'),
     // conf = require('./conf')(gulp),
     _ = require('lodash');
@@ -95,6 +96,7 @@ gulp.task('configProd', function() {
 // minify and compress CSS files
 gulp.task('css', function() {
     return sass('src/css/main.scss', { style: 'expanded' })
+        .pipe(prettyError())
         .pipe(autoprefixer('last 2 version'))
         .pipe(gulp.dest('./dist/css'))
         .pipe(rename({ suffix: '.min' }))
@@ -106,6 +108,7 @@ gulp.task('css', function() {
 gulp.task('js', function() {
 
     var app = gulp.src('src/js/app.js')
+        .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('app.js'))
         .pipe(gulp.dest('./dist/js'))
@@ -114,6 +117,7 @@ gulp.task('js', function() {
         .pipe(gulp.dest('./dist/js'));
 
     var configs = gulp.src('src/js/route-config/*.js')
+        .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('route-config.js'))
         .pipe(gulp.dest('./dist/js'))
@@ -122,6 +126,7 @@ gulp.task('js', function() {
         .pipe(gulp.dest('./dist/js'));
 
     var controllers = gulp.src('src/js/controllers/*.js')
+        .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('controllers.js'))
         .pipe(gulp.dest('./dist/js'))
@@ -130,6 +135,7 @@ gulp.task('js', function() {
         .pipe(gulp.dest('./dist/js'));
 
     var directives = gulp.src('src/js/directives/*.js')
+        .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('directives.js'))
         .pipe(gulp.dest('./dist/js'))
@@ -138,6 +144,7 @@ gulp.task('js', function() {
         .pipe(gulp.dest('./dist/js'));
 
     var services = gulp.src('src/js/services/*.js')
+        .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('services.js'))
         .pipe(gulp.dest('./dist/js'))

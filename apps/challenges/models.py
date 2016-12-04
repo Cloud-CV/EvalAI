@@ -28,7 +28,8 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Publicly Available")
     enable_forum = models.BooleanField(default=True)
     anonymous_leaderboard = models.BooleanField(default=False)
-    participant_teams = models.ManyToManyField(ParticipantTeam)
+    participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
+    is_disabled = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'challenges'
