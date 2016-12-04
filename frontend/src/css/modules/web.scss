@@ -2,10 +2,14 @@
 .web-container {
     width: calc(100vw - 220px);
     float: right;
-    @media screen and (max-width: $break-small) {
-        width: 100%;
-    }
 }
 #sidenav-overlay{
     z-index:1;
+}
+
+/*media queries*/
+@media only screen and (max-width: $med-screen) {
+    .web-container {
+        width: 100%;
+    }
 }
