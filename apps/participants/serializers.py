@@ -7,12 +7,14 @@ from .models import (Participant, ParticipantTeam)
 
 class ParticipantTeamSerializer(serializers.ModelSerializer):
 
+    created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+
     def __init__(self, *args, **kwargs):
         super(ParticipantTeamSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get('context')
         if context:
             request = context.get('request')
-            kwargs['data']['created_by'] = request.user.pk
+            kwargs['data']['created_by'] = request.user.username
 
     class Meta:
         model = ParticipantTeam
