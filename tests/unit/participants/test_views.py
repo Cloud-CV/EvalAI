@@ -43,7 +43,7 @@ class GetParticipantTeamTest(BaseAPITestClass):
             {
                 "id": self.participant_team.pk,
                 "team_name": self.participant_team.team_name,
-                "created_by": self.user.pk
+                "created_by": self.user.username
             }
         ]
 
@@ -83,7 +83,7 @@ class GetParticularParticipantTeam(BaseAPITestClass):
         expected = {
             "id": self.participant_team.pk,
             "team_name": self.participant_team.team_name,
-            "created_by": self.user.pk
+            "created_by": self.user.username
         }
 
         response = self.client.get(self.url, {})
@@ -121,7 +121,7 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
         expected = {
             "id": self.participant_team.pk,
             "team_name": self.partial_update_participant_team_name,
-            "created_by": self.user.pk
+            "created_by": self.user.username
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -131,7 +131,7 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
         expected = {
             "id": self.participant_team.pk,
             "team_name": self.update_participant_team_name,
-            "created_by": self.user.pk
+            "created_by": self.user.username
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
