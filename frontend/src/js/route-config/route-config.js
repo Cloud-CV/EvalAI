@@ -75,17 +75,6 @@
             abstract: true
         }
 
-        // main app 'web'
-        var web = {
-            name: "web",
-            url: "/web",
-            templateUrl: baseUrl + "/web/web.html",
-            controller: 'WebCtrl',
-            controllerAs: 'web',
-            authenticate: true,
-            abstract: true
-        }
-
         var dashboard = {
             name: "web.dashboard",
             parent: "web",
@@ -94,6 +83,28 @@
             controller: 'DashCtrl',
             controllerAs: 'dash',
             title: 'Dashboard',
+            authenticate: true
+        }
+
+        var teams = {
+            name: "web.teams",
+            parent: "web",
+            url: "/teams",
+            templateUrl: baseUrl + "/web/teams.html",
+            controller: 'TeamsCtrl',
+            controllerAs: 'teams',
+            title: 'Teams',
+            authenticate: true
+        }
+
+        var challenge_page = {
+            name: "web.challenge-page",
+            parent: "web",
+            url: "/challenge-page",
+            templateUrl: baseUrl + "/web/challenge-page.html",
+            controller: 'ChallengeCtrl',
+            controllerAs: 'challenge',
+            title: 'Challenge Page',
             authenticate: true
         }
 
@@ -106,7 +117,6 @@
             controller: 'ProfileCtrl',
             controllerAs: 'profile',
             authenticate: true
-
         }
 
 
@@ -120,9 +130,10 @@
         $stateProvider.state(logout);
 
         // web main configs.
-
         $stateProvider.state(web);
         $stateProvider.state(dashboard);
+        $stateProvider.state(teams);
+        $stateProvider.state(challenge_page);
         $stateProvider.state(profile);
 
         $urlRouterProvider.otherwise("/");
@@ -143,8 +154,8 @@
         // setting timout for token (7days)
         var getTokenTime = utilities.getData('tokenTime');
         var timeNow = (new Date()).getTime();
-        // .getTime() returns milliseconds, so for 7 days 1000 * 60 * 60 * 7 = 7 days
-        var tokenExpTime = 1000 * 60 * 60 * 7;
+        // .getTime() returns milliseconds, so for 7 days 1000 * 60 * 60 * 24 * 7 = 7 days
+        var tokenExpTime = 1000 * 60 * 60 * 24 * 7;
         if ((timeNow - getTokenTime) > tokenExpTime) {
             utilities.resetStorage();
         }
@@ -166,16 +177,15 @@
                 event.preventDefault();
                 return false;
             } else if (utilities.isAuthenticated()) {
-
                 $rootScope.isAuth = true;
             }
         });
-
 
         $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
             // Save the route title
             $rootScope.pageTitle = $state.current.title;
             // alert($rootScope.pageTitle)
+
         });
 
         $rootScope.logout = function() {

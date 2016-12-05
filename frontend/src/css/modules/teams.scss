@@ -1,0 +1,32 @@
+.exist-team-card {
+    ul {
+        li {
+            padding: 10px 0px;
+        }
+    }
+    input[type="radio"].selectTeam + label {
+        font-size: 15px;
+        color: $med-black;
+        vertical-align: middle;
+    }
+    i.list-icon {
+        line-height: 25px;
+    }
+}
+
+.new-team-card {
+    padding-bottom: 20px;
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.pagination-title {
+    padding: 0px 10px;
+}
+
+div.show-member-title {
+    width: calc(100% - 35px);
+    float: right;
+}

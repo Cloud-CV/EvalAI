@@ -143,6 +143,15 @@ gulp.task('js', function() {
         .pipe(uglify())
         .pipe(gulp.dest('./dist/js'));
 
+    var filters = gulp.src('src/js/filters/*.js')
+        .pipe(prettyError())
+        .pipe(jshint.reporter('default'))
+        .pipe(concat('filters.js'))
+        .pipe(gulp.dest('./dist/js'))
+        .pipe(rename({ suffix: '.min' }))
+        .pipe(uglify())
+        .pipe(gulp.dest('./dist/js'));
+
     var services = gulp.src('src/js/services/*.js')
         .pipe(prettyError())
         .pipe(jshint.reporter('default'))
@@ -152,7 +161,7 @@ gulp.task('js', function() {
         .pipe(uglify())
         .pipe(gulp.dest('./dist/js'));
 
-    return merge(app, configs, controllers, directives, services)
+    return merge(app, configs, controllers, directives, filters, services)
 });
 
 

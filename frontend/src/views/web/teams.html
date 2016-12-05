@@ -1,0 +1,63 @@
+<section class="ev-sm-container ev-view ">
+    <div class="row">
+        <div class="col s12 m6">
+            <div class=" ev-card-panel ev-z-depth-5">
+                <div class="ev-md-container ev-panel-title"><strong>Select from the existing teams</strong></div>
+                <div class="ev-md-container ev-card-body exist-team-card">
+                    <form>
+                        <ul>
+                            <li ng-repeat="(key, value) in teams.existTeam.results">
+                                <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="teams.teamId">
+                                <label for="{{value.id}}"></label>
+                                <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}<i class="fa fa-plus list-icon text-highlight w-300 right"></i>
+                                    <br>
+                                    <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
+                                <div class="clearfix"></div>
+                            </li>
+                            <section class="pagination">
+                                <div class="row rm-gut">
+                                    <div class="col s12 m6 ">
+                                        <a ng-class="teams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="teams.load(teams.existTeam.previous)">
+                                            <i class="fa fa-chevron-left"></i>
+                                        </a>
+                                        <span class="pagination-title"> <strong class="text-med-black"> Page {{teams.currentPage | ceil}} of {{teams.existTeam.count/10 | ceil}} </strong></span>
+                                        <a ng-class="teams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="teams.load(teams.existTeam.next)">
+                                            <i class="fa fa-chevron-right"></i>
+                                        </a>
+                                    </div>
+                                
+                                <div class="col s12 m6 ">
+                                    <div class="align-right ">
+                                        <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="teams.selectExistTeam()" value="Submit">Select Team</button><br><br>
+                                        <span class="text-dark-black"><strong >{{teams.existTeamError}}</strong></span>
+                                    </div>
+                                </div>
+                                </div>
+                            </section>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col s12 m6">
+            <div class=" ev-card-panel ev-z-depth-5">
+                <div class="ev-md-container ev-panel-title"><strong>Create a New Team</strong></div>
+                <div class="ev-md-container ev-card-body new-team-card">
+                    <form ng-submit="teams.createNewTeam()">
+                        <div class="input-field align-left">
+                            <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="teams.team.name" focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                            <label for="name" data-error="wrong" data-success="right">Team Name (no space)*</label>
+                            <div class="wrn-msg text-highlight" ng-show="teams.team.error">{{teams.team.error}}</div>
+                        </div>
+                        <div class="align-left reg-control">
+                            <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Create Team</button>
+                            <!-- 
+                            <span ng-hide="auth.isConfirm" class="fade"> {{auth.confirmMsg}}</span> -->
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
