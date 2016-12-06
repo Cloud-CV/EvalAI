@@ -10,8 +10,6 @@ from hosts.models import ChallengeHostTeam
 from participants.models import ParticipantTeam, Participant
 
 
-
-
 class BaseAPITestClass(APITestCase):
 
     def setUp(self):
@@ -305,7 +303,6 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             username='user3',
             email='user3@platform.com',
             password='user3_password')
-
 
         EmailAddress.objects.create(
             user=self.user3,

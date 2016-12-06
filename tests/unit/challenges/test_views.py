@@ -10,8 +10,6 @@ from participants.models import ParticipantTeam
 from hosts.models import ChallengeHostTeam
 
 
-
-
 class BaseAPITestClass(APITestCase):
 
     def setUp(self):

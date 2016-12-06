@@ -8,8 +8,6 @@ from rest_framework.test import APITestCase, APIClient
 from hosts.models import ChallengeHost, ChallengeHostTeam
 
 
-
-
 class BaseAPITestClass(APITestCase):
 
     def setUp(self):
