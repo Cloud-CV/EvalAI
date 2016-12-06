@@ -29,6 +29,14 @@
                     if (status == 200) {
                         vm.user.name = response.username;
                     }
+                    else if (status == 403){
+                        console.log(response);
+                        vm.error = response.error;
+
+                        // navigate to permissions denied page
+                        $state.go('web.permission-denied');
+
+                    }                    
                 },
                 onError: function() {
 
