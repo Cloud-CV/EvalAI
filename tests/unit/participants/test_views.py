@@ -1,6 +1,7 @@
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
 
+from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
@@ -16,8 +17,14 @@ class BaseAPITestClass(APITestCase):
 
         self.user = User.objects.create(
             username='someuser',
-            email='someuser@platform.com',
+            email="user@test.com",
             password='secret_password')
+
+        EmailAddress.objects.create(
+            user=self.user,
+            email='user@test.com',
+            primary=True,
+            verified=True)
 
         self.invite_user = User.objects.create(
             username='otheruser',
@@ -296,6 +303,12 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             username='user3',
             email='user3@platform.com',
             password='user3_password')
+
+        EmailAddress.objects.create(
+            user=self.user3,
+            email='user3@platform.com',
+            primary=True,
+            verified=True)
 
         self.participant3 = Participant.objects.create(
             user=self.user3,

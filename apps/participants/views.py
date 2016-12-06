@@ -11,6 +11,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import response, schemas
 
+from accounts.permissions import HasVerifiedEmail
 from challenges.models import Challenge
 
 from .models import (Participant, ParticipantTeam)
@@ -19,7 +20,7 @@ from .serializers import (InviteParticipantToTeamSerializer,
 
 
 @api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def participant_team_list(request):
 
@@ -49,7 +50,7 @@ def participant_team_list(request):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def participant_team_detail(request, pk):
 
@@ -87,7 +88,7 @@ def participant_team_detail(request, pk):
 
 
 @api_view(['POST'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def invite_participant_to_team(request, pk):
 
@@ -109,7 +110,7 @@ def invite_participant_to_team(request, pk):
 
 
 @api_view(['DELETE'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def delete_participant_from_team(request, participant_team_pk, participant_pk):
     """

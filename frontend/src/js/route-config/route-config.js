@@ -119,6 +119,16 @@
             authenticate: true
         }
 
+        var permission_denied = {
+            name: "web.permission-denied",
+            parent: "web",
+            url: "/permission-denied",
+            templateUrl: baseUrl + "/web/permission-denied.html",
+            title: "Permission Denied",
+            // controller: 'ProfileCtrl',
+            // controllerAs: 'profile',
+            authenticate: true
+        }
 
         // call all states here
         $stateProvider.state(home);
@@ -135,6 +145,7 @@
         $stateProvider.state(teams);
         $stateProvider.state(challenge_page);
         $stateProvider.state(profile);
+        $stateProvider.state(permission_denied);
 
         $urlRouterProvider.otherwise("/");
 

@@ -9,6 +9,7 @@ from rest_framework.decorators import (api_view,
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from accounts.permissions import HasVerifiedEmail
 from hosts.models import ChallengeHostTeam
 from participants.models import ParticipantTeam
 
@@ -17,7 +18,7 @@ from .serializers import ChallengeSerializer
 
 
 @api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def challenge_list(request, challenge_host_team_pk):
     try:
@@ -46,7 +47,7 @@ def challenge_list(request, challenge_host_team_pk):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, pk):
     try:
@@ -89,7 +90,7 @@ def challenge_detail(request, challenge_host_team_pk, pk):
 
 
 @api_view(['POST'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk):
 
@@ -110,7 +111,7 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
 
 
 @api_view(['POST'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def disable_challenge(request, pk):
 

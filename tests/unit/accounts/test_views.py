@@ -1,6 +1,7 @@
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
 
+from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
@@ -12,7 +13,14 @@ class BaseAPITestClass(APITestCase):
 
         self.user = User.objects.create(
             username='someuser',
+            email="user@test.com",
             password='secret_password')
+
+        EmailAddress.objects.create(
+            user=self.user,
+            email='user@test.com',
+            primary=True,
+            verified=True)
 
         self.client.force_authenticate(user=self.user)
 

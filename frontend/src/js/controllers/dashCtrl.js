@@ -26,7 +26,11 @@
 						vm.name = response.username;
 					}
 				},
-				onError: function(){
+				onError: function(error){
+					vm.error = error;
+
+                    // navigate to permissions denied page
+                    $state.go('web.permission-denied');
 
 				}
 			};

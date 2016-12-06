@@ -100,8 +100,11 @@
                     }
                 }
             },
-            onError: function() {
-
+            onError: function(error) {
+                vm.error = error;
+                console.log(error);
+                // navigate to permissions denied page
+                $state.go('web.permission-denied');
             }
         };
 
