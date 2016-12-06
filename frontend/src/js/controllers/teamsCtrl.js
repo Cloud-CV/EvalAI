@@ -33,6 +33,9 @@
                 if (status == 200) {
                     vm.existTeam = response;
 
+                    // clear error msg from storage
+                    utilities.deleteData('emailError');
+
                     // condition for pagination
                     if (vm.existTeam.next == null) {
                         vm.isNext = 'disabled';
