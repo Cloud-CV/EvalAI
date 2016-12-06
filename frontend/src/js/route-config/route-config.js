@@ -125,8 +125,8 @@
             url: "/permission-denied",
             templateUrl: baseUrl + "/web/permission-denied.html",
             title: "Permission Denied",
-            // controller: 'ProfileCtrl',
-            // controllerAs: 'profile',
+            controller: 'PermCtrl',
+            controllerAs: 'perm',
             authenticate: true
         }
 

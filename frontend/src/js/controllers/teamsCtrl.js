@@ -101,9 +101,7 @@
                 }
             },
             onError: function(error) {
-                vm.error = error;
-                console.log(error);
-                // navigate to permissions denied page
+                utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
             }
         };
@@ -121,7 +119,6 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response, status) {
-                    console.log(response)
                     vm.team.error = false;
 
                     // navigate to challenge page
