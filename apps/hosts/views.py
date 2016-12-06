@@ -9,6 +9,8 @@ from rest_framework.decorators import (api_view,
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from accounts.permissions import HasVerifiedEmail
+
 from .models import (ChallengeHost,
                      ChallengeHostTeam,)
 from .serializers import (ChallengeHostSerializer,
@@ -16,7 +18,7 @@ from .serializers import (ChallengeHostSerializer,
 
 
 @api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def challenge_host_team_list(request):
 
@@ -40,7 +42,7 @@ def challenge_host_team_list(request):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def challenge_host_team_detail(request, pk):
     try:
@@ -78,7 +80,7 @@ def challenge_host_team_detail(request, pk):
 
 
 @api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def challenge_host_list(request, challenge_host_team_pk):
 
@@ -118,7 +120,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def challenge_host_detail(request, challenge_host_team_pk, pk):
     try:
@@ -163,7 +165,7 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
 
 
 @api_view(['POST'])
-@permission_classes((permissions.IsAuthenticated,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((TokenAuthentication,))
 def create_challenge_host_team(request):
 
