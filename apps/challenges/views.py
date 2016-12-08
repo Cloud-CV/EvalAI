@@ -14,6 +14,7 @@ from hosts.models import ChallengeHostTeam
 from participants.models import ParticipantTeam
 
 from .models import Challenge
+from .permissions import IsChallengeCreator
 from .serializers import ChallengeSerializer
 
 
@@ -47,7 +48,7 @@ def challenge_list(request, challenge_host_team_pk):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((TokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, pk):
     try:
