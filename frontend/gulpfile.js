@@ -176,7 +176,11 @@ gulp.task('html', function() {
         .pipe(htmlmin({ collapseWhitespace: true }))
         .pipe(gulp.dest('./dist/views/web/partials'));
 
-    return merge(webViews, webPartials);
+    var challengePartials = gulp.src('src/views/web/challenge/*.html')
+        .pipe(htmlmin({ collapseWhitespace: true }))
+        .pipe(gulp.dest('./dist/views/web/challenge'));
+
+    return merge(webViews, webPartials, challengePartials);
 });
 
 

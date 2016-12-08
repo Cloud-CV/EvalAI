@@ -102,11 +102,37 @@
             parent: "web",
             url: "/challenge-page",
             templateUrl: baseUrl + "/web/challenge-page.html",
-            controller: 'ChallengeCtrl',
-            controllerAs: 'challenge',
-            title: 'Challenge Page',
+            // controller: 'ChallengeCtrl',
+            // controllerAs: 'challenge',
+            redirectTo: "web.challenge-page.overview",
             authenticate: true
         }
+
+        var overview = {
+            name: "web.challenge-page.overview",
+            parent: "web.challenge-page",
+            url: "/overview",
+            templateUrl: baseUrl + "/web/challenge/overview.html",
+            title: 'Overview',
+            authenticate: true
+        }
+
+        var evaluation = {
+            name: "web.challenge-page.evaluation",
+            url: "/evaluation",
+            templateUrl: baseUrl + "/web/challenge/evaluation.html",
+            title: 'Evaluation',
+            authenticate: true
+        }
+
+        var phases = {
+            name: "web.challenge-page.phases",
+            url: "/phases",
+            templateUrl: baseUrl + "/web/challenge/phases.html",
+            title: 'Phases',
+            authenticate: true
+        }
+
 
         var profile = {
             name: "web.profile",
@@ -143,7 +169,13 @@
         $stateProvider.state(web);
         $stateProvider.state(dashboard);
         $stateProvider.state(teams);
+
         $stateProvider.state(challenge_page);
+        $stateProvider.state(overview);
+        $stateProvider.state(evaluation);
+        $stateProvider.state(phases);
+
+
         $stateProvider.state(profile);
         $stateProvider.state(permission_denied);
 
@@ -189,6 +221,13 @@
                 return false;
             } else if (utilities.isAuthenticated()) {
                 $rootScope.isAuth = true;
+            }
+        });
+
+        $rootScope.$on('$stateChangeStart', function(event, to, params) {
+            if (to.redirectTo) {
+                event.preventDefault();
+                $state.go(to.redirectTo, params, { location: 'replace' })
             }
         });
 

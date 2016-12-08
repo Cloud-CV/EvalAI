@@ -1,4 +1,4 @@
-/*dynamic header style*/
+    /*dynamic header style*/
 
 .dyn-header {
     position: relative;
@@ -10,9 +10,9 @@
             color: $light-link;
             font-weight: $rob-med;
             img.cloudcv-logo {
-                height:50px;
-                width:50px;
-                vertical-align:middle;
+                height: 50px;
+                width: 50px;
+                vertical-align: middle;
             }
         }
         a:hover {
@@ -100,6 +100,9 @@ section.bg-section {
 
 .sim-header {
     font-size: 18px;
+    top: 0px;
+    z-index: 9;
+    width: calc(100vw - 220px);
 }
 
 
@@ -122,5 +125,8 @@ section.bg-section {
     }
     .ev-insight {
         bottom: 0px;
+    }
+    .sim-header {
+        width: 100%;
     }
 }
