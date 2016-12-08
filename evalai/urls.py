@@ -21,8 +21,6 @@ from django.conf import settings
 
 urlpatterns = [url(r'^',
                    include('web.urls')),
-               url(r'^docs/',
-                   include('rest_framework_docs.urls')),
                url(r'^',
                    include('django.contrib.auth.urls')),
                url(r'^admin/',
@@ -63,4 +61,8 @@ urlpatterns = [url(r'^',
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
 if settings.DEBUG:
-    urlpatterns += [url(r'^dbschema/', include('django_spaghetti.urls')), ]
+    urlpatterns += [url(r'^dbschema/',
+                    include('django_spaghetti.urls')),
+                    url(r'^docs/',
+                    include('rest_framework_docs.urls')),
+                    ]
