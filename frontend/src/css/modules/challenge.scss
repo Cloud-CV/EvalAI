@@ -1,0 +1,40 @@
+.challenge-title-container {
+    padding-bottom: 0px;
+    ul.inline-list {
+        margin: 0px;
+        li {
+            margin-right: 40px;
+            min-height: 40px;
+        }
+    }
+}
+
+a.active-challenge {
+    color: $dark-black;
+    display: block;
+    height: 40px;
+    box-sizing: border-box;
+    border-bottom: 2px solid $highlight;
+}
+
+.ev-challenge-view {
+    margin-top: 0px;
+    padding-top: 30px;
+    margin-bottom: 20px;
+}
+
+.challenge-container {
+    margin: 0px 10px -30px 10px;
+}
+
+.eval-card {
+    min-height: 160px;
+}
+
+.phase-card {
+    padding-bottom: 1px;
+}
+
+.ev-dark-card {
+    background-color: $light-gray;
+}

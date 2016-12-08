@@ -60,10 +60,10 @@
                         parameters.token = userKey;
                         parameters.callback = {
                             onSuccess: function(response, status) {
-                                $state.go('web.challenge-page');
+                                $state.go('web.challenge-page.overview');
                             },
                             onError: function(error) {
-                                vm.existTeamError = "Please select atleast one team";
+                                vm.existTeamError = "Please select a team";
                             }
                         };
                         utilities.sendRequest(parameters);
@@ -125,7 +125,7 @@
                     vm.team.error = false;
 
                     // navigate to challenge page
-                    $state.go('web.challenge-page');
+                    $state.go('web.challenge-page.overview');
                 },
                 onError: function(error) {
                     vm.team.error = error.team_name[0];

@@ -28,6 +28,10 @@ input.dark-autofill:-webkit-autofill:active {
     -webkit-text-fill-color: #4d4d4d !important;
 }
 
+a {
+    color: $med-gray;
+}
+
 
 /*scrollbar customization*/
 
@@ -52,6 +56,10 @@ input.dark-autofill:-webkit-autofill:active {
 
 .fs-14 {
     font-size: 14px;
+}
+
+.fs-18 {
+    font-size: 18px;
 }
 
 .pointer {
@@ -122,7 +130,7 @@ ul.inline-list {
 }
 
 .padding-sm-lr-header {
-    padding: 0px 20px;
+    padding: 0px 30px;
 }
 
 a.active {
@@ -288,6 +296,10 @@ i.icon {
     margin: 0px;
 }
 
+a {
+    transition: all 0.2s ease-in-out;
+}
+
 a.white-link {
     color: $light-link;
 }
@@ -304,14 +316,32 @@ a.light-link:hover {
     color: $light-link;
 }
 
-a.med-link,
-a.med-link:hover {
+a.med-link {
     color: $med-link;
 }
 
-a.dark-link,
-a.dark-link:hover {
+a.med-link:hover {
     color: $dark-link;
+}
+
+a.med-black-link {
+    color: $med-black;
+}
+
+a.med-black-link:hover {
+    color: $highlight;
+}
+
+a.dark-link {
+    color: $dark-link;
+}
+
+a.dark-link:hover {
+    color: $highlight;
+}
+
+a.text-light-black:hover {
+    color: $highlight;
 }
 
 .align-left {
