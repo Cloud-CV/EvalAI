@@ -108,8 +108,13 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         response_data = {'error': 'ParticipantTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    challenge.participant_teams.add(participant_team)
-    return Response(status=status.HTTP_201_CREATED)
+    if participant_team.challenge_set.filter(id=challenge_pk).exists():
+        response_data = {'message': 'Team already exists', 'challenge_id': int(challenge_pk),
+                         'participant_team_id': int(participant_team_pk)}
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        challenge.participant_teams.add(participant_team)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])

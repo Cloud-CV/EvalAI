@@ -270,6 +270,15 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
     def test_map_challenge_and_participant_team_together(self):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # to check when the api is hit again
+        expected = {
+            'message': 'Team already exists',
+            'challenge_id': self.challenge.pk,
+            'participant_team_id': self.participant_team.pk
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_for_mapping_with_participant_team_does_not_exist(self):
         self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
