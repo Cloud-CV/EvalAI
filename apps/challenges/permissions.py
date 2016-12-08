@@ -9,7 +9,7 @@ class IsChallengeCreator(permissions.BasePermission):
     Permission class for edit/delete a challenge.
     """
     message = "Sorry, you are not allowed to perform this operation!"
-    
+
     def has_permission(self, request, view):
 
         if request.method in permissions.SAFE_METHODS:
