@@ -102,8 +102,8 @@
             parent: "web",
             url: "/challenge-page",
             templateUrl: baseUrl + "/web/challenge-page.html",
-            // controller: 'ChallengeCtrl',
-            // controllerAs: 'challenge',
+            controller: 'ChallengeCtrl',
+            controllerAs: 'challenge',
             redirectTo: "web.challenge-page.overview",
             authenticate: true
         }
@@ -133,7 +133,6 @@
             authenticate: true
         }
 
-
         var profile = {
             name: "web.profile",
             parent: "web",
@@ -142,6 +141,17 @@
             title: "Profile",
             controller: 'ProfileCtrl',
             controllerAs: 'profile',
+            authenticate: true
+        }
+
+        var host_challenge = {
+            name: "web.host-challenge",
+            parent: "web",
+            url: "/host-challenge",
+            templateUrl: baseUrl + "/web/host-challenge.html",
+            title: 'Host Competition',
+            // controller: 'HostCtrl',
+            // controllerAs: 'host',
             authenticate: true
         }
 
@@ -174,6 +184,8 @@
         $stateProvider.state(overview);
         $stateProvider.state(evaluation);
         $stateProvider.state(phases);
+
+        $stateProvider.state(host_challenge);
 
 
         $stateProvider.state(profile);

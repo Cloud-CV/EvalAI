@@ -44,30 +44,109 @@
     }
 
 })();
+
+// loader directive
+
+(function() {
+
+    'use strict'
+    angular
+        .module('evalai')
+        .directive('evalLoader', evalLoader);
+
+    function evalLoader() {
+
+        var directive = {
+            link: link,
+            templateUrl: 'dist/views/web/partials/loader.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+
+        function link(scope, element, attrs) {
+
+            function evalLoader() {
+                var self = this;
+                this.init();
+            };
+
+            evalLoader.prototype = {
+                init: function() {
+
+
+                }
+            };
+
+            var evalLoaderObj = new evalLoader();
+        }
+    }
+
+})();
+
+// simple loader directive
+
+(function() {
+
+    'use strict'
+    angular
+        .module('evalai')
+        .directive('simLoader', simLoader);
+
+    function simLoader() {
+
+        var directive = {
+            link: link,
+            templateUrl: 'dist/views/web/partials/sim-loader.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+
+        function link(scope, element, attrs) {
+
+            function loaderComp() {
+                var self = this;
+                this.init();
+            };
+
+            loaderComp.prototype = {
+                init: function() {
+                    angular.element("#sim-loader").hide();
+
+                }
+            };
+
+            var loaderCompObj = new loaderComp();
+        }
+    }
+
+})();
+
 //Sidebar in Dashboard      
-       
- (function() {     
-       
-     'use strict'      
-       
-     // dynamic header directive       
-     angular       
-         .module('evalai')     
-         .directive('sideBar', sideBar);       
-       
-     function sideBar() {      
-         var directive = {     
-             link:function(){      
-                 //do nothing      
-             },        
-             templateUrl: 'dist/views/web/partials/sidebar.html',      
-             transclude: true,     
-             restrict: 'EA'        
-         };        
-         return directive;     
-     }     
-           
- })();
+
+(function() {
+
+    'use strict'
+
+    // dynamic header directive       
+    angular
+        .module('evalai')
+        .directive('sideBar', sideBar);
+
+    function sideBar() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/partials/sidebar.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+
+})();
 
 
 //Dashboard header
@@ -113,7 +192,7 @@
             var headerObj = new headerComp();
         }
     }
-    
+
 })();
 
 // scroll directive
