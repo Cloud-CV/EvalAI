@@ -1,14 +1,26 @@
 /*main container style*/
+
 .web-container {
     width: calc(100vw - 220px);
     float: right;
-    padding-top:70px;
-}
-#sidenav-overlay{
-    z-index:1;
+    padding-top: 70px;
 }
 
+#sidenav-overlay {
+    z-index: 1;
+}
+
+.light-dark-container {
+    .loader-title {
+        color: $med-gray;
+        font-size: 18px;
+        font-weight: 500;
+    }
+}
+
+
 /*media queries*/
+
 @media only screen and (max-width: $med-screen) {
     .web-container {
         width: 100%;

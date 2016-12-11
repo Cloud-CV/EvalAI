@@ -8,10 +8,10 @@
     angular
         .module('evalai')
         .service('utilities', utilities);
-        
-    utilities.$inject = ['$http', 'EnvironmentConfig'];
 
-    function utilities($http, EnvironmentConfig) {
+    utilities.$inject = ['$http', 'EnvironmentConfig', '$rootScope'];
+
+    function utilities($http, EnvironmentConfig, $rootScope) {
 
         // factory for API calls
         this.sendRequest = function(parameters, header) {
@@ -94,6 +94,16 @@
 
         this.resetStorage = function() {
             localStorage.clear();
+        };
+
+        this.showLoader = function() {
+            angular.element("#sim-loader").show();
+            angular.element(".web-container").addClass('low-screen');
+        };
+
+        this.hideLoader = function() {
+            angular.element("#sim-loader").fadeOut();
+            angular.element(".web-container").removeClass('low-screen');
         };
     }
 

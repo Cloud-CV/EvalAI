@@ -7,13 +7,15 @@
         .module('evalai')
         .controller('TeamsCtrl', TeamsCtrl);
 
-    TeamsCtrl.$inject = ['utilities', '$state', '$http'];
+    TeamsCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
 
-    function TeamsCtrl(utilities, $state, $http) {
+    function TeamsCtrl(utilities, $state, $http, $rootScope) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
         var challengePk = 1;
+
+        utilities.showLoader();
 
         // default variables/objects
         vm.team = {};
@@ -52,8 +54,32 @@
                         vm.currentPage = response.next.split('page=')[1] - 1;
                     }
 
+
                     // select team from existing list
                     vm.selectExistTeam = function() {
+
+                        // loader for exisiting teams
+                        vm.isExistLoader = true;
+                        vm.loaderTitle = '';
+                        vm.loginContainer = angular.element('.exist-team-card');
+
+                        // show loader
+                        vm.startLoader = function(msg) {
+                            vm.isExistLoader = true;
+                            vm.loaderTitle = msg;
+                            vm.loginContainer.addClass('low-screen');
+                        }
+
+                        // stop loader
+                        vm.stopLoader = function() {
+                            vm.isExistLoader = false;
+                            vm.loaderTitle = '';
+                            vm.loginContainer.removeClass('low-screen');
+                        }
+
+                        vm.startLoader("Loading Teams");
+                        // loader end
+
                         var parameters = {};
                         parameters.url = 'challenges/challenge/' + challengePk + '/participant_team/' + vm.teamId;
                         parameters.method = 'POST';
@@ -61,9 +87,11 @@
                         parameters.callback = {
                             onSuccess: function(response, status) {
                                 $state.go('web.challenge-page.overview');
+                                utilities.stopLoader();
                             },
                             onError: function(error) {
                                 vm.existTeamError = "Please select a team";
+                                utilities.hideLoader();
                             }
                         };
                         utilities.sendRequest(parameters);
@@ -71,7 +99,26 @@
 
                     // to load data with pagination
                     vm.load = function(url) {
+                        // loader for exisiting teams
+                        vm.isExistLoader = true;
+                        vm.loaderTitle = '';
+                        vm.loginContainer = angular.element('.exist-team-card');
 
+                        // show loader
+                        vm.startLoader = function(msg) {
+                            vm.isExistLoader = true;
+                            vm.loaderTitle = msg;
+                            vm.loginContainer.addClass('low-screen');
+                        }
+
+                        // stop loader
+                        vm.stopLoader = function() {
+                            vm.isExistLoader = false;
+                            vm.loaderTitle = '';
+                            vm.loginContainer.removeClass('low-screen');
+                        }
+
+                        vm.startLoader("Loading Teams");
                         if (url != null) {
 
                             //store the header data in a variable 
@@ -81,7 +128,7 @@
 
                             //Add headers with in your request
                             $http.get(url, { headers: headers }).success(function(response) {
-                            	// reinitialized data
+                                // reinitialized data
                                 vm.existTeam = response;
 
                                 // condition for pagination
@@ -98,14 +145,18 @@
                                 } else {
                                     vm.isPrev = '';
                                 }
+                                vm.stopLoader();
                             })
                         }
                     }
+
                 }
+                utilities.hideLoader();
             },
             onError: function(error) {
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
+                utilities.hideLoader();
             }
         };
 
@@ -113,6 +164,26 @@
 
         // function to create new team
         vm.createNewTeam = function() {
+            vm.isLoader = true;
+            vm.loaderTitle = '';
+            vm.loginContainer = angular.element('.new-team-card');
+
+            // show loader
+            vm.startLoader = function(msg) {
+                vm.isLoader = true;
+                vm.loaderTitle = msg;
+                vm.loginContainer.addClass('low-screen');
+            }
+
+            // stop loader
+            vm.stopLoader = function() {
+                vm.isLoader = false;
+                vm.loaderTitle = '';
+                vm.loginContainer.removeClass('low-screen');
+            }
+
+            vm.startLoader("Loading Teams");
+
             var parameters = {};
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
@@ -126,8 +197,10 @@
 
                     // navigate to challenge page
                     $state.go('web.challenge-page.overview');
+                    vm.stopLoader();
                 },
                 onError: function(error) {
+                    vm.stopLoader();
                     vm.team.error = error.team_name[0];
                 }
             };

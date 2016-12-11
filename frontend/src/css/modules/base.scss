@@ -227,6 +227,7 @@ nav {
 /*card styles*/
 
 .ev-card-panel {
+    position: relative;
     display: block;
     background-color: #fff;
     width: 100%;
@@ -544,6 +545,23 @@ input {
     top: 0;
     z-index: 5;
     background-color: transparent;
+}
+
+.card-loader-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    background-color: transparent;
+    .loader-title {
+        margin-top: 14vh;
+    }
+    .loader {
+        margin-top: 20%;
+        top: 0;
+    }
 }
 
 .loader {

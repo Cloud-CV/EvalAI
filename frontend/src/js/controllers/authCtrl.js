@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state'];
+    AuthCtrl.$inject = ['utilities', '$state', '$rootScope'];
 
-    function AuthCtrl(utilities, $state) {
+    function AuthCtrl(utilities, $state, $rootScope) {
         var vm = this;
 
         vm.isRem = false;
@@ -24,20 +24,20 @@
         vm.wrnMsg = {};
         vm.isValid = {};
         vm.confirmMsg = '';
-        vm.loaderTitle = '';
+        $rootScope.loaderTitle = '';
         vm.loginContainer = angular.element('.auth-container');
 
         // show loader
         vm.startLoader = function(msg) {
-            vm.isLoader = true;
-            vm.loaderTitle = msg;
+            $rootScope.isLoader = true;
+            $rootScope.loaderTitle = msg;
             vm.loginContainer.addClass('low-screen');
         }
 
         // stop loader
         vm.stopLoader = function() {
-            vm.isLoader = false;
-            vm.loaderTitle = '';
+            $rootScope.isLoader = false;
+            $rootScope.loaderTitle = '';
             vm.loginContainer.removeClass('low-screen');
         }
 
@@ -69,6 +69,7 @@
                         vm.stopLoader();
                     } else {
                         alert("Network Problem");
+                        vm.stopLoader();
                     }
                 },
                 onError: function(error, status) {
@@ -94,6 +95,7 @@
                                 vm.wrnMsg.username = value[0];
                             }
                         })
+                        vm.stopLoader();
                     }
                 }
             };
@@ -129,10 +131,10 @@
                         token = response.key;
 
                         // setting timout for token (7days)
-                        var timeNow  = (new Date()).getTime();
+                        var timeNow = (new Date()).getTime();
                         utilities.storeData('tokenTime', timeNow);
                         utilities.isAuthenticated();
-                        
+
                         $state.go('web.dashboard');
 
                         vm.stopLoader();
@@ -160,7 +162,9 @@
                                 vm.wrnMsg.username = value[0];
                             }
                         })
+                        vm.stopLoader();
                     }
+
                 }
             };
 

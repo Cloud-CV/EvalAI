@@ -7,15 +7,34 @@
         .module('evalai')
         .controller('WebCtrl', WebCtrl);
 
-    WebCtrl.$inject = ['utilities', '$state', '$stateParams'];
+    WebCtrl.$inject = ['utilities', '$state', '$stateParams', '$rootScope'];
 
-    function WebCtrl(utilities, $state, $stateParams) {
+    function WebCtrl(utilities, $state, $stateParams, $rootScope) {
         var vm = this;
 
         vm.user = {};
         vm.countLeft = 0;
         vm.compPerc = 0;
         var count = 0;
+
+        utilities.hideLoader();
+
+        // $rootScope.loaderTitle = '';
+        // vm.loginContainer = angular.element('.web-container');
+
+        // // show loader
+        // vm.startLoader = function(msg) {
+        //     $rootScope.isLoader = true;
+        //     $rootScope.loaderTitle = msg;
+        //     vm.loginContainer.addClass('low-screen');
+        // }
+
+        // // stop loader
+        // vm.stopLoader = function() {
+        //     $rootScope.isLoader = false;
+        //     $rootScope.loaderTitle = '';
+        //     vm.loginContainer.removeClass('low-screen');
+        // }
 
         // added sidebar box-shadow on scroll
         angular.element().find(".side-intro").addClass("z-depth-3");
@@ -52,7 +71,7 @@
         };
 
         utilities.sendRequest(parameters);
-	    
+
     }
 
 })();
