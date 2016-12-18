@@ -414,3 +414,78 @@ class GetPastChallengesTest(BaseAPITestClass):
         response = self.client.get(self.url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['results'], expected)
+
+
+class GetPresentChallengesTest(BaseAPITestClass):
+    url = reverse_lazy('challenges:get_present_challenges')
+
+    def setUp(self):
+        super(GetPresentChallengesTest, self).setUp()
+
+        # Present challenge
+        self.challenge2 = Challenge.objects.create(
+            title='Test Challenge 2',
+            description='Description for test challenge 2',
+            terms_and_conditions='Terms and conditions for test challenge 2',
+            submission_guidelines='Submission guidelines for test challenge 2',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        # Past Challenge challenge
+        self.challenge3 = Challenge.objects.create(
+            title='Test Challenge 3',
+            description='Description for test challenge 3',
+            terms_and_conditions='Terms and conditions for test challenge 3',
+            submission_guidelines='Submission guidelines for test challenge 3',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() - timedelta(days=1),
+        )
+
+        # Future challenge
+        self.challenge4 = Challenge.objects.create(
+            title='Test Challenge 4',
+            description='Description for test challenge 4',
+            terms_and_conditions='Terms and conditions for test challenge 4',
+            submission_guidelines='Submission guidelines for test challenge 4',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() + timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+    def test_get_present_challenges(self):
+        expected = [
+            {
+                "id": self.challenge2.pk,
+                "title": self.challenge2.title,
+                "description": self.challenge2.description,
+                "terms_and_conditions": self.challenge2.terms_and_conditions,
+                "submission_guidelines": self.challenge2.submission_guidelines,
+                "evaluation_details": self.challenge2.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge2.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge2.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge2.creator.pk,
+                    "team_name": self.challenge2.creator.team_name,
+                    "created_by": self.challenge2.creator.created_by.pk,
+                },
+                "published": self.challenge3.published,
+                "enable_forum": self.challenge3.enable_forum,
+                "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+            }
+        ]
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'], expected)

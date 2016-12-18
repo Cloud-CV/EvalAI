@@ -147,3 +147,17 @@ def get_past_challenges(request):
     serializer = ChallengeSerializer(result_page, many=True)
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
+
+
+@api_view(['GET'])
+def get_present_challenges(request):
+    """
+    Returns the list of all current challenges
+    """
+    challenge = Challenge.objects.filter(start_date__lt=timezone.now(), end_date__gt=timezone.now(), published=True)
+    paginator = PageNumberPagination()
+    paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+    result_page = paginator.paginate_queryset(challenge, request)
+    serializer = ChallengeSerializer(result_page, many=True)
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)

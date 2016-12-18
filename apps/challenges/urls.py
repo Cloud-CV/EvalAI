@@ -14,4 +14,6 @@ urlpatterns = [
         views.disable_challenge, name='disable_challenge'),
     url(r'get_past_challenges$', views.get_past_challenges,
         name='get_past_challenges'),
+    url(r'get_present_challenges$', views.get_present_challenges,
+        name='get_present_challenges'),
 ]
