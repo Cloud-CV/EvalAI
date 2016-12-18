@@ -341,20 +341,22 @@ class DisableChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class GetPastChallengesTest(BaseAPITestClass):
-    url = reverse_lazy('challenges:get_past_challenges')
+class GetAllChallengesTest(BaseAPITestClass):
+    url = reverse_lazy('challenges:get_all_challenges')
 
     def setUp(self):
-        super(GetPastChallengesTest, self).setUp()
+        super(GetAllChallengesTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_all_challenges',
+                                kwargs={'challenge_time': "PAST"})
 
-        # Present challenge and hence should not be displayed
+        # Present challenge
         self.challenge2 = Challenge.objects.create(
             title='Test Challenge 2',
             description='Description for test challenge 2',
             terms_and_conditions='Terms and conditions for test challenge 2',
             submission_guidelines='Submission guidelines for test challenge 2',
             creator=self.challenge_host_team,
-            published=False,
+            published=True,
             enable_forum=True,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
@@ -415,56 +417,10 @@ class GetPastChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['results'], expected)
 
-
-class GetPresentChallengesTest(BaseAPITestClass):
-    url = reverse_lazy('challenges:get_present_challenges')
-
-    def setUp(self):
-        super(GetPresentChallengesTest, self).setUp()
-
-        # Present challenge
-        self.challenge2 = Challenge.objects.create(
-            title='Test Challenge 2',
-            description='Description for test challenge 2',
-            terms_and_conditions='Terms and conditions for test challenge 2',
-            submission_guidelines='Submission guidelines for test challenge 2',
-            creator=self.challenge_host_team,
-            published=True,
-            enable_forum=True,
-            anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
-        )
-
-        # Past Challenge challenge
-        self.challenge3 = Challenge.objects.create(
-            title='Test Challenge 3',
-            description='Description for test challenge 3',
-            terms_and_conditions='Terms and conditions for test challenge 3',
-            submission_guidelines='Submission guidelines for test challenge 3',
-            creator=self.challenge_host_team,
-            published=True,
-            enable_forum=True,
-            anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() - timedelta(days=1),
-        )
-
-        # Future challenge
-        self.challenge4 = Challenge.objects.create(
-            title='Test Challenge 4',
-            description='Description for test challenge 4',
-            terms_and_conditions='Terms and conditions for test challenge 4',
-            submission_guidelines='Submission guidelines for test challenge 4',
-            creator=self.challenge_host_team,
-            published=True,
-            enable_forum=True,
-            anonymous_leaderboard=False,
-            start_date=timezone.now() + timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
-        )
-
     def test_get_present_challenges(self):
+        self.url = reverse_lazy('challenges:get_all_challenges',
+                                kwargs={'challenge_time': "PRESENT"})
+
         expected = [
             {
                 "id": self.challenge2.pk,
@@ -481,9 +437,38 @@ class GetPresentChallengesTest(BaseAPITestClass):
                     "team_name": self.challenge2.creator.team_name,
                     "created_by": self.challenge2.creator.created_by.pk,
                 },
-                "published": self.challenge3.published,
-                "enable_forum": self.challenge3.enable_forum,
-                "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+                "published": self.challenge2.published,
+                "enable_forum": self.challenge2.enable_forum,
+                "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+            }
+        ]
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'], expected)
+
+    def test_get_future_challenges(self):
+        self.url = reverse_lazy('challenges:get_all_challenges',
+                                kwargs={'challenge_time': "FUTURE"})
+
+        expected = [
+            {
+                "id": self.challenge4.pk,
+                "title": self.challenge4.title,
+                "description": self.challenge4.description,
+                "terms_and_conditions": self.challenge4.terms_and_conditions,
+                "submission_guidelines": self.challenge4.submission_guidelines,
+                "evaluation_details": self.challenge4.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge4.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge4.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge4.creator.pk,
+                    "team_name": self.challenge4.creator.team_name,
+                    "created_by": self.challenge4.creator.created_by.pk,
+                },
+                "published": self.challenge4.published,
+                "enable_forum": self.challenge4.enable_forum,
+                "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
