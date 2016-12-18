@@ -207,13 +207,13 @@
     function runFunc($rootScope, $state, utilities, $window) {
 
         // setting timout for token (7days)
-        var getTokenTime = utilities.getData('tokenTime');
-        var timeNow = (new Date()).getTime();
+        // var getTokenTime = utilities.getData('tokenTime');
+        // var timeNow = (new Date()).getTime();
         // .getTime() returns milliseconds, so for 7 days 1000 * 60 * 60 * 24 * 7 = 7 days
-        var tokenExpTime = 1000 * 60 * 60 * 24 * 7;
-        if ((timeNow - getTokenTime) > tokenExpTime) {
-            utilities.resetStorage();
-        }
+        // var tokenExpTime = 1000 * 60 * 60 * 24 * 7;
+        // if ((timeNow - getTokenTime) > tokenExpTime) {
+        //     utilities.resetStorage();
+        // }
 
         $rootScope.isAuth = false;
         // check for valid user
@@ -259,7 +259,7 @@
             parameters.callback = {
                 onSuccess: function(response, status) {
                     utilities.resetStorage();
-                    $state.go("home");
+                    $state.go("auth.login");
                     $rootScope.isAuth = false;
                 },
                 onError: function() {

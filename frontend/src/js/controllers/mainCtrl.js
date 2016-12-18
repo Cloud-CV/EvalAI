@@ -31,7 +31,9 @@
                     }
                 },
                 onError: function() {
-
+                    if (status == 401) {
+                        $rootScope.logout();
+                    }
                 }
             };
 
