@@ -1,17 +1,18 @@
+import json
+
+from datetime import timedelta
+
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
-from datetime import timedelta
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHostTeam
-
-import json
 
 
 class BaseAPITestClass(APITestCase):
@@ -412,5 +413,4 @@ class GetPastChallengesTest(BaseAPITestClass):
         ]
         response = self.client.get(self.url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertJSONEqual(json.dumps(
-            response.data['results']), json.dumps(expected))
+        self.assertEqual(response.data['results'], expected)
