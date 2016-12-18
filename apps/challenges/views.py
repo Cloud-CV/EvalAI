@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.shortcuts import render
+from django.utils import timezone
 
 from rest_framework import permissions, status
 from rest_framework.authentication import (TokenAuthentication,)
@@ -132,3 +133,17 @@ def disable_challenge(request, pk):
         response_data = {
             'error': 'Sorry, you do not have permission to disable this challenge'}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['GET'])
+def get_past_challenges(request):
+    """
+    Returns the list of all past challenges
+    """
+    challenge = Challenge.objects.filter(end_date__lt=timezone.now(), published=True)
+    paginator = PageNumberPagination()
+    paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+    result_page = paginator.paginate_queryset(challenge, request)
+    serializer = ChallengeSerializer(result_page, many=True)
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)

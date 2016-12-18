@@ -1,5 +1,10 @@
+import json
+
+from datetime import timedelta
+
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -334,3 +339,78 @@ class DisableChallengeTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GetPastChallengesTest(BaseAPITestClass):
+    url = reverse_lazy('challenges:get_past_challenges')
+
+    def setUp(self):
+        super(GetPastChallengesTest, self).setUp()
+
+        # Present challenge and hence should not be displayed
+        self.challenge2 = Challenge.objects.create(
+            title='Test Challenge 2',
+            description='Description for test challenge 2',
+            terms_and_conditions='Terms and conditions for test challenge 2',
+            submission_guidelines='Submission guidelines for test challenge 2',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        # Past Challenge challenge
+        self.challenge3 = Challenge.objects.create(
+            title='Test Challenge 3',
+            description='Description for test challenge 3',
+            terms_and_conditions='Terms and conditions for test challenge 3',
+            submission_guidelines='Submission guidelines for test challenge 3',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() - timedelta(days=1),
+        )
+
+        # Future challenge
+        self.challenge4 = Challenge.objects.create(
+            title='Test Challenge 4',
+            description='Description for test challenge 4',
+            terms_and_conditions='Terms and conditions for test challenge 4',
+            submission_guidelines='Submission guidelines for test challenge 4',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() + timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+    def test_get_past_challenges(self):
+        expected = [
+            {
+                "id": self.challenge3.pk,
+                "title": self.challenge3.title,
+                "description": self.challenge3.description,
+                "terms_and_conditions": self.challenge3.terms_and_conditions,
+                "submission_guidelines": self.challenge3.submission_guidelines,
+                "evaluation_details": self.challenge3.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge3.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge3.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge3.creator.pk,
+                    "team_name": self.challenge3.creator.team_name,
+                    "created_by": self.challenge3.creator.created_by.pk,
+                },
+                "published": self.challenge3.published,
+                "enable_forum": self.challenge3.enable_forum,
+                "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+            }
+        ]
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'], expected)
