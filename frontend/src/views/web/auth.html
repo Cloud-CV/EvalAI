@@ -16,8 +16,8 @@
             <div class="reg-alert col s12 m4 offset-m4 align-left text-highlight w-300">{{auth.regMsg}}</div>
             <div class="col s12 m4 offset-m4 left">
                 <ul class="left">
-                    <li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth">LogIn</a></li>
-                    <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth">SignUp</a></li>
+                    <li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetFrom()">LogIn</a></li>
+                    <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetFrom()">SignUp</a></li>
                 </ul>
             </div>
             <!-- render login/signup form here -->
