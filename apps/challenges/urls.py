@@ -12,8 +12,6 @@ urlpatterns = [
         views.add_participant_team_to_challenge, name='add_participant_team_to_challenge'),
     url(r'challenge/(?P<pk>[0-9]+)/disable',
         views.disable_challenge, name='disable_challenge'),
-    url(r'get_past_challenges$', views.get_past_challenges,
-        name='get_past_challenges'),
-    url(r'get_present_challenges$', views.get_present_challenges,
-        name='get_present_challenges'),
+    url(r'(?P<challenge_time>[\w.@+-]+)$', views.get_all_challenges,
+        name='get_all_challenges'),
 ]

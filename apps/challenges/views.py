@@ -24,7 +24,8 @@ from .serializers import ChallengeSerializer
 @authentication_classes((TokenAuthentication,))
 def challenge_list(request, challenge_host_team_pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(
+            pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -53,7 +54,8 @@ def challenge_list(request, challenge_host_team_pk):
 @authentication_classes((TokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(
+            pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -73,7 +75,8 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         if request.method == 'PATCH':
             serializer = ChallengeSerializer(challenge,
                                              data=request.data,
-                                             context={'challenge_host_team': challenge_host_team},
+                                             context={
+                                                 'challenge_host_team': challenge_host_team},
                                              partial=True)
         else:
             serializer = ChallengeSerializer(challenge,
@@ -136,28 +139,26 @@ def disable_challenge(request, pk):
 
 
 @api_view(['GET'])
-def get_past_challenges(request):
+def get_all_challenges(request, challenge_time):
     """
-    Returns the list of all past challenges
+    Returns the list of all challenges
     """
-    challenge = Challenge.objects.filter(end_date__lt=timezone.now(), published=True)
-    paginator = PageNumberPagination()
-    paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-    result_page = paginator.paginate_queryset(challenge, request)
-    serializer = ChallengeSerializer(result_page, many=True)
-    response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
-
-
-@api_view(['GET'])
-def get_present_challenges(request):
-    """
-    Returns the list of all current challenges
-    """
-    challenge = Challenge.objects.filter(start_date__lt=timezone.now(), end_date__gt=timezone.now(), published=True)
-    paginator = PageNumberPagination()
-    paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-    result_page = paginator.paginate_queryset(challenge, request)
-    serializer = ChallengeSerializer(result_page, many=True)
-    response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
+    try:
+        if challenge_time.lower() == "past":
+            challenge = Challenge.objects.filter(
+                end_date__lt=timezone.now(), published=True)
+        elif challenge_time.lower() == "present":
+            challenge = Challenge.objects.filter(
+                start_date__lt=timezone.now(), end_date__gt=timezone.now(), published=True)
+        elif challenge_time.lower() == "future":
+            challenge = Challenge.objects.filter(
+                start_date__gt=timezone.now(), published=True)
+        paginator = PageNumberPagination()
+        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+        result_page = paginator.paginate_queryset(challenge, request)
+        serializer = ChallengeSerializer(result_page, many=True)
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+    except:
+        response_data = {'error': 'Wrong url pattern!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
