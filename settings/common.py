@@ -146,7 +146,7 @@ REST_FRAMEWORK = {
         'rest_framework.pagination.LimitOffsetPagination'),
     'PAGE_SIZE': 10,
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_expiring_authtoken.authentication.ExpiringTokenAuthentication',
