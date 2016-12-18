@@ -13,11 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+
 from django.conf.urls import url, include
 from django.contrib import admin
-from accounts.views import ConfirmEmailView
 from django.views.generic.base import TemplateView
 from django.conf import settings
+
+from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
+
+from accounts.views import ConfirmEmailView
 
 urlpatterns = [url(r'^',
                    include('web.urls')),
@@ -25,6 +29,8 @@ urlpatterns = [url(r'^',
                    include('django.contrib.auth.urls')),
                url(r'^admin/',
                    admin.site.urls),
+               url(r'^api/auth/login',
+                   obtain_expiring_auth_token),
                url(r'^api/auth/',
                    include('rest_auth.urls')),
                url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',   # noqa

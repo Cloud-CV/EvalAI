@@ -10,9 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
+import datetime
 import logging
 import os
 import sys
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APPS_DIR = os.path.join(BASE_DIR, 'apps')
@@ -64,7 +66,6 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_docs',
     'rest_framework_expiring_authtoken',
-
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -148,7 +149,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_expiring_authtoken.authentication.ExpiringTokenAuthentication',
     ],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
@@ -156,8 +157,10 @@ REST_FRAMEWORK = {
 # ALLAUTH SETTINGS
 ACCOUNT_EMAIL_REQUIRED = True
 
-
 CORS_ORIGIN_ALLOW_ALL = True
+
+# REST Framework Expiring Tokens Configuration
+EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=7)
 
 # Logging
 LOGGING = {
