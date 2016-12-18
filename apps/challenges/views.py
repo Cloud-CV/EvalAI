@@ -24,8 +24,7 @@ from .serializers import ChallengeSerializer
 @authentication_classes((TokenAuthentication,))
 def challenge_list(request, challenge_host_team_pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(
-            pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -54,8 +53,7 @@ def challenge_list(request, challenge_host_team_pk):
 @authentication_classes((TokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(
-            pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -75,8 +73,7 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         if request.method == 'PATCH':
             serializer = ChallengeSerializer(challenge,
                                              data=request.data,
-                                             context={
-                                                 'challenge_host_team': challenge_host_team},
+                                             context={'challenge_host_team': challenge_host_team},
                                              partial=True)
         else:
             serializer = ChallengeSerializer(challenge,
@@ -144,15 +141,18 @@ def get_all_challenges(request, challenge_time):
     Returns the list of all challenges
     """
     try:
+        q_params = {'published': True}
         if challenge_time.lower() == "past":
-            challenge = Challenge.objects.filter(
-                end_date__lt=timezone.now(), published=True)
+            q_params['end_date__lt'] = timezone.now()
+
         elif challenge_time.lower() == "present":
-            challenge = Challenge.objects.filter(
-                start_date__lt=timezone.now(), end_date__gt=timezone.now(), published=True)
+            q_params['start_date__lt'] = timezone.now()
+            q_params['end_date__gt'] = timezone.now()
+
         elif challenge_time.lower() == "future":
-            challenge = Challenge.objects.filter(
-                start_date__gt=timezone.now(), published=True)
+            q_params['start_date__gt'] = timezone.now()
+
+        challenge = Challenge.objects.filter(**q_params)
         paginator = PageNumberPagination()
         paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
         result_page = paginator.paginate_queryset(challenge, request)
