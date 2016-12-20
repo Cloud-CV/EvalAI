@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('MainCtrl', MainCtrl);
 
-    MainCtrl.$inject = ['utilities'];
+    MainCtrl.$inject = ['utilities', '$rootScope'];
 
-    function MainCtrl(utilities) {
+    function MainCtrl(utilities, $rootScope) {
 
         var vm = this;
 
@@ -31,7 +31,9 @@
                     }
                 },
                 onError: function() {
-
+                    if (status == 401) {
+                        $rootScope.logout();
+                    }
                 }
             };
 

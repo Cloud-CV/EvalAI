@@ -10,7 +10,7 @@
     </div>
     <!-- password -->
     <div class="input-field align-left">
-        <input id="password" type="password" class="validate" ng-model="auth.getUser.password" >
+        <input id="password" type="password" class="validate" ng-model="auth.getUser.password" autocomplete="new-password">
         <span class="form-icon"><i class="fa fa-key"></i></span>
         <label for="password" >Password (min 8 characters) *</label>
         <div class="wrn-msg text-highlight" ng-show="auth.isValid.password">{{auth.wrnMsg.password}}</div>

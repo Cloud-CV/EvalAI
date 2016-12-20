@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state', '$rootScope'];
+    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
 
-    function AuthCtrl(utilities, $state, $rootScope) {
+    function AuthCtrl(utilities, $state, $rootScope, $timeout) {
         var vm = this;
 
         vm.isRem = false;
@@ -17,6 +17,7 @@
         vm.regUser = {};
         // useDetails for login
         vm.getUser = {};
+
 
         // default parameters
         vm.isLoader = false;
@@ -39,6 +40,13 @@
             $rootScope.isLoader = false;
             $rootScope.loaderTitle = '';
             vm.loginContainer.removeClass('low-screen');
+        }
+
+        vm.resetFrom = function() {
+            // getUser for signup
+            vm.regUser = {};
+            // useDetails for login
+            vm.getUser = {};
         }
 
         // getting signup
@@ -126,13 +134,13 @@
                         vm.isValid = {};
                         vm.confirmMsg = ''
                         vm.regMsg = "";
-                        utilities.storeData('userKey', response.key);
+                        utilities.storeData('userKey', response.token);
                         utilities.storeData('isRem', vm.isRem);
                         token = response.key;
 
                         // setting timout for token (7days)
-                        var timeNow = (new Date()).getTime();
-                        utilities.storeData('tokenTime', timeNow);
+                        // var timeNow = (new Date()).getTime();
+                        // utilities.storeData('tokenTime', timeNow);
                         utilities.isAuthenticated();
 
                         $state.go('web.dashboard');
