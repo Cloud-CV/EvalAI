@@ -2,12 +2,12 @@ from django.conf import settings
 from django.shortcuts import render
 
 from rest_framework import permissions, status
-from rest_framework.authentication import (TokenAuthentication,)
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
 
 from accounts.permissions import HasVerifiedEmail
 
@@ -19,7 +19,7 @@ from .serializers import (ChallengeHostSerializer,
 
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_team_list(request):
 
     if request.method == 'GET':
@@ -43,7 +43,7 @@ def challenge_host_team_list(request):
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_team_detail(request, pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=pk)
@@ -81,7 +81,7 @@ def challenge_host_team_detail(request, pk):
 
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_list(request, challenge_host_team_pk):
 
     try:
@@ -121,7 +121,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_detail(request, challenge_host_team_pk, pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
@@ -166,7 +166,7 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
 
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def create_challenge_host_team(request):
 
     serializer = ChallengeHostTeamSerializer(data=request.data,
