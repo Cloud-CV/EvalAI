@@ -166,6 +166,17 @@
             authenticate: true
         }
 
+        var change_password = {
+            name: "web.change-password",
+            parent: "web",
+            url: "/change-password",
+            templateUrl: baseUrl + "/web/change-password.html",
+            title: "Change Password",
+            controller: 'ChangePwdCtrl',
+            controllerAs: 'changepwd',
+            authenticate: true
+        }
+
         // call all states here
         $stateProvider.state(home);
 
@@ -190,6 +201,7 @@
 
         $stateProvider.state(profile);
         $stateProvider.state(permission_denied);
+        $stateProvider.state(change_password);
 
         $urlRouterProvider.otherwise("/");
 
