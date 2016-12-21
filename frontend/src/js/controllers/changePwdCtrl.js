@@ -12,6 +12,8 @@
     function ChangePwdCtrl(utilities, $state, $http, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
+        vm.wrnMsg = {};
+        vm.isValid = {};        
 
         // function to change password
         vm.changePassword = function() {
@@ -34,10 +36,26 @@
                     // navigate to challenge page
                     // $state.go('web.challenge-page.overview');
                 },
-                onError: function(error) {
-                    console.log("ERROR Occured");
-                    console.log(error);
+                onError: function(error, status) {
                     vm.user.error = "Failed";
+                    if (status == 400) {
+                        console.log("ERROR Occured");
+                        console.log(error);
+                        angular.forEach(error, function(value, key) {
+                            if (key == 'old_password') {
+                                vm.isValid.old_password = true;
+                                vm.wrnMsg.old_password = value[0];
+                            }
+                            if (key == 'new_password1') {
+                                vm.isValid.new_password1 = true;
+                                vm.wrnMsg.new_password1 = value[0];
+                            }
+                            if (key == 'new_password2' || key == 'non_field_errors') {
+                                vm.isValid.new_password2 = true;
+                                vm.wrnMsg.new_password2 = value[0];
+                            }
+                        })
+                    }
                 }
             };
 
