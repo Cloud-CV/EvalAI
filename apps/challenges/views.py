@@ -3,12 +3,12 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from rest_framework import permissions, status
-from rest_framework.authentication import (TokenAuthentication,)
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
 
 from accounts.permissions import HasVerifiedEmail
 from hosts.models import ChallengeHostTeam
@@ -21,7 +21,7 @@ from .serializers import ChallengeSerializer
 
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def challenge_list(request, challenge_host_team_pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
@@ -50,7 +50,7 @@ def challenge_list(request, challenge_host_team_pk):
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
@@ -93,7 +93,7 @@ def challenge_detail(request, challenge_host_team_pk, pk):
 
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk):
 
     try:
@@ -114,7 +114,7 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
 
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def disable_challenge(request, pk):
 
     try:
