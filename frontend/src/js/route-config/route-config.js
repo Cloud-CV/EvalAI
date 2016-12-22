@@ -62,9 +62,7 @@
             url: "/reset-password",
             templateUrl: baseUrl + "/web/reset-password.html",
             title: "Reset Password",
-            controller: 'ResetPwdCtrl',
-            controllerAs: 'resetpwd',
-            authenticate: false,
+            authenticate: false
         }
 
         var logout = {

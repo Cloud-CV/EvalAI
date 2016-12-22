@@ -179,6 +179,37 @@
             utilities.sendRequest(parameters, "no-header");
         }
 
+        // function to reset password
+        vm.resetPassword = function() {
+            var parameters = {};
+            parameters.url = 'auth/password/reset/';
+            parameters.method = 'POST';
+            parameters.data = {
+                "email": vm.getUser.email,
+            }
+            parameters.callback = {
+                onSuccess: function(response, status) {
+                    vm.getUser.error = false;
+                    console.log("Password reset email sent to the user");
+                    console.log(response);
+                },
+                onError: function(error, status) {
+                    vm.getUser.error = "Failed";
+                    if (status == 400) {
+                        console.log("ERROR Occured");
+                        console.log(error);
+                        angular.forEach(error, function(value, key) {
+                            if (key == 'email') {
+                                vm.isValid.email = true;
+                                vm.wrnMsg.email = value[0];
+                            }
+                        })
+                    }
+                }
+            };
+
+            utilities.sendRequest(parameters, "no-header");
+        }
     }
 
 })();
