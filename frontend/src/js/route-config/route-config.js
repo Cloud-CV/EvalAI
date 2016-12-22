@@ -56,6 +56,15 @@
             title: 'SignUp'
         }
 
+        var reset_password = {
+            name: "auth.reset-password",
+            parent: "auth",
+            url: "/reset-password",
+            templateUrl: baseUrl + "/web/reset-password.html",
+            title: "Reset Password",
+            authenticate: false
+        }
+
         var logout = {
             name: "auth.logout",
             parent: "auth",
@@ -177,6 +186,7 @@
             authenticate: true
         }
 
+
         // call all states here
         $stateProvider.state(home);
 
@@ -184,6 +194,7 @@
         $stateProvider.state(auth);
         $stateProvider.state(login);
         $stateProvider.state(signup);
+        $stateProvider.state(reset_password);
         $stateProvider.state(logout);
 
         // web main configs.
