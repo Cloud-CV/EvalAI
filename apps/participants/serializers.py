@@ -43,6 +43,6 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
 
     def save(self):
         email = self.validated_data.get('email')
-        return Participant.objects.create(user=User.objects.get(email=email),
-                                          status=Participant.ACCEPTED,
-                                          team=self.participant_team)
+        return Participant.objects.get_or_create(user=User.objects.get(email=email),
+                                                 status=Participant.ACCEPTED,
+                                                 team=self.participant_team)

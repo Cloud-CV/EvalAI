@@ -3,6 +3,7 @@ channels==0.17.2
 daphne==0.15.0
 django==1.10.2
 djangorestframework==3.5.2
+djangorestframework-expiring-authtoken==0.1.4
 django-rest-auth[with_social]
 drfdocs==0.0.11
 psycopg2==2.6.2

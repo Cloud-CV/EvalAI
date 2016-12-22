@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state', '$rootScope'];
+    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
 
-    function AuthCtrl(utilities, $state, $rootScope) {
+    function AuthCtrl(utilities, $state, $rootScope, $timeout) {
         var vm = this;
 
         vm.isRem = false;
@@ -17,6 +17,7 @@
         vm.regUser = {};
         // useDetails for login
         vm.getUser = {};
+
 
         // default parameters
         vm.isLoader = false;
@@ -39,6 +40,13 @@
             $rootScope.isLoader = false;
             $rootScope.loaderTitle = '';
             vm.loginContainer.removeClass('low-screen');
+        }
+
+        vm.resetFrom = function() {
+            // getUser for signup
+            vm.regUser = {};
+            // useDetails for login
+            vm.getUser = {};
         }
 
         // getting signup
@@ -171,6 +179,37 @@
             utilities.sendRequest(parameters, "no-header");
         }
 
+        // function to reset password
+        vm.resetPassword = function() {
+            var parameters = {};
+            parameters.url = 'auth/password/reset/';
+            parameters.method = 'POST';
+            parameters.data = {
+                "email": vm.getUser.email,
+            }
+            parameters.callback = {
+                onSuccess: function(response, status) {
+                    vm.getUser.error = false;
+                    console.log("Password reset email sent to the user");
+                    console.log(response);
+                },
+                onError: function(error, status) {
+                    vm.getUser.error = "Failed";
+                    if (status == 400) {
+                        console.log("ERROR Occured");
+                        console.log(error);
+                        angular.forEach(error, function(value, key) {
+                            if (key == 'email') {
+                                vm.isValid.email = true;
+                                vm.wrnMsg.email = value[0];
+                            }
+                        })
+                    }
+                }
+            };
+
+            utilities.sendRequest(parameters, "no-header");
+        }
     }
 
 })();

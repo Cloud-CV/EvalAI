@@ -2,7 +2,6 @@ from django.conf import settings
 from django.shortcuts import render
 
 from rest_framework import permissions, status
-from rest_framework.authentication import (TokenAuthentication,)
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,
@@ -10,6 +9,7 @@ from rest_framework.decorators import (api_view,
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import response, schemas
+from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
 
 from accounts.permissions import HasVerifiedEmail
 from challenges.models import Challenge
@@ -21,7 +21,7 @@ from .serializers import (InviteParticipantToTeamSerializer,
 
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_list(request):
 
     if request.method == 'GET':
@@ -51,7 +51,7 @@ def participant_team_list(request):
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_detail(request, pk):
 
     try:
@@ -89,7 +89,7 @@ def participant_team_detail(request, pk):
 
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def invite_participant_to_team(request, pk):
 
     try:
@@ -111,7 +111,7 @@ def invite_participant_to_team(request, pk):
 
 @api_view(['DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((TokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication,))
 def delete_participant_from_team(request, participant_team_pk, participant_pk):
     """
     Deletes a participant from a Participant Team

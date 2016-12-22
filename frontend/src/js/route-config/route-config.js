@@ -56,6 +56,15 @@
             title: 'SignUp'
         }
 
+        var reset_password = {
+            name: "auth.reset-password",
+            parent: "auth",
+            url: "/reset-password",
+            templateUrl: baseUrl + "/web/reset-password.html",
+            title: "Reset Password",
+            authenticate: false
+        }
+
         var logout = {
             name: "auth.logout",
             parent: "auth",
@@ -166,6 +175,18 @@
             authenticate: true
         }
 
+        var change_password = {
+            name: "web.change-password",
+            parent: "web",
+            url: "/change-password",
+            templateUrl: baseUrl + "/web/change-password.html",
+            title: "Change Password",
+            controller: 'ChangePwdCtrl',
+            controllerAs: 'changepwd',
+            authenticate: true
+        }
+
+
         // call all states here
         $stateProvider.state(home);
 
@@ -173,6 +194,7 @@
         $stateProvider.state(auth);
         $stateProvider.state(login);
         $stateProvider.state(signup);
+        $stateProvider.state(reset_password);
         $stateProvider.state(logout);
 
         // web main configs.
@@ -190,6 +212,7 @@
 
         $stateProvider.state(profile);
         $stateProvider.state(permission_denied);
+        $stateProvider.state(change_password);
 
         $urlRouterProvider.otherwise("/");
 
