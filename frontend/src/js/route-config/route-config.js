@@ -273,8 +273,10 @@
 
         });
 
+        var userKey = utilities.getData('userKey');
+
         $rootScope.logout = function() {
-            var userKey = utilities.getData('userKey');
+
             var parameters = {};
             parameters.url = 'auth/logout/';
             parameters.method = 'POST';
@@ -292,5 +294,34 @@
 
             utilities.sendRequest(parameters);
         }
+
+        checkToken = function() {
+            var parameters = {};
+            parameters.url = 'auth/user/';
+            parameters.method = 'GET';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response, status) {
+
+                },
+                onError: function(error, status) {
+                    if (status == 401) {
+                        alert("Timeout, Please login again to continue!")
+                        utilities.resetStorage();
+                        $state.go("auth.login");
+                        $rootScope.isAuth = false;
+                    }
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        }
+
+        console.log(utilities.isAuthenticated())
+        if ($rootScope.isAuth == false) {
+            // checkToken();
+        }
+
+
     };
 })();

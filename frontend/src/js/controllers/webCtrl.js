@@ -65,8 +65,8 @@
 
                 }
             },
-            onError: function() {
-
+            onError: function(error, status) {
+                alert("")
             }
         };
 

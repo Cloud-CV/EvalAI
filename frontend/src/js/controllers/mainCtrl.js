@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('MainCtrl', MainCtrl);
 
-    MainCtrl.$inject = ['utilities', '$rootScope'];
+    MainCtrl.$inject = ['utilities', '$rootScope', '$state'];
 
-    function MainCtrl(utilities, $rootScope) {
+    function MainCtrl(utilities, $rootScope, $state) {
 
         var vm = this;
 
@@ -30,9 +30,12 @@
                         vm.user.name = response.username;
                     }
                 },
-                onError: function() {
+                onError: function(error, status) {
                     if (status == 401) {
-                        $rootScope.logout();
+                        alert("")
+                        utilities.resetStorage();
+                        $state.go("auth.login");
+                        $rootScope.isAuth = false;
                     }
                 }
             };
