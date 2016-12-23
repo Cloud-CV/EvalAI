@@ -42,9 +42,6 @@ urlpatterns = [url(r'^',
                    TemplateView.as_view(
                        template_name="password_reset_confirm.html"),
                    name='password_reset_confirm'),
-               url(r'^api/admin-auth/',
-                   include('rest_framework.urls',
-                           namespace='rest_framework')),
                url(r'^api/accounts/',
                    include('accounts.urls',
                            namespace='accounts')),
@@ -71,4 +68,7 @@ if settings.DEBUG:
                     include('django_spaghetti.urls')),
                     url(r'^docs/',
                     include('rest_framework_docs.urls')),
+                    url(r'^api/admin-auth/',
+                        include('rest_framework.urls',
+                                namespace='rest_framework')),
                     ]
