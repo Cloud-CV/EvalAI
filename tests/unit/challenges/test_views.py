@@ -11,8 +11,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge
-from participants.models import ParticipantTeam
-from hosts.models import ChallengeHostTeam
+from participants.models import Participant, ParticipantTeam
+from hosts.models import ChallengeHost, ChallengeHostTeam
 
 
 class BaseAPITestClass(APITestCase):
@@ -267,13 +267,79 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'participant_team_pk': self.participant_team.pk})
 
+        # user who create a challenge host team
+        self.user2 = User.objects.create(
+            username='someuser2',
+            password='some_secret_password')
+        # user who maps a participant team to a challenge
+        self.user3 = User.objects.create(
+            username='someuser3',
+            password='some_secret_password')
+
+        self.challenge_host_team2 = ChallengeHostTeam.objects.create(
+            team_name='Some Test Challenge Host Team',
+            created_by=self.user2)
+
+        self.challenge_host2 = ChallengeHost.objects.create(
+            user=self.user2,
+            team_name=self.challenge_host_team2,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
+        self.challenge_host3 = ChallengeHost.objects.create(
+            user=self.user3,
+            team_name=self.challenge_host_team2,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
+        self.challenge2 = Challenge.objects.create(
+            title='Some Test Challenge',
+            description='Description for some test challenge',
+            terms_and_conditions='Terms and conditions for some test challenge',
+            submission_guidelines='Submission guidelines for some test challenge',
+            creator=self.challenge_host_team2,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False)
+
+        self.participant_team2 = ParticipantTeam.objects.create(
+            team_name='Some Participant Team',
+            created_by=self.user3)
+
+        self.participant2 = Participant.objects.create(
+            user=self.user3,
+            status=Participant.SELF,
+            team=self.participant_team2)
+
     def test_map_challenge_and_participant_team_together(self):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # to check when the api is hit again
+        expected = {
+            'message': 'Team already exists',
+            'challenge_id': self.challenge.pk,
+            'participant_team_id': self.participant_team.pk
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_when_challenge_host_maps_a_participant_team_with_his_challenge(self):
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team2.pk})
+        expected = {
+            'message': 'Sorry, You cannot participate in your own challenge!',
+            'challenge_id': self.challenge2.pk,
+            'participant_team_id': self.participant_team2.pk
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_particular_challenge_for_mapping_with_participant_team_does_not_exist(self):
         self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
-                                kwargs={'challenge_pk': self.challenge.pk + 1,
+                                kwargs={'challenge_pk': self.challenge.pk + 2,
                                         'participant_team_pk': self.participant_team.pk})
         expected = {
             'error': 'Challenge does not exist'
@@ -285,7 +351,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
     def test_particular_participant_team_for_mapping_with_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'participant_team_pk': self.participant_team.pk + 1})
+                                        'participant_team_pk': self.participant_team.pk + 2})
         expected = {
             'error': 'ParticipantTeam does not exist'
         }
