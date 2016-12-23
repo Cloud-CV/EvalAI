@@ -19,14 +19,15 @@ from django.contrib import admin
 from django.views.generic.base import TemplateView
 from django.conf import settings
 
+from allauth.account import views as allauth_views
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 
 from accounts.views import ConfirmEmailView
 
 urlpatterns = [url(r'^',
                    include('web.urls')),
-               url(r'^',
-                   include('django.contrib.auth.urls')),
+               url(r'^accounts/',
+                   include('allauth.urls')),
                url(r'^admin/',
                    admin.site.urls),
                url(r'^api/auth/login',
@@ -42,9 +43,6 @@ urlpatterns = [url(r'^',
                    TemplateView.as_view(
                        template_name="password_reset_confirm.html"),
                    name='password_reset_confirm'),
-               url(r'^api/admin-auth/',
-                   include('rest_framework.urls',
-                           namespace='rest_framework')),
                url(r'^api/accounts/',
                    include('accounts.urls',
                            namespace='accounts')),
@@ -71,4 +69,7 @@ if settings.DEBUG:
                     include('django_spaghetti.urls')),
                     url(r'^docs/',
                     include('rest_framework_docs.urls')),
+                    url(r'^api/admin-auth/',
+                        include('rest_framework.urls',
+                                namespace='rest_framework')),
                     ]

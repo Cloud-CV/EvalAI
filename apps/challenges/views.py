@@ -11,8 +11,8 @@ from rest_framework.response import Response
 from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
 
 from accounts.permissions import HasVerifiedEmail
-from hosts.models import ChallengeHostTeam
-from participants.models import ParticipantTeam
+from hosts.models import ChallengeHost, ChallengeHostTeam
+from participants.models import Participant, ParticipantTeam
 
 from .models import Challenge
 from .permissions import IsChallengeCreator
@@ -108,8 +108,27 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         response_data = {'error': 'ParticipantTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    challenge.participant_teams.add(participant_team)
-    return Response(status=status.HTTP_201_CREATED)
+    # check to disallow the user if he is a Challenge Host for this challenge
+
+    challenge_host_team_pk = challenge.creator.pk
+    challenge_host_team_user_ids = set(ChallengeHost.objects.select_related('user').filter(
+        team_name__id=challenge_host_team_pk).values_list('user', flat=True))
+
+    participant_team_user_ids = set(Participant.objects.select_related('user').filter(
+        team__id=participant_team_pk).values_list('user', flat=True))
+
+    if challenge_host_team_user_ids & participant_team_user_ids:
+        response_data = {'message': 'Sorry, You cannot participate in your own challenge!',
+                         'challenge_id': int(challenge_pk), 'participant_team_id': int(participant_team_pk)}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if participant_team.challenge_set.filter(id=challenge_pk).exists():
+        response_data = {'message': 'Team already exists', 'challenge_id': int(challenge_pk),
+                         'participant_team_id': int(participant_team_pk)}
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        challenge.participant_teams.add(participant_team)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])

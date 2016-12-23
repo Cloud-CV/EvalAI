@@ -332,3 +332,134 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
                                         })
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetTeamsAndCorrespondingChallengesForAParticipant, self).setUp()
+
+        self.url = reverse_lazy(
+            'participants:get_teams_and_corresponding_challenges_for_a_participant',)
+
+        self.user2 = User.objects.create(
+            username='user2',
+            email='user2@platform.com',
+            password='user2_password')
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email='user2@platform.com',
+            primary=True,
+            verified=True)
+
+        self.participant_team1 = ParticipantTeam.objects.create(
+            team_name='Team A',
+            created_by=self.user)
+
+        self.participant_team2 = ParticipantTeam.objects.create(
+            team_name='Team B',
+            created_by=self.user2)  # created by user2 and not user
+
+        self.participant1 = Participant.objects.create(
+            user=self.user,
+            status=Participant.SELF,
+            team=self.participant_team1)
+
+        self.participant2 = Participant.objects.create(
+            user=self.user2,
+            status=Participant.ACCEPTED,
+            team=self.participant_team2)
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name='Host Team 1',
+            created_by=self.user2)
+
+        self.challenge1 = Challenge.objects.create(
+            title='Test Challenge 1',
+            description='Description for test challenge 1',
+            terms_and_conditions='Terms and conditions for test challenge 1',
+            submission_guidelines='Submission guidelines for test challenge 1',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False)
+
+        self.challenge2 = Challenge.objects.create(
+            title='Test Challenge 2',
+            description='Description for test challenge 2',
+            terms_and_conditions='Terms and conditions for test challenge 2',
+            submission_guidelines='Submission guidelines for test challenge 2',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False)
+
+    def test_get_teams_and_corresponding_challenges_for_a_participant(self):
+
+        self.challenge1.participant_teams.add(self.participant_team1)
+        self.challenge1.save()
+
+        expected = {
+            "challenge_participant_team_list": [
+                {
+                    "challenge": {
+                        "id": self.challenge1.id,
+                        "title": self.challenge1.title,
+                        "description": self.challenge1.description,
+                        "terms_and_conditions": self.challenge1.terms_and_conditions,
+                        "submission_guidelines": self.challenge1.submission_guidelines,
+                        "evaluation_details": self.challenge1.evaluation_details,
+                        "image": self.challenge1.image,
+                        "start_date": self.challenge1.start_date,
+                        "end_date": self.challenge1.end_date,
+                        "creator": {
+                            "id": self.challenge_host_team.id,
+                            "team_name": self.challenge_host_team.team_name,
+                            "created_by": self.challenge_host_team.created_by.id
+                        },
+                        "published": self.challenge1.published,
+                        "enable_forum": self.challenge1.enable_forum,
+                        "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
+                    },
+                    "participant_team": {
+                        "id": self.participant_team1.id,
+                        "team_name": self.participant_team1.team_name,
+                        "created_by": self.participant_team1.created_by.username
+                    }
+                }
+            ]
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_when_participant_team_hasnot_participated_in_any_challenge(self):
+
+        expected = {
+            "challenge_participant_team_list": [
+                {
+                    "challenge": None,
+                    "participant_team": {
+                        "id": self.participant_team1.id,
+                        "team_name": self.participant_team1.team_name,
+                        "created_by": self.participant_team1.created_by.username
+                    }
+                }
+            ]
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_when_there_is_no_participant_team_of_user(self):
+
+        self.participant_team1.delete()
+
+        expected = {
+            "challenge_participant_team_list": []
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

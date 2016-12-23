@@ -13,6 +13,8 @@
         var vm = this;
 
         vm.isRem = false;
+        vm.isMail = true;
+        vm.userMail = '';
         // getUser for signup
         vm.regUser = {};
         // useDetails for login
@@ -42,11 +44,14 @@
             vm.loginContainer.removeClass('low-screen');
         }
 
-        vm.resetFrom = function() {
+        vm.resetForm = function() {
             // getUser for signup
             vm.regUser = {};
             // useDetails for login
             vm.getUser = {};
+
+            //reset error msg
+            vm.wrnMsg = {};
         }
 
         // getting signup
@@ -181,6 +186,7 @@
 
         // function to reset password
         vm.resetPassword = function() {
+            vm.startLoader("Sending Mail");
             var parameters = {};
             parameters.url = 'auth/password/reset/';
             parameters.method = 'POST';
@@ -189,9 +195,15 @@
             }
             parameters.callback = {
                 onSuccess: function(response, status) {
+                    vm.isMail = false;
                     vm.getUser.error = false;
                     console.log("Password reset email sent to the user");
                     console.log(response);
+                    vm.deliveredMsg = response.success;
+                    vm.getUser.email = '';
+                    vm.wrnMsg = {};
+                    vm.stopLoader();
+
                 },
                 onError: function(error, status) {
                     vm.getUser.error = "Failed";
@@ -205,6 +217,7 @@
                             }
                         })
                     }
+                    vm.stopLoader();
                 }
             };
 

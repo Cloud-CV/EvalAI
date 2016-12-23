@@ -158,6 +158,14 @@ REST_FRAMEWORK = {
 ACCOUNT_EMAIL_REQUIRED = True
 OLD_PASSWORD_FIELD_ENABLED = True
 
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+# CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True
 
 # REST Framework Expiring Tokens Configuration

@@ -1,43 +1,50 @@
-<!-- login form -->
-<form ng-submit="auth.userSignUp()" id="sign-up">
-    <!-- username -->
-    <div class="input-field align-left">
-		<input id="name" type="text" class="validate" ng-model="auth.regUser.name" focus-if>
-		<span class="form-icon"><i class="fa fa-user"></i></span>
-		<label for="name" data-error="wrong" data-success="right">User Name (no space)*</label>
-        <div class="wrn-msg text-highlight" ng-show="auth.isValid.username">{{auth.wrnMsg.username}}</div>
-
-    </div>
-    <!-- email -->
-    <div class="input-field align-left">
-        <input id="email" type="email" class="validate" ng-model="auth.regUser.email" >
-        <span class="form-icon"><i class="fa fa-envelope"></i></span>
-        <label for="email" data-error="wrong" data-success="right">Email</label>
-        <div class="wrn-msg text-highlight" ng-show="auth.isValid.email">{{auth.wrnMsg.email}}</div>
-    </div>
-    <!-- password -->
-    <div class="input-field align-left">
-		<input id="password" type="password" class="validate" ng-model="auth.regUser.password" >
-		<span class="form-icon"><i class="fa fa-key"></i></span>
-		<label for="password" >Password (min 8 characters) *</label>
-        <div class="wrn-msg text-highlight" ng-show="auth.isValid.password">{{auth.wrnMsg.password}}</div>
-    </div>
-    <!-- confirm password -->
-    <div class="input-field align-left">
-        <input id="confirm_password" type="password" class="validate" ng-model="auth.regUser.confirm" >
-        <span class="form-icon"><i class="fa fa-check-circle"></i></span>
-        <label for="password" >Confirm Password *</label>
-        <div class="wrn-msg text-highlight" ng-show="auth.isValid.confirm">{{auth.wrnMsg.confirm}}</div>
-    </div>
-    <!-- submit button -->
-    <div class="align-left reg-control">
-    	<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">SignUp</button>
-        <span ng-hide="auth.isConfirm" class="fade"> {{auth.confirmMsg}}</span>
-    </div>
-    <div>
-    	<p class="text-light-gray">
-    		Already have an account <a class="white-link" ui-sref="auth.login">LogIn</a>
-    	</p>
-    </div>
-
-</form>
+<div class="col s12 m4 offset-m4 left">
+    <ul class="left">
+        <li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">LogIn</a></li>
+        <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">SignUp</a></li>
+        <!-- <li class="ev-horiz-list"><a ui-sref="auth.reset-password" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetFrom()">Forgot Password</a></li> -->
+    </ul>
+</div>
+<div class="col s12 m4 offset-m4">
+    <!-- login form -->
+    <form ng-submit="auth.userSignUp()" id="sign-up">
+        <!-- username -->
+        <div class="input-field align-left">
+            <input id="name" type="text" class="validate" ng-model="auth.regUser.name" focus-if>
+            <span class="form-icon"><i class="fa fa-user"></i></span>
+            <label for="name" data-error="wrong" data-success="right">User Name (no space)*</label>
+            <div class="wrn-msg text-highlight" ng-show="auth.isValid.username">{{auth.wrnMsg.username}}</div>
+        </div>
+        <!-- email -->
+        <div class="input-field align-left">
+            <input id="email" type="email" class="validate" ng-model="auth.regUser.email">
+            <span class="form-icon"><i class="fa fa-envelope"></i></span>
+            <label for="email" data-error="wrong" data-success="right">Email</label>
+            <div class="wrn-msg text-highlight" ng-show="auth.isValid.email">{{auth.wrnMsg.email}}</div>
+        </div>
+        <!-- password -->
+        <div class="input-field align-left">
+            <input id="password" type="password" class="validate" ng-model="auth.regUser.password">
+            <span class="form-icon"><i class="fa fa-key"></i></span>
+            <label for="password">Password (min 8 characters) *</label>
+            <div class="wrn-msg text-highlight" ng-show="auth.isValid.password">{{auth.wrnMsg.password}}</div>
+        </div>
+        <!-- confirm password -->
+        <div class="input-field align-left">
+            <input id="confirm_password" type="password" class="validate" ng-model="auth.regUser.confirm">
+            <span class="form-icon"><i class="fa fa-check-circle"></i></span>
+            <label for="password">Confirm Password *</label>
+            <div class="wrn-msg text-highlight" ng-show="auth.isValid.confirm">{{auth.wrnMsg.confirm}}</div>
+        </div>
+        <!-- submit button -->
+        <div class="align-left reg-control">
+            <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">SignUp</button>
+            <span ng-hide="auth.isConfirm" class="fade"> {{auth.confirmMsg}}</span>
+        </div>
+        <div>
+            <p class="text-light-gray">
+                Already have an account <a class="white-link" ui-sref="auth.login">LogIn</a>
+            </p>
+        </div>
+    </form>
+</div>
