@@ -9,14 +9,19 @@ from rest_framework.decorators import (api_view,
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import response, schemas
-from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,)
 
 from accounts.permissions import HasVerifiedEmail
 from challenges.models import Challenge
 
 from .models import (Participant, ParticipantTeam)
 from .serializers import (InviteParticipantToTeamSerializer,
-                          ParticipantTeamSerializer,)
+                          ParticipantTeamSerializer,
+                          ChallengeParticipantTeam,
+                          ChallengeParticipantTeamList,
+                          ChallengeParticipantTeamListSerializer,
+                          ChallengeParticipantTeamSerializer,)
 
 
 @api_view(['GET', 'POST'])
@@ -132,7 +137,7 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
 
         if participant.user == request.user:  # when the user tries to remove himself
             response_data = {
-                'error': 'You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!'} # noqa: ignore=E501
+                'error': 'You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!'}  # noqa: ignore=E501
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         else:
             participant.delete()
@@ -141,3 +146,29 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
         response_data = {
             'error': 'Sorry, you do not have permissions to remove this participant'}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_teams_and_corresponding_challenges_for_a_participant(request):
+    """
+    Returns list of teams and corresponding challenges for a participant
+    """
+    # first get list of all the participants and teams related to the user
+    participant_objs = Participant.objects.filter(user=request.user).prefetch_related('team')
+
+    challenge_participated_teams = []
+    for participant_obj in participant_objs:
+        participant_team = participant_obj.team
+        try:
+            challenge = Challenge.objects.get(
+                participant_teams=participant_team)
+        except Challenge.DoesNotExist:
+            challenge = None
+
+        challenge_participated_teams.append(ChallengeParticipantTeam(
+            challenge, participant_team))
+
+    serializer = ChallengeParticipantTeamListSerializer(ChallengeParticipantTeamList(challenge_participated_teams))
+    return Response(serializer.data, status=status.HTTP_200_OK)
