@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
+from challenges.serializers import ChallengeSerializer
 from .models import (Participant, ParticipantTeam)
 
 
@@ -46,3 +47,26 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
         return Participant.objects.get_or_create(user=User.objects.get(email=email),
                                                  status=Participant.ACCEPTED,
                                                  team=self.participant_team)
+
+
+# Serializer to map Challenge and Participant Teams ####
+class ChallengeParticipantTeam(object):
+
+    def __init__(self, challenge, participant_team):
+        self.challenge = challenge
+        self.participant_team = participant_team
+
+
+class ChallengeParticipantTeamSerializer(serializers.Serializer):
+    challenge = ChallengeSerializer()
+    participant_team = ParticipantTeamSerializer()
+
+
+class ChallengeParticipantTeamList(object):
+
+    def __init__(self, challenge_participant_team_list):
+        self.challenge_participant_team_list = challenge_participant_team_list
+
+
+class ChallengeParticipantTeamListSerializer(serializers.Serializer):
+    challenge_participant_team_list = ChallengeParticipantTeamSerializer(many=True)
