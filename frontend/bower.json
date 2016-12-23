@@ -25,5 +25,8 @@
     "lodash": "^4.17.2",
     "ngSmoothScroll": "master",
     "ng-focus-if": "master"
+  },
+  "resolutions": {
+    "angular": "^1.5.8"
   }
 }

@@ -25,12 +25,17 @@
             parameters.method = 'GET';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response, status) {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
                     if (status == 200) {
                         vm.user.name = response.username;
                     }
                 },
-                onError: function(error, status) {
+                onError: function(response) {
+
+                    var status = response.status;
+                    var error = response.data;
                     if (status == 401) {
                         alert("")
                         utilities.resetStorage();
