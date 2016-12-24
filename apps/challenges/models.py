@@ -30,18 +30,24 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False)
+    evaluation_script = models.FileField(default=False)  # should be zip format
 
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge'
 
 
-class Phase(TimeStampedModel):
+class TestEnvironment(TimeStampedModel):
     name = models.CharField(max_length=100)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
+    start_date = models.DateTimeField(
+        null=True, blank=True, verbose_name="Start Date (UTC)")
+    end_date = models.DateTimeField(
+        null=True, blank=True, verbose_name="End Date (UTC)")
     challenge = models.ForeignKey('Challenge')
+    test_annotation = models.FileField()
 
     class Meta:
         app_label = 'challenges'
-        db_table = 'challenge_phase'
+        db_table = 'challenge_test_env'
