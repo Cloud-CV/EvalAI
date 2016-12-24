@@ -19,8 +19,8 @@
             var data = parameters.data;
             var token = parameters.token;
             var method = parameters.method;
-            var success = parameters.callback.onSuccess;
-            var error = parameters.callback.onError;
+            var successCallback = parameters.callback.onSuccess;
+            var errorCallback = parameters.callback.onError;
             // alert(EnvironmentConfig.API)
             var headers = {
                 'Authorization': "Token " + token
@@ -63,8 +63,7 @@
             req.timeout = 6000;
 
             $http(req)
-                .success(success)
-                .error(error);
+                .then(successCallback, errorCallback);
         };
 
         this.storeData = function(key, value) {

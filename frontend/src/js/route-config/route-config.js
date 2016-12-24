@@ -282,13 +282,16 @@
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response, status) {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
                 },
-                onError: function() {
-
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
                 }
             };
 
@@ -301,10 +304,13 @@
             parameters.method = 'GET';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response, status) {
-
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
                 },
-                onError: function(error, status) {
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
                     if (status == 401) {
                         alert("Timeout, Please login again to continue!")
                         utilities.resetStorage();

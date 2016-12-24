@@ -13,7 +13,7 @@
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
-        vm.isValid = {};        
+        vm.isValid = {};
 
         // function to change password
         vm.changePassword = function() {
@@ -29,14 +29,18 @@
             }
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response, status) {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
                     vm.user.error = false;
                     console.log("PASSWORD CHANGED SUCCESSFULLY");
                     console.log(response);
                     // navigate to challenge page
                     // $state.go('web.challenge-page.overview');
                 },
-                onError: function(error, status) {
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
                     vm.user.error = "Failed";
                     if (status == 400) {
                         console.log("ERROR Occured");
