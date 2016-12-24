@@ -1,16 +1,20 @@
 import json
+import os
+import shutil
 
 from datetime import timedelta
 
 from django.core.urlresolvers import reverse_lazy
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
+from django.test import override_settings
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge
+from challenges.models import Challenge, TestEnvironment
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 
@@ -540,3 +544,64 @@ class GetAllChallengesTest(BaseAPITestClass):
         response = self.client.get(self.url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['results'], expected)
+
+
+class BaseTestEnvironmentClass(BaseAPITestClass):
+
+    def setUp(self):
+        super(BaseTestEnvironmentClass, self).setUp()
+        try:
+            os.makedirs('/tmp/evalai')
+        except OSError:
+            pass
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.test_environment = TestEnvironment.objects.create(
+                name='Test Environment',
+                description='Description for Test Environment',
+                leaderboard_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain')
+            )
+
+    def tearDown(self):
+        shutil.rmtree('/tmp/evalai')
+
+
+class GetTestEnvironmentTest(BaseTestEnvironmentClass):
+
+    def setUp(self):
+        super(GetTestEnvironmentTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_test_environment_list',
+                                kwargs={'challenge_pk': self.challenge.pk})
+
+    def test_get_test_environment(self):
+        expected = [
+            {
+                "id": self.test_environment.id,
+                "name": self.test_environment.name,
+                "description": self.test_environment.description,
+                "leaderboard_public": self.test_environment.leaderboard_public,
+                "start_date": "{0}{1}".format(self.test_environment.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.test_environment.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "challenge": self.test_environment.challenge.pk,
+                "test_annotation": self.test_environment.test_annotation
+            }
+        ]
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_particular_challenge_for_test_environment_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_test_environment_list',
+                                kwargs={'challenge_pk': self.challenge.pk + 1})
+        expected = {
+            'error': 'Challenge does not exist'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)

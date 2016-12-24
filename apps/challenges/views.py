@@ -14,9 +14,9 @@ from accounts.permissions import HasVerifiedEmail
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import Participant, ParticipantTeam
 
-from .models import Challenge
+from .models import Challenge, TestEnvironment
 from .permissions import IsChallengeCreator
-from .serializers import ChallengeSerializer
+from .serializers import ChallengeSerializer, TestEnvironmentSerializer
 
 
 @api_view(['GET', 'POST'])
@@ -181,3 +181,22 @@ def get_all_challenges(request, challenge_time):
     except:
         response_data = {'error': 'Wrong url pattern!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def test_environment_list(request, challenge_pk):
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    test_environment = TestEnvironment.objects.filter(challenge=challenge)
+    paginator = PageNumberPagination()
+    paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+    result_page = paginator.paginate_queryset(test_environment, request)
+    serializer = TestEnvironmentSerializer(result_page, many=True)
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
