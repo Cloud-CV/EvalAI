@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0006_upload_to_attrbute_added'),
+        ('challenges', '0005_changed_phase_model'),
     ]
 
     operations = [
