@@ -14,9 +14,9 @@ from accounts.permissions import HasVerifiedEmail
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import Participant, ParticipantTeam
 
-from .models import Challenge
+from .models import Challenge, TestEnvironment
 from .permissions import IsChallengeCreator
-from .serializers import ChallengeSerializer
+from .serializers import ChallengeSerializer, TestEnvironmentSerializer
 
 
 @api_view(['GET', 'POST'])
@@ -181,3 +181,75 @@ def get_all_challenges(request, challenge_time):
     except:
         response_data = {'error': 'Wrong url pattern!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def test_environment_list(request, challenge_pk):
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if request.method == 'GET':
+        test_environment = TestEnvironment.objects.filter(challenge=challenge)
+        paginator = PageNumberPagination()
+        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+        result_page = paginator.paginate_queryset(test_environment, request)
+        serializer = TestEnvironmentSerializer(result_page, many=True)
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+
+    elif request.method == 'POST':
+        serializer = TestEnvironmentSerializer(data=request.data,
+                                               context={'challenge': challenge})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def test_environment_detail(request, challenge_pk, pk):
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        test_environment = TestEnvironment.objects.get(pk=pk)
+    except TestEnvironment.DoesNotExist:
+        response_data = {'error': 'TestEnvironment does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if request.method == 'GET':
+        serializer = TestEnvironmentSerializer(test_environment)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    elif request.method in ['PUT', 'PATCH']:
+        if request.method == 'PATCH':
+            serializer = TestEnvironmentSerializer(test_environment,
+                                                   data=request.data,
+                                                   context={'challenge': challenge},
+                                                   partial=True)
+        else:
+            serializer = TestEnvironmentSerializer(test_environment,
+                                                   data=request.data,
+                                                   context={'challenge': challenge})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        test_environment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
