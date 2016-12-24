@@ -30,7 +30,7 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False)
-    evaluation_script = models.FileField(default=False)  # should be zip format
+    evaluation_script = models.FileField(default=False, upload_to="evaluation_scripts")  # should be zip format
 
     class Meta:
         app_label = 'challenges'
@@ -46,7 +46,7 @@ class TestEnvironment(TimeStampedModel):
     end_date = models.DateTimeField(
         null=True, blank=True, verbose_name="End Date (UTC)")
     challenge = models.ForeignKey('Challenge')
-    test_annotation = models.FileField()
+    test_annotation = models.FileField(upload_to="test_annotations")
 
     class Meta:
         app_label = 'challenges'
