@@ -605,3 +605,28 @@ class GetTestEnvironmentTest(BaseTestEnvironmentClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class CreateTestEnvironmentTest(BaseTestEnvironmentClass):
+
+    def setUp(self):
+        super(CreateTestEnvironmentTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_test_environment_list',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.data = {
+            'name': 'New Test Environment',
+            'description': 'Description for new test environment'
+        }
+
+    @override_settings(MEDIA_ROOT='/tmp/evalai')
+    def test_create_test_environment_with_all_data(self):
+        self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
+                                                          'Another Dummy file content',
+                                                          content_type='text/plain')
+        response = self.client.post(self.url, self.data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_test_environment_with_no_data(self):
+        del self.data['name']
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
