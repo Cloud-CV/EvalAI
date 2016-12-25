@@ -106,6 +106,28 @@
             authenticate: true
         }
 
+        var challenge_main = {
+            name: "web.challenge-main",
+            parent: "web",
+            url: "/challenges",
+            templateUrl: baseUrl + "/web/challenge-main.html",
+            // controller: 'ChallengeMainCtrl',
+            // controllerAs: 'challengeMain',
+            redirectTo: "web.challenge-main.challenge-list",
+            authenticate: true
+        }
+
+         var challenge_list = {
+            name: "web.challenge-main.challenge-list",
+            parent: "web.challenge-main",
+            url: "/list",
+            templateUrl: baseUrl + "/web/challenge/challenge-list.html",
+            controller: 'ChallengeListCtrl',
+            controllerAs: 'challengeList',
+            title: 'Challenges',
+            authenticate: true
+        }
+
         var challenge_page = {
             name: "web.challenge-page",
             parent: "web",
@@ -202,13 +224,17 @@
         $stateProvider.state(dashboard);
         $stateProvider.state(teams);
 
+        // challenges list page
+        $stateProvider.state(challenge_main);
+        $stateProvider.state(challenge_list);
+
+        // challenge details
         $stateProvider.state(challenge_page);
         $stateProvider.state(overview);
         $stateProvider.state(evaluation);
         $stateProvider.state(phases);
 
         $stateProvider.state(host_challenge);
-
 
         $stateProvider.state(profile);
         $stateProvider.state(permission_denied);
