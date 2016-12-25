@@ -71,7 +71,9 @@
                 "email": vm.regUser.email
             }
             parameters.callback = {
-                onSuccess: function(response, status) {
+                onSuccess: function(response) {
+                     var status = response.status;
+                    var response = response.data;
                     if (status == 201) {
                         vm.regUser = {};
                         vm.wrnMsg = {};
@@ -85,7 +87,9 @@
                         vm.stopLoader();
                     }
                 },
-                onError: function(error, status) {
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
                     if (status == 400) {
                         vm.stopLoader();
                         vm.isConfirm = false;
@@ -132,7 +136,9 @@
                 "password": vm.getUser.password,
             }
             parameters.callback = {
-                onSuccess: function(response, status) {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
                     if (status == 200) {
                         vm.getUser = {};
                         vm.wrnMsg = {};
@@ -156,7 +162,10 @@
                         vm.stopLoader();
                     }
                 },
-                onError: function(error, status) {
+                onError: function(response) {
+                   
+                    var status = response.status;
+                    var error = response.data;
                     if (status == 400) {
                         vm.stopLoader();
                         vm.isConfirm = false;
@@ -194,7 +203,9 @@
                 "email": vm.getUser.email,
             }
             parameters.callback = {
-                onSuccess: function(response, status) {
+                onSuccess: function(response) {
+                     var status = response.status;
+                    var response = response.data;
                     vm.isMail = false;
                     vm.getUser.error = false;
                     console.log("Password reset email sent to the user");
@@ -205,7 +216,9 @@
                     vm.stopLoader();
 
                 },
-                onError: function(error, status) {
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
                     vm.getUser.error = "Failed";
                     if (status == 400) {
                         console.log("ERROR Occured");

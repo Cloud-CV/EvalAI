@@ -31,7 +31,9 @@
         parameters.method = 'GET';
         parameters.token = userKey;
         parameters.callback = {
-            onSuccess: function(response, status) {
+            onSuccess: function(response) {
+                var status = response.status;
+                var response = response.data;
                 if (status == 200) {
                     vm.existTeam = response;
 
@@ -85,13 +87,17 @@
                         parameters.method = 'POST';
                         parameters.token = userKey;
                         parameters.callback = {
-                            onSuccess: function(response, status) {
+                            onSuccess: function(response) {
+                                var status = response.status;
+                                var response = response.data;
                                 $state.go('web.challenge-page.overview');
-                                utilities.stopLoader();
+                                vm.stopLoader();
                             },
-                            onError: function(error) {
+                            onError: function(response) {
+                                var status = response.status;
+                                var error = response.data;
                                 vm.existTeamError = "Please select a team";
-                                utilities.hideLoader();
+                                vm.stopLoader();
                             }
                         };
                         utilities.sendRequest(parameters);
@@ -127,8 +133,10 @@
                             };
 
                             //Add headers with in your request
-                            $http.get(url, { headers: headers }).success(function(response) {
+                            $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
+                                var status = response.status;
+                                var response = response.data;
                                 vm.existTeam = response;
 
                                 // condition for pagination
@@ -153,7 +161,9 @@
                 }
                 utilities.hideLoader();
             },
-            onError: function(error) {
+            onError: function(response) {
+                var status = response.status;
+                var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
                 utilities.hideLoader();
@@ -192,14 +202,18 @@
             }
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response, status) {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
                     vm.team.error = false;
 
                     // navigate to challenge page
                     $state.go('web.challenge-page.overview');
                     vm.stopLoader();
                 },
-                onError: function(error) {
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
                     vm.stopLoader();
                     vm.team.error = error.team_name[0];
                 }
