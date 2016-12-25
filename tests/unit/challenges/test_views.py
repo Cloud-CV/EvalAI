@@ -727,3 +727,16 @@ class UpdateParticularTestEnvironment(BaseTestEnvironmentClass):
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteParticularTestEnvironment(BaseTestEnvironmentClass):
+
+    def setUp(self):
+        super(DeleteParticularTestEnvironment, self).setUp()
+        self.url = reverse_lazy('challenges:get_test_environment_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.test_environment.pk})
+
+    def test_particular_challenge_delete(self):
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
