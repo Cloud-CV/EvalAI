@@ -210,3 +210,24 @@ def test_environment_list(request, challenge_pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def test_environment_detail(request, challenge_pk, pk):
+    try:
+        Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        test_environment = TestEnvironment.objects.get(pk=pk)
+    except TestEnvironment.DoesNotExist:
+        response_data = {'error': 'TestEnvironment does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    serializer = TestEnvironmentSerializer(test_environment)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
