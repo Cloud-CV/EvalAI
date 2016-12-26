@@ -630,3 +630,49 @@ class CreateTestEnvironmentTest(BaseTestEnvironmentClass):
         del self.data['name']
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class GetParticularTestEnvironment(BaseTestEnvironmentClass):
+
+    def setUp(self):
+        super(GetParticularTestEnvironment, self).setUp()
+        self.url = reverse_lazy('challenges:get_test_environment_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.test_environment.pk})
+
+    def test_get_particular_test_environment(self):
+        expected = {
+            "id": self.test_environment.id,
+            "name": self.test_environment.name,
+            "description": self.test_environment.description,
+            "leaderboard_public": self.test_environment.leaderboard_public,
+            "start_date": "{0}{1}".format(self.test_environment.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.test_environment.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "challenge": self.test_environment.challenge.pk,
+            "test_annotation": self.test_environment.test_annotation
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_particular_test_environment_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_test_environment_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.test_environment.pk + 1})
+        expected = {
+            'error': 'TestEnvironment does not exist'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_particular_challenge_host_team_for_challenge_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_test_environment_detail',
+                                kwargs={'challenge_pk': self.challenge.pk + 1,
+                                        'pk': self.test_environment.pk})
+        expected = {
+            'error': 'Challenge does not exist'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
