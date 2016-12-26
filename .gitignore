@@ -74,3 +74,9 @@ ENV/
 
 # Fabric Files
 fabfile/
+
+# Frontend Files
+.sass-cache/
+node_modules/
+bower_components/
+
