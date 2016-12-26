@@ -233,6 +233,12 @@ nav {
     width: 100%;
     height: auto;
     border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0px 0px 12px #d6dbf1;
+}
+
+.ev-card-content {
+    padding: 10px;
 }
 
 .ev-card-body {
@@ -241,6 +247,63 @@ nav {
 
 .ev-panel-title {
     border-bottom: 1px solid $border-color-light;
+}
+
+.ev-card-image {
+    background: $dark-gray;
+    height: 150px;
+    overflow: hidden;
+}
+
+.ev-card-image {
+    img.bg-img {
+        opacity: 0.8;
+    }
+}
+
+.ev-card-title {
+    top: 10px;
+    left: 0px;
+    position: absolute;
+    font-size: 14px;
+    background-color: rgba(23, 24, 29, 0.7);
+    /* height: 55px; */
+    display: inline;
+    padding: 10px 20px;
+    border-radius: 0px 2px 2px 0px;
+    color: #fff;
+    span>img {
+        width: auto !important;
+        height: 20px;
+        vertical-align: middle;
+        float: left;
+        margin-right: 5px;
+    }
+}
+
+.ev-card-hover:hover {
+    box-shadow: 0px 0px 4px #d6dbf1;
+    .btn-card-detail {
+        background: $highlight;
+        color: #fff;
+    }
+}
+
+.btn-card-detail {
+    display: block;
+    width: 100%;
+    background: $border-color-light;
+    text-align: center;
+    padding: 10px 20px;
+    position: absolute;
+    bottom: 0;
+    transition: all 0.2s ease-in-out;
+}
+
+.card-content {
+    p {
+        padding-bottom: 10px;
+    }
 }
 
 .list-icon {
