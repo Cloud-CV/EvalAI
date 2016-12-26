@@ -28,6 +28,10 @@ class TestEnvironmentSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super(TestEnvironmentSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get('context')
+        if context:
+            challenge = context.get('challenge')
+            kwargs['data']['challenge'] = challenge.pk
 
     class Meta:
         model = TestEnvironment
