@@ -57,7 +57,6 @@ Follow this guide to setup your development machine.
 7. Open a new terminal window with node install on your machine and type
 
     ```
-    cd frontend
     npm install
     bower install
     ```

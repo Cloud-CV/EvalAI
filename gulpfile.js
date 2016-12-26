@@ -26,8 +26,8 @@ var gulp = require('gulp'),
     _ = require('lodash');
 
 
-var scripts = require('./app.scripts.json');
-var styles = require('./app.styles.json');
+var scripts = require('./frontend/app.scripts.json');
+var styles = require('./frontend/app.styles.json');
 
 
 //include all bower scripts files
@@ -47,7 +47,7 @@ gulp.task('vendorjs', function() {
         gulp.src(paths)
             .pipe(concat(chunkName + '.js'))
             //.on('error', swallowError)
-            .pipe(gulp.dest("./dist/vendors"))
+            .pipe(gulp.dest("frontend/dist/vendors"))
     })
 
 });
@@ -70,96 +70,96 @@ gulp.task('vendorcss', function() {
         gulp.src(paths)
             .pipe(concat(chunkName + '.css'))
             //.on('error', swallowError)
-            .pipe(gulp.dest("./dist/vendors"))
+            .pipe(gulp.dest("frontend/dist/vendors"))
     })
 
 });
 
 // config for dev server
 gulp.task('configDev', function() {
-    gulp.src('src/js/config.json')
+    gulp.src('frontend/src/js/config.json')
         .pipe(ngConfig('evalai-config', {
             environment: 'local'
         }))
-        .pipe(gulp.dest('./dist/js'))
+        .pipe(gulp.dest('frontend/dist/js'))
 });
 
 // config for prod server
 gulp.task('configProd', function() {
-    gulp.src('src/js/config.json')
+    gulp.src('frontend/src/js/config.json')
         .pipe(ngConfig('evalai-config', {
             environment: 'production'
         }))
-        .pipe(gulp.dest('./dist/js'))
+        .pipe(gulp.dest('frontend/dist/js'))
 });
 
 // minify and compress CSS files
 gulp.task('css', function() {
-    return sass('src/css/main.scss', { style: 'expanded' })
+    return sass('frontend/src/css/main.scss', { style: 'expanded' })
         .pipe(prettyError())
         .pipe(autoprefixer('last 2 version'))
-        .pipe(gulp.dest('./dist/css'))
+        .pipe(gulp.dest('frontend/dist/css'))
         .pipe(rename({ suffix: '.min' }))
         .pipe(cssnano())
-        .pipe(gulp.dest('./dist/css'));
+        .pipe(gulp.dest('frontend/dist/css'));
 })
 
 // minify angular scripts
 gulp.task('js', function() {
 
-    var app = gulp.src('src/js/app.js')
+    var app = gulp.src('frontend/src/js/app.js')
         .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('app.js'))
-        .pipe(gulp.dest('./dist/js'))
+        .pipe(gulp.dest('frontend/dist/js'))
         .pipe(rename({ suffix: '.min' }))
         .pipe(uglify())
-        .pipe(gulp.dest('./dist/js'));
+        .pipe(gulp.dest('frontend/dist/js'));
 
-    var configs = gulp.src('src/js/route-config/*.js')
+    var configs = gulp.src('frontend/src/js/route-config/*.js')
         .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('route-config.js'))
-        .pipe(gulp.dest('./dist/js'))
+        .pipe(gulp.dest('frontend/dist/js'))
         .pipe(rename({ suffix: '.min' }))
         .pipe(uglify())
-        .pipe(gulp.dest('./dist/js'));
+        .pipe(gulp.dest('frontend/dist/js'));
 
-    var controllers = gulp.src('src/js/controllers/*.js')
+    var controllers = gulp.src('frontend/src/js/controllers/*.js')
         .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('controllers.js'))
-        .pipe(gulp.dest('./dist/js'))
+        .pipe(gulp.dest('frontend/dist/js'))
         .pipe(rename({ suffix: '.min' }))
         .pipe(uglify())
-        .pipe(gulp.dest('./dist/js'));
+        .pipe(gulp.dest('frontend/dist/js'));
 
-    var directives = gulp.src('src/js/directives/*.js')
+    var directives = gulp.src('frontend/src/js/directives/*.js')
         .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('directives.js'))
-        .pipe(gulp.dest('./dist/js'))
+        .pipe(gulp.dest('frontend/dist/js'))
         .pipe(rename({ suffix: '.min' }))
         .pipe(uglify())
-        .pipe(gulp.dest('./dist/js'));
+        .pipe(gulp.dest('frontend/dist/js'));
 
-    var filters = gulp.src('src/js/filters/*.js')
+    var filters = gulp.src('frontend/src/js/filters/*.js')
         .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('filters.js'))
-        .pipe(gulp.dest('./dist/js'))
+        .pipe(gulp.dest('frontend/dist/js'))
         .pipe(rename({ suffix: '.min' }))
         .pipe(uglify())
-        .pipe(gulp.dest('./dist/js'));
+        .pipe(gulp.dest('frontend/dist/js'));
 
-    var services = gulp.src('src/js/services/*.js')
+    var services = gulp.src('frontend/src/js/services/*.js')
         .pipe(prettyError())
         .pipe(jshint.reporter('default'))
         .pipe(concat('services.js'))
-        .pipe(gulp.dest('./dist/js'))
+        .pipe(gulp.dest('frontend/dist/js'))
         .pipe(rename({ suffix: '.min' }))
         .pipe(uglify())
-        .pipe(gulp.dest('./dist/js'));
+        .pipe(gulp.dest('frontend/dist/js'));
 
     return merge(app, configs, controllers, directives, filters, services)
 });
@@ -168,17 +168,17 @@ gulp.task('js', function() {
 // minify and compress html files
 gulp.task('html', function() {
 
-    var webViews = gulp.src('src/views/web/*.html')
+    var webViews = gulp.src('frontend/src/views/web/*.html')
         .pipe(htmlmin({ collapseWhitespace: true }))
-        .pipe(gulp.dest('./dist/views/web'));
+        .pipe(gulp.dest('frontend/dist/views/web'));
 
-    var webPartials = gulp.src('src/views/web/partials/*.html')
+    var webPartials = gulp.src('frontend/src/views/web/partials/*.html')
         .pipe(htmlmin({ collapseWhitespace: true }))
-        .pipe(gulp.dest('./dist/views/web/partials'));
+        .pipe(gulp.dest('frontend/dist/views/web/partials'));
 
-    var challengePartials = gulp.src('src/views/web/challenge/*.html')
+    var challengePartials = gulp.src('frontend/src/views/web/challenge/*.html')
         .pipe(htmlmin({ collapseWhitespace: true }))
-        .pipe(gulp.dest('./dist/views/web/challenge'));
+        .pipe(gulp.dest('frontend/dist/views/web/challenge'));
 
     return merge(webViews, webPartials, challengePartials);
 });
@@ -186,23 +186,23 @@ gulp.task('html', function() {
 
 // for image compression
 gulp.task('images', function() {
-    return gulp.src('src/images/**/*')
+    return gulp.src('frontend/src/images/**/*')
         .pipe(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true }))
-        .pipe(gulp.dest('./dist/images'));
+        .pipe(gulp.dest('frontend/dist/images'));
 });
 
 
 // Fonts
 gulp.task('fonts', function() {
     var font = gulp.src([
-            'bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*'
+            'frontend/bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*'
         ])
-        .pipe(gulp.dest('dist/fonts/'));
+        .pipe(gulp.dest('frontend/dist/fonts/'));
 
     var fontCss = gulp.src([
-            'bower_components/font-awesome/css/font-awesome.css'
+            'frontend/bower_components/font-awesome/css/font-awesome.css'
         ])
-        .pipe(gulp.dest('dist/css/'));
+        .pipe(gulp.dest('frontend/dist/css/'));
 
     return merge(font, fontCss);
 });
@@ -210,7 +210,7 @@ gulp.task('fonts', function() {
 
 // cleaning build process- run clean before deploy and rebuild files again
 gulp.task('clean', function() {
-    return del(['./dist/css', './dist/js', './dist/images', '../dist/vendors', './dist/views'], { force: true });
+    return del(['frontend/dist/css', 'frontend/dist/js', 'frontend/dist/images', '../frontend/dist/vendors', 'frontend/dist/views'], { force: true });
 });
 
 
@@ -218,22 +218,22 @@ gulp.task('clean', function() {
 gulp.task('watch', function() {
 
     // Watch .scss files
-    gulp.watch('src/css/**/*.scss', ['css']);
+    gulp.watch('frontend/src/css/**/*.scss', ['css']);
 
     // Watch .js files
-    gulp.watch('src/js/**/*.js', ['js']);
+    gulp.watch('frontend/src/js/**/*.js', ['js']);
 
     // Watch html files
-    gulp.watch('src/views/**/*.html', ['html']);
+    gulp.watch('frontend/src/views/**/*.html', ['html']);
 
     // Watch image files
-    gulp.watch('src/images/**/*', ['images']);
+    gulp.watch('frontend/src/images/**/*', ['images']);
 
     // Create LiveReload server
     livereload.listen();
 
     // Watch any files in dist/, reload on change
-    gulp.watch(['./dist/**']).on('change', livereload.changed);
+    gulp.watch(['frontend/dist/**']).on('change', livereload.changed);
 
 });
 
@@ -241,7 +241,7 @@ gulp.task('watch', function() {
 // connect to server
 gulp.task('connect', function() {
     connect.server({
-        root: './',
+        root: 'frontend/',
         port: 8888,
         middleware: function(connect) {
             return [

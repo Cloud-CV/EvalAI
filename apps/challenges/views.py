@@ -212,12 +212,12 @@ def test_environment_list(request, challenge_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET', ])
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def test_environment_detail(request, challenge_pk, pk):
     try:
-        Challenge.objects.get(pk=challenge_pk)
+        challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -228,6 +228,28 @@ def test_environment_detail(request, challenge_pk, pk):
         response_data = {'error': 'TestEnvironment does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    serializer = TestEnvironmentSerializer(test_environment)
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
+    if request.method == 'GET':
+        serializer = TestEnvironmentSerializer(test_environment)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    elif request.method in ['PUT', 'PATCH']:
+        if request.method == 'PATCH':
+            serializer = TestEnvironmentSerializer(test_environment,
+                                                   data=request.data,
+                                                   context={'challenge': challenge},
+                                                   partial=True)
+        else:
+            serializer = TestEnvironmentSerializer(test_environment,
+                                                   data=request.data,
+                                                   context={'challenge': challenge})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        test_environment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

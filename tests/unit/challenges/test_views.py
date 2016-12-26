@@ -676,3 +676,67 @@ class GetParticularTestEnvironment(BaseTestEnvironmentClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class UpdateParticularTestEnvironment(BaseTestEnvironmentClass):
+
+    def setUp(self):
+        super(UpdateParticularTestEnvironment, self).setUp()
+        self.url = reverse_lazy('challenges:get_test_environment_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.test_environment.pk})
+
+        self.partial_update_test_environment_name = 'Partial Update Test Environment Name'
+        self.update_test_environment_title = 'Update Test Environment Name'
+        self.update_description = 'Update Test Environment Description'
+        self.data = {
+            'name': self.update_test_environment_title,
+            'description': self.update_description,
+        }
+
+    def test_particular_test_environment_partial_update(self):
+        self.partial_update_data = {
+            'name': self.partial_update_test_environment_name
+        }
+        expected = {
+            "id": self.test_environment.id,
+            "name": self.partial_update_test_environment_name,
+            "description": self.test_environment.description,
+            "leaderboard_public": self.test_environment.leaderboard_public,
+            "start_date": "{0}{1}".format(self.test_environment.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.test_environment.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "challenge": self.test_environment.challenge.pk,
+            "test_annotation": self.test_environment.test_annotation
+        }
+        response = self.client.patch(self.url, self.partial_update_data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @override_settings(MEDIA_ROOT='/tmp/evalai')
+    def test_particular_test_environment_update(self):
+
+        self.update_test_annotation = SimpleUploadedFile('update_test_sample_file.txt',
+                                                         'Dummy update file content', content_type='text/plain')
+        self.data['test_annotation'] = self.update_test_annotation
+        response = self.client.put(self.url, self.data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_particular_challenge_update_with_no_data(self):
+        self.data = {
+            'name': ''
+        }
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteParticularTestEnvironment(BaseTestEnvironmentClass):
+
+    def setUp(self):
+        super(DeleteParticularTestEnvironment, self).setUp()
+        self.url = reverse_lazy('challenges:get_test_environment_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.test_environment.pk})
+
+    def test_particular_challenge_delete(self):
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
