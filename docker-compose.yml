@@ -1,0 +1,28 @@
+version: "2"
+
+services:
+  evalai:
+    container_name: evalai
+    hostname: evalai
+    build: 
+      context: ./
+      dockerfile: docker/web/Dockerfile
+    volumes:
+      - .:/code
+    command: /code/docker/web/container-start.sh
+    ports:
+        - "8001:8000"
+  nodejs:
+    container_name: nodejs
+    hostname: nodejs
+    build:
+      context: ./
+      dockerfile: docker/nodejs/Dockerfile
+    command: /code/docker/nodejs/nginx.sh
+    ports:
+        - "80:80"
+        - "8000:8000"
+    environment:
+      NODE_ENV: production
+    depends_on:
+        - evalai
