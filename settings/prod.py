@@ -3,7 +3,7 @@ from .common import *  # noqa
 import os
 
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
