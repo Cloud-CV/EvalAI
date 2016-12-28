@@ -1,9 +1,6 @@
 FROM python:2.7
 ENV PYTHONUNBUFFERED 1
 
-# For websockets
-# ENV REDIS_HOST "redis"
-
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update \
@@ -19,7 +16,7 @@ RUN mkdir -p /var/run/evalai/ && chown -R evalai /var/run/evalai/ && chmod -R u+
 
 RUN apt-get install -y supervisor
 RUN mkdir -p /var/log/supervisor
-ADD ./docker/web/evalai_supervisor.conf /etc/supervisor/conf.d/evalai.conf
+ADD ./docker/django/evalai_supervisor.conf /etc/supervisor/conf.d/evalai.conf
 
 RUN mkdir /code
 WORKDIR /code
@@ -27,5 +24,5 @@ ADD ./ /code/
 RUN pip install -r requirements/prod.txt
 
 
-CMD ["sh", "/code/docker/web/container-start.sh"]
+CMD ["sh", "/code/docker/django/container-start.sh"]
 EXPOSE 8000

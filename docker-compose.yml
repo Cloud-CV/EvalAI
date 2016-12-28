@@ -1,15 +1,14 @@
 version: "2"
-
 services:
-  evalai:
-    container_name: evalai
-    hostname: evalai
+  django:
+    container_name: django
+    hostname: django
     build: 
       context: ./
-      dockerfile: docker/web/Dockerfile
+      dockerfile: docker/django/Dockerfile
     volumes:
       - .:/code
-    command: /code/docker/web/container-start.sh
+    command: /code/docker/django/container-start.sh
     ports:
         - "8001:8000"
   nodejs:
@@ -18,11 +17,20 @@ services:
     build:
       context: ./
       dockerfile: docker/nodejs/Dockerfile
-    command: /code/docker/nodejs/nginx.sh
-    ports:
-        - "80:80"
-        - "8000:8000"
+    command: /code/docker/nodejs/container-start.sh
     environment:
       NODE_ENV: production
+    volumes:
+      - .:/code
+  nginx:
+    container_name: nginx
+    hostname: nginx
+    build: docker/nginx/
     depends_on:
-        - evalai
+        - django
+        - nodejs
+    ports:
+        - "80:80"
+    volumes_from:
+        - container:nodejs
+    command: /code/docker/nginx/nginx.sh
