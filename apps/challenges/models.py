@@ -37,7 +37,7 @@ class Challenge(TimeStampedModel):
         db_table = 'challenge'
 
 
-class TestEnvironment(TimeStampedModel):
+class ChallengePhase(TimeStampedModel):
     name = models.CharField(max_length=100)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
@@ -50,4 +50,4 @@ class TestEnvironment(TimeStampedModel):
 
     class Meta:
         app_label = 'challenges'
-        db_table = 'challenge_test_env'
+        db_table = 'challenge_phase'
