@@ -29,4 +29,3 @@ RUN pip install -r requirements/prod.txt
 
 CMD ["sh", "/code/docker/web/container-start.sh"]
 EXPOSE 8000
-EXPOSE 8001
