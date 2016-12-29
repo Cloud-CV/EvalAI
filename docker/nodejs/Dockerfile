@@ -1,0 +1,30 @@
+FROM ubuntu:14.04
+
+RUN apt-get update -qq && apt-get install -y build-essential git curl
+RUN apt-get install nodejs-legacy -y
+RUN apt-get install npm -y
+RUN apt-get install -y ruby
+RUN gem install sass
+
+RUN apt-get install -y supervisor
+RUN mkdir -p /var/log/supervisor
+ADD ./docker/nodejs/node_supervisor.conf /etc/supervisor/conf.d/node.conf
+
+RUN mkdir /code
+
+# Add dependencies
+ADD ./ /code
+WORKDIR /code
+
+# Install Prerequisites
+RUN npm install bower -g
+RUN npm install gulp -g
+
+RUN npm cache clean -f
+RUN npm install -g n
+RUN n stable
+
+RUN npm install
+RUN bower install --allow-root
+
+CMD ["sh", "/code/docker/nodejs/container-start.sh"]
