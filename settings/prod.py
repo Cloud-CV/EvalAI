@@ -1,4 +1,4 @@
-from .common import *  # noqa
+from .common import *  # noqa: ignore=F405
 
 import os
 
@@ -54,5 +54,5 @@ REST_FRAMEWORK_DOCS = {
     'HIDE_DOCS': True
 }
 
-#Port number for the python-memcached cache backend.
-CACHES['default']['LOCATION'] = os.environ.get("LOCATION", "")
+# Port number for the python-memcached cache backend.
+CACHES['default']['LOCATION'] = os.environ.get("LOCATION", "") # noqa: ignore=F405
