@@ -243,3 +243,9 @@ REST_FRAMEWORK = {
         'user': '100/minute'
     }
 }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+    }
+}

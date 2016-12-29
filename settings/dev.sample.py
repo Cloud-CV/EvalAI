@@ -33,3 +33,6 @@ SPAGHETTI_SAUCE = {
     'apps': ['auth', 'accounts', 'analytics', 'base', 'challenges', 'hosts', 'jobs', 'participants', 'web'],
     'show_fields': True,
 }
+
+#port number for the python-Memcached cache backend.
+CACHES['default']['LOCATION'] = '127.0.0.1:11211'

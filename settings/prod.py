@@ -53,3 +53,6 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "")
 REST_FRAMEWORK_DOCS = {
     'HIDE_DOCS': True
 }
+
+#Port number for the python-memcached cache backend.
+CACHES['default']['LOCATION'] = os.environ.get("LOCATION", "")
