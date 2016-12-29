@@ -5,7 +5,6 @@ body{
     display:flex;
     flex-direction:column;
 }
-
 .web-container {
     width: calc(100vw - 220px);
     float: right;

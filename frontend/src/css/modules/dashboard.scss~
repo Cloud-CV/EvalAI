@@ -1,0 +1,4 @@
+.dashboard-footer{
+	margin-left:220px;
+	width:60%;
+}
