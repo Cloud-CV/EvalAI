@@ -23,8 +23,7 @@ sys.path.append(APPS_DIR)
 
 TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend')
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Don't forget to use absolute paths, not relative paths.
+
     TEMPLATE_PATH,
 )
 # Quick-start development settings - unsuitable for production
