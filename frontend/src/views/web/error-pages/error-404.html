@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html ng-app="evalai">
+<head>
+    <title> 
+      404 | Page Not Found
+    </title>
+  <link rel="stylesheet" type="text/css" href="/dist/vendors/vendor.css">
+
+  <!-- fonts css -->
+  <link rel="stylesheet" type="text/css" href="/dist/css/font-awesome.css">
+  <!-- evalAi main styles -->
+  <link rel="stylesheet" type="text/css" href="/dist/css/main.css">
+
+</head>
+
+<body>
+  <div ui-view>
+    <div class="logo">
+      <img class="error" src="/dist/images/error-404.png" alt="404 error">
+    </div>
+    <div class="link">
+      <a class="home" ui-sref="home"> 
+        Go back to Homepage 
+      </a>
+    </div>
+  </div>
+
+  <!-- html5shiv for IE8 -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+
+  <!-- angular, angular-material, angular-animate, angular-message, angular-aria, angular-ui-router files -->
+  <script type="text/javascript" src="/dist/vendors/vendor.js"></script>
+
+  <!-- evalAI main scripts -->
+  <script type="text/javascript" src="/dist/js/app.js"></script>
+  <script type="text/javascript" src="/dist/js/config.js"></script>
+  <script type="text/javascript" src="/dist/js/route-config.js"></script>
+  <script type="text/javascript" src="/dist/js/services.js"></script>
+  <script type="text/javascript" src="/dist/js/directives.js"></script>
+  <script type="text/javascript" src="/dist/js/filters.js"></script>
+  <script type="text/javascript" src="/dist/js/controllers.js"></script>
+</body>
+
+</html>

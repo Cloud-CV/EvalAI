@@ -240,7 +240,7 @@
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
 
-        $urlRouterProvider.otherwise("/");
+        $urlRouterProvider.otherwise(baseUrl+"web/error-pages/error-404.html");
 
     }
 
