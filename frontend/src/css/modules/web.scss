@@ -1,5 +1,11 @@
 /*main container style*/
 
+body{
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 .web-container {
     width: calc(100vw - 220px);
     float: right;
