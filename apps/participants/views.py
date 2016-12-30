@@ -5,12 +5,14 @@ from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,
-                                       renderer_classes,)
+                                       renderer_classes,
+                                       throttle_classes,)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import response, schemas
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
+from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 from challenges.models import Challenge
@@ -24,6 +26,7 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ChallengeParticipantTeamSerializer,)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -54,6 +57,7 @@ def participant_team_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -92,6 +96,7 @@ def participant_team_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -114,6 +119,7 @@ def invite_participant_to_team(request, pk):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -148,6 +154,7 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
