@@ -1,5 +1,7 @@
 version: "2"
 services:
+  db:
+    image: postgres
   django:
     container_name: django
     hostname: django
@@ -11,6 +13,8 @@ services:
     command: /code/docker/django/container-start.sh
     ports:
         - "8001:8000"
+    depends_on:
+      - db
   nodejs:
     container_name: nodejs
     hostname: nodejs
@@ -33,4 +37,6 @@ services:
         - "80:80"
     volumes_from:
         - container:nodejs
+    links:
+      - "django:django"
     command: /code/docker/nginx/nginx.sh

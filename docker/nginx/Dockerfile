@@ -1,4 +1,5 @@
 FROM nginx:1.10
+MAINTAINER Deshraj
 
 RUN apt-get update && apt-get install -qqy --no-install-recommends \
     supervisor \

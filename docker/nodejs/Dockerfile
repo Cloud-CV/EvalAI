@@ -1,4 +1,5 @@
 FROM ubuntu:14.04
+MAINTAINER Deshraj
 
 RUN apt-get update -qq && apt-get install -y build-essential git curl
 RUN apt-get install nodejs-legacy -y
