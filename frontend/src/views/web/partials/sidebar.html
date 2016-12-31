@@ -1,52 +1,7 @@
 <!-- define all main links here for navigation -->
-<div class="ev-sidebar ev-fixed z-depth-3 fixed" id="sidebarToggle">
+<div class="ev-sidebar ev-fixed z-depth-3 fixed" id="sidebarToggle" id="sidebarToggleTab" >
     <div class="side-intro ev-md-container fixed">
         <scroll-shadow></scroll-shadow>
-        <div class="w-400 side-logo">EvalAI</div>
-        <div class="w-300 text-light-gray">{{web.name}} <i class="fa fa-caret-down"></i></div>
-    </div>
-    <div class="links-section-outer">
-        <div class="links-section ">
-            <ul class="nav-links">
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.dashboard" ui-sref-active="side-active-link">
-                        <i class="fa fa-signal side-link-icon"></i> Dashboard</a>
-                </li>
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.teams" ui-sref-active="side-active-link">
-                        <i class="fa fa-users side-link-icon"></i> Teams</a>
-                </li>
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.challenge-main" ui-sref-active="side-active-link">
-                        <i class="fa fa-fire side-link-icon"></i> Challenge Page</a>
-                </li>
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.host-challenge" ui-sref-active="side-active-link">
-                        <i class="fa fa-paper-plane side-link-icon"></i> Host Competition</a>
-                </li>
-            </ul>
-            <ul>
-                <li class="text-highlight side-title w-500 ">My Details</li>
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.profile" ui-sref-active="side-active-link">
-                        <i class="fa fa-user side-link-icon"></i> My Profile</a>
-                </li>
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.update-profile" ui-sref-active="side-active-link">
-                        <i class="fa fa-pencil side-link-icon"></i> Update Profile</a>
-                </li>
-                <li>
-                    <a class="waves-effect waves-dark pointer text-light-gray ev-md-container" ng-click="logout()" ui-sref-active="side-active-link">
-                        <i class="fa fa-sign-out side-link-icon"></i> Logout</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-<!-- define all main links here for navigation -->
-<div class="ev-sidebar ev-fixed z-depth-3 fixed hide-on-small-only">
-    <div class="side-intro ev-md-container fixed">
-        <!-- <scroll-shadow></scroll-shadow> -->
         <div class="w-400 side-logo">EvalAI</div>
         <div class="w-300 text-light-gray">{{web.name}} <i class="fa fa-caret-down"></i></div>
     </div>
