@@ -1,5 +1,15 @@
 /*main container style*/
 
+.dashboard-flex{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.dashboard-content{
+	flex: 1;
+}
+
 .web-container {
     width: calc(100vw - 220px);
     float: right;
