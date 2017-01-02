@@ -1,23 +1,31 @@
 /* Error-404 styles */
 
-.logo{
-  padding-top: 100px;
-  width: 100%;
-}
+.wrapper {
+  position: absolute;
+  text-align: center;
+  width:100% ;
+  left: 0;
+  margin-top: 100px;
 
-.link {
-  width: 100%;
+} 
+
+.error_container {
+  font-family: "Roboto";
+  font-style: normal;
 }
 
 .error {
-  display: block;
-  margin: 0 auto;
+  font-size: 100px;
+  font-weight: bold;
+}
+
+.message {
+  margin-top: 10px;
+  font-size: 20px;
 }
 
 .home {
-  position: absolute;
-  text-align: center;
-  font-size: 20px;
-  left: 0;
-  width: 100%;
+  margin-top: 50px;
+  font-size: 30px;
+  font-family: "Roboto";
 }

@@ -15,14 +15,23 @@
 
 <body>
   <div ui-view>
-    <div class="logo">
-      <img class="error" src="/dist/images/error-404.png" alt="404 error">
+
+    <div class="wrapper">
+      <div class="error_container">
+        <div class="error">
+          Error 404
+        </div>
+
+        <div class="message">
+          Woops. Looks like this page doesn't exist.
+        </div>
+      </div>
+
+      <div class="home">
+        Go Back to <a ui-sref="home"> www.evalai.cloudcv.org </a>
+      </div>
     </div>
-    <div class="link">
-      <a class="home" ui-sref="home"> 
-        Go back to Homepage 
-      </a>
-    </div>
+
   </div>
 
   <!-- html5shiv for IE8 -->
