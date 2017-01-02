@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from hosts.serializers import ChallengeHostTeamSerializer
 
-from .models import Challenge
+from .models import Challenge, ChallengePhase
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
@@ -22,3 +22,18 @@ class ChallengeSerializer(serializers.ModelSerializer):
                   'submission_guidelines', 'evaluation_details',
                   'image', 'start_date', 'end_date', 'creator',
                   'published', 'enable_forum', 'anonymous_leaderboard',)
+
+
+class ChallengePhaseSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        super(ChallengePhaseSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get('context')
+        if context:
+            challenge = context.get('challenge')
+            kwargs['data']['challenge'] = challenge.pk
+
+    class Meta:
+        model = ChallengePhase
+        fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
+                  'end_date', 'challenge', 'test_annotation',)

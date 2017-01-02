@@ -1,16 +1,20 @@
 import json
+import os
+import shutil
 
 from datetime import timedelta
 
 from django.core.urlresolvers import reverse_lazy
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
+from django.test import override_settings
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge
+from challenges.models import Challenge, ChallengePhase
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 
@@ -540,3 +544,199 @@ class GetAllChallengesTest(BaseAPITestClass):
         response = self.client.get(self.url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['results'], expected)
+
+
+class BaseChallengePhaseClass(BaseAPITestClass):
+
+    def setUp(self):
+        super(BaseChallengePhaseClass, self).setUp()
+        try:
+            os.makedirs('/tmp/evalai')
+        except OSError:
+            pass
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase = ChallengePhase.objects.create(
+                name='Challenge Phase',
+                description='Description for Challenge Phase',
+                leaderboard_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain')
+            )
+
+    def tearDown(self):
+        shutil.rmtree('/tmp/evalai')
+
+
+class GetChallengePhaseTest(BaseChallengePhaseClass):
+
+    def setUp(self):
+        super(GetChallengePhaseTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_challenge_phase_list',
+                                kwargs={'challenge_pk': self.challenge.pk})
+
+    def test_get_challenge_phase(self):
+        expected = [
+            {
+                "id": self.challenge_phase.id,
+                "name": self.challenge_phase.name,
+                "description": self.challenge_phase.description,
+                "leaderboard_public": self.challenge_phase.leaderboard_public,
+                "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "challenge": self.challenge_phase.challenge.pk,
+                "test_annotation": self.challenge_phase.test_annotation
+            }
+        ]
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_particular_challenge_for_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_challenge_phase_list',
+                                kwargs={'challenge_pk': self.challenge.pk + 1})
+        expected = {
+            'error': 'Challenge does not exist'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class CreateChallengePhaseTest(BaseChallengePhaseClass):
+
+    def setUp(self):
+        super(CreateChallengePhaseTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_challenge_phase_list',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.data = {
+            'name': 'New Challenge Phase',
+            'description': 'Description for new challenge phase'
+        }
+
+    @override_settings(MEDIA_ROOT='/tmp/evalai')
+    def test_create_challenge_phase_with_all_data(self):
+        self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
+                                                          'Another Dummy file content',
+                                                          content_type='text/plain')
+        response = self.client.post(self.url, self.data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_challenge_phase_with_no_data(self):
+        del self.data['name']
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class GetParticularChallengePhase(BaseChallengePhaseClass):
+
+    def setUp(self):
+        super(GetParticularChallengePhase, self).setUp()
+        self.url = reverse_lazy('challenges:get_challenge_phase_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.challenge_phase.pk})
+
+    def test_get_particular_challenge_phase(self):
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": self.challenge_phase.name,
+            "description": self.challenge_phase.description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "test_annotation": self.challenge_phase.test_annotation
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_particular_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_challenge_phase_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.challenge_phase.pk + 1})
+        expected = {
+            'error': 'ChallengePhase does not exist'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_particular_challenge_host_team_for_challenge_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_challenge_phase_detail',
+                                kwargs={'challenge_pk': self.challenge.pk + 1,
+                                        'pk': self.challenge_phase.pk})
+        expected = {
+            'error': 'Challenge does not exist'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class UpdateParticularChallengePhase(BaseChallengePhaseClass):
+
+    def setUp(self):
+        super(UpdateParticularChallengePhase, self).setUp()
+        self.url = reverse_lazy('challenges:get_challenge_phase_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.challenge_phase.pk})
+
+        self.partial_update_challenge_phase_name = 'Partial Update Challenge Phase Name'
+        self.update_challenge_phase_title = 'Update Challenge Phase Name'
+        self.update_description = 'Update Challenge Phase Description'
+        self.data = {
+            'name': self.update_challenge_phase_title,
+            'description': self.update_description,
+        }
+
+    def test_particular_challenge_phase_partial_update(self):
+        self.partial_update_data = {
+            'name': self.partial_update_challenge_phase_name
+        }
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": self.partial_update_challenge_phase_name,
+            "description": self.challenge_phase.description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "test_annotation": self.challenge_phase.test_annotation
+        }
+        response = self.client.patch(self.url, self.partial_update_data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @override_settings(MEDIA_ROOT='/tmp/evalai')
+    def test_particular_challenge_phase_update(self):
+
+        self.update_test_annotation = SimpleUploadedFile('update_test_sample_file.txt',
+                                                         'Dummy update file content', content_type='text/plain')
+        self.data['test_annotation'] = self.update_test_annotation
+        response = self.client.put(self.url, self.data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_particular_challenge_update_with_no_data(self):
+        self.data = {
+            'name': ''
+        }
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteParticularChallengePhase(BaseChallengePhaseClass):
+
+    def setUp(self):
+        super(DeleteParticularChallengePhase, self).setUp()
+        self.url = reverse_lazy('challenges:get_challenge_phase_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.challenge_phase.pk})
+
+    def test_particular_challenge_delete(self):
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

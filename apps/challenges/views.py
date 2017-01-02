@@ -5,20 +5,23 @@ from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
-                                       permission_classes,)
+                                       permission_classes,
+                                       throttle_classes,)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import Participant, ParticipantTeam
 
-from .models import Challenge
+from .models import Challenge, ChallengePhase
 from .permissions import IsChallengeCreator
-from .serializers import ChallengeSerializer
+from .serializers import ChallengeSerializer, ChallengePhaseSerializer
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -48,6 +51,7 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -91,6 +95,7 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -131,6 +136,7 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         return Response(status=status.HTTP_201_CREATED)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -154,6 +160,7 @@ def disable_challenge(request, pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
+@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
 def get_all_challenges(request, challenge_time):
     """
@@ -181,3 +188,77 @@ def get_all_challenges(request, challenge_time):
     except:
         response_data = {'error': 'Wrong url pattern!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', 'POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def challenge_phase_list(request, challenge_pk):
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if request.method == 'GET':
+        challenge_phase = ChallengePhase.objects.filter(challenge=challenge)
+        paginator = PageNumberPagination()
+        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+        result_page = paginator.paginate_queryset(challenge_phase, request)
+        serializer = ChallengePhaseSerializer(result_page, many=True)
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+
+    elif request.method == 'POST':
+        serializer = ChallengePhaseSerializer(data=request.data,
+                                              context={'challenge': challenge})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def challenge_phase_detail(request, challenge_pk, pk):
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        challenge_phase = ChallengePhase.objects.get(pk=pk)
+    except ChallengePhase.DoesNotExist:
+        response_data = {'error': 'ChallengePhase does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if request.method == 'GET':
+        serializer = ChallengePhaseSerializer(challenge_phase)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    elif request.method in ['PUT', 'PATCH']:
+        if request.method == 'PATCH':
+            serializer = ChallengePhaseSerializer(challenge_phase,
+                                                  data=request.data,
+                                                  context={'challenge': challenge},
+                                                  partial=True)
+        else:
+            serializer = ChallengePhaseSerializer(challenge_phase,
+                                                  data=request.data,
+                                                  context={'challenge': challenge})
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        challenge_phase.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

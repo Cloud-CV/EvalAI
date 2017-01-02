@@ -54,10 +54,9 @@ Follow this guide to setup your development machine.
     ```
 
 
-7. Open a new terminal window with node install on your machine and type
+7. Open a new terminal window with node(6.9.2) and ruby(gem) install on your machine and type
 
     ```
-    cd frontend
     npm install
     bower install
     ```
