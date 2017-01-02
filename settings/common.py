@@ -23,7 +23,6 @@ sys.path.append(APPS_DIR)
 
 TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend')
 TEMPLATE_DIRS = (
-
     TEMPLATE_PATH,
 )
 

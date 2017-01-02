@@ -10,7 +10,7 @@ def page_not_found(request):
     return response
 
 
-def server_error(request):
+def internal_server_error(request):
     response = render('src/views/web/error/500.html',
                       context_instance=RequestContext(request)
                       )
