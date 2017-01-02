@@ -5,10 +5,12 @@ from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
-                                       permission_classes,)
+                                       permission_classes,
+                                       throttle_classes,)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 from hosts.models import ChallengeHost, ChallengeHostTeam
@@ -19,6 +21,7 @@ from .permissions import IsChallengeCreator
 from .serializers import ChallengeSerializer, ChallengePhaseSerializer
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -48,6 +51,7 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -91,6 +95,7 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -131,6 +136,7 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         return Response(status=status.HTTP_201_CREATED)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -154,6 +160,7 @@ def disable_challenge(request, pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
+@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
 def get_all_challenges(request, challenge_time):
     """
@@ -183,6 +190,7 @@ def get_all_challenges(request, challenge_time):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -212,6 +220,7 @@ def challenge_phase_list(request, challenge_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))

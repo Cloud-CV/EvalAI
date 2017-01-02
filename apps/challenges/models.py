@@ -47,6 +47,8 @@ class ChallengePhase(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)")
     challenge = models.ForeignKey('Challenge')
     test_annotation = models.FileField(upload_to="testAnnotations")
+    max_submissions_per_day = models.PositiveIntegerField(default=100000)
+    max_submissions = models.PositiveIntegerField(default=100000)
 
     class Meta:
         app_label = 'challenges'
