@@ -1,0 +1,1 @@
+<ng-include src=" 'src/views/web/partials/footer.html' "></ng-include>
