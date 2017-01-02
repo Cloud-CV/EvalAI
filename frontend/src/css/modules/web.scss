@@ -1,9 +1,13 @@
 /*main container style*/
 
-body{
-    min-height: 100%;
+.dashboard-flex{
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
+}
+
+.dashboard-content{
+	flex: 1;
 }
 
 .web-container {
