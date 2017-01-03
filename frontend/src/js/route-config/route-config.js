@@ -208,11 +208,10 @@
             authenticate: true
         }
 
-        var error = {
-            name: "error",
-            url: "/error",
+        var error_404 = {
+            name: "error-404",
             templateUrl: baseUrl + "/web/error-pages/error-404.html",
-            title: "Error 404"
+            title: "Error 404",
         }
 
 
@@ -247,10 +246,13 @@
         $stateProvider.state(profile);
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
-        $stateProvider.state(error);
+        $stateProvider.state(error_404);
 
-        $urlRouterProvider.otherwise('/error');
-
+        $urlRouterProvider.otherwise(function($injector, $location){
+            var state = $injector.get('$state');
+            state.go('error-404');
+            return $location.path();
+        });
     }
 
 })();
