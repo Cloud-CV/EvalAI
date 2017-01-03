@@ -5,6 +5,8 @@ services:
   django:
     container_name: django
     hostname: django
+    env_file:
+      - docker/dev.env
     build: 
       context: ./
       dockerfile: docker/dev/django/Dockerfile
