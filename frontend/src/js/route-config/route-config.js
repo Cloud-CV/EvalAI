@@ -208,6 +208,14 @@
             authenticate: true
         }
 
+        var error = {
+            name: "error",
+            url: "/error",
+            templateUrl: baseUrl + "/web/error-pages/error-404.html",
+            title: "Error 404"
+        }
+
+
 
         // call all states here
         $stateProvider.state(home);
@@ -239,8 +247,9 @@
         $stateProvider.state(profile);
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
+        $stateProvider.state(error);
 
-        $urlRouterProvider.otherwise(baseUrl+"web/error-pages/error-404.html");
+        $urlRouterProvider.otherwise('/error');
 
     }
 

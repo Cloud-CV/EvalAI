@@ -1,6 +1,6 @@
 /* Error-404 styles */
 
-.wrapper {
+.fof-wrapper {
   position: absolute;
   text-align: center;
   width:100% ;
@@ -9,22 +9,22 @@
 
 } 
 
-.error_container {
+.fof-error-container {
   font-family: "Roboto";
   font-style: normal;
 }
 
-.error {
+.fof-error {
   font-size: 100px;
   font-weight: bold;
 }
 
-.message {
+.fof-message {
   margin-top: 10px;
   font-size: 20px;
 }
 
-.home {
+.fof-home {
   margin-top: 50px;
   font-size: 30px;
   font-family: "Roboto";
