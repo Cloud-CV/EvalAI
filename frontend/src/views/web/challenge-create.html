@@ -1,0 +1,63 @@
+<section class="ev-sm-container ev-view ">
+    <div class="row">
+        <div class="col s12 m12 l12">
+            <div class=" ev-card-panel ev-z-depth-5">
+                <div class="ev-md-container ev-panel-title"><strong>Create Challenge</strong></div>
+                <div class="ev-md-container ev-card-body create-challenge-card">
+                    <form ng-submit="challenge_create.createChallenge()">
+
+                        <div class="input-field align-left">
+                            <input id="title" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge_create.title" focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                            <label for="title" data-error="wrong" data-success="right">Title*</label>
+                        </div>
+
+                        <div class="input-field align-left">
+                            <input id="description" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge_create.description" focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                            <label for="description" data-error="wrong" data-success="right">Description*</label>
+                        </div>
+
+                        <div class="input-field align-left">
+                            <input id="terms_and_conditions" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge_create.terms_and_conditions" focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                            <label for="terms_and_conditions" data-error="wrong" data-success="right">Terms and Conditions*</label>
+                        </div>
+
+                        <div class="input-field align-left">
+                            <input id="submission_guidelines" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge_create.submission_guidelines" focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                            <label for="submission_guidelines" data-error="wrong" data-success="right">Submission Guidelines*</label>
+                        </div>
+
+                        <div class="col s12 align-left rm-gut">
+                            <input type="checkbox" class="filled-in" ng-model="challenge_create.published" id="published">
+                            <label for="published">Make Challenge Public</label>
+                        </div>
+
+                        <div class="col s12 align-left rm-gut">
+                            <input type="checkbox" class="filled-in" ng-model="challenge_create.anonymous_leaderboard" id="anonymous_leaderboard">
+                            <label for="anonymous_leaderboard">Anonymous Leaderboard</label>
+                        </div>
+
+                        <div class="col s12 align-left rm-gut">
+                            <md-input-container flex-gt-md="30">
+                                <label>Timepicker Only</label>
+                                <input mdc-datetime-picker date="false" time="true" type="text" id="time" short-time="true"
+                                       placeholder="Time"
+                                       min-date="minDate"
+                                       format="hh:mm a"
+                                       ng-model="time">
+                            </md-input-container>
+                        </div>
+
+                        <div class="align-left reg-control">
+                            <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Proceed</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

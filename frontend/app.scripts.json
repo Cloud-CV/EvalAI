@@ -11,8 +11,10 @@
       "materialize",
       "lodash",
       "ngSmoothScroll",
-      "ng-focus-if"
-
+      "ng-focus-if",
+      "moment",
+      "ngMaterialDatePicker",
+      "ngRoute"
     ]
   },
   "paths": {
@@ -26,7 +28,9 @@
        "materialize": "bower_components/materialize/dist/js/materialize.min.js",
        "lodash": "bower_components/lodash/dist/lodash.min.js",
        "ngSmoothScroll": "bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js",
-       "ng-focus-if": "bower_components/ng-focus-if/focusIf.min.js"
-
+       "ng-focus-if": "bower_components/ng-focus-if/focusIf.min.js",
+       "moment": "bower_components/momentjs/min/moment.min.js",
+       "ngMaterialDatePicker": "bower_components/angular-material-datetimepicker/js/angular-material-datetimepicker.min.js",
+       "ngRoute": "bower_components/angular-route/angular-route.min.js"
      }
 }

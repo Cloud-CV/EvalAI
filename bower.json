@@ -27,6 +27,9 @@
     "ng-focus-if": "master"
   },
   "resolutions": {
-    "angular": "^1.6.1"
+    "angular": "^1.6.1",
+    "angular-ui-router": "^0.3.1",
+    "moment": "^2.16.0",
+    "angular-material": "^1.1.1"
   }
 }
