@@ -199,7 +199,11 @@
                     utilities.storeData('challengeHostTeamPk', vm.teamId);
 
                     // navigate to challenge creation page
+<<<<<<< HEAD
                     $state.go('web.challenge-create');
+=======
+                    // $state.go('web.challenge-create');
+>>>>>>> master
                     vm.stopLoader();
                 },
                 onError: function(response) {
