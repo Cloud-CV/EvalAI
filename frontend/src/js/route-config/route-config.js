@@ -109,7 +109,7 @@
         var challenge_host_teams = {
             name: "web.challenge-host-teams",
             parent: "web",
-            url: "/teams/challenge-host",
+            url: "/challenge-host-teams",
             templateUrl: baseUrl + "/web/challenge-host-teams.html",
             controller: 'ChallengeHostTeamsCtrl',
             controllerAs: 'challengeHostTeams',
