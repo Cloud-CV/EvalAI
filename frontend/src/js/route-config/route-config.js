@@ -128,18 +128,6 @@
             authenticate: true
         }
 
-        var challenge_create = {
-            name: "web.challenge-create",
-            parent: "web",
-            url: "/challenges/create",
-            templateUrl: baseUrl + "/web/challenge-create.html",
-            title: 'Create Challenge',
-            controller: 'ChallengeCreateCtrl',
-            controllerAs: 'challengeCreate',
-            // redirectTo: "web.challenge-create.challenge-list",
-            authenticate: true
-        }
-
          var challenge_list = {
             name: "web.challenge-main.challenge-list",
             parent: "web.challenge-main",
@@ -260,9 +248,6 @@
         // challenges list page
         $stateProvider.state(challenge_main);
         $stateProvider.state(challenge_list);
-
-        // challenge create page
-        $stateProvider.state(challenge_create);
 
         // challenge details
         $stateProvider.state(challenge_page);
