@@ -22,6 +22,3 @@ class TestErrorPages(TestCase):
         response = internal_server_error(request)
         self.assertEqual(response.status_code, 500)
         self.assertIn('500 Internal Server Error', unicode(response))
-
-
-
