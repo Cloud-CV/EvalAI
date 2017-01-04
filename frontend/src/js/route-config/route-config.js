@@ -106,6 +106,17 @@
             authenticate: true
         }
 
+        var challenge_host_teams = {
+            name: "web.challenge-host-teams",
+            parent: "web",
+            url: "/teams/challenge-host",
+            templateUrl: baseUrl + "/web/challenge-host-teams.html",
+            controller: 'ChallengeHostTeamsCtrl',
+            controllerAs: 'challengeHostTeams',
+            title: 'Challenge Host Teams',
+            authenticate: true
+        }
+
         var challenge_main = {
             name: "web.challenge-main",
             parent: "web",
@@ -114,6 +125,18 @@
             // controller: 'ChallengeMainCtrl',
             // controllerAs: 'challengeMain',
             redirectTo: "web.challenge-main.challenge-list",
+            authenticate: true
+        }
+
+        var challenge_create = {
+            name: "web.challenge-create",
+            parent: "web",
+            url: "/challenges/create",
+            templateUrl: baseUrl + "/web/challenge-create.html",
+            title: 'Create Challenge',
+            controller: 'ChallengeCreateCtrl',
+            controllerAs: 'challengeCreate',
+            // redirectTo: "web.challenge-create.challenge-list",
             authenticate: true
         }
 
@@ -231,9 +254,15 @@
         $stateProvider.state(dashboard);
         $stateProvider.state(teams);
 
+        // challenge host teams
+        $stateProvider.state(challenge_host_teams);
+
         // challenges list page
         $stateProvider.state(challenge_main);
         $stateProvider.state(challenge_list);
+
+        // challenge create page
+        $stateProvider.state(challenge_create);
 
         // challenge details
         $stateProvider.state(challenge_page);
