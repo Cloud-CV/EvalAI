@@ -1,14 +1,27 @@
-from django.core.urlresolvers import reverse, resolve
+from django.test.client import RequestFactory
 from django.test import TestCase
 
-from evalai.urls import * # noqa: ignore=F405
+from evalai.views import page_not_found, internal_server_error
+from evalai import urls
 
 
-class TestURLs(TestCase):
+class TestErrorPages(TestCase):
 
-    def test_obtain_expiring_auth_token(self):
-        url = reverse('obtain_expiring_auth_token')
-        self.assertEqual(url, '/api/auth/login')
+    def test_error_handlers_404(self):
+        self.assertTrue(urls.handler404.endswith('.page_not_found'))
+        factory = RequestFactory()
+        request = factory.get('/')
+        response = page_not_found(request)
+        self.assertEqual(response.status_code, 404)
+        self.assertIn('Error 404', unicode(response))
 
-        resolver = resolve('/api/auth/login')
-        self.assertEqual(resolver.view_name, 'obtain_expiring_auth_token')
+    def test_error_handlers_500(self):
+        self.assertTrue(urls.handler500.endswith('.internal_server_error'))
+        factory = RequestFactory()
+        request = factory.get('/')
+        response = internal_server_error(request)
+        self.assertEqual(response.status_code, 500)
+        self.assertIn('500 Internal Server Error', unicode(response))
+
+
+
