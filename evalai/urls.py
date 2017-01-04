@@ -34,7 +34,7 @@ urlpatterns = [url(r'^',
                url(r'^admin/',
                    admin.site.urls),
                url(r'^api/auth/login',
-                   obtain_expiring_auth_token),
+                   obtain_expiring_auth_token, name='obtain_expiring_auth_token'),
                url(r'^api/auth/',
                    include('rest_auth.urls')),
                url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',   # noqa
