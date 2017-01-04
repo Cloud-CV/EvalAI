@@ -87,7 +87,7 @@
                         utilities.storeData('challengeHostTeamPk', vm.teamId);
 
                         // redirect the user to challenge creation page
-                        $state.go('web.challenge-create');
+                        // $state.go('web.challenge-create');
                     }
 
                     // to load data with pagination
@@ -199,7 +199,7 @@
                     utilities.storeData('challengeHostTeamPk', vm.teamId);
 
                     // navigate to challenge creation page
-                    $state.go('web.challenge-create');
+                    // $state.go('web.challenge-create');
                     vm.stopLoader();
                 },
                 onError: function(response) {
