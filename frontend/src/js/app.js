@@ -7,7 +7,5 @@ angular
 		'ngMessages',
 		'evalai-config',
 		'smoothScroll',
-		'focus-if',
-		'ngRoute',
-		'ngMaterialDatePicker'
+		'focus-if'
 	]);

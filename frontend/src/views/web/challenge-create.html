@@ -4,51 +4,60 @@
             <div class=" ev-card-panel ev-z-depth-5">
                 <div class="ev-md-container ev-panel-title"><strong>Create Challenge</strong></div>
                 <div class="ev-md-container ev-card-body create-challenge-card">
-                    <form ng-submit="challenge_create.createChallenge()">
+                    <form ng-submit="challengeCreate.createChallenge()">
 
                         <div class="input-field align-left">
-                            <input id="title" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge_create.title" focus-if>
+                            <input id="title" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.title" focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                             <label for="title" data-error="wrong" data-success="right">Title*</label>
+                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.title">{{challengeCreate.wrnMsg.title}}</div>
                         </div>
 
                         <div class="input-field align-left">
-                            <input id="description" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge_create.description" focus-if>
+                            <input id="description" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.description" focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                             <label for="description" data-error="wrong" data-success="right">Description*</label>
+                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.description">{{challengeCreate.wrnMsg.description}}</div>
                         </div>
 
                         <div class="input-field align-left">
-                            <input id="terms_and_conditions" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge_create.terms_and_conditions" focus-if>
+                            <input id="terms_and_conditions" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.terms_and_conditions" focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                             <label for="terms_and_conditions" data-error="wrong" data-success="right">Terms and Conditions*</label>
+                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.terms_and_conditions">{{challengeCreate.wrnMsg.terms_and_conditions}}</div>
                         </div>
 
                         <div class="input-field align-left">
-                            <input id="submission_guidelines" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge_create.submission_guidelines" focus-if>
+                            <input id="submission_guidelines" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.submission_guidelines" focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                             <label for="submission_guidelines" data-error="wrong" data-success="right">Submission Guidelines*</label>
+                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.submission_guidelines">{{challengeCreate.wrnMsg.submission_guidelines}}</div>
+                        </div>
+
+                        <div class="input-field align-left">
+                            <input id="start_date" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.start_date" focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                            <label for="start_date" data-error="wrong" data-success="right">Start Date*</label>
+                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.start_date">{{challengeCreate.wrnMsg.start_date}}</div>
+                        </div>
+
+                        <div class="input-field align-left">
+                            <input id="end_date" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.end_date" focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                            <label for="end_date" data-error="wrong" data-success="right">End Date*</label>
+                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.end_date">{{challengeCreate.wrnMsg.end_date}}</div>
                         </div>
 
                         <div class="col s12 align-left rm-gut">
-                            <input type="checkbox" class="filled-in" ng-model="challenge_create.published" id="published">
+                            <input type="checkbox" class="filled-in" ng-model="challengeCreate.published" id="published">
                             <label for="published">Make Challenge Public</label>
+                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.published">{{challengeCreate.wrnMsg.published}}</div>
                         </div>
 
                         <div class="col s12 align-left rm-gut">
-                            <input type="checkbox" class="filled-in" ng-model="challenge_create.anonymous_leaderboard" id="anonymous_leaderboard">
+                            <input type="checkbox" class="filled-in" ng-model="challengeCreate.anonymous_leaderboard" id="anonymous_leaderboard">
                             <label for="anonymous_leaderboard">Anonymous Leaderboard</label>
-                        </div>
-
-                        <div class="col s12 align-left rm-gut">
-                            <md-input-container flex-gt-md="30">
-                                <label>Timepicker Only</label>
-                                <input mdc-datetime-picker date="false" time="true" type="text" id="time" short-time="true"
-                                       placeholder="Time"
-                                       min-date="minDate"
-                                       format="hh:mm a"
-                                       ng-model="time">
-                            </md-input-container>
+                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.anonymous_leaderboard">{{challengeCreate.wrnMsg.anonymous_leaderboard}}</div>
                         </div>
 
                         <div class="align-left reg-control">

@@ -12,54 +12,74 @@
     function ChallengeCreateCtrl(utilities, $state, $http, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
+        var hostTeamId = utilities.getData('challengeHostTeamPk');
         vm.wrnMsg = {};
         vm.isValid = {};
 
-        // function to change password
+        // function to create a challenge
         vm.createChallenge = function() {
-            // vm.loginContainer = angular.element('.change-passowrd-card');
-
             var parameters = {};
-            parameters.url = 'auth/password/change/';
+            parameters.url = 'challenges/challenge_host_team/' + hostTeamId +'/challenge';
             parameters.method = 'POST';
             parameters.data = {
-                "old_password": vm.user.old_password,
-                "new_password1": vm.user.new_password1,
-                "new_password2": vm.user.new_password2,
+                "title": vm.title,
+                "description": vm.description,
+                "terms_and_conditions": vm.terms_and_conditions,
+                "submission_guidelines": vm.submission_guidelines,
+                "published": vm.published,
+                "anonymous_leaderboard": vm.anonymous_leaderboard,
+                "start_date": vm.start_date,
+                "end_date": vm.end_date
             }
+
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
                     var response = response.data;
-                    vm.user.error = false;
-                    console.log("PASSWORD CHANGED SUCCESSFULLY");
                     console.log(response);
-                    // navigate to challenge page
-                    // $state.go('web.challenge-page.overview');
+                    // navigate to Challenge List Page
+                    $state.go('web.challenge-main.challenge-list');
                 },
                 onError: function(response) {
                     var status = response.status;
                     var error = response.data;
-                    vm.user.error = "Failed";
-                    if (status == 400) {
-                        console.log("ERROR Occured");
-                        console.log(error);
-                        angular.forEach(error, function(value, key) {
-                            if (key == 'old_password') {
-                                vm.isValid.old_password = true;
-                                vm.wrnMsg.old_password = value[0];
-                            }
-                            if (key == 'new_password1') {
-                                vm.isValid.new_password1 = true;
-                                vm.wrnMsg.new_password1 = value[0];
-                            }
-                            if (key == 'new_password2' || key == 'non_field_errors') {
-                                vm.isValid.new_password2 = true;
-                                vm.wrnMsg.new_password2 = value[0];
-                            }
-                        })
-                    }
+                    console.log("Error");
+                    console.log(error);
+                    angular.forEach(error, function(value, key) {
+                        if (key == 'title') {
+                            vm.isValid.title = true;
+                            vm.wrnMsg.title = value[0];
+                        }
+                        if (key == 'description') {
+                            vm.isValid.description = true;
+                            vm.wrnMsg.description = value[0];
+                        }
+                        if (key == 'terms_and_conditions') {
+                            vm.isValid.terms_and_conditions = true;
+                            vm.wrnMsg.terms_and_conditions = value[0];
+                        }
+                        if (key == 'submission_guidelines') {
+                            vm.isValid.submission_guidelines = true;
+                            vm.wrnMsg.submission_guidelines = value[0];
+                        }
+                        if (key == 'published') {
+                            vm.isValid.published = true;
+                            vm.wrnMsg.published = value[0];
+                        }
+                        if (key == 'anonymous_leaderboard') {
+                            vm.isValid.anonymous_leaderboard = true;
+                            vm.wrnMsg.anonymous_leaderboard = value[0];
+                        }
+                        if (key == 'start_date') {
+                            vm.isValid.start_date = true;
+                            vm.wrnMsg.start_date = value[0];
+                        }
+                        if (key == 'end_date') {
+                            vm.isValid.end_date = true;
+                            vm.wrnMsg.end_date = value[0];
+                        }
+                    })
                 }
             };
 
