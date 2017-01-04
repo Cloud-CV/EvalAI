@@ -21,11 +21,6 @@ APPS_DIR = os.path.join(BASE_DIR, 'apps')
 
 sys.path.append(APPS_DIR)
 
-TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend')
-TEMPLATE_DIRS = (
-    TEMPLATE_PATH,
-)
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -88,10 +83,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'evalai.urls'
 
+TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend')
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATE_PATH],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
