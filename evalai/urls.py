@@ -24,6 +24,9 @@ from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 
 from accounts.views import ConfirmEmailView
 
+handler404 = 'evalai.views.page_not_found'
+handler500 = 'evalai.views.server_error'
+
 urlpatterns = [url(r'^',
                    include('web.urls')),
                url(r'^accounts/',

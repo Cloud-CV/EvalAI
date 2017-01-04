@@ -21,6 +21,11 @@ APPS_DIR = os.path.join(BASE_DIR, 'apps')
 
 sys.path.append(APPS_DIR)
 
+TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend')
+TEMPLATE_DIRS = (
+
+    TEMPLATE_PATH,
+)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
