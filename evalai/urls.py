@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
-from django.conf.urls import url, include
+from django.conf.urls import url, include, handler404, handler500
 from django.contrib import admin
 from django.views.generic.base import TemplateView
 from django.conf import settings
@@ -23,6 +23,9 @@ from allauth.account import views as allauth_views
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 
 from accounts.views import ConfirmEmailView
+
+handler404 = 'evalai.views.page_not_found'
+handler500 = 'evalai.views.server_error'
 
 urlpatterns = [url(r'^',
                    include('web.urls')),
