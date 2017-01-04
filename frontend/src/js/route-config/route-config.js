@@ -106,6 +106,17 @@
             authenticate: true
         }
 
+        var challenge_host_teams = {
+            name: "web.challenge-host-teams",
+            parent: "web",
+            url: "/challenge-host-teams",
+            templateUrl: baseUrl + "/web/challenge-host-teams.html",
+            controller: 'ChallengeHostTeamsCtrl',
+            controllerAs: 'challengeHostTeams',
+            title: 'Challenge Host Teams',
+            authenticate: true
+        }
+
         var challenge_main = {
             name: "web.challenge-main",
             parent: "web",
@@ -208,6 +219,13 @@
             authenticate: true
         }
 
+        var error_404 = {
+            name: "error-404",
+            templateUrl: baseUrl + "/web/error-pages/error-404.html",
+            title: "Error 404",
+        }
+
+
 
         // call all states here
         $stateProvider.state(home);
@@ -224,6 +242,9 @@
         $stateProvider.state(dashboard);
         $stateProvider.state(teams);
 
+        // challenge host teams
+        $stateProvider.state(challenge_host_teams);
+
         // challenges list page
         $stateProvider.state(challenge_main);
         $stateProvider.state(challenge_list);
@@ -239,9 +260,13 @@
         $stateProvider.state(profile);
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
+        $stateProvider.state(error_404);
 
-        $urlRouterProvider.otherwise("/");
-
+        $urlRouterProvider.otherwise(function($injector, $location){
+            var state = $injector.get('$state');
+            state.go('error-404');
+            return $location.path();
+        });
     }
 
 })();

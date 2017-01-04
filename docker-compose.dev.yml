@@ -1,0 +1,30 @@
+version: "2"
+services:
+  db:
+    image: postgres
+  django:
+    container_name: django
+    hostname: django
+    env_file:
+      - docker/dev.env
+    build: 
+      context: ./
+      dockerfile: docker/dev/django/Dockerfile
+    command: /code/docker/dev/django/container-start.sh
+    ports:
+        - "8000:8000"
+    depends_on:
+      - db
+  nodejs:
+    container_name: nodejs
+    hostname: nodejs
+    build:
+      context: ./
+      dockerfile: docker/dev/nodejs/Dockerfile
+    command: /code/docker/dev/nodejs/container-start.sh
+    volumes:
+      - .:/code
+    environment:
+      NODE_ENV: development
+    ports:
+        - "8888:8888"

@@ -37,7 +37,7 @@ class Challenge(TimeStampedModel):
         db_table = 'challenge'
 
 
-class TestEnvironment(TimeStampedModel):
+class ChallengePhase(TimeStampedModel):
     name = models.CharField(max_length=100)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
@@ -47,7 +47,9 @@ class TestEnvironment(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)")
     challenge = models.ForeignKey('Challenge')
     test_annotation = models.FileField(upload_to="testAnnotations")
+    max_submissions_per_day = models.PositiveIntegerField(default=100000)
+    max_submissions = models.PositiveIntegerField(default=100000)
 
     class Meta:
         app_label = 'challenges'
-        db_table = 'challenge_test_env'
+        db_table = 'challenge_phase'

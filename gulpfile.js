@@ -180,7 +180,11 @@ gulp.task('html', function() {
         .pipe(htmlmin({ collapseWhitespace: true }))
         .pipe(gulp.dest('frontend/dist/views/web/challenge'));
 
-    return merge(webViews, webPartials, challengePartials);
+    var webErrors = gulp.src('frontend/src/views/web/error-pages/*.html')
+        .pipe(htmlmin({ collapseWhitespace: true }))
+        .pipe(gulp.dest('frontend/dist/views/web/error-pages'));
+
+    return merge(webViews, webPartials, challengePartials, webErrors);
 });
 
 
