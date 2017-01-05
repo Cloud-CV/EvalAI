@@ -199,12 +199,12 @@ gulp.task('images', function() {
 // Fonts
 gulp.task('fonts', function() {
     var font = gulp.src([
-            'frontend/bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*'
+            'bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*'
         ])
         .pipe(gulp.dest('frontend/dist/fonts/'));
 
     var fontCss = gulp.src([
-            'frontend/bower_components/font-awesome/css/font-awesome.css'
+            'bower_components/font-awesome/css/font-awesome.css'
         ])
         .pipe(gulp.dest('frontend/dist/css/'));
 
