@@ -349,10 +349,10 @@ class CreateChallengeHostAndTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class DeleteChallengeHostFromTeamHimselfTest(BaseAPITestClass):
+class RemoveChallengeHostFromTeamHimselfTest(BaseAPITestClass):
 
     def setUp(self):
-        super(DeleteChallengeHostFromTeamHimselfTest, self).setUp()
+        super(RemoveChallengeHostFromTeamHimselfTest, self).setUp()
 
         self.challenge_host = ChallengeHost.objects.create(
             user=self.user,
