@@ -190,6 +190,22 @@ def get_all_challenges(request, challenge_time):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
+@throttle_classes([AnonRateThrottle])
+@api_view(['GET'])
+def get_challenge_by_pk(request, pk):
+    """
+    Returns a particular challenge by id
+    """
+    try:
+        challenge = Challenge.objects.get(pk=pk)
+        serializer = ChallengeSerializer(challenge)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    except:
+        response_data = {'error': 'Challenge does not exist!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
