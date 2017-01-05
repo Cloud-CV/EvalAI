@@ -12,6 +12,6 @@ urlpatterns = [
         name='get_challenge_host_list'),
     url(r'challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/challenge_host/(?P<pk>[0-9]+)$',
         views.challenge_host_detail, name='get_challenge_host_details'),
-    url(r'(?P<challenge_host_team_pk>[0-9]+)$',
-        views.delete_challenge_host_from_team_by_self, name='delete_challenge_host_from_team_by_self'),
+    url(r'remove_challenge_host/(?P<challenge_host_team_pk>[0-9]+)$',
+        views.remove_self_from_challenge_host_team, name='remove_self_from_challenge_host_team'),
 ]
