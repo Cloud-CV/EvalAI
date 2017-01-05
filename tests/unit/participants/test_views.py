@@ -476,13 +476,13 @@ class DeleteParticipantFromTeamHimselfTest(BaseAPITestClass):
             team=self.participant_team)
 
         self.url = reverse_lazy('Participants:delete_participant_from_team_by_self',
-                                kwargs={'participant_team_pk': self.participant_team.pk
-                                })
+                                kwargs={'participant_team_pk': self.participant_team.pk}
+                                )
 
     def test_when_participant_team_does_not_exist(self):
         self.url = reverse_lazy('participants:delete_participant_from_team_by_self',
-                                kwargs={'participant_team_pk': self.participant_team.pk + 1
-                                })
+                                kwargs={'participant_team_pk': self.participant_team.pk + 1}
+                                )
 
         expected = {
             'error': 'ParticipantTeam does not exist'
