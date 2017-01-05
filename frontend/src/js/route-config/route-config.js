@@ -151,17 +151,6 @@
             authenticate: true
         }
 
-         var challenge_detail = {
-            name: "web.challenge-main.challenge-detail",
-            parent: "web.challenge-main",
-            url: "/challenge-detail/:challengeId",
-            templateUrl: baseUrl + "/web/challenge/challenge-detail.html",
-            controller: 'ChallengeDetailCtrl',
-            controllerAs: 'challengeDetail',
-            title: 'Challenges',
-            authenticate: true
-        }
-
         var challenge_page = {
             name: "web.challenge-page",
             parent: "web",
@@ -169,7 +158,7 @@
             templateUrl: baseUrl + "/web/challenge-page.html",
             controller: 'ChallengeCtrl',
             controllerAs: 'challenge',
-            redirectTo: "web.challenge-page.overview",
+            // redirectTo: "web.challenge-page.overview",
             authenticate: true
         }
 
@@ -271,7 +260,6 @@
         // challenges list page
         $stateProvider.state(challenge_main);
         $stateProvider.state(challenge_list);
-        $stateProvider.state(challenge_detail);
 
         // challenge create page
         $stateProvider.state(challenge_create);
