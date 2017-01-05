@@ -18,4 +18,7 @@ urlpatterns = [
         views.challenge_phase_detail, name='get_challenge_phase_detail'),
     url(r'(?P<challenge_time>[\w.@+-]+)$', views.get_all_challenges,
         name='get_all_challenges'),
+    url(r'challenge/(?P<pk>[0-9]+)/',
+        views.get_challenge_by_pk, name='get_challenge_by_pk'),
+
 ]
