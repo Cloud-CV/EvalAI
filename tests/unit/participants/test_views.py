@@ -465,10 +465,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class RemoveParticipantFromTeamHimselfTest(BaseAPITestClass):
+class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
 
     def setUp(self):
-        super(RemoveParticipantFromTeamHimselfTest, self).setUp()
+        super(RemoveSelfFromParticipantTeamTest, self).setUp()
 
         self.participant = Participant.objects.create(
             user=self.user,
