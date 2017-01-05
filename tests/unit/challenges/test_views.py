@@ -546,6 +546,63 @@ class GetAllChallengesTest(BaseAPITestClass):
         self.assertEqual(response.data['results'], expected)
 
 
+class GetChallengeByPk(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetChallengeByPk, self).setUp()
+
+        self.challenge3 = Challenge.objects.create(
+            title='Test Challenge 3',
+            description='Description for test challenge 3',
+            terms_and_conditions='Terms and conditions for test challenge 3',
+            submission_guidelines='Submission guidelines for test challenge 3',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() - timedelta(days=1),
+        )
+
+    def test_get_challenge_by_pk_when_challenge_exists(self):
+        self.url = reverse_lazy('challenges:get_challenge_by_pk',
+                                kwargs={'pk': self.challenge3.pk})
+
+        expected = {
+            "id": self.challenge3.pk,
+            "title": self.challenge3.title,
+            "description": self.challenge3.description,
+            "terms_and_conditions": self.challenge3.terms_and_conditions,
+            "submission_guidelines": self.challenge3.submission_guidelines,
+            "evaluation_details": self.challenge3.evaluation_details,
+            "image": None,
+            "start_date": "{0}{1}".format(self.challenge3.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge3.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "creator": {
+                "id": self.challenge3.creator.pk,
+                "team_name": self.challenge3.creator.team_name,
+                "created_by": self.challenge3.creator.created_by.pk,
+            },
+            "published": self.challenge3.published,
+            "enable_forum": self.challenge3.enable_forum,
+            "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_by_pk_when_challenge_does_not_exists(self):
+        self.url = reverse_lazy('challenges:get_challenge_by_pk',
+                                kwargs={'pk': self.challenge3.pk + 10})
+        expected = {
+            'error': 'Challenge does not exist!'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
 class BaseChallengePhaseClass(BaseAPITestClass):
 
     def setUp(self):
