@@ -200,7 +200,7 @@ def delete_challenge_host_from_team_by_self(request, challenge_host_team_pk):
     A user can remove himself from the challenge host team.
     """
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
