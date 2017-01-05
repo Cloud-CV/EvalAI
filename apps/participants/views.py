@@ -190,9 +190,9 @@ def delete_participant_from_team_by_self(request, participant_team_pk):
     A user can remove himself from the participant team.
     """
     try:
-        participant = Participant.objects.get(user=request.user.id)
-    except Participant.DoesNotExist:
-        response_data = {'error': 'Participant does not exist'}
+        participant = ParticipantTeam.objects.get(pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'ParticipantTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     participant = Participant.objects.get(user=request.user.id)
