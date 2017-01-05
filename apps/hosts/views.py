@@ -189,3 +189,27 @@ def create_challenge_host_team(request):
         challenge_host.save()
         return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle, ])
+@api_view(['DELETE', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication, ))
+def delete_challenge_host_from_team_by_self(request, challenge_host_team_pk):
+    """
+    A user can remove himself from the challenge host team.
+    """
+    try:
+        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+    except ChallengeHostTeam.DoesNotExist:
+        response_data = {'error': 'ChallengeHostTeam does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    challenge_host = ChallengeHost.objects.get(user=request.user.id)
+    if challenge_host.team_name.id == int(challenge_host_team_pk):
+        challenge_host.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+        response_data = {
+            'error': 'Sorry, you do not belong to this team.'}
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
