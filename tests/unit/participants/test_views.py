@@ -465,22 +465,22 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class DeleteParticipantFromTeamHimselfTest(BaseAPITestClass):
+class RemoveParticipantFromTeamHimselfTest(BaseAPITestClass):
 
     def setUp(self):
-        super(DeleteParticipantFromTeamHimselfTest, self).setUp()
+        super(RemoveParticipantFromTeamHimselfTest, self).setUp()
 
         self.participant = Participant.objects.create(
             user=self.user,
             status=Participant.SELF,
             team=self.participant_team)
 
-        self.url = reverse_lazy('Participants:delete_participant_from_team_by_self',
+        self.url = reverse_lazy('participants:remove_self_from_participant_team',
                                 kwargs={'participant_team_pk': self.participant_team.pk
                                         })
 
     def test_when_participant_team_does_not_exist(self):
-        self.url = reverse_lazy('participants:delete_participant_from_team_by_self',
+        self.url = reverse_lazy('participants:remove_self_from_participant_team',
                                 kwargs={'participant_team_pk': self.participant_team.pk + 1
                                         })
 
@@ -493,7 +493,7 @@ class DeleteParticipantFromTeamHimselfTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_when_a_participant_is_successfully_removed_from_team(self):
-        self.url = reverse_lazy('participants:delete_participant_from_team_by_self',
+        self.url = reverse_lazy('participants:remove_self_from_participant_team',
                                 kwargs={'participant_team_pk': self.participant_team.pk,
                                         })
         response = self.client.delete(self.url, {})

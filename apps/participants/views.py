@@ -196,11 +196,9 @@ def remove_self_from_participant_team(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        participant = Participant.objects.get(user=request.user.id, team_name__pk=participant_team_pk)
+        participant = Participant.objects.get(user=request.user.id, team__pk=participant_team_pk)
         participant.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     except:
         response_data = {'error': 'Sorry, you do not belong to this team.'}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
-
