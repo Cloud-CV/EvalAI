@@ -21,7 +21,7 @@
                                 <label for="{{value.id}}"></label>
                                 <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
                                 <a ng-click="teams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
-                                <a><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
+                                <a ng-click="teams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
                                     <br>
                                     <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
                                 <div class="clearfix"></div>
