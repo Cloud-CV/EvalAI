@@ -59,7 +59,14 @@
                     data: data,
                     headers: headers
                 };
+            } else if (method == "DELETE") {
+                var req = {
+                    method: parameters.method,
+                    url: url,
+                    headers: headers
+                };
             }
+
             req.timeout = 6000;
 
             $http(req)
