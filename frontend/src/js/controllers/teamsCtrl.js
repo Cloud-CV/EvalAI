@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('TeamsCtrl', TeamsCtrl);
 
-    TeamsCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    TeamsCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function TeamsCtrl(utilities, $state, $http, $rootScope) {
+    function TeamsCtrl(utilities, $scope, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -221,6 +221,43 @@
 
             utilities.sendRequest(parameters);
         }
+
+        vm.confirmDelete = function(ev, participantTeamId) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                  .title('Would you like to remove yourself?')
+                  .textContent('Note: This action will remove you from the team.')
+                  .ariaLabel('Lucky day')
+                  .targetEvent(ev)
+                  .ok('Yes')
+                  .cancel("No");
+
+            $mdDialog.show(confirm).then(function() {
+                var parameters = {};
+                parameters.url = 'participants/remove_self_from_participant_team/' + participantTeamId;
+                parameters.method = 'DELETE';
+                parameters.data = {}
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var response = response.data;
+                        vm.team.error = false;
+
+                        $state.reload();
+                    },
+                    onError: function(response) {
+                        var status = response.status;
+                        var error = response.data;
+                        console.log(error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+
+            });
+        };
+
     }
 
 })();
