@@ -297,6 +297,5 @@ def get_all_challenges_participated_by_user(request):
 
     except:
         response_data = {
-            'error': 'You have not participated in any challenge.'
-            }
+            'message': 'You have not participated in any challenge.'}
         return Response(response_data, status=status.HTTP_200_OK)
