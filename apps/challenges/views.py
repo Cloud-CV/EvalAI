@@ -278,3 +278,25 @@ def challenge_phase_detail(request, challenge_pk, pk):
     elif request.method == 'DELETE':
         challenge_phase.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@throttle_classes([UserRateThrottle, ])
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, ))
+@authentication_classes((ExpiringTokenAuthentication, ))
+def get_all_challenges_participated_by_user(request):
+    try:
+        participant = Participant.objects.get(user=request.user.id)
+        challenges = Challenge.objects.filter(participant_teams=participant.team_id)
+        paginator = PageNumberPagination()
+        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+        result_page = paginator.paginate_queryset(challenges, request)
+        serializer = ChallengeSerializer(result_page, many=True)
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+
+    except:
+        response_data = {
+            'error': 'You have not participated in any challenge.'
+            }
+        return Response(response_data, status=status.HTTP_200_OK)
