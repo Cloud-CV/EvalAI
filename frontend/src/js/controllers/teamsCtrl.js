@@ -268,7 +268,6 @@
                 .textContent('Enter the email address of the person')
                 .placeholder('deshraj@cloudcv.org')
                 .ariaLabel('')
-                .backdrop('static')
                 .targetEvent(ev)
                 .ok('Send Invite')
                 .cancel('Cancel');
