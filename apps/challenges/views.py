@@ -32,6 +32,11 @@ def challenge_list(request, challenge_host_team_pk):
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    if challenge_host_team.created_by != request.user:
+        response_data = {
+            'error': 'Sorry, you do not have permission to this challenge'}
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         challenge = Challenge.objects.filter(creator=challenge_host_team)
         paginator = PageNumberPagination()
