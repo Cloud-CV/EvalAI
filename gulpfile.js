@@ -56,9 +56,6 @@ gulp.task('vendorjs', function() {
                     del.sync(destFilePath);
                     }
                   }))
-
-
-
     })
 
 });
