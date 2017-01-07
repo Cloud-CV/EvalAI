@@ -21,6 +21,8 @@ var gulp = require('gulp'),
     connectModRewrite = require('connect-modrewrite'),
     ngConfig = require('gulp-ng-config'),
     prettyError = require('gulp-prettyerror'),
+    del = require('del'),
+    path = require('path'),
     // path = require('gulp-path'),
     // conf = require('./conf')(gulp),
     _ = require('lodash');
@@ -222,16 +224,40 @@ gulp.task('clean', function() {
 gulp.task('watch', function() {
 
     // Watch .scss files
-    gulp.watch('frontend/src/css/**/*.scss', ['css']);
+    gulp.watch('frontend/src/css/**/*.scss', ['css']).on('change', function (event){
+    if(event.type == 'deleted'){
+        var filePathFromSrc = path.relative(path.resolve('frontend'), event.path);
+        var destFilePath = path.resolve('frontend/dist/css', filePathFromSrc);
+        del.sync(destFilePath);
+        }
+     });
 
     // Watch .js files
-    gulp.watch('frontend/src/js/**/*.js', ['js']);
+    gulp.watch('frontend/src/js/**/*.js', ['js']).on('change', function (event){
+      if(event.type == 'deleted'){
+          var filePathFromSrc = path.relative(path.resolve('frontend'), event.path);
+          var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
+          del.sync(destFilePath);
+          }
+        });
 
     // Watch html files
-    gulp.watch('frontend/src/views/**/*.html', ['html']);
+    gulp.watch('frontend/src/views/**/*.html', ['html']).on('change', function (event){
+      if(event.type == 'deleted'){
+          var filePathFromSrc = path.relative(path.resolve('frontend'), event.path);
+          var destFilePath = path.resolve('frontend/dist/views/web', filePathFromSrc);
+          del.sync(destFilePath);
+          }
+        });
 
     // Watch image files
-    gulp.watch('frontend/src/images/**/*', ['images']);
+    gulp.watch('frontend/src/images/**/*', ['images']).on('change', function (event){
+      if(event.type == 'deleted'){
+          var filePathFromSrc = path.relative(path.resolve('frontend'), event.path);
+          var destFilePath = path.resolve('frontend/dist/images', filePathFromSrc);
+          del.sync(destFilePath);
+          }
+        });
 
     // Create LiveReload server
     livereload.listen();
