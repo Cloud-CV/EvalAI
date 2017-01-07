@@ -7,10 +7,11 @@ DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'HOST': 'db',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'evalai',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': 'localhost',
         'PORT': 5432,
     }
 }
