@@ -45,7 +45,7 @@ class GetChallengeHostTeamTest(BaseAPITestClass):
             {
                 "id": self.challenge_host_team.pk,
                 "team_name": self.challenge_host_team.team_name,
-                "created_by": self.challenge_host_team.created_by
+                "created_by": self.challenge_host_team.created_by.username
             }
         ]
 
