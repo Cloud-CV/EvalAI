@@ -45,7 +45,7 @@ def challenge_list(request, challenge_host_team_pk):
 
         if challenge_host_team.created_by != request.user:
             response_data = {
-                'error': 'Sorry, you do not have permission to this challenge'}
+                'error': 'Sorry, you do not belong to this Host Team!'}
             return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = ChallengeSerializer(data=request.data,
