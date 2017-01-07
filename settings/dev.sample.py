@@ -10,7 +10,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'evalai',
         'USER': '',
-        'PASSWORD':'',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': 5432,
     }
