@@ -284,7 +284,7 @@ gulp.task('watch', function() {
           }
         });
 
-    gulp.watch('bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*', ['configDev']).on('change', function (event){
+    gulp.watch('bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*', ['fonts']).on('change', function (event){
       if(event.type == 'deleted'){
           var filePathFromSrc = path.relative(path.resolve('bower_components'), event.path);
           var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
@@ -292,7 +292,7 @@ gulp.task('watch', function() {
           }
         });
 
-    gulp.watch('bower_components/font-awesome/css/font-awesome.css', ['configDev']).on('change', function (event){
+    gulp.watch('bower_components/font-awesome/css/font-awesome.css', ['fonts']).on('change', function (event){
        if(event.type == 'deleted'){
           var filePathFromSrc = path.relative(path.resolve('bower_components'), event.path);
           var destFilePath = path.resolve('frontend/dist/css/', filePathFromSrc);
