@@ -8,6 +8,8 @@ from .models import (ChallengeHost,
 
 class ChallengeHostTeamSerializer(serializers.ModelSerializer):
 
+    created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    
     def __init__(self, *args, **kwargs):
         super(ChallengeHostTeamSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get('context')
