@@ -33,7 +33,7 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge = Challenge.objects.filter(creator=challenge_host_team)
+        challenge = Challenge.objects.filter(creator=challenge_host_team.created_by)
         paginator = PageNumberPagination()
         paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
         result_page = paginator.paginate_queryset(challenge, request)
