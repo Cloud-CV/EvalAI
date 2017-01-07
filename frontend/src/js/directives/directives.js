@@ -288,4 +288,5 @@
             var slideCompObj = new slideComp();
         }
     }
+    
 })();
