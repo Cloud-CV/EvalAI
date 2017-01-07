@@ -49,7 +49,7 @@ gulp.task('vendorjs', function() {
             .pipe(concat(chunkName + '.js'))
             //.on('error', swallowError)
             .pipe(gulp.dest("frontend/dist/vendors"))
-            .pipe(gulp.watch(paths, ['vendorjs']).on('change', function (event){
+            .pipe(gulp.watch(paths).on('change', function (event){
                 if(event.type == 'deleted'){
                     var filePathFromSrc = path.relative(path.resolve(paths), event.path);
                     var destFilePath = path.resolve('frontend/dist/vendors', filePathFromSrc);
@@ -82,7 +82,7 @@ gulp.task('vendorcss', function() {
             .pipe(concat(chunkName + '.css'))
             //.on('error', swallowError)
             .pipe(gulp.dest("frontend/dist/vendors"))
-            .pipe(gulp.watch(paths, ['vendorjs']).on('change', function (event){
+            .pipe(gulp.watch(paths).on('change', function (event){
                 if(event.type == 'deleted'){
                     var filePathFromSrc = path.relative(path.resolve(paths), event.path);
                     var destFilePath = path.resolve('frontend/dist/vendors', filePathFromSrc);
