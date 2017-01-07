@@ -34,5 +34,8 @@ SPAGHETTI_SAUCE = {
     'show_fields': True,
 }
 
-# Port number for the python-Memcached cache backend.
-CACHES['default']['LOCATION'] = '127.0.0.1:11211' # noqa: ignore=F405
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
