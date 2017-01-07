@@ -45,7 +45,7 @@ class GetChallengeHostTeamTest(BaseAPITestClass):
             {
                 "id": self.challenge_host_team.pk,
                 "team_name": self.challenge_host_team.team_name,
-                "created_by": self.challenge_host_team.created_by.pk
+                "created_by": self.challenge_host_team.created_by
             }
         ]
 
@@ -83,7 +83,7 @@ class GetParticularChallengeHostTeam(BaseAPITestClass):
         expected = {
             "id": self.challenge_host_team.pk,
             "team_name": self.challenge_host_team.team_name,
-            "created_by": self.user.id
+            "created_by": self.user.username
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -108,7 +108,7 @@ class UpdateParticularChallengeHostTeam(BaseAPITestClass):
         expected = {
             "id": self.challenge_host_team.pk,
             "team_name": self.partial_update_team_name,
-            "created_by": self.user.id
+            "created_by": self.user.username
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -121,7 +121,7 @@ class UpdateParticularChallengeHostTeam(BaseAPITestClass):
         expected = {
             "id": self.challenge_host_team.pk,
             "team_name": self.update_team_name,
-            "created_by": self.user.id
+            "created_by": self.user.username
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
