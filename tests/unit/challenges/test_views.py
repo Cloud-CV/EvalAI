@@ -116,7 +116,7 @@ class CreateChallengeTest(BaseAPITestClass):
             'published': False,
             'enable_forum': True,
             'anonymous_leaderboard': False,
-            'team_name': self.challenge_host_team_pk
+            'team_name_id': self.challenge_host_team_pk
         }
 
     def test_create_challenge_with_all_data(self):
