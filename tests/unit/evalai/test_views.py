@@ -14,4 +14,4 @@ class TestErrorPages(TestCase):
         request = c.get("/abc")
         response = page_not_found(request)
         self.assertEqual(request.status_code, response.status_code)
-        self.assertIn('404', unicode(response))
+        self.assertIn('Error 404', unicode(response))
