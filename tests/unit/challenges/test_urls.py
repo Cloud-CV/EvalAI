@@ -42,20 +42,20 @@ class BaseAPITestClass(APITestCase):
 
 class TestStringMethods(BaseAPITestClass):
     def test_challenges_urls(self):
-        url = reverse_lazy('challenges:get_challenge_list', 
-        	kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
-        self.assertEqual(url, '/api/challenges/challenge_host_team/'+
-        	str(self.challenge_host_team.pk) + '/challenge')
+        url = reverse_lazy('challenges:get_challenge_list',
+                           kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
+        self.assertEqual(url, '/api/challenges/challenge_host_team/' +
+                         str(self.challenge_host_team.pk) + '/challenge')
 
         url = reverse_lazy('challenges:get_challenge_detail',
-        	kwargs={'challenge_host_team_pk': self.challenge_host_team.pk, 'pk': self.challenge.pk})
+                           kwargs={'challenge_host_team_pk': self.challenge_host_team.pk, 'pk': self.challenge.pk})
         self.assertEqual(url, '/api/challenges/challenge_host_team/'+
-        	str(self.challenge_host_team.pk) + '/challenge/' + str(self.challenge.pk))
+                         str(self.challenge_host_team.pk) + '/challenge/' + str(self.challenge.pk))
 
         url = reverse_lazy('challenges:add_participant_team_to_challenge',
-        	kwargs={'challenge_pk': self.challenge.pk,'participant_team_pk': self.participant_team.pk})
+                           kwargs={'challenge_pk': self.challenge.pk, 'participant_team_pk': self.participant_team.pk})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk)+'/participant_team/' +
-        	str(self.participant_team.pk))
+                         str(self.participant_team.pk))
 
         url = reverse_lazy('challenges:disable_challenge', kwargs={'pk': self.challenge.pk})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/disable')
@@ -64,12 +64,12 @@ class TestStringMethods(BaseAPITestClass):
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk)+'/challenge_phase')
 
         url = reverse_lazy('challenges:get_challenge_phase_detail',
-        	kwargs={'challenge_pk': self.challenge.pk,'pk': self.challenge.pk})
+                           kwargs={'challenge_pk': self.challenge.pk,'pk': self.challenge.pk})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/challenge_phase/' +
-        	str(self.challenge.pk))
+                         str(self.challenge.pk))
 
         url = reverse_lazy('challenges:get_challenge_by_pk', kwargs={'pk': self.challenge.pk})
-        self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk)+'/')
+        self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/')
 
         '''url = reverse_lazy('challenges:get_all_challenges', kwargs={'challenge_time': self.challenge_time})
         print url
