@@ -15,39 +15,33 @@
                     </div>
                 </div>
                 <div class="ev-md-container ev-card-body exist-team-card">
-                    <form>
-                        <ul>
-                            <li ng-repeat="(key, value) in challengeHostTeams.existTeam.results">
-                                <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="challengeHostTeams.teamId">
-                                <label for="{{value.id}}"></label>
-                                <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}<i class="fa fa-plus list-icon text-highlight w-300 right"></i>
-                                    <br>
-                                    <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
-                                <div class="clearfix"></div>
-                            </li>
-                            <section class="pagination">
-                                <div class="row rm-gut">
-                                    <div class="col s12 m6 ">
-                                        <a ng-class="challengeHostTeams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.previous)">
-                                            <i class="fa fa-chevron-left"></i>
-                                        </a>
-                                        <span class="pagination-title"> <strong class="text-med-black"> Page {{challengeHostTeams.currentPage | ceil}} of {{challengeHostTeams.existTeam.count/10 | ceil}} </strong></span>
-                                        <a ng-class="challengeHostTeams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.next)">
-                                            <i class="fa fa-chevron-right"></i>
-                                        </a>
-                                    </div>
-                                    <div class="col s12 m6 ">
-                                        <div class="align-right ">
-                                            <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challengeHostTeams.selectExistTeam()" value="Submit">Use this Team</button>
-                                            <br>
-                                            <br>
-                                            <span class="text-dark-black"><strong >{{challengeHostTeams.existTeamError}}</strong></span>
-                                        </div>
+                    <ul>
+                        <li ng-repeat="(key, value) in challengeHostTeams.existTeam.results">
+                            <i class="fa fa-users" aria-hidden="true"></i>
+                            <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}<i class="fa fa-plus list-icon text-highlight w-300 right"></i>
+                                <br>
+                                <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
+                            <div class="clearfix"></div>
+                        </li>
+                        <section class="pagination">
+                            <div class="row rm-gut">
+                                <div class="col s12 m6 ">
+                                    <a ng-class="challengeHostTeams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.previous)">
+                                        <i class="fa fa-chevron-left"></i>
+                                    </a>
+                                    <span class="pagination-title"> <strong class="text-med-black"> Page {{challengeHostTeams.currentPage | ceil}} of {{challengeHostTeams.existTeam.count/10 | ceil}} </strong></span>
+                                    <a ng-class="challengeHostTeams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.next)">
+                                        <i class="fa fa-chevron-right"></i>
+                                    </a>
+                                </div>
+                                <div class="col s12 m6 ">
+                                    <div class="align-right ">
+                                        <span class="text-dark-black"><strong >{{challengeHostTeams.existTeamError}}</strong></span>
                                     </div>
                                 </div>
-                            </section>
-                        </ul>
-                    </form>
+                            </div>
+                        </section>
+                    </ul>
                 </div>
             </div>
         </div>
