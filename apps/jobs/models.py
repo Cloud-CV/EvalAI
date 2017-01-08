@@ -9,15 +9,15 @@ from participants.models import ParticipantTeam
 
 
 def input_file_name(instance, filename):
-    return '/'.join(['submissionFiles', str(instance.pk), filename])
+    return '/'.join(['submission_files', str(instance.pk), filename])
 
 
 def stdout_file_name(instance, filename):
-    return '/'.join(['submissionFiles', str(instance.pk), 'stdout.log'])
+    return '/'.join(['submission_files', str(instance.pk), 'stdout.log'])
 
 
 def stderr_file_name(instance, filename):
-    return '/'.join(['submissionFiles', str(instance.pk), 'stderr.log'])
+    return '/'.join(['submission_files', str(instance.pk), 'stderr.log'])
 
 
 class Submission(TimeStampedModel):
