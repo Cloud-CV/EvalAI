@@ -213,14 +213,14 @@ gulp.task('images', function() {
 
 // Fonts
 gulp.task('fonts', function() {
-    var font = merge(gulp.src('bower_components/font-awesome/fonts/fontawesome-webfont.*', {base: 'bower_components/font-awesome/fonts/'}),
-                     gulp.src('bower_components/materialize/fonts/**/*', {base:'bower_components/font-awesome/fonts/'}))
-
+    var font = gulp.src([
+            'bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*'
+        ])
         .pipe(gulp.dest('frontend/dist/fonts/'));
 
-    var fontCss = gulp.src(
-            'bower_components/font-awesome/css/font-awesome.css',  {base: 'bower_components/font-awesome/css/'}
-        )
+    var fontCss = gulp.src([
+            'bower_components/font-awesome/css/font-awesome.css'
+        ])
         .pipe(gulp.dest('frontend/dist/css/'));
 
     return merge(font, fontCss);
