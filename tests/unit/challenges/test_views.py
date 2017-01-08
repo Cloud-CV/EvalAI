@@ -79,7 +79,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge.creator.pk,
                     "team_name": self.challenge.creator.team_name,
-                    "created_by": self.challenge.creator.created_by.pk
+                    "created_by": self.challenge.creator.created_by.username
                 },
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
@@ -150,7 +150,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
-                "created_by": self.challenge.creator.created_by.pk
+                "created_by": self.challenge.creator.created_by.username
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
@@ -476,7 +476,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge3.creator.pk,
                     "team_name": self.challenge3.creator.team_name,
-                    "created_by": self.challenge3.creator.created_by.pk,
+                    "created_by": self.challenge3.creator.created_by.username,
                 },
                 "published": self.challenge3.published,
                 "enable_forum": self.challenge3.enable_forum,
@@ -505,7 +505,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
-                    "created_by": self.challenge2.creator.created_by.pk,
+                    "created_by": self.challenge2.creator.created_by.username,
                 },
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,
@@ -534,7 +534,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge4.creator.pk,
                     "team_name": self.challenge4.creator.team_name,
-                    "created_by": self.challenge4.creator.created_by.pk,
+                    "created_by": self.challenge4.creator.created_by.username,
                 },
                 "published": self.challenge4.published,
                 "enable_forum": self.challenge4.enable_forum,
@@ -581,7 +581,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "creator": {
                 "id": self.challenge3.creator.pk,
                 "team_name": self.challenge3.creator.team_name,
-                "created_by": self.challenge3.creator.created_by.pk,
+                "created_by": self.challenge3.creator.created_by.username,
             },
             "published": self.challenge3.published,
             "enable_forum": self.challenge3.enable_forum,
@@ -617,6 +617,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 name='Challenge Phase',
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
+                is_public=False,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
@@ -645,6 +646,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
                 "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
                 "challenge": self.challenge_phase.challenge.pk,
+                "is_public": self.challenge_phase.is_public,
                 "test_annotation": self.challenge_phase.test_annotation
             }
         ]
@@ -706,7 +708,8 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
-            "test_annotation": self.challenge_phase.test_annotation
+            "test_annotation": self.challenge_phase.test_annotation,
+            "is_public": self.challenge_phase.is_public
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -763,7 +766,8 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
-            "test_annotation": self.challenge_phase.test_annotation
+            "test_annotation": self.challenge_phase.test_annotation,
+            "is_public": self.challenge_phase.is_public
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)

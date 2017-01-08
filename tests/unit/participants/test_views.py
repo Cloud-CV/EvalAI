@@ -416,7 +416,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "creator": {
                             "id": self.challenge_host_team.id,
                             "team_name": self.challenge_host_team.team_name,
-                            "created_by": self.challenge_host_team.created_by.id
+                            "created_by": self.challenge_host_team.created_by.username
                         },
                         "published": self.challenge1.published,
                         "enable_forum": self.challenge1.enable_forum,
