@@ -33,7 +33,7 @@ class TestStringMethods(unittest.TestCase,BaseAPITestClass):
 		
 		url = reverse_lazy('hosts:get_challenge_host_team_details',kwargs={'pk': self.challenge_host.pk})
 		print url
-		self.assertEqual(url, '/challenge_host_team/someuser')
+		self.assertEqual(url, '/challenge_host_team/1')
 		
 		url = reverse_lazy('hosts:create_challenge_host_team')
 		print url
@@ -41,19 +41,19 @@ class TestStringMethods(unittest.TestCase,BaseAPITestClass):
 
 		url = reverse_lazy('get_challenge_host_list',kwargs={'challenge_host_team_pk':self.challenge_host_team.pk})
 		print url
-		self.assertEqual(url, '/challenge_host_team/Team_name/challenge_host/')
+		self.assertEqual(url, '/challenge_host_team/1/challenge_host/')
 
 		url = reverse_lazy('get_challenge_host_list',kwargs={'challenge_host_team_pk':self.challenge_host_team.pk})
 		print url
-		self.assertEqual(url, '/challenge_host_team/Team_name/challenge_host/')
+		self.assertEqual(url, '/challenge_host_team/1/challenge_host/')
 
 		url = reverse_lazy('get_challenge_host_details',kwargs={'challenge_host_team_pk':self.challenge_host_team.pk,'pk':self.challenge_host.pk})
 		print url
-		self.assertEqual(url, '/challenge_host_team/Team_name/challenge_host/someuser')
+		self.assertEqual(url, '/challenge_host_team/1/challenge_host/1')
 
 		url = reverse_lazy('gremove_self_from_challenge_host_team',kwargs={'challenge_host_team_pk':self.challenge_host_team.pk})
 		print url
-		self.assertEqual(url, '/remove_self_from_challenge_host/Team_name')
+		self.assertEqual(url, '/remove_self_from_challenge_host/1')
 
 
 	if __name__ == '__main__':
