@@ -50,8 +50,8 @@ class Submission(TimeStampedModel):
     input_file = models.FileField(upload_to=input_file_name)
     stdout_file = models.FileField(upload_to=stdout_file_name, null=True, blank=True)
     stderr_file = models.FileField(upload_to=stderr_file_name, null=True, blank=True)
-    duration = models.TimeField(default=timedelta(seconds=300))
-    
+    execution_time_limit = models.TimeField(default=timedelta(seconds=300))
+
     def __unicode__(self):
         return '{}'.format(self.id)
 
