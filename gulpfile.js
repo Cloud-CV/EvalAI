@@ -219,7 +219,7 @@ gulp.task('fonts', function() {
         .pipe(gulp.dest('frontend/dist/fonts/'));
 
     var fontCss = gulp.src(
-            'bower_components/font-awesome/css/font-awesome.css',  {base: 'frontend/src/js/'}
+            'bower_components/font-awesome/css/font-awesome.css',  {base: 'bower_components/font-awesome/css/'}
         )
         .pipe(gulp.dest('frontend/dist/css/'));
 
