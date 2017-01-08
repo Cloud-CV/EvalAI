@@ -92,7 +92,7 @@ gulp.task('vendorcss', function() {
 
 // config for dev server
 gulp.task('configDev', function() {
-    gulp.src('frontend/src/js/config.json')
+    gulp.src('frontend/src/js/config.json' , {base: 'frontend/src/js/'})
         .pipe(ngConfig('evalai-config', {
             environment: 'local'
         }))
@@ -213,14 +213,14 @@ gulp.task('images', function() {
 
 // Fonts
 gulp.task('fonts', function() {
-    var font = gulp.src([
-            'bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*'
-        ])
+    var font = merge(gulp.src('bower_components/font-awesome/fonts/fontawesome-webfont.*', {base: 'bower_components/font-awesome/fonts/'}),
+                     gulp.src('bower_components/materialize/fonts/**/*', {base:'bower_components/font-awesome/fonts/'}))
+
         .pipe(gulp.dest('frontend/dist/fonts/'));
 
-    var fontCss = gulp.src([
-            'bower_components/font-awesome/css/font-awesome.css'
-        ])
+    var fontCss = gulp.src(
+            'bower_components/font-awesome/css/font-awesome.css',  {base: 'frontend/src/js/'}
+        )
         .pipe(gulp.dest('frontend/dist/css/'));
 
     return merge(font, fontCss);
@@ -239,7 +239,7 @@ gulp.task('watch', function() {
     // Watch .scss files
     gulp.watch('frontend/src/css/**/*.scss', ['css']).on('change', function (event){
     if(event.type == 'deleted'){
-        var filePathFromSrc = path.relative(path.resolve('frontend'), event.path);
+        var filePathFromSrc = path.relative(path.resolve('frontend/src/css/'), event.path);
         var destFilePath = path.resolve('frontend/dist/css', filePathFromSrc);
         del.sync(destFilePath);
         }
@@ -248,7 +248,7 @@ gulp.task('watch', function() {
     // Watch .js files
     gulp.watch('frontend/src/js/**/*.js', ['js']).on('change', function (event){
       if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('frontend'), event.path);
+          var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
           var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
           del.sync(destFilePath);
           }
@@ -257,7 +257,7 @@ gulp.task('watch', function() {
     // Watch html files
     gulp.watch('frontend/src/views/**/*.html', ['html']).on('change', function (event){
       if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('frontend'), event.path);
+          var filePathFromSrc = path.relative(path.resolve('frontend/src/views/'), event.path);
           var destFilePath = path.resolve('frontend/dist/views/web', filePathFromSrc);
           del.sync(destFilePath);
           }
@@ -266,7 +266,7 @@ gulp.task('watch', function() {
     // Watch image files
     gulp.watch('frontend/src/images/**/*', ['images']).on('change', function (event){
       if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('frontend'), event.path);
+          var filePathFromSrc = path.relative(path.resolve('frontend/src/images/'), event.path);
           var destFilePath = path.resolve('frontend/dist/images', filePathFromSrc);
           del.sync(destFilePath);
           }
@@ -275,7 +275,7 @@ gulp.task('watch', function() {
     // Watch config dev
     gulp.watch('frontend/src/js/config.json', ['configDev']).on('change', function (event){
       if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('frontend'), event.path);
+          var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
           var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
           del.sync(destFilePath);
           }
@@ -283,7 +283,7 @@ gulp.task('watch', function() {
 
     gulp.watch('bower_components/font-awesome/fonts/fontawesome-webfont.*', ['fonts']).on('change', function (event){
       if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('bower_components'), event.path);
+          var filePathFromSrc = path.relative(path.resolve('bower_components/font-awesome/fonts/'), event.path);
           var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
           del.sync(destFilePath);
           }
@@ -291,7 +291,7 @@ gulp.task('watch', function() {
 
       gulp.watch('bower_components/materialize/fonts/**/*', ['fonts']).on('change', function (event){
         if(event.type == 'deleted'){
-            var filePathFromSrc = path.relative(path.resolve('bower_components'), event.path);
+            var filePathFromSrc = path.relative(path.resolve('bower_components/materialize/fonts/'), event.path);
             var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
             del.sync(destFilePath);
             }
@@ -300,7 +300,7 @@ gulp.task('watch', function() {
 
        gulp.watch('bower_components/font-awesome/css/font-awesome.css', ['fonts']).on('change', function (event){
          if(event.type == 'deleted'){
-            var filePathFromSrc = path.relative(path.resolve('bower_components'), event.path);
+            var filePathFromSrc = path.relative(path.resolve('bower_components/font-awesome/css/'), event.path);
             var destFilePath = path.resolve('frontend/dist/css/', filePathFromSrc);
             del.sync(destFilePath);
             }
