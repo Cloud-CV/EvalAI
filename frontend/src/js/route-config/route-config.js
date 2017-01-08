@@ -154,11 +154,11 @@
         var challenge_page = {
             name: "web.challenge-page",
             parent: "web",
-            url: "/challenge-page",
+            url: "/challenge-page/:challengeId",
             templateUrl: baseUrl + "/web/challenge-page.html",
             controller: 'ChallengeCtrl',
             controllerAs: 'challenge',
-            redirectTo: "web.challenge-page.overview",
+            // redirectTo: "web.challenge-page.overview",
             authenticate: true
         }
 
