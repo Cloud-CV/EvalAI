@@ -57,39 +57,6 @@
                         vm.currentPage = response.next.split('page=')[1] - 1;
                     }
 
-
-                    // select team from existing list
-                    vm.selectExistTeam = function() {
-
-                        // loader for exisiting teams
-                        vm.isExistLoader = true;
-                        vm.loaderTitle = '';
-                        vm.loginContainer = angular.element('.exist-team-card');
-
-                        // show loader
-                        vm.startLoader = function(msg) {
-                            vm.isExistLoader = true;
-                            vm.loaderTitle = msg;
-                            vm.loginContainer.addClass('low-screen');
-                        }
-
-                        // stop loader
-                        vm.stopLoader = function() {
-                            vm.isExistLoader = false;
-                            vm.loaderTitle = '';
-                            vm.loginContainer.removeClass('low-screen');
-                        }
-
-                        vm.startLoader("Loading Teams");
-                        // loader end
-
-                        // store the challenge_host_team_pk in local storage
-                        utilities.storeData('challengeHostTeamPk', vm.teamId);
-
-                        // redirect the user to challenge creation page
-                        $state.go('web.challenge-create');
-                    }
-
                     // to load data with pagination
                     vm.load = function(url) {
                         // loader for exisiting teams
@@ -182,7 +149,7 @@
             vm.startLoader("Loading Teams");
 
             var parameters = {};
-            parameters.url = 'hosts/create_challenge_host_team  ';
+            parameters.url = 'hosts/create_challenge_host_team';
             parameters.method = 'POST';
             parameters.data = {
                 "team_name": vm.team.name
@@ -195,12 +162,20 @@
                     vm.teamId = response.id;
                     vm.team.error = false;
 
-                    // store the challenge_host_team_pk in local storage
-                    utilities.storeData('challengeHostTeamPk', vm.teamId);
-
-                    // navigate to challenge creation page
-                    $state.go('web.challenge-create');
-
+                    var parameters = {};
+                    parameters.url = 'hosts/challenge_host_team/';
+                    parameters.method = 'GET';
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var response = response.data;
+                            if (status == 200) {
+                                vm.existTeam = response;
+                            }
+                        }
+                    };
+                    utilities.sendRequest(parameters);
                     vm.stopLoader();
                 },
                 onError: function(response) {

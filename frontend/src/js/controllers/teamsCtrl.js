@@ -207,8 +207,21 @@
                     var response = response.data;
                     vm.team.error = false;
 
-                    // navigate to challenge page
-                    $state.go('web.challenge-page.overview');
+                    var parameters = {};
+                    parameters.url = 'participants/participant_team';
+                    parameters.method = 'GET';
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var response = response.data;
+                            if (status == 200) {
+                                vm.existTeam = response;
+                            }
+                        }
+                    }
+                    utilities.sendRequest(parameters);
+
                     vm.stopLoader();
                 },
                 onError: function(response) {
@@ -244,7 +257,20 @@
                         var response = response.data;
                         vm.team.error = false;
 
-                        $state.reload();
+                        var parameters = {};
+                        parameters.url = 'participants/participant_team';
+                        parameters.method = 'GET';
+                        parameters.token = userKey;
+                        parameters.callback = {
+                            onSuccess: function(response) {
+                                var status = response.status;
+                                var response = response.data;
+                                if (status == 200) {
+                                    vm.existTeam = response;
+                                }
+                            }
+                        }
+                        utilities.sendRequest(parameters);
                     },
                     onError: function(response) {
                         var status = response.status;
