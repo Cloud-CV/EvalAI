@@ -179,3 +179,26 @@ def get_teams_and_corresponding_challenges_for_a_participant(request):
 
     serializer = ChallengeParticipantTeamListSerializer(ChallengeParticipantTeamList(challenge_participated_teams))
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['DELETE', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def remove_self_from_participant_team(request, participant_team_pk):
+    """
+    A user can remove himself from the participant team.
+    """
+    try:
+        ParticipantTeam.objects.get(pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'ParticipantTeam does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        participant = Participant.objects.get(user=request.user.id, team__pk=participant_team_pk)
+        participant.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except:
+        response_data = {'error': 'Sorry, you do not belong to this team.'}
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)

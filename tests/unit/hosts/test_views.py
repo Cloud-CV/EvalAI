@@ -45,7 +45,7 @@ class GetChallengeHostTeamTest(BaseAPITestClass):
             {
                 "id": self.challenge_host_team.pk,
                 "team_name": self.challenge_host_team.team_name,
-                "created_by": self.challenge_host_team.created_by.pk
+                "created_by": self.challenge_host_team.created_by.username
             }
         ]
 
@@ -83,7 +83,7 @@ class GetParticularChallengeHostTeam(BaseAPITestClass):
         expected = {
             "id": self.challenge_host_team.pk,
             "team_name": self.challenge_host_team.team_name,
-            "created_by": self.user.id
+            "created_by": self.user.username
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -108,7 +108,7 @@ class UpdateParticularChallengeHostTeam(BaseAPITestClass):
         expected = {
             "id": self.challenge_host_team.pk,
             "team_name": self.partial_update_team_name,
-            "created_by": self.user.id
+            "created_by": self.user.username
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -121,7 +121,7 @@ class UpdateParticularChallengeHostTeam(BaseAPITestClass):
         expected = {
             "id": self.challenge_host_team.pk,
             "team_name": self.update_team_name,
-            "created_by": self.user.id
+            "created_by": self.user.username
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -347,3 +347,39 @@ class CreateChallengeHostAndTeam(BaseAPITestClass):
         del self.data['team_name']
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class RemoveChallengeHostFromTeamHimselfTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(RemoveChallengeHostFromTeamHimselfTest, self).setUp()
+
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
+        self.url = reverse_lazy('hosts:remove_self_from_challenge_host_team',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk
+                                        })
+
+    def test_when_challenge_host_team_does_not_exist(self):
+        self.url = reverse_lazy('hosts:remove_self_from_challenge_host_team',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk + 1
+                                        })
+
+        expected = {
+            'error': 'ChallengeHostTeam does not exist'
+        }
+
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_when_a_challenge_host_is_successfully_removed_from_team(self):
+        self.url = reverse_lazy('hosts:remove_self_from_challenge_host_team',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk,
+                                        })
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
