@@ -116,7 +116,7 @@ class CreateChallengeTest(BaseAPITestClass):
             'published': False,
             'enable_forum': True,
             'anonymous_leaderboard': False,
-            'team_name': 'Test Challenge Host Team',
+            'team_name': 'Test Challenge Host Team'
         }
 
     def test_create_challenge_with_all_data(self):
@@ -129,9 +129,9 @@ class CreateChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_check_challenge_host_team_ownership(self):
-        del self.date['team_name']
+        del self.data['team_name']
         response = self.client.post(self.url, self.data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)    
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class GetParticularChallenge(BaseAPITestClass):
