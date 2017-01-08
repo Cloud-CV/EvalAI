@@ -1,65 +1,65 @@
 /* Error-404 styles */
 
 .fof-wrapper {
-  position: absolute;
-  text-align: center;
-  width:100% ;
-  height:100%;
-  left: 0;
-  background: #202028;
-  color: #9A958A;
-  padding-top: 100px;
+	position: absolute;
+	text-align: center;
+	width: 100% ;
+	height: 100%;
+	left: 0;
+	background: #202028;
+	color: #9A958A;
+	padding-top: 100px;
 } 
 
 .fof-error-container {
-  width:100% ;
-  height:100%;
-  font-family: "Roboto";
-  font-style: normal;
+	width: 100% ;
+	height: 100%;
+	font-family: "Roboto";
+	font-style: normal;
 }
 
 .fof-error {
-  postion:absolute;	
-  left: 0;
-  color: #BDB9A8;
-  font-size: 80px;
-  text-align: left;
-  font-weight: bold;
-  padding-top:130px;
-  width:100%;
-  height:50px;
+	postion: absolute;	
+	left: 0;
+	color: #BDB9A8;
+	font-size: 80px;
+	text-align: left;
+	font-weight: bold;
+	padding-top: 130px;
+	width: 100%;
+	height: 50px;
 }
 
 .fof-message {
-  postion:absolute;	
-  left: 0;
-  text-align: left;
-  font-size: 18px;
-  padding-top:90px;
-  width:100%;
+	postion: absolute;	
+	left: 0;
+	text-align: left;
+	font-size: 18px;
+	padding-top: 90px;
+	width: 100%;
 }
 
 .fof-home { 	
-  position: absolute;
-  left: 0;
-  right:0;  
-  bottom: 0;
-  margin-bottom: 15px;
-  font-size: 15px;
-  font-family: "Roboto";
-  color: #BDB9A8;
+	position: absolute;
+	left: 0;
+	right: 0;  
+	bottom: 0;
+	margin-bottom: 15px;
+	font-size: 15px;
+	font-family: "Roboto";
+	color: #BDB9A8;
 }
 
 .home-link{
-  color: #FFFFFF;
+	color: #FFFFFF;
 }
 
 .owl-pic{
-	position:absolute;
+	position: absolute;
 	right: 10%;
-	width:200px;
-	height:200px;
-	top:20%;
+	width: 200px;
+	height: 200px;
+	top: 20%;
 	background: url('../images/owl.png');
 }
 
@@ -95,57 +95,57 @@
 
 #star-2{
 	left: 20%; 
-	top:5%;
+	top: 5%;
 }
 
 #star-3{
 	right: 20%; 
-	bottom:40%;
+	bottom: 40%;
 }
 
 #star-4{
 	right: 60%; 
-	bottom:25%;
+	bottom: 25%;
 }
 
 #star-5{
 	right: 50%; 
-	bottom:45%;
+	bottom: 45%;
 }
 
 #star-6{
 	left: 40%; 
-	top:10%;
+	top: 10%;
 }
 
 #star-7{
 	left: 30%; 
-	bottom:50%;
+	bottom: 50%;
 }
 
 #star-8{
 	left: 25%; 
-	bottom:15%;
+	bottom: 15%;
 }
 
 #star-9{
 	left: 60%; 
-	bottom:25%;
+	bottom: 25%;
 }
 
 #star-10{
 	right: 40%; 
-	top:6%;
+	top: 6%;
 }
 
 #star-11{
 	left: 30%; 
-	top:3%;
+	top: 3%;
 }
 
 #star-12{
 	left: 20%; 
-	bottom:30%;
+	bottom: 30%;
 }
 
 /* Media Queries */
@@ -168,15 +168,15 @@
 		width: 360px;
 	}
 	.fof-home{
-		font-size:12px;
+		font-size: 12px;
 	}
 	.fof-message{
 		font-size: 14px;
-		padding-top:70px;
+		padding-top: 70px;
 		padding-left: 5px;
 	}
 	.fof-error{
-		font-size:60px;
+		font-size: 60px;
 		padding-top: 130px;
 	}
 }
@@ -193,14 +193,14 @@
 		width: 320px;
 	}
 	.fof-home{
-		font-size:12px;
+		font-size: 12px;
 	}
 	.fof-message{
 		font-size: 12px;
-  		padding-top:60px;
+		padding-top: 60px;
 	}
 	.fof-error{
-		font-size:50px;
+		font-size: 50px;
 		padding-top: 110px;
 	}
 }
