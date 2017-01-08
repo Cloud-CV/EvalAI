@@ -35,19 +35,19 @@ class TestStringMethods(BaseAPITestClass):
         self.assertEqual(url, '/api/hosts/challenge_host_team/')
 
         url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={'pk': self.challenge_host.pk})
-        self.assertEqual(url, '/api/hosts/challenge_host_team/'+ str(self.challenge_host.pk))
+        self.assertEqual(url, '/api/hosts/challenge_host_team/' + str(self.challenge_host.pk))
 
         url = reverse_lazy('hosts:create_challenge_host_team')
         self.assertEqual(url, '/api/hosts/create_challenge_host_team')
 
         url = reverse_lazy('hosts:get_challenge_host_list',kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
-        self.assertEqual(url, '/api/hosts/challenge_host_team/'+s tr(self.challenge_host_team.pk)+'/challenge_host')
+        self.assertEqual(url, '/api/hosts/challenge_host_team/' + str(self.challenge_host_team.pk) + '/challenge_host')
 
         url = reverse_lazy('hosts:get_challenge_host_details',kwargs={'challenge_host_team_pk': self.challenge_host_team.pk, 'pk': self.challenge_host.pk})
-        self.assertEqual(url, '/api/hosts/challenge_host_team/'+ str(self.challenge_host_team.pk)+'/challenge_host/'+ str(self.challenge_host.pk))
+        self.assertEqual(url, '/api/hosts/challenge_host_team/' + str(self.challenge_host_team.pk)+'/challenge_host/' + str(self.challenge_host.pk))
 
         url = reverse_lazy('hosts:remove_self_from_challenge_host_team',kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
-        self.assertEqual(url, '/api/hosts/remove_self_from_challenge_host/'+ str(self.challenge_host_team.pk))
+        self.assertEqual(url, '/api/hosts/remove_self_from_challenge_host/' + str(self.challenge_host_team.pk))
 
     if __name__ == '__main__':
         unittest.main()
