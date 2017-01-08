@@ -52,6 +52,3 @@ class TestStringMethods(BaseAPITestClass):
         url = reverse_lazy('hosts:remove_self_from_challenge_host_team',
                            kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
         self.assertEqual(url, '/api/hosts/remove_self_from_challenge_host/' + str(self.challenge_host_team.pk))
-
-    if __name__ == '__main__':
-        unittest.main()
