@@ -43,7 +43,7 @@ def challenge_list(request, challenge_host_team_pk):
 
     elif request.method == 'POST':
 
-        if not ChallengeHost.objects.filter(user=request.user).filter(team_name=challenge_host_team_pk):
+        if not ChallengeHost.objects.filter(user=request.user, team_name_id=challenge_host_team_pk).exists():
             response_data = {
                 'error': 'Sorry, you do not belong to this Host Team!'}
             return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
