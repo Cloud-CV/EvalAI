@@ -10,6 +10,9 @@
   "license": "ISC",
   "devDependencies": {
     "del": "^2.2.2",
+    "eslint": "^3.13.0",
+    "eslint-config-angular": "^0.2.0",
+    "eslint-plugin-angular": "^1.6.1",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.1",
     "gulp-cache": "^0.4.5",
