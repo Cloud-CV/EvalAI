@@ -117,7 +117,7 @@ class CreateChallengeTest(BaseAPITestClass):
                 "id": self.user.id,
                 "team_name": 'Test Challenge Host Team',
                 "created_by": self.user.username
-            }
+            },
             'published': False,
             'enable_forum': True,
             'anonymous_leaderboard': False
