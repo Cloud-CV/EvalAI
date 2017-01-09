@@ -114,9 +114,9 @@ class CreateChallengeTest(BaseAPITestClass):
             'terms_and_conditions': 'Terms and conditions for new test challenge',
             'submission_guidelines': 'Submission guidelines for new test challenge',
             "creator": {
-                "id": self.challenge.creator.pk,
+                "id": self.challenge_host_team.pk,
                 "team_name": self.challenge_host_team.team_name,
-                "created_by": self.user.id
+                "created_by": self.challenge_host_team.created_by.pk
             },
             'published': False,
             'enable_forum': True,
