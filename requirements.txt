@@ -1,6 +1,0 @@
-boto==2.43.0
-django==1.10.2
-djangorestframework==3.5.2
-django-rest-auth[with_social]
-django-storages==1.5.1
-psycopg2==2.6.2

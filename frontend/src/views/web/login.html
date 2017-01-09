@@ -1,0 +1,45 @@
+<div class="col s12 m4 offset-m4 left">
+    <ul class="left">
+        <li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">LogIn</a></li>
+        <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">SignUp</a></li>
+        <!-- <li class="ev-horiz-list"><a ui-sref="auth.reset-password" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetFrom()">Forgot Password</a></li> -->
+    </ul>
+</div>
+<div class="col s12 m4 offset-m4">
+    <!-- login form -->
+    <form ng-submit="auth.userLogin()" id="log-in">
+        <!-- username -->
+        <div class="input-field align-left">
+            <input id="name" type="text" class="validate" ng-model="auth.getUser.name" focus-if>
+            <span class="form-icon"><i class="fa fa-user"></i></span>
+            <label for="name" data-error="wrong" data-success="right">User Name (no space)*</label>
+            <div class="wrn-msg text-highlight" ng-show="auth.isValid.username">{{auth.wrnMsg.username}}</div>
+        </div>
+        <!-- password -->
+        <div class="input-field align-left">
+            <input id="password" type="password" class="validate" ng-model="auth.getUser.password" autocomplete="new-password">
+            <span class="form-icon"><i class="fa fa-key"></i></span>
+            <label for="password">Password (min 8 characters) *</label>
+            <div class="wrn-msg text-highlight" ng-show="auth.isValid.password">{{auth.wrnMsg.password}}</div>
+        </div>
+        <div class="row">
+            <!--    <div class="col s6 align-left rm-gut">
+            <input type="checkbox" class="filled-in" ng-model="auth.isRem" id="remeb">
+            <label for="remeb">Remember Me</label>
+        </div> -->
+            <br>
+            <div class="col s6 align-left rm-gut">
+                <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">LogIn</button>
+            </div>
+            <div class="col s6 align-right right rm-gut">
+                <a ui-sref="auth.reset-password" class="light-link fg-pass" ng-click="auth.resetForm()">Forgotten Account?</a>
+            </div>
+        </div>
+        <div ng-hide="auth.isConfirm" class="fade align-left"> {{auth.wrnMsg.cred}}</div>
+        <div>
+            <p class="text-light-gray">
+                Or start with a new account <a class="white-link" ui-sref="auth.signup">SignUp</a>
+            </p>
+        </div>
+    </form>
+</div>

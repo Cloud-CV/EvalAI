@@ -1,0 +1,41 @@
+.exist-team-card {
+    ul {
+        li {
+            padding: 10px 0px;
+        }
+    }
+    input[type="radio"].selectTeam + label {
+        font-size: 15px;
+        color: $med-black;
+        vertical-align: middle;
+    }
+    [type="radio"]:checked + label:after, 
+    [type="radio"].with-gap:checked + label:after {
+    background-color: #252833;
+    }
+    [type="radio"]:checked + label:after, 
+    [type="radio"].with-gap:checked + label:before,
+    [type="radio"].with-gap:checked + label:after {
+    border: 2px solid #252833;
+    }
+    i.list-icon {
+        line-height: 25px;
+    }
+}
+
+.new-team-card {
+    padding-bottom: 40px;
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.pagination-title {
+    padding: 0px 10px;
+}
+
+div.show-member-title {
+    width: calc(100% - 35px);
+    float: right;
+}

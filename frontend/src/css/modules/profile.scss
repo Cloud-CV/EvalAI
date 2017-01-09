@@ -1,0 +1,24 @@
+.profile-sidebar {
+    position: absolute;
+    z-index: 9;
+    font-size: 14px;
+    /*padding:0px  30px;*/
+    min-width: 200px;
+    min-height: 100vh;
+    background-color: $dust-gray;
+    top: 0;
+    left: -200px;
+    text-align: center;
+    color: #fff;
+    /*transition:all 0.2s ease-in-out;*/
+    ul {
+        margin-top: 20px;
+        text-align: left;
+        li {
+            padding: 10px 0px;
+        }
+    }
+    input[type="checkbox"] + label {
+        font-size: 12px;
+    }
+}

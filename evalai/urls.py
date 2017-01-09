@@ -13,20 +13,31 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+
 from django.conf.urls import url, include
 from django.contrib import admin
-from apps.accounts.views import ConfirmEmailView
 from django.views.generic.base import TemplateView
+from django.conf import settings
+
+from allauth.account import views as allauth_views
+from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
+
+from accounts.views import ConfirmEmailView
+
+handler404 = 'evalai.views.page_not_found'
+handler500 = 'evalai.views.internal_server_error'
 
 urlpatterns = [url(r'^',
-                   include('apps.web.urls')),
-               url(r'^',
-                   include('django.contrib.auth.urls')),
+                   include('web.urls')),
+               url(r'^accounts/',
+                   include('allauth.urls')),
                url(r'^admin/',
                    admin.site.urls),
+               url(r'^api/auth/login',
+                   obtain_expiring_auth_token, name='obtain_expiring_auth_token'),
                url(r'^api/auth/',
                    include('rest_auth.urls')),
-               url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',
+               url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',   # noqa
                    ConfirmEmailView.as_view(),
                    name='account_confirm_email'),
                url(r'^api/auth/registration/',
@@ -35,7 +46,33 @@ urlpatterns = [url(r'^',
                    TemplateView.as_view(
                        template_name="password_reset_confirm.html"),
                    name='password_reset_confirm'),
-               url(r'^api/admin-auth/',
-                   include('rest_framework.urls',
-                           namespace='rest_framework')),
+               url(r'^api/accounts/',
+                   include('accounts.urls',
+                           namespace='accounts')),
+               url(r'^api/challenges/',
+                   include('challenges.urls',
+                           namespace='challenges')),
+               url(r'^api/analytics/',
+                   include('analytics.urls',
+                           namespace='analytics')),
+               url(r'^api/hosts/',
+                   include('hosts.urls',
+                           namespace='hosts')),
+               url(r'^api/jobs/',
+                   include('jobs.urls',
+                           namespace='jobs')),
+               url(r'^api/participants/',
+                   include('participants.urls',
+                           namespace='participants')),
                ]
+
+# DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
+if settings.DEBUG:
+    urlpatterns += [url(r'^dbschema/',
+                    include('django_spaghetti.urls')),
+                    url(r'^docs/',
+                    include('rest_framework_docs.urls')),
+                    url(r'^api/admin-auth/',
+                        include('rest_framework.urls',
+                                namespace='rest_framework')),
+                    ]

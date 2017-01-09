@@ -1,0 +1,24 @@
+/*variable file*/
+
+@import "modules/variables.scss";
+
+/*base style files*/
+
+@import "modules/base.scss";
+
+/*core files*/
+
+@import "modules/landing.scss";
+@import "modules/auth.scss";
+@import "modules/error_404.scss";
+@import "modules/error_500.scss";
+@import "modules/header.scss";
+@import "modules/sidebar.scss";
+@import "modules/footer.scss";
+
+/*web files*/
+
+@import "modules/web.scss";
+@import "modules/teams.scss";
+@import "modules/challenge.scss";
+@import "modules/profile.scss";

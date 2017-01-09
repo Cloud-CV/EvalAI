@@ -1,0 +1,703 @@
+/*ng cloak default styling*/
+
+[ng\:cloak],
+[ng-cloak],
+[data-ng-cloak],
+[x-ng-cloak],
+.ng-cloak,
+.x-ng-cloak {
+    display: none !important;
+}
+
+
+/* autofill transparent */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+    -webkit-text-fill-color: #FFFFFF !important;
+}
+
+input.dark-autofill:-webkit-autofill,
+input.dark-autofill:-webkit-autofill:hover,
+input.dark-autofill:-webkit-autofill:focus,
+input.dark-autofill:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+    -webkit-text-fill-color: #4d4d4d !important;
+}
+
+a {
+    color: $med-gray;
+}
+
+
+/*scrollbar customization*/
+
+::-webkit-scrollbar {
+    width: 4px;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-track-piece {
+    background-color: $dark-gray;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+    background-color: $light-gray;
+    border-radius: 10px;
+}
+
+.fs-12 {
+    font-size: 12px;
+}
+
+.fs-14 {
+    font-size: 14px;
+}
+
+.fs-18 {
+    font-size: 18px;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+
+/*inline list*/
+
+ul.inline-list {
+    li {
+        display: inline-block;
+        margin-right: 20px;
+    }
+}
+
+
+/*clearfix*/
+
+.clearfix {
+    clear: both;
+    content: '';
+}
+
+
+/*position default*/
+
+.ev-fixed {
+    position: fixed;
+}
+
+.ev-absolute {
+    position: absolute;
+}
+
+
+/*bg color*/
+
+.ev-dark-bg {
+    background-color: $dark-gray;
+}
+
+.ev-dust-bg {
+    background-color: $dust-gray;
+}
+
+.ev-light-bg {
+    background-color: $light-gray;
+}
+
+
+/*main intro page*/
+
+.ev-md-container {
+    padding: 20px 30px;
+}
+
+.ev-sm-container {
+    padding: 10px 20px;
+}
+
+.ev-big-container {
+    padding: 30px 60px;
+}
+
+.padding-lr-header {
+    padding: 0px 100px;
+}
+
+.padding-sm-lr-header {
+    padding: 0px 30px;
+}
+
+a.active {
+    color: $link-hover-dark;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.ev-btn-dark:focus {
+    background-color: $dark-gray !important;
+}
+
+nav {
+    ul {
+        li {
+            a {
+                transition: all 0.2s ease-in-out;
+            }
+        }
+    }
+}
+
+.ev-container {
+    width: 100%;
+    padding: 20px 40px;
+    position: relative;
+    color: #fff;
+}
+
+.w-200 {
+    font-weight: 200;
+}
+
+.w-300 {
+    font-weight: 300;
+}
+
+.w-400 {
+    font-weight: 400;
+}
+
+.w-500 {
+    font-weight: 500;
+}
+
+.w-600 {
+    font-weight: 600;
+}
+
+.text-highlight {
+    color: $link-hover-dark;
+}
+
+.text-white {
+    color: #fff;
+}
+
+.text-light-black {
+    color: $light-black;
+}
+
+.text-med-black {
+    color: $med-black;
+}
+
+.text-dark-black {
+    color: $dark-black;
+}
+
+.text-light-gray {
+    color: #9ca3be;
+}
+
+.text-med-gray {
+    color: #3c3e49;
+}
+
+.text-dark-gray {
+    color: #252833;
+}
+
+.text-highlight {
+    color: $highlight;
+}
+
+.ev-btn-dark {
+    background: $dark-gray;
+}
+
+.ev-btn-dark:hover {
+    background: $med-gray;
+}
+
+
+/*card styles*/
+
+.ev-card-panel {
+    position: relative;
+    display: block;
+    background-color: #fff;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0px 0px 12px #d6dbf1;
+}
+
+.ev-card-content {
+    padding: 10px;
+}
+
+.ev-card-body {
+    padding: 10px 30px;
+}
+
+.ev-panel-title {
+    border-bottom: 1px solid $border-color-light;
+}
+
+.ev-card-image {
+    background: $dark-gray;
+    height: 150px;
+    overflow: hidden;
+}
+
+.ev-card-image {
+    img.bg-img {
+        opacity: 0.8;
+    }
+}
+
+.ev-card-title {
+    top: 10px;
+    left: 0px;
+    position: absolute;
+    font-size: 14px;
+    background-color: rgba(23, 24, 29, 0.7);
+    /* height: 55px; */
+    display: inline;
+    padding: 10px 20px;
+    border-radius: 0px 2px 2px 0px;
+    color: #fff;
+    span>img {
+        width: auto !important;
+        height: 20px;
+        vertical-align: middle;
+        float: left;
+        margin-right: 5px;
+    }
+}
+
+.ev-card-hover:hover {
+    box-shadow: 0px 0px 4px #d6dbf1;
+    .btn-card-detail {
+        background: $highlight;
+        color: #fff;
+    }
+}
+
+.btn-card-detail {
+    display: block;
+    width: 100%;
+    background: $border-color-light;
+    text-align: center;
+    padding: 10px 20px;
+    position: absolute;
+    bottom: 0;
+    transition: all 0.2s ease-in-out;
+}
+
+.card-content {
+    p {
+        padding-bottom: 10px;
+    }
+}
+
+.list-icon {
+    /*float: right;*/
+}
+
+.ev-z-depth-5 {
+    box-shadow: 0px 0px 10px #d6dbf1;
+}
+
+.ev-z-depth-4 {
+    box-shadow: 0px 0px 8px #d6dbf1;
+}
+
+.ev-z-depth-3 {
+    box-shadow: 0px 0px 6px #d6dbf1;
+}
+
+.ev-z-depth-2 {
+    box-shadow: 0px 0px 4px #d6dbf1;
+}
+
+.ev-z-depth-1 {
+    box-shadow: 0px 0px 2px #d6dbf1;
+}
+
+.ev-view {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.btn {
+    text-transform: none;
+}
+
+.fade {
+    transition: all linear 500ms;
+    opacity: 1;
+}
+
+.fade.ng-hide {
+    opacity: 0;
+}
+
+.fade.ng-show {
+    opacity: 1;
+}
+
+i.icon {
+    font-size: 15px;
+}
+
+.side-nav li > a > i {
+    margin: 0px;
+}
+
+a {
+    transition: all 0.2s ease-in-out;
+}
+
+a.white-link {
+    color: $light-link;
+}
+
+a.white-link:hover {
+    color: $link-hover-dark;
+}
+
+a.light-link {
+    color: $med-link;
+}
+
+a.light-link:hover {
+    color: $light-link;
+}
+
+a.med-link {
+    color: $med-link;
+}
+
+a.med-link:hover {
+    color: $dark-link;
+}
+
+a.med-black-link {
+    color: $med-black;
+}
+
+a.med-black-link:hover {
+    color: $highlight;
+}
+
+a.dark-link {
+    color: $dark-link;
+}
+
+a.dark-link:hover {
+    color: $highlight;
+}
+
+a.text-light-black:hover {
+    color: $highlight;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.align-right {
+    text-align: right;
+}
+
+
+/*to remove gutter from col*/
+
+.rm-gut {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+}
+
+.form-icon {
+    i {
+        position: absolute;
+        right: 0;
+        top: 15px;
+        color: $light-gray;
+        font-size: 0.9em;
+        transition: all 0.2s ease-in-out;
+    }
+}
+
+
+/*pagination*/
+
+.pagination-container {
+    margin-top: 25px;
+    .md-button.md-warn.md-raised {
+        background-color: $highlight;
+    }
+    .md-button.md-primary,
+    .md-button.md-primary.md-raised,
+    .md-button.md-primary.md-raised:not([disabled]):hover,
+    .md-button.md-primary.md-raised:active {
+        background-color: $dark-gray;
+    }
+}
+
+.btn-pagination {
+    background-color: $highlight;
+    i {
+        font-size: 16px;
+    }
+}
+
+.btn-pagination:hover {
+    background-color: $highlight;
+    i {
+        font-size: 16px;
+    }
+}
+
+
+/* label color */
+
+.input-field label,
+input[type=checkbox] + label {
+    color: $light-gray;
+    font-size: 0.8em;
+    font-weight: 400;
+}
+
+input[type="checkbox"].filled-in:checked + label:after {
+    width: 17px;
+    height: 17px;
+    border: 1px solid $link-hover-dark;
+    background-color: $link-hover-dark;
+}
+
+input[type="checkbox"] + label {
+    padding-left: 24px;
+    line-height: 20px;
+}
+
+input[type="checkbox"].filled-in:checked + label:before {
+    top: 0;
+    left: 2px;
+    width: 5px;
+    height: 11px;
+}
+
+input[type="checkbox"].filled-in:not(:checked) + label:after {
+    width: 17px;
+    height: 17px;
+    border: 1px solid $light-gray;
+    background-color: transparent;
+}
+
+
+/* label focus color */
+
+.input-field input[type=email]:focus + label,
+.input-field input[type=password]:focus + label,
+.input-field input[type=text]:focus + label {
+    color: $light-gray;
+}
+
+
+/* label underline focus color */
+
+.input-field input[type=email]:focus,
+.input-field input[type=password]:focus,
+.input-field input[type=text]:focus {
+    border-bottom: 1px solid $link-hover-dark;
+    box-shadow: 0 0px 0 0 $link-hover-dark;
+}
+
+
+/* valid color */
+
+.input-field input[type=email].valid,
+.input-field input[type=password].valid,
+.input-field input[type=text].valid {
+    border-bottom: 1px solid $link-hover-dark;
+    box-shadow: 0 0px 0 0 #000;
+}
+
+
+/* invalid color */
+
+.input-field input[type=email].invalid,
+.input-field input[type=password].invalid,
+.input-field input[type=text].invalid {
+    border-bottom: 1px solid $link-hover-dark;
+    box-shadow: 0 0px 0 0 #000;
+}
+
+
+/* icon prefix focus color */
+
+.input-field .prefix.active {
+    color: #000;
+}
+
+input[type=password],
+input[type=email] {
+    border-bottom: 1px solid $light-gray;
+}
+
+input {
+    font-weight: 300;
+}
+
+.input-field input[type=email]:focus + .form-icon,
+.input-field input[type=password]:focus + .form-icon,
+.input-field input[type=text]:focus + .form-icon {
+    i {
+        color: $light-link;
+    }
+}
+
+.input-field input[type=email]:focus + .form-icon-dark,
+.input-field input[type=password]:focus + .form-icon-dark,
+.input-field input[type=text]:focus + .form-icon-dark {
+    i {
+        color: $dark-link;
+    }
+}
+
+.ev-spinner-dark {
+    border-color: $light-link;
+}
+
+.ev-spinner-light {
+    border-color: $highlight;
+}
+
+
+/*loader*/
+
+.show-loader {
+    display: block;
+}
+
+.hide-loader {
+    display: none;
+}
+
+.low-screen {
+    transition: all 0.2s ease-in-out;
+    opacity: 0.2;
+}
+
+.loader-title {
+    margin-top: 39vh;
+}
+
+.loader-container {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    background-color: transparent;
+}
+
+.card-loader-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    background-color: transparent;
+    .loader-title {
+        margin-top: 14vh;
+    }
+    .loader {
+        margin-top: 20%;
+        top: 0;
+    }
+}
+
+.loader {
+    width: $loader-size;
+    height: $loader-height;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    > div {
+        content: " ";
+        width: $loader-dot-size;
+        height: $loader-dot-size;
+        background: $loader-dot-color;
+        border-radius: 100%;
+        position: absolute;
+        animation: shift 2s linear infinite;
+        &:nth-of-type(1) {
+            animation-delay: -.4s;
+        }
+        &:nth-of-type(2) {
+            animation-delay: -.8s;
+        }
+        &:nth-of-type(3) {
+            animation-delay: -1.2s;
+        }
+        &:nth-of-type(4) {
+            animation-delay: -1.6s;
+        }
+    }
+}
+
+@keyframes shift {
+    0% {
+        left: -3*$loader-dot-size;
+        opacity: 0;
+        background-color: $loader-dot-color;
+    }
+    10% {
+        left: 0;
+        opacity: 1;
+    }
+    90% {
+        left: $loader-size;
+        opacity: 1;
+    }
+    100% {
+        left: ($loader-size + 3*$loader-dot-size);
+        background-color: $light-gray;
+        opacity: 0;
+    }
+}
+
+.info {
+    position: absolute;
+    bottom: 0;
+    color: crimson;
+    .info-text {
+        display: none;
+    }
+    input:checked + .info-text {
+        display: block;
+    }
+}
+
+
+/*media queries*/
+
+@media only screen and (max-width: 992px) {
+    .padding-lr-header {
+        padding: 0px 20px;
+    }
+    .ev-container {
+        padding: 20px;
+    }
+}
