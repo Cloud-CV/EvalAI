@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-
+from datetime import timedelta
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -50,7 +50,8 @@ class Submission(TimeStampedModel):
     input_file = models.FileField(upload_to=input_file_name)
     stdout_file = models.FileField(upload_to=stdout_file_name, null=True, blank=True)
     stderr_file = models.FileField(upload_to=stderr_file_name, null=True, blank=True)
-
+    execution_time_limit = models.PositiveIntegerField(default=timedelta(seconds=300))
+    
     def __unicode__(self):
         return '{}'.format(self.id)
 
