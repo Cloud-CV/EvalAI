@@ -116,7 +116,7 @@ class CreateChallengeTest(BaseAPITestClass):
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge_host_team.team_name,
-                "created_by": self.challenge_host_team.created_by.pk
+                "created_by": self.user.id
             },
             'published': False,
             'enable_forum': True,
