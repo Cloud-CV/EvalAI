@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
-from datetime import datetime
-
+from django.utils import timezone
 from django.db import models
 
 from base.models import (TimeStampedModel, )
@@ -62,12 +61,9 @@ class Challenge(TimeStampedModel):
     @property
     def is_active(self):
         """Returns if the challenge is active or not"""
-        if self.end_date is None:
+        if self.end_date > timezone.now():
             return True
-        if type(self.end_date) is datetime.datetime.date:
-            return True if self.end_date is None else self.end_date > datetime.now().date()
-        if type(self.end_date) is datetime.datetime:
-            return True if self.end_date is None else self.end_date > datetime.now()
+        return False
 
 
 class ChallengePhase(TimeStampedModel):
@@ -105,9 +101,6 @@ class ChallengePhase(TimeStampedModel):
     @property
     def is_active(self):
         """Returns if the challenge is active or not"""
-        if self.end_date is None:
+        if self.end_date > timezone.now():
             return True
-        if type(self.end_date) is datetime.datetime.date:
-            return True if self.end_date is None else self.end_date > datetime.now().date()
-        if type(self.end_date) is datetime.datetime:
-            return True if self.end_date is None else self.end_date > datetime.now()
+        return False
