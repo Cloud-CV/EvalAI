@@ -115,7 +115,7 @@ class CreateChallengeTest(BaseAPITestClass):
             'submission_guidelines': 'Submission guidelines for new test challenge',
             "creator": {
                 "id": self.challenge.creator.pk,
-                "team_name": self.challenge.creator.team_name,
+                "team_name": self.challenge_host_team.team_name,
                 "created_by": self.challenge.creator.created_by.pk
             },
             'published': False,
