@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from django.db import models
 
 from base.models import (TimeStampedModel, )
@@ -36,6 +38,32 @@ class Challenge(TimeStampedModel):
         app_label = 'challenges'
         db_table = 'challenge'
 
+    def __str__(self):
+        return self.title
+
+    def get_image_url(self):
+        if self.image:
+            return self.image.url
+        return None
+
+    def get_evaluation_script_path(self):
+        return self.evaluation_script.url
+
+    def get_start_date(self):
+        return self.start_date
+
+    def get_end_date(self):
+        return self.end_date
+
+    @property
+    def is_active(self):
+        if self.end_date is None:
+            return True
+        if type(self.end_date) is datetime.datetime.date:
+            return True if self.end_date is None else self.end_date > datetime.now().date()
+        if type(self.end_date) is datetime.datetime:
+            return True if self.end_date is None else self.end_date > datetime.now()
+
 
 class ChallengePhase(TimeStampedModel):
     name = models.CharField(max_length=100)
@@ -54,3 +82,21 @@ class ChallengePhase(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_phase'
+
+    def __str__(self):
+        return self.name
+
+    def get_start_date(self):
+        return self.start_date
+
+    def get_end_date(self):
+        return self.end_date
+
+    @property
+    def is_active(self):
+        if self.end_date is None:
+            return True
+        if type(self.end_date) is datetime.datetime.date:
+            return True if self.end_date is None else self.end_date > datetime.now().date()
+        if type(self.end_date) is datetime.datetime:
+            return True if self.end_date is None else self.end_date > datetime.now()
