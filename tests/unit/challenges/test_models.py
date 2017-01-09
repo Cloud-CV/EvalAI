@@ -39,8 +39,24 @@ class BaseTestCase(TestCase):
 
 
 class ChalengeTestCase(BaseTestCase):
+
     def setUp(self):
         super(ChalengeTestCase, self).setUp()
+
+        try:
+            os.makedirs('/tmp/evalai')
+        except OSError:
+            pass
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge.image = SimpleUploadedFile('test_sample_file.jpg',
+                                                      'Dummy image content', content_type='image')
+            self.challenge.evaluation_script = SimpleUploadedFile('test_sample_file.zip',
+                                                                  'Dummy zip content', content_type='zip')
+        self.challenge.save()
+
+    def tearDown(self):
+        shutil.rmtree('/tmp/evalai')
 
     def test__str__(self):
         self.assertEqual(self.challenge.title, self.challenge.__str__())
@@ -53,11 +69,31 @@ class ChalengeTestCase(BaseTestCase):
         self.challenge.save()
         self.assertEqual(False, self.challenge.is_active)
 
+    def test_get_evaluation_script_path(self):
+        self.assertEqual(self.challenge.evaluation_script.url,
+                         self.challenge.get_evaluation_script_path())
+
+    def test_get_evaluation_script_path_when_file_is_none(self):
+        self.challenge.evaluation_script = None
+        self.challenge.save()
+        self.assertEqual(None, self.challenge.get_evaluation_script_path(), )
+
+    def test_get_image_url(self):
+        self.assertEqual(self.challenge.image.url,
+                         self.challenge.get_image_url())
+
+    def test_get_image_url_when_image_is_none(self):
+        self.challenge.image = None
+        self.challenge.save()
+        self.assertEqual(None, self.challenge.get_image_url())
+
     def test_get_start_date(self):
-        self.assertEqual(self.challenge.start_date, self.challenge.get_start_date())
+        self.assertEqual(self.challenge.start_date,
+                         self.challenge.get_start_date())
 
     def test_get_end_date(self):
-        self.assertEqual(self.challenge.end_date, self.challenge.get_end_date())
+        self.assertEqual(self.challenge.end_date,
+                         self.challenge.get_end_date())
 
 
 class ChallengePhaseTestCase(BaseTestCase):
@@ -86,7 +122,8 @@ class ChallengePhaseTestCase(BaseTestCase):
         shutil.rmtree('/tmp/evalai')
 
     def test__str__(self):
-        self.assertEqual(self.challenge_phase.name, self.challenge_phase.__str__())
+        self.assertEqual(self.challenge_phase.name,
+                         self.challenge_phase.__str__())
 
     def test_is_active(self):
         self.assertEqual(True, self.challenge_phase.is_active)
@@ -97,7 +134,9 @@ class ChallengePhaseTestCase(BaseTestCase):
         self.assertEqual(False, self.challenge_phase.is_active)
 
     def test_get_start_date(self):
-        self.assertEqual(self.challenge_phase.start_date, self.challenge_phase.get_start_date())
+        self.assertEqual(self.challenge_phase.start_date,
+                         self.challenge_phase.get_start_date())
 
     def test_get_end_date(self):
-        self.assertEqual(self.challenge_phase.end_date, self.challenge_phase.get_end_date())
+        self.assertEqual(self.challenge_phase.end_date,
+                         self.challenge_phase.get_end_date())

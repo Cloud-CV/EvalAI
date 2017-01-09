@@ -48,7 +48,9 @@ class Challenge(TimeStampedModel):
 
     def get_evaluation_script_path(self):
         """Returns the path of evaluation script"""
-        return self.evaluation_script.url
+        if self.evaluation_script:
+            return self.evaluation_script.url
+        return None
 
     def get_start_date(self):
         """Returns the start date of Challenge"""
