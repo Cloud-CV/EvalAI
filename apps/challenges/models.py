@@ -10,9 +10,8 @@ from participants.models import (ParticipantTeam, )
 
 
 class Challenge(TimeStampedModel):
-    """
-    Model representing a hosted Challenge
-    """
+
+    """Model representing a hosted Challenge"""
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     terms_and_conditions = models.TextField(null=True, blank=True)
@@ -39,24 +38,30 @@ class Challenge(TimeStampedModel):
         db_table = 'challenge'
 
     def __str__(self):
+        """Returns the title of Challenge"""
         return self.title
 
     def get_image_url(self):
+        """Returns the url of logo of Challenge"""
         if self.image:
             return self.image.url
         return None
 
     def get_evaluation_script_path(self):
+        """Returns the path of evaluation script"""
         return self.evaluation_script.url
 
     def get_start_date(self):
+        """Returns the start date of Challenge"""
         return self.start_date
 
     def get_end_date(self):
+        """Returns the end date of Challenge"""
         return self.end_date
 
     @property
     def is_active(self):
+        """Returns if the challenge is active or not"""
         if self.end_date is None:
             return True
         if type(self.end_date) is datetime.datetime.date:
@@ -66,6 +71,8 @@ class Challenge(TimeStampedModel):
 
 
 class ChallengePhase(TimeStampedModel):
+
+    """Model representing a Challenge Phase"""
     name = models.CharField(max_length=100)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
@@ -84,16 +91,20 @@ class ChallengePhase(TimeStampedModel):
         db_table = 'challenge_phase'
 
     def __str__(self):
+        """Returns the name of Phase"""
         return self.name
 
     def get_start_date(self):
+        """Returns the start date of Phase"""
         return self.start_date
 
     def get_end_date(self):
+        """Returns the end date of Challenge"""
         return self.end_date
 
     @property
     def is_active(self):
+        """Returns if the challenge is active or not"""
         if self.end_date is None:
             return True
         if type(self.end_date) is datetime.datetime.date:
