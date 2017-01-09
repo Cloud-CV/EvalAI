@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
-import unittest
 
 
 class BaseAPITestClass(APITestCase):
