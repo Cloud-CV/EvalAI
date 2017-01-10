@@ -49,6 +49,12 @@ class BaseAPITestClass(APITestCase):
             enable_forum=True,
             anonymous_leaderboard=False)
 
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
         self.participant_team = ParticipantTeam.objects.create(
             team_name='Participant Team for Challenge',
             created_by=self.user)
@@ -134,6 +140,7 @@ class CreateChallengeTest(BaseAPITestClass):
 
     def test_check_challenge_host_team_ownership(self):
         del self.data['creator']
+        self.challenge_host.delete()
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
