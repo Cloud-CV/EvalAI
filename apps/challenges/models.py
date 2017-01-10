@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.db import models
 
 from base.models import (TimeStampedModel, )
-from hosts.models import (ChallengeHostTeam, )
+from hosts.models import (ChallengeHostTeam, ) #pylint: disable=W0611
 from participants.models import (ParticipantTeam, )
 
 
@@ -30,7 +30,8 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False)
-    evaluation_script = models.FileField(default=False, upload_to="evaluation_scripts")  # should be zip format
+    evaluation_script = models.FileField(
+        default=False, upload_to="evaluation_scripts")  # should be zip format
 
     class Meta:
         app_label = 'challenges'

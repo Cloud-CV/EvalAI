@@ -77,7 +77,8 @@ class GetParticularChallengeHostTeam(BaseAPITestClass):
 
     def setUp(self):
         super(GetParticularChallengeHostTeam, self).setUp()
-        self.url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={'pk': self.challenge_host_team.pk})
+        self.url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={
+                                'pk': self.challenge_host_team.pk})
 
     def test_get_particular_challenge_host_team(self):
         expected = {
@@ -94,7 +95,8 @@ class UpdateParticularChallengeHostTeam(BaseAPITestClass):
 
     def setUp(self):
         super(UpdateParticularChallengeHostTeam, self).setUp()
-        self.url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={'pk': self.challenge_host_team.pk})
+        self.url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={
+                                'pk': self.challenge_host_team.pk})
         self.data = {
             'team_name': 'Test Team'
         }
@@ -135,7 +137,8 @@ class UpdateParticularChallengeHostTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_particular_challenge_host_team_does_not_exist(self):
-        self.url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={'pk': self.challenge_host_team.pk + 1})
+        self.url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={
+                                'pk': self.challenge_host_team.pk + 1})
         expected = {
             'error': 'ChallengeHostTeam does not exist'
         }
@@ -148,7 +151,8 @@ class DeleteParticularChallengeHostTeam(BaseAPITestClass):
 
     def setUp(self):
         super(DeleteParticularChallengeHostTeam, self).setUp()
-        self.url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={'pk': self.challenge_host_team.pk})
+        self.url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={
+                                'pk': self.challenge_host_team.pk})
 
     def test_particular_challenge_host_team_delete(self):
         response = self.client.delete(self.url, {})

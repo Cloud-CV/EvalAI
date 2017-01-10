@@ -1,6 +1,1 @@
-from django.conf.urls import url
-# from .views import ()
-
-
-urlpatterns = [
-]
+# Register your urls here

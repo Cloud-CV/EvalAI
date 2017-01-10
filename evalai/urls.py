@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.views.generic.base import TemplateView
 from django.conf import settings
 
-from allauth.account import views as allauth_views
+from allauth.account import views as allauth_views #pylint: disable=W0611
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 
 from accounts.views import ConfirmEmailView
@@ -69,9 +69,9 @@ urlpatterns = [url(r'^',
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
 if settings.DEBUG:
     urlpatterns += [url(r'^dbschema/',
-                    include('django_spaghetti.urls')),
+                        include('django_spaghetti.urls')),
                     url(r'^docs/',
-                    include('rest_framework_docs.urls')),
+                        include('rest_framework_docs.urls')),
                     url(r'^api/admin-auth/',
                         include('rest_framework.urls',
                                 namespace='rest_framework')),

@@ -6,6 +6,7 @@ uses:
   - django
 autodetect: true
 requirements:
+  -requirements/common.txt
   - requirements/dev.txt
   - requirements/prod.txt
 ignore-paths:
@@ -15,3 +16,7 @@ ignore-patterns:
   - (^|/)docs(/|$)
 python-targets:
   - 2
+pep8:
+  full: true
+pylint:
+  run: true

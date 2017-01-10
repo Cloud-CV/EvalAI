@@ -8,7 +8,8 @@ from .models import (ChallengeHost,
 
 class ChallengeHostTeamSerializer(serializers.ModelSerializer):
 
-    created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    created_by = serializers.SlugRelatedField(
+        slug_field='username', queryset=User.objects.all())
 
     def __init__(self, *args, **kwargs):
         super(ChallengeHostTeamSerializer, self).__init__(*args, **kwargs)
@@ -25,8 +26,10 @@ class ChallengeHostTeamSerializer(serializers.ModelSerializer):
 class ChallengeHostSerializer(serializers.ModelSerializer):
 
     status = serializers.ChoiceField(choices=ChallengeHost.STATUS_OPTIONS)
-    permissions = serializers.ChoiceField(choices=ChallengeHost.PERMISSION_OPTIONS)
-    user = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    permissions = serializers.ChoiceField(
+        choices=ChallengeHost.PERMISSION_OPTIONS)
+    user = serializers.SlugRelatedField(
+        slug_field='username', queryset=User.objects.all())
 
     def __init__(self, *args, **kwargs):
         super(ChallengeHostSerializer, self).__init__(*args, **kwargs)

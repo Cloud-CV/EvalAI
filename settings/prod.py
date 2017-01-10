@@ -37,7 +37,8 @@ STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
 
 # Media files configuration on S3
 MEDIAFILES_LOCATION = 'media'
-MEDIA_URL = 'http://%s.s3.amazonaws.com/%s/' % (AWS_STORAGE_BUCKET_NAME, MEDIAFILES_LOCATION)
+MEDIA_URL = 'http://%s.s3.amazonaws.com/%s/' % (
+    AWS_STORAGE_BUCKET_NAME, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = 'settings.custom_storages.MediaStorage'
 
 # Setup Email Backend related settings
@@ -55,4 +56,4 @@ REST_FRAMEWORK_DOCS = {
 }
 
 # Port number for the python-memcached cache backend.
-CACHES['default']['LOCATION'] = os.environ.get("LOCATION", "") # noqa: ignore=F405
+CACHES['default']['LOCATION'] = os.environ.get("LOCATION", "")  # noqa: ignore=F405

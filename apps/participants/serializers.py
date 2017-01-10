@@ -8,7 +8,8 @@ from .models import (Participant, ParticipantTeam)
 
 class ParticipantTeamSerializer(serializers.ModelSerializer):
 
-    created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    created_by = serializers.SlugRelatedField(
+        slug_field='username', queryset=User.objects.all())
 
     def __init__(self, *args, **kwargs):
         super(ParticipantTeamSerializer, self).__init__(*args, **kwargs)
@@ -27,7 +28,8 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def __init__(self, *args, **kwargs):
-        super(InviteParticipantToTeamSerializer, self).__init__(*args, **kwargs)
+        super(InviteParticipantToTeamSerializer,
+              self).__init__(*args, **kwargs)
         context = kwargs.get('context')
         if context:
             self.participant_team = context.get('participant_team')
@@ -35,7 +37,8 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if value == self.user.email:
-            raise serializers.ValidationError('A participant cannot invite himself')
+            raise serializers.ValidationError(
+                'A participant cannot invite himself')
         try:
             User.objects.get(email=value)
         except User.DoesNotExist:
@@ -69,4 +72,5 @@ class ChallengeParticipantTeamList(object):
 
 
 class ChallengeParticipantTeamListSerializer(serializers.Serializer):
-    challenge_participant_team_list = ChallengeParticipantTeamSerializer(many=True)
+    challenge_participant_team_list = ChallengeParticipantTeamSerializer(
+        many=True)

@@ -1,15 +1,15 @@
+# flake8: noqa
 from django.conf import settings
-from django.shortcuts import render
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,
                                        renderer_classes,
-                                       throttle_classes,)
+                                       throttle_classes,) #pylint: disable=W0611
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework import response, schemas
+from rest_framework import response, schemas #pylint: disable=W0611
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle
@@ -23,7 +23,7 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ChallengeParticipantTeam,
                           ChallengeParticipantTeamList,
                           ChallengeParticipantTeamListSerializer,
-                          ChallengeParticipantTeamSerializer,)
+                          ChallengeParticipantTeamSerializer,) #pylint: disable=W0611
 
 
 @throttle_classes([UserRateThrottle])
@@ -163,7 +163,8 @@ def get_teams_and_corresponding_challenges_for_a_participant(request):
     Returns list of teams and corresponding challenges for a participant
     """
     # first get list of all the participants and teams related to the user
-    participant_objs = Participant.objects.filter(user=request.user).prefetch_related('team')
+    participant_objs = Participant.objects.filter(
+        user=request.user).prefetch_related('team')
 
     challenge_participated_teams = []
     for participant_obj in participant_objs:
@@ -177,7 +178,8 @@ def get_teams_and_corresponding_challenges_for_a_participant(request):
         challenge_participated_teams.append(ChallengeParticipantTeam(
             challenge, participant_team))
 
-    serializer = ChallengeParticipantTeamListSerializer(ChallengeParticipantTeamList(challenge_participated_teams))
+    serializer = ChallengeParticipantTeamListSerializer(
+        ChallengeParticipantTeamList(challenge_participated_teams))
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -196,7 +198,8 @@ def remove_self_from_participant_team(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        participant = Participant.objects.get(user=request.user.id, team__pk=participant_team_pk)
+        participant = Participant.objects.get(
+            user=request.user.id, team__pk=participant_team_pk)
         participant.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     except:

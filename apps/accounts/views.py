@@ -1,17 +1,15 @@
 from django.contrib.auth import logout
-from django.contrib.auth.models import User
-from django.shortcuts import render
 from django.urls import reverse
 
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-from rest_auth.registration.views import VerifyEmailView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,)
-from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,)
 
 import requests
 
