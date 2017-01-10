@@ -9,15 +9,15 @@ from participants.models import ParticipantTeam
 
 
 def input_file_name(instance, filename):
-    return '/'.join(['submissionFiles', str(instance.pk), filename])
+    return '/'.join(['submission_files', str(instance.pk), filename])
 
 
 def stdout_file_name(instance, filename):
-    return '/'.join(['submissionFiles', str(instance.pk), 'stdout.log'])
+    return '/'.join(['submission_files', str(instance.pk), 'stdout.log'])
 
 
 def stderr_file_name(instance, filename):
-    return '/'.join(['submissionFiles', str(instance.pk), 'stderr.log'])
+    return '/'.join(['submission_files', str(instance.pk), 'stderr.log'])
 
 
 class Submission(TimeStampedModel):
@@ -50,6 +50,7 @@ class Submission(TimeStampedModel):
     input_file = models.FileField(upload_to=input_file_name)
     stdout_file = models.FileField(upload_to=stdout_file_name, null=True, blank=True)
     stderr_file = models.FileField(upload_to=stderr_file_name, null=True, blank=True)
+    execution_time_limit = models.PositiveIntegerField(default=300)
 
     def __unicode__(self):
         return '{}'.format(self.id)
