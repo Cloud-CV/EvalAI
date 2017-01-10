@@ -31,6 +31,8 @@ class Challenge(TimeStampedModel):
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False)
     evaluation_script = models.FileField(default=False, upload_to="evaluation_scripts")  # should be zip format
+    approved_by_admin = models.BooleanField(
+        default=False, verbose_name="Approved By Admin")
 
     class Meta:
         app_label = 'challenges'
