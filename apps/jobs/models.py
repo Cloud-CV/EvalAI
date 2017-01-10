@@ -2,10 +2,10 @@ from __future__ import unicode_literals
 
 import datetime
 
+from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.db.models import Max
-from django.core.exceptions import PermissionDenied
-from django.contrib.auth.models import User
 
 from base.models import (TimeStampedModel, )
 from challenges.models import ChallengePhase
@@ -82,16 +82,22 @@ class Submission(TimeStampedModel):
                 participant_team=self.participant_team,
                 status=Submission.FAILED).count()
 
-            offset_submission_count = self.submission_number - failed_count
+            successful_count = self.submission_number - failed_count
 
-            if (offset_submission_count > self.challenge_phase.max_submissions):
-                print "Checking to see if the offset_submission_count (%d) ", \
+            if (successful_count > self.challenge_phase.max_submissions):
+                print "Checking to see if the successful_count (%d) ", \
                     " is greater than the maximum allowed (%d)" % (
-                        offset_submission_count, self.challenge_phase.max_submissions)
+                        successful_count, self.challenge_phase.max_submissions)
+
+                print "The submission request is submitted by user (%d) ", \
+                    "from participant_team (%d) " % (
+                        self.created_by, self.participant_team)
+
                 raise PermissionDenied(
                     "The maximum number of submissions has been reached.")
             else:
-                print "Submission number below maximum."
+                print "Submission is below for user (%d) form participant_team (%d) for challenge_phase (%d)" % (
+                    self.created_by, self.participant_team, self.challenge_phase)
 
             if hasattr(self.challenge_phase, 'max_submissions_per_day'):
                 submissions_done_today_count = Submission.objects.filter(
@@ -104,17 +110,9 @@ class Submission(TimeStampedModel):
                         (self.challenge_phase.max_submissions_per_day == 0)):
                     print 'PERMISSION DENIED'
                     raise PermissionDenied(
-                        "The maximum number of submissions this day have been reached.")
-            else:
-                # Increment the number if we are enforcing it
-                while Submission.objects.filter(
-                    challenge_phase=self.challenge_phase,
-                    participant_team=self.participant_team,
-                    submission_number=self.submission_number
-                ).exists():
-                    self.submission_number += 1
+                        "The maximum number of submission for today has been reached")
 
             self.status = Submission.SUBMITTED
 
-        saved_model = super(Submission, self).save(*args, **kwargs)
-        return saved_model
+        submission_instance = super(Submission, self).save(*args, **kwargs)
+        return submission_instance
