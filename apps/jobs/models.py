@@ -54,10 +54,9 @@ class Submission(TimeStampedModel):
     completed_at = models.DateTimeField(null=True, blank=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
     input_file = models.FileField(upload_to=input_file_name)
-    stdout_file = models.FileField(
-        upload_to=stdout_file_name, null=True, blank=True)
-    stderr_file = models.FileField(
-        upload_to=stderr_file_name, null=True, blank=True)
+    stdout_file = models.FileField(upload_to=stdout_file_name, null=True, blank=True)
+    stderr_file = models.FileField(upload_to=stderr_file_name, null=True, blank=True)
+    execution_time_limit = models.PositiveIntegerField(default=300)
 
     def __unicode__(self):
         return '{}'.format(self.id)

@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0008_max_submissions'),
+        ('challenges', '0009_challengephase_is_public'),
     ]
 
     operations = [
