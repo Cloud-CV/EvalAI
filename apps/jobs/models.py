@@ -36,8 +36,10 @@ class Submission(TimeStampedModel):
         (FINISHED, FINISHED),
     )
 
-    participant_team = models.ForeignKey(ParticipantTeam, related_name='submissions')
-    challenge_phase = models.ForeignKey(ChallengePhase, related_name='submissions')
+    participant_team = models.ForeignKey(
+        ParticipantTeam, related_name='submissions')
+    challenge_phase = models.ForeignKey(
+        ChallengePhase, related_name='submissions')
     created_by = models.ForeignKey(User)
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
     is_public = models.BooleanField(default=False)
@@ -48,8 +50,10 @@ class Submission(TimeStampedModel):
     completed_at = models.DateTimeField(null=True, blank=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
     input_file = models.FileField(upload_to=input_file_name)
-    stdout_file = models.FileField(upload_to=stdout_file_name, null=True, blank=True)
-    stderr_file = models.FileField(upload_to=stderr_file_name, null=True, blank=True)
+    stdout_file = models.FileField(
+        upload_to=stdout_file_name, null=True, blank=True)
+    stderr_file = models.FileField(
+        upload_to=stderr_file_name, null=True, blank=True)
     execution_time_limit = models.PositiveIntegerField(default=300)
 
     def __unicode__(self):

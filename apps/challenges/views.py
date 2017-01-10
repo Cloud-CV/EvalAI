@@ -9,7 +9,8 @@ from rest_framework.decorators import (api_view,
                                        throttle_classes,)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
@@ -27,7 +28,8 @@ from .serializers import ChallengeSerializer, ChallengePhaseSerializer
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_list(request, challenge_host_team_pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(
+            pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -57,7 +59,8 @@ def challenge_list(request, challenge_host_team_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(
+            pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -77,7 +80,8 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         if request.method == 'PATCH':
             serializer = ChallengeSerializer(challenge,
                                              data=request.data,
-                                             context={'challenge_host_team': challenge_host_team},
+                                             context={
+                                                 'challenge_host_team': challenge_host_team},
                                              partial=True)
         else:
             serializer = ChallengeSerializer(challenge,
@@ -262,7 +266,8 @@ def challenge_phase_detail(request, challenge_pk, pk):
         if request.method == 'PATCH':
             serializer = ChallengePhaseSerializer(challenge_phase,
                                                   data=request.data,
-                                                  context={'challenge': challenge},
+                                                  context={
+                                                      'challenge': challenge},
                                                   partial=True)
         else:
             serializer = ChallengePhaseSerializer(challenge_phase,

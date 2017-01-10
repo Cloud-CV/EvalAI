@@ -24,7 +24,8 @@ class Participant(TimeStampedModel):
 
     user = models.ForeignKey(User, related_name='participation')
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
-    team = models.ForeignKey('ParticipantTeam', related_name='participants', null=True)
+    team = models.ForeignKey(
+        'ParticipantTeam', related_name='participants', null=True)
 
     def __str__(self):
         return '{}'.format(self.user)
