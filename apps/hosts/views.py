@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.shortcuts import render
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,

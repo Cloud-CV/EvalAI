@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.views.generic.base import TemplateView
 from django.conf import settings
 
-from allauth.account import views as allauth_views
+from allauth.account import views as allauth_views #pylint: disable=W0611
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 
 from accounts.views import ConfirmEmailView

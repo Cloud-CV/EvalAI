@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import datetime
-import logging
+import logging #pylint: disable=W0611
 import os
 import sys
 

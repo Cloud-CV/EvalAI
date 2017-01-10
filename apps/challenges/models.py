@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.db import models
 
 from base.models import (TimeStampedModel, )
-from hosts.models import (ChallengeHostTeam, )
+from hosts.models import (ChallengeHostTeam, ) #pylint: disable=unused-import
 from participants.models import (ParticipantTeam, )
 
 

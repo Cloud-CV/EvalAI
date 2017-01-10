@@ -1,7 +1,6 @@
 from rest_framework import permissions
 
 from .models import Challenge
-from .serializers import ChallengeSerializer
 
 
 class IsChallengeCreator(permissions.BasePermission):
