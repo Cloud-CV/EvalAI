@@ -17,6 +17,6 @@ ignore-patterns:
 python-targets:
   - 2
 pep8:
-  full:true
+  full: true
 pylint:
-  run:true
+  run: true
