@@ -35,7 +35,7 @@ class Submission(TimeStampedModel):
         (FAILED, FAILED),
         (CANCELLED, CANCELLED),
         (FINISHED, FINISHED),
-        (SUBMITTING,SUBMITTING),
+        (SUBMITTING, SUBMITTING),
     )
 
     participant_team = models.ForeignKey(ParticipantTeam, related_name='submissions')
