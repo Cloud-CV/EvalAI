@@ -1,14 +1,10 @@
-import unittest
-
 from django.urls import reverse_lazy
 
-from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import Challenge
 from participants.models import Participant, ParticipantTeam
-from hosts.models import ChallengeHost, ChallengeHostTeam
-from base.models import TimeStampedModel
+from hosts.models import ChallengeHostTeam
 from django.contrib.auth.models import User
 
 
