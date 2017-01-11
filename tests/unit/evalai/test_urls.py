@@ -3,9 +3,9 @@ from django.urls import reverse_lazy
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
-from rest_framework.test import APITestCase, APIClient
-
 from django.contrib.auth.models import User
+
+from rest_framework.test import APITestCase, APIClient
 
 
 class BaseAPITestClass(APITestCase):
@@ -22,9 +22,9 @@ class BaseAPITestClass(APITestCase):
         self.client.force_authenticate(user=self.user)
 
 
-class TestChallengeUrls(BaseAPITestClass):
+class TestEvalAiUrls(BaseAPITestClass):
 
-    def test_challenges_urls(self):
+    def test_evalai_urls(self):
         url = reverse_lazy('obtain_expiring_auth_token')
         self.assertEqual(url, '/api/auth/login')
 
