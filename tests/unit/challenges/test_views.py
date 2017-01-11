@@ -49,6 +49,12 @@ class BaseAPITestClass(APITestCase):
             enable_forum=True,
             anonymous_leaderboard=False)
 
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
         self.participant_team = ParticipantTeam.objects.create(
             team_name='Participant Team for Challenge',
             created_by=self.user)
@@ -113,6 +119,11 @@ class CreateChallengeTest(BaseAPITestClass):
             'description': 'Description for new test challenge',
             'terms_and_conditions': 'Terms and conditions for new test challenge',
             'submission_guidelines': 'Submission guidelines for new test challenge',
+            "creator": {
+                "id": self.challenge_host_team.pk,
+                "team_name": self.challenge_host_team.team_name,
+                "created_by": self.challenge_host_team.created_by.pk
+            },
             'published': False,
             'enable_forum': True,
             'anonymous_leaderboard': False
@@ -126,6 +137,12 @@ class CreateChallengeTest(BaseAPITestClass):
         del self.data['title']
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_check_challenge_host_team_ownership(self):
+        del self.data['creator']
+        self.challenge_host.delete()
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class GetParticularChallenge(BaseAPITestClass):

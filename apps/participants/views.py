@@ -1,15 +1,12 @@
 from django.conf import settings
-from django.shortcuts import render
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,
-                                       renderer_classes,
                                        throttle_classes,)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework import response, schemas
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle
@@ -22,8 +19,7 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ParticipantTeamSerializer,
                           ChallengeParticipantTeam,
                           ChallengeParticipantTeamList,
-                          ChallengeParticipantTeamListSerializer,
-                          ChallengeParticipantTeamSerializer,)
+                          ChallengeParticipantTeamListSerializer,)
 
 
 @throttle_classes([UserRateThrottle])
