@@ -1,0 +1,13 @@
+[MESSAGES CONTROL]
+# Disable Messages
+disable=C1001,R0903,W0613,W0702,E1101,D100,C0330,W0223,C0111,W0232,C0103,R0201
+
+[FORMAT]
+
+# Maximum number of characters on a single line.
+max-line-length=120
+
+[DESIGN]
+
+# Maximum number of return / yield for function / method body
+max-returns=10
