@@ -1,12 +1,15 @@
+import unittest
+
 from django.urls import reverse_lazy
+
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
+
 from challenges.models import Challenge, ChallengePhase
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from base.models import TimeStampedModel
 from django.contrib.auth.models import User
-import unittest
 
 
 class BaseAPITestClass(APITestCase):
@@ -40,7 +43,8 @@ class BaseAPITestClass(APITestCase):
         self.client.force_authenticate(user=self.user)
 
 
-class TestStringMethods(BaseAPITestClass):
+class TestChallengeUrls(BaseAPITestClass):
+
     def test_challenges_urls(self):
         url = reverse_lazy('challenges:get_challenge_list',
                            kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
@@ -71,7 +75,5 @@ class TestStringMethods(BaseAPITestClass):
         url = reverse_lazy('challenges:get_challenge_by_pk', kwargs={'pk': self.challenge.pk})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/')
 
-        '''url = reverse_lazy('challenges:get_all_challenges', kwargs={'challenge_time': self.challenge_time})
-        print url
-        self.assertEqual(url, '/api/challenges/'+str(self.challenge_time))
-        #url(r'(?P<challenge_time>[\w.@+-]+)$', views.get_all_challenges,name='get_all_challenges'),'''
+        url = reverse_lazy('challenges:get_all_challenges', kwargs={'challenge_time': "PAST"})
+        self.assertEqual(url, '/api/challenges/PAST')
