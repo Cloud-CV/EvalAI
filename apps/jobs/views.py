@@ -15,7 +15,7 @@ from accounts.permissions import HasVerifiedEmail
 from challenges.models import (
     ChallengePhase,
     Challenge,)
-from participants.models import (ParticipantTeam, Participant)
+from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
 
