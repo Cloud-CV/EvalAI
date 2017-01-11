@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 from challenges.models import Challenge, ChallengePhase
-from hosts.models import ChallengeHost, ChallengeHostTeam
+from hosts.models import ChallengeHostTeam
 
 
 class BaseTestCase(TestCase):

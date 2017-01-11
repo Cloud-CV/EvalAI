@@ -4,7 +4,6 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 
 from rest_framework.test import APITestCase, APIClient
-from rest_framework import status
 
 
 class BaseAPITestClass(APITestCase):
