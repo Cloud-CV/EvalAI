@@ -85,18 +85,18 @@ class Submission(TimeStampedModel):
             successful_count = self.submission_number - failed_count
 
             if (successful_count > self.challenge_phase.max_submissions):
-                print "Checking to see if the successful_count (%d) ", \
-                    " is greater than the maximum allowed (%d)" % (
+                print "Checking to see if the successful_count {0} ", \
+                    " is greater than the maximum allowed {1}".format(
                         successful_count, self.challenge_phase.max_submissions)
 
-                print "The submission request is submitted by user (%d) ", \
-                    "from participant_team (%d) " % (
+                print "The submission request is submitted by user {0}", \
+                    "from participant_team {1} ".format(
                         self.created_by, self.participant_team)
 
                 raise PermissionDenied(
                     "The maximum number of submissions has been reached.")
             else:
-                print "Submission is below for user (%d) form participant_team (%d) for challenge_phase (%d)" % (
+                print "Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
                     self.created_by, self.participant_team, self.challenge_phase)
 
             if hasattr(self.challenge_phase, 'max_submissions_per_day'):
@@ -111,6 +111,8 @@ class Submission(TimeStampedModel):
                     print 'PERMISSION DENIED'
                     raise PermissionDenied(
                         "The maximum number of submission for today has been reached")
+
+            self.is_public = (True if self.challenge_phase.leaderboard_public else False)
 
             self.status = Submission.SUBMITTED
 

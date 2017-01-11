@@ -18,10 +18,11 @@ from challenges.models import (
     Challenge,)
 from participants.models import (ParticipantTeam, Participant)
 from participants.utils import (
-    get_participant_team_id_of_a_user_for_a_challenge,
-    check_user_participated_in_challenge,)
+    get_participant_team_id_of_user_for_a_challenge,
+    is_user_part_of_participant_team,)
 
 from .models import Submission
+from .serializers import SubmissionSerializer
 
 
 @throttle_classes([UserRateThrottle])
@@ -35,18 +36,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         challenge = Challenge.objects.get(pk=challenge_id)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist!'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the challenge is active or not
-    if not challenge.is_active():
+    if not challenge.is_active:
         response_data = {'error': 'Challenge is not active!'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
-    # check if challenge is public and accepting solutions
-    if not challenge.is_public:
-        response_data = {
-            'error': 'Sorry, cannot accept submissions since challenge is not public!'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check if the challenge phase exists or not
     try:
@@ -54,34 +49,35 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             pk=challenge_phase_id, challenge=challenge)
     except ChallengePhase.DoesNotExist:
         response_data = {'error': 'Challenge Phase does not exist!'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if challenge phase is public and accepting solutions
     if not challenge_phase.is_public:
         response_data = {
             'error': 'Sorry, cannot accept submissions since challenge phase is not public!'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # participant team exists and has participated in the challenge
-    if not check_user_participated_in_challenge(request.user, challenge_id):
-        response_data = {'error': 'You haven\'t participated in the challenge'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
-    participant_team_id = get_participant_team_id_of_a_user_for_a_challenge(
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge_id)
 
+    if participant_team_id is None:
+        response_data = {'error': 'You haven\'t participated in the challenge'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
     try:
-        participant_team = Participant.objects.get(pk=participant_team_id)
-    except ParticipantTeam.DoesNotExist:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except Participant.DoesNotExist:
         response_data = {'error': 'Participant Team not found!'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-    Submission.objects.create(
-        challenge_phase=challenge_phase,
-        challenge=challenge,
-        participated_team=participant_team,
-        created_by=request.user
-    )
-
-    response_data = {'message': 'Submission done successfully!'}
-    return Response(response_data, status=status.HTTP_201_CREATED)
+    serializer = SubmissionSerializer(data=request.data,
+                                      context={'participant_team': participant_team,
+                                               'challenge_phase': challenge_phase,
+                                               'request': request
+                                               })
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        print response_data
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
