@@ -31,6 +31,8 @@ class Challenge(TimeStampedModel):
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False)
     evaluation_script = models.FileField(default=False, upload_to="evaluation_scripts")  # should be zip format
+    approved_by_admin = models.BooleanField(
+        default=False, verbose_name="Approved By Admin")
 
     class Meta:
         app_label = 'challenges'
@@ -80,7 +82,7 @@ class ChallengePhase(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)")
     challenge = models.ForeignKey('Challenge')
     is_public = models.BooleanField(default=False)
-    test_annotation = models.FileField(upload_to="testAnnotations")
+    test_annotation = models.FileField(upload_to="test_annotations")
     max_submissions_per_day = models.PositiveIntegerField(default=100000)
     max_submissions = models.PositiveIntegerField(default=100000)
 
