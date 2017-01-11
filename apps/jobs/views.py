@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.shortcuts import render
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -18,10 +17,8 @@ from challenges.models import (
     Challenge,)
 from participants.models import (ParticipantTeam, Participant)
 from participants.utils import (
-    get_participant_team_id_of_user_for_a_challenge,
-    is_user_part_of_participant_team,)
+    get_participant_team_id_of_user_for_a_challenge,)
 
-from .models import Submission
 from .serializers import SubmissionSerializer
 
 

@@ -84,7 +84,7 @@ class Submission(TimeStampedModel):
 
             successful_count = self.submission_number - failed_count
 
-            if (successful_count > self.challenge_phase.max_submissions):
+            if successful_count > self.challenge_phase.max_submissions:
                 print "Checking to see if the successful_count {0} ", \
                     " is greater than the maximum allowed {1}".format(
                         successful_count, self.challenge_phase.max_submissions)
