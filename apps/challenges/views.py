@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.shortcuts import render
 from django.utils import timezone
 
 from rest_framework import permissions, status
