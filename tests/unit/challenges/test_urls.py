@@ -1,11 +1,13 @@
+from challenges.models import Challenge
+from django.contrib.auth.models import User
+from hosts.models import ChallengeHostTeam
+from participants.models import ParticipantTeam
+
 from django.urls import reverse_lazy
 
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge
-from participants.models import ParticipantTeam
-from hosts.models import ChallengeHostTeam
-from django.contrib.auth.models import User
+import unittest
 
 
 class BaseAPITestClass(APITestCase):
