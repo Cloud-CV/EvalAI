@@ -1,9 +1,7 @@
 from django.urls import reverse_lazy
-from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from django.contrib.auth.models import User
-import unittest
 
 
 class BaseAPITestClass(APITestCase):

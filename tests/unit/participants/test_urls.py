@@ -2,12 +2,9 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 
 from allauth.account.models import EmailAddress
-from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge
-from hosts.models import ChallengeHostTeam
-from participants.models import ParticipantTeam, Participant
+from participants.models import ParticipantTeam
 
 
 class BaseAPITestClass(APITestCase):
