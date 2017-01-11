@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from os.path import join
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -8,16 +10,20 @@ from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
 
 
-def input_file_name(instance, filename):
-    return '/'.join(['submission_files', str(instance.pk), filename])
+def submission_root(instance):
+    return join('submission_files', 'submission_' + str(instance.pk))
 
 
-def stdout_file_name(instance, filename):
-    return '/'.join(['submission_files', str(instance.pk), 'stdout.log'])
+def input_file_name(instance, filename='input.txt'):
+    return join(submission_root(instance), filename)
 
 
-def stderr_file_name(instance, filename):
-    return '/'.join(['submission_files', str(instance.pk), 'stderr.log'])
+def stdout_file_name(instance, filename='stdout.txt'):
+    return join(submission_root(instance), filename)
+
+
+def stderr_file_name(instance, filename='stderr.txt'):
+    return join(submission_root(instance), filename)
 
 
 class Submission(TimeStampedModel):
