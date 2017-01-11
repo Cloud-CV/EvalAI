@@ -6,7 +6,6 @@ from datetime import timedelta
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
-from django.test import override_settings
 from django.utils import timezone
 
 
