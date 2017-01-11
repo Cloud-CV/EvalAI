@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 import datetime
 
+from os.path import join
+
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import models
@@ -97,13 +99,13 @@ class Submission(TimeStampedModel):
 
                 print "The submission request is submitted by user {0}", \
                     "from participant_team {1} ".format(
-                        self.created_by, self.participant_team)
+                        self.created_by.pk, self.participant_team.pk)
 
                 raise PermissionDenied(
                     "The maximum number of submissions has been reached.")
             else:
                 print "Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
-                    self.created_by, self.participant_team, self.challenge_phase)
+                    self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk)
 
             if hasattr(self.challenge_phase, 'max_submissions_per_day'):
                 submissions_done_today_count = Submission.objects.filter(

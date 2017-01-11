@@ -23,5 +23,4 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Submission
-        fields = ('participant_team', 'challenge_phase', 'created_by', 'status',
-                  'submission_number', 'input_file')
+        fields = ('participant_team', 'challenge_phase', 'created_by', 'status', 'input_file')

@@ -28,6 +28,7 @@ from .serializers import SubmissionSerializer
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_submission(request, challenge_id, challenge_phase_id):
     """API Endpoint for making a submission to a challenge"""
+
     # check if the challenge exists or not
     try:
         challenge = Challenge.objects.get(pk=challenge_id)
@@ -56,15 +57,10 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge_id)
-
-    if participant_team_id is None:
-        response_data = {'error': 'You haven\'t participated in the challenge'}
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
     try:
         participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
-    except Participant.DoesNotExist:
-        response_data = {'error': 'Participant Team not found!'}
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'You haven\'t participated in the challenge'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     serializer = SubmissionSerializer(data=request.data,
