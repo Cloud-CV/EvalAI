@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from os.path import join
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -8,16 +10,20 @@ from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
 
 
-def input_file_name(instance, filename):
-    return '/'.join(['submissionFiles', str(instance.pk), filename])
+def submission_root(instance):
+    return join('submission_files', 'submission_' + str(instance.pk))
 
 
-def stdout_file_name(instance, filename):
-    return '/'.join(['submissionFiles', str(instance.pk), 'stdout.log'])
+def input_file_name(instance, filename='input.txt'):
+    return join(submission_root(instance), filename)
 
 
-def stderr_file_name(instance, filename):
-    return '/'.join(['submissionFiles', str(instance.pk), 'stderr.log'])
+def stdout_file_name(instance, filename='stdout.txt'):
+    return join(submission_root(instance), filename)
+
+
+def stderr_file_name(instance, filename='stderr.txt'):
+    return join(submission_root(instance), filename)
 
 
 class Submission(TimeStampedModel):
@@ -27,6 +33,7 @@ class Submission(TimeStampedModel):
     FAILED = "failed"
     CANCELLED = "cancelled"
     FINISHED = "finished"
+    SUBMITTING = "submitting"
 
     STATUS_OPTIONS = (
         (SUBMITTED, SUBMITTED),
@@ -34,6 +41,7 @@ class Submission(TimeStampedModel):
         (FAILED, FAILED),
         (CANCELLED, CANCELLED),
         (FINISHED, FINISHED),
+        (SUBMITTING, SUBMITTING),
     )
 
     participant_team = models.ForeignKey(ParticipantTeam, related_name='submissions')
@@ -50,6 +58,7 @@ class Submission(TimeStampedModel):
     input_file = models.FileField(upload_to=input_file_name)
     stdout_file = models.FileField(upload_to=stdout_file_name, null=True, blank=True)
     stderr_file = models.FileField(upload_to=stderr_file_name, null=True, blank=True)
+    execution_time_limit = models.PositiveIntegerField(default=300)
 
     def __unicode__(self):
         return '{}'.format(self.id)
