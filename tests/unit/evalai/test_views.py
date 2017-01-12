@@ -1,9 +1,8 @@
 from django.test import Client
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from evalai.views import page_not_found, internal_server_error
-from evalai.urls import handler404, handler500
+from evalai.views import page_not_found
+from evalai.urls import handler404
 
 
 class TestErrorPages(TestCase):
