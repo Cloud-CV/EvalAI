@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import datetime
+import logging
 
 from os.path import join
 
@@ -13,8 +14,8 @@ from base.models import (TimeStampedModel, )
 from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
 
-import logging
 logger = logging.getLogger(__name__)
+
 
 def submission_root(instance):
     return join('submission_files', 'submission_' + str(instance.pk))
@@ -95,16 +96,14 @@ class Submission(TimeStampedModel):
             successful_count = self.submission_number - failed_count
 
             if successful_count > self.challenge_phase.max_submissions:
-                logger.debug("Checking to see if the successful_count {0} ", \
-                    " is greater than the maximum allowed {1}".format(
+                logger.debug("Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
                         successful_count, self.challenge_phase.max_submissions))
 
-                logger.debug("The submission request is submitted by user {0}", \
-                    "from participant_team {1} ".format(
+                logger.debug("The submission request is submitted by user {0} from participant_team {1} ".format(
                         self.created_by.pk, self.participant_team.pk))
 
                 raise PermissionDenied(
-                    "The maximum number of submissions has been reached.")
+                    "The maximum number of submissions has been reached")
             else:
                 logger.info("Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
                     self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk))

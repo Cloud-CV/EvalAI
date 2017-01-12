@@ -107,7 +107,7 @@ class BaseAPITestClass(APITestCase):
         self.challenge.delete()
 
         expected = {
-            'error': 'Challenge does not exist!'
+            'error': 'Challenge does not exist'
         }
 
         response = self.client.post(self.url, {
@@ -124,7 +124,7 @@ class BaseAPITestClass(APITestCase):
         self.challenge.save()
 
         expected = {
-            'error': 'Challenge is not active!'
+            'error': 'Challenge is not active'
         }
 
         response = self.client.post(self.url, {
@@ -140,7 +140,7 @@ class BaseAPITestClass(APITestCase):
         self.challenge_phase.delete()
 
         expected = {
-            'error': 'Challenge Phase does not exist!'
+            'error': 'Challenge Phase does not exist'
         }
 
         response = self.client.post(self.url, {
@@ -157,7 +157,7 @@ class BaseAPITestClass(APITestCase):
         self.challenge_phase.save()
 
         expected = {
-            'error': 'Sorry, cannot accept submissions since challenge phase is not public!'
+            'error': 'Sorry, cannot accept submissions since challenge phase is not public'
         }
 
         response = self.client.post(self.url, {
