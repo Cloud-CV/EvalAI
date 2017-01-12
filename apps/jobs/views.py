@@ -33,12 +33,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
     try:
         challenge = Challenge.objects.get(pk=challenge_id)
     except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge does not exist!'}
+        response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the challenge is active or not
     if not challenge.is_active:
-        response_data = {'error': 'Challenge is not active!'}
+        response_data = {'error': 'Challenge is not active'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check if the challenge phase exists or not
@@ -46,13 +46,13 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         challenge_phase = ChallengePhase.objects.get(
             pk=challenge_phase_id, challenge=challenge)
     except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'Challenge Phase does not exist!'}
+        response_data = {'error': 'Challenge Phase does not exist'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if challenge phase is public and accepting solutions
     if not challenge_phase.is_public:
         response_data = {
-            'error': 'Sorry, cannot accept submissions since challenge phase is not public!'}
+            'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
@@ -71,6 +71,5 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
     if serializer.is_valid():
         serializer.save()
         response_data = serializer.data
-        print response_data
         return Response(response_data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -13,6 +13,8 @@ from base.models import (TimeStampedModel, )
 from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
 
+import logging
+logger = logging.getLogger(__name__)
 
 def submission_root(instance):
     return join('submission_files', 'submission_' + str(instance.pk))
@@ -93,19 +95,19 @@ class Submission(TimeStampedModel):
             successful_count = self.submission_number - failed_count
 
             if successful_count > self.challenge_phase.max_submissions:
-                print "Checking to see if the successful_count {0} ", \
+                logger.debug("Checking to see if the successful_count {0} ", \
                     " is greater than the maximum allowed {1}".format(
-                        successful_count, self.challenge_phase.max_submissions)
+                        successful_count, self.challenge_phase.max_submissions))
 
-                print "The submission request is submitted by user {0}", \
+                logger.debug("The submission request is submitted by user {0}", \
                     "from participant_team {1} ".format(
-                        self.created_by.pk, self.participant_team.pk)
+                        self.created_by.pk, self.participant_team.pk))
 
                 raise PermissionDenied(
                     "The maximum number of submissions has been reached.")
             else:
-                print "Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
-                    self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk)
+                logger.info("Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
+                    self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk))
 
             if hasattr(self.challenge_phase, 'max_submissions_per_day'):
                 submissions_done_today_count = Submission.objects.filter(
@@ -116,7 +118,7 @@ class Submission(TimeStampedModel):
 
                 if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
                         (self.challenge_phase.max_submissions_per_day == 0)):
-                    print 'PERMISSION DENIED'
+                    logger.debug("Permission Denied: The maximum number of submission for today has been reached")
                     raise PermissionDenied(
                         "The maximum number of submission for today has been reached")
 
