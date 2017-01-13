@@ -261,11 +261,11 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
-class GetChallengeSubmittedTest(BaseAPITestClass):
+class GetChallengeSubmissionTest(BaseAPITestClass):
 
     def setUp(self):
-        super(GetChallengeSubmittedTest, self).setUp()
-        self.url = reverse_lazy('jobs:get_challenge_submission',
+        super(GetChallengeSubmissionTest, self).setUp()
+        self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk})
 
@@ -278,7 +278,7 @@ class GetChallengeSubmittedTest(BaseAPITestClass):
         )
 
     def test_challenge_submission_when_challenge_does_not_exist(self):
-        self.url = reverse_lazy('jobs:get_challenge_submission',
+        self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk})
 
@@ -293,7 +293,7 @@ class GetChallengeSubmittedTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
-        self.url = reverse_lazy('jobs:get_challenge_submission',
+        self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk})
 
@@ -308,7 +308,7 @@ class GetChallengeSubmittedTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_challenge_submission_when_participant_team_is_none(self):
-        self.url = reverse_lazy('jobs:get_challenge_submission',
+        self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk})
 
@@ -323,7 +323,7 @@ class GetChallengeSubmittedTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(self):
-        self.url = reverse_lazy('jobs:get_challenge_submission',
+        self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk})
 
@@ -336,8 +336,8 @@ class GetChallengeSubmittedTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_get_challenge_submitted(self):
-        self.url = reverse_lazy('jobs:get_challenge_submission',
+    def test_get_challenge_submissions(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk})
         expected = [
