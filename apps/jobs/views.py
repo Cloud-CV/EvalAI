@@ -36,7 +36,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # check if the challenge phase exists or not 
+    # check if the challenge phase exists or not
     try:
         challenge_phase = ChallengePhase.objects.get(
             pk=challenge_phase_id, challenge=challenge)
@@ -45,7 +45,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'GET':
-        
         # getting participant team object for the user for a particular challenge.
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id)
