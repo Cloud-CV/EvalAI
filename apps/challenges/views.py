@@ -283,3 +283,23 @@ def challenge_phase_detail(request, challenge_pk, pk):
     elif request.method == 'DELETE':
         challenge_phase.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@throttle_classes([UserRateThrottle, ])
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication, ))
+def get_all_challenges_hosted_by_user(request):
+    try:
+        challenge_host_team_user = ChallengeHostTeam.objects.get(created_by=request.user.id)
+        challenges = Challenge.objects.filter(creator=challenge_host_team_user)
+        paginator = PageNumberPagination()
+        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
+        result_page = paginator.paginate_queryset(challenges, request)
+        serializer = ChallengeSerializer(result_page, many=True)
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+    except:
+        response_data = {
+            'message': 'You have not hosted any challenge.'}
+        return Response(response_data, status=status.HTTP_200_OK)
