@@ -103,7 +103,7 @@ def get_challenge_submission(request, challenge_id, challenge_phase_id):
 
     # check if participant team exists or not.
     try:
-        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+        ParticipantTeam.objects.get(pk=participant_team_id)
     except ParticipantTeam.DoesNotExist:
         response_data = {'error': 'You haven\'t participated in the challenge'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
