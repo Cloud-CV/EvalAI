@@ -352,6 +352,5 @@ class GetChallengeSubmittedTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        print "response********", response.data
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
