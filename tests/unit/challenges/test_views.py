@@ -780,7 +780,6 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
-            "test_annotation": self.challenge_phase.test_annotation,
             "is_public": self.challenge_phase.is_public
         }
         response = self.client.patch(self.url, self.partial_update_data)
