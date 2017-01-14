@@ -17,7 +17,8 @@
                     <form>
                         <ul>
                             <li ng-repeat="(key, value) in teams.existTeam.results">
-                                <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="teams.teamId">
+                                <!--<input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="teams.teamId">-->
+                                <i class="fa fa-users" aria-hidden="true" id="{{value.id}}" value="{{value.id}}" ng-model="teams.teamId"></i>
                                 <label for="{{value.id}}"></label>
                                 <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
                                 <a ng-click="teams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
