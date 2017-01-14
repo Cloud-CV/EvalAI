@@ -233,10 +233,10 @@
             };
 
             utilities.sendRequest(parameters);
-            $scope.reset = function() {
+            vm.reset = function() {
                  vm.team.name = '';
                  };
-            $scope.reset();
+            vm.reset();
         }
 
         vm.confirmDelete = function(ev, participantTeamId) {
