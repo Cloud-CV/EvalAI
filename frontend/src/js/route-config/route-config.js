@@ -102,7 +102,7 @@
             templateUrl: baseUrl + "/web/teams.html",
             controller: 'TeamsCtrl',
             controllerAs: 'teams',
-            title: 'Teams',
+            title: 'Participating Teams',
             authenticate: true
         }
 
@@ -113,7 +113,7 @@
             templateUrl: baseUrl + "/web/challenge-host-teams.html",
             controller: 'ChallengeHostTeamsCtrl',
             controllerAs: 'challengeHostTeams',
-            title: 'Challenge Host Teams',
+            title: 'Host Teams',
             authenticate: true
         }
 
@@ -154,11 +154,11 @@
         var challenge_page = {
             name: "web.challenge-page",
             parent: "web",
-            url: "/challenge-page",
+            url: "/challenge-page/:challengeId",
             templateUrl: baseUrl + "/web/challenge-page.html",
             controller: 'ChallengeCtrl',
             controllerAs: 'challenge',
-            redirectTo: "web.challenge-page.overview",
+            // redirectTo: "web.challenge-page.overview",
             authenticate: true
         }
 

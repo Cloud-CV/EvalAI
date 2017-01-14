@@ -1,0 +1,22 @@
+doc-warnings: false
+test-warnings: false
+strictness: high
+max-line-length: 120
+uses:
+  - django
+autodetect: true
+requirements:
+  - requirements/common.txt
+  - requirements/dev.txt
+  - requirements/prod.txt
+ignore-paths:
+  - docs
+ignore-patterns:
+  - ^example/doc_.*\.py$
+  - (^|/)docs(/|$)
+python-targets:
+  - 2
+pep8:
+  full: true
+pylint:
+  run: true
