@@ -187,10 +187,10 @@
             };
 
             utilities.sendRequest(parameters);
-            $state.reset = function() {
+            vm.reset = function() {
                  vm.team.name = '';
                  };
-            $state.reset();
+            vm.reset();
         }
     }
 
