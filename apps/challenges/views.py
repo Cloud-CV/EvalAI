@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.utils import timezone
 
 from rest_framework import permissions, status
@@ -6,12 +5,12 @@ from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,
                                        throttle_classes,)
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
+from base.utils import paginated_queryset
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import Participant, ParticipantTeam
 
@@ -33,9 +32,7 @@ def challenge_list(request, challenge_host_team_pk):
 
     if request.method == 'GET':
         challenge = Challenge.objects.filter(creator=challenge_host_team)
-        paginator = PageNumberPagination()
-        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-        result_page = paginator.paginate_queryset(challenge, request)
+        paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
@@ -184,9 +181,7 @@ def get_all_challenges(request, challenge_time):
             q_params['start_date__gt'] = timezone.now()
 
         challenge = Challenge.objects.filter(**q_params)
-        paginator = PageNumberPagination()
-        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-        result_page = paginator.paginate_queryset(challenge, request)
+        paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
@@ -224,9 +219,7 @@ def challenge_phase_list(request, challenge_pk):
 
     if request.method == 'GET':
         challenge_phase = ChallengePhase.objects.filter(challenge=challenge)
-        paginator = PageNumberPagination()
-        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-        result_page = paginator.paginate_queryset(challenge_phase, request)
+        paginator, result_page = paginated_queryset(challenge_phase, request)
         serializer = ChallengePhaseSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)

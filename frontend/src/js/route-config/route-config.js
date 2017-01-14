@@ -102,7 +102,7 @@
             templateUrl: baseUrl + "/web/teams.html",
             controller: 'TeamsCtrl',
             controllerAs: 'teams',
-            title: 'Teams',
+            title: 'Participating Teams',
             authenticate: true
         }
 
@@ -113,7 +113,7 @@
             templateUrl: baseUrl + "/web/challenge-host-teams.html",
             controller: 'ChallengeHostTeamsCtrl',
             controllerAs: 'challengeHostTeams',
-            title: 'Challenge Host Teams',
+            title: 'Host Teams',
             authenticate: true
         }
 
