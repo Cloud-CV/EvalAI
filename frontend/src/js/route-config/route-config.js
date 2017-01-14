@@ -65,6 +65,15 @@
             authenticate: false
         }
 
+        var reset_password_confirm = {
+            name: "auth.reset-password-confirm",
+            parent: "auth",
+            url: "/api/password/reset/confirm/:user_id/:reset_token",
+            templateUrl: baseUrl + "/web/reset-password-confirm.html",
+            title: "Reset Password Confirm",
+            authenticate: false
+        }
+
         var logout = {
             name: "auth.logout",
             parent: "auth",
@@ -247,6 +256,7 @@
         $stateProvider.state(login);
         $stateProvider.state(signup);
         $stateProvider.state(reset_password);
+        $stateProvider.state(reset_password_confirm);
         $stateProvider.state(logout);
 
         // web main configs.
