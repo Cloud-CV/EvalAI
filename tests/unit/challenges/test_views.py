@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 
@@ -49,6 +48,12 @@ class BaseAPITestClass(APITestCase):
             enable_forum=True,
             anonymous_leaderboard=False)
 
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
         self.participant_team = ParticipantTeam.objects.create(
             team_name='Participant Team for Challenge',
             created_by=self.user)
@@ -79,7 +84,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge.creator.pk,
                     "team_name": self.challenge.creator.team_name,
-                    "created_by": self.challenge.creator.created_by.pk
+                    "created_by": self.challenge.creator.created_by.username
                 },
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
@@ -113,6 +118,11 @@ class CreateChallengeTest(BaseAPITestClass):
             'description': 'Description for new test challenge',
             'terms_and_conditions': 'Terms and conditions for new test challenge',
             'submission_guidelines': 'Submission guidelines for new test challenge',
+            "creator": {
+                "id": self.challenge_host_team.pk,
+                "team_name": self.challenge_host_team.team_name,
+                "created_by": self.challenge_host_team.created_by.pk
+            },
             'published': False,
             'enable_forum': True,
             'anonymous_leaderboard': False
@@ -126,6 +136,12 @@ class CreateChallengeTest(BaseAPITestClass):
         del self.data['title']
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_check_challenge_host_team_ownership(self):
+        del self.data['creator']
+        self.challenge_host.delete()
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class GetParticularChallenge(BaseAPITestClass):
@@ -150,7 +166,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
-                "created_by": self.challenge.creator.created_by.pk
+                "created_by": self.challenge.creator.created_by.username
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
@@ -476,7 +492,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge3.creator.pk,
                     "team_name": self.challenge3.creator.team_name,
-                    "created_by": self.challenge3.creator.created_by.pk,
+                    "created_by": self.challenge3.creator.created_by.username,
                 },
                 "published": self.challenge3.published,
                 "enable_forum": self.challenge3.enable_forum,
@@ -505,7 +521,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
-                    "created_by": self.challenge2.creator.created_by.pk,
+                    "created_by": self.challenge2.creator.created_by.username,
                 },
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,
@@ -534,7 +550,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge4.creator.pk,
                     "team_name": self.challenge4.creator.team_name,
-                    "created_by": self.challenge4.creator.created_by.pk,
+                    "created_by": self.challenge4.creator.created_by.username,
                 },
                 "published": self.challenge4.published,
                 "enable_forum": self.challenge4.enable_forum,
@@ -581,7 +597,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "creator": {
                 "id": self.challenge3.creator.pk,
                 "team_name": self.challenge3.creator.team_name,
-                "created_by": self.challenge3.creator.created_by.pk,
+                "created_by": self.challenge3.creator.created_by.username,
             },
             "published": self.challenge3.published,
             "enable_forum": self.challenge3.enable_forum,
@@ -617,6 +633,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 name='Challenge Phase',
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
+                is_public=False,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
@@ -645,7 +662,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
                 "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
                 "challenge": self.challenge_phase.challenge.pk,
-                "test_annotation": self.challenge_phase.test_annotation
+                "is_public": self.challenge_phase.is_public,
             }
         ]
 
@@ -706,7 +723,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
-            "test_annotation": self.challenge_phase.test_annotation
+            "is_public": self.challenge_phase.is_public
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -763,7 +780,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
-            "test_annotation": self.challenge_phase.test_annotation
+            "is_public": self.challenge_phase.is_public
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)

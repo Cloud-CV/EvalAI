@@ -1,9 +1,8 @@
 from django.test import Client
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from evalai.views import page_not_found, internal_server_error
-from evalai.urls import handler404, handler500
+from evalai.views import page_not_found
+from evalai.urls import handler404
 
 
 class TestErrorPages(TestCase):
@@ -14,4 +13,4 @@ class TestErrorPages(TestCase):
         request = c.get("/abc")
         response = page_not_found(request)
         self.assertEqual(request.status_code, response.status_code)
-        self.assertIn('Error 404', unicode(response))
+        self.assertIn('404', unicode(response))
