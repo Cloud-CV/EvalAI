@@ -39,3 +39,5 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
+
+MEDIA_URL = "/media/"
