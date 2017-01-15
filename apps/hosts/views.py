@@ -8,9 +8,7 @@ from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthe
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-
-from base.utils import paginated_queryset 
-
+from base.utils import paginated_queryset
 from .models import (ChallengeHost,
                      ChallengeHostTeam,)
 from .serializers import (ChallengeHostSerializer,
