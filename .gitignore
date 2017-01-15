@@ -80,3 +80,9 @@ fabfile/
 node_modules/
 bower_components/
 
+# Challenge data files
+challenge_data/*
+
+# Media Files
+media/
+

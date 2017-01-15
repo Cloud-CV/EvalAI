@@ -14,6 +14,7 @@ from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
+from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
 
 
@@ -258,3 +259,98 @@ class BaseAPITestClass(APITestCase):
         response = self.client.post(self.url, {
                                     'status': 'submitting', 'input_file': self.input_file}, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class GetChallengeSubmissionTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetChallengeSubmissionTest, self).setUp()
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation
+        )
+
+    def test_challenge_submission_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.challenge.delete()
+
+        expected = {
+            'error': 'Challenge does not exist'
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_challenge_submission_when_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.challenge_phase.delete()
+
+        expected = {
+            'error': 'Challenge Phase does not exist'
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_challenge_submission_when_participant_team_is_none(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.participant_team.delete()
+
+        expected = {
+            'error': 'You haven\'t participated in the challenge'
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        # Note that we haven't added the self.participant_team to Challenge
+        expected = {
+            'error': 'You haven\'t participated in the challenge'
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_challenge_submissions(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+        expected = [
+            {
+                'participant_team': self.submission.participant_team.pk,
+                'challenge_phase': self.submission.challenge_phase.pk,
+                'created_by': self.submission.created_by.pk,
+                'status': self.submission.status,
+                'input_file': self.submission.input_file
+            }
+        ]
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

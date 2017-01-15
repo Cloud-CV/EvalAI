@@ -187,6 +187,10 @@
             };
 
             utilities.sendRequest(parameters);
+            vm.reset = function() {
+                 vm.team.name = '';
+                 };
+            vm.reset();
         }
     }
 
