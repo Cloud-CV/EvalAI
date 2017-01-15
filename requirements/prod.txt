@@ -4,3 +4,4 @@ boto==2.43.0
 django-storages==1.5.1
 python-memcached==1.58
 uWSGI==2.0.14
+datadog==0.14.0

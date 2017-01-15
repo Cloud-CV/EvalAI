@@ -18,3 +18,4 @@ omit =
     */python?.?/*
     */migrations/*
     */tests/*
+    */middleware/*
