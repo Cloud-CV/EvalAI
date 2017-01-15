@@ -4,14 +4,14 @@
             <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card">
                 <span class="fs-18"><strong>Evaluation Criteria
 </strong></span>
-                <p>The challenge evaluation procedure and code is described on the <a href="http://visualqa.org/evaluation.html" class="dark-link w-500">VQA Evaluation page</a>.</p>
+                <div ng-bind-html="challenge.page.evaluation_details"></div>
             </div>
         </div>
         <div class="col s12 m6">
             <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view  eval-card">
                 <span class="fs-18"><strong>Terms And Conditions
 </strong></span>
-                <p>Please refer to the <a href="http://visualqa.org/terms.html" class="med-black-link"><strong>VQA Terms of Use</strong></a>.</p>
+                <div ng-bind-html="challenge.page.terms_and_conditions"></div>
             </div>
         </div>
     </div>
