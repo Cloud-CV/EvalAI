@@ -55,26 +55,30 @@
             vm.wrnMsg = {};
         }
 
-        vm.passwordChecksignUp = function(password1, password2) {
+        vm.passwordChecks = function(password1, password2) {
             var password1_len = password1.length;
             var password2_len = password2.length;
+            var context = {};
 
             if (password1_len >= 8 && password2_len >= 8)
             {
                 if (password1 === password2)
                 {
-                    vm.confirmMsg = "Passwords Match !"
-                    return true;
+                    context.confirmMsg = "Passwords Match !";
+                    context.status = true;
+                    return context;
                 }
                 else {
-                    vm.confirmMsg = "Passwords do not Match !"
+                    context.confirmMsg = "Passwords do not Match !";
+                    context.status = false;
                     vm.stopLoader();
-                    return false;
+                    return context;
                 }
             }
             else {
-                vm.confirmMsg = "Password is less than 8 characters !"
-                vm.stopLoader();
+                context.confirmMsg = "Password is less than 8 characters !";
+                context.status = false;
+                return context;
             }
         }
 
@@ -94,8 +98,8 @@
                 "password2": vm.regUser.confirm,
                 "email": vm.regUser.email
             }
-            vm.passwordsignUp = vm.passwordChecksignUp(parameters.data.password1, parameters.data.password2);
-            if (vm.passwordsignUp)
+            vm.passwordCheck = vm.passwordChecks(parameters.data.password1, parameters.data.password2);
+            if (vm.passwordCheck.status)
             {
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -147,7 +151,7 @@
                     utilities.sendRequest(parameters, "no-header");
             }
             else {
-                confirmMsg = "Please fill the details carefully."
+                vm.confirmMsg = vm.passwordCheck.confirmMsg;
                 vm.stopLoader();
             }
         }
