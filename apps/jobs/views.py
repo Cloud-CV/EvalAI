@@ -19,6 +19,7 @@ from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
 
 from .models import Submission
+from .sender import publish_submission_message
 from .serializers import SubmissionSerializer
 
 
@@ -95,5 +96,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
+            submission = serializer.instance
+            # publish message in the queue
+            publish_submission_message(challenge_id, challenge_phase_id, submission.id)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
