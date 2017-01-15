@@ -54,8 +54,7 @@
                     }
                     if (response.next != null) {
                         vm.currentPage = response.next.split('page=')[1] - 1;
-                    }
-                    else {
+                    } else {
                     	vm.currentPage = 1;
                     }
 
