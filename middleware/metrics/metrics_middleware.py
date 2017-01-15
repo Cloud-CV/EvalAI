@@ -1,4 +1,3 @@
-import json
 import time
 import traceback
 
@@ -27,7 +26,7 @@ class DatadogMiddleware(MiddlewareMixin):
         setattr(request, self.DATADOG_TIMING_ATTRIBUTE, time.time())
 
     def process_response(self, request, response):
-        if not hasattr(request,self.DATADOG_TIMING_ATTRIBUTE):
+        if not hasattr(request, self.DATADOG_TIMING_ATTRIBUTE):
             return response
 
         request_time = time.time() - getattr(request, self.DATADOG_TIMING_ATTRIBUTE)
