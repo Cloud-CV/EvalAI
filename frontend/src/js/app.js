@@ -7,5 +7,6 @@ angular
 		'ngMessages',
 		'evalai-config',
 		'smoothScroll',
-		'focus-if'
+		'focus-if',
+		'ngSanitize'
 	]);

@@ -11,7 +11,7 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong>{{challenge.description  | limitTo:50}}{{challenge.isLarge}}</strong></p>
+                        <p><strong><span class="inline" ng-bind-html="challenge.description  | limitTo:50"></span></strong>{{challenge.isLarge}}</p>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts at</strong>
@@ -34,7 +34,7 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong>{{challenge.description  | limitTo:50}}{{challenge.isLarge}}</strong></p>
+                        <p><strong><span class="inline" ng-bind-html="challenge.description  | limitTo:50"></span></strong>{{challenge.isLarge}}</p>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts at</strong>
@@ -57,7 +57,7 @@
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong>{{challenge.description  | limitTo:50}}{{challenge.isLarge}}</strong></p>
+                        <p><strong><span class="inline" ng-bind-html="challenge.description  | limitTo:50"></span></strong>{{challenge.isLarge}}</p>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts at</strong>

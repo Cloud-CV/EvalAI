@@ -11,7 +11,8 @@
       "materialize",
       "lodash",
       "ngSmoothScroll",
-      "ng-focus-if"
+      "ng-focus-if",
+      "ng-sanitize"
 
     ]
   },
@@ -26,7 +27,8 @@
        "materialize": "bower_components/materialize/dist/js/materialize.min.js",
        "lodash": "bower_components/lodash/dist/lodash.min.js",
        "ngSmoothScroll": "bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js",
-       "ng-focus-if": "bower_components/ng-focus-if/focusIf.min.js"
+       "ng-focus-if": "bower_components/ng-focus-if/focusIf.min.js",
+       "ng-sanitize": "bower_components/angular-sanitize/angular-sanitize.min.js"
 
      }
 }
