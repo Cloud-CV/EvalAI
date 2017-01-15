@@ -1,17 +1,14 @@
-from django.conf import settings
-
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,
                                        throttle_classes,)
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-
+from base.utils import paginated_queryset
 from .models import (ChallengeHost,
                      ChallengeHostTeam,)
 from .serializers import (ChallengeHostSerializer,
@@ -26,9 +23,7 @@ def challenge_host_team_list(request):
 
     if request.method == 'GET':
         challenge_host_teams = ChallengeHostTeam.objects.filter(created_by=request.user)
-        paginator = PageNumberPagination()
-        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-        result_page = paginator.paginate_queryset(challenge_host_teams, request)
+        paginator, result_page = paginated_queryset(challenge_host_teams, request)
         serializer = ChallengeHostTeamSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
@@ -105,9 +100,7 @@ def challenge_host_list(request, challenge_host_team_pk):
             filter_condition.update({'status__in': challenge_host_status})
 
         challenge_host = ChallengeHost.objects.filter(**filter_condition)
-        paginator = PageNumberPagination()
-        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-        result_page = paginator.paginate_queryset(challenge_host, request)
+        paginator, result_page = paginated_queryset(challenge_host, request)
         serializer = ChallengeHostSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
