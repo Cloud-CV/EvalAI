@@ -82,7 +82,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'evalai.urls'
 
-TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend')
+TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend', 'dist')
 
 TEMPLATES = [
     {
