@@ -46,7 +46,6 @@ class DatadogMiddleware(MiddlewareMixin):
         statsd.increment(count_metric, tags=tags)
         statsd.histogram(timing_metric, request_time, tags=tags)
 
-        print timing_metric, count_metric, success_metric, unsuccess_metric
         return response
 
     def process_exception(self, request, exception):
