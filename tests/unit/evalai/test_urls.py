@@ -33,6 +33,6 @@ class TestEvalAiUrls(BaseAPITestClass):
         url = reverse_lazy('password_reset_confirm',
                            kwargs={'uidb64': urlsafe_base64_encode(force_bytes(self.user.pk)),
                                    'token': default_token_generator.make_token(self.user)})
-        self.assertEqual(url, '/api/password/reset/confirm/' +
+        self.assertEqual(url, '/auth/api/password/reset/confirm/' +
                          str(urlsafe_base64_encode(force_bytes(self.user.pk))) + '/' +
-                         str(default_token_generator.make_token(self.user)) + '/')
+                         str(default_token_generator.make_token(self.user)))

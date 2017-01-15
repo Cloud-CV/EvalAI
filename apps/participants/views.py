@@ -1,17 +1,15 @@
-from django.conf import settings
-
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,
                                        throttle_classes,)
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
+from base.utils import paginated_queryset
 from challenges.models import Challenge
 
 from .models import (Participant, ParticipantTeam)
@@ -31,9 +29,7 @@ def participant_team_list(request):
     if request.method == 'GET':
         participant_teams = ParticipantTeam.objects.filter(
             created_by=request.user)
-        paginator = PageNumberPagination()
-        paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
-        result_page = paginator.paginate_queryset(participant_teams, request)
+        paginator, result_page = paginated_queryset(participant_teams, request)
         serializer = ParticipantTeamSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
