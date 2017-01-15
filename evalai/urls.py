@@ -18,6 +18,8 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.generic.base import TemplateView
 from django.conf import settings
+from django.conf.urls.static import static
+
 
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 
@@ -74,4 +76,4 @@ if settings.DEBUG:
                     url(r'^api/admin-auth/',
                         include('rest_framework.urls',
                                 namespace='rest_framework')),
-                    ]
+                    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
