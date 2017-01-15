@@ -32,7 +32,7 @@
 
         // calls for ongoing challneges
         var parameters = {};
-        parameters.url = 'challenges/present';
+        parameters.url = 'challenges/challenge/present';
         parameters.method = 'GET';
         parameters.token = userKey;
 
@@ -67,7 +67,7 @@
                 // dependent api
                 // calls for upcoming challneges
                 var parameters = {};
-                parameters.url = 'challenges/future';
+                parameters.url = 'challenges/challenge/future';
                 parameters.method = 'GET';
                 parameters.token = userKey;
 
@@ -102,7 +102,7 @@
                         // dependent api
                         // calls for upcoming challneges
                         var parameters = {};
-                        parameters.url = 'challenges/past';
+                        parameters.url = 'challenges/challenge/past';
                         parameters.method = 'GET';
                         parameters.token = userKey;
 
