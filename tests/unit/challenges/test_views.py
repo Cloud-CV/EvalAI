@@ -561,6 +561,81 @@ class GetAllChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['results'], expected)
 
+    def test_get_all_challenges(self):
+        self.url = reverse_lazy('challenges:get_all_challenges',
+                                kwargs={'challenge_time': "ALL"})
+
+        expected = [
+            {
+                "id": self.challenge2.pk,
+                "title": self.challenge2.title,
+                "description": self.challenge2.description,
+                "terms_and_conditions": self.challenge2.terms_and_conditions,
+                "submission_guidelines": self.challenge2.submission_guidelines,
+                "evaluation_details": self.challenge2.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge2.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge2.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge2.creator.pk,
+                    "team_name": self.challenge2.creator.team_name,
+                    "created_by": self.challenge2.creator.created_by.username,
+                },
+                "published": self.challenge2.published,
+                "enable_forum": self.challenge2.enable_forum,
+                "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+            },
+            {
+                "id": self.challenge3.pk,
+                "title": self.challenge3.title,
+                "description": self.challenge3.description,
+                "terms_and_conditions": self.challenge3.terms_and_conditions,
+                "submission_guidelines": self.challenge3.submission_guidelines,
+                "evaluation_details": self.challenge3.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge3.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge3.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge3.creator.pk,
+                    "team_name": self.challenge3.creator.team_name,
+                    "created_by": self.challenge3.creator.created_by.username,
+                },
+                "published": self.challenge3.published,
+                "enable_forum": self.challenge3.enable_forum,
+                "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+            },
+            {
+                "id": self.challenge4.pk,
+                "title": self.challenge4.title,
+                "description": self.challenge4.description,
+                "terms_and_conditions": self.challenge4.terms_and_conditions,
+                "submission_guidelines": self.challenge4.submission_guidelines,
+                "evaluation_details": self.challenge4.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge4.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge4.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge4.creator.pk,
+                    "team_name": self.challenge4.creator.team_name,
+                    "created_by": self.challenge4.creator.created_by.username,
+                },
+                "published": self.challenge4.published,
+                "enable_forum": self.challenge4.enable_forum,
+                "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+            }
+        ]
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'], expected)
+
+    def test_incorrent_url_pattern_challenges(self):
+        self.url = reverse_lazy('challenges:get_all_challenges',
+                                kwargs={'challenge_time': "INCORRECT"})
+        expected = {'error': 'Wrong url pattern!'}
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+
 
 class GetChallengeByPk(BaseAPITestClass):
 
