@@ -27,8 +27,9 @@ from .serializers import (InviteParticipantToTeamSerializer,
 def participant_team_list(request):
 
     if request.method == 'GET':
+        participant_teams_id = Participant.objects.filter(user_id = request.user).values_list('team_id', flat=True)
         participant_teams = ParticipantTeam.objects.filter(
-            created_by=request.user)
+            id__in=participant_teams_id)
         paginator, result_page = paginated_queryset(participant_teams, request)
         serializer = ParticipantTeamSerializer(result_page, many=True)
         response_data = serializer.data
