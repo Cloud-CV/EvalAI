@@ -7,31 +7,35 @@
 </div>
 <div class="col s12 m4 offset-m4">
     <!-- login form -->
-    <form ng-submit="auth.userSignUp()" id="sign-up">
+    <form name="signupForm" ng-submit="signupForm.$valid && auth.userSignUp()" id="sign-up" novalidate>
         <!-- username -->
         <div class="input-field align-left">
-            <input id="name" type="text" class="validate" ng-model="auth.regUser.name" focus-if>
+            <input id="name" name="name" type="text" class="validate" ng-model="auth.regUser.name" focus-if required>
             <span class="form-icon"><i class="fa fa-user"></i></span>
             <label for="name" data-error="wrong" data-success="right">User Name (no space)*</label>
             <div class="wrn-msg text-highlight" ng-show="auth.isValid.username">{{auth.wrnMsg.username}}</div>
+            <div class="wrn-msg text-highlight" ng-show="signupForm.name.$error.required && signupForm.name.$dirty">Please Enter Your Username </div>
         </div>
         <!-- email -->
         <div class="input-field align-left">
-            <input id="email" type="email" class="validate" ng-model="auth.regUser.email">
+            <input id="email" name="email" type="email" class="validate" ng-model="auth.regUser.email" required>
             <span class="form-icon"><i class="fa fa-envelope"></i></span>
             <label for="email" data-error="wrong" data-success="right">Email</label>
             <div class="wrn-msg text-highlight" ng-show="auth.isValid.email">{{auth.wrnMsg.email}}</div>
+            <div class="wrn-msg text-highlight" ng-show="signupForm.email.$error.required && signupForm.email.$dirty"> Please Enter Your Email</div>
+            <div class="wrn-msg text-highlight" ng-show="signupForm.email.$error.email && signupForm.email.$dirty "> Invalid Email Address </div>
+
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input id="password" type="password" class="validate" ng-model="auth.regUser.password">
+            <input id="password" name="password" type="password" class="validate" ng-model="auth.regUser.password" required>
             <span class="form-icon"><i class="fa fa-key"></i></span>
             <label for="password">Password (min 8 characters) *</label>
             <div class="wrn-msg text-highlight" ng-show="auth.isValid.password">{{auth.wrnMsg.password}}</div>
         </div>
         <!-- confirm password -->
         <div class="input-field align-left">
-            <input id="confirm_password" type="password" class="validate" ng-model="auth.regUser.confirm">
+            <input id="confirm_password" name="confirm_password" type="password" class="validate" ng-model="auth.regUser.confirm" required>
             <span class="form-icon"><i class="fa fa-check-circle"></i></span>
             <label for="password">Confirm Password *</label>
             <div class="wrn-msg text-highlight" ng-show="auth.isValid.confirm">{{auth.wrnMsg.confirm}}</div>
