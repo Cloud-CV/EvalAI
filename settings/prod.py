@@ -1,7 +1,7 @@
 from .common import *  # noqa: ignore=F405
 
 import os
-
+import raven
 
 DEBUG = False
 
@@ -27,7 +27,7 @@ DATADOG_API_KEY = os.environ.get('DATADOG_API_KEY')
 
 MIDDLEWARE += ['middleware.metrics.DatadogMiddleware', ]     # noqa
 
-INSTALLED_APPS += ('storages',)  # noqa
+INSTALLED_APPS += ('storages', 'raven.contrib.django.raven_compat')  # noqa
 
 AWS_STORAGE_BUCKET_NAME = "evalai"
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
@@ -62,3 +62,21 @@ REST_FRAMEWORK_DOCS = {
 
 # Port number for the python-memcached cache backend.
 CACHES['default']['LOCATION'] = os.environ.get("LOCATION", "") # noqa: ignore=F405
+
+RAVEN_CONFIG = {
+    'dsn': os.environ.get('SENTRY_URL'),
+    # If you are using git, you can also automatically configure the
+    # release based on the git info.
+    'release': raven.fetch_git_sha(os.path.dirname(os.pardir)),
+}
+
+LOGGING['root'] = {                                     # noqa
+    'level': 'INFO',
+    'handlers': ['console', 'sentry', 'logfile'],
+}
+
+LOGGING['handlers']['sentry'] = {                       # noqa
+    'level': 'ERROR',
+    'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+    'tags': {'custom-tag': 'x'},
+}
