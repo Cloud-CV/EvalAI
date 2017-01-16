@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -44,6 +47,12 @@ class GetParticipantTeamTest(BaseAPITestClass):
 
     def setUp(self):
         super(GetParticipantTeamTest, self).setUp()
+
+        self.participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team
+        )
 
     def test_get_challenge(self):
         expected = [
@@ -383,7 +392,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False)
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
 
         self.challenge2 = Challenge.objects.create(
             title='Test Challenge 2',
@@ -393,7 +405,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False)
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            )
 
     def test_get_teams_and_corresponding_challenges_for_a_participant(self):
 
@@ -411,16 +426,18 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "submission_guidelines": self.challenge1.submission_guidelines,
                         "evaluation_details": self.challenge1.evaluation_details,
                         "image": self.challenge1.image,
-                        "start_date": self.challenge1.start_date,
-                        "end_date": self.challenge1.end_date,
+                        "start_date":
+                            "{0}{1}".format(self.challenge1.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                        "end_date": "{0}{1}".format(self.challenge1.end_date.isoformat(), 'Z').replace("+00:00", ""),
                         "creator": {
                             "id": self.challenge_host_team.id,
                             "team_name": self.challenge_host_team.team_name,
                             "created_by": self.challenge_host_team.created_by.username
-                        },
+                            },
                         "published": self.challenge1.published,
                         "enable_forum": self.challenge1.enable_forum,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
+                        "is_active": True
                     },
                     "participant_team": {
                         "id": self.participant_team1.id,
