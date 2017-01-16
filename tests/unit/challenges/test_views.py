@@ -710,11 +710,27 @@ class GetChallengeByPk(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_by_pk_when_challenge_exists_and_not_active(self):
+    def test_get_challenge_by_pk_when_challenge_exists_in_past_and_not_active(self):
         self.url = reverse_lazy('challenges:get_challenge_by_pk',
                                 kwargs={'pk': self.challenge3.pk})
 
         self.challenge3.end_date = timezone.now() - timedelta(days=1)
+        self.challenge3.save()
+
+        expected = {
+            'error': 'Challenge is not active!'
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_get_challenge_by_pk_when_challenge_will_exist_in_future_and_not_active(self):
+        self.url = reverse_lazy('challenges:get_challenge_by_pk',
+                                kwargs={'pk': self.challenge3.pk})
+
+        self.challenge3.start_date = timezone.now() + timedelta(days=1)
+        self.challenge3.end_date = timezone.now() + timedelta(days=3)
         self.challenge3.save()
 
         expected = {
