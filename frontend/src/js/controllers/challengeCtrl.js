@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$stateParams', '$rootScope'];
+    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope'];
 
-    function ChallengeCtrl(utilities, $scope, $state, $stateParams, $rootScope) {
+    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.wrnMsg = {};
@@ -35,10 +35,8 @@
                 vm.page = response;
                 console.log(response.is_active);
                 vm.isActive = response.is_active;
-                // navigate to challenge page
-                // $state.go('web.challenge-page.overview');
-//////////?##########//////////////////
                 if (vm.isActive == true){
+
                     // get details of challenges corresponding to participant teams of that user
                     var parameters = {};
                     parameters.url = 'participants/participant_teams/challenges/user';
@@ -58,8 +56,7 @@
                             }
 
                             if (vm.isParticipated == false){
-        ////////////////////////////////////////////////////////////////
-                                // default variables/objects
+
                                 vm.team = {};
                                 vm.teamId = null;
                                 vm.existTeam = {};
@@ -125,14 +122,15 @@
                                                 // loader end
 
                                                 var parameters = {};
-                                                parameters.url = 'challenges/challenge/' + challengePk + '/participant_team/' + vm.teamId;
+                                                parameters.url = 'challenges/challenge/' + vm.challengeId + '/participant_team/' + vm.teamId;
                                                 parameters.method = 'POST';
                                                 parameters.token = userKey;
                                                 parameters.callback = {
                                                     onSuccess: function(response) {
                                                         var status = response.status;
                                                         var response = response.data;
-                                                        $state.go('web.challenge-page.overview');
+                                                        vm.isParticipated = true;
+                                                        $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
@@ -214,11 +212,7 @@
 
                                 utilities.sendRequest(parameters);
 
-        ////////////////////////////////////////////////////////////////
                             }
-                            // vm.phases = response;
-                            // navigate to challenge page
-                            // $state.go('web.challenge-page.overview');
                             utilities.hideLoader();
                         },
                         onError: function(response) {
@@ -231,15 +225,8 @@
                     utilities.sendRequest(parameters);
                 }
 
-
-
-
-
-
-
-
-////////###########///////////////////
                 utilities.hideLoader();
+
             },
             onError: function(response) {
                 var status = response.status;
