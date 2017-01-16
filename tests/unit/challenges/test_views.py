@@ -678,10 +678,10 @@ class GetChallengeByPk(BaseAPITestClass):
             enable_forum=True,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=1),
         )
 
-    def test_get_challenge_by_pk_when_challenge_exists(self):
+    def test_get_challenge_by_pk_when_challenge_exists_and_active(self):
         self.url = reverse_lazy('challenges:get_challenge_by_pk',
                                 kwargs={'pk': self.challenge3.pk})
 
@@ -709,6 +709,21 @@ class GetChallengeByPk(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_by_pk_when_challenge_exists_and_not_active(self):
+        self.url = reverse_lazy('challenges:get_challenge_by_pk',
+                                kwargs={'pk': self.challenge3.pk})
+
+        self.challenge3.end_date = timezone.now() - timedelta(days=1)
+        self.challenge3.save()
+
+        expected = {
+            'error': 'Challenge is not active!'
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_get_challenge_by_pk_when_challenge_does_not_exists(self):
         self.url = reverse_lazy('challenges:get_challenge_by_pk',

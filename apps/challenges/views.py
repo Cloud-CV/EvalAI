@@ -205,7 +205,7 @@ def get_challenge_by_pk(request, pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
-            response_data = {'error':'Challenge is not active!'}
+            response_data = {'error': 'Challenge is not active!'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     except:
         response_data = {'error': 'Challenge does not exist!'}
