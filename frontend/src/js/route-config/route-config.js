@@ -56,6 +56,15 @@
             title: 'SignUp'
         }
 
+        var verify_email = {
+            name: "auth.verify-email",
+            parent: "auth",
+            url: "/api/auth/registration/account-confirm-email/:email_conf_key",
+            templateUrl: baseUrl + "/web/verify-email.html",
+            title: "Email Verify",
+            authenticate: false
+        }
+
         var reset_password = {
             name: "auth.reset-password",
             parent: "auth",
@@ -271,6 +280,7 @@
         $stateProvider.state(auth);
         $stateProvider.state(login);
         $stateProvider.state(signup);
+        $stateProvider.state(verify_email);
         $stateProvider.state(reset_password);
         $stateProvider.state(reset_password_confirm);
         $stateProvider.state(logout);
