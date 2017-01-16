@@ -703,7 +703,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "published": self.challenge3.published,
             "enable_forum": self.challenge3.enable_forum,
             "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
-            "is_active": False,
+            "is_active": True,
         }
 
         response = self.client.get(self.url, {})
