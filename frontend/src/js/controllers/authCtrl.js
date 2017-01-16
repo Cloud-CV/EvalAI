@@ -228,6 +228,28 @@
             utilities.sendRequest(parameters, "no-header");
         }
 
+        vm.verifyEmail = function() {
+            vm.startLoader("Verifying Your Email");
+            var parameters = {};
+            parameters.url = 'auth/registration/account-confirm-email/' + $state.params.email_conf_key + '/';
+            parameters.method = 'GET';
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.email_verify_msg = "Your email has been verified successfully";
+                    vm.stopLoader();
+                    $timeout(function() {
+                        $state.go("auth.login");
+                    }, 2000);
+                },
+                onError: function(response) {
+                    vm.email_verify_msg = "Something went wrong!! Please try again.";
+                    vm.stopLoader();
+                }
+            };
+
+            utilities.sendRequest(parameters, "no-header");
+        }
+
         // function to reset password
         vm.resetPassword = function() {
             vm.startLoader("Sending Mail");
