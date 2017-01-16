@@ -237,9 +237,6 @@
                 onSuccess: function(response) {
                     vm.email_verify_msg = "Your email has been verified successfully";
                     vm.stopLoader();
-                    $timeout(function() {
-                        $state.go("auth.login");
-                    }, 2000);
                 },
                 onError: function(response) {
                     vm.email_verify_msg = "Something went wrong!! Please try again.";
