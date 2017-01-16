@@ -7,6 +7,8 @@ from .models import Challenge, ChallengePhase
 
 class ChallengeSerializer(serializers.ModelSerializer):
 
+    is_active = serializers.ReadOnlyField()
+
     def __init__(self, *args, **kwargs):
         super(ChallengeSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get('context')
@@ -21,7 +23,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'description', 'terms_and_conditions',
                   'submission_guidelines', 'evaluation_details',
                   'image', 'start_date', 'end_date', 'creator',
-                  'published', 'enable_forum', 'anonymous_leaderboard',)
+                  'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',)
 
 
 class ChallengePhaseSerializer(serializers.ModelSerializer):
