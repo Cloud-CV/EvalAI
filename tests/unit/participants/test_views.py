@@ -45,6 +45,12 @@ class GetParticipantTeamTest(BaseAPITestClass):
     def setUp(self):
         super(GetParticipantTeamTest, self).setUp()
 
+        self.participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.ACCEPTED,
+            team=self.participant_team
+        )
+
     def test_get_challenge(self):
         expected = [
             {
