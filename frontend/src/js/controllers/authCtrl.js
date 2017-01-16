@@ -55,6 +55,32 @@
             vm.wrnMsg = {};
         }
 
+        vm.passwordChecks = function(password1, password2) {
+            var password1_len = password1.length;
+            var password2_len = password2.length;
+            var context = {};
+
+            if (password1_len >= 8 && password2_len >= 8)
+            {
+                if (password1 === password2)
+                {
+                    context.confirmMsg = "Passwords Match !";
+                    context.status = true;
+                    return context;
+                }
+                else {
+                    context.confirmMsg = "Passwords do not Match !";
+                    context.status = false;
+                    return context;
+                }
+            }
+            else {
+                context.confirmMsg = "Password is less than 8 characters !";
+                context.status = false;
+                return context;
+            }
+        }
+
         // getting signup
         vm.userSignUp = function() {
             vm.isValid = {};
@@ -71,54 +97,62 @@
                 "password2": vm.regUser.confirm,
                 "email": vm.regUser.email
             }
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                    if (status == 201) {
-                        vm.regUser = {};
-                        vm.wrnMsg = {};
-                        vm.isValid = {};
-                        vm.confirmMsg = ''
-                        vm.regMsg = "Registered successfully, Login to continue!";
-                        $state.go('auth.login');
-                        vm.stopLoader();
-                    } else {
-                        alert("Network Problem");
-                        vm.stopLoader();
+            vm.passwordCheck = vm.passwordChecks(parameters.data.password1, parameters.data.password2);
+            if (vm.passwordCheck.status)
+            {
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var response = response.data;
+                        if (status == 201) {
+                            vm.regUser = {};
+                            vm.wrnMsg = {};
+                            vm.isValid = {};
+                            vm.confirmMsg = ''
+                            vm.regMsg = "Registered successfully, Login to continue!";
+                            $state.go('auth.login');
+                            vm.stopLoader();
+                        } else {
+                            alert("Network Problem");
+                            vm.stopLoader();
+                        }
+                    },
+                    onError: function(response) {
+                        var status = response.status;
+                        var error = response.data;
+                        if (status == 400) {
+                            vm.stopLoader();
+                            vm.isConfirm = false;
+                            vm.confirmMsg = "Please correct above marked fields!"
+                            angular.forEach(error, function(value, key) {
+                                if (key == 'email') {
+                                    vm.isValid.email = true;
+                                    vm.wrnMsg.email = value[0]
+                                }
+                                if (key == 'password1') {
+                                    vm.isValid.password = true;
+                                    vm.wrnMsg.password = value[0];
+                                }
+                                if (key == 'password2' || key == 'non_field_errors') {
+                                    vm.isValid.confirm = true;
+                                    vm.wrnMsg.confirm = value[0];
+                                }
+                                if (key == 'username') {
+                                    vm.isValid.username = true;
+                                    vm.wrnMsg.username = value[0];
+                                }
+                            })
+                            vm.stopLoader();
+                        }
                     }
-                },
-                onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
-                    if (status == 400) {
-                        vm.stopLoader();
-                        vm.isConfirm = false;
-                        vm.confirmMsg = "Please correct above marked fields!"
-                        angular.forEach(error, function(value, key) {
-                            if (key == 'email') {
-                                vm.isValid.email = true;
-                                vm.wrnMsg.email = value[0]
-                            }
-                            if (key == 'password1') {
-                                vm.isValid.password = true;
-                                vm.wrnMsg.password = value[0];
-                            }
-                            if (key == 'password2' || key == 'non_field_errors') {
-                                vm.isValid.confirm = true;
-                                vm.wrnMsg.confirm = value[0];
-                            }
-                            if (key == 'username') {
-                                vm.isValid.username = true;
-                                vm.wrnMsg.username = value[0];
-                            }
-                        })
-                        vm.stopLoader();
-                    }
-                }
-            };
+                };
 
-            utilities.sendRequest(parameters, "no-header");
+                    utilities.sendRequest(parameters, "no-header");
+            }
+            else {
+                vm.confirmMsg = vm.passwordCheck.confirmMsg;
+                vm.stopLoader();
+            }
         }
 
         // login user
