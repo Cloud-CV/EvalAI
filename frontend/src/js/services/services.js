@@ -32,41 +32,17 @@
             };
 
             header = pick(header, 'header');
-
-            if (method == "POST" && header == 'header') {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    data: data,
-                    headers: headers
-                };
-            } else if (method == "POST" && header == 'no-header') {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    data: data
-                };
-            } else if (method == "GET") {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    headers: headers
-                };
-            } else if (method == "PUT") {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    data: data,
-                    headers: headers
-                };
-            } else if (method == "DELETE") {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    headers: headers
-                };
+            var req = {
+                method: method,
+                url: url,
             }
-
+            if (header == 'header') {
+                req.headers = headers;
+            }
+            if(method == "POST" || method == "PUT") {
+                req.data = data;
+            }
+            
             req.timeout = 6000;
 
             $http(req)
