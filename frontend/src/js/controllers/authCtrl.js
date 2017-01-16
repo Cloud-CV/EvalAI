@@ -71,7 +71,6 @@
                 else {
                     context.confirmMsg = "Passwords do not Match !";
                     context.status = false;
-                    vm.stopLoader();
                     return context;
                 }
             }
