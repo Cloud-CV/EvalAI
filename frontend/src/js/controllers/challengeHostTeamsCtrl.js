@@ -7,9 +7,10 @@
         .module('evalai')
         .controller('ChallengeHostTeamsCtrl', ChallengeHostTeamsCtrl);
 
-    ChallengeHostTeamsCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    ChallengeHostTeamsCtrl.$inject = ['utilities', '$scope' , '$state', '$http',
+      '$rootScope', '$mdDialog'];
 
-    function ChallengeHostTeamsCtrl(utilities, $state, $http, $rootScope) {
+    function ChallengeHostTeamsCtrl(utilities, $scope, $state, $http, $rootScope) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -81,7 +82,7 @@
                         vm.startLoader("Loading Teams");
                         if (url != null) {
 
-                            //store the header data in a variable 
+                            //store the header data in a variable
                             var headers = {
                                 'Authorization': "Token " + userKey
                             };
@@ -192,6 +193,109 @@
                  };
             vm.reset();
         }
+
+        vm.confirmDelete = function(ev, hostTeamId) {
+
+            var confirm = $mdDialog.confirm()
+                  .title('Would you like to remove yourself?')
+                  .textContent('Note: This action will remove you from the team.')
+                  .ariaLabel('Lucky day')
+                  .targetEvent(ev)
+                  .ok('Yes')
+                  .cancel("No");
+
+            $mdDialog.show(confirm).then(function() {
+                var parameters = {};
+                parameters.url = 'participants/remove_self_from_participant_team/' + hostTeamId;
+                parameters.method = 'DELETE';
+                parameters.data = {}
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var response = response.data;
+                        vm.team.error = false;
+
+                        var parameters = {};
+                        parameters.url = 'participants/participant_team';
+                        parameters.method = 'GET';
+                        parameters.token = userKey;
+                        parameters.callback = {
+                            onSuccess: function(response) {
+                                var status = response.status;
+                                var response = response.data;
+                                if (status == 200) {
+                                    vm.existTeam = response;
+                                }
+                            }
+                        }
+                        utilities.sendRequest(parameters);
+                    },
+                    onError: function(response) {
+                        var status = response.status;
+                        var error = response.data;
+                        console.log(error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+
+            }, function() {
+                console.log("Operation defered");
+            });
+        };
+
+
+        vm.inviteOthers = function(ev, hostTeamId) {
+
+            var confirm = $mdDialog.prompt()
+                .title('Invite others to this team')
+                .textContent('Enter the email address of the person')
+                .placeholder('deshraj@cloudcv.org')
+                .ariaLabel('')
+                .targetEvent(ev)
+                .ok('Send Invite')
+                .cancel('Cancel');
+
+                $mdDialog.show(confirm).then(function(result) {
+                    console.log(result);
+                    var parameters = {};
+                    parameters.url = 'participants/participant_team/' + hostTeamId + '/invite';
+                    parameters.method = 'POST';
+                    parameters.data = {
+                        "email": result
+                    }
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var response = response.data;
+                        },
+                        onError: function(response) {
+                            var status = response.status;
+                            var error = response.data;
+                            console.log(error);
+                        }
+                    };
+
+                    utilities.sendRequest(parameters);
+                }, function() {
+                    console.log("Operation Aborted");
+                });
+        };
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
 })();
