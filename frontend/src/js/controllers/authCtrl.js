@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
+    AuthCtrl.$inject = ['utilities', 'validationSvc', '$state', '$rootScope', '$timeout'];
 
-    function AuthCtrl(utilities, $state, $rootScope, $timeout) {
+    function AuthCtrl(utilities, validationSvc, $state, $rootScope, $timeout) {
         var vm = this;
 
         vm.isRem = false;
@@ -19,7 +19,7 @@
         vm.regUser = {};
         // useDetails for login
         vm.getUser = {};
-        vm.isResetPassword = true;
+        vm.isResetPassword = false;
 
 
         // default parameters
@@ -55,32 +55,6 @@
             vm.wrnMsg = {};
         }
 
-        vm.passwordChecks = function(password1, password2) {
-            var password1_len = password1.length;
-            var password2_len = password2.length;
-            var context = {};
-
-            if (password1_len >= 8 && password2_len >= 8)
-            {
-                if (password1 === password2)
-                {
-                    context.confirmMsg = "Passwords Match !";
-                    context.status = true;
-                    return context;
-                }
-                else {
-                    context.confirmMsg = "Passwords do not Match !";
-                    context.status = false;
-                    return context;
-                }
-            }
-            else {
-                context.confirmMsg = "Password is less than 8 characters !";
-                context.status = false;
-                return context;
-            }
-        }
-
         // getting signup
         vm.userSignUp = function() {
             vm.isValid = {};
@@ -97,9 +71,8 @@
                 "password2": vm.regUser.confirm,
                 "email": vm.regUser.email
             }
-            vm.passwordCheck = vm.passwordChecks(parameters.data.password1, parameters.data.password2);
-            if (vm.passwordCheck.status)
-            {
+            var passwordCheck = validationSvc.password_check(parameters.data.password1, parameters.data.password2);
+            if (passwordCheck.status) {
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -147,10 +120,9 @@
                     }
                 };
 
-                    utilities.sendRequest(parameters, "no-header");
-            }
-            else {
-                vm.confirmMsg = vm.passwordCheck.confirmMsg;
+                utilities.sendRequest(parameters, "no-header");
+            } else {
+                vm.confirmMsg = passwordCheck.confirmMsg;
                 vm.stopLoader();
             }
         }
@@ -228,6 +200,7 @@
             utilities.sendRequest(parameters, "no-header");
         }
 
+        // function to Verify Email
         vm.verifyEmail = function() {
             vm.startLoader("Verifying Your Email");
             var parameters = {};
@@ -303,43 +276,46 @@
                 "uid": $state.params.user_id,
                 "token": $state.params.reset_token,
             }
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                    vm.isResetPassword = false;
-                    vm.deliveredMsg = response.detail;
-                    vm.stopLoader();
-                    $timeout(function() {
-                        $state.go("auth.login");
-                    }, 2000);
-                },
-                onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
-                    var token_valid, password1_valid, password2_valid;
-                    try {
-                        vm.isResetPassword = false;
-                        token_valid = typeof(response.data.token) !== 'undefined' ? true : false;
-                        password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
-                        password2_valid = typeof(response.data.new_password2) !== 'undefined' ? true : false;
-                        if (token_valid) {
-                            vm.deliveredMsg = "this link has been already used or expired.";
-                        } else if (password1_valid) {
-                            vm.deliveredMsg = response.data.new_password1[0] + " " + response.data.new_password1[1];
-                        } else if (password2_valid) {
-                            vm.deliveredMsg = response.data.new_password2[0] + " " + response.data.new_password2[1];
-                        } else {
-                            console.log("Unhandled Error");
-                        }
-                    } catch (error) {
-                        vm.deliveredMsg = "Something went wrong! Please refresh the page and try again.";
-                    }
-                    vm.stopLoader();
-                }
-            };
 
-            utilities.sendRequest(parameters, "no-header");
+            var passwordCheck = validationSvc.password_check(parameters.data.new_password1, parameters.data.new_password2);
+            if (passwordCheck.status) {
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var response = response.data;
+                        vm.isResetPassword = true;
+                        vm.deliveredMsg = response.detail;
+                        vm.stopLoader();
+                    },
+                    onError: function(response) {
+                        var status = response.status;
+                        var error = response.data;
+                        var token_valid, password1_valid, password2_valid;
+                        try {
+                            token_valid = typeof(response.data.token) !== 'undefined' ? true : false;
+                            password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
+                            password2_valid = typeof(response.data.new_password2) !== 'undefined' ? true : false;
+                            if (token_valid) {
+                                vm.deliveredMsg = "this link has been already used or expired.";
+                            } else if (password1_valid) {
+                                vm.deliveredMsg = response.data.new_password1[0] + " " + response.data.new_password1[1];
+                            } else if (password2_valid) {
+                                vm.deliveredMsg = response.data.new_password2[0] + " " + response.data.new_password2[1];
+                            } else {
+                                console.log("Unhandled Error");
+                            }
+                        } catch (error) {
+                            vm.deliveredMsg = "Something went wrong! Please refresh the page and try again.";
+                        }
+                        vm.stopLoader();
+                    }
+                };
+
+                utilities.sendRequest(parameters, "no-header");
+            } else {
+                vm.deliveredMsg = passwordCheck.confirmMsg;
+                vm.stopLoader();
+            }
         }
     }
 
