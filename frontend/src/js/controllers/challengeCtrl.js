@@ -40,6 +40,9 @@
             onError: function(response) {
                 var status = response.status;
                 var error = response.data;
+                alert("");
+                utilities.storeData('emailError', error.detail);
+                $state.go('web.permission-denied');
                 utilities.hideLoader();
             }
         };
@@ -56,7 +59,6 @@
             onSuccess: function(response) {
                 var status = response.status;
                 var response = response.data;
-                console.log(response);
                 vm.phases = response;
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
@@ -65,7 +67,8 @@
             onError: function(response) {
                 var status = response.status;
                 var error = response.data;
-                console.log(error);
+                utilities.storeData('emailError', error.detail);
+                $state.go('web.permission-denied');
                 utilities.hideLoader();
             }
         };
@@ -83,7 +86,6 @@
             onSuccess: function(response) {
                 var status = response.status;
                 var response = response.data;
-                console.log(response);
 
                 for (var i in response.challenge_participant_team_list) {
                     console.log
@@ -107,7 +109,6 @@
             onError: function(response) {
                 var status = response.status;
                 var error = response.data;
-                console.log(error);
                 utilities.hideLoader();
             }
         };
