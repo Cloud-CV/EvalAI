@@ -7,20 +7,24 @@
 </div>
 <div class="col s12 m4 offset-m4">
     <!-- login form -->
-    <form ng-submit="auth.userLogin()" id="log-in">
+    <form name="loginForm" ng-submit="loginForm.$valid && auth.userLogin()" id="log-in" novalidate>
         <!-- username -->
         <div class="input-field align-left">
-            <input id="name" type="text" class="validate" ng-model="auth.getUser.name" focus-if>
+            <input id="name" name="name" type="text" class="validate" ng-model="auth.getUser.name" focus-if required>
             <span class="form-icon"><i class="fa fa-user"></i></span>
             <label for="name" data-error="wrong" data-success="right">User Name (no space)*</label>
             <div class="wrn-msg text-highlight" ng-show="auth.isValid.username">{{auth.wrnMsg.username}}</div>
+            <div class="wrn-msg text-highlight" ng-show="loginForm.name.$error.required && loginForm.name.$dirty">
+            Please Enter username.</div>
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input id="password" type="password" class="validate" ng-model="auth.getUser.password" autocomplete="new-password">
+            <input id="password" name="password" type="password" class="validate" ng-model="auth.getUser.password" autocomplete="new-password" ng-minlength="8" required>
             <span class="form-icon"><i class="fa fa-key"></i></span>
             <label for="password">Password (min 8 characters) *</label>
             <div class="wrn-msg text-highlight" ng-show="auth.isValid.password">{{auth.wrnMsg.password}}</div>
+            <div class="wrn-msg text-highlight" ng-show="loginForm.password.$dirty && loginForm.password.$invalid">
+            Password is less than 8 characters.</div>
         </div>
         <div class="row">
             <!--    <div class="col s6 align-left rm-gut">
