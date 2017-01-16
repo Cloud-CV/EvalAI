@@ -1,38 +1,13 @@
-<section class="ev-sm-container ev-view challenge-container  ">
+<section ng-repeat="item in challenge.phases.results" class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view phase-card">
         <div class="row">
             <div class="col s12">
-                <span class="fs-18 text-med-black"><strong>Real test-dev2015 (oe)</strong></span>
+                <span class="fs-18 text-med-black"><strong>{{item.name}}</strong></span>
             </div>
             <div class="col s12">
-                <p><strong>Start:</strong> Oct. 6, 2015, midnight</p>
-                <p><strong>Description: </strong> Description: This phase evaluates algorithms on the VQA Open-Ended task for the dataset built on top of MSCOCO test-dev2015 real images for algorithm experimentation (see website for guidelines). Please do not try to make your results public; doing so will just fill the table with 0s. Evaluation (i.e., 'Running' status) takes about 2 minutes. ***REMINDER*** Your full test set submissions will be entered in our challenge if you either submit to the phase marked with 'Challenge' (Please do not try to make these results public; doing so will just fill the table with 0s.) OR you make your submission to the non-challenge phase public (i.e., on the leaderboard) before the challenge ends.</p>
-            </div>
-        </div>
-    </div>
-</section>
-<section class="ev-sm-container ev-view challenge-container  ">
-    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view phase-card">
-        <div class="row">
-            <div class="col s12">
-                <span class="fs-18 text-med-black"><strong>Real test2015 (oe)</strong></span>
-            </div>
-            <div class="col s12">
-                <p><strong>Start:</strong> Oct. 21, 2015, midnight</p>
-                <p><strong>Description: </strong> This phase evaluates algorithms on the VQA Open-Ended task for the dataset built on top of MSCOCO test2015 real images. Evaluation (i.e., 'Running' status) takes about 10 minutes. ***REMINDER*** Your full test set submissions will be entered in our challenge if you either submit to the phase marked with 'Challenge' (Please do not try to make these results public; doing so will just fill the table with 0s.) OR you make your submission to the non-challenge phase public (i.e., on the leaderboard) before the challenge ends.</p>
-            </div>
-        </div>
-    </div>
-</section>
-<section class="ev-sm-container ev-view challenge-container  ">
-    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view phase-card">
-        <div class="row">
-            <div class="col s12">
-                <span class="fs-18 text-med-black"><strong>Real Challenge test2015 (oe)</strong></span>
-            </div>
-            <div class="col s12">
-                <p><strong>Start:</strong> Oct. 21, 2015, midnight</p>
-                <p><strong>Description: </strong> Description: This phase evaluates algorithms on the VQA Open-Ended task for the dataset built on top of MSCOCO test2015 real images for the explicit challenge. Evaluation (i.e., 'Running' status) takes about 10 minutes. ***REMINDER*** Your full test set submissions will be entered in our challenge if you either submit to the phase marked with 'Challenge' (Please do not try to make these results public; doing so will just fill the table with 0s.) OR you make your submission to the non-challenge phase public (i.e., on the leaderboard) before the challenge ends.</p>
+                <p><strong>Start:</strong> {{item.start_date | date:'yyyy-MM-dd HH:mm:ss Z'}}</p>
+                <p><strong>End:</strong> {{item.end_date | date:'yyyy-MM-dd HH:mm:ss Z'}}</p>
+                <div ng-bind-html="item.description"></div>
             </div>
         </div>
     </div>
@@ -41,7 +16,7 @@
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view phase-card ev-dark-card ">
         <div class="row">
             <div class="col s12">
-                <p><strong>Competition Ends: </strong> June 5, 2016, 11:59 p.m.</p>
+                <p><strong>Competition Ends: </strong>{{challenge.page.end_date | date:'yyyy-MM-dd HH:mm:ss Z'}}</p>
             </div>
         </div>
     </div>

@@ -16,7 +16,8 @@ urlpatterns = [
         name='get_challenge_phase_list'),
     url(r'challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<pk>[0-9]+)$',
         views.challenge_phase_detail, name='get_challenge_phase_detail'),
-    url(r'(?P<challenge_time>[\w.@+-]+)$', views.get_all_challenges,
+    # `A-Za-z` because it accepts either of `all, future, past or present` in either case
+    url(r'challenge/(?P<challenge_time>[A-Za-z]+)$', views.get_all_challenges,
         name='get_all_challenges'),
     url(r'challenge/(?P<pk>[0-9]+)/',
         views.get_challenge_by_pk, name='get_challenge_by_pk'),

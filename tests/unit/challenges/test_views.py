@@ -46,7 +46,10 @@ class BaseAPITestClass(APITestCase):
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False)
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
 
         self.challenge_host = ChallengeHost.objects.create(
             user=self.user,
@@ -79,8 +82,8 @@ class GetChallengeTest(BaseAPITestClass):
                 "submission_guidelines": self.challenge.submission_guidelines,
                 "evaluation_details": self.challenge.evaluation_details,
                 "image": None,
-                "start_date": None,
-                "end_date": None,
+                "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
                 "creator": {
                     "id": self.challenge.creator.pk,
                     "team_name": self.challenge.creator.team_name,
@@ -88,7 +91,8 @@ class GetChallengeTest(BaseAPITestClass):
                 },
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
-                "anonymous_leaderboard": self.challenge.anonymous_leaderboard
+                "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+                "is_active": True
             }
         ]
 
@@ -125,7 +129,9 @@ class CreateChallengeTest(BaseAPITestClass):
             },
             'published': False,
             'enable_forum': True,
-            'anonymous_leaderboard': False
+            'anonymous_leaderboard': False,
+            'start_date': timezone.now() - timedelta(days=2),
+            'end_date': timezone.now() + timedelta(days=1),
         }
 
     def test_create_challenge_with_all_data(self):
@@ -161,8 +167,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.challenge.submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": None,
-            "end_date": None,
+            "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
@@ -170,7 +176,8 @@ class GetParticularChallenge(BaseAPITestClass):
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
-            "anonymous_leaderboard": self.challenge.anonymous_leaderboard
+            "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+            "is_active": True
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -232,7 +239,11 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "creator": self.challenge.creator.pk,
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
-            "anonymous_leaderboard": self.challenge.anonymous_leaderboard
+            "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+            "is_active": True,
+            "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
+
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -252,7 +263,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "creator": self.challenge.creator.pk,
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
-            "anonymous_leaderboard": self.challenge.anonymous_leaderboard
+            "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+            "is_active": True,
+            "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -320,7 +334,10 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             creator=self.challenge_host_team2,
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False)
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
 
         self.participant_team2 = ParticipantTeam.objects.create(
             team_name='Some Participant Team',
@@ -401,7 +418,10 @@ class DisableChallengeTest(BaseAPITestClass):
             creator=self.challenge_host_team1,
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False)
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
 
         self.url = reverse_lazy('challenges:disable_challenge',
                                 kwargs={'pk': self.challenge.pk})
@@ -497,6 +517,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "published": self.challenge3.published,
                 "enable_forum": self.challenge3.enable_forum,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+                "is_active": False,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -526,6 +547,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "is_active": True,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -555,11 +577,90 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "published": self.challenge4.published,
                 "enable_forum": self.challenge4.enable_forum,
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+                "is_active": False,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['results'], expected)
+
+    def test_get_all_challenges(self):
+        self.url = reverse_lazy('challenges:get_all_challenges',
+                                kwargs={'challenge_time': "ALL"})
+
+        expected = [
+            {
+                "id": self.challenge2.pk,
+                "title": self.challenge2.title,
+                "description": self.challenge2.description,
+                "terms_and_conditions": self.challenge2.terms_and_conditions,
+                "submission_guidelines": self.challenge2.submission_guidelines,
+                "evaluation_details": self.challenge2.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge2.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge2.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge2.creator.pk,
+                    "team_name": self.challenge2.creator.team_name,
+                    "created_by": self.challenge2.creator.created_by.username,
+                },
+                "published": self.challenge2.published,
+                "enable_forum": self.challenge2.enable_forum,
+                "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "is_active": True,
+            },
+            {
+                "id": self.challenge3.pk,
+                "title": self.challenge3.title,
+                "description": self.challenge3.description,
+                "terms_and_conditions": self.challenge3.terms_and_conditions,
+                "submission_guidelines": self.challenge3.submission_guidelines,
+                "evaluation_details": self.challenge3.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge3.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge3.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge3.creator.pk,
+                    "team_name": self.challenge3.creator.team_name,
+                    "created_by": self.challenge3.creator.created_by.username,
+                },
+                "published": self.challenge3.published,
+                "enable_forum": self.challenge3.enable_forum,
+                "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+                "is_active": False,
+            },
+            {
+                "id": self.challenge4.pk,
+                "title": self.challenge4.title,
+                "description": self.challenge4.description,
+                "terms_and_conditions": self.challenge4.terms_and_conditions,
+                "submission_guidelines": self.challenge4.submission_guidelines,
+                "evaluation_details": self.challenge4.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge4.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge4.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge4.creator.pk,
+                    "team_name": self.challenge4.creator.team_name,
+                    "created_by": self.challenge4.creator.created_by.username,
+                },
+                "published": self.challenge4.published,
+                "enable_forum": self.challenge4.enable_forum,
+                "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+                "is_active": False,
+            }
+        ]
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'], expected)
+
+    def test_incorrent_url_pattern_challenges(self):
+        self.url = reverse_lazy('challenges:get_all_challenges',
+                                kwargs={'challenge_time': "INCORRECT"})
+        expected = {'error': 'Wrong url pattern!'}
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
 
 
 class GetChallengeByPk(BaseAPITestClass):
@@ -602,6 +703,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "published": self.challenge3.published,
             "enable_forum": self.challenge3.enable_forum,
             "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+            "is_active": False,
         }
 
         response = self.client.get(self.url, {})

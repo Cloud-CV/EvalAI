@@ -3,15 +3,14 @@
     <div class="challenge-page-title"><strong class="text-med-black ">Ongoing Challenge</strong></div>
     <div ng-if="challengeList.noneCurrentChallenge">No Ongoing Challenges for now, waiting to see you again &#x1F603;</div>
     <div class="row">
-        <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList">
-            <a class="ev-card-hover" ui-sref="web.challenge-page({challengeId:challenge.id})">
+        <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
                         <img class="bg-img" ng-src="{{challenge.background_image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong>{{challenge.description  | limitTo:50}}{{challenge.isLarge}}</strong></p>
+                        <p><strong><span class="inline" ng-bind-html="challenge.description  | limitTo:50"></span></strong>{{challenge.isLarge}}</p>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts at</strong>
@@ -26,15 +25,14 @@
     <div class="challenge-page-title"><strong class="text-med-black ">Upcoming Challenge</strong></div>
     <div ng-if="challengeList.noneUpcomingChallenge">No Upcoming Challenges for now, waiting to see you soon &#x1F603;</div>
     <div class="row">
-        <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList">
-            <a class="ev-card-hover" ui-sref="web.challenge-page({challengeId:challenge.id})">
+        <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
                         <img class="bg-img" ng-src="{{challenge.background_image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong>{{challenge.description  | limitTo:50}}{{challenge.isLarge}}</strong></p>
+                        <p><strong><span class="inline" ng-bind-html="challenge.description  | limitTo:50"></span></strong>{{challenge.isLarge}}</p>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts at</strong>
@@ -50,14 +48,14 @@
     <div ng-if="challengeList.nonePastChallenge">No Past Challenges for now, waiting to see you soon &#x1F603;</div>
     <div class="row">
         <div class="col s12 m3" ng-repeat="challenge in challengeList.pastList">
-            <a class="ev-card-hover" ui-sref="web.challenge-page({challengeId:challenge.id})">
+            <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
                         <img class="bg-img" ng-src="{{challenge.background_image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong>{{challenge.description  | limitTo:50}}{{challenge.isLarge}}</strong></p>
+                        <p><strong><span class="inline" ng-bind-html="challenge.description  | limitTo:50"></span></strong>{{challenge.isLarge}}</p>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
                         <p><strong class="text-light-black fs-12">Starts at</strong>

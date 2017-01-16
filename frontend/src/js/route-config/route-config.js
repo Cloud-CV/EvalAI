@@ -56,6 +56,15 @@
             title: 'SignUp'
         }
 
+        var verify_email = {
+            name: "auth.verify-email",
+            parent: "auth",
+            url: "/api/auth/registration/account-confirm-email/:email_conf_key",
+            templateUrl: baseUrl + "/web/verify-email.html",
+            title: "Email Verify",
+            authenticate: false
+        }
+
         var reset_password = {
             name: "auth.reset-password",
             parent: "auth",
@@ -149,7 +158,7 @@
             authenticate: true
         }
 
-         var challenge_list = {
+        var challenge_list = {
             name: "web.challenge-main.challenge-list",
             parent: "web.challenge-main",
             url: "/list",
@@ -161,19 +170,19 @@
         }
 
         var challenge_page = {
-            name: "web.challenge-page",
-            parent: "web",
+            name: "web.challenge-main.challenge-page",
+            parent: "web.challenge-main",
             url: "/challenge-page/:challengeId",
             templateUrl: baseUrl + "/web/challenge-page.html",
             controller: 'ChallengeCtrl',
             controllerAs: 'challenge',
-            // redirectTo: "web.challenge-page.overview",
+            redirectTo: "web.challenge-main.challenge-page.overview",
             authenticate: true
         }
 
         var overview = {
-            name: "web.challenge-page.overview",
-            parent: "web.challenge-page",
+            name: "web.challenge-main.challenge-page.overview",
+            parent: "web.challenge-main.challenge-page",
             url: "/overview",
             templateUrl: baseUrl + "/web/challenge/overview.html",
             title: 'Overview',
@@ -181,7 +190,7 @@
         }
 
         var evaluation = {
-            name: "web.challenge-page.evaluation",
+            name: "web.challenge-main.challenge-page.evaluation",
             url: "/evaluation",
             templateUrl: baseUrl + "/web/challenge/evaluation.html",
             title: 'Evaluation',
@@ -189,10 +198,26 @@
         }
 
         var phases = {
-            name: "web.challenge-page.phases",
+            name: "web.challenge-main.challenge-page.phases",
             url: "/phases",
             templateUrl: baseUrl + "/web/challenge/phases.html",
             title: 'Phases',
+            authenticate: true
+        }
+
+        var participate = {
+            name: "web.challenge-main.challenge-page.participate",
+            url: "/participate",
+            templateUrl: baseUrl + "/web/challenge/participate.html",
+            title: 'Participate',
+            authenticate: true
+        }
+
+        var submission = {
+            name: "web.challenge-main.challenge-page.submission",
+            url: "/submission",
+            templateUrl: baseUrl + "/web/challenge/submission.html",
+            title: 'Submission',
             authenticate: true
         }
 
@@ -255,6 +280,7 @@
         $stateProvider.state(auth);
         $stateProvider.state(login);
         $stateProvider.state(signup);
+        $stateProvider.state(verify_email);
         $stateProvider.state(reset_password);
         $stateProvider.state(reset_password_confirm);
         $stateProvider.state(logout);
@@ -279,6 +305,8 @@
         $stateProvider.state(overview);
         $stateProvider.state(evaluation);
         $stateProvider.state(phases);
+        $stateProvider.state(participate);
+        $stateProvider.state(submission);
 
         $stateProvider.state(host_challenge);
 
@@ -287,7 +315,7 @@
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);
 
-        $urlRouterProvider.otherwise(function($injector, $location){
+        $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
             state.go('error-404');
             return $location.path();

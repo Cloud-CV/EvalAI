@@ -168,26 +168,28 @@ def get_all_challenges(request, challenge_time):
     """
     Returns the list of all challenges
     """
-    try:
-        q_params = {'published': True}
-        if challenge_time.lower() == "past":
-            q_params['end_date__lt'] = timezone.now()
-
-        elif challenge_time.lower() == "present":
-            q_params['start_date__lt'] = timezone.now()
-            q_params['end_date__gt'] = timezone.now()
-
-        elif challenge_time.lower() == "future":
-            q_params['start_date__gt'] = timezone.now()
-
-        challenge = Challenge.objects.filter(**q_params)
-        paginator, result_page = paginated_queryset(challenge, request)
-        serializer = ChallengeSerializer(result_page, many=True)
-        response_data = serializer.data
-        return paginator.get_paginated_response(response_data)
-    except:
+    # make sure that a valid url is requested.
+    if challenge_time.lower() not in ("all", "future", "past", "present"):
         response_data = {'error': 'Wrong url pattern!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    q_params = {'published': True}
+    if challenge_time.lower() == "past":
+        q_params['end_date__lt'] = timezone.now()
+
+    elif challenge_time.lower() == "present":
+        q_params['start_date__lt'] = timezone.now()
+        q_params['end_date__gt'] = timezone.now()
+
+    elif challenge_time.lower() == "future":
+        q_params['start_date__gt'] = timezone.now()
+    # for `all` we dont need any condition in `q_params`
+
+    challenge = Challenge.objects.filter(**q_params)
+    paginator, result_page = paginated_queryset(challenge, request)
+    serializer = ChallengeSerializer(result_page, many=True)
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
 
 
 @throttle_classes([AnonRateThrottle])

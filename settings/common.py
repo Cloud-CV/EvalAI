@@ -140,6 +140,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 SITE_ID = 1
 
 REST_FRAMEWORK = {
@@ -212,6 +214,14 @@ LOGGING = {
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
+        },
+        'logfile': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': "/tmp/logfile",
+            'maxBytes': 50000,
+            'backupCount': 10,
+            'formatter': 'verbose'
         },
         'mail_admins': {
             'level': 'ERROR',

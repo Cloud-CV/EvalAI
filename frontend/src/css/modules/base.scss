@@ -66,6 +66,10 @@ a {
     cursor: pointer;
 }
 
+.rm-row-bot {
+    margin-bottom: 0px;
+}
+
 
 /*inline list*/
 
@@ -76,6 +80,11 @@ ul.inline-list {
     }
 }
 
+span.inline {
+    p{
+        display: inline;
+    }
+}
 
 /*clearfix*/
 
