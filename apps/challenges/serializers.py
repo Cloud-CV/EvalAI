@@ -28,6 +28,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
 class ChallengePhaseSerializer(serializers.ModelSerializer):
 
+    is_active = serializers.ReadOnlyField()
+
     def __init__(self, *args, **kwargs):
         super(ChallengePhaseSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get('context')
@@ -38,4 +40,4 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChallengePhase
         fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
-                  'end_date', 'challenge', 'is_public',)
+                  'end_date', 'challenge', 'is_public', 'is_active',)
