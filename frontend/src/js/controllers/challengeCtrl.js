@@ -11,6 +11,8 @@
     function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
+        vm.phaseId = null;
+        vm.input_file = null;
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
@@ -212,6 +214,40 @@
 
                                 utilities.sendRequest(parameters);
 
+                            }
+                            // This condition means that the user is eligible to make submissions
+                            else if (vm.isParticipated == true){
+/////////////////////////////////////////////////////////////////////
+                                vm.makeSubmission = function() {
+                                    var parameters = {};
+                                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
+                                    parameters.method = 'POST';
+                                    parameters.data = {
+                                        "status": "submitting",
+                                        "input_file": vm.input_file,
+                                    }
+                                    console.log(parameters.data);
+                                    parameters.token = userKey;
+                                    parameters.callback = {
+                                        onSuccess: function(response) {
+                                            var status = response.status;
+                                            var response = response.data;
+                                            console.log("Successful submission");
+                                            console.log(response);
+                                        },
+                                        onError: function(response) {
+                                            var status = response.status;
+                                            var error = response.data;
+                                            console.log("Error occured");
+                                            console.log(response);
+                                            // vm.stopLoader();
+                                            // vm.team.error = error.team_name[0];
+                                        }
+                                    };
+
+                                    utilities.sendRequest(parameters);
+                                }
+/////////////////////////////////////////////////////////////////////
                             }
                             utilities.hideLoader();
                         },
