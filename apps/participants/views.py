@@ -198,7 +198,6 @@ def remove_self_from_participant_team(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
-
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))

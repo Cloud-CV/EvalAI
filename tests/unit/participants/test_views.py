@@ -71,8 +71,8 @@ class GetParticipantTeamTest(BaseAPITestClass):
 class GetParticipantsOfTeam(BaseAPITestClass):
 
     def setUp(self):
-        super(GetParticipantsOfTeam,self).setUp()
-        
+        super(GetParticipantsOfTeam, self).setUp()
+
         self.user2 = User.objects.create(
             username='user2',
             email='user2@platform.com',
@@ -102,28 +102,28 @@ class GetParticipantsOfTeam(BaseAPITestClass):
                                 kwargs={'participant_team_pk': self.participant_team1.pk})
 
     def test_get_participants_of_team(self):
-        expected=[
+        expected = [
             {
                 "member": {
-                    "id":self.participant1.user.id,
-                    "username":self.participant1.user.username
+                    "id": self.participant1.user.id,
+                    "username": self.participant1.user.username
                 },
-                "status":self.participant1.status,
+                "status": self.participant1.status,
                 "member_team": {
-                    "id":self.participant1.team.id,
-                    "team":self.participant1.team.team_name
+                    "id": self.participant1.team.id,
+                    "team": self.participant1.team.team_name
                 }
             },
             {
                 "member": {
-                    "id":self.participant2.user.id,
-                    "username":self.participant2.user.username
+                    "id": self.participant2.user.id,
+                    "username": self.participant2.user.username
                 },
-                "status":self.participant2.status,
+                "status": self.participant2.status,
                 "member_team": {
-                    "id":self.participant2.team.id,
-                    "team":self.participant2.team.team_name
-                } 
+                    "id": self.participant2.team.id,
+                    "team": self.participant2.team.team_name
+                }
             }
 
         ]

@@ -56,14 +56,14 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Participant
-        fields = ('member','status','member_team')
+        fields = ('member', 'status', 'member_team')
 
     def get_member(self, obj):
-        user={'username':obj.user.username,'id':obj.user.id}
+        user = {'username': obj.user.username, 'id': obj.user.id}
         return user
 
     def get_member_team(self, obj):
-        team={'team':obj.team.team_name,'id':obj.team.id}
+        team = {'team': obj.team.team_name, 'id': obj.team.id}
         return team
 
 
