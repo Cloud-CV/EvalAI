@@ -69,3 +69,4 @@ class TestStringMethods(BaseAPITestClass):
                            kwargs={'pk': self.participant_team.pk})
         self.assertEqual(unicode(
             url), '/api/participants/participants_list_based_on_team/' + str(self.participant_team.pk))
+        
