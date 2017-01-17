@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope'];
+    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', 'EnvironmentConfig', '$rootScope', 'Upload'];
 
-    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope) {
+    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope, EnvironmentConfig, Upload) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -24,6 +24,8 @@
 
         utilities.showLoader();
 
+        console.log(EnvironmentConfig)
+
         // get details of the particular challenge
         var parameters = {};
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/';
@@ -37,7 +39,7 @@
                 vm.page = response;
                 console.log(response.is_active);
                 vm.isActive = response.is_active;
-                if (vm.isActive == true){
+                if (vm.isActive == true) {
 
                     // get details of challenges corresponding to participant teams of that user
                     var parameters = {};
@@ -57,7 +59,7 @@
                                 }
                             }
 
-                            if (vm.isParticipated == false){
+                            if (vm.isParticipated == false) {
 
                                 vm.team = {};
                                 vm.teamId = null;
@@ -216,9 +218,13 @@
 
                             }
                             // This condition means that the user is eligible to make submissions
-                            else if (vm.isParticipated == true){
-/////////////////////////////////////////////////////////////////////
+                            else if (vm.isParticipated == true) {
+                                /////////////////////////////////////////////////////////////////////
                                 vm.makeSubmission = function() {
+                                    console.log(vm.input_file)
+                                    if (vm.input_file) {
+                                        // vm.upload(vm.input_file);
+                                    }
                                     var parameters = {};
                                     parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                                     parameters.method = 'POST';
@@ -245,9 +251,32 @@
                                         }
                                     };
 
-                                    utilities.sendRequest(parameters);
+                                    utilities.sendRequest(parameters, 'header', 'upload');
                                 }
-/////////////////////////////////////////////////////////////////////
+
+
+                                // upload on file select or drop
+                                // vm.upload = function(file) {
+                                //     Upload.upload({
+                                //         url: EnvironmentConfig.API + 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/',
+                                //         data: { 'input_file': file, 'status': 'submitting' },
+                                //         transformRequest: function(data, headersGetterFunction) {
+                                //             return data;
+                                //         },
+                                //         header: {
+                                //             'Authorization': "Token " + userKey
+                                //         },
+                                //         method: 'POST'
+                                //     }).then(function(resp) {
+                                //         console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);
+                                //     }, function(resp) {
+                                //         console.log('Error status: ' + resp.status);
+                                //     }, function(evt) {
+                                //         var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+                                //         console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+                                //     });
+                                // };
+                                /////////////////////////////////////////////////////////////////////
                             }
                             utilities.hideLoader();
                         },

@@ -1,10 +1,12 @@
-<section ng-if="challenge.isParticipated" class="ev-sm-container ev-view challenge-container  ">
-    <div ng-if="challenge.isParticipated">
+<section ng-if="challenge.isParticipated" class="ev-sm-container ev-view ">
+    <!-- <div ng-if="challenge.isParticipated"> -->
         <div class="row">
             <div class="col s12 m12">
-                <div class=" ev-card-panel ev-z-depth-5">
+    <div class=" ev-card-panel ev-z-depth-5 ">
+
+                <!-- <div class=" ev-card-panel ev-z-depth-5"> -->
                     <div class="ev-md-container ev-panel-title"><strong>Please fill the following fields to submit</strong></div>
-                    <div class="ev-md-container ev-card-body exist-team-card">
+                    <div class=" ev-card-body exist-team-card">
                         <form ng-submit="challenge.makeSubmission()">
                             <ul>
                                 <b>Select Phase:</b>
@@ -19,7 +21,7 @@
                                 <div class="file-field input-field">
                                     <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
                                         <span>Submission File</span>
-                                        <input type="file" ng-model="challenge.input_file">
+                                        <input type="file" ngf-select ng-model="challenge.input_file" name="challenge.input_file">
                                     </div>
                                     <div class="file-path-wrapper">
                                         <input class="file-path validate" type="text">
@@ -40,8 +42,9 @@
                             </ul>
                         </form>
                     </div>
-                </div>
-            </div>
+<!--                 </div>
+ -->            </div>
         </div>
     </div>
+    <!-- </div> -->
 </section>
