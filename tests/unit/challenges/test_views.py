@@ -918,7 +918,9 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
                                 kwargs={'challenge_pk': self.challenge.pk})
         self.data = {
             'name': 'New Challenge Phase',
-            'description': 'Description for new challenge phase'
+            'description': 'Description for new challenge phase',
+            'start_date': "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            'end_date': "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
         }
 
     @override_settings(MEDIA_ROOT='/tmp/evalai')
