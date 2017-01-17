@@ -17,4 +17,7 @@ urlpatterns = [
     url(r'remove_self_from_participant_team/(?P<participant_team_pk>[0-9]+)$',
         views.remove_self_from_participant_team,
         name='remove_self_from_participant_team'),
+    url(r'participants_list_based_on_team/(?P<participant_team_pk>[0-9]+)$',
+        views.participants_list_based_on_team,
+        name='participants_list_based_on_team'),
 ]
