@@ -10,7 +10,7 @@
     ChallengeHostTeamsCtrl.$inject = ['utilities', '$scope' , '$state', '$http',
       '$rootScope', '$mdDialog'];
 
-    function ChallengeHostTeamsCtrl(utilities, $scope, $state, $http, $rootScope) {
+    function ChallengeHostTeamsCtrl(utilities, $scope, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -194,8 +194,9 @@
             vm.reset();
         }
 
-        vm.confirmDelete = function(ev, hostTeamId) {
 
+          vm.confirmDelete1 = function(ev, hostTeamId) {
+            // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.confirm()
                   .title('Would you like to remove yourself?')
                   .textContent('Note: This action will remove you from the team.')
@@ -206,7 +207,7 @@
 
             $mdDialog.show(confirm).then(function() {
                 var parameters = {};
-                parameters.url = 'participants/remove_self_from_participant_team/' + hostTeamId;
+                parameters.url = 'hosts/remove_self_from_challenge_host/' + hostTeamId;
                 parameters.method = 'DELETE';
                 parameters.data = {}
                 parameters.token = userKey;
@@ -216,20 +217,7 @@
                         var response = response.data;
                         vm.team.error = false;
 
-                        var parameters = {};
-                        parameters.url = 'participants/participant_team';
-                        parameters.method = 'GET';
-                        parameters.token = userKey;
-                        parameters.callback = {
-                            onSuccess: function(response) {
-                                var status = response.status;
-                                var response = response.data;
-                                if (status == 200) {
-                                    vm.existTeam = response;
-                                }
-                            }
-                        }
-                        utilities.sendRequest(parameters);
+                        $state.reload();
                     },
                     onError: function(response) {
                         var status = response.status;
@@ -245,9 +233,8 @@
             });
         };
 
-
-        vm.inviteOthers = function(ev, hostTeamId) {
-
+        vm.inviteOthers1 = function(ev, hostTeamId) {
+            // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.prompt()
                 .title('Invite others to this team')
                 .textContent('Enter the email address of the person')
@@ -260,7 +247,7 @@
                 $mdDialog.show(confirm).then(function(result) {
                     console.log(result);
                     var parameters = {};
-                    parameters.url = 'participants/participant_team/' + hostTeamId + '/invite';
+                    parameters.url = 'hosts/challenge_host_team/' + hostTeamId + '/invite';
                     parameters.method = 'POST';
                     parameters.data = {
                         "email": result
@@ -283,18 +270,6 @@
                     console.log("Operation Aborted");
                 });
         };
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
 

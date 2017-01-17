@@ -16,8 +16,12 @@
                 <div class="ev-md-container ev-card-body exist-team-card">
                     <ul>
                         <li ng-repeat="(key, value) in challengeHostTeams.existTeam.results">
-                            <i class="fa fa-users" aria-hidden="true"></i>
-                            <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}<i class="fa fa-plus list-icon text-highlight w-300 right"></i>
+                             <i class="fa fa-users" aria-hidden="true" id="{{value.id}}" value="{{value.id}}" ng-model="challengeHostTeams.teamId"></i>
+                              <label for="{{value.id}}"></label>
+                              <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
+                              <a ng-click="challengeHostTeams.confirmDelete1($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
+                              <a ng-click="challengeHostTeams.inviteOthers1($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
+
                                 <br>
                                 <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
                             <div class="clearfix"></div>
@@ -67,7 +71,7 @@
                         </div>
                         <div class="align-left reg-control">
                             <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Create Host Team</button>
-                            <!-- 
+                            <!--
                             <span ng-hide="auth.isConfirm" class="fade"> {{auth.confirmMsg}}</span> -->
                         </div>
                     </form>
@@ -76,3 +80,14 @@
         </div>
     </div>
 </section>
+
+
+<!-- Dialog Box Code -->
+<div style="visibility: hidden">
+<div class="md-dialog-container" id="myDialog">
+  <md-dialog layout-padding>
+    <h2></h2>
+    <p></p>
+  </md-dialog>
+</div>
+</div>
