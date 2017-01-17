@@ -37,7 +37,6 @@
                 var status = response.status;
                 var response = response.data;
                 vm.page = response;
-                console.log(response.is_active);
                 vm.isActive = response.is_active;
                 if (vm.isActive == true) {
 
@@ -220,7 +219,6 @@
                             // This condition means that the user is eligible to make submissions
                             else if (vm.isParticipated == true) {
                                 vm.makeSubmission = function() {
-                                    console.log(vm.input_file)
                                     if (vm.input_file) {
                                         // vm.upload(vm.input_file);
                                     }
@@ -233,13 +231,11 @@
 
                                     parameters.data = formData;
 
-                                    console.log(parameters.data);
                                     parameters.token = userKey;
                                     parameters.callback = {
                                         onSuccess: function(response) {
                                             var status = response.status;
                                             var response = response.data;
-                                            console.log(vm.input_file)
                                                 // vm.input_file.name = '';
 
                                             angular.forEach(
@@ -251,18 +247,12 @@
 
                                             angular.element(".file-path").val(null);
 
-                                            vm.subErrors.msg = "Yay! Your submission has been recieved."
-                                                // console.log("Successful submission");
-                                                // console.log(response);
+                                            vm.subErrors.msg = "Your submission has been recorded succesfully!"
                                         },
                                         onError: function(response) {
                                             var status = response.status;
                                             var error = response.data;
-                                            // console.log("Error occured");
-                                            // console.log(response);
                                             vm.subErrors.msg = "Something went wrong, please try again!"
-                                                // vm.stopLoader();
-                                                // vm.team.error = error.team_name[0];
                                         }
                                     };
 
