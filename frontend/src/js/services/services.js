@@ -42,11 +42,18 @@
                 req.data = data;
             }
 
+            // for file upload
             if (method == "POST" && type == "upload") {
-
+                // alert("")
+                var headers = {
+                    'Content-Type': undefined,
+                    'Authorization': "Token " + token
+                };
                 req.transformRequest = function(data, headersGetterFunction) {
                     return data;
                 }
+
+                req.headers = headers;
             }
 
             req.timeout = 6000;

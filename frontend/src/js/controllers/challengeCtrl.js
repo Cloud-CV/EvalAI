@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', 'EnvironmentConfig', '$rootScope', 'Upload'];
+    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload'];
 
-    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope, EnvironmentConfig, Upload) {
+    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope, Upload) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -22,9 +22,9 @@
         vm.isValid = {};
         var userKey = utilities.getData('userKey');
 
-        utilities.showLoader();
+        vm.subErrors = {};
 
-        console.log(EnvironmentConfig)
+        utilities.showLoader();
 
         // get details of the particular challenge
         var parameters = {};
@@ -219,7 +219,6 @@
                             }
                             // This condition means that the user is eligible to make submissions
                             else if (vm.isParticipated == true) {
-                                /////////////////////////////////////////////////////////////////////
                                 vm.makeSubmission = function() {
                                     console.log(vm.input_file)
                                     if (vm.input_file) {
@@ -228,55 +227,47 @@
                                     var parameters = {};
                                     parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                                     parameters.method = 'POST';
-                                    parameters.data = {
-                                        "status": "submitting",
-                                        "input_file": vm.input_file,
-                                    }
+                                    var formData = new FormData();
+                                    formData.append("status", "submitting");
+                                    formData.append("input_file", vm.input_file);
+
+                                    parameters.data = formData;
+
                                     console.log(parameters.data);
                                     parameters.token = userKey;
                                     parameters.callback = {
                                         onSuccess: function(response) {
                                             var status = response.status;
                                             var response = response.data;
-                                            console.log("Successful submission");
-                                            console.log(response);
+                                            console.log(vm.input_file)
+                                                // vm.input_file.name = '';
+
+                                            angular.forEach(
+                                                angular.element("input[type='file']"),
+                                                function(inputElem) {
+                                                    angular.element(inputElem).val(null);
+                                                }
+                                            );
+
+                                            angular.element(".file-path").val(null);
+
+                                            vm.subErrors.msg = "Yay! Your submission has been recieved."
+                                                // console.log("Successful submission");
+                                                // console.log(response);
                                         },
                                         onError: function(response) {
                                             var status = response.status;
                                             var error = response.data;
-                                            console.log("Error occured");
-                                            console.log(response);
-                                            // vm.stopLoader();
-                                            // vm.team.error = error.team_name[0];
+                                            // console.log("Error occured");
+                                            // console.log(response);
+                                            vm.subErrors.msg = "Something went wrong, please try again!"
+                                                // vm.stopLoader();
+                                                // vm.team.error = error.team_name[0];
                                         }
                                     };
 
                                     utilities.sendRequest(parameters, 'header', 'upload');
                                 }
-
-
-                                // upload on file select or drop
-                                // vm.upload = function(file) {
-                                //     Upload.upload({
-                                //         url: EnvironmentConfig.API + 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/',
-                                //         data: { 'input_file': file, 'status': 'submitting' },
-                                //         transformRequest: function(data, headersGetterFunction) {
-                                //             return data;
-                                //         },
-                                //         header: {
-                                //             'Authorization': "Token " + userKey
-                                //         },
-                                //         method: 'POST'
-                                //     }).then(function(resp) {
-                                //         console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);
-                                //     }, function(resp) {
-                                //         console.log('Error status: ' + resp.status);
-                                //     }, function(evt) {
-                                //         var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
-                                //         console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
-                                //     });
-                                // };
-                                /////////////////////////////////////////////////////////////////////
                             }
                             utilities.hideLoader();
                         },
