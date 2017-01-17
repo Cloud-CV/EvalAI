@@ -17,7 +17,8 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ParticipantTeamSerializer,
                           ChallengeParticipantTeam,
                           ChallengeParticipantTeamList,
-                          ChallengeParticipantTeamListSerializer,)
+                          ChallengeParticipantTeamListSerializer,
+                          ParticipantSerializer,)
 
 
 @throttle_classes([UserRateThrottle])
