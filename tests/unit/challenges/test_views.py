@@ -891,6 +891,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
                 "challenge": self.challenge_phase.challenge.pk,
                 "is_public": self.challenge_phase.is_public,
+                "is_active": True,
             }
         ]
 
@@ -917,7 +918,9 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
                                 kwargs={'challenge_pk': self.challenge.pk})
         self.data = {
             'name': 'New Challenge Phase',
-            'description': 'Description for new challenge phase'
+            'description': 'Description for new challenge phase',
+            'start_date': "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            'end_date': "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
         }
 
     @override_settings(MEDIA_ROOT='/tmp/evalai')
@@ -951,7 +954,8 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
-            "is_public": self.challenge_phase.is_public
+            "is_public": self.challenge_phase.is_public,
+            "is_active": True
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1008,7 +1012,8 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
-            "is_public": self.challenge_phase.is_public
+            "is_public": self.challenge_phase.is_public,
+            "is_active": True
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
