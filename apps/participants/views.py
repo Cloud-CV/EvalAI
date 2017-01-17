@@ -198,7 +198,6 @@ def remove_self_from_participant_team(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
-
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -212,7 +211,6 @@ def participants_list_based_on_team(request, participant_team_pk):
         serializer = ParticipantSerializer(participant, many=True)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-
     except:
         response_data = {'error': 'Sorry, incorrect request.'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
