@@ -51,18 +51,20 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
 
 class ParticipantSerializer(serializers.ModelSerializer):
 
-    member_name = serializers.SerializerMethodField()
-    member_id = serializers.SerializerMethodField()
+    member = serializers.SerializerMethodField()
+    member_team = serializers.SerializerMethodField()
 
     class Meta:
         model = Participant
-        fields = ('member_id', 'member_name')
+        fields = ('member','status','member_team')
 
-    def get_member_name(self, obj):
-        return obj.user.username
+    def get_member(self, obj):
+        user={'username':obj.user.username,'id':obj.user.id}
+        return user
 
-    def get_member_id(self, obj):
-        return obj.user.id
+    def get_member_team(self, obj):
+        team={'team':obj.team.team_name,'id':obj.team.id}
+        return team
 
 
 # Serializer to map Challenge and Participant Teams ####
