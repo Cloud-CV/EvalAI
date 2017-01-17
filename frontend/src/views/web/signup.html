@@ -7,14 +7,14 @@
 </div>
 <div class="col s12 m4 offset-m4">
     <!-- login form -->
-    <form name="signupForm" ng-submit="signupForm.$valid && auth.userSignUp()" id="sign-up" novalidate>
+    <form name="signupForm" ng-submit="signupForm.$valid || auth.userSignUp()" id="sign-up" novalidate>
         <!-- username -->
         <div class="input-field align-left">
             <input id="name" name="name" type="text" class="validate" ng-model="auth.regUser.name" focus-if required>
             <span class="form-icon"><i class="fa fa-user"></i></span>
             <label for="name" data-error="wrong" data-success="right">User Name (no space)*</label>
             <div class="wrn-msg text-highlight" ng-show="auth.isValid.username">{{auth.wrnMsg.username}}</div>
-            <div class="wrn-msg text-highlight" ng-show="signupForm.name.$error.required && signupForm.name.$dirty">Please Enter Your Username </div>
+            <div class="wrn-msg text-highlight" ng-show="signupForm.name.$dirty && signupForm.name.$error.required">Please Enter Your Username </div>
         </div>
         <!-- email -->
         <div class="input-field align-left">
