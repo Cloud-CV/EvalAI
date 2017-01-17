@@ -129,7 +129,7 @@
                         vm.startLoader("Loading Teams");
                         if (url != null) {
 
-                            //store the header data in a variable 
+                            //store the header data in a variable
                             var headers = {
                                 'Authorization': "Token " + userKey
                             };
@@ -144,10 +144,10 @@
                                 // condition for pagination
                                 if (vm.existTeam.next == null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = response.count / 10;
+                                    vm.currentPage = vm.existTeam.count / 10;
                                 } else {
                                     vm.isNext = '';
-                                    vm.currentPage = parseInt(response.next.split('page=')[1] - 1);
+                                    vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
                                 }
 
                                 if (vm.existTeam.previous == null) {
@@ -325,7 +325,7 @@
                         }
                     };
 
-                    utilities.sendRequest(parameters); 
+                    utilities.sendRequest(parameters);
                 }, function() {
                     console.log("Operation Aborted");
                 });

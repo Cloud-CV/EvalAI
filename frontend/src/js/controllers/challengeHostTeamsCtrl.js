@@ -53,8 +53,8 @@
                     } else {
                         vm.isPrev = '';
                     }
-                    if (response.next != null) {
-                        vm.currentPage = response.next.split('page=')[1] - 1;
+                    if (vm.existTeam.next != null) {
+                        vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
                     }
 
                     // to load data with pagination
@@ -81,7 +81,7 @@
                         vm.startLoader("Loading Teams");
                         if (url != null) {
 
-                            //store the header data in a variable 
+                            //store the header data in a variable
                             var headers = {
                                 'Authorization': "Token " + userKey
                             };
