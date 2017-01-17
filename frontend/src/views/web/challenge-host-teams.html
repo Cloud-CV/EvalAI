@@ -19,8 +19,8 @@
                              <i class="fa fa-users" aria-hidden="true" id="{{value.id}}" value="{{value.id}}" ng-model="challengeHostTeams.teamId"></i>
                               <label for="{{value.id}}"></label>
                               <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
-                              <a ng-click="challengeHostTeams.confirmDelete1($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
-                              <a ng-click="challengeHostTeams.inviteOthers1($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
+                              <a ng-click="challengeHostTeams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
+                              <a ng-click="challengeHostTeams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
 
                                 <br>
                                 <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>

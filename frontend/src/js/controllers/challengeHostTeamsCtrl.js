@@ -195,45 +195,45 @@
         }
 
 
-          vm.confirmDelete1 = function(ev, hostTeamId) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.confirm()
-                  .title('Would you like to remove yourself?')
-                  .textContent('Note: This action will remove you from the team.')
-                  .ariaLabel('Lucky day')
-                  .targetEvent(ev)
-                  .ok('Yes')
-                  .cancel("No");
+          vm.confirmDelete = function(ev, hostTeamId) {
+                      // Appending dialog to document.body to cover sidenav in docs app
+                      var confirm = $mdDialog.confirm()
+                            .title('Would you like to remove yourself?')
+                            .textContent('Note: This action will remove you from the team.')
+                            .ariaLabel('Lucky day')
+                            .targetEvent(ev)
+                            .ok('Yes')
+                            .cancel("No");
 
-            $mdDialog.show(confirm).then(function() {
-                var parameters = {};
-                parameters.url = 'hosts/remove_self_from_challenge_host/' + hostTeamId;
-                parameters.method = 'DELETE';
-                parameters.data = {}
-                parameters.token = userKey;
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var status = response.status;
-                        var response = response.data;
-                        vm.team.error = false;
+                      $mdDialog.show(confirm).then(function() {
+                          var parameters = {};
+                          parameters.url = 'hosts/remove_self_from_challenge_host/' + hostTeamId;
+                          parameters.method = 'DELETE';
+                          parameters.data = {}
+                          parameters.token = userKey;
+                          parameters.callback = {
+                              onSuccess: function(response) {
+                                  var status = response.status;
+                                  var response = response.data;
+                                  vm.team.error = false;
 
-                        $state.reload();
-                    },
-                    onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
-                        console.log(error);
-                    }
-                };
+                                  $state.reload();
+                              },
+                              onError: function(response) {
+                                  var status = response.status;
+                                  var error = response.data;
+                                  console.log(error);
+                              }
+                          };
 
-                utilities.sendRequest(parameters);
+                          utilities.sendRequest(parameters);
 
-            }, function() {
-                console.log("Operation defered");
-            });
-        };
+                      }, function() {
+                          console.log("Operation defered");
+                      });
+                  };
 
-        vm.inviteOthers1 = function(ev, hostTeamId) {
+        vm.inviteOthers = function(ev, hostTeamId) {
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.prompt()
                 .title('Invite others to this team')
