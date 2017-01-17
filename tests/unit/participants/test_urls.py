@@ -65,8 +65,4 @@ class TestStringMethods(BaseAPITestClass):
         self.assertEqual(unicode(url), '/api/participants/remove_self_from_participant_team/' +
                          str(self.participant_team.pk))
 
-        url = reverse_lazy('participants:participants_list_based_on_team',
-                           kwargs={'pk': self.participant_team.pk})
-        self.assertEqual(unicode(
-            url), '/api/participants/participants_list_based_on_team/' + str(self.participant_team.pk))
-        
+
