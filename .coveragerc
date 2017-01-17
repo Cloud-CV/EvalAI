@@ -19,3 +19,5 @@ omit =
     */migrations/*
     */tests/*
     */middleware/*
+    frontend/
+    settings/prod.py
