@@ -213,6 +213,30 @@ def get_challenge_by_pk(request, pk):
 
 
 @throttle_classes([UserRateThrottle])
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenges_based_on_teams(request):
+    q_params = {}
+    participant_team_id = request.query_params.get('participant_team', None)
+    challenge_host_team_id = request.query_params.get('host_team', None)
+
+    if not participant_team_id and not challenge_host_team_id:
+        response_data = {'error': 'Invalid url pattern!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if participant_team_id:
+        q_params['participant_teams__pk'] = participant_team_id
+    if challenge_host_team_id:
+        q_params['creator__id'] = challenge_host_team_id
+    challenge = Challenge.objects.filter(**q_params)
+    paginator, result_page = paginated_queryset(challenge, request)
+    serializer = ChallengeSerializer(result_page, many=True)
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
+
+
+@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
