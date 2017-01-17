@@ -52,7 +52,7 @@
                     } else {
                         vm.isPrev = '';
                     }
-                    if (vm.existTeam.next != null) {
+                    if (vm.existTeam.next!= null) {
                         vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
                     } else {
                     	vm.currentPage = 1;
