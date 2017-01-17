@@ -9,5 +9,6 @@ angular
 		'smoothScroll',
 		'focus-if',
 		'ngSanitize',
-		'ng-file-upload-shim'
+		'ngFileUpload'
+
 	]);
