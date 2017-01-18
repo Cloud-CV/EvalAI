@@ -206,7 +206,7 @@
 
                 $mdDialog.show(confirm).then(function(result) {
                     var parameters = {};
-                    parameters.url = 'hosts/challenge_host_team/' + hostTeamId + '/invite';
+                    parameters.url = 'hosts/challenge_host_teams/' + hostTeamId + '/invite';
                     parameters.method = 'POST';
                     parameters.data = {
                         "email": result
