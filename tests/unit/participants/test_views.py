@@ -96,25 +96,25 @@ class GetParticularParticipantTeam(BaseAPITestClass):
                                 kwargs={'pk': self.participant_team.pk})
 
         self.user2 = User.objects.create(
-            username = 'user2',
-            email = 'user2@platform.com',
-            password = 'user2_password')
+            username='user2',
+            email='user2@platform.com',
+            password='user2_password')
 
         EmailAddress.objects.create(
-            user = self.user2,
-            email = 'user2@platform.com',
-            primary = True,
-            verified = True)
+            user=self.user2,
+            email='user2@platform.com',
+            primary=True,
+            verified=True)
 
         self.participant1 = Participant.objects.create(
-            user = self.user,
-            status = Participant.SELF,
-            team = self.participant_team)
+            user=self.user,
+            status=Participant.SELF,
+            team=self.participant_team)
 
         self.participant2 = Participant.objects.create(
-            user = self.user2,
-            status = Participant.ACCEPTED,
-            team = self.participant_team)
+            user=self.user2,
+            status=Participant.ACCEPTED,
+            team=self.participant_team)
 
     def test_get_particular_participant_team(self):
         expected = {
@@ -123,14 +123,14 @@ class GetParticularParticipantTeam(BaseAPITestClass):
             "created_by": self.user.username,
             "members": [
                 {
-                "member_name": self.participant1.user.username,
-                "status": self.participant1.status,
-                "member_id": self.participant1.user.id
+                    "member_name": self.participant1.user.username,
+                    "status": self.participant1.status,
+                    "member_id": self.participant1.user.id
                 },
                 {
-                "member_name": self.participant2.user.username,
-                "status": self.participant2.status,
-                "member_id": self.participant2.user.id
+                    "member_name": self.participant2.user.username,
+                    "status": self.participant2.status,
+                    "member_id": self.participant2.user.id
                 }
             ]
         }

@@ -18,7 +18,6 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ChallengeParticipantTeam,
                           ChallengeParticipantTeamList,
                           ChallengeParticipantTeamListSerializer,
-                          ParticipantSerializer,
                           ParticipantsBasedOnParticipantTeamSerializer,)
 
 
