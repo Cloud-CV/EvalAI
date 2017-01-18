@@ -221,7 +221,7 @@
                                 vm.makeSubmission = function() {
 
                                     var fileVal = angular.element(".file-path").val();
-                                    console.log(fileVal)
+
                                     if (fileVal == null || fileVal == "") {
                                         vm.subErrors.msg = "Please upload file!"
                                     } else {
@@ -272,7 +272,6 @@
 
                                                 angular.element(".file-path").val(null);
 
-                                                // console.log();
 
                                                 vm.phaseId = null;
                                                 vm.subErrors.msg = "Your submission has been recorded succesfully!"
@@ -283,7 +282,6 @@
                                                 var error = response.data;
 
                                                 vm.phaseId = null;
-                                                // console.log(error)
                                                 if (status == 404) {
 
                                                     vm.subErrors.msg = "Please select phase!"
