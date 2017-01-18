@@ -24,6 +24,11 @@ class BaseAPITestClass(APITestCase):
             primary=True,
             verified=True)
 
+        self.invite_user = User.objects.create(
+            username='otheruser',
+            email='other@platform.com',
+            password='other_secret_password')
+
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name='Test Challenge Host Team',
             created_by=self.user)
@@ -383,3 +388,65 @@ class RemoveChallengeHostFromTeamHimselfTest(BaseAPITestClass):
                                         })
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class InviteHostToTeamTest(BaseAPITestClass):
+
+    url = reverse_lazy('hosts:invite_host_to_team')
+
+    def setUp(self):
+        super(InviteHostToTeamTest, self).setUp()
+        self.data = {
+            'email': self.invite_user.email
+        }
+        self.url = reverse_lazy('hosts:invite_host_to_team',
+                                kwargs={'pk': self.challenge_host_team.pk})
+
+    def test_invite_host_to_team_with_all_data(self):
+        expected = {
+            'message': 'User has been added successfully to the host team'
+        }
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+    def test_invite_host_to_team_with_no_data(self):
+        del self.data['email']
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invite_self_to_team(self):
+        self.data = {
+            'email': self.user.email
+        }
+        expected = {
+            'email': [
+                'A host cannot invite himself'
+            ]
+        }
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invite_user_which_does_not_exist_to_team(self):
+        self.data = {
+            'email': 'userwhichdoesnotexist@platform.com'
+        }
+        expected = {
+            'email': [
+                'User does not exist'
+            ]
+        }
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_particular_challenge_host_team_for_invite_does_not_exist(self):
+        self.url = reverse_lazy('hosts:invite_host_to_team',
+                                kwargs={'pk': self.challenge_host_team.pk + 1})
+        expected = {
+            'error': 'ChallengeHostTeam does not exist'
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
