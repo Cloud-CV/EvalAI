@@ -14,14 +14,13 @@
     function utilities($http, EnvironmentConfig, $rootScope) {
 
         // factory for API calls
-        this.sendRequest = function(parameters, header) {
+        this.sendRequest = function(parameters, header, type) {
             var url = EnvironmentConfig.API + parameters.url;
             var data = parameters.data;
             var token = parameters.token;
             var method = parameters.method;
             var successCallback = parameters.callback.onSuccess;
             var errorCallback = parameters.callback.onError;
-            // alert(EnvironmentConfig.API)
             var headers = {
                 'Authorization': "Token " + token
             };
@@ -39,10 +38,24 @@
             if (header == 'header') {
                 req.headers = headers;
             }
-            if(method == "POST" || method == "PUT") {
+            if (method == "POST" || method == "PUT") {
                 req.data = data;
             }
-            
+
+            // for file upload
+            if (method == "POST" && type == "upload") {
+                // alert("")
+                var headers = {
+                    'Content-Type': undefined,
+                    'Authorization': "Token " + token
+                };
+                req.transformRequest = function(data, headersGetterFunction) {
+                    return data;
+                }
+
+                req.headers = headers;
+            }
+
             req.timeout = 6000;
 
             $http(req)
