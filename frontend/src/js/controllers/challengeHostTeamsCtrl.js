@@ -233,44 +233,6 @@
                       });
                   };
 
-        vm.inviteOthers = function(ev, hostTeamId) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.prompt()
-                .title('Invite others to this team')
-                .textContent('Enter the email address of the person')
-                .placeholder('deshraj@cloudcv.org')
-                .ariaLabel('')
-                .targetEvent(ev)
-                .ok('Send Invite')
-                .cancel('Cancel');
 
-                $mdDialog.show(confirm).then(function(result) {
-                    console.log(result);
-                    var parameters = {};
-                    parameters.url = 'hosts/challenge_host_team/' + hostTeamId + '/invite';
-                    parameters.method = 'POST';
-                    parameters.data = {
-                        "email": result
-                    }
-                    parameters.token = userKey;
-                    parameters.callback = {
-                        onSuccess: function(response) {
-                            var status = response.status;
-                            var response = response.data;
-                        },
-                        onError: function(response) {
-                            var status = response.status;
-                            var error = response.data;
-                            console.log(error);
-                        }
-                    };
-
-                    utilities.sendRequest(parameters);
-                }, function() {
-                    console.log("Operation Aborted");
-                });
-        };
-
-    }
 
 })();
