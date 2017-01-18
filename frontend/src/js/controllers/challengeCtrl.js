@@ -207,7 +207,7 @@
                                     onError: function(response) {
                                         var status = response.status;
                                         var error = response.data;
-                                        utilities.storeData('emailError', error.detail);
+                                        utilities.storeData('emailError', error.error);
                                         $state.go('web.permission-denied');
                                         utilities.hideLoader();
                                     }
@@ -246,13 +246,12 @@
                                             );
 
                                             angular.element(".file-path").val(null);
-
                                             vm.subErrors.msg = "Your submission has been recorded succesfully!"
                                         },
                                         onError: function(response) {
                                             var status = response.status;
                                             var error = response.data;
-                                            vm.subErrors.msg = "Something went wrong, please try again!"
+                                            vm.subErrors.msg = error.error;
                                         }
                                     };
 
@@ -277,7 +276,7 @@
             onError: function(response) {
                 var status = response.status;
                 var error = response.data;
-                utilities.storeData('emailError', error.detail);
+                utilities.storeData('emailError', error.error);
                 $state.go('web.permission-denied');
                 utilities.hideLoader();
             }
@@ -303,7 +302,7 @@
             onError: function(response) {
                 var status = response.status;
                 var error = response.data;
-                utilities.storeData('emailError', error.detail);
+                utilities.storeData('emailError', error.error);
                 $state.go('web.permission-denied');
                 utilities.hideLoader();
             }
