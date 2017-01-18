@@ -61,7 +61,7 @@ REST_FRAMEWORK_DOCS = {
 }
 
 # Port number for the python-memcached cache backend.
-CACHES['default']['LOCATION'] = os.environ.get("LOCATION", "") # noqa: ignore=F405
+CACHES['default']['LOCATION'] = os.environ.get("MEMCACHED_LOCATION", "") # noqa: ignore=F405
 
 RAVEN_CONFIG = {
     'dsn': os.environ.get('SENTRY_URL'),
