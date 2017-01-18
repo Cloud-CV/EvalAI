@@ -205,7 +205,6 @@
                 .cancel('Cancel');
 
                 $mdDialog.show(confirm).then(function(result) {
-                    console.log(result);
                     var parameters = {};
                     parameters.url = 'hosts/challenge_host_team/' + hostTeamId + '/invite';
                     parameters.method = 'POST';
