@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeHostTeamsCtrl', ChallengeHostTeamsCtrl);
 
-    ChallengeHostTeamsCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    ChallengeHostTeamsCtrl.$inject = ['utilities', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function ChallengeHostTeamsCtrl(utilities, $state, $http, $rootScope) {
+    function ChallengeHostTeamsCtrl(utilities, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -192,6 +192,45 @@
                  };
             vm.reset();
         }
+        
+        vm.inviteOthers = function(ev, hostTeamId) {
+            // Appending dialog to document.body 
+            var confirm = $mdDialog.prompt()
+                .title('Invite others to this Team')
+                .textContent('Enter the email address of the person')
+                .placeholder('deshraj@cloudcv.org')
+                .ariaLabel('')
+                .targetEvent(ev)
+                .ok('Send Invite')
+                .cancel('Cancel');
+
+                $mdDialog.show(confirm).then(function(result) {
+                    console.log(result);
+                    var parameters = {};
+                    parameters.url = '';
+                    parameters.method = '';
+                    parameters.data = {
+                        "email": result
+                    }
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var response = response.data;
+                        },
+                        onError: function(response) {
+                            var status = response.status;
+                            var error = response.data;
+                            console.log(error);
+                        }
+                    };
+
+                    utilities.sendRequest(parameters);
+                }, function() {
+                    console.log("Operation Aborted");
+                });
+        };
+        
     }
 
 })();
