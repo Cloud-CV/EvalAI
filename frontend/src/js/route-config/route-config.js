@@ -377,10 +377,9 @@
 
         });
 
-        var userKey = utilities.getData('userKey');
 
         $rootScope.logout = function() {
-
+            var userKey = utilities.getData('userKey');
             var parameters = {};
             parameters.url = 'auth/logout/';
             parameters.method = 'POST';
@@ -403,6 +402,7 @@
         }
 
         checkToken = function() {
+            var userKey = utilities.getData('userKey');
             var parameters = {};
             parameters.url = 'auth/user/';
             parameters.method = 'GET';
