@@ -162,15 +162,18 @@ def get_teams_and_corresponding_challenges_for_a_participant(request):
     challenge_participated_teams = []
     for participant_obj in participant_objs:
         participant_team = participant_obj.team
-        try:
-            challenge = Challenge.objects.get(
-                participant_teams=participant_team)
-        except Challenge.DoesNotExist:
+
+        challenges = Challenge.objects.filter(
+            participant_teams=participant_team)
+
+        if challenges.count():
+            for challenge in challenges:
+                challenge_participated_teams.append(ChallengeParticipantTeam(
+                    challenge, participant_team))
+        else:
             challenge = None
-
-        challenge_participated_teams.append(ChallengeParticipantTeam(
-            challenge, participant_team))
-
+            challenge_participated_teams.append(ChallengeParticipantTeam(
+                challenge, participant_team))
     serializer = ChallengeParticipantTeamListSerializer(ChallengeParticipantTeamList(challenge_participated_teams))
     return Response(serializer.data, status=status.HTTP_200_OK)
 

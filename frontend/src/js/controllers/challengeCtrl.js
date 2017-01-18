@@ -6,11 +6,13 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope'];
+    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload'];
 
-    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope) {
+    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope, Upload) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
+        vm.phaseId = null;
+        vm.input_file = null;
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
@@ -19,6 +21,8 @@
         vm.phases = {};
         vm.isValid = {};
         var userKey = utilities.getData('userKey');
+
+        vm.subErrors = {};
 
         utilities.showLoader();
 
@@ -33,9 +37,8 @@
                 var status = response.status;
                 var response = response.data;
                 vm.page = response;
-                console.log(response.is_active);
                 vm.isActive = response.is_active;
-                if (vm.isActive == true){
+                if (vm.isActive == true) {
 
                     // get details of challenges corresponding to participant teams of that user
                     var parameters = {};
@@ -55,7 +58,7 @@
                                 }
                             }
 
-                            if (vm.isParticipated == false){
+                            if (vm.isParticipated == false) {
 
                                 vm.team = {};
                                 vm.teamId = null;
@@ -91,8 +94,8 @@
                                             } else {
                                                 vm.isPrev = '';
                                             }
-                                            if (response.next != null) {
-                                                vm.currentPage = response.next.split('page=')[1] - 1;
+                                            if (vm.existTeam.next != null) {
+                                                vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
                                             }
 
 
@@ -167,7 +170,7 @@
                                                 vm.startLoader("Loading Teams");
                                                 if (url != null) {
 
-                                                    //store the header data in a variable 
+                                                    //store the header data in a variable
                                                     var headers = {
                                                         'Authorization': "Token " + userKey
                                                     };
@@ -182,10 +185,10 @@
                                                         // condition for pagination
                                                         if (vm.existTeam.next == null) {
                                                             vm.isNext = 'disabled';
-                                                            vm.currentPage = response.count / 10;
+                                                            vm.currentPage = vm.existTeam.count / 10;
                                                         } else {
                                                             vm.isNext = '';
-                                                            vm.currentPage = parseInt(response.next.split('page=')[1] - 1);
+                                                            vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
                                                         }
 
                                                         if (vm.existTeam.previous == null) {
@@ -212,6 +215,49 @@
 
                                 utilities.sendRequest(parameters);
 
+                            }
+                            // This condition means that the user is eligible to make submissions
+                            else if (vm.isParticipated == true) {
+                                vm.makeSubmission = function() {
+                                    if (vm.input_file) {
+                                        // vm.upload(vm.input_file);
+                                    }
+                                    var parameters = {};
+                                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
+                                    parameters.method = 'POST';
+                                    var formData = new FormData();
+                                    formData.append("status", "submitting");
+                                    formData.append("input_file", vm.input_file);
+
+                                    parameters.data = formData;
+
+                                    parameters.token = userKey;
+                                    parameters.callback = {
+                                        onSuccess: function(response) {
+                                            var status = response.status;
+                                            var response = response.data;
+                                                // vm.input_file.name = '';
+
+                                            angular.forEach(
+                                                angular.element("input[type='file']"),
+                                                function(inputElem) {
+                                                    angular.element(inputElem).val(null);
+                                                }
+                                            );
+
+                                            angular.element(".file-path").val(null);
+
+                                            vm.subErrors.msg = "Your submission has been recorded succesfully!"
+                                        },
+                                        onError: function(response) {
+                                            var status = response.status;
+                                            var error = response.data;
+                                            vm.subErrors.msg = "Something went wrong, please try again!"
+                                        }
+                                    };
+
+                                    utilities.sendRequest(parameters, 'header', 'upload');
+                                }
                             }
                             utilities.hideLoader();
                         },
