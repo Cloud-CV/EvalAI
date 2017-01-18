@@ -18,7 +18,7 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ChallengeParticipantTeam,
                           ChallengeParticipantTeamList,
                           ChallengeParticipantTeamListSerializer,
-                          ParticipantsBasedOnParticipantTeamSerializer,)
+                          ParticipantTeamDetailSerializer,)
 
 
 @throttle_classes([UserRateThrottle])
@@ -64,7 +64,7 @@ def participant_team_detail(request, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        serializer = ParticipantsBasedOnParticipantTeamSerializer(participant_team)
+        serializer = ParticipantTeamDetailSerializer(participant_team)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 

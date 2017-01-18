@@ -66,7 +66,7 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
 
 # Serializer for Participant Teams and Participant Combined
-class ParticipantsBasedOnParticipantTeamSerializer(serializers.ModelSerializer):
+class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
 
     members = serializers.SerializerMethodField()
     created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
