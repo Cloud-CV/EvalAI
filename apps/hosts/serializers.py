@@ -68,3 +68,18 @@ class InviteHostToTeamSerializer(serializers.Serializer):
                                                    status=ChallengeHost.ACCEPTED,
                                                    team_name=self.challenge_host_team,
                                                    permissions=ChallengeHost.WRITE)
+
+
+class HostTeamDetailSerializer(serializers.ModelSerializer):
+
+    members = serializers.SerializerMethodField()
+    created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+
+    class Meta:
+        model = ChallengeHostTeam
+        fields = ('id', 'team_name', 'created_by', 'members')
+
+    def get_members(self, obj):
+        hosts = ChallengeHost.objects.filter(team_name_id=obj.id)
+        serializer = ChallengeHostSerializer(hosts, many=True)
+        return serializer.data

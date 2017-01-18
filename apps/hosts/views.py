@@ -13,7 +13,8 @@ from .models import (ChallengeHost,
                      ChallengeHostTeam,)
 from .serializers import (ChallengeHostSerializer,
                           ChallengeHostTeamSerializer,
-                          InviteHostToTeamSerializer,)
+                          InviteHostToTeamSerializer,
+                          HostTeamDetailSerializer,)
 
 
 @throttle_classes([UserRateThrottle])
@@ -51,7 +52,7 @@ def challenge_host_team_detail(request, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        serializer = ChallengeHostTeamSerializer(challenge_host_team)
+        serializer = HostTeamDetailSerializer(challenge_host_team)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
