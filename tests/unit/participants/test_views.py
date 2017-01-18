@@ -68,71 +68,6 @@ class GetParticipantTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class GetParticipantsOfTeam(BaseAPITestClass):
-
-    def setUp(self):
-        super(GetParticipantsOfTeam, self).setUp()
-
-        self.user2 = User.objects.create(
-            username='user2',
-            email='user2@platform.com',
-            password='user2_password')
-
-        EmailAddress.objects.create(
-            user=self.user2,
-            email='user2@platform.com',
-            primary=True,
-            verified=True)
-
-        self.participant_team1 = ParticipantTeam.objects.create(
-            team_name='Team A',
-            created_by=self.user)
-
-        self.participant1 = Participant.objects.create(
-            user=self.user,
-            status=Participant.SELF,
-            team=self.participant_team1)
-
-        self.participant2 = Participant.objects.create(
-            user=self.user2,
-            status=Participant.ACCEPTED,
-            team=self.participant_team1)
-
-        self.url = reverse_lazy('participants:participants_list_based_on_team',
-                                kwargs={'participant_team_pk': self.participant_team1.pk})
-
-    def test_get_participants_of_team(self):
-        expected = [
-            {
-                "member": {
-                    "id": self.participant1.user.id,
-                    "username": self.participant1.user.username
-                },
-                "status": self.participant1.status,
-                "member_team": {
-                    "id": self.participant1.team.id,
-                    "team": self.participant1.team.team_name
-                }
-            },
-            {
-                "member": {
-                    "id": self.participant2.user.id,
-                    "username": self.participant2.user.username
-                },
-                "status": self.participant2.status,
-                "member_team": {
-                    "id": self.participant2.team.id,
-                    "team": self.participant2.team.team_name
-                }
-            }
-
-        ]
-
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
 class CreateParticipantTeamTest(BaseAPITestClass):
 
     url = reverse_lazy('participants:get_participant_team_list')
@@ -160,11 +95,44 @@ class GetParticularParticipantTeam(BaseAPITestClass):
         self.url = reverse_lazy('participants:get_participant_team_details',
                                 kwargs={'pk': self.participant_team.pk})
 
+        self.user2 = User.objects.create(
+            username = 'user2',
+            email = 'user2@platform.com',
+            password = 'user2_password')
+
+        EmailAddress.objects.create(
+            user = self.user2,
+            email = 'user2@platform.com',
+            primary = True,
+            verified = True)
+
+        self.participant1 = Participant.objects.create(
+            user = self.user,
+            status = Participant.SELF,
+            team = self.participant_team)
+
+        self.participant2 = Participant.objects.create(
+            user = self.user2,
+            status = Participant.ACCEPTED,
+            team = self.participant_team)
+
     def test_get_particular_participant_team(self):
         expected = {
             "id": self.participant_team.pk,
             "team_name": self.participant_team.team_name,
-            "created_by": self.user.username
+            "created_by": self.user.username,
+            "members": [
+                {
+                "member_name": self.participant1.user.username,
+                "status": self.participant1.status,
+                "member_id": self.participant1.user.id
+                },
+                {
+                "member_name": self.participant2.user.username,
+                "status": self.participant2.status,
+                "member_id": self.participant2.user.id
+                }
+            ]
         }
 
         response = self.client.get(self.url, {})
