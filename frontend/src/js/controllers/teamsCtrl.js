@@ -128,7 +128,6 @@
 
                         vm.startLoader("Loading Teams");
                         if (url != null) {
-
                             //store the header data in a variable
                             var headers = {
                                 'Authorization': "Token " + userKey
@@ -324,7 +323,6 @@
                             console.log(error);
                         }
                     };
-
                     utilities.sendRequest(parameters);
                 }, function() {
                     console.log("Operation Aborted");
