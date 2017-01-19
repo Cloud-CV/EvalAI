@@ -202,14 +202,8 @@ def get_challenge_by_pk(request, pk):
     Returns a particular challenge by id
     """
     try:
-        challenge = Challenge.objects.get(pk=pk)
-        if challenge.is_active:
-            serializer = ChallengeSerializer(challenge)
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            response_data = {'error': 'Challenge is not active!'}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        response_data = Challenge.objects.get(pk=pk)
+        return Response(response_data, status=status.HTTP_200_OK)
     except:
         response_data = {'error': 'Challenge does not exist!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
