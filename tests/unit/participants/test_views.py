@@ -87,7 +87,7 @@ class GetParticipantTeamTest(BaseAPITestClass):
                         "status": self.participant2.status,
                         "member_id": self.participant2.user.id
                     }
-                ]   
+                ]
             }
         ]
 
