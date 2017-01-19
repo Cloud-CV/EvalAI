@@ -202,7 +202,9 @@ def get_challenge_by_pk(request, pk):
     Returns a particular challenge by id
     """
     try:
-        response_data = Challenge.objects.get(pk=pk)
+        challenge = Challenge.objects.get(pk=pk)
+        serializer = ChallengeSerializer(challenge)
+        response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     except:
         response_data = {'error': 'Challenge does not exist!'}
