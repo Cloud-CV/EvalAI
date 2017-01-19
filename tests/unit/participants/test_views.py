@@ -70,7 +70,6 @@ class GetParticipantTeamTest(BaseAPITestClass):
             status=Participant.ACCEPTED,
             team=self.participant_team)
 
-
     def test_get_challenge(self):
         expected = [
             {
@@ -78,17 +77,17 @@ class GetParticipantTeamTest(BaseAPITestClass):
                 "team_name": self.participant_team.team_name,
                 "created_by": self.user.username,
                 "members": [
-                {
-                    "member_name": self.participant.user.username,
-                    "status": self.participant.status,
-                    "member_id": self.participant.user.id
-                },
-                {
-                    "member_name": self.participant2.user.username,
-                    "status": self.participant2.status,
-                    "member_id": self.participant2.user.id
-                }
-            ]
+                    {
+                        "member_name": self.participant.user.username,
+                        "status": self.participant.status,
+                        "member_id": self.participant.user.id
+                    },
+                    {
+                        "member_name": self.participant2.user.username,
+                        "status": self.participant2.status,
+                        "member_id": self.participant2.user.id
+                    }
+                ]   
             }
         ]
 
