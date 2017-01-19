@@ -45,12 +45,49 @@ class BaseAPITestClass(APITestCase):
 class GetChallengeHostTeamTest(BaseAPITestClass):
     url = reverse_lazy('hosts:get_challenge_host_team_list')
 
+    def setUp(self):
+        super(GetChallengeHostTeamTest, self).setUp()
+        self.url = reverse_lazy('hosts:get_challenge_host_team_list')
+
+        self.user2 = User.objects.create(
+            username='someuser2',
+            email="user2@test.com",
+            password='secret_password')
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email='user2@test.com',
+            primary=True,
+            verified=True)
+
+        self.challenge_host2 = ChallengeHost.objects.create(
+            user=self.user2,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.READ)
+
     def test_get_challenge_host_team(self):
         expected = [
             {
                 "id": self.challenge_host_team.pk,
                 "team_name": self.challenge_host_team.team_name,
-                "created_by": self.challenge_host_team.created_by.username
+                "created_by": self.challenge_host_team.created_by.username,
+                "members": [
+                    {
+                        "id": self.challenge_host.id,
+                        "permissions": self.challenge_host.permissions,
+                        "status": self.challenge_host.status,
+                        "team_name": self.challenge_host.team_name.id,
+                        "user": self.challenge_host.user.username
+                    },
+                    {
+                        "id": self.challenge_host2.id,
+                        "permissions": self.challenge_host2.permissions,
+                        "status": self.challenge_host2.status,
+                        "team_name": self.challenge_host2.team_name.id,
+                        "user": self.challenge_host2.user.username
+                    }
+                ]
             }
         ]
 
