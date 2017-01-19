@@ -54,12 +54,41 @@ class GetParticipantTeamTest(BaseAPITestClass):
             team=self.participant_team
         )
 
+        self.user2 = User.objects.create(
+            username='user2',
+            email='user2@platform.com',
+            password='user2_password')
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email='user2@platform.com',
+            primary=True,
+            verified=True)
+
+        self.participant2 = Participant.objects.create(
+            user=self.user2,
+            status=Participant.ACCEPTED,
+            team=self.participant_team)
+
+
     def test_get_challenge(self):
         expected = [
             {
                 "id": self.participant_team.pk,
                 "team_name": self.participant_team.team_name,
-                "created_by": self.user.username
+                "created_by": self.user.username,
+                "members": [
+                {
+                    "member_name": self.participant.user.username,
+                    "status": self.participant.status,
+                    "member_id": self.participant.user.id
+                },
+                {
+                    "member_name": self.participant2.user.username,
+                    "status": self.participant2.status,
+                    "member_id": self.participant2.user.id
+                }
+            ]
             }
         ]
 
