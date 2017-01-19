@@ -71,59 +71,67 @@
                 "password2": vm.regUser.confirm,
                 "email": vm.regUser.email
             }
-            var passwordCheck = validationSvc.password_check(parameters.data.password1, parameters.data.password2);
-            if (passwordCheck.status) {
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var status = response.status;
-                        var response = response.data;
-                        if (status == 201) {
-                            vm.regUser = {};
-                            vm.wrnMsg = {};
-                            vm.isValid = {};
-                            vm.confirmMsg = ''
-                            vm.regMsg = "Registered successfully, Login to continue!";
-                            $state.go('auth.login');
-                            vm.stopLoader();
-                        } else {
-                            alert("Network Problem");
-                            vm.stopLoader();
-                        }
-                    },
-                    onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
-                        if (status == 400) {
-                            vm.stopLoader();
-                            vm.isConfirm = false;
-                            vm.confirmMsg = "Please correct above marked fields!"
-                            angular.forEach(error, function(value, key) {
-                                if (key == 'email') {
-                                    vm.isValid.email = true;
-                                    vm.wrnMsg.email = value[0]
-                                }
-                                if (key == 'password1') {
-                                    vm.isValid.password = true;
-                                    vm.wrnMsg.password = value[0];
-                                }
-                                if (key == 'password2' || key == 'non_field_errors') {
-                                    vm.isValid.confirm = true;
-                                    vm.wrnMsg.confirm = value[0];
-                                }
-                                if (key == 'username') {
-                                    vm.isValid.username = true;
-                                    vm.wrnMsg.username = value[0];
-                                }
-                            })
-                            vm.stopLoader();
-                        }
-                    }
-                };
-
-                utilities.sendRequest(parameters, "no-header");
-            } else {
-                vm.confirmMsg = passwordCheck.confirmMsg;
+            if (parameters.data.username === undefined || parameters.data.password1 === undefined
+                || parameters.data.password1 === undefined || parameters.data.password2 === undefined)
+            {
+                vm.confirmMsg = "All the Fields are required !";
                 vm.stopLoader();
+            }
+            else {
+                var passwordCheck = validationSvc.password_check(parameters.data.password1, parameters.data.password2);
+                if (passwordCheck.status) {
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var response = response.data;
+                            if (status == 201) {
+                                vm.regUser = {};
+                                vm.wrnMsg = {};
+                                vm.isValid = {};
+                                vm.confirmMsg = ''
+                                vm.regMsg = "Registered successfully, Login to continue!";
+                                $state.go('auth.login');
+                                vm.stopLoader();
+                            } else {
+                                alert("Network Problem");
+                                vm.stopLoader();
+                            }
+                        },
+                        onError: function(response) {
+                            var status = response.status;
+                            var error = response.data;
+                            if (status == 400) {
+                                vm.stopLoader();
+                                vm.isConfirm = false;
+                                vm.confirmMsg = "Please correct above marked fields!"
+                                angular.forEach(error, function(value, key) {
+                                    if (key == 'email') {
+                                        vm.isValid.email = true;
+                                        vm.wrnMsg.email = value[0]
+                                    }
+                                    if (key == 'password1') {
+                                        vm.isValid.password = true;
+                                        vm.wrnMsg.password = value[0];
+                                    }
+                                    if (key == 'password2' || key == 'non_field_errors') {
+                                        vm.isValid.confirm = true;
+                                        vm.wrnMsg.confirm = value[0];
+                                    }
+                                    if (key == 'username') {
+                                        vm.isValid.username = true;
+                                        vm.wrnMsg.username = value[0];
+                                    }
+                                })
+                                vm.stopLoader();
+                            }
+                        }
+                    };
+
+                    utilities.sendRequest(parameters, "no-header");
+                } else {
+                    vm.confirmMsg = passwordCheck.confirmMsg;
+                    vm.stopLoader();
+                }
             }
         }
 
@@ -142,62 +150,69 @@
                 "username": vm.getUser.name,
                 "password": vm.getUser.password,
             }
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                    if (status == 200) {
-                        vm.getUser = {};
-                        vm.wrnMsg = {};
-                        vm.isValid = {};
-                        vm.confirmMsg = ''
-                        vm.regMsg = "";
-                        utilities.storeData('userKey', response.token);
-                        utilities.storeData('isRem', vm.isRem);
-                        token = response.key;
+            if (parameters.data.username === undefined || parameters.data.password === undefined)
+            {
+                vm.wrnMsg.cred = "All the Fields are required !";
+                vm.stopLoader();
+            }
+            else {
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var response = response.data;
+                        if (status == 200) {
+                            vm.getUser = {};
+                            vm.wrnMsg = {};
+                            vm.isValid = {};
+                            vm.confirmMsg = ''
+                            vm.regMsg = "";
+                            utilities.storeData('userKey', response.token);
+                            utilities.storeData('isRem', vm.isRem);
+                            token = response.key;
 
-                        // setting timout for token (7days)
-                        // var timeNow = (new Date()).getTime();
-                        // utilities.storeData('tokenTime', timeNow);
-                        utilities.isAuthenticated();
+                            // setting timout for token (7days)
+                            // var timeNow = (new Date()).getTime();
+                            // utilities.storeData('tokenTime', timeNow);
+                            utilities.isAuthenticated();
 
-                        $state.go('web.dashboard');
+                            $state.go('web.dashboard');
 
-                        vm.stopLoader();
-                    } else {
-                        alert("Something went wrong");
-                        vm.stopLoader();
+                            vm.stopLoader();
+                        } else {
+                            alert("Something went wrong");
+                            vm.stopLoader();
+                        }
+                    },
+                    onError: function(response) {
+
+                        var status = response.status;
+                        var error = response.data;
+                        if (status == 400) {
+                            vm.stopLoader();
+                            vm.isConfirm = false;
+                            vm.wrnMsg.cred = "Please correct above marked fields!"
+                            angular.forEach(error, function(value, key) {
+                                if (key == 'non_field_errors') {
+                                    vm.isValid.cred = true;
+                                    vm.wrnMsg.cred = value[0]
+                                }
+                                if (key == 'password') {
+                                    vm.isValid.password = true;
+                                    vm.wrnMsg.password = value[0];
+                                }
+                                if (key == 'username') {
+                                    vm.isValid.username = true;
+                                    vm.wrnMsg.username = value[0];
+                                }
+                            })
+                            vm.stopLoader();
+                        }
+
                     }
-                },
-                onError: function(response) {
+                };
 
-                    var status = response.status;
-                    var error = response.data;
-                    if (status == 400) {
-                        vm.stopLoader();
-                        vm.isConfirm = false;
-                        vm.wrnMsg.cred = "Please correct above marked fields!"
-                        angular.forEach(error, function(value, key) {
-                            if (key == 'non_field_errors') {
-                                vm.isValid.cred = true;
-                                vm.wrnMsg.cred = value[0]
-                            }
-                            if (key == 'password') {
-                                vm.isValid.password = true;
-                                vm.wrnMsg.password = value[0];
-                            }
-                            if (key == 'username') {
-                                vm.isValid.username = true;
-                                vm.wrnMsg.username = value[0];
-                            }
-                        })
-                        vm.stopLoader();
-                    }
-
-                }
-            };
-
-            utilities.sendRequest(parameters, "no-header");
+                utilities.sendRequest(parameters, "no-header");
+            }
         }
 
         // function to Verify Email
