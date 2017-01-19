@@ -346,7 +346,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 'challenge_phase': self.submission.challenge_phase.pk,
                 'created_by': self.submission.created_by.pk,
                 'status': self.submission.status,
-                'input_file': self.submission.input_file
+                'input_file': self.submission.input_file.url
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
