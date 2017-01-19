@@ -26,7 +26,7 @@ def challenge_host_team_list(request):
     if request.method == 'GET':
         challenge_host_teams = ChallengeHostTeam.objects.filter(created_by=request.user)
         paginator, result_page = paginated_queryset(challenge_host_teams, request)
-        serializer = ChallengeHostTeamSerializer(result_page, many=True)
+        serializer = HostTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
