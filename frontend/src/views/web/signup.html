@@ -7,7 +7,7 @@
 </div>
 <div class="col s12 m4 offset-m4">
     <!-- login form -->
-    <form name="signupForm" ng-submit="signupForm.$valid || auth.userSignUp()" id="sign-up" novalidate>
+    <form name="signupForm" ng-submit="auth.userSignUp()" id="sign-up" novalidate>
         <!-- username -->
         <div class="input-field align-left">
             <input id="name" name="name" type="text" class="validate" ng-model="auth.regUser.name" focus-if required>
