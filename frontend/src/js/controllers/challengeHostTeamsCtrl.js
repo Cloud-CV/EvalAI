@@ -7,9 +7,10 @@
         .module('evalai')
         .controller('ChallengeHostTeamsCtrl', ChallengeHostTeamsCtrl);
 
-    ChallengeHostTeamsCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    ChallengeHostTeamsCtrl.$inject = ['utilities', '$scope' , '$state', '$http',
+      '$rootScope', '$mdDialog'];
 
-    function ChallengeHostTeamsCtrl(utilities, $state, $http, $rootScope) {
+    function ChallengeHostTeamsCtrl(utilities, $scope, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -192,6 +193,43 @@
                  };
             vm.reset();
         }
-    }
+
+
+          vm.confirmDelete = function(ev, hostTeamId) {
+                      // Appending dialog to document.body to cover sidenav in docs app
+                      var confirm = $mdDialog.confirm()
+                            .title('Would you like to remove yourself?')
+                            .textContent('Note: This action will remove you from the team.')
+                            .ariaLabel('Lucky day')
+                            .targetEvent(ev)
+                            .ok('Yes')
+                            .cancel("No");
+
+                      $mdDialog.show(confirm).then(function() {
+                          var parameters = {};
+                          parameters.url = 'hosts/remove_self_from_challenge_host/' + hostTeamId;
+                          parameters.method = 'DELETE';
+                          parameters.data = {}
+                          parameters.token = userKey;
+                          parameters.callback = {
+                              onSuccess: function(response) {
+                                  var status = response.status;
+                                  var response = response.data;
+                                  vm.team.error = false;
+
+                                  $state.reload();
+                              },
+                              onError: function(response) {
+                                  var status = response.status;
+                                  var error = response.data;
+                              }
+                          };
+
+                          utilities.sendRequest(parameters);
+
+                      });
+                  };
+
+
 
 })();
