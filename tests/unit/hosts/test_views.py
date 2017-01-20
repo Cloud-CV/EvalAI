@@ -109,6 +109,20 @@ class CreateChallengeHostTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_create_challenge_host_team_when_team_with_same_name_already_exists(self):
+
+        expected = {
+            "team_name": ["challenge host team with this team name already exists."]
+        }
+
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Trying to create a team with the same team name
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, expected)
+
     def test_create_challenge_host_team_with_no_data(self):
         del self.data['team_name']
         response = self.client.post(self.url, self.data)
