@@ -681,66 +681,6 @@ class GetChallengeByPk(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
         )
 
-    def test_get_challenge_by_pk_when_challenge_exists_and_active(self):
-        self.url = reverse_lazy('challenges:get_challenge_by_pk',
-                                kwargs={'pk': self.challenge3.pk})
-
-        expected = {
-            "id": self.challenge3.pk,
-            "title": self.challenge3.title,
-            "description": self.challenge3.description,
-            "terms_and_conditions": self.challenge3.terms_and_conditions,
-            "submission_guidelines": self.challenge3.submission_guidelines,
-            "evaluation_details": self.challenge3.evaluation_details,
-            "image": None,
-            "start_date": "{0}{1}".format(self.challenge3.start_date.isoformat(), 'Z').replace("+00:00", ""),
-            "end_date": "{0}{1}".format(self.challenge3.end_date.isoformat(), 'Z').replace("+00:00", ""),
-            "creator": {
-                "id": self.challenge3.creator.pk,
-                "team_name": self.challenge3.creator.team_name,
-                "created_by": self.challenge3.creator.created_by.username,
-            },
-            "published": self.challenge3.published,
-            "enable_forum": self.challenge3.enable_forum,
-            "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
-            "is_active": True,
-        }
-
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_get_challenge_by_pk_when_challenge_exists_in_past_and_not_active(self):
-        self.url = reverse_lazy('challenges:get_challenge_by_pk',
-                                kwargs={'pk': self.challenge3.pk})
-
-        self.challenge3.end_date = timezone.now() - timedelta(days=1)
-        self.challenge3.save()
-
-        expected = {
-            'error': 'Challenge is not active!'
-        }
-
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-
-    def test_get_challenge_by_pk_when_challenge_will_exist_in_future_and_not_active(self):
-        self.url = reverse_lazy('challenges:get_challenge_by_pk',
-                                kwargs={'pk': self.challenge3.pk})
-
-        self.challenge3.start_date = timezone.now() + timedelta(days=1)
-        self.challenge3.end_date = timezone.now() + timedelta(days=3)
-        self.challenge3.save()
-
-        expected = {
-            'error': 'Challenge is not active!'
-        }
-
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-
     def test_get_challenge_by_pk_when_challenge_does_not_exists(self):
         self.url = reverse_lazy('challenges:get_challenge_by_pk',
                                 kwargs={'pk': self.challenge3.pk + 10})
@@ -761,6 +701,12 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             team_name='Some Test Challenge Host Team',
             created_by=self.user)
 
+        self.challenge_host2 = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team2,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
         self.challenge2 = Challenge.objects.create(
             title='Some Test Challenge',
             description='Description for some test challenge',
@@ -777,6 +723,11 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         self.participant_team2 = ParticipantTeam.objects.create(
             team_name='Some Participant Team',
             created_by=self.user)
+
+        self.participant2 = Participant.objects.create(
+            user=self.user,
+            status=Participant.SELF,
+            team=self.participant_team2)
 
         self.challenge2.participant_teams.add(self.participant_team2)
 
@@ -836,6 +787,84 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_challenge_when_mode_is_participant(self):
+        self.url = reverse_lazy('challenges:get_challenges_based_on_teams')
+
+        expected = [{
+            "id": self.challenge2.pk,
+            "title": self.challenge2.title,
+            "description": self.challenge2.description,
+            "terms_and_conditions": self.challenge2.terms_and_conditions,
+            "submission_guidelines": self.challenge2.submission_guidelines,
+            "evaluation_details": self.challenge2.evaluation_details,
+            "image": None,
+            "start_date": "{0}{1}".format(self.challenge2.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge2.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "creator": {
+                "id": self.challenge2.creator.pk,
+                "team_name": self.challenge2.creator.team_name,
+                "created_by": self.challenge2.creator.created_by.username
+            },
+            "published": self.challenge2.published,
+            "enable_forum": self.challenge2.enable_forum,
+            "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+            "is_active": True
+        }]
+
+        response = self.client.get(self.url, {'mode': 'participant'})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_when_mode_is_host(self):
+        self.url = reverse_lazy('challenges:get_challenges_based_on_teams')
+
+        expected = [
+            {
+                "id": self.challenge.pk,
+                "title": self.challenge.title,
+                "description": self.challenge.description,
+                "terms_and_conditions": self.challenge.terms_and_conditions,
+                "submission_guidelines": self.challenge.submission_guidelines,
+                "evaluation_details": self.challenge.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge.creator.pk,
+                    "team_name": self.challenge.creator.team_name,
+                    "created_by": self.challenge.creator.created_by.username
+                },
+                "published": self.challenge.published,
+                "enable_forum": self.challenge.enable_forum,
+                "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+                "is_active": True
+            },
+            {
+                "id": self.challenge2.pk,
+                "title": self.challenge2.title,
+                "description": self.challenge2.description,
+                "terms_and_conditions": self.challenge2.terms_and_conditions,
+                "submission_guidelines": self.challenge2.submission_guidelines,
+                "evaluation_details": self.challenge2.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge2.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge2.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge2.creator.pk,
+                    "team_name": self.challenge2.creator.team_name,
+                    "created_by": self.challenge2.creator.created_by.username
+                },
+                "published": self.challenge2.published,
+                "enable_forum": self.challenge2.enable_forum,
+                "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "is_active": True
+            }
+        ]
+
+        response = self.client.get(self.url, {'mode': 'host'})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_get_challenge_with_incorrect_url_pattern(self):
         self.url = reverse_lazy('challenges:get_challenges_based_on_teams')
 
@@ -843,6 +872,18 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             'error': 'Invalid url pattern!'
         }
         response = self.client.get(self.url, {'invalid_q_param': 'invalidvalue'})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_get_challenge_with_incorrect_url_pattern_with_all_values(self):
+        self.url = reverse_lazy('challenges:get_challenges_based_on_teams')
+
+        expected = {
+            'error': 'Invalid url pattern!'
+        }
+        response = self.client.get(self.url, {'host_team': self.challenge_host_team2.pk,
+                                              'participant_team': self.participant_team2.pk,
+                                              'mode': 'participant'})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 

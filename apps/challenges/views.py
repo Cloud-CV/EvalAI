@@ -12,7 +12,10 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from hosts.models import ChallengeHost, ChallengeHostTeam
+from hosts.utils import get_challenge_host_teams_for_user
 from participants.models import Participant, ParticipantTeam
+from participants.utils import get_participant_teams_for_user
+
 
 from .models import Challenge, ChallengePhase
 from .permissions import IsChallengeCreator
@@ -200,13 +203,9 @@ def get_challenge_by_pk(request, pk):
     """
     try:
         challenge = Challenge.objects.get(pk=pk)
-        if challenge.is_active:
-            serializer = ChallengeSerializer(challenge)
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            response_data = {'error': 'Challenge is not active!'}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        serializer = ChallengeSerializer(challenge)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
     except:
         response_data = {'error': 'Challenge does not exist!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -220,8 +219,14 @@ def get_challenges_based_on_teams(request):
     q_params = {}
     participant_team_id = request.query_params.get('participant_team', None)
     challenge_host_team_id = request.query_params.get('host_team', None)
+    mode = request.query_params.get('mode', None)
 
-    if not participant_team_id and not challenge_host_team_id:
+    if not participant_team_id and not challenge_host_team_id and not mode:
+        response_data = {'error': 'Invalid url pattern!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # either mode should be there or one of paricipant team and host team
+    if mode and (participant_team_id or challenge_host_team_id):
         response_data = {'error': 'Invalid url pattern!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -229,6 +234,15 @@ def get_challenges_based_on_teams(request):
         q_params['participant_teams__pk'] = participant_team_id
     if challenge_host_team_id:
         q_params['creator__id'] = challenge_host_team_id
+
+    if mode == 'participant':
+        participant_team_ids = get_participant_teams_for_user(request.user)
+        q_params['participant_teams__pk__in'] = participant_team_ids
+
+    elif mode == 'host':
+        host_team_ids = get_challenge_host_teams_for_user(request.user)
+        q_params['creator__id__in'] = host_team_ids
+
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(result_page, many=True)
