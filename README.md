@@ -61,23 +61,14 @@ Follow this guide to setup your development machine.
     bower install
     ```
 
-8. To build static files(development) type
+8. Now to connect to dev server at http://127.0.0.1:8888 (for serving frontend)
 
     ```
-    gulp dev
+    gulp dev:runserver
     ```
 
-9. That's it, Now to connect to dev server at http://127.0.0.1:8888 (for serving frontend)
+9. That's it, Open web browser and hit the url `http://127.0.0.1:8888`.
 
-    ```
-    gulp connect
-    ```
-
-10. To check for static files change run gulp watch task in new terminal window
-
-    ```
-    gulp watch
-    ```
 
 ## Contribution guidelines
 
