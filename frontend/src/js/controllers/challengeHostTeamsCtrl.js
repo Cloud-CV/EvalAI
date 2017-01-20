@@ -220,13 +220,10 @@
                         onError: function(response) {
                             var status = response.status;
                             var error = response.data;
-                            console.log(error);
                         }
                     };
 
                     utilities.sendRequest(parameters);
-                }, function() {
-                    console.log("Operation Aborted");
                 });
         };
         
