@@ -331,7 +331,13 @@
         .module('evalai')
         .run(runFunc);
 
-    function runFunc($rootScope, $state, utilities, $window) {
+    function runFunc($rootScope, $state, utilities, $window, $location, $window) {
+
+        // Google Analytics Scripts
+        $window.ga('create', 'UA-45466017-2', 'auto');
+        $rootScope.$on('$stateChangeSuccess', function(event) {
+            $window.ga('send', 'pageview', $location.path());
+        });
 
         // setting timout for token (7days)
         // var getTokenTime = utilities.getData('tokenTime');
