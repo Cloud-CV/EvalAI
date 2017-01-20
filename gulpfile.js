@@ -49,13 +49,13 @@ gulp.task('vendorjs', function() {
             .pipe(concat(chunkName + '.js'))
             //.on('error', swallowError)
             .pipe(gulp.dest("frontend/dist/vendors"))
-            .pipe(gulp.watch(paths).on('change', function (event){
-                if(event.type == 'deleted'){
+            .pipe(gulp.watch(paths).on('change', function(event) {
+                if (event.type == 'deleted') {
                     var filePathFromSrc = path.relative(path.resolve(paths), event.path);
                     var destFilePath = path.resolve('frontend/dist/vendors', filePathFromSrc);
                     del.sync(destFilePath);
-                    }
-                  }))
+                }
+            }))
     })
 
 });
@@ -79,20 +79,20 @@ gulp.task('vendorcss', function() {
             .pipe(concat(chunkName + '.css'))
             //.on('error', swallowError)
             .pipe(gulp.dest("frontend/dist/vendors"))
-            .pipe(gulp.watch(paths).on('change', function (event){
-                if(event.type == 'deleted'){
+            .pipe(gulp.watch(paths).on('change', function(event) {
+                if (event.type == 'deleted') {
                     var filePathFromSrc = path.relative(path.resolve(paths), event.path);
                     var destFilePath = path.resolve('frontend/dist/vendors', filePathFromSrc);
                     del.sync(destFilePath);
-                    }
-                  }))
+                }
+            }))
     })
 
 });
 
 // config for dev server
 gulp.task('configDev', function() {
-    gulp.src('frontend/src/js/config.json' , {base: 'frontend/src/js/'})
+    gulp.src('frontend/src/js/config.json', { base: 'frontend/src/js/' })
         .pipe(ngConfig('evalai-config', {
             environment: 'local'
         }))
@@ -237,74 +237,74 @@ gulp.task('clean', function() {
 gulp.task('watch', function() {
 
     // Watch .scss files
-    gulp.watch('frontend/src/css/**/*.scss', ['css']).on('change', function (event){
-    if(event.type == 'deleted'){
-        var filePathFromSrc = path.relative(path.resolve('frontend/src/css/'), event.path);
-        var destFilePath = path.resolve('frontend/dist/css', filePathFromSrc);
-        del.sync(destFilePath);
+    gulp.watch('frontend/src/css/**/*.scss', ['css']).on('change', function(event) {
+        if (event.type == 'deleted') {
+            var filePathFromSrc = path.relative(path.resolve('frontend/src/css/'), event.path);
+            var destFilePath = path.resolve('frontend/dist/css', filePathFromSrc);
+            del.sync(destFilePath);
         }
-     });
+    });
 
     // Watch .js files
-    gulp.watch('frontend/src/js/**/*.js', ['js']).on('change', function (event){
-      if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
-          var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
-          del.sync(destFilePath);
-          }
-        });
+    gulp.watch('frontend/src/js/**/*.js', ['js']).on('change', function(event) {
+        if (event.type == 'deleted') {
+            var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
+            var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
+            del.sync(destFilePath);
+        }
+    });
 
     // Watch html files
-    gulp.watch('frontend/src/views/**/*.html', ['html']).on('change', function (event){
-      if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('frontend/src/views/'), event.path);
-          var destFilePath = path.resolve('frontend/dist/views/web', filePathFromSrc);
-          del.sync(destFilePath);
-          }
-        });
+    gulp.watch('frontend/src/views/**/*.html', ['html']).on('change', function(event) {
+        if (event.type == 'deleted') {
+            var filePathFromSrc = path.relative(path.resolve('frontend/src/views/'), event.path);
+            var destFilePath = path.resolve('frontend/dist/views/web', filePathFromSrc);
+            del.sync(destFilePath);
+        }
+    });
 
     // Watch image files
-    gulp.watch('frontend/src/images/**/*', ['images']).on('change', function (event){
-      if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('frontend/src/images/'), event.path);
-          var destFilePath = path.resolve('frontend/dist/images', filePathFromSrc);
-          del.sync(destFilePath);
-          }
-        });
+    gulp.watch('frontend/src/images/**/*', ['images']).on('change', function(event) {
+        if (event.type == 'deleted') {
+            var filePathFromSrc = path.relative(path.resolve('frontend/src/images/'), event.path);
+            var destFilePath = path.resolve('frontend/dist/images', filePathFromSrc);
+            del.sync(destFilePath);
+        }
+    });
 
     // Watch config dev
-    gulp.watch('frontend/src/js/config.json', ['configDev']).on('change', function (event){
-      if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
-          var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
-          del.sync(destFilePath);
-          }
-        });
+    gulp.watch('frontend/src/js/config.json', ['configDev']).on('change', function(event) {
+        if (event.type == 'deleted') {
+            var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
+            var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
+            del.sync(destFilePath);
+        }
+    });
 
-    gulp.watch('bower_components/font-awesome/fonts/fontawesome-webfont.*', ['fonts']).on('change', function (event){
-      if(event.type == 'deleted'){
-          var filePathFromSrc = path.relative(path.resolve('bower_components/font-awesome/fonts/'), event.path);
-          var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
-          del.sync(destFilePath);
-          }
-        });
+    gulp.watch('bower_components/font-awesome/fonts/fontawesome-webfont.*', ['fonts']).on('change', function(event) {
+        if (event.type == 'deleted') {
+            var filePathFromSrc = path.relative(path.resolve('bower_components/font-awesome/fonts/'), event.path);
+            var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
+            del.sync(destFilePath);
+        }
+    });
 
-      gulp.watch('bower_components/materialize/fonts/**/*', ['fonts']).on('change', function (event){
-        if(event.type == 'deleted'){
+    gulp.watch('bower_components/materialize/fonts/**/*', ['fonts']).on('change', function(event) {
+        if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('bower_components/materialize/fonts/'), event.path);
             var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
             del.sync(destFilePath);
-            }
-        });
+        }
+    });
 
 
-       gulp.watch('bower_components/font-awesome/css/font-awesome.css', ['fonts']).on('change', function (event){
-         if(event.type == 'deleted'){
+    gulp.watch('bower_components/font-awesome/css/font-awesome.css', ['fonts']).on('change', function(event) {
+        if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('bower_components/font-awesome/css/'), event.path);
             var destFilePath = path.resolve('frontend/dist/css/', filePathFromSrc);
             del.sync(destFilePath);
-            }
-         });
+        }
+    });
 
     // Create LiveReload server
     livereload.listen();
@@ -315,7 +315,7 @@ gulp.task('watch', function() {
 });
 
 
-// connect to server
+// Start a server for serving frontend
 gulp.task('connect', function() {
     connect.server({
         root: 'frontend/',
@@ -338,4 +338,9 @@ gulp.task('dev', ['clean'], function() {
 // production task
 gulp.task('prod', ['clean'], function() {
     gulp.start('css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configProd');
+});
+
+// Runserver for development
+gulp.task('dev:runserver', ['dev'], function() {
+    gulp.start('connect', 'watch');
 });
