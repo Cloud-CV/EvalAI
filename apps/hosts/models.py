@@ -11,7 +11,7 @@ class ChallengeHostTeam(TimeStampedModel):
     """
     Model representing the Host Team for a partiuclar challenge
     """
-    team_name = models.CharField(max_length=100,)
+    team_name = models.CharField(max_length=100, unique=True, )
     created_by = models.ForeignKey(User, related_name='challenge_host_team_creator')
 
     def __unicode__(self):
