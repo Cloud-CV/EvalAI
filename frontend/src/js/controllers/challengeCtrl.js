@@ -219,44 +219,82 @@
                             // This condition means that the user is eligible to make submissions
                             else if (vm.isParticipated == true) {
                                 vm.makeSubmission = function() {
-                                    if (vm.input_file) {
-                                        // vm.upload(vm.input_file);
-                                    }
-                                    var parameters = {};
-                                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
-                                    parameters.method = 'POST';
-                                    var formData = new FormData();
-                                    formData.append("status", "submitting");
-                                    formData.append("input_file", vm.input_file);
 
-                                    parameters.data = formData;
+                                    var fileVal = angular.element(".file-path").val();
 
-                                    parameters.token = userKey;
-                                    parameters.callback = {
-                                        onSuccess: function(response) {
-                                            var status = response.status;
-                                            var response = response.data;
+                                    if (fileVal == null || fileVal == "") {
+                                        vm.subErrors.msg = "Please upload file!"
+                                    } else {
+                                        vm.isExistLoader = true;
+                                        vm.loaderTitle = '';
+                                        vm.loginContainer = angular.element('.exist-team-card');
+
+                                        // show loader
+                                        vm.startLoader = function(msg) {
+                                            vm.isExistLoader = true;
+                                            vm.loaderTitle = msg;
+                                            vm.loginContainer.addClass('low-screen');
+                                        }
+
+                                        // stop loader
+                                        vm.stopLoader = function() {
+                                            vm.isExistLoader = false;
+                                            vm.loaderTitle = '';
+                                            vm.loginContainer.removeClass('low-screen');
+                                        }
+
+                                        vm.startLoader("Making Submission");
+                                        if (vm.input_file) {
+                                            // vm.upload(vm.input_file);
+                                        }
+                                        var parameters = {};
+                                        parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
+                                        parameters.method = 'POST';
+                                        var formData = new FormData();
+                                        formData.append("status", "submitting");
+                                        formData.append("input_file", vm.input_file);
+
+                                        parameters.data = formData;
+
+                                        parameters.token = userKey;
+                                        parameters.callback = {
+                                            onSuccess: function(response) {
+                                                var status = response.status;
+                                                var response = response.data;
                                                 // vm.input_file.name = '';
 
-                                            angular.forEach(
-                                                angular.element("input[type='file']"),
-                                                function(inputElem) {
-                                                    angular.element(inputElem).val(null);
+                                                angular.forEach(
+                                                    angular.element("input[type='file']"),
+                                                    function(inputElem) {
+                                                        angular.element(inputElem).val(null);
+                                                    }
+                                                );
+
+                                                angular.element(".file-path").val(null);
+
+
+                                                vm.phaseId = null;
+                                                vm.subErrors.msg = "Your submission has been recorded succesfully!"
+                                                vm.stopLoader();
+                                            },
+                                            onError: function(response) {
+                                                var status = response.status;
+                                                var error = response.data;
+
+                                                vm.phaseId = null;
+                                                if (status == 404) {
+
+                                                    vm.subErrors.msg = "Please select phase!"
+                                                } else if (status == 400) {
+                                                    vm.subErrors.msg = error.input_file[0]
                                                 }
-                                            );
 
-                                            angular.element(".file-path").val(null);
+                                                vm.stopLoader();
+                                            }
+                                        };
 
-                                            vm.subErrors.msg = "Your submission has been recorded succesfully!"
-                                        },
-                                        onError: function(response) {
-                                            var status = response.status;
-                                            var error = response.data;
-                                            vm.subErrors.msg = "Something went wrong, please try again!"
-                                        }
-                                    };
-
-                                    utilities.sendRequest(parameters, 'header', 'upload');
+                                        utilities.sendRequest(parameters, 'header', 'upload');
+                                    }
                                 }
                             }
                             utilities.hideLoader();

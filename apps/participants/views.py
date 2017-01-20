@@ -32,7 +32,7 @@ def participant_team_list(request):
         participant_teams = ParticipantTeam.objects.filter(
             id__in=participant_teams_id)
         paginator, result_page = paginated_queryset(participant_teams, request)
-        serializer = ParticipantTeamSerializer(result_page, many=True)
+        serializer = ParticipantTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
