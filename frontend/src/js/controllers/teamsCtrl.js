@@ -43,20 +43,20 @@
                     // condition for pagination
                     if (vm.existTeam.next == null) {
                         vm.isNext = 'disabled';
+                        vm.currentPage = vm.existTeam.count / 10;
                     } else {
                         vm.isNext = '';
                     }
 
                     if (vm.existTeam.previous == null) {
                         vm.isPrev = 'disabled';
+                        vm.currentPage = vm.existTeam.count / 10;
                     } else {
                         vm.isPrev = '';
                     }
                     if (vm.existTeam.next!= null) {
-                        vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
-                    } else {
-                    	vm.currentPage = 1;
-                    }
+                        vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+                    } 
 
 
                     // select team from existing list
