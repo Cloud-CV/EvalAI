@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', 'validationSvc', '$state', '$rootScope', '$timeout'];
+    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
 
-    function AuthCtrl(utilities, validationSvc, $state, $rootScope, $timeout) {
+    function AuthCtrl(utilities, $state, $rootScope, $timeout) {
         var vm = this;
 
         vm.isRem = false;
@@ -192,64 +192,51 @@
         }
 
         // function to reset password
-        vm.resetPassword = function() {
-            vm.startLoader("Sending Mail");
-            var parameters = {};
-            parameters.url = 'auth/password/reset/';
-            parameters.method = 'POST';
-            parameters.data = {
-                "email": vm.getUser.email,
-            }
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                    vm.isMail = false;
-                    vm.getUser.error = false;
-                    console.log("Password reset email sent to the user");
-                    console.log(response);
-                    vm.deliveredMsg = response.success;
-                    vm.getUser.email = '';
-                    vm.wrnMsg = {};
-                    vm.stopLoader();
-
-                },
-                onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
-                    vm.getUser.error = "Failed";
-                    if (status == 400) {
-                        console.log("ERROR Occured");
-                        console.log(error);
-                        angular.forEach(error, function(value, key) {
-                            if (key == 'email') {
-                                vm.isValid.email = true;
-                                vm.wrnMsg.email = value[0];
-                            }
-                        })
-                    }
-                    vm.stopLoader();
+        vm.resetPassword = function(resetPassFormValid) {
+            if (resetPassFormValid) {
+                vm.startLoader("Sending Mail");
+                var parameters = {};
+                parameters.url = 'auth/password/reset/';
+                parameters.method = 'POST';
+                parameters.data = {
+                    "email": vm.getUser.email,
                 }
-            };
-
-            utilities.sendRequest(parameters, "no-header");
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        vm.isMail = false;
+                        vm.getUser.error = false;
+                        vm.isFormError = false;
+                        vm.deliveredMsg = response.data.success;
+                        vm.getUser.email = '';
+                        vm.stopLoader();
+                    },
+                    onError: function(response) {
+                        vm.isFormError = true;
+                        vm.FormError = "Something went wrong. Please try again";
+                        vm.stopLoader();
+                    }
+                };
+                utilities.sendRequest(parameters, "no-header");
+            } else {
+                console.log("Form fields are not valid !");
+                vm.stopLoader();
+            }
         }
 
         // function to reset password confirm
-        vm.resetPasswordConfirm = function() {
-            vm.startLoader("Resetting Your Password");
-            var parameters = {};
-            parameters.url = 'auth/password/reset/confirm/';
-            parameters.method = 'POST';
-            parameters.data = {
-                "new_password1": vm.getUser.new_password1,
-                "new_password2": vm.getUser.new_password2,
-                "uid": $state.params.user_id,
-                "token": $state.params.reset_token,
-            }
+        vm.resetPasswordConfirm = function(resetconfirmFormValid) {
+            if (resetconfirmFormValid) {
+                vm.startLoader("Resetting Your Password");
+                var parameters = {};
+                parameters.url = 'auth/password/reset/confirm/';
+                parameters.method = 'POST';
+                parameters.data = {
+                    "new_password1": vm.getUser.new_password1,
+                    "new_password2": vm.getUser.new_password2,
+                    "uid": $state.params.user_id,
+                    "token": $state.params.reset_token,
+                }
 
-            var passwordCheck = validationSvc.password_check(parameters.data.new_password1, parameters.data.new_password2);
-            if (passwordCheck.status) {
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -262,21 +249,22 @@
                         var status = response.status;
                         var error = response.data;
                         var token_valid, password1_valid, password2_valid;
+                        vm.isFormError = true;
                         try {
                             token_valid = typeof(response.data.token) !== 'undefined' ? true : false;
                             password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
                             password2_valid = typeof(response.data.new_password2) !== 'undefined' ? true : false;
                             if (token_valid) {
-                                vm.deliveredMsg = "this link has been already used or expired.";
+                                vm.FormError = "this link has been already used or expired.";
                             } else if (password1_valid) {
-                                vm.deliveredMsg = response.data.new_password1[0] + " " + response.data.new_password1[1];
+                                vm.FormError = response.data.new_password1[0] + " " + response.data.new_password1[1];
                             } else if (password2_valid) {
-                                vm.deliveredMsg = response.data.new_password2[0] + " " + response.data.new_password2[1];
+                                vm.FormError = response.data.new_password2[0] + " " + response.data.new_password2[1];
                             } else {
                                 console.log("Unhandled Error");
                             }
                         } catch (error) {
-                            vm.deliveredMsg = "Something went wrong! Please refresh the page and try again.";
+                            vm.FormError = "Something went wrong! Please refresh the page and try again.";
                         }
                         vm.stopLoader();
                     }
@@ -284,7 +272,7 @@
 
                 utilities.sendRequest(parameters, "no-header");
             } else {
-                vm.deliveredMsg = passwordCheck.confirmMsg;
+                console.log("Form fields are not valid !");
                 vm.stopLoader();
             }
         }

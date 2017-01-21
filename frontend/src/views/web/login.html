@@ -10,7 +10,7 @@
     <form name="loginForm" ng-submit="auth.userLogin(loginForm.$valid)" id="log-in" novalidate>
         <!-- username -->
         <div class="input-field align-left">
-            <input type="text" id="name" name="name" ng-model="auth.getUser.name" ng-minlength="3" focus-if required>
+            <input type="text" id="name" name="name" ng-model="auth.getUser.name" ng-minlength="3" required>
             <span class="form-icon"><i class="fa fa-user"></i></span>
             <label for="name">User Name (no space)*</label>
             <div class="wrn-msg text-highlight" ng-messages="loginForm.name.$error" ng-if="loginForm.name.$touched || loginForm.$submitted">
@@ -38,7 +38,7 @@
                 <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit">LogIn</button>
             </div>
             <div class="col s6 align-right right rm-gut">
-                <a ui-sref="auth.reset-password" class="light-link fg-pass" ng-click="auth.resetForm()">Forgotten Account?</a>
+                <a ui-sref="auth.reset-password" class="light-link fg-pass">Forgotten Account?</a>
             </div>
         </div>
         <div ng-if="auth.isFormError" class="wrn-msg text-highlight align-left"> {{auth.FormError}}</div>

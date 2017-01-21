@@ -10,7 +10,7 @@
     <form name="signupForm" ng-submit="auth.userSignUp(signupForm.$valid)" id="sign-up" novalidate>
         <!-- username -->
         <div class="input-field align-left">
-            <input type="text" id="name" name="name" ng-model="auth.regUser.name" ng-minlength="3" focus-if required>
+            <input type="text" id="name" name="name" ng-model="auth.regUser.name" ng-minlength="3" required>
             <span class="form-icon"><i class="fa fa-user"></i></span>
             <label for="name">User Name (no space)*</label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.name.$error" ng-if="signupForm.name.$touched || signupForm.$submitted">
@@ -43,10 +43,10 @@
             <input type="password" id="confirm_password" name="confirm_password" ng-model="auth.regUser.confirm_password" ng-minlength="8" compare-to="auth.regUser.password" required>
             <span class="form-icon"><i class="fa fa-check-circle"></i></span>
             <label for="confirm_password">Confirm Password *</label>
-            <div class="wrn-msg text-highlight" ng-messages="signupForm.confirm_password.$error" ng-if="signupForm.password.$touched || signupForm.$submitted">
+            <div class="wrn-msg text-highlight" ng-messages="signupForm.confirm_password.$error" ng-if="signupForm.confirm_password.$touched || signupForm.$submitted">
                 <p ng-message="compareTo">Password do not match</p>
                 <p ng-message="minlength">password is less than 8 characters.</p>
-                <p ng-message="required">password confirm is required.</p>
+                <p ng-message="required">password confirmation is required.</p>
             </div>
         </div>
         <!-- submit button -->
