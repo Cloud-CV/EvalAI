@@ -327,7 +327,10 @@ def main():
 
     channel.queue_declare(queue='submission_task_queue', durable=True)
 
-    channel.queue_declare(queue=add_challenge_queue_name, durable=True)
+    # reason for using `exclusive` instead of `autodelete` is that
+    # challenge addition queue should have only have one consumer on the connection
+    # that creates it.
+    channel.queue_declare(queue=add_challenge_queue_name, durable=True, exclusive=True)
     print(' [*] Waiting for messages. To exit press CTRL+C')
 
     # create submission base data directory
