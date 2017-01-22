@@ -984,7 +984,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             'non_field_errors': ['The fields code_name, challenge must make a unique set.']
         }
         response = self.client.post(self.url, self.data, format='multipart')
-        self.assertEqual(response.data, expected )
+        self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_challenge_phase_with_no_data(self):
