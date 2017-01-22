@@ -6,10 +6,10 @@ import logging
 from os.path import join
 
 from django.contrib.auth.models import User
-from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.db.models import Max
 from django.utils import timezone
+from rest_framework.exceptions import PermissionDenied
 
 from base.models import (TimeStampedModel, )
 from challenges.models import ChallengePhase
@@ -104,14 +104,13 @@ class Submission(TimeStampedModel):
             successful_count = self.submission_number - failed_count
 
             if successful_count > self.challenge_phase.max_submissions:
-                logger.debug("Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
+                logger.info("Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
                         successful_count, self.challenge_phase.max_submissions))
 
-                logger.debug("The submission request is submitted by user {0} from participant_team {1} ".format(
+                logger.info("The submission request is submitted by user {0} from participant_team {1} ".format(
                         self.created_by.pk, self.participant_team.pk))
 
-                raise PermissionDenied(
-                    "The maximum number of submissions has been reached")
+                raise PermissionDenied({'error': 'The maximum number of submissions has been reached'})
             else:
                 logger.info("Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
                     self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk))
@@ -125,9 +124,8 @@ class Submission(TimeStampedModel):
 
                 if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
                         (self.challenge_phase.max_submissions_per_day == 0)):
-                    logger.debug("Permission Denied: The maximum number of submission for today has been reached")
-                    raise PermissionDenied(
-                        "The maximum number of submission for today has been reached")
+                    logger.info("Permission Denied: The maximum number of submission for today has been reached")
+                    raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
 
             self.is_public = (True if self.challenge_phase.leaderboard_public else False)
 

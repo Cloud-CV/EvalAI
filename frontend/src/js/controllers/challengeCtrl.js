@@ -279,7 +279,7 @@
                                             },
                                             onError: function(response) {
                                                 var status = response.status;
-                                                var error = response.data;
+                                                var error = response.data.error;
 
                                                 vm.phaseId = null;
                                                 if (status == 404) {
@@ -287,8 +287,9 @@
                                                     vm.subErrors.msg = "Please select phase!"
                                                 } else if (status == 400) {
                                                     vm.subErrors.msg = error.input_file[0]
+                                                } else {
+                                                    vm.subErrors.msg = error
                                                 }
-
                                                 vm.stopLoader();
                                             }
                                         };
