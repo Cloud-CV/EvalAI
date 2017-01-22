@@ -154,10 +154,10 @@ def create_dir_as_python_package(directory):
 def return_file_url_per_environment(url):
 
     if DJANGO_SETTINGS_MODULE == "settings.dev":
-        url = "{0}{1}".format("http://localhost:8000/media/", url)
+        url = "{0}{1}".format("http://localhost:8000", url)
 
     elif DJANGO_SETTINGS_MODULE == "settings.test":
-        url = "{0}{1}".format("http://testserver/", url)
+        url = "{0}{1}".format("http://testserver", url)
 
     return url
 
@@ -170,7 +170,7 @@ def extract_challenge_data(challenge, phases):
     '''
 
     challenge_data_directory = CHALLENGE_DATA_DIR.format(challenge_id=challenge.id)
-    evaluation_script_url = challenge.evaluation_script
+    evaluation_script_url = challenge.evaluation_script.url
     evaluation_script_url = return_file_url_per_environment(evaluation_script_url)
     # create challenge directory as package
     create_dir_as_python_package(challenge_data_directory)
@@ -187,7 +187,7 @@ def extract_challenge_data(challenge, phases):
         phase_data_directory = PHASE_DATA_DIR.format(challenge_id=challenge.id, phase_id=phase.id)
         # create phase directory
         create_dir(phase_data_directory)
-        annotation_file_url = phase.test_annotation
+        annotation_file_url = phase.test_annotation.url
         annotation_file_url = return_file_url_per_environment(annotation_file_url)
         annotation_file_name = os.path.basename(phase.test_annotation.name)
         PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id][phase.id] = annotation_file_name
@@ -229,7 +229,7 @@ def extract_submission_data(submission_id):
         print 'Submission {} does not exist'.format(submission_id)
         traceback.print_exc()
 
-    submission_input_file = submission.input_file
+    submission_input_file = submission.input_file.url
     submission_input_file = return_file_url_per_environment(submission_input_file)
 
     submission_data_directory = SUBMISSION_DATA_DIR.format(submission_id=submission.id)
@@ -241,14 +241,17 @@ def extract_submission_data(submission_id):
 
     download_and_extract_file(submission_input_file, submission_input_file_path)
 
+    return submission
 
-def run_submission(challenge_id, phase_id, submission_id, user_annotation_file_path):
+
+def run_submission(challenge_id, phase_id, submission_id, submission, user_annotation_file_path):
     '''
         * receives a challenge id, phase id and user annotation file path
         * checks whether the corresponding evaluation script for the challenge exists or not
         * checks the above for annotation file
         * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
     '''
+    submission_output = None
     annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP.get(challenge_id).get(phase_id)
     annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(challenge_id=challenge_id, phase_id=phase_id,
                                                              annotation_file=annotation_file_name)
@@ -261,10 +264,6 @@ def run_submission(challenge_id, phase_id, submission_id, user_annotation_file_p
     stdout_file_name = 'temp_stdout.txt'
     stderr_file_name = 'temp_stderr.txt'
 
-    try:
-        submission = Submission.objects.get(id=submission_id)
-    except Submission.DoesNotExist:
-        submission = None
     stdout_file = join(temp_run_dir, stdout_file_name)
     stderr_file = join(temp_run_dir, stderr_file_name)
 
@@ -275,10 +274,13 @@ def run_submission(challenge_id, phase_id, submission_id, user_annotation_file_p
     submission.status = Submission.RUNNING
     submission.save()
     with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
-        EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path, user_annotation_file_path)
+        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path, user_annotation_file_path)
     # after the execution is finished, set `status` to finished and hence `completed_at`
     submission.status = Submission.FINISHED
+    if submission_output:
+        submission.output = submission_output
     submission.save()
+
     stderr.close()
     stdout.close()
     stderr_content = open(stderr_file, 'r').read()
@@ -300,9 +302,10 @@ def process_submission_message(message):
     challenge_id = message.get('challenge_id')
     phase_id = message.get('phase_id')
     submission_id = message.get('submission_id')
-    extract_submission_data(submission_id)
-    user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id), 'user_output.txt')
-    run_submission(challenge_id, phase_id, submission_id, user_annotation_file_path)
+    submission_instance = extract_submission_data(submission_id)
+    user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
+                                     os.path.basename(submission_instance.input_file.name))
+    run_submission(challenge_id, phase_id, submission_id, submission_instance, user_annotation_file_path)
 
 
 def process_add_challenge_message(message):
