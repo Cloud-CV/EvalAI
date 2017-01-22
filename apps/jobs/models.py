@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.db.models import Max
+from django.utils import timezone
 
 from base.models import (TimeStampedModel, )
 from challenges.models import ChallengePhase
@@ -78,6 +79,12 @@ class Submission(TimeStampedModel):
         db_table = 'submission'
 
     def save(self, *args, **kwargs):
+
+        if hasattr(self, 'status'):
+            if self.status == Submission.RUNNING:
+                self.started_at = timezone.now()
+            if self.status == Submission.FINISHED:
+                self.completed_at = timezone.now()
 
         if not self.pk:
             sub_num = Submission.objects.filter(
