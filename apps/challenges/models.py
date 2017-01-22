@@ -90,6 +90,7 @@ class ChallengePhase(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_phase'
+        unique_together = (('code_name', 'challenge'),)
 
     def __str__(self):
         """Returns the name of Phase"""
