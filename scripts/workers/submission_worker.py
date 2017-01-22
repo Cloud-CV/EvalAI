@@ -33,7 +33,6 @@ if len(sys.argv) == 2:
 
 
 sys.path.insert(0, DJANGO_PROJECT_PATH)
-sys.path.append(COMPUTE_DIRECTORY_PATH)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
@@ -359,6 +358,8 @@ def main():
 
     # print tempfile.mkdtemp()
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
+
+    sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     load_active_challenges()
 
