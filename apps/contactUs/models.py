@@ -19,4 +19,3 @@ class Contact(TimeStampedModel):
     class Meta:
         app_label = 'contactUs'
         db_table = 'contact'
-
