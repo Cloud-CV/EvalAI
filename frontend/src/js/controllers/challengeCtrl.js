@@ -279,7 +279,7 @@
                                             },
                                             onError: function(response) {
                                                 var status = response.status;
-                                                var error = response.data.error;
+                                                var error = response.data;
 
                                                 vm.phaseId = null;
                                                 if (status == 404) {
@@ -288,7 +288,7 @@
                                                 } else if (status == 400) {
                                                     vm.subErrors.msg = error.input_file[0]
                                                 } else {
-                                                    vm.subErrors.msg = error
+                                                    vm.subErrors.msg = error.error
                                                 }
                                                 vm.stopLoader();
                                             }
