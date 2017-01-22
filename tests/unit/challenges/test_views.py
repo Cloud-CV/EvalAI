@@ -933,6 +933,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "challenge": self.challenge_phase.challenge.pk,
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
+                "code_name": "Phase Code Name",
             }
         ]
 
@@ -969,8 +970,22 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
                                                           'Another Dummy file content',
                                                           content_type='text/plain')
+        self.data['code_name'] = "Test Code Name"
         response = self.client.post(self.url, self.data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @override_settings(MEDIA_ROOT='/tmp/evalai')
+    def test_create_challenge_phase_with_same_code_name(self):
+        self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
+                                                          'Another Dummy file content',
+                                                          content_type='text/plain')
+
+        expected = {
+            'non_field_errors': ['The fields code_name, challenge must make a unique set.']
+        }
+        response = self.client.post(self.url, self.data, format='multipart')
+        self.assertEqual(response.data, expected )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_challenge_phase_with_no_data(self):
         del self.data['name']
@@ -996,7 +1011,8 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
-            "is_active": True
+            "is_active": True,
+            "code_name": "Phase Code Name",
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1054,7 +1070,8 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
             "is_public": self.challenge_phase.is_public,
-            "is_active": True
+            "is_active": True,
+            "code_name": "Phase Code Name",
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
