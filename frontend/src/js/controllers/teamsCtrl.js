@@ -386,7 +386,7 @@
             var confirm = $mdDialog.prompt()
                 .title('Invite others to this team')
                 .textContent('Enter the email address of the person')
-                .placeholder('deshraj@cloudcv.org')
+                .placeholder('email')
                 .ariaLabel('')
                 .targetEvent(ev)
                 .ok('Send Invite')
