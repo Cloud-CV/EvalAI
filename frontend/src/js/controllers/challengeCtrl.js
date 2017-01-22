@@ -287,8 +287,9 @@
                                                     vm.subErrors.msg = "Please select phase!"
                                                 } else if (status == 400) {
                                                     vm.subErrors.msg = error.input_file[0]
+                                                } else {
+                                                    vm.subErrors.msg = error.error
                                                 }
-
                                                 vm.stopLoader();
                                             }
                                         };
