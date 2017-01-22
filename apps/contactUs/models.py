@@ -6,9 +6,7 @@ from base.models import (TimeStampedModel, )
 
 
 class Contact(TimeStampedModel):
-    """
-    Model representing details of User submitting queries
-    """
+    """Model representing details of User submitting queries."""
     name = models.CharField(max_length=100,)
     email = models.EmailField(max_length=70,)
     message = models.CharField(max_length=500,)
