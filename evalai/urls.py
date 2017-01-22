@@ -27,7 +27,7 @@ from accounts.views import ConfirmEmailView
 handler404 = 'evalai.views.page_not_found'
 handler500 = 'evalai.views.internal_server_error'
 
-urlpatterns = [url(r'^',
+urlpatterns = [url(r'^api/web/',
                    include('web.urls')),
                url(r'^accounts/',
                    include('allauth.urls')),
