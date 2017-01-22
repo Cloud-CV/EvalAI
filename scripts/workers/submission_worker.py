@@ -324,6 +324,7 @@ def process_submission_callback(ch, method, properties, body):
     try:
         print(" [x] Received %r" % body, properties, method)
         body = yaml.safe_load(body)
+        body = dict((k, int(v)) for k, v in body.iteritems())
         process_submission_message(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
