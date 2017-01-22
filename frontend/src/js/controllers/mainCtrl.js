@@ -57,8 +57,8 @@
         		
         	$mdDialog.show(alert).then(function () {
         		var parameters = {};
-        		        		
-                utilities.sendRequest(parameters);
+				
+				utilities.sendRequest(parameters);
         	});
         };
 
