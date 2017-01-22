@@ -23,12 +23,12 @@ from django.conf.urls.static import static
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 
 from accounts.views import ConfirmEmailView
+from web import views
 
 handler404 = 'evalai.views.page_not_found'
 handler500 = 'evalai.views.internal_server_error'
 
-urlpatterns = [url(r'^',
-                   include('web.urls')),
+urlpatterns = [url(r'^$', views.home, name='home'),
                url(r'^accounts/',
                    include('allauth.urls')),
                url(r'^admin/',
@@ -64,6 +64,9 @@ urlpatterns = [url(r'^',
                url(r'^api/participants/',
                    include('participants.urls',
                            namespace='participants')),
+               url(r'^api/web/',
+                   include('web.urls',
+                           namespace='web')),
                ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
