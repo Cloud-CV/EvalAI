@@ -14,16 +14,18 @@
                     </div>
                 </div>
                 <div class="ev-md-container ev-card-body exist-team-card">
+                    <div ng-if="!showPagination" class="page-msg">{{challengeHostTeams.paginationMsg}}</div>
                     <ul>
                         <li ng-repeat="(key, value) in challengeHostTeams.existTeam.results">
                             <i class="fa fa-users" aria-hidden="true"></i>
                             <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
-                            <a ng-click="challengeHostTeams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
+                                <a ng-click="challengeHostTeams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
+                                <a ng-click="challengeHostTeams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
                                 <br>
                                 <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
                             <div class="clearfix"></div>
                         </li>
-                        <section class="pagination">
+                        <section class="pagination" ng-if="challengeHostTeams.showPagination">
                             <div class="row rm-gut">
                                 <div class="col s12 m6 ">
                                     <a ng-class="challengeHostTeams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.previous)">
