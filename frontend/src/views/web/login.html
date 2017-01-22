@@ -7,24 +7,26 @@
 </div>
 <div class="col s12 m4 offset-m4">
     <!-- login form -->
-    <form name="loginForm" ng-submit="auth.userLogin()" id="log-in" novalidate>
+    <form name="loginForm" ng-submit="auth.userLogin(loginForm.$valid)" id="log-in" novalidate>
         <!-- username -->
         <div class="input-field align-left">
-            <input id="name" name="name" type="text" class="validate" ng-model="auth.getUser.name" focus-if required>
+            <input type="text" id="name" name="name" ng-model="auth.getUser.name" ng-minlength="3" required>
             <span class="form-icon"><i class="fa fa-user"></i></span>
-            <label for="name" data-error="wrong" data-success="right">User Name (no space)*</label>
-            <div class="wrn-msg text-highlight" ng-show="auth.isValid.username">{{auth.wrnMsg.username}}</div>
-            <div class="wrn-msg text-highlight" ng-show="loginForm.name.$error.required && loginForm.name.$dirty">
-            Please Enter username.</div>
+            <label for="name">User Name (no space)*</label>
+            <div class="wrn-msg text-highlight" ng-messages="loginForm.name.$error" ng-if="loginForm.name.$touched || loginForm.$submitted">
+                <p ng-message="minlength">username is too short.</p>
+                <p ng-message="required">username is required.</p>
+            </div>
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input id="password" name="password" type="password" class="validate" ng-model="auth.getUser.password" autocomplete="new-password" ng-minlength="8" required>
+            <input type="password" id="password" name="password" ng-model="auth.getUser.password" autocomplete="new-password" ng-minlength="8" required>
             <span class="form-icon"><i class="fa fa-key"></i></span>
             <label for="password">Password (min 8 characters) *</label>
-            <div class="wrn-msg text-highlight" ng-show="auth.isValid.password">{{auth.wrnMsg.password}}</div>
-            <div class="wrn-msg text-highlight" ng-show="loginForm.password.$dirty && loginForm.password.$invalid">
-            Password is less than 8 characters.</div>
+            <div class="wrn-msg text-highlight" ng-messages="loginForm.password.$error" ng-if="loginForm.password.$touched || loginForm.$submitted">
+                <p ng-message="minlength">password is less than 8 characters.</p>
+                <p ng-message="required">password is required.</p>
+            </div>
         </div>
         <div class="row">
             <!--    <div class="col s6 align-left rm-gut">
@@ -33,13 +35,13 @@
         </div> -->
             <br>
             <div class="col s6 align-left rm-gut">
-                <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">LogIn</button>
+                <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit">LogIn</button>
             </div>
             <div class="col s6 align-right right rm-gut">
-                <a ui-sref="auth.reset-password" class="light-link fg-pass" ng-click="auth.resetForm()">Forgotten Account?</a>
+                <a ui-sref="auth.reset-password" class="light-link fg-pass">Forgotten Account?</a>
             </div>
         </div>
-        <div ng-hide="auth.isConfirm" class="fade align-left"> {{auth.wrnMsg.cred}}</div>
+        <div ng-if="auth.isFormError" class="wrn-msg text-highlight align-left"> {{auth.FormError}}</div>
         <div>
             <p class="text-light-gray">
                 Or start with a new account <a class="white-link" ui-sref="auth.signup">SignUp</a>

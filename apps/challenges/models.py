@@ -85,10 +85,12 @@ class ChallengePhase(TimeStampedModel):
     test_annotation = models.FileField(upload_to="test_annotations")
     max_submissions_per_day = models.PositiveIntegerField(default=100000)
     max_submissions = models.PositiveIntegerField(default=100000)
+    code_name = models.CharField(max_length=100, default="Phase Code Name")
 
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_phase'
+        unique_together = (('code_name', 'challenge'),)
 
     def __str__(self):
         """Returns the name of Phase"""

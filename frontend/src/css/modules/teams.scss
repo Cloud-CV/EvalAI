@@ -9,14 +9,14 @@
         color: $med-black;
         vertical-align: middle;
     }
-    [type="radio"]:checked + label:after, 
+    [type="radio"]:checked + label:after,
     [type="radio"].with-gap:checked + label:after {
-    background-color: #252833;
+        background-color: #252833;
     }
-    [type="radio"]:checked + label:after, 
+    [type="radio"]:checked + label:after,
     [type="radio"].with-gap:checked + label:before,
     [type="radio"].with-gap:checked + label:after {
-    border: 2px solid #252833;
+        border: 2px solid #252833;
     }
     i.list-icon {
         line-height: 25px;
@@ -38,4 +38,8 @@
 div.show-member-title {
     width: calc(100% - 35px);
     float: right;
+}
+
+.page-msg {
+    margin-top: 16px;
 }

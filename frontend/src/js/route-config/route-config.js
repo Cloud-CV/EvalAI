@@ -433,11 +433,8 @@
             utilities.sendRequest(parameters);
         }
 
-        console.log(utilities.isAuthenticated())
         if ($rootScope.isAuth == false) {
             // checkToken();
         }
-
-
     };
 })();
