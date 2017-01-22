@@ -56,9 +56,7 @@
         		.ok('Close')
         		
         	$mdDialog.show(alert).then(function () {
-        		var parameters = {};
         		
-        		utilities.sendRequest(parameters);
         	});
         };
 
