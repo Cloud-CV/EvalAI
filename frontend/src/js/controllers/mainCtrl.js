@@ -55,9 +55,7 @@
         		.textContent('Thanks for your interest in hosting a Challenge on EvalAI. We will release this feature soon!')
         		.ok('Close')
         		
-        	$mdDialog.show(alert).then(function () {
-        		
-        	});
+        	$mdDialog.show(alert).then();
         };
 
     }
