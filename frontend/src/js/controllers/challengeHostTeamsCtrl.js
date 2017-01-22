@@ -25,6 +25,26 @@
         vm.isNext = '';
         vm.isPrev = '';
         vm.team.error = false;
+        vm.showPagination = false;
+
+        // loader for existng teams// loader for exisiting teams
+        vm.isExistLoader = false;
+        vm.loaderTitle = '';
+        vm.loginContainer = angular.element('.exist-team-card');
+
+        // show loader
+        vm.startExistLoader = function(msg) {
+            vm.isExistLoader = true;
+            vm.loaderTitle = msg;
+            vm.loginContainer.addClass('low-screen');
+        }
+
+        // stop loader
+        vm.stopExistLoader = function() {
+            vm.isExistLoader = false;
+            vm.loaderTitle = '';
+            vm.loginContainer.removeClass('low-screen');
+        }
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
@@ -36,7 +56,15 @@
                 var response = response.data;
                 if (status == 200) {
                     vm.existTeam = response;
-                    console.log(response);
+
+                    if (vm.existTeam.count == 0) {
+                        vm.showPagination = false;
+                        vm.paginationMsg = "No team exist for now, Start by creating a new team!"
+                    } else {
+
+                        vm.showPagination = true;
+                        vm.paginationMsg = ""
+                    }
 
                     // clear error msg from storage
                     utilities.deleteData('emailError');
@@ -55,6 +83,8 @@
                     }
                     if (vm.existTeam.next != null) {
                         vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
+                    } else {
+                        vm.currentPage = 1;
                     }
 
                     // to load data with pagination
@@ -109,6 +139,8 @@
                                 }
                                 vm.stopLoader();
                             })
+                        } else {
+                            vm.stopLoader();
                         }
                     }
 
@@ -130,20 +162,20 @@
         vm.createNewTeam = function() {
             vm.isLoader = true;
             vm.loaderTitle = '';
-            vm.loginContainer = angular.element('.new-team-card');
+            vm.newContainer = angular.element('.new-team-card');
 
             // show loader
             vm.startLoader = function(msg) {
                 vm.isLoader = true;
                 vm.loaderTitle = msg;
-                vm.loginContainer.addClass('low-screen');
+                vm.newContainer.addClass('low-screen');
             }
 
             // stop loader
             vm.stopLoader = function() {
                 vm.isLoader = false;
                 vm.loaderTitle = '';
-                vm.loginContainer.removeClass('low-screen');
+                vm.newContainer.removeClass('low-screen');
             }
 
             vm.startLoader("Loading Teams");
@@ -161,7 +193,10 @@
                     var response = response.data;
                     vm.teamId = response.id;
                     vm.team.error = false;
+                    vm.team.name = '';
 
+                    vm.stopLoader();
+                    vm.startExistLoader("Loading Teams");
                     var parameters = {};
                     parameters.url = 'hosts/challenge_host_team/';
                     parameters.method = 'GET';
@@ -172,61 +207,167 @@
                             var response = response.data;
                             if (status == 200) {
                                 vm.existTeam = response;
+                                vm.showPagination = true;
+                                vm.paginationMsg = '';
+
+
+                                // condition for pagination
+                                if (vm.existTeam.next == null) {
+                                    vm.isNext = 'disabled';
+                                    vm.currentPage = 1;
+                                } else {
+                                    vm.isNext = '';
+                                    vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
+                                }
+
+                                if (vm.existTeam.previous == null) {
+                                    vm.isPrev = 'disabled';
+                                } else {
+                                    vm.isPrev = '';
+                                }
+
+
+                                vm.stopExistLoader();
                             }
+                        },
+                        onError: function(response) {
+                            var status = response.status;
+                            var error = response.data;
+                            vm.stopExistLoader();
                         }
                     };
                     utilities.sendRequest(parameters);
-                    vm.stopLoader();
+
                 },
                 onError: function(response) {
                     var status = response.status;
                     var error = response.data;
-                    vm.stopLoader();
+
                     vm.team.error = error.team_name[0];
+                    vm.stopLoader();
                 }
             };
 
             utilities.sendRequest(parameters);
-            vm.reset = function() {
-                 vm.team.name = '';
-                 };
-            vm.reset();
+
         }
-        
+
+        vm.confirmDelete = function(ev, hostTeamId) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                .title('Would you like to remove yourself?')
+                .textContent('Note: This action will remove you from the team.')
+                .ariaLabel('Lucky day')
+                .targetEvent(ev)
+                .ok('Yes')
+                .cancel("No");
+
+            $mdDialog.show(confirm).then(function() {
+                vm.startExistLoader();
+                var parameters = {};
+                parameters.url = 'hosts/remove_self_from_challenge_host/' + hostTeamId;
+                parameters.method = 'DELETE';
+                parameters.data = {}
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+
+                        var status = response.status;
+                        var response = response.data;
+                        vm.team.error = false;
+
+                        var parameters = {};
+                        parameters.url = 'hosts/challenge_host_team/';
+                        parameters.method = 'GET';
+                        parameters.token = userKey;
+                        parameters.callback = {
+                            onSuccess: function(response) {
+                                var status = response.status;
+                                var response = response.data;
+                                if (status == 200) {
+                                    vm.existTeam = response;
+
+
+                                    // condition for pagination
+                                    if (vm.existTeam.next == null) {
+                                        vm.isNext = 'disabled';
+                                        vm.currentPage = vm.existTeam.count / 10;
+                                    } else {
+                                        vm.isNext = '';
+                                        vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+                                    }
+
+                                    if (vm.existTeam.previous == null) {
+                                        vm.isPrev = 'disabled';
+                                    } else {
+                                        vm.isPrev = '';
+                                    }
+
+
+                                    if (vm.existTeam.count == 0) {
+
+                                        vm.showPagination = false;
+                                        vm.paginationMsg = "No team exist for now, Start by creating a new team!"
+                                    } else {
+                                        vm.showPagination = true;
+                                        vm.paginationMsg = "";
+                                    }
+                                }
+
+                                vm.stopExistLoader();
+                            }
+                        }
+                        utilities.sendRequest(parameters);
+                    },
+                    onError: function(response) {
+                        var status = response.status;
+                        var error = response.data;
+                        vm.stopExistLoader();
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+
+            }, function() {
+                console.log("Operation defered");
+            });
+        };
+
         vm.inviteOthers = function(ev, hostTeamId) {
             // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
                 .title('Invite others to this Team')
                 .textContent('Enter the email address of the person')
-                .placeholder('deshraj@cloudcv.org')
+                .placeholder('email')
                 .ariaLabel('')
                 .targetEvent(ev)
                 .ok('Send Invite')
                 .cancel('Cancel');
 
-                $mdDialog.show(confirm).then(function(result) {
-                    var parameters = {};
-                    parameters.url = 'hosts/challenge_host_teams/' + hostTeamId + '/invite';
-                    parameters.method = 'POST';
-                    parameters.data = {
-                        "email": result
-                    }
-                    parameters.token = userKey;
-                    parameters.callback = {
-                        onSuccess: function(response) {
-                            var status = response.status;
-                            var response = response.data;
-                        },
-                        onError: function(response) {
-                            var status = response.status;
-                            var error = response.data;
-                        }
-                    };
+            $mdDialog.show(confirm).then(function(result) {
 
-                    utilities.sendRequest(parameters);
-                });
+                var parameters = {};
+                parameters.url = 'hosts/challenge_host_teams/' + hostTeamId + '/invite';
+                parameters.method = 'POST';
+                parameters.data = {
+                    "email": result
+                }
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var response = response.data;
+                    },
+                    onError: function(response) {
+                        var status = response.status;
+                        var error = response.data;
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            });
         };
-        
+
     }
 
 })();
