@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.shortcuts import render
 
 from rest_framework import permissions, status
@@ -19,11 +20,24 @@ def home(request, template_name="index.html"):
 
 @throttle_classes([AnonRateThrottle, ])
 @api_view(['POST', ])
-@permission_classes((permissions.AllowAny, ))
+@permission_classes((permissions.AllowAny,))
 def contact_us(request):
-    serializer = ContactSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        response_data = {'message': 'Your message has been successfully recorded. We will contact you shortly.'}
-        return Response(response_data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        user = User.objects.get(username=request.user)
+        name = user.username
+        email = user.email
+        request_data = {"name": name, "email": email}
+        request_data['message'] = request.data['message']
+        serializer = ContactSerializer(data=request_data)
+        if serializer.is_valid():
+            serializer.save()
+            response_data = {'message': 'Your message has been successfully recorded. We will contact you shortly.'}
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except:
+        serializer = ContactSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            response_data = {'message': 'Your message has been successfully recorded. We will contact you shortly.'}
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

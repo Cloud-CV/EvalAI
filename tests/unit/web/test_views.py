@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse_lazy
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from contactUs.models import Contact
+from web.models import Contact
 
 
 class BaseAPITestCase(APITestCase):
@@ -11,7 +11,7 @@ class BaseAPITestCase(APITestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
-        self.message = Contact.objects.create (
+        self.message = Contact.objects.create(
             name='someuser',
             email='user@test.com',
             message='Message for Contact')
@@ -21,7 +21,7 @@ class CreateContactMessage(BaseAPITestCase):
 
     def setUp(self):
         super(CreateContactMessage, self).setUp()
-        self.url = reverse_lazy('contactUs:contact_us')
+        self.url = reverse_lazy('web:contact_us')
 
         self.data = {
             'name': 'New Message',
