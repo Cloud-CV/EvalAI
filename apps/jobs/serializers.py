@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from participants.serializers import ParticipantTeamSerializer
+
 from .models import Submission
 
 
@@ -22,3 +24,13 @@ class SubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Submission
         fields = ('participant_team', 'challenge_phase', 'created_by', 'status', 'input_file')
+
+
+class LeaderboardSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        super(LeaderboardSerializer, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = Submission
+        fields = ('participant_team', 'challenge_phase', 'created_by', 'status', 'input_file', 'output', 'id')

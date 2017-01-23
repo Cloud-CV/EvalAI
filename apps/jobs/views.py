@@ -19,7 +19,7 @@ from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
 
 from .models import Submission
-from .serializers import SubmissionSerializer
+from .serializers import SubmissionSerializer, LeaderboardSerializer
 
 
 @throttle_classes([UserRateThrottle])
@@ -96,4 +96,45 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             serializer.save()
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def leaderboard(request, challenge_id, challenge_phase_id):
+    """
+    NOTE: THIS API WILL BE DEPRECATED IN THE NEAR FUTURE
+    Returns the list of Successful Submissions for a particular Challenge
+    """
+    # check if the challenge exists or not
+    try:
+        challenge = Challenge.objects.get(pk=challenge_id)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # check if the challenge phase exists or not
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            pk=challenge_phase_id, challenge=challenge)
+    except ChallengePhase.DoesNotExist:
+        response_data = {'error': 'Challenge Phase does not exist'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not challenge_phase.leaderboard_public:
+        response_data = {'error': 'Challenge Phase leaderboard is not public!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    submissions = Submission.objects.filter(status=Submission.FINISHED,
+                                           challenge_phase=challenge_phase)
+    submissions = sorted(submissions, key=lambda submission: submission.execution_time)
+
+    paginator, result_page = paginated_queryset(submissions, request)
+    try:
+        serializer = LeaderboardSerializer(result_page, many=True)
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+    except:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
