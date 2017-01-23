@@ -350,5 +350,64 @@
 
         utilities.sendRequest(parameters);
 
+        // my submissions
+        vm.isResult = false;
+        vm.getResults = function(phaseId) {
+            vm.isResult = true;
+            // loader for exisiting teams
+            vm.isExistLoader = true;
+            vm.loaderTitle = '';
+            vm.loginContainer = angular.element('.exist-team-card');
+
+            // show loader
+            vm.startLoader = function(msg) {
+                vm.isExistLoader = true;
+                vm.loaderTitle = msg;
+                vm.loginContainer.addClass('low-screen');
+            }
+
+            // stop loader
+            vm.stopLoader = function() {
+                vm.isExistLoader = false;
+                vm.loaderTitle = '';
+                vm.loginContainer.removeClass('low-screen');
+            }
+
+            vm.startLoader("Loading Teams");
+
+            // get details of the particular challenge phase
+
+            var parameters = {};
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/submission/";
+            parameters.method = 'GET';
+            parameters.data = {}
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
+                    vm.submissionResult = response;
+                    // navigate to challenge page
+                    // $state.go('web.challenge-page.overview');
+                    vm.stopLoader();
+                },
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
+                    utilities.storeData('emailError', error.detail);
+                    $state.go('web.permission-denied');
+                    vm.stopLoader();
+                }
+            };
+
+            utilities.sendRequest(parameters);
+
+        }
     }
+
+
+
+
+
+
 })();
