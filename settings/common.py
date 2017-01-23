@@ -29,7 +29,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'random_secret_key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -83,7 +83,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'evalai.urls'
 
-TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend')
+TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend', 'dist')
 
 TEMPLATES = [
     {
