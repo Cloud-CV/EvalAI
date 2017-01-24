@@ -14,7 +14,7 @@
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
         vm.isValid = {};
-
+        vm.user = {};
         // function to change password
         vm.changePassword = function() {
             vm.loginContainer = angular.element('.change-passowrd-card');
