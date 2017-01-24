@@ -221,6 +221,14 @@
             authenticate: true
         }
 
+        var my_submission = {
+            name: "web.challenge-main.challenge-page.my-submission",
+            url: "/my-submission",
+            templateUrl: baseUrl + "/web/challenge/my-submission.html",
+            title: 'My Submission',
+            authenticate: true
+        }
+
         var profile = {
             name: "web.profile",
             parent: "web",
@@ -307,6 +315,7 @@
         $stateProvider.state(phases);
         $stateProvider.state(participate);
         $stateProvider.state(submission);
+        $stateProvider.state(my_submission);
 
         $stateProvider.state(host_challenge);
 
