@@ -343,10 +343,15 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
         expected = [
             {
                 'participant_team': self.submission.participant_team.pk,
+                'participant_team_name': self.submission.participant_team.team_name,
+                'execution_time': self.submission.execution_time,
                 'challenge_phase': self.submission.challenge_phase.pk,
                 'created_by': self.submission.created_by.pk,
                 'status': self.submission.status,
-                'input_file': self.submission.input_file.url
+                'input_file': self.submission.input_file.url,
+                'stdout_file': None,
+                'stderr_file': None,
+                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)

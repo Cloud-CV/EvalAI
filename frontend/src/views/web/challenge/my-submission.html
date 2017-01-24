@@ -14,7 +14,7 @@
                 <div class="ev-md-container ev-panel-title">
                     <div class="row">
                         <div class="col s12">
-                            <strong>Please select a particular phase to get the result!</strong>
+                            <strong>Please select a phase to get list of submissions!</strong>
                         </div>
                     </div>
                     <div class="row">
@@ -25,22 +25,40 @@
                         </div>
                     </div>
                 </div>
+
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
                         <div class="col s12">
                             <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                            <div ng-if="challenge.isResult">
-                                <div class="text-highlight result-tag">Result - {{challenge.phase.name}}</div>
-                                <div ng-repeat="key in challenge.submissionResult.results" class="result-val">
-                                    <div class="fs-12">File</div>
-                                    <div class="val-style"><a href="{{key.input_file}}" target="_blank" class="dark-link"><i class="fa fa-external-link"></i> {{key.input_file}}</a></div>
-                                    <div class="fs-12">Status</div>
-                                    <div class="val-style" ng-class="key.status">{{key.status}}</div>
-                                </div>
-                            </div>
+                            <table ng-if="challenge.isResult" class="highlight">
+                                <thead>
+                                    <tr>
+                                        <th data-field="team">Team Name</th>
+                                        <th data-field="status">Status</th>
+                                        <th data-field="status">Execution Time (In sec.)</th>
+                                        <th data-field="file">Submitted File</th>
+                                        <th data-field="file">Stdout File</th>
+                                        <th data-field="file">Stderr File</th>
+                                        <th data-field="file">Submitted At</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
+                                        <td>{{key.participant_team_name}}</td>
+                                        <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
+                                        <td>{{key.execution_time}}</td>
+                                        <td><a href="{{key.input_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                                        <td><a href="{{key.stdout_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                                        <td><a href="{{key.stderr_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                                        <td>{{key.submitted_at | date:'medium'}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
