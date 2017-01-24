@@ -91,15 +91,6 @@
             title: 'Logout'
         }
         
-        var terms_and_conditions = {
-        	name: "terms_and_conditions",
-        	url: "/tandc",
-        	templateUrl: baseUrl + "/web/terms-and-conditions.html",
-        	controller:'',
-        	controllerAs:'',
-        	title: "Terms and Conditions"
-        }
-
         // main app 'web'
         var web = {
             name: "web",
@@ -286,6 +277,13 @@
             name: "error-404",
             templateUrl: baseUrl + "/web/error-pages/error-404.html",
             title: "Error 404",
+        }
+                
+        var terms_and_conditions = {
+        	name: "terms_and_conditions",
+        	url: "/tandc",
+        	templateUrl: baseUrl + "/web/terms-and-conditions.html",
+        	title: "Terms and Conditions"
         }
 
 
