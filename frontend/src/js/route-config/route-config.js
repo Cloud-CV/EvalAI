@@ -93,8 +93,10 @@
         
         var terms_and_conditions = {
         	name: "terms_and_conditions",
-        	url: "/",
+        	url: "/tandc",
         	templateUrl: baseUrl + "/web/terms-and-conditions.html",
+        	controller:'',
+        	controllerAs:'',
         	title: "Terms and Conditions"
         }
 
@@ -290,6 +292,8 @@
 
         // call all states here
         $stateProvider.state(home);
+        $stateProvider.state(terms_and_conditions);
+        
 
         // auth configs
         $stateProvider.state(auth);
