@@ -31,6 +31,12 @@ class SubmissionSerializer(serializers.ModelSerializer):
         fields = ('participant_team', 'participant_team_name', 'execution_time', 'challenge_phase',
                   'created_by', 'status', 'input_file', 'stdout_file', 'stderr_file', 'submitted_at')
 
+    def get_participant_team_name(self, obj):
+        return obj.participant_team.team_name
+
+    def get_execution_time(self, obj):
+        return obj.execution_time
+
 
 class LeaderboardSerializer(serializers.ModelSerializer):
 
