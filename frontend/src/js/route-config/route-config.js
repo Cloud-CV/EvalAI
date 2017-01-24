@@ -281,7 +281,7 @@
                 
         var terms_and_conditions = {
         	name: "terms_and_conditions",
-        	url: "/tandc",
+        	url: "/legals",
         	templateUrl: baseUrl + "/web/terms-and-conditions.html",
         	title: "Terms and Conditions"
         }
