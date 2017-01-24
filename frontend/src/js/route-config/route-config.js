@@ -281,9 +281,8 @@
 
         var about_us = {
             name: 'about-us',
-            parent: "web",
             url: "/about",
-            templateUrl: baseUrl + "/web/dashboard-about-us.html",
+            templateUrl: baseUrl + "/web/about-us.html",
             title: "About Us"
         }
 
