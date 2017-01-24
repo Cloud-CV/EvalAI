@@ -56,8 +56,6 @@
 
             //reset error msg
             vm.wrnMsg = {};
-            vm.isFormError = false;
-            vm.FormError = {};
         }
 
         // Function to signup
@@ -74,7 +72,6 @@
                     "password2": vm.regUser.confirm_password,
                     "email": vm.regUser.email
                 }
-                vm.FormError = {};
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 201) {
