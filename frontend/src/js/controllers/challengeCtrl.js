@@ -402,7 +402,8 @@
 
             utilities.sendRequest(parameters);
 
-            // Show leaderboard  
+            // Show leaderboard
+            vm.leaderboard = {};
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/leaderboard/";
             parameters.method = 'GET';
@@ -422,8 +423,7 @@
                 onError: function(response) {
                     var status = response.status;
                     var error = response.data;
-                    utilities.storeData('emailError', error.detail);
-                    $state.go('web.permission-denied');
+                    vm.leaderboard.error = error;
                     vm.stopLoader();
                 }
             };

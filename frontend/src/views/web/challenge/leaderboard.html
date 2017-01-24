@@ -50,7 +50,10 @@
                                 </tr>
                                 </tbody>
                             </table>
-                            <div ng-if="challenge.isResult && !challenge.leaderboard.length">
+                            <div ng-if="challenge.isResult && challenge.leaderboard.error">
+                                <p>{{challenge.leaderboard.error.error}}</p>
+                            </div>
+                            <div ng-if="challenge.isResult && !challenge.leaderboard.length && !challenge.leaderboard.error">
                                 <p>No results to show!</p>
                             </div>
                         </div>
