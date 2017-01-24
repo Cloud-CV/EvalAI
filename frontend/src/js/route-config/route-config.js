@@ -90,6 +90,13 @@
             authenticate: false,
             title: 'Logout'
         }
+        
+        var terms_and_conditions = {
+        	name: "terms_and_conditions",
+        	url: "/",
+        	templateUrl: baseUrl + "/web/terms-and-conditions.html",
+        	title: "Terms and Conditions"
+        }
 
         // main app 'web'
         var web = {
