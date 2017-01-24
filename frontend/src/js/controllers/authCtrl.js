@@ -74,7 +74,6 @@
                     "password2": vm.regUser.confirm_password,
                     "email": vm.regUser.email
                 }
-                vm.FormError = {};
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 201) {
