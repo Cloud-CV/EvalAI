@@ -58,3 +58,55 @@ a.active-challenge {
     /* width: 109%; */
     margin-top: -17%;
 }
+
+.blue-bg {
+    background: $med-gray;
+    padding: 10px 20px !important;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.phases-cont {
+    padding: 10px 0px;
+}
+
+.rm-margin {
+    margin: 0px;
+}
+
+.result-tag {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.result-val {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e3e3e3;
+}
+
+.val-style {
+    margin-bottom: 10px;
+}
+
+.submitted,
+.finished {
+    color: green;
+}
+
+.running,
+.submitting {
+    color: orange;
+}
+
+.failed,
+.cancelled {
+    color: red;
+}
+
+.result-wrn {
+    margin-top: 15px;
+}
+
+.capitalize {
+    text-transform: capitalize;
+}

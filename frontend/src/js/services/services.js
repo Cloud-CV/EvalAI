@@ -56,8 +56,6 @@
                 req.headers = headers;
             }
 
-            req.timeout = 6000;
-
             $http(req)
                 .then(successCallback, errorCallback);
         };
