@@ -57,7 +57,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         submission = Submission.objects.filter(participant_team=participant_team_id,
-                                               challenge_phase=challenge_phase)
+                                               challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submission, request)
         try:
             serializer = SubmissionSerializer(result_page, many=True)

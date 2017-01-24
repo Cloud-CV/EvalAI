@@ -81,7 +81,13 @@ class Submission(TimeStampedModel):
     @property
     def execution_time(self):
         """Returns the execution time of a submission"""
-        return (self.completed_at - self.started_at).total_seconds()
+        # if self.self.completed_at and self.started_at:
+        try:
+            return (self.completed_at - self.started_at).total_seconds()
+        except:
+            return "None"
+        # else:
+        #     return None
 
     def save(self, *args, **kwargs):
 
