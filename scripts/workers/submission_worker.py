@@ -8,6 +8,7 @@ import requests
 import shutil
 import socket
 import sys
+import tempfile
 import traceback
 import yaml
 import zipfile
@@ -23,7 +24,10 @@ from django.utils import timezone
 # but make sure that this worker is run like `python scripts/workers/submission_worker.py`
 DJANGO_PROJECT_PATH = dirname(dirname(dirname(os.path.abspath(__file__))))
 
-COMPUTE_DIRECTORY_PATH = join(dirname(dirname(os.path.abspath(__file__))), 'compute')
+# all challenge and submission will be stored in temp directory
+BASE_TEMP_DIR = tempfile.mkdtemp()
+
+COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, 'compute')
 
 # default settings module will be `dev`, to override it pass
 # as command line arguments
@@ -345,19 +349,7 @@ def add_challenge_callback(ch, method, properties, body):
 
 def main():
 
-    # before starting, make sure that everything is cleaned
-    # delete `challenge_data` and `submission_files` directory completely
-    try:
-        shutil.rmtree(CHALLENGE_DATA_BASE_DIR)
-    except OSError as e:
-        print 'Failed to remove directory {} with error {}'.format(CHALLENGE_DATA_BASE_DIR, e)
-
-    try:
-        shutil.rmtree(SUBMISSION_DATA_BASE_DIR)
-    except OSError as e:
-        print 'Failed to remove directory {} with error {}'.format(SUBMISSION_DATA_BASE_DIR, e)
-
-    # print tempfile.mkdtemp()
+    print 'Using {0} as temp directory to store data'.format(BASE_TEMP_DIR)
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
 
     sys.path.append(COMPUTE_DIRECTORY_PATH)
