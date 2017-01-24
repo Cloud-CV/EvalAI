@@ -7,7 +7,8 @@
 
     angular
         .module('evalai')
-        .filter('ceil', ceil);
+        .filter('ceil', ceil)
+        .filter('numKeys', numKeys);
 
     function ceil() {
         return function(input) {
@@ -15,6 +16,11 @@
         };
     }
 
+    function numKeys() {
+        return function(json) {
+            var keys = Object.keys(json)
+            return keys.length;
+        }
+    }
+
 })();
-
-

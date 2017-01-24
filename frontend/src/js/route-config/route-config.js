@@ -229,6 +229,14 @@
             authenticate: true
         }
 
+        var leaderboard = {
+            name: "web.challenge-main.challenge-page.leaderboard",
+            url: "/leaderboard",
+            templateUrl: baseUrl + "/web/challenge/leaderboard.html",
+            title: 'Leaderboard',
+            authenticate: true
+        }
+
         var profile = {
             name: "web.profile",
             parent: "web",
@@ -316,6 +324,7 @@
         $stateProvider.state(participate);
         $stateProvider.state(submission);
         $stateProvider.state(my_submission);
+        $stateProvider.state(leaderboard);
 
         $stateProvider.state(host_challenge);
 
