@@ -1,0 +1,63 @@
+<section class="ev-sm-container ev-view ">
+    <div class="row">
+        <div class="col s12 m12">
+            <div class=" ev-card-panel ev-z-depth-5 ">
+                <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
+                    <div class="loader">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+                <div class="ev-md-container ev-panel-title">
+                    <div class="row">
+                        <div class="col s12">
+                            <strong>Please select a phase!</strong>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col xs12 s6">
+                            <span><md-select ng-model="challenge.phase.name" placeholder="Phase" class="rm-margin">
+                            <md-option ng-click="challenge.getResults(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}}</md-option>
+                        </md-select></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class=" ev-card-body exist-team-card">
+                    <div class="row">
+                        <div class="col s12">
+                            <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
+                            <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight">
+                                <thead>
+                                    <tr>
+                                        <th data-field="team">Team Name</th>
+                                        <th ng-repeat="(key, value) in challenge.leaderboard[0].final_result">
+                                            <a href="#" ng-click="sortType = '{{key}}'; sortReverse = !sortReverse">
+                                                {{key}}
+                                                <span ng-show="sortType == '{{key}}' && !sortReverse" class="fa fa-caret-down"></span>
+                                                <span ng-show="sortType == '{{key}}' && sortReverse" class="fa fa-caret-up"></span>
+                                            </a>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="key in challenge.leaderboard | orderBy:sortType:sortReverse">
+                                    <td><b>{{key.participant_team_name}}</b></td>
+                                    <td ng-repeat="result in key.final_result">{{result}}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div ng-if="challenge.isResult && !challenge.leaderboard.length">
+                                <p>No results to show!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
