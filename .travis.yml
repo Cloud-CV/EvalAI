@@ -20,6 +20,9 @@ install:
   - pip install -r requirements/dev.txt
   - pip install coveralls
 
+services:
+  - rabbitmq
+
 script:
   - flake8 ./
   - py.test --cov . --cov-config .coveragerc
