@@ -133,7 +133,10 @@ def leaderboard(request, challenge_id, challenge_phase_id):
 
     submissions = Submission.objects.filter(status=Submission.FINISHED,
                                            challenge_phase=challenge_phase)
-    submissions = sorted(submissions, key=lambda submission: submission.execution_time)
+
+    # Order by the execution time
+    submissions = submissions.extra(select={"exec_time": "completed_at - started_at"})
+    submissions = submissions.order_by('participant_team', 'exec_time').distinct('participant_team')
 
     paginator, result_page = paginated_queryset(submissions, request)
     try:
