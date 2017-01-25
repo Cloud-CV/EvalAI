@@ -1,30 +1,33 @@
-<!-- dynamic header for home page-->
-
+<!--
+    dynamic header for home page
+-->
 <dyn-header></dyn-header>
-
 <!-- background hero section -->
 <section class="bg-section">
-	<div class="bg-image"></div>
+    <div class="bg-image"></div>
 </section>
-
 <!-- EvalAI into -->
 <section class="ev-container center">
-	<h4 class="ev-head w-300 text-white">EvalAI</h4>
-	<p class="text-light-gray ev-intro w-300">Be a leader in Computational Research</p>
-	<br>
-	<a ng-click="main.hostChallenge($event)" class="waves-effect waves-dark btn ev-btn-dark w-300">Host Competition&nbsp; <i class="fa fa-paper-plane-o text-light-gray icon"></i></a>
+    <h4 class="ev-head w-300 text-white">EvalAI</h4>
+    <p class="text-light-gray ev-intro w-300">Be a leader in Computational Research</p>
+    <br/>
+    <a ng-click="main.hostChallenge($event)" class="waves-effect waves-dark btn ev-btn-dark w-300">
+        Host Competition&nbsp;
+        <i class="fa fa-paper-plane-o text-light-gray icon"></i>
+    </a>
 </section>
-
 <!-- Scroll direction -->
 <section class="ev-container center ev-insight">
-	<a href="#" scroll-to="ev-scroll-down"  duration="2000" class="light-link">Get Insights<br>
-	<i class="fa fa-chevron-circle-down dark-link"></i></a>
+    <a href="#" scroll-to="ev-scroll-down"  duration="2000" class="light-link">
+        Get Insights
+        <br/>
+        <i class="fa fa-chevron-circle-down dark-link"></i>
+    </a>
 </section>
-
 <!-- details section -->
 <section class="ev-container ev-details text-med-black" id="ev-scroll-down">
-	Details Comes Here!
-
-	<!-- footer -->
-	<ng-include src=" 'src/views/web/partials/footer.html' "></ng-include>
+    Details Comes Here!
+    <!-- footer -->
+    <!-- <ng-include src=" 'src/views/web/partials/footer.html' "></ng-include> -->
+    <landing-footer></landing-footer>
 </section>

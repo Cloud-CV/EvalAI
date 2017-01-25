@@ -12,12 +12,29 @@
                     </ul>
                
             </div>
-            <div class="col l4 offset-l2 s12">
+            <div class="col l4 offset-l0 s12">
                 <h5 class="white-text">Links</h5>
                 <ul>
                     <li><a class="text-light-gray" href="#!">Blog</a></li>
                     <li><a class="text-light-gray" ui-sref="about-us">About Us</a></li>
                     <li><a class="text-light-gray" href="#!">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="col l2 s12">
+                <h5 class="white-text">Stats</h5>
+                <ul>
+                    <li><a class="text-light-gray" ng-href="{{githubStats.htmlUrl}}">
+                        <div class="chip">
+                            <i class="fa fa-code-fork"></i>
+                            <strong>{{githubStats.forksCount || 0}}</strong> Forks
+                        </div>
+                    </a></li>
+                    <li><a class="text-light-gray" ng-href="{{githubStats.htmlUrl}}">
+                        <div class="chip">
+                            <i class="fa fa-star"></i>
+                            <strong>{{githubStats.starsCount || 0}}</strong> Stars
+                        </div>
+                    </a></li>
                 </ul>
             </div>
         </div>
