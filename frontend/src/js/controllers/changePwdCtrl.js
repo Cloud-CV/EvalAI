@@ -7,16 +7,17 @@
         .module('evalai')
         .controller('ChangePwdCtrl', ChangePwdCtrl);
 
-    ChangePwdCtrl.$inject = ['utilities', 'validationSvc', '$state', '$http', '$rootScope'];
+    ChangePwdCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
 
-    function ChangePwdCtrl(utilities, validationSvc, $state, $http, $rootScope) {
+    function ChangePwdCtrl(utilities, $state, $http, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
         vm.isValid = {};
         vm.user = {};
         // function to change password
-        vm.changePassword = function() {
+        vm.changePassword = function(resetconfirmFormValid) {
+          if(resetconfirmFormValid){
             vm.loginContainer = angular.element('.change-passowrd-card');
 
             var parameters = {};
@@ -66,7 +67,8 @@
                 };
 
                 utilities.sendRequest(parameters);
-            } else {
+              }
+            }else {
                 //Assign variable for the view to show errors
             }
         }
