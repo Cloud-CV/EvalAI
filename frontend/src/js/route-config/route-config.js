@@ -285,7 +285,12 @@
             templateUrl: baseUrl + "/web/about-us.html",
             title: "About Us"
         }
-
+        var our_team = {
+            name: 'our-team',
+            url: "/our-team",
+            templateUrl: baseUrl + "/web/our-team.html",
+            title: "Our Team"
+        }
 
 
         // call all states here
@@ -331,6 +336,7 @@
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);
         $stateProvider.state(about_us);
+        $stateProvider.state(our_team);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
