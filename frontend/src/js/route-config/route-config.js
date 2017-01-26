@@ -286,6 +286,13 @@
         	title: "Terms and Conditions"
         }
 
+        var about_us = {
+            name: 'about-us',
+            url: "/about",
+            templateUrl: baseUrl + "/web/about-us.html",
+            title: "About Us"
+        }
+
 
 
         // call all states here
@@ -332,6 +339,7 @@
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);
+        $stateProvider.state(about_us);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
