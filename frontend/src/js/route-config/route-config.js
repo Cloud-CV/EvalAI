@@ -90,7 +90,7 @@
             authenticate: false,
             title: 'Logout'
         }
-
+        
         // main app 'web'
         var web = {
             name: "web",
@@ -278,6 +278,13 @@
             templateUrl: baseUrl + "/web/error-pages/error-404.html",
             title: "Error 404",
         }
+                
+        var terms_and_conditions = {
+        	name: "terms_and_conditions",
+        	url: "/legals",
+        	templateUrl: baseUrl + "/web/terms-and-conditions.html",
+        	title: "Terms and Conditions"
+        }
 
         var about_us = {
             name: 'about-us',
@@ -295,6 +302,8 @@
 
         // call all states here
         $stateProvider.state(home);
+        $stateProvider.state(terms_and_conditions);
+        
 
         // auth configs
         $stateProvider.state(auth);
