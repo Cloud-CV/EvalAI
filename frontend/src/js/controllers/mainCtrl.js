@@ -57,6 +57,15 @@
         		
         	$mdDialog.show(alert);
         };
+        vm.participateChallenge = function (ev) {
+            
+            var alert = $mdDialog.alert()
+                .title('Participate in challenges')
+                .textContent('Thanks for your interest in Participating in Challenges on EvalAI. We will release this feature soon!')
+                .ok('Close')
+                
+            $mdDialog.show(alert);
+        };
 
     }
 
