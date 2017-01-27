@@ -2,8 +2,6 @@ import yaml
 
 from rest_framework import serializers
 
-from participants.serializers import ParticipantTeamSerializer
-
 from .models import Submission
 
 
@@ -62,4 +60,3 @@ class LeaderboardSerializer(serializers.ModelSerializer):
             return yaml.safe_load(obj.output)
         except:
             return None
-

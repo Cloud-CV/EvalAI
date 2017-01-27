@@ -132,7 +132,7 @@ def leaderboard(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     submissions = Submission.objects.filter(status=Submission.FINISHED,
-                                           challenge_phase=challenge_phase)
+                                            challenge_phase=challenge_phase)
 
     # Order by the execution time
     submissions = submissions.extra(select={"exec_time": "completed_at - started_at"})
