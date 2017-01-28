@@ -57,7 +57,7 @@
                         var status = response.status;
                         var error = response.data;
                         vm.user.error = "Failed";
-                        var token_valid, oldpassword_valid ,password1_valid, password2_valid;
+                        var oldpassword_valid ,password1_valid, password2_valid;
                         try {
                             oldpassword_valid = typeof(response.data.old_password) !== 'undefined' ? true : false;
                             password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
