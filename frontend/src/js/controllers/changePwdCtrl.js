@@ -19,21 +19,21 @@
         // function to change password
         vm.changePassword = function(resetconfirmFormValid) {
           if(resetconfirmFormValid){
-            vm.loginContainer = angular.element('.change-passowrd-card');
+            vm.changepassContainer = angular.element('.change-passowrd-card');
 
             vm.startLoader = function(msg) {
                 $rootScope.isLoader = true;
                 $rootScope.loaderTitle = msg;
-                vm.loginContainer.addClass('low-screen');
+                vm.changepassContainer.addClass('low-screen');
             }
 
             // stop loader
             vm.stopLoader = function() {
                 $rootScope.isLoader = false;
                 $rootScope.loaderTitle = '';
-                vm.loginContainer.removeClass('low-screen');
+                vm.changepassContainer.removeClass('low-screen');
             }
-            
+
             vm.startLoader("Changing Your Password");
             var parameters = {};
             parameters.url = 'auth/password/change/';
