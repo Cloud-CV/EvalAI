@@ -13,7 +13,7 @@
         <!-- show after authenticate user -->
         <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
         <li ng-show="isAuth">
-          <a ng-click="main.profileDropdown($event)" class="dropdown-button waves-effect waves-dark" data-activates='ev-dropdown' ui-sref-active="active">Hi {{main.user.name}}! &nbsp; <i class="fa fa-caret-down text-light-gray icon"></i></a>
+          <a ng-init="main.profileDropdown($event)" class="dropdown-button waves-effect waves-dark" data-activates='ev-dropdown' ui-sref-active="active">Hi {{main.user.name}}! &nbsp; <i class="fa fa-caret-down text-light-gray icon"></i></a>
         </li>
       </ul>
 
