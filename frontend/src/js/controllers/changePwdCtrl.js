@@ -15,6 +15,19 @@
         vm.wrnMsg = {};
         vm.isValid = {};
         vm.user = {};
+
+        vm.startLoader = function(msg) {
+            $rootScope.isLoader = true;
+            $rootScope.loaderTitle = msg;
+            vm.loginContainer.addClass('low-screen');
+        }
+
+        // stop loader
+        vm.stopLoader = function() {
+            $rootScope.isLoader = false;
+            $rootScope.loaderTitle = '';
+            vm.loginContainer.removeClass('low-screen');
+        }
         // function to change password
         vm.changePassword = function(resetconfirmFormValid) {
           if(resetconfirmFormValid){
@@ -28,7 +41,6 @@
                 "new_password1": vm.user.new_password1,
                 "new_password2": vm.user.new_password2,
                 "uid": $state.params.user_id,
-                "token": $state.params.reset_token,
             }
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -47,13 +59,10 @@
                         vm.user.error = "Failed";
                         var token_valid, oldpassword_valid ,password1_valid, password2_valid;
                         try {
-                            token_valid = typeof(response.data.token) !== 'undefined' ? true : false;
                             oldpassword_valid = typeof(response.data.old_password) !== 'undefined' ? true : false;
                             password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
                             password2_valid = typeof(response.data.new_password2) !== 'undefined' ? true : false;
-                            if (token_valid) {
-                                vm.FormError = "this link has been already used or expired.";
-                            }else if (oldpassword_valid) {
+                            if (oldpassword_valid) {
                                 vm.FormError = response.data.oldpassword_valid[0] + " " + response.data.oldpassword_valid[1];
                             }else if (password1_valid) {
                                 vm.FormError = response.data.new_password1[0] + " " + response.data.new_password1[1];
