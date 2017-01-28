@@ -58,6 +58,11 @@
         	$mdDialog.show(alert);
         };
 
+        vm.profileDropdown = function (ev) {
+            $(".dropdown-button").dropdown();
+
+        };
     }
+
 
 })();
