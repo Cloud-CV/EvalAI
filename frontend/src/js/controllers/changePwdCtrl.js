@@ -15,7 +15,7 @@
         vm.wrnMsg = {};
         vm.isValid = {};
         vm.user = {};
-
+        vm.isFormError = false;
         // function to change password
         vm.changePassword = function(resetconfirmFormValid) {
           if(resetconfirmFormValid){
@@ -59,6 +59,7 @@
                         var status = response.status;
                         var error = response.data;
                         vm.user.error = "Failed";
+                        vm.isFormError = true;
                         var oldpassword_valid ,password1_valid, password2_valid;
                         try {
                             oldpassword_valid = typeof(response.data.old_password) !== 'undefined' ? true : false;
