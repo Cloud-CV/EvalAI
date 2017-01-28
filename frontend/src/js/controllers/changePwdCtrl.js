@@ -16,22 +16,24 @@
         vm.isValid = {};
         vm.user = {};
 
-        vm.startLoader = function(msg) {
-            $rootScope.isLoader = true;
-            $rootScope.loaderTitle = msg;
-            vm.loginContainer.addClass('low-screen');
-        }
-
-        // stop loader
-        vm.stopLoader = function() {
-            $rootScope.isLoader = false;
-            $rootScope.loaderTitle = '';
-            vm.loginContainer.removeClass('low-screen');
-        }
         // function to change password
         vm.changePassword = function(resetconfirmFormValid) {
           if(resetconfirmFormValid){
             vm.loginContainer = angular.element('.change-passowrd-card');
+
+            vm.startLoader = function(msg) {
+                $rootScope.isLoader = true;
+                $rootScope.loaderTitle = msg;
+                vm.loginContainer.addClass('low-screen');
+            }
+
+            // stop loader
+            vm.stopLoader = function() {
+                $rootScope.isLoader = false;
+                $rootScope.loaderTitle = '';
+                vm.loginContainer.removeClass('low-screen');
+            }
+            
             vm.startLoader("Changing Your Password");
             var parameters = {};
             parameters.url = 'auth/password/change/';
