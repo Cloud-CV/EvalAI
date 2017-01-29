@@ -1,5 +1,5 @@
 // define directives here
-(function () {
+(function() {
     'use strict'
     // dynamic header directive
     angular.module('evalai').directive('dynHeader', dynHeader);
@@ -19,7 +19,7 @@
                 this.init();
             };
             headerComp.prototype = {
-                init: function () {
+                init: function() {
                     var self = this;
                     // initialized mobile sidebar
                     angular.element(".button-collapse").sideNav({
@@ -34,7 +34,7 @@
     }
 })();
 //Landing Footer directive
-(function () {
+(function() {
     'use strict'
     angular.module('evalai').directive('landingFooter', landingFooter);
 
@@ -49,7 +49,7 @@
 
         function controller($scope, $element, $attrs, $http) {
             var githubRepoUrl = "https://api.github.com/repos/Cloud-CV/EvalAI";
-            $http.get(githubRepoUrl).then(function (res) {
+            $http.get(githubRepoUrl).then(function(res) {
                 $scope.githubStats = {
                     forksCount: res.data.forks_count,
                     starsCount: res.data.stargazers_count,
@@ -60,7 +60,7 @@
     }
 })();
 //Dashboard Footer directive
-(function () {
+(function() {
     'use strict'
     // dynamic header directive
     angular.module('evalai').directive('dashboardFooter', dashboardFooter);
@@ -76,7 +76,7 @@
 
         function controller($scope, $element, $attrs, $http) {
             var githubRepoUrl = "https://api.github.com/repos/Cloud-CV/EvalAI";
-            $http.get(githubRepoUrl).then(function (res) {
+            $http.get(githubRepoUrl).then(function(res) {
                 $scope.githubStats = {
                     forksCount: res.data.forks_count,
                     starsCount: res.data.stargazers_count,
@@ -87,7 +87,7 @@
     }
 })();
 // loader directive
-(function () {
+(function() {
     'use strict'
     angular.module('evalai').directive('evalLoader', evalLoader);
 
@@ -106,14 +106,14 @@
                 this.init();
             };
             evalLoader.prototype = {
-                init: function () {}
+                init: function() {}
             };
             var evalLoaderObj = new evalLoader();
         }
     }
 })();
 // simple loader directive
-(function () {
+(function() {
     'use strict'
     angular.module('evalai').directive('simLoader', simLoader);
 
@@ -132,7 +132,7 @@
                 this.init();
             };
             loaderComp.prototype = {
-                init: function () {
+                init: function() {
                     angular.element("#sim-loader").hide();
                 }
             };
@@ -141,14 +141,14 @@
     }
 })();
 //Sidebar in Dashboard      
-(function () {
+(function() {
     'use strict'
     // dynamic header directive       
     angular.module('evalai').directive('sideBar', sideBar);
 
     function sideBar() {
         var directive = {
-            link: function () {
+            link: function() {
                 //do nothing      
             },
             templateUrl: 'dist/views/web/partials/sidebar.html',
@@ -159,7 +159,7 @@
     }
 })();
 //Dashboard header
-(function () {
+(function() {
     'use strict'
     // dynamic header directive
     angular.module('evalai').directive('simHeader', simHeader);
@@ -179,7 +179,7 @@
                 this.init();
             };
             headerComp.prototype = {
-                init: function () {
+                init: function() {
                     var self = this;
                     // initialized mobile sidebar
                     angular.element(".button-collapse").sideNav({
@@ -194,7 +194,7 @@
     }
 })();
 // scroll directive
-(function () {
+(function() {
     'use strict'
     // dynamic header directive
     angular.module('evalai').directive('scrollShadow', scrollShadow);
@@ -214,10 +214,10 @@
                 this.init();
             };
             shadowComp.prototype = {
-                init: function () {
+                init: function() {
                     var self = this;
                     // initialized mobile sidebar
-                    angular.element(".links-section-outer").bind('scroll', function () {
+                    angular.element(".links-section-outer").bind('scroll', function() {
                         // alert("")
                         if (this.scrollTop >= 5) {
                             angular.element(".side-intro").addClass('z-depth-3');
@@ -233,7 +233,7 @@
     }
 })();
 // profile directive slider component
-(function () {
+(function() {
     'use strict'
     // dynamic header directive
     angular.module('evalai').directive('slideProfile', slideProfile);
@@ -252,7 +252,7 @@
                 this.init();
             };
             slideComp.prototype = {
-                init: function () {
+                init: function() {
                     var self = this;
                     // initialized mobile sidebar
                     angular.element(".profile-sidebar").animate({
