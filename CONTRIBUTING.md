@@ -37,6 +37,8 @@ Our central development branch is development. Coding is done on feature branche
             autopep8 --in-place --exclude env,docs --recursive .     
             git commit -a -m “{{commit_message}}”
             git push origin {{branch_name}}
+    - Also, For Pretifying the Frontend Code Use ```HTML/JS/CSS Pretifier```.
+    - For installing the Sublime Package Control Manager in Sublime-Text Editor use [this](https://packagecontrol.io/installation#st2) link. Also, If Sublime Package Control Manager is installed then install ```HTML/JS/CSS Pretifier```.
 
 3. Once the code is pushed, create a pull request:
 
