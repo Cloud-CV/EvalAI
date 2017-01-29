@@ -1,8 +1,10 @@
 // define directives here
 (function() {
-    'use strict'
+    'use strict';
     // dynamic header directive
-    angular.module('evalai').directive('dynHeader', dynHeader);
+    angular
+        .module('evalai')
+        .directive('dynHeader', dynHeader);
 
     function dynHeader() {
         var directive = {
@@ -17,7 +19,7 @@
             function headerComp() {
                 var self = this;
                 this.init();
-            };
+            }
             headerComp.prototype = {
                 init: function() {
                     var self = this;
@@ -35,7 +37,7 @@
 })();
 //Landing Footer directive
 (function() {
-    'use strict'
+    'use strict';
     angular.module('evalai').directive('landingFooter', landingFooter);
 
     function landingFooter() {
@@ -54,14 +56,14 @@
                     forksCount: res.data.forks_count,
                     starsCount: res.data.stargazers_count,
                     htmlUrl: res.data.html_url
-                }
+                };
             });
         }
     }
 })();
 //Dashboard Footer directive
 (function() {
-    'use strict'
+    'use strict';
     // dynamic header directive
     angular.module('evalai').directive('dashboardFooter', dashboardFooter);
 
@@ -81,14 +83,14 @@
                     forksCount: res.data.forks_count,
                     starsCount: res.data.stargazers_count,
                     htmlUrl: res.data.html_url
-                }
+                };
             });
         }
     }
 })();
 // loader directive
 (function() {
-    'use strict'
+    'use strict';
     angular.module('evalai').directive('evalLoader', evalLoader);
 
     function evalLoader() {
@@ -104,7 +106,7 @@
             function evalLoader() {
                 var self = this;
                 this.init();
-            };
+            }
             evalLoader.prototype = {
                 init: function() {}
             };
@@ -114,7 +116,7 @@
 })();
 // simple loader directive
 (function() {
-    'use strict'
+    'use strict';
     angular.module('evalai').directive('simLoader', simLoader);
 
     function simLoader() {
@@ -130,7 +132,7 @@
             function loaderComp() {
                 var self = this;
                 this.init();
-            };
+            }
             loaderComp.prototype = {
                 init: function() {
                     angular.element("#sim-loader").hide();
@@ -142,7 +144,7 @@
 })();
 //Sidebar in Dashboard      
 (function() {
-    'use strict'
+    'use strict';
     // dynamic header directive       
     angular.module('evalai').directive('sideBar', sideBar);
 
@@ -160,7 +162,7 @@
 })();
 //Dashboard header
 (function() {
-    'use strict'
+    'use strict';
     // dynamic header directive
     angular.module('evalai').directive('simHeader', simHeader);
 
@@ -177,7 +179,7 @@
             function headerComp() {
                 var self = this;
                 this.init();
-            };
+            }
             headerComp.prototype = {
                 init: function() {
                     var self = this;
@@ -195,7 +197,7 @@
 })();
 // scroll directive
 (function() {
-    'use strict'
+    'use strict';
     // dynamic header directive
     angular.module('evalai').directive('scrollShadow', scrollShadow);
 
@@ -212,7 +214,7 @@
             function shadowComp() {
                 var self = this;
                 this.init();
-            };
+            }
             shadowComp.prototype = {
                 init: function() {
                     var self = this;
@@ -222,7 +224,7 @@
                         if (this.scrollTop >= 5) {
                             angular.element(".side-intro").addClass('z-depth-3');
                         } else {
-                            angular.element(".side-intro").removeClass('z-depth-3')
+                            angular.element(".side-intro").removeClass('z-depth-3');
                         }
                         scope.$apply();
                     });
@@ -234,7 +236,7 @@
 })();
 // profile directive slider component
 (function() {
-    'use strict'
+    'use strict';
     // dynamic header directive
     angular.module('evalai').directive('slideProfile', slideProfile);
 
@@ -250,14 +252,14 @@
             function slideComp() {
                 var self = this;
                 this.init();
-            };
+            }
             slideComp.prototype = {
                 init: function() {
                     var self = this;
                     // initialized mobile sidebar
                     angular.element(".profile-sidebar").animate({
                         'left': '219px'
-                    }, 200)
+                    }, 200);
                 }
             };
             var slideCompObj = new slideComp();
