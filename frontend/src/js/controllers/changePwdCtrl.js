@@ -46,6 +46,7 @@
                 "new_password2": vm.user.new_password2,
                 "uid": $state.params.user_id,
             }
+            parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -68,7 +69,7 @@
                             password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
                             password2_valid = typeof(response.data.new_password2) !== 'undefined' ? true : false;
                             if (oldpassword_valid) {
-                                vm.FormError = response.data.oldpassword_valid[0] + " " + response.data.oldpassword_valid[1];
+                                vm.FormError = response.data.old_password[0] + " " + response.data.old_password[1];
                             }else if (password1_valid) {
                                 vm.FormError = response.data.new_password1[0] + " " + response.data.new_password1[1];
                             } else if (password2_valid) {
