@@ -47,17 +47,22 @@
 
             utilities.sendRequest(parameters);
         }
-        
-        vm.hostChallenge = function (ev) {
-        	
-        	var alert = $mdDialog.alert()
-        		.title('Host a challenge')
-        		.textContent('Thanks for your interest in hosting a Challenge on EvalAI. We will release this feature soon!')
-        		.ok('Close')
-        		
-        	$mdDialog.show(alert);
+
+        vm.hostChallenge = function(ev) {
+
+            var alert = $mdDialog.alert()
+                .title('Host a challenge')
+                .textContent('Thanks for your interest in hosting a Challenge on EvalAI. We will release this feature soon!')
+                .ok('Close')
+
+            $mdDialog.show(alert);
         };
 
+        vm.profileDropdown = function(ev) {
+            angular.element(".dropdown-button").dropdown();
+
+        };
     }
+
 
 })();
