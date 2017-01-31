@@ -6,7 +6,7 @@
     },
     "production": {
         "EnvironmentConfig": {
-            "API": "http://evalai.cloudcv.org:8080/api/"
+            "API": "http://api.evalai.cloudcv.org/api/"
         }
     }
 }
