@@ -402,12 +402,34 @@
 
             utilities.sendRequest(parameters);
 
+            // Show leaderboard
+            vm.leaderboard = {};
+            var parameters = {};
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/leaderboard/";
+            parameters.method = 'GET';
+            parameters.data = {}
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
+                    vm.leaderboard = response.results;
+
+                    $scope.sortType     = 'overall_acc'; // set the default sort type
+                    $scope.sortReverse  = true;  // set the default sort order
+
+                    vm.stopLoader();
+                },
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
+                    vm.leaderboard.error = error;
+                    vm.stopLoader();
+                }
+            };
+
+            utilities.sendRequest(parameters);
         }
     }
-
-
-
-
-
 
 })();
