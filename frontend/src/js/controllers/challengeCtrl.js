@@ -38,6 +38,11 @@
                 var response = response.data;
                 vm.page = response;
                 vm.isActive = response.is_active;
+                
+                if(vm.page.image == null){
+                	vm.page.image = "dist/images/logo.png";
+                }
+                
                 if (vm.isActive == true) {
 
                     // get details of challenges corresponding to participant teams of that user
