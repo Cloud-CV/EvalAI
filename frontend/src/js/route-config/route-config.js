@@ -286,6 +286,12 @@
             templateUrl: baseUrl + "/web/error-pages/error-404.html",
             title: "Error 404",
         }
+
+        var error_500 = {
+            name: "error-500",
+            templateUrl: baseUrl + "/web/error-pages/error-500.html",
+            title: "Error 500",
+        }
                 
         var terms_and_conditions = {
         	name: "terms_and_conditions",
@@ -353,6 +359,7 @@
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);
+        $stateProvider.state(error_500);
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
 
