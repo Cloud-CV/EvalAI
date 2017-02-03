@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.utils import timezone
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from base.models import (TimeStampedModel, )
@@ -123,3 +124,15 @@ class ChallengePhase(TimeStampedModel):
         if self.start_date < timezone.now() and self.end_date > timezone.now():
             return True
         return False
+
+
+class Leaderboard(TimeStampedModel):
+
+    schema = JSONField()
+
+    def __unicode__(self):
+        return "%s" % (self.id)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'leaderboard'
