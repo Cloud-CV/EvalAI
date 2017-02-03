@@ -4,7 +4,6 @@ from base.admin import TimeStampedAdmin
 
 from .models import Challenge, ChallengePhase, DatasetSplit, Leaderboard, ChallengePhaseSplit
 
-
 @admin.register(Challenge)
 class ChallengeAdmin(TimeStampedAdmin):
     list_display = ("title", "start_date", "end_date", "creator", "published", "enable_forum", "anonymous_leaderboard")
@@ -32,7 +31,7 @@ class LeaderboardAdmin(TimeStampedAdmin):
     list_filter = ("id",)
     search_fields = ("id",)
 
-
+    
 @admin.register(ChallengePhaseSplit)
 class ChallengePhaseSplitAdmin(TimeStampedAdmin):
     list_display = ("id", "challenge_phase", "dataset_split", "leaderboard", "visibility")
