@@ -5,7 +5,6 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from base.models import (TimeStampedModel, )
-from hosts.models import (ChallengeHostTeam, )  # noqa
 from participants.models import (ParticipantTeam, )
 
 
@@ -176,7 +175,7 @@ class LeaderboardData(TimeStampedModel):
     result = JSONField()
 
     def __unicode__(self):
-        return "%s : %s" %(self.challenge_phase_split, self.submission)
+        return "%s : %s" % (self.challenge_phase_split, self.submission)
 
     class Meta:
         app_label = 'challenges'

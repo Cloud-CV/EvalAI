@@ -39,7 +39,7 @@ class ChallengePhaseSplitAdmin(TimeStampedAdmin):
     list_filter = ("id", "challenge_phase", "dataset_split", "leaderboard", "visibility")
     search_fields = ("challenge_phase", "dataset_split", "leaderboard")
 
-    
+
 @admin.register(LeaderboardData)
 class LeaderboardDataAdmin(TimeStampedAdmin):
     list_display = ("challenge_phase_split", "submission", "leaderboard", "result")
