@@ -166,3 +166,18 @@ class ChallengePhaseSplit(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_phase_split'
+
+
+class LeaderboardData(TimeStampedModel):
+
+    challenge_phase_split = models.ForeignKey('ChallengePhaseSplit')
+    submission = models.ForeignKey('jobs.Submission')
+    leaderboard = models.ForeignKey('Leaderboard')
+    result = JSONField()
+
+    def __unicode__(self):
+        return "%s : %s" %(self.challenge_phase_split, self.submission)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'leaderboard_data'
