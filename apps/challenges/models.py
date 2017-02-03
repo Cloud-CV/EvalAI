@@ -131,7 +131,7 @@ class Leaderboard(TimeStampedModel):
     schema = JSONField()
 
     def __unicode__(self):
-        return "%s"%(self.id)
+        return "%s" % (self.id)
 
     class Meta:
         app_label = 'challenges'
