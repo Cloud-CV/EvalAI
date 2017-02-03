@@ -70,6 +70,18 @@ class Challenge(TimeStampedModel):
         return False
 
 
+class DatasetSplit(TimeStampedModel):
+    name = models.CharField(max_length=100)
+    codename = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'dataset_split'
+
+
 class ChallengePhase(TimeStampedModel):
 
     """Model representing a Challenge Phase"""
