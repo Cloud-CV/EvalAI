@@ -136,3 +136,33 @@ class Leaderboard(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'leaderboard'
+
+
+class ChallengePhaseSplit(TimeStampedModel):
+
+    # visibility options
+    HOST = '1'
+    OWNER_AND_HOST = '2'
+    PUBLIC = '3'
+
+    VISIBILITY_OPTIONS = (
+        (HOST, 'host'),
+        (OWNER_AND_HOST, 'owner and host'),
+        (PUBLIC, 'public'),
+    )
+
+    challenge_phase = models.ForeignKey('ChallengePhase')
+    dataset_split = models.ForeignKey('DatasetSplit')
+    leaderboard = models.ForeignKey('Leaderboard')
+    visibility = models.CharField(
+        max_length=1,
+        choices=VISIBILITY_OPTIONS,
+        default=PUBLIC
+    )
+
+    def __unicode__(self):
+        return "%s : %s" % (self.challenge_phase.name, self.dataset_split.name)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'challenge_phase_split'
