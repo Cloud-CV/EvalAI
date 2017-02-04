@@ -152,6 +152,13 @@ a.active {
     background-color: $dark-gray !important;
 }
 
+.ev-btn-highlight {
+    background-color: $highlight;
+    &:hover {
+        background-color: $highlight-dark;
+    }
+}
+
 nav {
     ul {
         li {
@@ -228,15 +235,19 @@ nav {
 .ev-btn-dark {
     background: $dark-gray;
 }
+
 .ev-btn-light {
-    background: #ffffff;
+    background: #fff;
 }
+
 .ev-btn-dark:hover {
     background: $med-gray;
 }
+
 .ev-btn-light:hover {
-    background: $light-gray;
+    background: #e2e2e2;
 }
+
 
 /*card styles*/
 
