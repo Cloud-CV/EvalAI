@@ -15,7 +15,7 @@ EvalAI is an open source web application that helps researchers, students and da
 Setting up EvalAI on your local machine is really easy.
 Follow this guide to setup your development machine.
 
-1. Install [git], [postgresql] and [virtualenv], in your computer, if you don't have it already.
+1. Install [git], [postgresql] version >= 9.4 and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
