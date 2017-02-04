@@ -83,12 +83,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'evalai.urls'
 
-TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend')
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [TEMPLATE_PATH],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
