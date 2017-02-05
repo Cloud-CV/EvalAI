@@ -1,10 +1,15 @@
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse_lazy, reverse
 
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from web.models import Contact
 
+from django.test import Client
+from django.test import TestCase
+
+from web.views import page_not_found, internal_server_error
+from evalai.urls import handler404, handler500
 
 class BaseAPITestCase(APITestCase):
 
@@ -37,3 +42,14 @@ class CreateContactMessage(BaseAPITestCase):
         del self.data['message']
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class TestErrorPages(TestCase):
+
+    def test_error_handlers_404(self):
+        self.assertTrue(handler404.endswith('.page_not_found'))
+        c = Client()
+        request = c.get("/abc")
+        response = page_not_found(request)
+        self.assertEqual(request.status_code, response.status_code)
+        self.assertIn('Error 404', unicode(response))
