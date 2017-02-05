@@ -16,7 +16,7 @@ def home(request, template_name="index.html"):
     Home Page View
     """
     return render(request, template_name)
-    
+
 
 def page_not_found(request):
     response = render(request, 'error404.html',
