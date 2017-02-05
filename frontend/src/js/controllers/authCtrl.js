@@ -257,9 +257,9 @@
                             if (token_valid) {
                                 vm.FormError = "this link has been already used or expired.";
                             } else if (password1_valid) {
-                                vm.FormError = response.data.new_password1[0];
+                                vm.FormError = Object.values(response.data.new_password1).join(" ");
                             } else if (password2_valid) {
-                                vm.FormError = response.data.new_password2[0];
+                                vm.FormError = Object.values(response.data.new_password2).join(" ");
                             } else {
                                 console.log("Unhandled Error");
                             }
