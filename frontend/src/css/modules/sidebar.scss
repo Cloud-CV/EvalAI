@@ -2,7 +2,10 @@
     display: block;
     height: 100vh;
     width: 220px;
-    background-color: $dark-gray;
+    background: -webkit-linear-gradient(to top, #121215, #2f210f);
+    background: -o-linear-gradient(to top, #121215, #2f210f);
+    background: -moz-linear-gradient(to top, #121215, #2f210f);
+    background: linear-gradient(to top, #121215, #2f210f);
     color: #fff;
     z-index: 10;
     top: 0px;
