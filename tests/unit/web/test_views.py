@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse_lazy, reverse
+from django.core.urlresolvers import reverse_lazy
 
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
@@ -10,6 +10,7 @@ from django.test import TestCase
 
 from web.views import page_not_found, internal_server_error
 from evalai.urls import handler404, handler500
+
 
 class BaseAPITestCase(APITestCase):
 
