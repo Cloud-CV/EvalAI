@@ -7,9 +7,9 @@ from base.models import (TimeStampedModel, )
 
 class Contact(TimeStampedModel):
     """Model representing details of User submitting queries."""
-    name = models.CharField(max_length=100,)
-    email = models.EmailField(max_length=70,)
-    message = models.CharField(max_length=500,)
+    name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=70)
+    message = models.CharField(max_length=500)
 
     def __unicode__(self):
         return "%s: %s: %s" % (self.name, self.email, self.message)
@@ -31,17 +31,17 @@ class Team(models.Model):
         (CONTRIBUTOR, CONTRIBUTOR),
     )
 
-    name = models.CharField(max_length=100,)
-    email = models.EmailField(max_length=70,)
+    name = models.CharField(max_length=100)
+    email = models.EmailField(max_length=70)
     headshot = models.ImageField(upload_to="headshots", null=True, blank=True)
     visible = models.BooleanField(default=True)
-    github_url = models.URLField(max_length=200,)
-    linkedin_url = models.URLField(max_length=200,)
-    personal_website = models.URLField(max_length=200,)
-    team_type = models.CharField(choices=TEAM_TYPE_OPTIONS, max_length=50,)
+    github_url = models.URLField(max_length=200)
+    linkedin_url = models.URLField(max_length=200)
+    personal_website = models.URLField(max_length=200)
+    team_type = models.CharField(choices=TEAM_TYPE_OPTIONS, max_length=50)
 
     def __unicode__(self):
-        return "%s: %s: %s:" % (self.name, self.email, self.team_type)
+        return self.name
 
     class Meta:
         app_label = 'web'

@@ -14,6 +14,6 @@ class ContactAdmin(TimeStampedAdmin):
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
-    list_filter = ("team_type", "email",)
+    list_filter = ("team_type",)
     list_display = ("name", "email", "team_type",)
-    search_fields = ("email",)
+    search_fields = ("email", "name",)
