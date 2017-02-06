@@ -56,6 +56,8 @@
 
             //reset error msg
             vm.wrnMsg = {};
+            vm.isFormError = false;
+            vm.FormError = {};
         }
 
         // Function to signup
