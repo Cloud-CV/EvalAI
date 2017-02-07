@@ -98,7 +98,7 @@ class ChallengePhase(TimeStampedModel):
     max_submissions_per_day = models.PositiveIntegerField(default=100000)
     max_submissions = models.PositiveIntegerField(default=100000)
     codename = models.CharField(max_length=100, default="Phase Code Name")
-    dataset_split = models.ManyToManyField(DatasetSplit, blank=True)
+    dataset_split = models.ManyToManyField(DatasetSplit, blank=True, through='ChallengePhaseSplit')
 
     class Meta:
         app_label = 'challenges'
@@ -140,9 +140,9 @@ class Leaderboard(TimeStampedModel):
 class ChallengePhaseSplit(TimeStampedModel):
 
     # visibility options
-    HOST = '1'
-    OWNER_AND_HOST = '2'
-    PUBLIC = '3'
+    HOST = 1
+    OWNER_AND_HOST = 2
+    PUBLIC = 3
 
     VISIBILITY_OPTIONS = (
         (HOST, 'host'),
@@ -153,8 +153,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     challenge_phase = models.ForeignKey('ChallengePhase')
     dataset_split = models.ForeignKey('DatasetSplit')
     leaderboard = models.ForeignKey('Leaderboard')
-    visibility = models.CharField(
-        max_length=1,
+    visibility = models.PositiveSmallIntegerField(
         choices=VISIBILITY_OPTIONS,
         default=PUBLIC
     )
