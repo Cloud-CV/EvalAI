@@ -98,7 +98,7 @@ class ChallengePhase(TimeStampedModel):
     max_submissions_per_day = models.PositiveIntegerField(default=100000)
     max_submissions = models.PositiveIntegerField(default=100000)
     codename = models.CharField(max_length=100, default="Phase Code Name")
-    dataset_split = models.ManyToManyField(DatasetSplit, blank=True)
+    dataset_split = models.ManyToManyField(DatasetSplit, blank=True, through='ChallengePhaseSplit')
 
     class Meta:
         app_label = 'challenges'
