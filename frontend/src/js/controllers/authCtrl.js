@@ -277,8 +277,10 @@
             }
         }
         
-        // Fix for toggle problem of forgotten account link        
-        $rootScope.$on("$routeChangeSucess",vm.resetForm());
+        $rootScope.$on('$stateChangeStart',function () {
+        	vm.resetForm();
+        })
+        
     }
 
 })();
