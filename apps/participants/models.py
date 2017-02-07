@@ -7,7 +7,9 @@ from base.models import (TimeStampedModel,)
 
 
 class Participant(TimeStampedModel):
-
+    """
+    Model representing the Participant of the competition. 
+    """
     UNKNOWN = 'Unknown'
     SELF = 'Self'
     DENIED = 'Denied'
