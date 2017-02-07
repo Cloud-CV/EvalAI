@@ -278,7 +278,9 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     submission.status = Submission.RUNNING
     submission.save()
     with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
-        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path, user_annotation_file_path, challenge_phase.codename)
+        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
+                                                                      user_annotation_file_path,
+                                                                      challenge_phase.codename,)
     # after the execution is finished, set `status` to finished and hence `completed_at`
     submission.status = Submission.FINISHED
     if submission_output:
