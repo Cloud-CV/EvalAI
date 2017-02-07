@@ -41,7 +41,7 @@ sys.path.insert(0, DJANGO_PROJECT_PATH)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
-from challenges.models import Challenge     # noqa
+from challenges.models import Challenge, ChallengePhase     # noqa
 from jobs.models import Submission          # noqa
 
 
@@ -247,7 +247,7 @@ def extract_submission_data(submission_id):
     return submission
 
 
-def run_submission(challenge_id, phase_id, submission_id, submission, user_annotation_file_path):
+def run_submission(challenge_id, challenge_phase, submission_id, submission, user_annotation_file_path):
     '''
         * receives a challenge id, phase id and user annotation file path
         * checks whether the corresponding evaluation script for the challenge exists or not
@@ -255,6 +255,7 @@ def run_submission(challenge_id, phase_id, submission_id, submission, user_annot
         * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
     '''
     submission_output = None
+    phase_id = challenge_phase.id
     annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP.get(challenge_id).get(phase_id)
     annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(challenge_id=challenge_id, phase_id=phase_id,
                                                              annotation_file=annotation_file_name)
@@ -277,7 +278,7 @@ def run_submission(challenge_id, phase_id, submission_id, submission, user_annot
     submission.status = Submission.RUNNING
     submission.save()
     with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
-        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path, user_annotation_file_path)
+        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path, user_annotation_file_path, challenge_phase.codename)
     # after the execution is finished, set `status` to finished and hence `completed_at`
     submission.status = Submission.FINISHED
     if submission_output:
@@ -306,9 +307,16 @@ def process_submission_message(message):
     phase_id = message.get('phase_id')
     submission_id = message.get('submission_id')
     submission_instance = extract_submission_data(submission_id)
+
+    try:
+        challenge_phase = ChallengePhase.objects.get(id=phase_id)
+    except ChallengePhase.DoesNotExist:
+        print 'Challenge Phase {} does not exist'.format(phase_id)
+        traceback.print_exc()
+
     user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
                                      os.path.basename(submission_instance.input_file.name))
-    run_submission(challenge_id, phase_id, submission_id, submission_instance, user_annotation_file_path)
+    run_submission(challenge_id, challenge_phase, submission_id, submission_instance, user_annotation_file_path)
 
 
 def process_add_challenge_message(message):
