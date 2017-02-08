@@ -20,9 +20,10 @@
     "gulp-connect": "^5.0.0",
     "gulp-cssnano": "^2.1.2",
     "gulp-debug": "^3.0.0",
+    "gulp-eslint": "^3.0.1",
     "gulp-html-minifier": "^0.1.8",
     "gulp-imagemin": "^3.0.3",
-    "gulp-jshint": "^2.0.2",
+    "gulp-jshint": "^2.0.4",
     "gulp-livereload": "^3.8.1",
     "gulp-notify": "^2.2.0",
     "gulp-prettyerror": "^1.1.1",
@@ -30,6 +31,7 @@
     "gulp-ruby-sass": "^2.1.0",
     "gulp-uglify": "^2.0.0",
     "jshint": "^2.9.4",
+    "jshint-stylish": "^2.2.1",
     "merge-stream": "^1.0.0"
   },
   "dependencies": {

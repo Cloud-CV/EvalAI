@@ -9,6 +9,9 @@ var gulp = require('gulp'),
     autoprefixer = require('gulp-autoprefixer'),
     cssnano = require('gulp-cssnano'),
     jshint = require('gulp-jshint'),
+    eslint = require('gulp-eslint'),
+    stylish = require('jshint-stylish'),
+    angularPlugin = require('eslint-plugin-angular'),
     gulp_if = require('gulp-if'),
     uglify = require('gulp-uglify'),
     imagemin = require('gulp-imagemin'),
@@ -208,7 +211,6 @@ gulp.task('inject', function() {
         .pipe(gulp.dest('./frontend/'));
 });
 
-
 // config for dev server
 gulp.task('configDev', function() {
     gulp.src('frontend/src/js/config.json', { base: 'frontend/src/js/' })
@@ -227,6 +229,16 @@ gulp.task('configProd', function() {
         .pipe(gulp.dest('frontend/dist/js'))
 });
 
+// js linting
+var lint_path = {
+    js: ['frontend/src/js/**/*.js', ]
+}
+
+gulp.task('lint', [], function() {
+    return gulp.src(lint_path.js)
+        .pipe(jshint())
+        .pipe(jshint.reporter('jshint-stylish'))
+});
 
 // cleaning build process- run clean before deploy and rebuild files again
 gulp.task('clean', function() {
@@ -349,5 +361,5 @@ gulp.task('prod', function(callback) {
 
 // Runserver for development
 gulp.task('dev:runserver', function(callback) {
-    runSequence('dev', 'connect', 'watch', callback);
+    runSequence('dev', 'lint', 'connect', 'watch', callback);
 });
