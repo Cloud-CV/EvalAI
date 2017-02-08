@@ -79,6 +79,7 @@ fabfile/
 .sass-cache/
 node_modules/
 bower_components/
+frontend/index.html
 
 # Challenge data files
 challenge_data/*
