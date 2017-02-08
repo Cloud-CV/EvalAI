@@ -80,7 +80,6 @@ fabfile/
 node_modules/
 bower_components/
 frontend/dist/
-frontend/index.html
 
 # Challenge data files
 challenge_data/*
