@@ -204,7 +204,7 @@ gulp.task('inject', function() {
     ], { read: false });
 
     gulp.src('./frontend/base.html')
-        .pipe(inject(sources, { ignorePath: 'frontend', addRootSlash: false }))
+        .pipe(inject(sources, { ignorePath: 'frontend', addRootSlash: true }))
         .pipe(rename({
             basename: "index"
         }))
