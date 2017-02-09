@@ -41,7 +41,7 @@ sys.path.insert(0, DJANGO_PROJECT_PATH)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
-from challenges.models import Challenge, ChallengePhase     # noqa
+from challenges.models import Challenge, ChallengePhase, ChallengePhaseSplit, DatasetSplit, LeaderboardData  # noqa
 from jobs.models import Submission          # noqa
 
 
@@ -247,6 +247,12 @@ def extract_submission_data(submission_id):
     return submission
 
 
+def set_submission_status(submission_obj, successful_submission_flag):
+    submission_status = Submission.FINISHED if successful_submission_flag else Submission.FAILED
+    submission_obj.status = submission_status
+    submission_obj.save()
+
+
 def run_submission(challenge_id, challenge_phase, submission_id, submission, user_annotation_file_path):
     '''
         * receives a challenge id, phase id and user annotation file path
@@ -277,12 +283,61 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     # call `main` from globals and set `status` to running and hence `started_at`
     submission.status = Submission.RUNNING
     submission.save()
-    with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
-        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
-                                                                      user_annotation_file_path,
-                                                                      challenge_phase.codename,)
+    try:
+        successful_submission_flag = True
+        with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
+            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
+                                                                          user_annotation_file_path,
+                                                                          challenge_phase.codename,)
+
+        if 'result' in submission_output:
+
+            leaderboard_data_list = []
+            for split_result in submission_output['result']:
+
+                # Check if the dataset_split exists for the codename in the result
+                try:
+                    split_code_name = split_result.items()[0][0]  # get split_code_name that is the key of the result
+                    dataset_split = DatasetSplit.objects.get(codename=split_code_name)
+                except:
+                    stderr.write(traceback.format_exc())
+                    successful_submission_flag = False
+                    break
+
+                # Check if the challenge_phase_split exists for the challenge_phase and dataset_split
+                try:
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
+                                                                            dataset_split=dataset_split)
+                except:
+                    stderr.write(traceback.format_exc())
+                    successful_submission_flag = False
+                    break
+
+                leaderboard_data = LeaderboardData()
+                leaderboard_data.challenge_phase_split = challenge_phase_split
+                leaderboard_data.submission = submission
+                leaderboard_data.leaderboard = challenge_phase_split.leaderboard
+                leaderboard_data.result = split_result[dataset_split.codename]
+
+                leaderboard_data_list.append(leaderboard_data)
+
+            # Check to see if length of leaderboard_data_list matches with length of submission_output['result']
+            if len(leaderboard_data_list) == len(submission_output['result']):
+                LeaderboardData.objects.bulk_create(leaderboard_data_list)
+            else:
+                successful_submission_flag = False
+
+        # Once the submission_output is processed, then save the submission object with appropriate status
+        else:
+            successful_submission_flag = False
+
+    except:
+        stderr.write(traceback.format_exc())
+        successful_submission_flag = False
+
+    set_submission_status(submission, successful_submission_flag)
+
     # after the execution is finished, set `status` to finished and hence `completed_at`
-    submission.status = Submission.FINISHED
     if submission_output:
         submission.output = submission_output
     submission.save()
