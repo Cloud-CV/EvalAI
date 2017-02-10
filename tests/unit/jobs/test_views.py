@@ -348,7 +348,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 'challenge_phase': self.submission.challenge_phase.pk,
                 'created_by': self.submission.created_by.pk,
                 'status': self.submission.status,
-                'input_file': self.submission.input_file.url,
+                'input_file': 'http://testserver' + self.submission.input_file.url,
                 'stdout_file': None,
                 'stderr_file': None,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
