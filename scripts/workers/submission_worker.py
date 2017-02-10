@@ -41,7 +41,12 @@ sys.path.insert(0, DJANGO_PROJECT_PATH)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
-from challenges.models import Challenge, ChallengePhase, ChallengePhaseSplit, DatasetSplit, LeaderboardData  # noqa
+from challenges.models import (Challenge,
+                               ChallengePhase,
+                               ChallengePhaseSplit,
+                               DatasetSplit,
+                               LeaderboardData) # noqa
+
 from jobs.models import Submission          # noqa
 
 
@@ -247,12 +252,6 @@ def extract_submission_data(submission_id):
     return submission
 
 
-def set_submission_status(submission_obj, successful_submission_flag):
-    submission_status = Submission.FINISHED if successful_submission_flag else Submission.FAILED
-    submission_obj.status = submission_status
-    submission_obj.save()
-
-
 def run_submission(challenge_id, challenge_phase, submission_id, submission, user_annotation_file_path):
     '''
         * receives a challenge id, phase id and user annotation file path
@@ -289,7 +288,31 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
                                                                           user_annotation_file_path,
                                                                           challenge_phase.codename,)
-
+        '''
+        A submission will be marked successful only if it is of the format
+            {
+               "result":[
+                  {
+                     "split_codename_1":{
+                        "key1":30,
+                        "key2":50,
+                     }
+                  },
+                  {
+                     "split_codename_2":{
+                        "key1":90,
+                        "key2":10,
+                     }
+                  },
+                  {
+                     "split_codename_3":{
+                        "key1":100,
+                        "key2":45,
+                     }
+                  }
+               ]
+            }
+        '''
         if 'result' in submission_output:
 
             leaderboard_data_list = []
@@ -300,6 +323,8 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
                     split_code_name = split_result.items()[0][0]  # get split_code_name that is the key of the result
                     dataset_split = DatasetSplit.objects.get(codename=split_code_name)
                 except:
+                    stderr.write("ORGINIAL EXCEPTION: The codename specified by your Challenge Host doesn't match"
+                                 " with that in the evaluation Script.\n")
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
                     break
@@ -309,6 +334,8 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
                     challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
                                                                             dataset_split=dataset_split)
                 except:
+                    stderr.write("ORGINIAL EXCEPTION: No such relation between between Challenge Phase and DatasetSplit"
+                                 " specified by Challenge Host \n")
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
                     break
@@ -317,15 +344,12 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
                 leaderboard_data.challenge_phase_split = challenge_phase_split
                 leaderboard_data.submission = submission
                 leaderboard_data.leaderboard = challenge_phase_split.leaderboard
-                leaderboard_data.result = split_result[dataset_split.codename]
+                leaderboard_data.result = split_result.get(dataset_split.codename)
 
                 leaderboard_data_list.append(leaderboard_data)
 
-            # Check to see if length of leaderboard_data_list matches with length of submission_output['result']
-            if len(leaderboard_data_list) == len(submission_output['result']):
+            if successful_submission_flag:
                 LeaderboardData.objects.bulk_create(leaderboard_data_list)
-            else:
-                successful_submission_flag = False
 
         # Once the submission_output is processed, then save the submission object with appropriate status
         else:
@@ -335,7 +359,9 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
         stderr.write(traceback.format_exc())
         successful_submission_flag = False
 
-    set_submission_status(submission, successful_submission_flag)
+    submission_status = Submission.FINISHED if successful_submission_flag else Submission.FAILED
+    submission.status = submission_status
+    submission.save()
 
     # after the execution is finished, set `status` to finished and hence `completed_at`
     if submission_output:
