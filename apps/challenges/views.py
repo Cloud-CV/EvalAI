@@ -36,19 +36,19 @@ def challenge_list(request, challenge_host_team_pk):
     if request.method == 'GET':
         challenge = Challenge.objects.filter(creator=challenge_host_team)
         paginator, result_page = paginated_queryset(challenge, request)
-        serializer = ChallengeSerializer(result_page, many=True)
+        serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
     elif request.method == 'POST':
-
         if not ChallengeHost.objects.filter(user=request.user, team_name_id=challenge_host_team_pk).exists():
             response_data = {
                 'error': 'Sorry, you do not belong to this Host Team!'}
             return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = ChallengeSerializer(data=request.data,
-                                         context={'challenge_host_team': challenge_host_team})
+                                         context={'challenge_host_team': challenge_host_team,
+                                                  'request': request})
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
@@ -74,7 +74,7 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        serializer = ChallengeSerializer(challenge)
+        serializer = ChallengeSerializer(challenge, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -82,12 +82,14 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         if request.method == 'PATCH':
             serializer = ChallengeSerializer(challenge,
                                              data=request.data,
-                                             context={'challenge_host_team': challenge_host_team},
+                                             context={'challenge_host_team': challenge_host_team,
+                                                      'request': request},
                                              partial=True)
         else:
             serializer = ChallengeSerializer(challenge,
                                              data=request.data,
-                                             context={'challenge_host_team': challenge_host_team})
+                                             context={'challenge_host_team': challenge_host_team,
+                                                      'request': request})
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
@@ -190,7 +192,7 @@ def get_all_challenges(request, challenge_time):
 
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(result_page, many=True)
+    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
@@ -203,7 +205,7 @@ def get_challenge_by_pk(request, pk):
     """
     try:
         challenge = Challenge.objects.get(pk=pk)
-        serializer = ChallengeSerializer(challenge)
+        serializer = ChallengeSerializer(challenge, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     except:
@@ -245,7 +247,7 @@ def get_challenges_based_on_teams(request):
 
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(result_page, many=True)
+    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
