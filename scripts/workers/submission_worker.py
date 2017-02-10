@@ -41,7 +41,12 @@ sys.path.insert(0, DJANGO_PROJECT_PATH)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
-from challenges.models import Challenge, ChallengePhase     # noqa
+from challenges.models import (Challenge,
+                               ChallengePhase,
+                               ChallengePhaseSplit,
+                               DatasetSplit,
+                               LeaderboardData) # noqa
+
 from jobs.models import Submission          # noqa
 
 
@@ -277,12 +282,88 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     # call `main` from globals and set `status` to running and hence `started_at`
     submission.status = Submission.RUNNING
     submission.save()
-    with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
-        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
-                                                                      user_annotation_file_path,
-                                                                      challenge_phase.codename,)
+    try:
+        successful_submission_flag = True
+        with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
+            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
+                                                                          user_annotation_file_path,
+                                                                          challenge_phase.codename,)
+        '''
+        A submission will be marked successful only if it is of the format
+            {
+               "result":[
+                  {
+                     "split_codename_1":{
+                        "key1":30,
+                        "key2":50,
+                     }
+                  },
+                  {
+                     "split_codename_2":{
+                        "key1":90,
+                        "key2":10,
+                     }
+                  },
+                  {
+                     "split_codename_3":{
+                        "key1":100,
+                        "key2":45,
+                     }
+                  }
+               ]
+            }
+        '''
+        if 'result' in submission_output:
+
+            leaderboard_data_list = []
+            for split_result in submission_output['result']:
+
+                # Check if the dataset_split exists for the codename in the result
+                try:
+                    split_code_name = split_result.items()[0][0]  # get split_code_name that is the key of the result
+                    dataset_split = DatasetSplit.objects.get(codename=split_code_name)
+                except:
+                    stderr.write("ORGINIAL EXCEPTION: The codename specified by your Challenge Host doesn't match"
+                                 " with that in the evaluation Script.\n")
+                    stderr.write(traceback.format_exc())
+                    successful_submission_flag = False
+                    break
+
+                # Check if the challenge_phase_split exists for the challenge_phase and dataset_split
+                try:
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
+                                                                            dataset_split=dataset_split)
+                except:
+                    stderr.write("ORGINIAL EXCEPTION: No such relation between between Challenge Phase and DatasetSplit"
+                                 " specified by Challenge Host \n")
+                    stderr.write(traceback.format_exc())
+                    successful_submission_flag = False
+                    break
+
+                leaderboard_data = LeaderboardData()
+                leaderboard_data.challenge_phase_split = challenge_phase_split
+                leaderboard_data.submission = submission
+                leaderboard_data.leaderboard = challenge_phase_split.leaderboard
+                leaderboard_data.result = split_result.get(dataset_split.codename)
+
+                leaderboard_data_list.append(leaderboard_data)
+
+            if successful_submission_flag:
+                LeaderboardData.objects.bulk_create(leaderboard_data_list)
+
+        # Once the submission_output is processed, then save the submission object with appropriate status
+        else:
+            successful_submission_flag = False
+
+    except:
+        stderr.write(traceback.format_exc())
+        successful_submission_flag = False
+
+    submission_status = Submission.FINISHED if successful_submission_flag else Submission.FAILED
+    submission.status = submission_status
+    submission.save()
+
     # after the execution is finished, set `status` to finished and hence `completed_at`
-    submission.status = Submission.FINISHED
     if submission_output:
         submission.output = submission_output
     submission.save()
