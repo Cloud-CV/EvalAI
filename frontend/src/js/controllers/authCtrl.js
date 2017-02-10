@@ -279,6 +279,11 @@
                 vm.stopLoader();
             }
         }
+        
+        $rootScope.$on('$stateChangeStart',function () {
+        	vm.resetForm();
+        })
+        
     }
 
 })();
