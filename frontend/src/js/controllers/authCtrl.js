@@ -172,7 +172,7 @@
                 console.log("Form fields are not valid !");
                 vm.stopLoader();
             }
-            vm.$on('$stateChangeStart',function () {
+            $rootScope.$on('$stateChangeStart',function () {
           	   vm.resetForm();
             })
         }
