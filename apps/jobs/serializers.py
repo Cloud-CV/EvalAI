@@ -12,7 +12,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         context = kwargs.get('context')
-        if context:
+        if context and context.get('request').method != 'GET':
             created_by = context.get('request').user
             kwargs['data']['created_by'] = created_by.pk
 
