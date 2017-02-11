@@ -20,8 +20,6 @@
         var flag = 0;
         vm.phases = {};
         vm.isValid = {};
-        vm.isNext = '';
-        vm.isPrev = '';
         var userKey = utilities.getData('userKey');
 
         vm.subErrors = {};
@@ -385,8 +383,25 @@
             // get details of the particular challenge phase
             vm.isNext = '';
             vm.isPrev = '';
-            vm.existTeam = {};
             vm.currentPage = '';
+            vm.isExistLoader = false;
+            vm.loaderTitle = '';
+            vm.loginContainer = angular.element('.exist-team-card');
+
+            // show loader
+            vm.startExistLoader = function(msg) {
+                vm.isExistLoader = true;
+                vm.loaderTitle = msg;
+                vm.loginContainer.addClass('low-screen');
+            }
+
+            // stop loader
+            vm.stopExistLoader = function() {
+                vm.isExistLoader = false;
+                vm.loaderTitle = '';
+                vm.loginContainer.removeClass('low-screen');
+            }
+
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/submission/";
             parameters.method = 'GET';
@@ -399,19 +414,19 @@
                     vm.submissionResult = response;
                     // navigate to challenge page
                     // $state.go('web.challenge-page.overview');
-                    if (vm.existTeam.next == null) {
+                    if (vm.submissionResult.next == null) {
                         vm.isNext = 'disabled';
                     } else {
                         vm.isNext = '';
-                    }
 
-                    if (vm.existTeam.previous == null) {
+                    }
+                    if (vm.submissionResult.previous == null) {
                         vm.isPrev = 'disabled';
                     } else {
                         vm.isPrev = '';
                     }
-                    if (vm.existTeam.next != null) {
-                        vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
+                    if (vm.submissionResult.next != null) {
+                        vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
                     } else {
                         vm.currentPage = 1;
                     }
@@ -449,18 +464,18 @@
                                 // reinitialized data
                                 var status = response.status;
                                 var response = response.data;
-                                vm.existTeam = response;
+                                vm.submissionResult = response;
 
                                 // condition for pagination
-                                if (vm.existTeam.next == null) {
+                                if (vm.submissionResult.next == null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.existTeam.count / 10;
+                                    vm.currentPage = vm.submissionResult.count / 3;
                                 } else {
                                     vm.isNext = '';
-                                    vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+                                    vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
                                 }
 
-                                if (vm.existTeam.previous == null) {
+                                if (vm.submissionResult.previous == null) {
                                     vm.isPrev = 'disabled';
                                 } else {
                                     vm.isPrev = '';

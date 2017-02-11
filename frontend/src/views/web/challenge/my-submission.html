@@ -58,9 +58,14 @@
                         </div>
                     </div>
                 </div>
-                <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.existTeam.next)">
-                    <i class="fa fa-chevron-right"></i>
-                </a>
+                <div class="center">
+                  <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.previous)">
+                      <i class="fa fa-chevron-left"></i>
+                  </a>
+                  <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.next)">
+                      <i class="fa fa-chevron-right"></i>
+                  </a>
+                </div>
             </div>
         </div>
     </div>
