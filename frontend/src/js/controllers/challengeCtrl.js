@@ -384,23 +384,6 @@
             vm.isNext = '';
             vm.isPrev = '';
             vm.currentPage = '';
-            vm.isExistLoader = false;
-            vm.loaderTitle = '';
-            vm.loginContainer = angular.element('.exist-team-card');
-
-            // show loader
-            vm.startExistLoader = function(msg) {
-                vm.isExistLoader = true;
-                vm.loaderTitle = msg;
-                vm.loginContainer.addClass('low-screen');
-            }
-
-            // stop loader
-            vm.stopExistLoader = function() {
-                vm.isExistLoader = false;
-                vm.loaderTitle = '';
-                vm.loginContainer.removeClass('low-screen');
-            }
 
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/submission/";
