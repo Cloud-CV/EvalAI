@@ -20,6 +20,8 @@
         var flag = 0;
         vm.phases = {};
         vm.isValid = {};
+        vm.isNext = '';
+        vm.isPrev = '';
         var userKey = utilities.getData('userKey');
 
         vm.subErrors = {};
@@ -38,11 +40,11 @@
                 var response = response.data;
                 vm.page = response;
                 vm.isActive = response.is_active;
-                
+
                 if(vm.page.image == null){
                 	vm.page.image = "dist/images/logo.png";
                 }
-                
+
                 if (vm.isActive == true) {
 
                     // get details of challenges corresponding to participant teams of that user
@@ -381,7 +383,10 @@
             vm.startLoader("Loading Teams");
 
             // get details of the particular challenge phase
-
+            vm.isNext = '';
+            vm.isPrev = '';
+            vm.existTeam = {};
+            vm.currentPage = '';
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/submission/";
             parameters.method = 'GET';
@@ -394,7 +399,81 @@
                     vm.submissionResult = response;
                     // navigate to challenge page
                     // $state.go('web.challenge-page.overview');
-                    vm.stopLoader();
+                    if (vm.existTeam.next == null) {
+                        vm.isNext = 'disabled';
+                    } else {
+                        vm.isNext = '';
+                    }
+
+                    if (vm.existTeam.previous == null) {
+                        vm.isPrev = 'disabled';
+                    } else {
+                        vm.isPrev = '';
+                    }
+                    if (vm.existTeam.next != null) {
+                        vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
+                    } else {
+                        vm.currentPage = 1;
+                    }
+
+                    vm.load = function(url) {
+                        // loader for exisiting teams
+                        vm.isExistLoader = true;
+                        vm.loaderTitle = '';
+                        vm.loginContainer = angular.element('.exist-team-card');
+
+                        // show loader
+                        vm.startLoader = function(msg) {
+                            vm.isExistLoader = true;
+                            vm.loaderTitle = msg;
+                            vm.loginContainer.addClass('low-screen');
+                        }
+
+                        // stop loader
+                        vm.stopLoader = function() {
+                            vm.isExistLoader = false;
+                            vm.loaderTitle = '';
+                            vm.loginContainer.removeClass('low-screen');
+                        }
+
+                        vm.startLoader("Loading Teams");
+                        if (url != null) {
+
+                            //store the header data in a variable
+                            var headers = {
+                                'Authorization': "Token " + userKey
+                            };
+
+                            //Add headers with in your request
+                            $http.get(url, { headers: headers }).then(function(response) {
+                                // reinitialized data
+                                var status = response.status;
+                                var response = response.data;
+                                vm.existTeam = response;
+
+                                // condition for pagination
+                                if (vm.existTeam.next == null) {
+                                    vm.isNext = 'disabled';
+                                    vm.currentPage = vm.existTeam.count / 10;
+                                } else {
+                                    vm.isNext = '';
+                                    vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+                                }
+
+                                if (vm.existTeam.previous == null) {
+                                    vm.isPrev = 'disabled';
+                                } else {
+                                    vm.isPrev = '';
+                                }
+                                vm.stopLoader();
+                            })
+                        } else {
+                            vm.stopLoader();
+                        }
+
+
+                    }
+
                 },
                 onError: function(response) {
                     var status = response.status;
