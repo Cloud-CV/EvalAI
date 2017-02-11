@@ -1,5 +1,5 @@
 // Invoking IIFE
-
+/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -37,7 +37,7 @@
                     var status = response.status;
                     var error = response.data;
                     if (status == 401) {
-                        alert("")
+                        alert("");
                         utilities.resetStorage();
                         $state.go("auth.login");
                         $rootScope.isAuth = false;
@@ -53,7 +53,7 @@
             var alert = $mdDialog.alert()
                 .title('Host a challenge')
                 .textContent('Thanks for your interest in hosting a Challenge on EvalAI. We will release this feature soon!')
-                .ok('Close')
+                .ok('Close');
 
             $mdDialog.show(alert);
         };
