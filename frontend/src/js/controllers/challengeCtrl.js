@@ -398,18 +398,18 @@
                     vm.submissionResult = response;
                     // navigate to challenge page
                     // $state.go('web.challenge-page.overview');
-                    if (vm.submissionResult.next == null) {
+                    if (vm.submissionResult.next === null) {
                         vm.isNext = 'disabled';
                     } else {
                         vm.isNext = '';
 
                     }
-                    if (vm.submissionResult.previous == null) {
+                    if (vm.submissionResult.previous === null) {
                         vm.isPrev = 'disabled';
                     } else {
                         vm.isPrev = '';
                     }
-                    if (vm.submissionResult.next != null) {
+                    if (vm.submissionResult.next !== null) {
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
                     } else {
                         vm.currentPage = 1;
@@ -426,17 +426,17 @@
                             vm.isExistLoader = true;
                             vm.loaderTitle = msg;
                             vm.loginContainer.addClass('low-screen');
-                        }
+                        };
 
                         // stop loader
                         vm.stopLoader = function() {
                             vm.isExistLoader = false;
                             vm.loaderTitle = '';
                             vm.loginContainer.removeClass('low-screen');
-                        }
+                        };
 
                         vm.startLoader("Loading Teams");
-                        if (url != null) {
+                        if (url !== null) {
 
                             //store the header data in a variable
                             var headers = {
@@ -451,7 +451,7 @@
                                 vm.submissionResult = response;
 
                                 // condition for pagination
-                                if (vm.submissionResult.next == null) {
+                                if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = vm.submissionResult.count / 3;
                                 } else {
@@ -459,19 +459,19 @@
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
                                 }
 
-                                if (vm.submissionResult.previous == null) {
+                                if (vm.submissionResult.previous === null) {
                                     vm.isPrev = 'disabled';
                                 } else {
                                     vm.isPrev = '';
                                 }
                                 vm.stopLoader();
-                            })
+                            });
                         } else {
                             vm.stopLoader();
                         }
 
 
-                    }
+                    };
 
                 },
                 onError: function(response) {
