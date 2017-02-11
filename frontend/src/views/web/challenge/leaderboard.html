@@ -13,14 +13,19 @@
                 </div>
                 <div class="ev-md-container ev-panel-title">
                     <div class="row">
+                        <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page" ng-if="challenge.showLeaderboardUpdate">
+                            <span class="right text-dark-gray">Page is Outdated<br>
+                                    <span class="text-white" >Click to update <i class="fa fa-refresh"></i></span>
+                            </span>
+                        </div>
                         <div class="col s12">
-                            <strong>Please select a phase!</strong>
+                            <strong>Please select a phase!                           
                         </div>
                     </div>
                     <div class="row">
                         <div class="col xs12 s6">
                             <span><md-select ng-model="challenge.phase.name" placeholder="Phase" class="rm-margin">
-                            <md-option ng-click="challenge.getResults(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}}</md-option>
+                            <md-option ng-click="challenge.getLeaderboard(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}}</md-option>
                         </md-select></span>
                         </div>
                     </div>
