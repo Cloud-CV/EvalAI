@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload'];
+    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
 
-    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope, Upload) {
+    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -39,11 +39,11 @@
                 var response = response.data;
                 vm.page = response;
                 vm.isActive = response.is_active;
-                
-                if(vm.page.image === null){
-                	vm.page.image = "dist/images/logo.png";
+
+                if (vm.page.image === null) {
+                    vm.page.image = "dist/images/logo.png";
                 }
-                
+
                 if (vm.isActive === true) {
 
                     // get details of challenges corresponding to participant teams of that user
@@ -408,33 +408,37 @@
 
             utilities.sendRequest(parameters);
 
-            // Show leaderboard
-            vm.leaderboard = {};
-            var parameters = {};
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/leaderboard/";
-            parameters.method = 'GET';
-            parameters.data = {};
-            parameters.token = userKey;
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                    vm.leaderboard = response.results;
+            // long polling (2s) for leaderboard
+            $interval(function() {
+                // Show leaderboard
+                vm.leaderboard = {};
+                var parameters = {};
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/leaderboard/";
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var response = response.data;
+                        vm.leaderboard = response.results;
 
-                    $scope.sortType     = 'overall_acc'; // set the default sort type
-                    $scope.sortReverse  = true;  // set the default sort order
+                        vm.sortType = 'overall_acc'; // set the default sort type
+                        vm.sortReverse = true; // set the default sort order
 
-                    vm.stopLoader();
-                },
-                onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
-                    vm.leaderboard.error = error;
-                    vm.stopLoader();
-                }
-            };
+                        vm.stopLoader();
+                    },
+                    onError: function(response) {
+                        var status = response.status;
+                        var error = response.data;
+                        vm.leaderboard.error = error;
+                        vm.stopLoader();
+                    }
+                };
 
-            utilities.sendRequest(parameters);
+                utilities.sendRequest(parameters);
+
+            },2000)
         };
     }
 
