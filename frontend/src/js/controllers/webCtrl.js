@@ -1,4 +1,5 @@
 // Invoking IIFE for dashboard
+/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -54,7 +55,7 @@
                     vm.name = response.username;
 
                     for (var i in response) {
-                        if (response[i] == "" || response[i] == undefined || response[i] == null) {
+                        if (response[i] === "" || response[i] === undefined || response[i] === null) {
                             response[i] = "-";
                             vm.countLeft = vm.countLeft + 1;
                         }
@@ -70,7 +71,7 @@
             onError: function(response) {
                 var status = response.status;
                 var error = response.data;
-                alert("")
+                alert("");
             }
         };
 

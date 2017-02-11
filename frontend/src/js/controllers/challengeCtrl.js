@@ -1,4 +1,5 @@
 // Invoking IIFE for challenge page
+/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -30,7 +31,7 @@
         var parameters = {};
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/';
         parameters.method = 'GET';
-        parameters.data = {}
+        parameters.data = {};
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
@@ -39,17 +40,17 @@
                 vm.page = response;
                 vm.isActive = response.is_active;
                 
-                if(vm.page.image == null){
+                if(vm.page.image === null){
                 	vm.page.image = "dist/images/logo.png";
                 }
                 
-                if (vm.isActive == true) {
+                if (vm.isActive === true) {
 
                     // get details of challenges corresponding to participant teams of that user
                     var parameters = {};
                     parameters.url = 'participants/participant_teams/challenges/user';
                     parameters.method = 'GET';
-                    parameters.data = {}
+                    parameters.data = {};
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
@@ -57,13 +58,13 @@
                             var response = response.data;
 
                             for (var i in response.challenge_participant_team_list) {
-                                if (response.challenge_participant_team_list[i].challenge != null && response.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
+                                if (response.challenge_participant_team_list[i].challenge !== null && response.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
                                     vm.isParticipated = true;
                                     break;
                                 }
                             }
 
-                            if (vm.isParticipated == false) {
+                            if (vm.isParticipated === false) {
 
                                 vm.team = {};
                                 vm.teamId = null;
@@ -88,18 +89,18 @@
                                             utilities.deleteData('emailError');
 
                                             // condition for pagination
-                                            if (vm.existTeam.next == null) {
+                                            if (vm.existTeam.next === null) {
                                                 vm.isNext = 'disabled';
                                             } else {
                                                 vm.isNext = '';
                                             }
 
-                                            if (vm.existTeam.previous == null) {
+                                            if (vm.existTeam.previous === null) {
                                                 vm.isPrev = 'disabled';
                                             } else {
                                                 vm.isPrev = '';
                                             }
-                                            if (vm.existTeam.next != null) {
+                                            if (vm.existTeam.next !== null) {
                                                 vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
                                             }
 
@@ -117,14 +118,14 @@
                                                     vm.isExistLoader = true;
                                                     vm.loaderTitle = msg;
                                                     vm.loginContainer.addClass('low-screen');
-                                                }
+                                                };
 
                                                 // stop loader
                                                 vm.stopLoader = function() {
                                                     vm.isExistLoader = false;
                                                     vm.loaderTitle = '';
                                                     vm.loginContainer.removeClass('low-screen');
-                                                }
+                                                };
 
                                                 vm.startLoader("Loading Teams");
                                                 // loader end
@@ -149,7 +150,7 @@
                                                     }
                                                 };
                                                 utilities.sendRequest(parameters);
-                                            }
+                                            };
 
                                             // to load data with pagination
                                             vm.load = function(url) {
@@ -163,17 +164,17 @@
                                                     vm.isExistLoader = true;
                                                     vm.loaderTitle = msg;
                                                     vm.loginContainer.addClass('low-screen');
-                                                }
+                                                };
 
                                                 // stop loader
                                                 vm.stopLoader = function() {
                                                     vm.isExistLoader = false;
                                                     vm.loaderTitle = '';
                                                     vm.loginContainer.removeClass('low-screen');
-                                                }
+                                                };
 
                                                 vm.startLoader("Loading Teams");
-                                                if (url != null) {
+                                                if (url !== null) {
 
                                                     //store the header data in a variable
                                                     var headers = {
@@ -188,7 +189,7 @@
                                                         vm.existTeam = response;
 
                                                         // condition for pagination
-                                                        if (vm.existTeam.next == null) {
+                                                        if (vm.existTeam.next === null) {
                                                             vm.isNext = 'disabled';
                                                             vm.currentPage = vm.existTeam.count / 10;
                                                         } else {
@@ -196,15 +197,15 @@
                                                             vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
                                                         }
 
-                                                        if (vm.existTeam.previous == null) {
+                                                        if (vm.existTeam.previous === null) {
                                                             vm.isPrev = 'disabled';
                                                         } else {
                                                             vm.isPrev = '';
                                                         }
                                                         vm.stopLoader();
-                                                    })
+                                                    });
                                                 }
-                                            }
+                                            };
 
                                         }
                                         utilities.hideLoader();
@@ -222,13 +223,13 @@
 
                             }
                             // This condition means that the user is eligible to make submissions
-                            else if (vm.isParticipated == true) {
+                            else if (vm.isParticipated === true) {
                                 vm.makeSubmission = function() {
 
                                     var fileVal = angular.element(".file-path").val();
 
-                                    if (fileVal == null || fileVal == "") {
-                                        vm.subErrors.msg = "Please upload file!"
+                                    if (fileVal === null || fileVal === "") {
+                                        vm.subErrors.msg = "Please upload file!";
                                     } else {
                                         vm.isExistLoader = true;
                                         vm.loaderTitle = '';
@@ -239,14 +240,14 @@
                                             vm.isExistLoader = true;
                                             vm.loaderTitle = msg;
                                             vm.loginContainer.addClass('low-screen');
-                                        }
+                                        };
 
                                         // stop loader
                                         vm.stopLoader = function() {
                                             vm.isExistLoader = false;
                                             vm.loaderTitle = '';
                                             vm.loginContainer.removeClass('low-screen');
-                                        }
+                                        };
 
                                         vm.startLoader("Making Submission");
                                         if (vm.input_file) {
@@ -279,7 +280,7 @@
 
 
                                                 vm.phaseId = null;
-                                                vm.subErrors.msg = "Your submission has been recorded succesfully!"
+                                                vm.subErrors.msg = "Your submission has been recorded succesfully!";
                                                 vm.stopLoader();
                                             },
                                             onError: function(response) {
@@ -289,11 +290,11 @@
                                                 vm.phaseId = null;
                                                 if (status == 404) {
 
-                                                    vm.subErrors.msg = "Please select phase!"
+                                                    vm.subErrors.msg = "Please select phase!";
                                                 } else if (status == 400) {
-                                                    vm.subErrors.msg = error.input_file[0]
+                                                    vm.subErrors.msg = error.input_file[0];
                                                 } else {
-                                                    vm.subErrors.msg = error.error
+                                                    vm.subErrors.msg = error.error;
                                                 }
                                                 vm.stopLoader();
                                             }
@@ -301,7 +302,7 @@
 
                                         utilities.sendRequest(parameters, 'header', 'upload');
                                     }
-                                }
+                                };
                             }
                             utilities.hideLoader();
                         },
@@ -333,7 +334,7 @@
         var parameters = {};
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
         parameters.method = 'GET';
-        parameters.data = {}
+        parameters.data = {};
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
@@ -369,14 +370,14 @@
                 vm.isExistLoader = true;
                 vm.loaderTitle = msg;
                 vm.loginContainer.addClass('low-screen');
-            }
+            };
 
             // stop loader
             vm.stopLoader = function() {
                 vm.isExistLoader = false;
                 vm.loaderTitle = '';
                 vm.loginContainer.removeClass('low-screen');
-            }
+            };
 
             vm.startLoader("Loading Teams");
 
@@ -385,7 +386,7 @@
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/submission/";
             parameters.method = 'GET';
-            parameters.data = {}
+            parameters.data = {};
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
@@ -412,7 +413,7 @@
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/leaderboard/";
             parameters.method = 'GET';
-            parameters.data = {}
+            parameters.data = {};
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
@@ -434,7 +435,7 @@
             };
 
             utilities.sendRequest(parameters);
-        }
+        };
     }
 
 })();

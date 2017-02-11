@@ -9,6 +9,7 @@
 
     function validationSvc() {
         // factory for password check
+        /* jshint validthis: true */
         this.password_check = function(password1, password2) {
             var password1_len = password1.length;
             var password2_len = password2.length;

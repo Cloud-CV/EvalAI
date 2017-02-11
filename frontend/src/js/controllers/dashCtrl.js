@@ -1,5 +1,5 @@
 // Invoking IIFE for dashboard
-
+/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -37,7 +37,7 @@
                     // navigate to permissions denied page
                     $state.go('web.permission-denied');
                 } else if (status == 401) {
-                    alert("Timeout, Please login again to continue!")
+                    alert("Timeout, Please login again to continue!");
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
