@@ -24,10 +24,10 @@
         var hasImage = utilities.getData('avatar');
         if(!hasImage){
             vm.imgUrl = _.sample(vm.imgUrlObj);
-            utilities.storeData('avatar', vm.imgUrl)
+            utilities.storeData('avatar', vm.imgUrl);
         }
         else{
-            vm.imgUrl = utilities.getData('avatar')
+            vm.imgUrl = utilities.getData('avatar');
         }
         
         // pich random avatar

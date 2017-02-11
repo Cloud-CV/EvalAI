@@ -1,4 +1,5 @@
 // Invoking IIFE for teams
+/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -23,14 +24,14 @@
             $rootScope.isLoader = true;
             $rootScope.loaderTitle = msg;
             vm.changepassContainer.addClass('low-screen');
-        }
+        };
 
         // stop loader
         vm.stopLoader = function() {
             $rootScope.isLoader = false;
             $rootScope.loaderTitle = '';
             vm.changepassContainer.removeClass('low-screen');
-        }
+        };
         // function to change password
         vm.changePassword = function(resetconfirmFormValid) {
           if(resetconfirmFormValid){
@@ -45,7 +46,7 @@
                 "new_password1": vm.user.new_password1,
                 "new_password2": vm.user.new_password2,
                 "uid": $state.params.user_id,
-            }
+            };
             parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -77,7 +78,7 @@
                             } else {
                                 console.log("Unhandled Error");
                             }
-                        } catch (error) {
+                        } catch (error) { // jshint ignore:line
                             vm.FormError = "Something went wrong! Please refresh the page and try again.";
                         }
                         vm.stopLoader();
@@ -90,7 +91,7 @@
               console.log("Form fields are not valid !");
               vm.stopLoader();
             }
-        }
+        };
     }
 
 })();
