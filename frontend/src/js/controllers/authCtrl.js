@@ -172,6 +172,9 @@
                 console.log("Form fields are not valid !");
                 vm.stopLoader();
             }
+            $rootScope.$on('$stateChangeStart',function () {
+          	   vm.resetForm();
+            })
         }
 
         // function to Verify Email
