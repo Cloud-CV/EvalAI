@@ -449,7 +449,7 @@
                     };
 
                     utilities.sendRequest(parameters);
-                }, 1000);
+                }, 5000);
             };
 
         };
@@ -536,7 +536,7 @@
                     };
 
                     utilities.sendRequest(parameters);
-                }, 1000);
+                }, 5000);
             };
         };
 
