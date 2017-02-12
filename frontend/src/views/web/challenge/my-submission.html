@@ -35,7 +35,7 @@
                                     <tr>
                                         <th data-field="team">Team Name</th>
                                         <th data-field="status">Status</th>
-                                        <th style="text-align:center" data-field="status">Execution Time (sec.)</th>
+                                        <th class="align-center" style=align-center data-field="status">Execution Time (sec.)</th>
                                         <th data-field="file">Submitted File</th>
                                         <th data-field="file">Stdout File</th>
                                         <th data-field="file">Stderr File</th>
@@ -47,7 +47,7 @@
                                     <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
                                         <td>{{key.participant_team_name}}</td>
                                         <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
-                                        <td style="text-align:center" >{{key.execution_time}}</td>
+                                        <td class="align-center">{{key.execution_time}}</td>
                                         <td><a href="{{key.input_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                         <td><a href="{{key.stdout_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                         <td><a href="{{key.stderr_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>

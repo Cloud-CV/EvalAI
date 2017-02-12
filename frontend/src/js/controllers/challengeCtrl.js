@@ -400,7 +400,7 @@
                     // $state.go('web.challenge-page.overview');
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
-                        vm.paginationMsg = "No team exist for now, Start by creating a new team!";
+                        vm.paginationMsg = "No results found";
                     } else {
 
                         vm.showPagination = true;
