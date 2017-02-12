@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
-from os.path import join
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
@@ -12,26 +10,11 @@ from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 
 from base.models import (TimeStampedModel, )
+from base.utils import RandomFileName
 from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
 
 logger = logging.getLogger(__name__)
-
-
-def submission_root(instance):
-    return join('submission_files', 'submission_' + str(instance.pk))
-
-
-def input_file_name(instance, filename='input.txt'):
-    return join(submission_root(instance), filename)
-
-
-def stdout_file_name(instance, filename='stdout.txt'):
-    return join(submission_root(instance), filename)
-
-
-def stderr_file_name(instance, filename='stderr.txt'):
-    return join(submission_root(instance), filename)
 
 
 class Submission(TimeStampedModel):
@@ -66,9 +49,9 @@ class Submission(TimeStampedModel):
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
-    input_file = models.FileField(upload_to=input_file_name)
-    stdout_file = models.FileField(upload_to=stdout_file_name, null=True, blank=True)
-    stderr_file = models.FileField(upload_to=stderr_file_name, null=True, blank=True)
+    input_file = models.FileField(upload_to=RandomFileName("submission_files/submission"))
+    stdout_file = models.FileField(upload_to=RandomFileName("submission_files/submission"), null=True, blank=True)
+    stderr_file = models.FileField(upload_to=RandomFileName("submission_files/submission"), null=True, blank=True)
     execution_time_limit = models.PositiveIntegerField(default=300)
 
     def __unicode__(self):
