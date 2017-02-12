@@ -309,7 +309,7 @@
         };
         var our_team = {
             name: 'our-team',
-            url: "/our-team",
+            url: "/team",
             templateUrl: baseUrl + "/web/our-team.html",
             title: "Our Team"
         };
@@ -317,8 +317,7 @@
 
         // call all states here
         $stateProvider.state(home);
-        $stateProvider.state(terms_and_conditions);
-        
+        $stateProvider.state(terms_and_conditions);      
 
         // auth configs
         $stateProvider.state(auth);
