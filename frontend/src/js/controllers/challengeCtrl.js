@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload'];
+    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
 
-    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope, Upload) {
+    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -21,6 +21,11 @@
         var flag = 0;
         vm.phases = {};
         vm.isValid = {};
+        vm.showUpdate = false;
+        vm.showLeaderboardUpdate = false;
+        vm.stopLeaderboard = function() {};
+        vm.stop = function() {};
+
         var userKey = utilities.getData('userKey');
 
         vm.subErrors = {};
@@ -39,11 +44,11 @@
                 var response = response.data;
                 vm.page = response;
                 vm.isActive = response.is_active;
-                
-                if(vm.page.image === null){
-                	vm.page.image = "dist/images/logo.png";
+
+                if (vm.page.image === null) {
+                    vm.page.image = "dist/images/logo.png";
                 }
-                
+
                 if (vm.isActive === true) {
 
                     // get details of challenges corresponding to participant teams of that user
@@ -358,8 +363,105 @@
 
         // my submissions
         vm.isResult = false;
-        vm.getResults = function(phaseId) {
+
+        vm.getLeaderboard = function(phaseId) {
+            var poller;
+
+            vm.stopLeaderboard = function() {
+                $interval.cancel(poller);
+            };
+            vm.stopLeaderboard();
+
             vm.isResult = true;
+            vm.phaseId = phaseId;
+            // loader for exisiting teams
+            vm.isExistLoader = true;
+            vm.loaderTitle = '';
+            vm.loginContainer = angular.element('.exist-team-card');
+
+            // show loader
+            vm.startLoader = function(msg) {
+                vm.isExistLoader = true;
+                vm.loaderTitle = msg;
+                vm.loginContainer.addClass('low-screen');
+            };
+
+            // stop loader
+            vm.stopLoader = function() {
+                vm.isExistLoader = false;
+                vm.loaderTitle = '';
+                vm.loginContainer.removeClass('low-screen');
+            };
+
+            vm.startLoader("Loading Teams");
+
+
+            // Show leaderboard
+            vm.leaderboard = {};
+            var parameters = {};
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/leaderboard/";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
+                    vm.leaderboard = response.results;
+
+                    vm.sortType = 'overall_acc'; // set the default sort type
+                    vm.sortReverse = true; // set the default sort order
+                    vm.startLeaderboard();
+                    vm.stopLoader();
+                },
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
+                    vm.leaderboard.error = error;
+                    vm.stopLoader();
+                }
+            };
+
+            utilities.sendRequest(parameters);
+            vm.startLeaderboard = function() {
+                vm.stopLeaderboard();
+                poller = $interval(function() {
+                    var parameters = {};
+                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/leaderboard/";
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var response = response.data;
+                            if (vm.leaderboard.count !== response.count) {
+                                vm.showLeaderboardUpdate = true;
+                            }
+                        },
+                        onError: function(response) {
+                            var status = response.status;
+                            var error = response.data;
+                            utilities.storeData('emailError', error.detail);
+                            $state.go('web.permission-denied');
+                            vm.stopLoader();
+                        }
+                    };
+
+                    utilities.sendRequest(parameters);
+                }, 5000);
+            };
+
+        };
+        vm.getResults = function(phaseId) {
+
+            var poller;
+            vm.stop = function() {
+                $interval.cancel(poller);
+            };
+            vm.stop();
+            vm.isResult = true;
+            vm.phaseId = phaseId;
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
@@ -382,9 +484,8 @@
             vm.startLoader("Loading Teams");
 
             // get details of the particular challenge phase
-
             var parameters = {};
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/submission/";
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
@@ -393,8 +494,7 @@
                     var status = response.status;
                     var response = response.data;
                     vm.submissionResult = response;
-                    // navigate to challenge page
-                    // $state.go('web.challenge-page.overview');
+                    vm.start();
                     vm.stopLoader();
                 },
                 onError: function(response) {
@@ -408,10 +508,69 @@
 
             utilities.sendRequest(parameters);
 
-            // Show leaderboard
+            // long polling (2s) for leaderboard
+
+            vm.start = function() {
+                vm.stop();
+                poller = $interval(function() {
+                    var parameters = {};
+                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
+                    parameters.method = 'GET';
+                    parameters.data = {};
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var response = response.data;
+                            if (vm.submissionResult.count !== response.count) {
+                                vm.showUpdate = true;
+                            }
+                        },
+                        onError: function(response) {
+                            var status = response.status;
+                            var error = response.data;
+                            utilities.storeData('emailError', error.detail);
+                            $state.go('web.permission-denied');
+                            vm.stopLoader();
+                        }
+                    };
+
+                    utilities.sendRequest(parameters);
+                }, 5000);
+            };
+        };
+
+        vm.refreshSubmissionData = function() {
+            vm.startLoader("Loading Teams");
+            vm.submissionResult = {};
+            var parameters = {};
+
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var response = response.data;
+                    vm.submissionResult = response;
+                    vm.showUpdate = false;
+                    vm.stopLoader();
+                },
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
+                    vm.stopLoader();
+                }
+            };
+
+            utilities.sendRequest(parameters);
+        };
+        vm.refreshLeaderboard = function() {
+            vm.startLoader("Loading Teams");
             vm.leaderboard = {};
             var parameters = {};
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/leaderboard/";
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/leaderboard/";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
@@ -421,9 +580,9 @@
                     var response = response.data;
                     vm.leaderboard = response.results;
 
-                    $scope.sortType     = 'overall_acc'; // set the default sort type
-                    $scope.sortReverse  = true;  // set the default sort order
-
+                    vm.sortType = 'overall_acc'; // set the default sort type
+                    vm.sortReverse = true; // set the default sort order
+                    vm.startLeaderboard();
                     vm.stopLoader();
                 },
                 onError: function(response) {
@@ -436,6 +595,18 @@
 
             utilities.sendRequest(parameters);
         };
+
+        $scope.$on('$destroy', function() {
+            vm.stop();
+            vm.stopLeaderboard();
+        });
+
+        $rootScope.$on('$stateChangeStart', function() {
+            vm.phase = {};
+            vm.isResult = false;
+            vm.stop();
+            vm.stopLeaderboard();
+        });
     }
 
 })();
