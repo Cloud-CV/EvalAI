@@ -12,6 +12,9 @@
                     </div>
                 </div>
                 <div class="ev-md-container ev-panel-title">
+                    <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page" ng-if="challenge.showUpdate">
+                        <span class="text-white">Page is Outdated, Click to update&nbsp; <i class="fa fa-refresh text-highlight"></i></span>
+                    </div>
                     <div class="row">
                         <div class="col s12">
                             <strong>Please select a phase to get list of submissions!</strong>
@@ -25,7 +28,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
                         <div class="col s12">
@@ -40,7 +42,6 @@
                                         <th data-field="file">Stdout File</th>
                                         <th data-field="file">Stderr File</th>
                                         <th data-field="file">Submitted At</th>
-
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -74,7 +75,6 @@
                        </div>
                     <section>
                 </div>
-
             </div>
         </div>
     </div>

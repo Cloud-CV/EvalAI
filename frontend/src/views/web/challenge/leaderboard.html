@@ -13,6 +13,9 @@
                 </div>
                 <div class="ev-md-container ev-panel-title">
                     <div class="row">
+                        <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page" ng-if="challenge.showLeaderboardUpdate">
+                            <span class="text-white">Page is Outdated, Click to update&nbsp; <i class="fa fa-refresh text-highlight"></i></span>
+                        </div>
                         <div class="col s12">
                             <strong>Please select a phase!</strong>
                         </div>
@@ -20,12 +23,11 @@
                     <div class="row">
                         <div class="col xs12 s6">
                             <span><md-select ng-model="challenge.phase.name" placeholder="Phase" class="rm-margin">
-                            <md-option ng-click="challenge.getResults(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}}</md-option>
+                            <md-option ng-click="challenge.getLeaderboard(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}}</md-option>
                         </md-select></span>
                         </div>
                     </div>
                 </div>
-
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
                         <div class="col s12">
@@ -44,10 +46,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                <tr ng-repeat="key in challenge.leaderboard | orderBy:sortType:sortReverse">
-                                    <td><b>{{key.participant_team_name}}</b></td>
-                                    <td ng-repeat="result in key.final_result">{{result}}</td>
-                                </tr>
+                                    <tr ng-repeat="key in challenge.leaderboard | orderBy:sortType:sortReverse">
+                                        <td><b>{{key.participant_team_name}}</b></td>
+                                        <td ng-repeat="result in key.final_result">{{result}}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                             <div ng-if="challenge.isResult && challenge.leaderboard.error">
@@ -59,7 +61,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
