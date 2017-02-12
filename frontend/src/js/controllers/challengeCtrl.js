@@ -385,7 +385,7 @@
             vm.isNext = '';
             vm.isPrev = '';
             vm.currentPage = '';
-
+            vm.showPagination = false;
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + phaseId + "/submission/";
             parameters.method = 'GET';
@@ -398,6 +398,15 @@
                     vm.submissionResult = response;
                     // navigate to challenge page
                     // $state.go('web.challenge-page.overview');
+                    if (vm.submissionResult.count === 0) {
+                        vm.showPagination = false;
+                        vm.paginationMsg = "No team exist for now, Start by creating a new team!";
+                    } else {
+
+                        vm.showPagination = true;
+                        vm.paginationMsg = "";
+                    }
+
                     if (vm.submissionResult.next === null) {
                         vm.isNext = 'disabled';
                     } else {
