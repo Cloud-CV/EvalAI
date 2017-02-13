@@ -10,7 +10,10 @@
 
     var baseUrl = "dist/views/";
 
-    function configure($stateProvider, $urlRouterProvider, $locationProvider) {
+    function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
+
+        // Preventing 404 on trailing / in urls
+        $urlMatcherFactoryProvider.strictMode(false);
 
         // formating hashed url
         $locationProvider.html5Mode({
@@ -91,7 +94,7 @@
             authenticate: false,
             title: 'Logout'
         };
-        
+
         // main app 'web'
         var web = {
             name: "web",
@@ -293,12 +296,12 @@
             templateUrl: baseUrl + "/web/error-pages/error-500.html",
             title: "Error 500",
         };
-                
+
         var terms_and_conditions = {
-        	name: "terms_and_conditions",
-        	url: "/legals",
-        	templateUrl: baseUrl + "/web/terms-and-conditions.html",
-        	title: "Terms and Conditions"
+            name: "terms_and_conditions",
+            url: "/legals",
+            templateUrl: baseUrl + "/web/terms-and-conditions.html",
+            title: "Terms and Conditions"
         };
 
         var about_us = {
@@ -318,7 +321,7 @@
         // call all states here
         $stateProvider.state(home);
         $stateProvider.state(terms_and_conditions);
-        
+
 
         // auth configs
         $stateProvider.state(auth);
