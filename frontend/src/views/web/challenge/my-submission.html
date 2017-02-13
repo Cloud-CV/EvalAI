@@ -37,7 +37,7 @@
                                     <tr>
                                         <th data-field="team">Team Name</th>
                                         <th data-field="status">Status</th>
-                                        <th data-field="status">Execution Time (In sec.)</th>
+                                        <th class="align-center" data-field="status">Execution Time (sec.)</th>
                                         <th data-field="file">Submitted File</th>
                                         <th data-field="file">Stdout File</th>
                                         <th data-field="file">Stderr File</th>
@@ -48,7 +48,7 @@
                                     <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
                                         <td>{{key.participant_team_name}}</td>
                                         <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
-                                        <td>{{key.execution_time}}</td>
+                                        <td class="align-center">{{key.execution_time}}</td>
                                         <td><a href="{{key.input_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                         <td><a href="{{key.stdout_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                         <td><a href="{{key.stderr_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
@@ -57,7 +57,23 @@
                                 </tbody>
                             </table>
                         </div>
+
                     </div>
+                    <section class="pagination" ng-if="challenge.showPagination">
+                      <div class="row">
+                          <div class="col s12 left-align">
+
+                              <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.previous)">
+                                  <i class="fa fa-chevron-left"></i>
+                              </a>
+                              <span class="pagination-title"> <strong class="text-med-black"> Page {{challenge.currentPage | ceil}} of {{challenge.submissionResult.count/10 | ceil}} </strong></span>
+                              <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.next)">
+                                  <i class="fa fa-chevron-right"></i>
+                              </a>
+
+                          </div>
+                       </div>
+                    <section>
                 </div>
             </div>
         </div>
