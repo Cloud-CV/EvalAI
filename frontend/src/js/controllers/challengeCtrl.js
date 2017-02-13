@@ -45,8 +45,10 @@
                 vm.page = response;
                 vm.isActive = response.is_active;
 
+
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
+
                 }
 
                 if (vm.isActive === true) {
@@ -484,6 +486,11 @@
             vm.startLoader("Loading Teams");
 
             // get details of the particular challenge phase
+            vm.isNext = '';
+            vm.isPrev = '';
+            vm.currentPage = '';
+            vm.showPagination = false;
+
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
             parameters.method = 'GET';
@@ -494,8 +501,93 @@
                     var status = response.status;
                     var response = response.data;
                     vm.submissionResult = response;
-                    vm.start();
-                    vm.stopLoader();
+                    // navigate to challenge page
+                    // $state.go('web.challenge-page.overview');
+                    if (vm.submissionResult.count === 0) {
+                        vm.showPagination = false;
+                        vm.paginationMsg = "No results found";
+                    } else {
+
+                        vm.showPagination = true;
+                        vm.paginationMsg = "";
+                    }
+
+                    if (vm.submissionResult.next === null) {
+                        vm.isNext = 'disabled';
+                    } else {
+                        vm.isNext = '';
+
+                    }
+                    if (vm.submissionResult.previous === null) {
+                        vm.isPrev = 'disabled';
+                    } else {
+                        vm.isPrev = '';
+                    }
+                    if (vm.submissionResult.next !== null) {
+                        vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                    } else {
+                        vm.currentPage = 1;
+                    }
+
+                    vm.load = function(url) {
+                        // loader for exisiting teams
+                        vm.isExistLoader = true;
+                        vm.loaderTitle = '';
+                        vm.loginContainer = angular.element('.exist-team-card');
+
+                        // show loader
+                        vm.startLoader = function(msg) {
+                            vm.isExistLoader = true;
+                            vm.loaderTitle = msg;
+                            vm.loginContainer.addClass('low-screen');
+                        };
+
+                        // stop loader
+                        vm.stopLoader = function() {
+                            vm.isExistLoader = false;
+                            vm.loaderTitle = '';
+                            vm.loginContainer.removeClass('low-screen');
+                        };
+
+                        vm.startLoader("Loading Teams");
+                        if (url !== null) {
+
+                            //store the header data in a variable
+                            var headers = {
+                                'Authorization': "Token " + userKey
+                            };
+
+                            //Add headers with in your request
+                            $http.get(url, { headers: headers }).then(function(response) {
+                                // reinitialized data
+                                var status = response.status;
+                                var response = response.data;
+                                vm.submissionResult = response;
+
+                                // condition for pagination
+                                if (vm.submissionResult.next === null) {
+                                    vm.isNext = 'disabled';
+                                    vm.currentPage = vm.submissionResult.count / 10;
+                                } else {
+                                    vm.isNext = '';
+                                    vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                                }
+
+                                if (vm.submissionResult.previous === null) {
+                                    vm.isPrev = 'disabled';
+                                } else {
+                                    vm.isPrev = '';
+                                }
+                                vm.stopLoader();
+                            });
+                        } else {
+                            vm.stopLoader();
+                        }
+
+
+                    };
+
+
                 },
                 onError: function(response) {
                     var status = response.status;
