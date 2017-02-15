@@ -56,6 +56,7 @@
         return directive;
 
         function controller($scope, $element, $attrs, $http, utilities) {
+            /* jshint validthis: true */
             var vm = this;
 
             vm.user = {};
@@ -71,9 +72,9 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
-                        var response = response.data;
+                        var data = response.data;
                         if (status == 200) {
-                            vm.user.name = response.username;
+                            vm.user.name = data.username;
                         }
                     },
                     onError: function(response) {
