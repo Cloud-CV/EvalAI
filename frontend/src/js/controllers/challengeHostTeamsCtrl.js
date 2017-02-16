@@ -190,7 +190,7 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    $rootScope.notify("info", "team", "New team created");
+                    $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
                     var status = response.status;
                     var response = response.data;
                     vm.teamId = response.id;
@@ -247,6 +247,7 @@
 
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
+                    $rootScope.notify("error", "New team couldn't be created.");
                 }
             };
 
@@ -273,7 +274,7 @@
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
-
+                        $rootScope.notify("info", "You have removed yourself from the challenge");
                         var status = response.status;
                         var response = response.data;
                         vm.team.error = false;
@@ -357,10 +358,12 @@
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
+                        $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                         var status = response.status;
                         var response = response.data;
                     },
                     onError: function(response) {
+                        $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
                         var status = response.status;
                         var error = response.data;
                     }
