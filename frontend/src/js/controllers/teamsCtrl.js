@@ -242,8 +242,7 @@
                     vm.team.name = '';
 
                     vm.stopLoader();
-
-
+                    $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
 
                     vm.startExistLoader("Loading Teams");
                     var parameters = {};
@@ -293,6 +292,7 @@
 
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
+                    $rootScope.notify("error", "New team couldn't be created.");
                 }
             };
 
@@ -323,6 +323,7 @@
                         var status = response.status;
                         var response = response.data;
                         vm.team.error = false;
+                        $rootScope.notify("info", "You have removed yourself successfully");
 
                         var parameters = {};
                         parameters.url = 'participants/participant_team';
@@ -371,6 +372,7 @@
                         var status = response.status;
                         var error = response.data;
                         vm.stopExistLoader();
+                        $rootScope.notify("error", "couldn't remove you from the challenge");
                     }
                 };
 
@@ -406,11 +408,13 @@
                     onSuccess: function(response) {
                         var status = response.status;
                         var response = response.data;
+                        $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
                     onError: function(response) {
                         var status = response.status;
                         var error = response.data;
                         console.log(error);
+                        $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
                     }
                 };
 

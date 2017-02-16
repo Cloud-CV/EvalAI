@@ -190,14 +190,14 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
                     var status = response.status;
                     var response = response.data;
                     vm.teamId = response.id;
                     vm.team.error = false;
                     vm.team.name = '';
-
                     vm.stopLoader();
+                    $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
+
                     vm.startExistLoader("Loading Teams");
                     var parameters = {};
                     parameters.url = 'hosts/challenge_host_team/';
@@ -274,10 +274,10 @@
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
-                        $rootScope.notify("info", "You have removed yourself from the challenge");
                         var status = response.status;
                         var response = response.data;
                         vm.team.error = false;
+                        $rootScope.notify("info", "You have removed yourself successfully");
 
                         var parameters = {};
                         parameters.url = 'hosts/challenge_host_team/';
@@ -326,6 +326,7 @@
                         var status = response.status;
                         var error = response.data;
                         vm.stopExistLoader();
+                        $rootScope.notify("error", "couldn't remove you from the challenge");
                     }
                 };
 
@@ -358,14 +359,14 @@
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
-                        $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                         var status = response.status;
                         var response = response.data;
+                        $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
                     onError: function(response) {
-                        $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
                         var status = response.status;
                         var error = response.data;
+                        $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
                     }
                 };
 
