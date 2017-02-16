@@ -17,9 +17,9 @@ from participants.models import Participant, ParticipantTeam
 from participants.utils import get_participant_teams_for_user
 
 
-from .models import Challenge, ChallengePhase
+from .models import Challenge, ChallengePhase, ChallengePhaseSplit
 from .permissions import IsChallengeCreator
-from .serializers import ChallengeSerializer, ChallengePhaseSerializer
+from .serializers import ChallengeSerializer, ChallengePhaseSerializer, ChallengePhaseSplitSerializer
 
 
 @throttle_classes([UserRateThrottle])
@@ -322,3 +322,24 @@ def challenge_phase_detail(request, challenge_pk, pk):
     elif request.method == 'DELETE':
         challenge_phase.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@throttle_classes([AnonRateThrottle])
+@api_view(['GET'])
+# @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+# @authentication_classes((ExpiringTokenAuthentication,))
+def challenge_phase_split_list(request, challenge_pk):
+    """
+    Returns the list of Challenge Phase Splits for a particular challenge
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    challenge_phase_split = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
+    paginator, result_page = paginated_queryset(challenge_phase_split, request)
+    serializer = ChallengePhaseSplitSerializer(result_page, many=True)
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
