@@ -32,7 +32,7 @@ class CreateContactMessage(BaseAPITestCase):
         self.data = {
             'name': 'New Message',
             'email': 'newuser@test.com',
-            'message': 'New Message for Conatct'
+            'message': 'New Message for Contact'
         }
 
     def test_create_contact_message_with_all_data(self):
