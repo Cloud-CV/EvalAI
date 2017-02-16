@@ -379,7 +379,7 @@
         .module('evalai')
         .run(runFunc);
 
-    function runFunc($rootScope, $state, utilities, $window, $location) {
+    function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
 
         // Google Analytics Scripts
         $window.ga('create', 'UA-45466017-2', 'auto');
@@ -431,6 +431,9 @@
 
         });
 
+        $rootScope.notify = function(type, title, text) {
+             toaster.pop(type, title, text);
+        };
 
         $rootScope.logout = function() {
             var userKey = utilities.getData('userKey');

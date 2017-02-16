@@ -190,6 +190,7 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
+                    $rootScope.notify("info", "team", "New team created");
                     var status = response.status;
                     var response = response.data;
                     vm.teamId = response.id;
