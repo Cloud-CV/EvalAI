@@ -47,7 +47,6 @@
 
             utilities.sendRequest(parameters);
         }
-
         vm.hostChallenge = function(ev) {
 
             var alert = $mdDialog.alert()
