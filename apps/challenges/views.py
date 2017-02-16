@@ -326,8 +326,6 @@ def challenge_phase_detail(request, challenge_pk, pk):
 
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
-# @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-# @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_split_list(request, challenge_pk):
     """
     Returns the list of Challenge Phase Splits for a particular challenge
