@@ -63,7 +63,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChallengePhaseSplit
         fields = '__all__'
-        fields = ('id', 'dataset_split', 'challenge_phase', 'challenge_phase_name', 'dataset_split_name')
+        fields = ('id', 'dataset_split', 'challenge_phase', 'challenge_phase_name', 'dataset_split_name', 'visibility')
 
     def get_dataset_split_name(self, obj):
         return obj.dataset_split.name
