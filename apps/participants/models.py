@@ -7,9 +7,8 @@ from base.models import (TimeStampedModel,)
 
 
 class Participant(TimeStampedModel):
-    """
-    Model representing the Participant of the competition. 
-    """
+    """Model representing the Participant of the competition. """
+    
     UNKNOWN = 'Unknown'
     SELF = 'Self'
     DENIED = 'Denied'
@@ -37,9 +36,8 @@ class Participant(TimeStampedModel):
 
 
 class ParticipantTeam(TimeStampedModel):
-    """
-    Model representing the Teams associated with different challenges
-    """
+    """Model representing the Teams associated with different challenges"""
+    
     team_name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(User, null=True)
 
