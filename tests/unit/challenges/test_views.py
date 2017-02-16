@@ -1160,6 +1160,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "challenge_phase_name": self.challenge_phase.name,
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
+                "visibility": self.challenge_phase_split.visibility,
             }
         ]
 
