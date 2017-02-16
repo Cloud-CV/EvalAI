@@ -15,7 +15,7 @@ EvalAI is an open source web application that helps researchers, students and da
 Setting up EvalAI on your local machine is really easy.
 Follow this guide to setup your development machine.
 
-1. Install [git], [postgresql] version >= 9.4 and [virtualenv], in your computer, if you don't have it already.
+1. Install [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
@@ -69,6 +69,11 @@ Follow this guide to setup your development machine.
 
 9. That's it, Open web browser and hit the url `http://127.0.0.1:8888`.
 
+10. (Optional) If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:
+
+    ```
+    python scripts/workers/submission_worker.py
+    ```
 
 ## Contribution guidelines
 
@@ -78,3 +83,4 @@ If you are interested in contributing to EvalAI, follow your [contribution guide
 [virtualenv]: https://virtualenv.pypa.io/
 [postgresql]: http://www.postgresql.org/download/
 [postgresqlhelp]: http://bobbyong.com/blog/installing-postgresql-on-windoes/
+[rabbitmq]: https://www.rabbitmq.com/
