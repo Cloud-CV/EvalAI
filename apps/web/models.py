@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from ckeditor.fields import RichTextField
+
 from django.db import models
 
 from base.models import (TimeStampedModel, )
@@ -33,6 +35,7 @@ class Team(models.Model):
 
     name = models.CharField(max_length=100)
     email = models.EmailField(max_length=70)
+    description = RichTextField(null=True)
     headshot = models.ImageField(upload_to="headshots", null=True, blank=True)
     visible = models.BooleanField(default=True)
     github_url = models.URLField(max_length=200)

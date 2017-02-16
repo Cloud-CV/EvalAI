@@ -67,6 +67,7 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                url(r'^api/web/',
                    include('web.urls',
                            namespace='web')),
+               url(r'^ckeditor/', include('ckeditor_uploader.urls'))
                ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
