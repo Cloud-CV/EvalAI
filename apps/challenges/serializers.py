@@ -2,7 +2,11 @@ from rest_framework import serializers
 
 from hosts.serializers import ChallengeHostTeamSerializer
 
-from .models import Challenge, ChallengePhase
+from .models import (
+                     Challenge,
+                     ChallengePhase,
+                     ChallengePhaseSplit,
+                     DatasetSplit,)
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
@@ -12,7 +16,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super(ChallengeSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get('context')
-        if context:
+        if context and context.get('request').method != 'GET':
             challenge_host_team = context.get('challenge_host_team')
             kwargs['data']['creator'] = challenge_host_team.pk
         else:
@@ -41,3 +45,28 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
         model = ChallengePhase
         fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'is_public', 'is_active', 'codename')
+
+
+class DatasetSplitSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DatasetSplit
+        fields = '__all__'
+
+
+class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
+    """Serialize the ChallengePhaseSplits Model"""
+
+    dataset_split_name = serializers.SerializerMethodField()
+    challenge_phase_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChallengePhaseSplit
+        fields = '__all__'
+        fields = ('id', 'dataset_split', 'challenge_phase', 'challenge_phase_name', 'dataset_split_name', 'visibility')
+
+    def get_dataset_split_name(self, obj):
+        return obj.dataset_split.name
+
+    def get_challenge_phase_name(self, obj):
+        return obj.challenge_phase.name
