@@ -38,6 +38,7 @@ class Team(models.Model):
     github_url = models.URLField(max_length=200)
     linkedin_url = models.URLField(max_length=200)
     personal_website = models.URLField(max_length=200)
+    bg_image = models.ImageField(upload_to="bg-images", null=True, blank=True)
     team_type = models.CharField(choices=TEAM_TYPE_OPTIONS, max_length=50)
 
     def __unicode__(self):
