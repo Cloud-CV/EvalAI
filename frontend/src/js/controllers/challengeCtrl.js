@@ -395,7 +395,7 @@
                 vm.loginContainer.removeClass('low-screen');
             };
 
-            vm.startLoader("Loading Teams");
+            vm.startLoader("Loading Leaderboard Items");
 
 
             // Show leaderboard
@@ -483,9 +483,9 @@
                 vm.loginContainer.removeClass('low-screen');
             };
 
-            vm.startLoader("Loading Teams");
+            vm.startLoader("Loading Submissions");
 
-            // get details of the particular challenge phase
+            // get submissions of a particular challenge phase
             vm.isNext = '';
             vm.isPrev = '';
             vm.currentPage = '';
@@ -501,8 +501,8 @@
                     var status = response.status;
                     var response = response.data;
                     vm.submissionResult = response;
-                    // navigate to challenge page
-                    // $state.go('web.challenge-page.overview');
+                    vm.start();
+
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
@@ -549,7 +549,7 @@
                             vm.loginContainer.removeClass('low-screen');
                         };
 
-                        vm.startLoader("Loading Teams");
+                        vm.startLoader("Loading Submissions");
                         if (url !== null) {
 
                             //store the header data in a variable
@@ -583,11 +583,8 @@
                         } else {
                             vm.stopLoader();
                         }
-
-
                     };
-
-
+                    vm.stopLoader();
                 },
                 onError: function(response) {
                     var status = response.status;
@@ -600,7 +597,7 @@
 
             utilities.sendRequest(parameters);
 
-            // long polling (2s) for leaderboard
+            // long polling (5s) for leaderboard
 
             vm.start = function() {
                 vm.stop();
@@ -633,7 +630,7 @@
         };
 
         vm.refreshSubmissionData = function() {
-            vm.startLoader("Loading Teams");
+            vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
             var parameters = {};
 
@@ -659,7 +656,7 @@
             utilities.sendRequest(parameters);
         };
         vm.refreshLeaderboard = function() {
-            vm.startLoader("Loading Teams");
+            vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/leaderboard/";
