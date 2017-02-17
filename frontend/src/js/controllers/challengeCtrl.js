@@ -287,7 +287,9 @@
 
 
                                                 vm.phaseId = null;
-                                                vm.subErrors.msg = "Your submission has been recorded succesfully!";
+                                                // vm.subErrors.msg = "Your submission has been recorded succesfully!";
+                                                $rootScope.notify("success", "Your submission has been recorded succesfully!");
+
                                                 vm.stopLoader();
                                             },
                                             onError: function(response) {

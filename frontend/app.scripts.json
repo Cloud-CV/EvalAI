@@ -13,7 +13,8 @@
       "ngSmoothScroll",
       "ng-focus-if",
       "ng-sanitize",
-      "ng-file-upload"
+      "ng-file-upload",
+      "AngularJS-Toaster"
 
     ]
   },
@@ -30,7 +31,8 @@
        "ngSmoothScroll": "bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js",
        "ng-focus-if": "bower_components/ng-focus-if/focusIf.min.js",
        "ng-sanitize": "bower_components/angular-sanitize/angular-sanitize.min.js",
-       "ng-file-upload": "bower_components/ng-file-upload/ng-file-upload.min.js"
+       "ng-file-upload": "bower_components/ng-file-upload/ng-file-upload.min.js",
+       "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.js"
 
      }
 }
