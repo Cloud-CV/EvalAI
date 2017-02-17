@@ -79,7 +79,7 @@
                     onSuccess: function(response) {
                         if (response.status == 201) {
                             vm.isFormError = false;
-                            vm.regMsg = "Registered successfully, Login to continue!";
+                            // vm.regMsg = "Registered successfully, Login to continue!";
                             $rootScope.notify("success", "Registered successfully, Login to continue!");
                             $state.go('auth.login');
                         } else {

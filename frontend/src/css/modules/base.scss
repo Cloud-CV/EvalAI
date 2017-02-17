@@ -728,6 +728,8 @@ input {
 .toast-message {
     -ms-word-wrap: initial;
     word-wrap: initial;
+    // text-align: center;
+    // font-size: 14px;
 }
 
 .toast-message a,
@@ -742,6 +744,7 @@ input {
 
 .toast {
     background-color: #030303;
+    word-break: initial;
 }
 
 .toast-success {

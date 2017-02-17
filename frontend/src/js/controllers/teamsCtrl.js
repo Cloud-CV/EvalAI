@@ -236,13 +236,12 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
+                    $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
                     var status = response.status;
                     var response = response.data;
                     vm.team.error = false;
-                    vm.team.name = '';
-
                     vm.stopLoader();
-                    $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
+                    vm.team.name = '';
 
                     vm.startExistLoader("Loading Teams");
                     var parameters = {};
@@ -414,7 +413,7 @@
                         var status = response.status;
                         var error = response.data;
                         console.log(error);
-                        $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
+                        $rootScope.notify("error", "couldn't invite " + parameters.data.email + ". Please try again.");
                     }
                 };
 

@@ -190,13 +190,13 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
+                    $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
                     var status = response.status;
                     var response = response.data;
                     vm.teamId = response.id;
                     vm.team.error = false;
                     vm.team.name = '';
                     vm.stopLoader();
-                    $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
 
                     vm.startExistLoader("Loading Teams");
                     var parameters = {};
