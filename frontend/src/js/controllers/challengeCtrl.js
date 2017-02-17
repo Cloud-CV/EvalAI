@@ -437,8 +437,6 @@
                     var response = response.data;
                     vm.leaderboard = response.results;
 
-                    vm.sortType = 'overall_acc'; // set the default sort type
-                    vm.sortReverse = true; // set the default sort order
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
@@ -685,7 +683,7 @@
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             var parameters = {};
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/leaderboard/";
+            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
@@ -694,9 +692,6 @@
                     var status = response.status;
                     var response = response.data;
                     vm.leaderboard = response.results;
-
-                    vm.sortType = 'overall_acc'; // set the default sort type
-                    vm.sortReverse = true; // set the default sort order
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },

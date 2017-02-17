@@ -1,5 +1,3 @@
-import yaml
-
 from rest_framework import serializers
 
 from challenges.models import LeaderboardData

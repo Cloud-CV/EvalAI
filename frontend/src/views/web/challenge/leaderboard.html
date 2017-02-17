@@ -35,18 +35,16 @@
                             <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight">
                                 <thead>
                                     <tr>
-                                        <th data-field="team">Team Name</th>
-                                        <th ng-repeat="key in challenge.leaderboard[0].leaderboard_schema.labels">
-                                            <a href="#" ng-click="sortType = '{{key}}'; sortReverse = !sortReverse">
-                                                {{key}}
-                                            </a>
-                                        </th>
+                                        <td data-field="rank">Rank</td>
+                                        <td data-field="team">Participant Team</td>
+                                        <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="key in challenge.leaderboard">
-                                        <td><b>{{key.participant_team_name}}</b></td>
-                                        <td ng-repeat="(key, value) in key.result">{{value}}</td>
+                                        <td>{{$index+1}}</td>
+                                        <td>{{key.submission__participant_team__team_name}}</td>
+                                        <td ng-repeat="score in key.result track by $index">{{score}}</td>
                                     </tr>
                                 </tbody>
                             </table>

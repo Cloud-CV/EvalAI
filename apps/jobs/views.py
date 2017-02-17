@@ -5,14 +5,12 @@ from rest_framework.decorators import (api_view,
                                        throttle_classes,)
 
 from django.db.models.expressions import RawSQL
-from django.db.models import IntegerField, Value, F
+from django.db.models import IntegerField
 
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
-
-import challenges.constants as constants
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
@@ -27,7 +25,7 @@ from participants.utils import (
 
 from .models import Submission
 from .sender import publish_submission_message
-from .serializers import SubmissionSerializer, LeaderboardDataSerializer
+from .serializers import SubmissionSerializer
 
 
 @throttle_classes([UserRateThrottle])
@@ -113,9 +111,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
 def leaderboard(request, challenge_phase_split_id):
-    """
-    Returns leaderboard for a corresponding Challenge Phase Split
-    """
+    """Returns leaderboard for a corresponding Challenge Phase Split"""
 
     # check if the challenge exists or not
     try:
@@ -141,25 +137,29 @@ def leaderboard(request, challenge_phase_split_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Get all the successful submissions related to the challenge phase split
-    leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split)
-    leaderboard_data = leaderboard_data.annotate(filtering_score=RawSQL(
-        'result->>%s', (default_order_by, ), output_field=IntegerField())).order_by('-filtering_score', 'submission__participant_team').distinct('submission__participant_team')
+    leaderboard_data = LeaderboardData.objects.filter(
+        challenge_phase_split=challenge_phase_split).order_by('created_at')
+    leaderboard_data = leaderboard_data.annotate(
+        filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=IntegerField())).values(
+            'id', 'submission__participant_team__team_name',
+            'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema')
 
-    # print leaderboard_data.query
-    # print leaderboard_data
-    print leaderboard_data.values_list('filtering_score', flat=True)
+    sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: k['filtering_score'], reverse=True)
 
-    # If number of entries in the leaderboard data is more than number of rows allowed in leaderboard,
-    # then choose the `TOP N` entries from the table
+    distinct_sorted_leaderboard_data = []
+    team_list = []
 
-    if leaderboard_data.count() >= constants.NUMBER_OF_ROWS_IN_LEADERBOARD:
-        leaderboard_data = leaderboard_data[:constants.NUMBER_OF_ROWS_IN_LEADERBOARD]
+    for data in sorted_leaderboard_data:
+        if data['submission__participant_team__team_name'] in team_list:
+            continue
+        else:
+            distinct_sorted_leaderboard_data.append(data)
+            team_list.append(data['submission__participant_team__team_name'])
 
-    # print leaderboard_data
-    paginator, result_page = paginated_queryset(leaderboard_data, request)
-    try:
-        serializer = LeaderboardDataSerializer(result_page, many=True)
-        response_data = serializer.data
-        return paginator.get_paginated_response(response_data)
-    except:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
+    for item in distinct_sorted_leaderboard_data:
+        item['result'] = [item['result'][index.lower()] for index in leaderboard_labels]
+
+    paginator, result_page = paginated_queryset(distinct_sorted_leaderboard_data, request)
+    response_data = result_page
+    return paginator.get_paginated_response(response_data)
