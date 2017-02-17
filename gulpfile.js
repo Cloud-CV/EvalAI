@@ -236,7 +236,7 @@ var lint_path = {
 
 gulp.task('lint', [], function() {
     return gulp.src(lint_path.js)
-        .pipe(jshint())
+        .pipe(jshint({ "esversion": 6 }))
         .pipe(jshint.reporter('jshint-stylish'))
 });
 

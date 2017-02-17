@@ -91,7 +91,7 @@
             authenticate: false,
             title: 'Logout'
         };
-        
+
         // main app 'web'
         var web = {
             name: "web",
@@ -293,12 +293,12 @@
             templateUrl: baseUrl + "/web/error-pages/error-500.html",
             title: "Error 500",
         };
-                
+
         var terms_and_conditions = {
-        	name: "terms_and_conditions",
-        	url: "/legals",
-        	templateUrl: baseUrl + "/web/terms-and-conditions.html",
-        	title: "Terms and Conditions"
+            name: "terms_and_conditions",
+            url: "/legals",
+            templateUrl: baseUrl + "/web/terms-and-conditions.html",
+            title: "Terms and Conditions"
         };
 
         var about_us = {
@@ -317,7 +317,7 @@
 
         // call all states here
         $stateProvider.state(home);
-        $stateProvider.state(terms_and_conditions);      
+        $stateProvider.state(terms_and_conditions);
 
         // auth configs
         $stateProvider.state(auth);
@@ -379,7 +379,7 @@
         .module('evalai')
         .run(runFunc);
 
-    function runFunc($rootScope, $state, utilities, $window, $location) {
+    function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
 
         // Google Analytics Scripts
         $window.ga('create', 'UA-45466017-2', 'auto');
@@ -431,6 +431,13 @@
 
         });
 
+        $rootScope.notify = function(type, message, timeout = 3000) {
+            toaster.pop({
+                type: type,
+                body: message,
+                timeout: timeout
+            });
+        };
 
         $rootScope.logout = function() {
             var userKey = utilities.getData('userKey');
@@ -445,6 +452,7 @@
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
+                    $rootScope.notify("info", "Logout Successfully");
                 },
                 onError: function(response) {
                     var status = response.status;
