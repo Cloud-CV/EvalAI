@@ -1,9 +1,10 @@
 from django.core.urlresolvers import reverse_lazy
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from web.models import Contact
+from web.models import Contact, Team
 
 from django.test import Client
 from django.test import TestCase
@@ -43,6 +44,48 @@ class CreateContactMessage(BaseAPITestCase):
         del self.data['message']
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class GetTeamTest(APITestCase):
+    def setUp(self):
+        self.url = reverse_lazy('web:our_team')
+        self.team = Team.objects.create(
+            name='John Snow',
+            email='john@snow.com',
+            description='An awesome description for John Snow',
+            headshot=SimpleUploadedFile(
+                name='test_headshot.jpg',
+                content=open('frontend/src/images/deshraj.png', 'rb').read(),
+                content_type='image/png'
+            ),
+            github_url='www.github.com/johnsnow',
+            linkedin_url='www.linkedin.com/johnsnow',
+            personal_website='www.johnsnow.com',
+            background_image=SimpleUploadedFile(
+                name='test_background_image.jpg',
+                content=open('frontend/src/images/deshraj-profile.jpg', 'rb').read(),
+                content_type='image/jpg'
+            ),
+            team_type='Core Team',
+            visible=True,
+        )
+
+    def test_team_get_request(self):
+        response = self.client.get(self.url)
+        expected = [
+            {
+                "name": self.team.name,
+                "headshot": "http://testserver%s" % self.team.headshot.url,
+                "background_image": "http://testserver%s" % self.team.background_image.url,
+                "github_url": self.team.github_url,
+                "linkedin_url": self.team.linkedin_url,
+                "personal_website": self.team.personal_website,
+                "description": self.team.description,
+                "team_type": self.team.team_type,
+            }
+        ]
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestErrorPages(TestCase):
