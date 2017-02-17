@@ -42,13 +42,13 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
 
     participant_team_name = serializers.SerializerMethodField()
     leaderboard_schema = serializers.SerializerMethodField()
-    result = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         super(LeaderboardDataSerializer, self).__init__(*args, **kwargs)
 
     class Meta:
         model = LeaderboardData
+        fields = "__all__"
         fields = ('id', 'participant_team_name', 'challenge_phase_split', 'leaderboard_schema', 'result')
 
     def get_participant_team_name(self, obj):
@@ -56,6 +56,3 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
 
     def get_leaderboard_schema(self, obj):
         return obj.leaderboard.schema
-
-    def get_result(self, obj):
-        return yaml.safe_load(obj.result)

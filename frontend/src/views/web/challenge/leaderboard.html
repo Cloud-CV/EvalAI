@@ -36,19 +36,17 @@
                                 <thead>
                                     <tr>
                                         <th data-field="team">Team Name</th>
-                                        <th ng-repeat="(key, value) in challenge.leaderboard[0].final_result">
+                                        <th ng-repeat="key in challenge.leaderboard[0].leaderboard_schema.labels">
                                             <a href="#" ng-click="sortType = '{{key}}'; sortReverse = !sortReverse">
                                                 {{key}}
-                                                <span ng-show="sortType == '{{key}}' && !sortReverse" class="fa fa-caret-down"></span>
-                                                <span ng-show="sortType == '{{key}}' && sortReverse" class="fa fa-caret-up"></span>
                                             </a>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="key in challenge.leaderboard | orderBy:sortType:sortReverse">
+                                    <tr ng-repeat="key in challenge.leaderboard">
                                         <td><b>{{key.participant_team_name}}</b></td>
-                                        <td ng-repeat="result in key.final_result">{{result}}</td>
+                                        <td ng-repeat="(key, value) in key.result">{{value}}</td>
                                     </tr>
                                 </tbody>
                             </table>

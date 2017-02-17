@@ -5,6 +5,8 @@ from rest_framework.decorators import (api_view,
                                        throttle_classes,)
 
 from django.db.models.expressions import RawSQL
+from django.db.models import IntegerField, Value, F
+
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.response import Response
@@ -139,8 +141,13 @@ def leaderboard(request, challenge_phase_split_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Get all the successful submissions related to the challenge phase split
-    leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split).annotate(filtering_score=RawSQL(
-        'result->>%s', (default_order_by, ))).order_by('submission__participant_team', '-filtering_score').distinct('submission__participant_team')
+    leaderboard_data = LeaderboardData.objects.filter(challenge_phase_split=challenge_phase_split)
+    leaderboard_data = leaderboard_data.annotate(filtering_score=RawSQL(
+        'result->>%s', (default_order_by, ), output_field=IntegerField())).order_by('-filtering_score', 'submission__participant_team').distinct('submission__participant_team')
+
+    # print leaderboard_data.query
+    # print leaderboard_data
+    print leaderboard_data.values_list('filtering_score', flat=True)
 
     # If number of entries in the leaderboard data is more than number of rows allowed in leaderboard,
     # then choose the `TOP N` entries from the table
@@ -152,8 +159,6 @@ def leaderboard(request, challenge_phase_split_id):
     paginator, result_page = paginated_queryset(leaderboard_data, request)
     try:
         serializer = LeaderboardDataSerializer(result_page, many=True)
-        print serializer.is_valid()
-        print serializer.errors
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
     except:

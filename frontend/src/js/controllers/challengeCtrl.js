@@ -455,7 +455,7 @@
                 vm.stopLeaderboard();
                 poller = $interval(function() {
                     var parameters = {};
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/leaderboard/";
+                    parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/";
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.token = userKey;
