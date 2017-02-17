@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 
@@ -13,7 +14,7 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import Challenge, ChallengePhase, DatasetSplit, ChallengePhaseSplit, Leaderboard
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 
@@ -1105,3 +1106,77 @@ class DeleteParticularChallengePhase(BaseChallengePhaseClass):
     def test_particular_challenge_delete(self):
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class BaseChallengePhaseSplitClass(BaseAPITestClass):
+
+    def setUp(self):
+        super(BaseChallengePhaseSplitClass, self).setUp()
+        try:
+            os.makedirs('/tmp/evalai')
+        except OSError:
+            pass
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase = ChallengePhase.objects.create(
+                name='Challenge Phase',
+                description='Description for Challenge Phase',
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain')
+            )
+
+        self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
+
+        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
+
+        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+            dataset_split=self.dataset_split,
+            challenge_phase=self.challenge_phase,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC
+            )
+
+    def tearDown(self):
+        shutil.rmtree('/tmp/evalai')
+
+
+class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
+
+    def setUp(self):
+        super(GetChallengePhaseSplitTest, self).setUp()
+        self.url = reverse_lazy('challenges:challenge_phase_split_list',
+                                kwargs={'challenge_pk': self.challenge.pk})
+
+    def test_get_challenge_phase_split(self):
+        expected = [
+            {
+                "id": self.challenge_phase_split.id,
+                "challenge_phase": self.challenge_phase.id,
+                "challenge_phase_name": self.challenge_phase.name,
+                "dataset_split": self.dataset_split.id,
+                "dataset_split_name": self.dataset_split.name,
+                "visibility": self.challenge_phase_split.visibility,
+            }
+        ]
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_challenge_phase_split_when_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('challenges:challenge_phase_split_list',
+                                kwargs={'challenge_pk': self.challenge.pk})
+
+        self.challenge.delete()
+
+        expected = {
+            'error': 'Challenge does not exist'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
