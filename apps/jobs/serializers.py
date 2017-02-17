@@ -1,6 +1,6 @@
-import yaml
-
 from rest_framework import serializers
+
+from challenges.models import LeaderboardData
 
 from .models import Submission
 
@@ -36,27 +36,21 @@ class SubmissionSerializer(serializers.ModelSerializer):
         return obj.execution_time
 
 
-class LeaderboardSerializer(serializers.ModelSerializer):
+class LeaderboardDataSerializer(serializers.ModelSerializer):
 
     participant_team_name = serializers.SerializerMethodField()
-    challenge_phase_name = serializers.SerializerMethodField()
-    final_result = serializers.SerializerMethodField()
+    leaderboard_schema = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        super(LeaderboardSerializer, self).__init__(*args, **kwargs)
+        super(LeaderboardDataSerializer, self).__init__(*args, **kwargs)
 
     class Meta:
-        model = Submission
-        fields = ('participant_team_name', 'challenge_phase_name', 'final_result')
+        model = LeaderboardData
+        fields = "__all__"
+        fields = ('id', 'participant_team_name', 'challenge_phase_split', 'leaderboard_schema', 'result')
 
     def get_participant_team_name(self, obj):
-        return obj.participant_team.team_name
+        return obj.submission.participant_team.team_name
 
-    def get_challenge_phase_name(self, obj):
-        return obj.challenge_phase.name
-
-    def get_final_result(self, obj):
-        try:
-            return yaml.safe_load(obj.output)
-        except:
-            return None
+    def get_leaderboard_schema(self, obj):
+        return obj.leaderboard.schema

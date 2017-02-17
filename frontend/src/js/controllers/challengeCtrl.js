@@ -13,6 +13,7 @@
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
+        vm.phaseSplitId = null;
         vm.input_file = null;
         vm.wrnMsg = {};
         vm.page = {};
@@ -20,6 +21,7 @@
         vm.isActive = false;
         var flag = 0;
         vm.phases = {};
+        vm.phaseSplits = {};
         vm.isValid = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
@@ -365,10 +367,34 @@
 
         utilities.sendRequest(parameters);
 
+        // get details of the particular challenge phase split
+        var parameters = {};
+        parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
+        parameters.method = 'GET';
+        parameters.data = {};
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function(response) {
+                var status = response.status;
+                var response = response.data;
+                vm.phaseSplits = response;
+                utilities.hideLoader();
+            },
+            onError: function(response) {
+                var status = response.status;
+                var error = response.data;
+                utilities.storeData('emailError', error.detail);
+                $state.go('web.permission-denied');
+                utilities.hideLoader();
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
         // my submissions
         vm.isResult = false;
 
-        vm.getLeaderboard = function(phaseId) {
+        vm.getLeaderboard = function(phaseSplitId) {
             var poller;
 
             vm.stopLeaderboard = function() {
@@ -377,7 +403,7 @@
             vm.stopLeaderboard();
 
             vm.isResult = true;
-            vm.phaseId = phaseId;
+            vm.phaseSplitId = phaseSplitId;
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
@@ -403,7 +429,7 @@
             // Show leaderboard
             vm.leaderboard = {};
             var parameters = {};
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/leaderboard/";
+            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
@@ -413,8 +439,6 @@
                     var response = response.data;
                     vm.leaderboard = response.results;
 
-                    vm.sortType = 'overall_acc'; // set the default sort type
-                    vm.sortReverse = true; // set the default sort order
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
@@ -431,7 +455,7 @@
                 vm.stopLeaderboard();
                 poller = $interval(function() {
                     var parameters = {};
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/leaderboard/";
+                    parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/";
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.token = userKey;
@@ -661,7 +685,7 @@
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             var parameters = {};
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/leaderboard/";
+            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
@@ -670,9 +694,6 @@
                     var status = response.status;
                     var response = response.data;
                     vm.leaderboard = response.results;
-
-                    vm.sortType = 'overall_acc'; // set the default sort type
-                    vm.sortReverse = true; // set the default sort order
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
