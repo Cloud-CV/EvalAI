@@ -63,10 +63,7 @@ def contact_us(request):
 @api_view(['GET'])
 @permission_classes((permissions.AllowAny,))
 def our_team(request):
-    team = Team.objects.all()
-    if not team:
-        response_data = {'message': 'Team details not available!'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    serializer = TeamSerializer(team, many=True, context={'request': request})
+    teams = Team.objects.all()
+    serializer = TeamSerializer(teams, many=True, context={'request': request})
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
