@@ -53,7 +53,7 @@
 
                 }
 
-                if (vm.isActive === true) {
+                if (vm.isActive) {
 
                     // get details of challenges corresponding to participant teams of that user
                     var parameters = {};
@@ -73,7 +73,7 @@
                                 }
                             }
 
-                            if (vm.isParticipated === false) {
+                            if (!vm.isParticipated) {
 
                                 vm.team = {};
                                 vm.teamId = null;
@@ -232,7 +232,7 @@
 
                             }
                             // This condition means that the user is eligible to make submissions
-                            else if (vm.isParticipated === true) {
+                            else if (vm.isParticipated) {
                                 vm.makeSubmission = function() {
 
                                     var fileVal = angular.element(".file-path").val();
