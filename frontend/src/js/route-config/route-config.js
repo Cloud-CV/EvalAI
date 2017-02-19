@@ -431,7 +431,13 @@
 
         });
 
-        $rootScope.notify = function(type, message, timeout = 3000) {
+        $rootScope.notify = function(type, message, timeout) {
+            // function to pic timeout
+            function pick(arg, def) {
+                return (typeof arg == undefined ? def : arg);
+            }
+
+            timeout = pick(timeout, 3000);
             toaster.pop({
                 type: type,
                 body: message,
