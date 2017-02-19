@@ -17,13 +17,13 @@
                             <span class="text-white">Page is Outdated, Click to update&nbsp; <i class="fa fa-refresh text-highlight"></i></span>
                         </div>
                         <div class="col s12">
-                            <strong>Please select a phase!</strong>
+                            <strong>Please select from following Public Challenge Phase Dataset Splits!</strong>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col xs12 s6">
-                            <span><md-select ng-model="challenge.phase.name" placeholder="Phase" class="rm-margin">
-                            <md-option ng-click="challenge.getLeaderboard(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}}</md-option>
+                            <span><md-select ng-model="challenge.phase.name" placeholder="Challenge Phase Split" class="rm-margin">
+                            <md-option ng-click="challenge.getLeaderboard(key.id)" value="{{key.id}}" ng-repeat="key in challenge.phaseSplits.results" ng-show="{{key.visibility}}==3">{{key.challenge_phase_name}} : {{key.dataset_split_name}}</md-option>
                         </md-select></span>
                         </div>
                     </div>
@@ -35,20 +35,16 @@
                             <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight">
                                 <thead>
                                     <tr>
-                                        <th data-field="team">Team Name</th>
-                                        <th ng-repeat="(key, value) in challenge.leaderboard[0].final_result">
-                                            <a href="#" ng-click="sortType = '{{key}}'; sortReverse = !sortReverse">
-                                                {{key}}
-                                                <span ng-show="sortType == '{{key}}' && !sortReverse" class="fa fa-caret-down"></span>
-                                                <span ng-show="sortType == '{{key}}' && sortReverse" class="fa fa-caret-up"></span>
-                                            </a>
-                                        </th>
+                                        <td data-field="rank">Rank</td>
+                                        <td data-field="team">Participant Team</td>
+                                        <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="key in challenge.leaderboard | orderBy:sortType:sortReverse">
-                                        <td><b>{{key.participant_team_name}}</b></td>
-                                        <td ng-repeat="result in key.final_result">{{result}}</td>
+                                    <tr ng-repeat="key in challenge.leaderboard">
+                                        <td>{{$index+1}}</td>
+                                        <td>{{key.submission__participant_team__team_name}}</td>
+                                        <td ng-repeat="score in key.result track by $index">{{score}}</td>
                                     </tr>
                                 </tbody>
                             </table>
