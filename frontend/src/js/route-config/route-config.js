@@ -406,7 +406,7 @@
                 event.preventDefault();
             }
             // restrict authorized user too access login/signup page
-            else if (!toState.authenticate && utilities.isAuthenticated()) {
+            else if (toState.authenticate === false && utilities.isAuthenticated()) {
                 // alert("")
                 $rootScope.isAuth = true;
                 $state.transitionTo("home");
