@@ -5,10 +5,16 @@
 .main-header {
     position: relative;
     z-index: 999;
+    width: 100%;
     nav {
-        background-color: rgba(0, 0, 0, 0);
+        background-color: rgba(255, 255, 255, 0.9);
         box-shadow: 0 0 0 0 #000;
-        a.main-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding: 0 100px;
+        transition: all 0.1s ease-in-out;
+        a.main-header-link {
             color: $med-black;
             font-weight: $rob-reg;
             transition: all 0.2s ease-in-out;
@@ -18,7 +24,7 @@
                 vertical-align: middle;
             }
         }
-        a.main-header:hover {
+        a.main-header-link:hover {
             color: $link-hover-dark;
             background-color: rgba(0, 0, 0, 0);
         }
@@ -30,7 +36,11 @@
             color: $light-link;
         }
         a.active {
-            color: $med-link;
+            color: $highlight;
+            background-color: rgba(0, 0, 0, 0);
         }
+    }
+    nav.grad-shadow-1 {
+        box-shadow: 0 0 10px $light-black;
     }
 }

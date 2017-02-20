@@ -69,6 +69,10 @@ section.bg-section {
     position: absolute;
     bottom: 0px;
     color: $light-gray;
+    width: 50%;
+    right: 0;
+    height: 50vh;
+    overflow: hidden;
 }
 
 #mobile-demo {
@@ -129,4 +133,166 @@ section.bg-section {
     .sim-header {
         width: 100%;
     }
+}
+
+.grad-head {
+    padding-top: 20vh;
+}
+
+.landing-buttons {
+    margin-top: 35px;
+}
+
+.rocket-anim {
+    width: 150px;
+    padding-right: 50px;
+    position: absolute;
+    /* margin: auto; */
+    right: 0;
+    z-index: 10;
+    animation: rocket 4s alternate infinite;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes rocket {
+    0% {
+        margin-top: 10vh;
+    }
+    100% {
+        margin-top: 35vh;
+    }
+}
+
+.insight-text {
+    color: $light-black;
+    &:hover {
+        color: $highlight;
+    }
+}
+
+.rocket-container {
+    position: relative;
+}
+
+.cloud-1 {
+    width: 80px;
+    position: absolute;
+    right: 0;
+    top: 10vh;
+    animation: cloud-one 4s alternate linear infinite;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes cloud-one {
+    0% {
+        /*right: 0;*/
+        width: 80px;
+    }
+    20% {
+        width: 90px
+    }
+    40% {
+        width: 80px;
+    }
+    60% {
+        width: 90px;
+    }
+    80% {
+        width: 80px
+    }
+    100% {
+        /*right: 100px;*/
+        width: 90px;
+    }
+}
+
+.cloud-2 {
+    width: 100px;
+    position: absolute;
+    right: 150px;
+    top: 25vh;
+    animation: cloud-two 6s alternate linear infinite;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes cloud-two {
+    0% {
+        /*right: 0;*/
+        width: 100px;
+    }
+    20% {
+        width: 90px
+    }
+    40% {
+        width: 100px;
+    }
+    60% {
+        width: 90px;
+    }
+    80% {
+        width: 100px
+    }
+    100% {
+        /*right: 100px;*/
+        width: 90px;
+    }
+}
+
+.cloud-3 {
+    width: 100px;
+    position: absolute;
+    right: -10px;
+    top: 35vh;
+    animation: cloud-three 6s alternate linear infinite;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes cloud-three {
+    0% {
+        /*right: 0;*/
+        width: 70px;
+    }
+    20% {
+        width: 80px
+    }
+    40% {
+        width: 70px;
+    }
+    60% {
+        width: 80px;
+    }
+    80% {
+        width: 70px
+    }
+    100% {
+        /*right: 100px;*/
+        width: 80px;
+    }
+}
+
+.cloud-big {
+    position: absolute;
+    display: inline-block;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    height: 100%;
+    img {
+        height: 100%;
+    }
+}
+
+.cloud-big-2 {
+    right: 0px;
+    z-index: 0;
+    bottom: 4px;
+    transform: rotate(-4deg);
 }

@@ -10,6 +10,9 @@ from django.db import models
 from django.db.models import Max
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+
 
 from base.models import (TimeStampedModel, )
 from base.utils import RandomFileName
@@ -38,6 +41,24 @@ def stdout_file_name(instance, filename='stdout.txt'):
 
 def stderr_file_name(instance, filename='stderr.txt'):
     return join(submission_root(instance), filename)
+
+
+# submission.pk is not available when saving input_file
+# OutCome: `input_file` was saved for submission in folder named `submission_None`
+# why is the hack not done for `stdout_file` and `stderr_file`
+# Because they will be saved only after a submission instance is saved(pk will be available)
+@receiver(pre_save, sender='jobs.Submission')
+def skip_saving_file(sender, instance, **kwargs):
+    if not instance.pk and not hasattr(instance, '_input_file'):
+        setattr(instance, '_input_file', instance.input_file)
+        instance.input_file = None
+
+
+@receiver(post_save, sender='jobs.Submission')
+def save_file(sender, instance, created, **kwargs):
+    if created and hasattr(instance, '_input_file'):
+        instance.input_file = getattr(instance, '_input_file')
+        instance.save()
 
 
 class Submission(TimeStampedModel):

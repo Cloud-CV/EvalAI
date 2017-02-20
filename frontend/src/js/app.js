@@ -9,6 +9,7 @@ angular
 		'smoothScroll',
 		'focus-if',
 		'ngSanitize',
-		'ngFileUpload'
+		'ngFileUpload',
+		'toaster'
 
 	]);

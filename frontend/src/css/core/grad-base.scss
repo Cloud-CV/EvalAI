@@ -8,9 +8,9 @@
     background: $med-gray;
     font-weight: $rob-reg;
     color: #fff;
-    box-shadow: 0px 4px 10px #9395a2;
+    box-shadow: 0px 4px 8px #9d9d9d;
     &:hover {
-        box-shadow: 0px 0px 10px #9395a2;
+        box-shadow: 0px 0px 8px #9d9d9d;
     }
 }
 
@@ -28,13 +28,13 @@
     background-color: #fff;
 }
 
-.view-container{
-	min-height: 100vh;
+.view-container {
+    min-height: 100vh;
 }
 
-.grad-container{
-	max-width: 1400px;
-	margin: 0 auto;
-	padding: 40px 100px;
-	clear: both;
+.grad-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 100px 40px 100px;
+    clear: both;
 }
