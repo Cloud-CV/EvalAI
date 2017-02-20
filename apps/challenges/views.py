@@ -27,6 +27,7 @@ from .serializers import ChallengeSerializer, ChallengePhaseSerializer
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_list(request, challenge_host_team_pk):
+  """ Lists all the challenges active. """
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
@@ -61,6 +62,7 @@ def challenge_list(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, pk):
+  """ Displays the details of the challenges active"""
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
@@ -105,7 +107,7 @@ def challenge_detail(request, challenge_host_team_pk, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk):
-
+    """ Adds a participating team to a challenge."""
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
@@ -146,7 +148,7 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def disable_challenge(request, pk):
-
+    """Deactivates a challenge."""
     try:
         challenge = Challenge.objects.get(pk=pk)
     except Challenge.DoesNotExist:
@@ -255,6 +257,7 @@ def get_challenges_based_on_teams(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_list(request, challenge_pk):
+    """ Returns the list of the current phase of the challenge."""
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
@@ -283,6 +286,7 @@ def challenge_phase_list(request, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_detail(request, challenge_pk, pk):
+  """ Returns the details for current phase of challenge."""
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
