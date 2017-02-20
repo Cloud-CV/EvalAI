@@ -8,7 +8,6 @@ from .models import (Participant, ParticipantTeam)
 
 class ParticipantTeamSerializer(serializers.ModelSerializer):
     """Serializer class to map Participants to Teams."""
-    
     created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
 
     def __init__(self, *args, **kwargs):
@@ -25,7 +24,6 @@ class ParticipantTeamSerializer(serializers.ModelSerializer):
 
 class InviteParticipantToTeamSerializer(serializers.Serializer):
     """Serializer class for inviting Participant to Team."""
-    
     email = serializers.EmailField()
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +51,6 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
 
 class ParticipantSerializer(serializers.ModelSerializer):
     """Serializer class for Participants."""
-    
     member_name = serializers.SerializerMethodField()
     member_id = serializers.SerializerMethodField()
 
@@ -70,7 +67,6 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
 class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
     """Serializer for Participant Teams and Participant Combined."""
-    
     members = serializers.SerializerMethodField()
     created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
 
@@ -86,7 +82,6 @@ class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
 
 class ChallengeParticipantTeam(object):
     """Serializer to map Challenge and Participant Teams."""
-    
     def __init__(self, challenge, participant_team):
         self.challenge = challenge
         self.participant_team = participant_team
@@ -94,7 +89,6 @@ class ChallengeParticipantTeam(object):
 
 class ChallengeParticipantTeamSerializer(serializers.Serializer):
     """Serializer to initialize Challenge and Participant's Team"""
-    
     challenge = ChallengeSerializer()
     participant_team = ParticipantTeamSerializer()
 
@@ -108,5 +102,4 @@ class ChallengeParticipantTeamList(object):
 
 class ChallengeParticipantTeamListSerializer(serializers.Serializer):
     """Serializer to map a challenge's participant team lists."""
-    
     challenge_participant_team_list = ChallengeParticipantTeamSerializer(many=True)
