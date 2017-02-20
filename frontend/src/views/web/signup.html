@@ -1,7 +1,7 @@
 <div class="col s12 m4 offset-m4 left">
     <ul class="left">
-        <li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">LogIn</a></li>
-        <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">SignUp</a></li>
+        <li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Log In</a></li>
+        <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Sign Up</a></li>
         <!-- <li class="ev-horiz-list"><a ui-sref="auth.reset-password" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Forgot Password</a></li> -->
     </ul>
 </div>
@@ -12,7 +12,7 @@
         <div class="input-field align-left">
             <input type="text" id="name" name="name" ng-model="auth.regUser.name" ng-minlength="3" required>
             <span class="form-icon"><i class="fa fa-user"></i></span>
-            <label for="name">User Name (no space)*</label>
+            <label for="name">Username*</label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.name.$error" ng-if="signupForm.name.$touched || signupForm.$submitted">
                 <p ng-message="minlength">username is too short.</p>
                 <p ng-message="required">username is required.</p>
@@ -51,12 +51,12 @@
         </div>
         <!-- submit button -->
         <div class="align-left reg-control">
-            <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">SignUp</button>
+            <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">Sign Up</button>
         </div>
         <div ng-if="auth.isFormError" class="text-highlight align-left"> {{auth.FormError}}</div>
         <div>
             <p class="text-light-gray">
-                Already have an account <a class="white-link" ui-sref="auth.login">LogIn</a>
+                Already have an account <a class="white-link" ui-sref="auth.login">Log In</a>
             </p>
         </div>
     </form>
