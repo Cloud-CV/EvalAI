@@ -71,6 +71,8 @@ class Challenge(TimeStampedModel):
 
 
 class DatasetSplit(TimeStampedModel):
+    """ Model Representing a dataset"""
+    
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
 
@@ -126,7 +128,7 @@ class ChallengePhase(TimeStampedModel):
 
 
 class Leaderboard(TimeStampedModel):
-
+    """ Model representing a Leaderboard"""
     schema = JSONField()
 
     def __unicode__(self):
@@ -167,7 +169,8 @@ class ChallengePhaseSplit(TimeStampedModel):
 
 
 class LeaderboardData(TimeStampedModel):
-
+    """ Model representing Leaderboard data"""
+    
     challenge_phase_split = models.ForeignKey('ChallengePhaseSplit')
     submission = models.ForeignKey('jobs.Submission')
     leaderboard = models.ForeignKey('Leaderboard')
