@@ -8,8 +8,8 @@
       <ul class="right hide-on-med-and-down">
         <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active">Home</a></li>
        
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active">LogIn</a></li>
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active">SignUp</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active">Log In</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active">Sign Up</a></li>
         <!-- show after authenticate user -->
         <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
         <li ng-show="isAuth">
@@ -32,8 +32,8 @@
           </div>
         </li>
         <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active"><i class="fa fa-home"></i>Home</a></li>
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>LogIn</a></li>
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>SignUp</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>Sign Up</a></li>
         <!-- show after authenticate user -->
         <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
         <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{main.user.name}}!</a></li>
