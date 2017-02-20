@@ -95,7 +95,6 @@ class ChallengeParticipantTeamSerializer(serializers.Serializer):
 
 class ChallengeParticipantTeamList(object):
     """Class to create a list of Challenge and Participant Teams."""
-    
     def __init__(self, challenge_participant_team_list):
         self.challenge_participant_team_list = challenge_participant_team_list
 
