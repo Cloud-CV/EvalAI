@@ -44,7 +44,7 @@
         .module('evalai')
         .directive('mainHeader', dynHeader);
 
-    function dynHeader() {
+    function dynHeader($document) {
         var directive = {
             link: link,
             templateUrl: 'dist/views/web/partials/main-header.html',
@@ -55,7 +55,7 @@
         };
         return directive;
 
-        function controller($scope, $element, $attrs, $http, utilities) {
+        function controller($scope, $element, $attrs, $http, utilities, $window) {
             /* jshint validthis: true */
             var vm = this;
 
@@ -100,7 +100,7 @@
             console.log(vm.user);
         }
 
-        function link(scope, element, attrs) {
+        function link(scope, element, attrs, $window) {
             function headerComp() {
                 /* jshint validthis: true */
                 var self = this;
@@ -114,6 +114,17 @@
                         menuWidth: 200,
                         closeOnClick: true,
                         draggable: true
+                    });
+
+                    // initialized shadow to main header
+                    angular.element(window).bind('scroll', function() {
+
+                        if (this.pageYOffset >= 10) {
+                            angular.element(" nav").addClass('grad-shadow-1');
+                        } else {
+                            angular.element(" nav").removeClass('grad-shadow-1');
+                        }
+                        scope.$apply();
                     });
                 }
             };

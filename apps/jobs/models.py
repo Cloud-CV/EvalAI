@@ -10,12 +10,21 @@ from django.db import models
 from django.db.models import Max
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+
 
 from base.models import (TimeStampedModel, )
+from base.utils import RandomFileName
 from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
 
 logger = logging.getLogger(__name__)
+
+# Whenever the migrations are being squashed, Please remove these functions.
+# Reason: During migrating django looks for its previous state,
+#         hence these functions were not removed to prevent this error.
+# "AttributeError: 'module' object has no attribute 'input_file_name'"
 
 
 def submission_root(instance):
@@ -32,6 +41,24 @@ def stdout_file_name(instance, filename='stdout.txt'):
 
 def stderr_file_name(instance, filename='stderr.txt'):
     return join(submission_root(instance), filename)
+
+
+# submission.pk is not available when saving input_file
+# OutCome: `input_file` was saved for submission in folder named `submission_None`
+# why is the hack not done for `stdout_file` and `stderr_file`
+# Because they will be saved only after a submission instance is saved(pk will be available)
+@receiver(pre_save, sender='jobs.Submission')
+def skip_saving_file(sender, instance, **kwargs):
+    if not instance.pk and not hasattr(instance, '_input_file'):
+        setattr(instance, '_input_file', instance.input_file)
+        instance.input_file = None
+
+
+@receiver(post_save, sender='jobs.Submission')
+def save_file(sender, instance, created, **kwargs):
+    if created and hasattr(instance, '_input_file'):
+        instance.input_file = getattr(instance, '_input_file')
+        instance.save()
 
 
 class Submission(TimeStampedModel):
@@ -66,9 +93,9 @@ class Submission(TimeStampedModel):
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
-    input_file = models.FileField(upload_to=input_file_name)
-    stdout_file = models.FileField(upload_to=stdout_file_name, null=True, blank=True)
-    stderr_file = models.FileField(upload_to=stderr_file_name, null=True, blank=True)
+    input_file = models.FileField(upload_to=RandomFileName("submission_files/submission"))
+    stdout_file = models.FileField(upload_to=RandomFileName("submission_files/submission"), null=True, blank=True)
+    stderr_file = models.FileField(upload_to=RandomFileName("submission_files/submission"), null=True, blank=True)
     execution_time_limit = models.PositiveIntegerField(default=300)
 
     def __unicode__(self):
