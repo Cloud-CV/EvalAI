@@ -164,6 +164,9 @@ REST_FRAMEWORK = {
         'anon': '100/minute',
         'user': '100/minute'
     }
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
 }
 
 # ALLAUTH SETTINGS
