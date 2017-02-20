@@ -406,7 +406,7 @@
                 event.preventDefault();
             }
             // restrict authorized user too access login/signup page
-            else if (!toState.authenticate && utilities.isAuthenticated()) {
+            else if (toState.authenticate === false && utilities.isAuthenticated()) {
                 // alert("")
                 $rootScope.isAuth = true;
                 $state.transitionTo("home");
@@ -431,7 +431,13 @@
 
         });
 
-        $rootScope.notify = function(type, message, timeout = 3000) {
+        $rootScope.notify = function(type, message, timeout) {
+            // function to pic timeout
+            function pick(arg, def) {
+                return (typeof arg == undefined ? def : arg);
+            }
+
+            timeout = pick(timeout, 3000);
             toaster.pop({
                 type: type,
                 body: message,
