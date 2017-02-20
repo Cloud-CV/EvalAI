@@ -90,7 +90,7 @@ class Submission(TimeStampedModel):
         #     return None
 
     def save(self, *args, **kwargs):
-
+        """ API for saving a submission"""
         if hasattr(self, 'status'):
             if self.status == Submission.RUNNING:
                 self.started_at = timezone.now()
