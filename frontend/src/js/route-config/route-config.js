@@ -434,7 +434,7 @@
         $rootScope.notify = function(type, message, timeout) {
             // function to pic timeout
             function pick(arg, def) {
-                return (typeof arg == undefined ? def : arg);
+                return (typeof arg === undefined ? def : arg);
             }
 
             timeout = pick(30000000000000000, 3000);
