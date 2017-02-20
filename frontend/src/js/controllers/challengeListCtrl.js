@@ -42,7 +42,7 @@
                 var data = response.data;
                 vm.currentList = data.results;
 
-                if (vm.currentList.length == 0) {
+                if (vm.currentList.length === 0) {
                     vm.noneCurrentChallenge = true;
                 } else {
                     vm.noneCurrentChallenge = false;
@@ -57,7 +57,7 @@
                         vm.currentList[i].isLarge = "";
                     }
 
-                    if (vm.currentList[i].background_image == undefined || vm.currentList[i].background_image == null) {
+                    if (vm.currentList[i].background_image === undefined || vm.currentList[i].background_image === null) {
                         vm.currentList[i].background_image = vm.imgUrlObj.hulk;
                     }
 
@@ -77,7 +77,7 @@
                         var data = response.data;
                         vm.upcomingList = data.results;
 
-                        if (vm.upcomingList.length == 0) {
+                        if (vm.upcomingList.length === 0) {
                             vm.noneUpcomingChallenge = true;
                         } else {
                             vm.noneUpcomingChallenge = false;
@@ -87,14 +87,13 @@
 
                             var descLength = vm.upcomingList[i].description.length;
 
-                            var descLength = vm.upcomingList[i].description.length;
                             if (descLength >= 50) {
                                 vm.upcomingList[i].isLarge = "...";
                             } else {
                                 vm.upcomingList[i].isLarge = "";
                             }
 
-                            if (vm.upcomingList[i].background_image == undefined || vm.upcomingList[i].background_image == null) {
+                            if (vm.upcomingList[i].background_image === undefined || vm.upcomingList[i].background_image === null) {
                                 vm.upcomingList[i].background_image = vm.imgUrlObj.captain;
                             }
                         }
@@ -112,7 +111,7 @@
                                 var data = response.data;
                                 vm.pastList = data.results;
 
-                                if (vm.pastList.length == 0) {
+                                if (vm.pastList.length === 0) {
                                     vm.nonePastChallenge = true;
                                 } else {
                                     vm.nonePastChallenge = false;
@@ -128,7 +127,7 @@
                                     } else {
                                         vm.pastList[i].isLarge = "";
                                     }
-                                    if (vm.pastList[i].background_image == undefined || vm.pastList[i].background_image == null) {
+                                    if (vm.pastList[i].background_image === undefined || vm.pastList[i].background_image === null) {
 
                                         vm.pastList[i].background_image = vm.imgUrlObj.bird;
                                     }

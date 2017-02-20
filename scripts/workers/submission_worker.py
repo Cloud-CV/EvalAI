@@ -41,7 +41,12 @@ sys.path.insert(0, DJANGO_PROJECT_PATH)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
-from challenges.models import Challenge     # noqa
+from challenges.models import (Challenge,
+                               ChallengePhase,
+                               ChallengePhaseSplit,
+                               DatasetSplit,
+                               LeaderboardData) # noqa
+
 from jobs.models import Submission          # noqa
 
 
@@ -247,7 +252,7 @@ def extract_submission_data(submission_id):
     return submission
 
 
-def run_submission(challenge_id, phase_id, submission_id, submission, user_annotation_file_path):
+def run_submission(challenge_id, challenge_phase, submission_id, submission, user_annotation_file_path):
     '''
         * receives a challenge id, phase id and user annotation file path
         * checks whether the corresponding evaluation script for the challenge exists or not
@@ -255,6 +260,7 @@ def run_submission(challenge_id, phase_id, submission_id, submission, user_annot
         * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
     '''
     submission_output = None
+    phase_id = challenge_phase.id
     annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP.get(challenge_id).get(phase_id)
     annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(challenge_id=challenge_id, phase_id=phase_id,
                                                              annotation_file=annotation_file_name)
@@ -276,10 +282,88 @@ def run_submission(challenge_id, phase_id, submission_id, submission, user_annot
     # call `main` from globals and set `status` to running and hence `started_at`
     submission.status = Submission.RUNNING
     submission.save()
-    with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
-        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path, user_annotation_file_path)
+    try:
+        successful_submission_flag = True
+        with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
+            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
+                                                                          user_annotation_file_path,
+                                                                          challenge_phase.codename,)
+        '''
+        A submission will be marked successful only if it is of the format
+            {
+               "result":[
+                  {
+                     "split_codename_1":{
+                        "key1":30,
+                        "key2":50,
+                     }
+                  },
+                  {
+                     "split_codename_2":{
+                        "key1":90,
+                        "key2":10,
+                     }
+                  },
+                  {
+                     "split_codename_3":{
+                        "key1":100,
+                        "key2":45,
+                     }
+                  }
+               ]
+            }
+        '''
+        if 'result' in submission_output:
+
+            leaderboard_data_list = []
+            for split_result in submission_output['result']:
+
+                # Check if the dataset_split exists for the codename in the result
+                try:
+                    split_code_name = split_result.items()[0][0]  # get split_code_name that is the key of the result
+                    dataset_split = DatasetSplit.objects.get(codename=split_code_name)
+                except:
+                    stderr.write("ORGINIAL EXCEPTION: The codename specified by your Challenge Host doesn't match"
+                                 " with that in the evaluation Script.\n")
+                    stderr.write(traceback.format_exc())
+                    successful_submission_flag = False
+                    break
+
+                # Check if the challenge_phase_split exists for the challenge_phase and dataset_split
+                try:
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
+                                                                            dataset_split=dataset_split)
+                except:
+                    stderr.write("ORGINIAL EXCEPTION: No such relation between between Challenge Phase and DatasetSplit"
+                                 " specified by Challenge Host \n")
+                    stderr.write(traceback.format_exc())
+                    successful_submission_flag = False
+                    break
+
+                leaderboard_data = LeaderboardData()
+                leaderboard_data.challenge_phase_split = challenge_phase_split
+                leaderboard_data.submission = submission
+                leaderboard_data.leaderboard = challenge_phase_split.leaderboard
+                leaderboard_data.result = split_result.get(dataset_split.codename)
+
+                leaderboard_data_list.append(leaderboard_data)
+
+            if successful_submission_flag:
+                LeaderboardData.objects.bulk_create(leaderboard_data_list)
+
+        # Once the submission_output is processed, then save the submission object with appropriate status
+        else:
+            successful_submission_flag = False
+
+    except:
+        stderr.write(traceback.format_exc())
+        successful_submission_flag = False
+
+    submission_status = Submission.FINISHED if successful_submission_flag else Submission.FAILED
+    submission.status = submission_status
+    submission.save()
+
     # after the execution is finished, set `status` to finished and hence `completed_at`
-    submission.status = Submission.FINISHED
     if submission_output:
         submission.output = submission_output
     submission.save()
@@ -306,9 +390,16 @@ def process_submission_message(message):
     phase_id = message.get('phase_id')
     submission_id = message.get('submission_id')
     submission_instance = extract_submission_data(submission_id)
+
+    try:
+        challenge_phase = ChallengePhase.objects.get(id=phase_id)
+    except ChallengePhase.DoesNotExist:
+        print 'Challenge Phase {} does not exist'.format(phase_id)
+        traceback.print_exc()
+
     user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
                                      os.path.basename(submission_instance.input_file.name))
-    run_submission(challenge_id, phase_id, submission_id, submission_instance, user_annotation_file_path)
+    run_submission(challenge_id, challenge_phase, submission_id, submission_instance, user_annotation_file_path)
 
 
 def process_add_challenge_message(message):

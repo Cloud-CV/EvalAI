@@ -1,126 +1,298 @@
-    /*dynamic header style*/
-    
-    .dyn-header {
-        position: relative;
-        z-index: 999;
-        nav {
-            background-color: rgba(0, 0, 0, 0);
-            box-shadow: 0 0 0 0 #000;
-            a {
-                color: $light-link;
-                font-weight: $rob-med;
-                img.cloudcv-logo {
-                    height: 50px;
-                    width: 50px;
-                    vertical-align: middle;
-                }
-            }
-            a:hover {
-                color: $link-hover-dark;
-            }
-            a.light-link {
-                color: $med-link;
-                transition: all 0.2s ease-in-out;
-            }
-            a.light-link:hover {
-                color: $light-link;
-            }
-            a.active {
-                color: $link-hover-dark;
-                background-color: rgba(0, 0, 0, 0.1);
+/*dynamic header style*/
+
+.dyn-header {
+    position: relative;
+    z-index: 999;
+    nav {
+        background-color: rgba(0, 0, 0, 0);
+        box-shadow: 0 0 0 0 #000;
+        a {
+            color: $light-link;
+            font-weight: $rob-med;
+            img.cloudcv-logo {
+                height: 50px;
+                width: 50px;
+                vertical-align: middle;
             }
         }
+        a:hover {
+            color: $link-hover-dark;
+        }
+        a.light-link {
+            color: $med-link;
+            transition: all 0.2s ease-in-out;
+        }
+        a.light-link:hover {
+            color: $light-link;
+        }
+        a.active {
+            color: $link-hover-dark;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
     }
-    /*main intor*/
-    
-    section.bg-section {
+}
+
+
+/*main intor*/
+
+section.bg-section {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    background-color: $med-gray;
+    .bg-image {
         width: 100%;
-        height: 100vh;
-        position: fixed;
-        top: 0px;
-        left: 0px;
-        background-color: $med-gray;
-        .bg-image {
-            width: 100%;
-            height: 100%;
-            opacity: 0.2;
-            background-image: url('../images/background.png');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: right;
+        height: 100%;
+        opacity: 0.2;
+        background-image: url('../images/background.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: right;
+    }
+}
+
+.ev-head {
+    margin-top: 100px;
+}
+
+.ev-head-small {
+    margin-top: 80px;
+}
+
+.ev-intro {
+    margin-top: -10px;
+}
+
+.ev-insight {
+    position: absolute;
+    bottom: 0px;
+    color: $light-gray;
+    width: 50%;
+    right: 0;
+    height: 50vh;
+    overflow: hidden;
+}
+
+#mobile-demo {
+    li {
+        a {
+            color: $med-black;
         }
     }
-    
+}
+
+.background {
+    background-color: $dark-gray;
+}
+
+.ev-details {
+    position: absolute;
+    top: 100vh;
+    left: 0;
+    height: 100vh;
+    background-color: #fff;
+}
+
+.full-view {
+    min-height: 100vh;
+}
+
+
+/*simple header*/
+
+.sim-header {
+    font-size: 18px;
+    top: 0px;
+    z-index: 9;
+    width: calc(100vw - 220px);
+}
+
+
+/*media queries*/
+
+@media only screen and (max-width: $med-screen) {
+    .dyn-header {
+        nav {
+            a.org-link {
+                float: right;
+                padding-right: 20px;
+            }
+        }
+    }
     .ev-head {
-        margin-top: 100px;
+        margin-top: 40px;
     }
-    
     .ev-head-small {
-        margin-top: 80px;
+        margin-top: 20px;
     }
-    
-    .ev-intro {
-        margin-top: -10px;
-    }
-    
     .ev-insight {
-        position: absolute;
         bottom: 0px;
-        color: $light-gray;
     }
-    
-    #mobile-demo {
-        li {
-            a {
-                color: $med-black;
-            }
-        }
-    }
-    
-    .background {
-        background-color: $dark-gray;
-    }
-    
-    .ev-details {
-        position: absolute;
-        top: 100vh;
-        left: 0;
-        height: 100vh;
-        background-color: #fff;
-    }
-    
-    .full-view {
-        min-height: 100vh;
-    }
-    /*simple header*/
-    
     .sim-header {
-        font-size: 18px;
-        top: 0px;
-        z-index: 9;
-        width: calc(100vw - 220px);
+        width: 100%;
     }
-    /*media queries*/
-    
-    @media only screen and (max-width: $med-screen) {
-        .dyn-header {
-            nav {
-                a.org-link {
-                    float: right;
-                    padding-right: 20px;
-                }
-            }
-        }
-        .ev-head {
-            margin-top: 40px;
-        }
-        .ev-head-small {
-            margin-top: 20px;
-        }
-        .ev-insight {
-            bottom: 0px;
-        }
-        .sim-header {
-            width: 100%;
-        }
+}
+
+.grad-head {
+    padding-top: 20vh;
+}
+
+.landing-buttons {
+    margin-top: 35px;
+}
+
+.rocket-anim {
+    width: 150px;
+    padding-right: 50px;
+    position: absolute;
+    /* margin: auto; */
+    right: 0;
+    z-index: 10;
+    animation: rocket 4s alternate infinite;
+    img {
+        width: 100%;
     }
+}
+
+@keyframes rocket {
+    0% {
+        margin-top: 10vh;
+    }
+    100% {
+        margin-top: 35vh;
+    }
+}
+
+.insight-text {
+    color: $light-black;
+    &:hover {
+        color: $highlight;
+    }
+}
+
+.rocket-container {
+    position: relative;
+}
+
+.cloud-1 {
+    width: 80px;
+    position: absolute;
+    right: 0;
+    top: 10vh;
+    animation: cloud-one 4s alternate linear infinite;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes cloud-one {
+    0% {
+        /*right: 0;*/
+        width: 80px;
+    }
+    20% {
+        width: 90px
+    }
+    40% {
+        width: 80px;
+    }
+    60% {
+        width: 90px;
+    }
+    80% {
+        width: 80px
+    }
+    100% {
+        /*right: 100px;*/
+        width: 90px;
+    }
+}
+
+.cloud-2 {
+    width: 100px;
+    position: absolute;
+    right: 150px;
+    top: 25vh;
+    animation: cloud-two 6s alternate linear infinite;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes cloud-two {
+    0% {
+        /*right: 0;*/
+        width: 100px;
+    }
+    20% {
+        width: 90px
+    }
+    40% {
+        width: 100px;
+    }
+    60% {
+        width: 90px;
+    }
+    80% {
+        width: 100px
+    }
+    100% {
+        /*right: 100px;*/
+        width: 90px;
+    }
+}
+
+.cloud-3 {
+    width: 100px;
+    position: absolute;
+    right: -10px;
+    top: 35vh;
+    animation: cloud-three 6s alternate linear infinite;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes cloud-three {
+    0% {
+        /*right: 0;*/
+        width: 70px;
+    }
+    20% {
+        width: 80px
+    }
+    40% {
+        width: 70px;
+    }
+    60% {
+        width: 80px;
+    }
+    80% {
+        width: 70px
+    }
+    100% {
+        /*right: 100px;*/
+        width: 80px;
+    }
+}
+
+.cloud-big {
+    position: absolute;
+    display: inline-block;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    height: 100%;
+    img {
+        height: 100%;
+    }
+}
+
+.cloud-big-2 {
+    right: 0px;
+    z-index: 0;
+    bottom: 4px;
+    transform: rotate(-4deg);
+}

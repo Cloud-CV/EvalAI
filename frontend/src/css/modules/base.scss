@@ -228,15 +228,19 @@ nav {
 .ev-btn-dark {
     background: $dark-gray;
 }
+
 .ev-btn-light {
     background: #ffffff;
 }
+
 .ev-btn-dark:hover {
     background: $med-gray;
 }
+
 .ev-btn-light:hover {
     background: $light-gray;
 }
+
 
 /*card styles*/
 
@@ -428,6 +432,10 @@ a.text-light-black:hover {
 
 .align-right {
     text-align: right;
+}
+
+.align-center {
+    text-align: center;
 }
 
 
@@ -714,4 +722,47 @@ input {
     .ev-container {
         padding: 20px;
     }
+}
+
+// notification override
+.toast-message {
+    -ms-word-wrap: initial;
+    word-wrap: initial;
+    // text-align: center;
+    // font-size: 14px;
+}
+
+.toast-message a,
+.toast-message label {
+    color: #ffffff;
+}
+
+.toast-message a:hover {
+    color: #cccccc;
+    text-decoration: none;
+}
+
+.toast {
+    background-color: #030303;
+    word-break: initial;
+}
+
+.toast-success {
+    background-color: #51a351;
+}
+
+.toast-error {
+    background-color: #bd362f;
+}
+
+.toast-info {
+    background-color: #2f96b4;
+}
+
+.toast-wait {
+    background-color: #2f96b4;
+}
+
+.toast-warning {
+    background-color: #f89406;
 }

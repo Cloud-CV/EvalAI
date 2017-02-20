@@ -1,30 +1,60 @@
-<!--
-    dynamic header for home page
--->
-<dyn-header></dyn-header>
-<!-- background hero section -->
-<section class="bg-section">
-    <div class="bg-image"></div>
-</section>
-<!-- EvalAI into -->
-<section class="ev-container center">
-    <h4 class="ev-head w-300 text-white">EvalAI</h4>
-    <p class="text-light-gray ev-intro w-300">Be a leader in Computational Research</p>
-    <br>
-    <a ng-click="main.hostChallenge($event)" class="waves-effect waves-dark btn ev-btn-dark w-300">Host Challenge&nbsp; <i class="fa fa-paper-plane-o text-light-gray icon"></i></a>
-    <a ui-sref="web.challenge-main" class="waves-effect waves-dark btn ev-btn-light text-dark-black w-300">Participate in Challenges&nbsp; <i class="fa fa-free-code-camp text-dark-black icon"></i></a>
-</section>
-<!-- Scroll direction -->
-<section class="ev-container center ev-insight">
-    <a href="#" scroll-to="ev-scroll-down" duration="2000" class="light-link">
-        Get Insights
-        <br/>
-        <i class="fa fa-chevron-circle-down dark-link"></i>
+<div class="white-bg view-container">
+    <main-header></main-header>
+    <!-- EvalAI into -->
+    <div class="grad-container">
+        <div class="row">
+            <div class="col s12 m6 ">
+                <div class="grad-head">
+                    <h4 class="text-dark-black"><strong>EvalAI</strong></h4>
+                    <p class="text-med-black">View, Participate, or Host and,
+                        <br> Become a leader of Machine Learning</p>
+                    <div class="landing-buttons">
+                        <ul class="inline-list hide-on-med-and-down">
+                            <li>
+                                <a ng-click="main.hostChallenge($event)" href="javascript:void(0)" class="dark-link"><strong>Host Challenge</strong></a>
+                            </li>
+                            <li><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="web.challenge-main">Participate</a></li>
+                        </ul>
+                    </div>
+                    <div class="landing-buttons">
+                        <a href="#" scroll-to="ev-scroll-down" duration="2000" class="insight-text">
+        Get Insights 
+        <i class="fa fa-chevron-circle-down"></i>
     </a>
-</section>
-<!-- details section -->
-<section class="ev-container ev-details text-med-black" id="ev-scroll-down">
-    Details Comes Here!
-    <!-- footer -->
-    <landing-footer></landing-footer>
-</section>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m6 ">
+                <div class="rocket-container">
+                    <div class="rocket-anim">
+                        <img src="dist/images/rocket.png">
+                    </div>
+                    <div class="cloud-1">
+                        <img src="dist/images/cloud-1.png">
+                    </div>
+                    <div class="cloud-2">
+                        <img src="dist/images/cloud-2.png">
+                    </div>
+                    <div class="cloud-3">
+                        <img src="dist/images/cloud-1.png">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Scroll direction -->
+    <section class="ev-container center ev-insight">
+        <div class="cloud-big cloud-big-1">
+            <img src="dist/images/cloud1.png">
+        </div>
+        <div class="cloud-big cloud-big-2">
+            <img src="dist/images/cloud2.png">
+        </div>
+    </section>
+    <!-- details section -->
+    <section class="ev-container ev-details text-med-black" id="ev-scroll-down">
+        Details Comes Here!
+        <!-- footer -->
+        <landing-footer></landing-footer>
+    </section>
+</div>

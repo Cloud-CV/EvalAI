@@ -17,6 +17,7 @@
 
         function link(scope, element, attrs) {
             function headerComp() {
+                /* jshint validthis: true */
                 var self = this;
                 this.init();
             }
@@ -28,6 +29,102 @@
                         menuWidth: 200,
                         closeOnClick: true,
                         draggable: true
+                    });
+                }
+            };
+            var headerObj = new headerComp();
+        }
+    }
+})();
+// define directives here
+(function() {
+    'use strict';
+    // dynamic header directive
+    angular
+        .module('evalai')
+        .directive('mainHeader', dynHeader);
+
+    function dynHeader($document) {
+        var directive = {
+            link: link,
+            templateUrl: 'dist/views/web/partials/main-header.html',
+            transclude: true,
+            restrict: 'EA',
+            controller: controller,
+            controllerAs: 'header'
+        };
+        return directive;
+
+        function controller($scope, $element, $attrs, $http, utilities, $window) {
+            /* jshint validthis: true */
+            var vm = this;
+
+            vm.user = {};
+
+            // get token
+            var userKey = utilities.getData('userKey');
+
+            if (userKey) {
+                var parameters = {};
+                parameters.url = 'auth/user/';
+                parameters.method = 'GET';
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var data = response.data;
+                        if (status == 200) {
+                            vm.user.name = data.username;
+                        }
+                    },
+                    onError: function(response) {
+
+                        var status = response.status;
+                        var error = response.data;
+                        if (status == 401) {
+                            alert("");
+                            utilities.resetStorage();
+                            $state.go("auth.login");
+                            $rootScope.isAuth = false;
+                        }
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            }
+            vm.profileDropdown = function(ev) {
+                angular.element(".dropdown-button").dropdown();
+
+            };
+
+            console.log(vm.user);
+        }
+
+        function link(scope, element, attrs, $window) {
+            function headerComp() {
+                /* jshint validthis: true */
+                var self = this;
+                this.init();
+            }
+            headerComp.prototype = {
+                init: function() {
+                    var self = this;
+                    // initialized mobile sidebar
+                    angular.element(".button-collapse").sideNav({
+                        menuWidth: 200,
+                        closeOnClick: true,
+                        draggable: true
+                    });
+
+                    // initialized shadow to main header
+                    angular.element(window).bind('scroll', function() {
+
+                        if (this.pageYOffset >= 10) {
+                            angular.element(" nav").addClass('grad-shadow-1');
+                        } else {
+                            angular.element(" nav").removeClass('grad-shadow-1');
+                        }
+                        scope.$apply();
                     });
                 }
             };
@@ -104,6 +201,7 @@
 
         function link(scope, element, attrs) {
             function evalLoader() {
+                /* jshint validthis: true */
                 var self = this;
                 this.init();
             }
@@ -130,6 +228,7 @@
 
         function link(scope, element, attrs) {
             function loaderComp() {
+                /* jshint validthis: true */
                 var self = this;
                 this.init();
             }
@@ -177,6 +276,7 @@
 
         function link(scope, element, attrs) {
             function headerComp() {
+                /* jshint validthis: true */
                 var self = this;
                 this.init();
             }
@@ -212,6 +312,7 @@
 
         function link(scope, element, attrs) {
             function shadowComp() {
+                /* jshint validthis: true */
                 var self = this;
                 this.init();
             }
@@ -250,11 +351,13 @@
 
         function link(scope, element, attrs) {
             function slideComp() {
+                /* jshint validthis: true */
                 var self = this;
                 this.init();
             }
             slideComp.prototype = {
                 init: function() {
+                    /* jshint validthis: true */
                     var self = this;
                     // initialized mobile sidebar
                     angular.element(".profile-sidebar").animate({

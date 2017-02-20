@@ -24,7 +24,8 @@ from .serializers import (ChallengeHostSerializer,
 def challenge_host_team_list(request):
     """ List the Teams for a challenge."""
     if request.method == 'GET':
-        challenge_host_teams = ChallengeHostTeam.objects.filter(created_by=request.user)
+        challenge_host_team_ids = ChallengeHost.objects.filter(user=request.user).values_list('team_name', flat=True)
+        challenge_host_teams = ChallengeHostTeam.objects.filter(id__in=challenge_host_team_ids)
         paginator, result_page = paginated_queryset(challenge_host_teams, request)
         serializer = HostTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data

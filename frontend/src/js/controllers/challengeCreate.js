@@ -30,12 +30,13 @@
                 "anonymous_leaderboard": vm.anonymous_leaderboard,
                 "start_date": vm.start_date,
                 "end_date": vm.end_date
-            }
+            };
 
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
+                    /* jshint shadow:true */
                     var response = response.data;
                     console.log(response);
                     // navigate to Challenge List Page
@@ -79,12 +80,12 @@
                             vm.isValid.end_date = true;
                             vm.wrnMsg.end_date = value[0];
                         }
-                    })
+                    });
                 }
             };
 
             utilities.sendRequest(parameters);
-        }
+        };
     }
 
 })();

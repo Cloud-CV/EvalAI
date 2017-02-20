@@ -4,23 +4,28 @@ from rest_framework.decorators import (api_view,
                                        permission_classes,
                                        throttle_classes,)
 
+from django.db.models.expressions import RawSQL
+from django.db.models import IntegerField
+
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from challenges.models import (
     ChallengePhase,
-    Challenge,)
+    Challenge,
+    ChallengePhaseSplit,
+    LeaderboardData,)
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
 
 from .models import Submission
 from .sender import publish_submission_message
-from .serializers import SubmissionSerializer, LeaderboardSerializer
+from .serializers import SubmissionSerializer
 
 
 @throttle_classes([UserRateThrottle])
@@ -61,7 +66,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                                                challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submission, request)
         try:
-            serializer = SubmissionSerializer(result_page, many=True)
+            serializer = SubmissionSerializer(result_page, many=True, context={'request': request})
             response_data = serializer.data
             return paginator.get_paginated_response(response_data)
         except:
@@ -103,45 +108,58 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
+@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
-def leaderboard(request, challenge_id, challenge_phase_id):
-    """
-    NOTE: THIS API WILL BE DEPRECATED IN THE NEAR FUTURE
-    Returns the list of Successful Submissions for a particular Challenge
-    """
+def leaderboard(request, challenge_phase_split_id):
+    """Returns leaderboard for a corresponding Challenge Phase Split"""
+
     # check if the challenge exists or not
     try:
-        challenge = Challenge.objects.get(pk=challenge_id)
-    except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge does not exist'}
+        challenge_phase_split = ChallengePhaseSplit.objects.get(
+            pk=challenge_phase_split_id)
+    except ChallengePhaseSplit.DoesNotExist:
+        response_data = {'error': 'Challenge Phase Split does not exist'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # check if the challenge phase exists or not
+    # Check if the Challenge Phase Split is publicly visible or not
+    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC:
+        response_data = {'error': 'Sorry, leaderboard is not public yet for this Challenge Phase Split!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # Get the leaderboard associated with the Challenge Phase Split
+    leaderboard = challenge_phase_split.leaderboard
+
+    # Get the default order by key to rank the entries on the leaderboard
     try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_id, challenge=challenge)
-    except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'Challenge Phase does not exist'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    if not challenge_phase.leaderboard_public:
-        response_data = {'error': 'Challenge Phase leaderboard is not public!'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    submissions = Submission.objects.filter(status=Submission.FINISHED,
-                                            challenge_phase=challenge_phase)
-
-    # Order by the execution time
-    submissions = submissions.extra(select={"exec_time": "completed_at - started_at"})
-    submissions = submissions.order_by('participant_team', 'exec_time').distinct('participant_team')
-
-    paginator, result_page = paginated_queryset(submissions, request)
-    try:
-        serializer = LeaderboardSerializer(result_page, many=True)
-        response_data = serializer.data
-        return paginator.get_paginated_response(response_data)
+        default_order_by = leaderboard.schema['default_order_by']
     except:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {'error': 'Sorry, Default filtering key not found in leaderboard schema!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # Get all the successful submissions related to the challenge phase split
+    leaderboard_data = LeaderboardData.objects.filter(
+        challenge_phase_split=challenge_phase_split).order_by('created_at')
+    leaderboard_data = leaderboard_data.annotate(
+        filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=IntegerField())).values(
+            'id', 'submission__participant_team__team_name',
+            'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema')
+
+    sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: k['filtering_score'], reverse=True)
+
+    distinct_sorted_leaderboard_data = []
+    team_list = []
+
+    for data in sorted_leaderboard_data:
+        if data['submission__participant_team__team_name'] in team_list:
+            continue
+        else:
+            distinct_sorted_leaderboard_data.append(data)
+            team_list.append(data['submission__participant_team__team_name'])
+
+    leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
+    for item in distinct_sorted_leaderboard_data:
+        item['result'] = [item['result'][index.lower()] for index in leaderboard_labels]
+
+    paginator, result_page = paginated_queryset(distinct_sorted_leaderboard_data, request)
+    response_data = result_page
+    return paginator.get_paginated_response(response_data)

@@ -1,4 +1,5 @@
 // Invoking IIFE for teams
+/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -37,14 +38,14 @@
             vm.isExistLoader = true;
             vm.loaderTitle = msg;
             vm.loginContainer.addClass('low-screen');
-        }
+        };
 
         // stop loader
         vm.stopExistLoader = function() {
             vm.isExistLoader = false;
             vm.loaderTitle = '';
             vm.loginContainer.removeClass('low-screen');
-        }
+        };
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
@@ -57,31 +58,31 @@
                 if (status == 200) {
                     vm.existTeam = response;
 
-                    if (vm.existTeam.count == 0) {
+                    if (vm.existTeam.count === 0) {
                         vm.showPagination = false;
-                        vm.paginationMsg = "No team exist for now, Start by creating a new team!"
+                        vm.paginationMsg = "No team exist for now, Start by creating a new team!";
                     } else {
 
                         vm.showPagination = true;
-                        vm.paginationMsg = ""
+                        vm.paginationMsg = "";
                     }
 
                     // clear error msg from storage
                     utilities.deleteData('emailError');
 
                     // condition for pagination
-                    if (vm.existTeam.next == null) {
+                    if (vm.existTeam.next === null) {
                         vm.isNext = 'disabled';
                     } else {
                         vm.isNext = '';
                     }
 
-                    if (vm.existTeam.previous == null) {
+                    if (vm.existTeam.previous === null) {
                         vm.isPrev = 'disabled';
                     } else {
                         vm.isPrev = '';
                     }
-                    if (vm.existTeam.next != null) {
+                    if (vm.existTeam.next !== null) {
                         vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
                     } else {
                         vm.currentPage = 1;
@@ -99,17 +100,17 @@
                             vm.isExistLoader = true;
                             vm.loaderTitle = msg;
                             vm.loginContainer.addClass('low-screen');
-                        }
+                        };
 
                         // stop loader
                         vm.stopLoader = function() {
                             vm.isExistLoader = false;
                             vm.loaderTitle = '';
                             vm.loginContainer.removeClass('low-screen');
-                        }
+                        };
 
                         vm.startLoader("Loading Teams");
-                        if (url != null) {
+                        if (url !== null) {
 
                             //store the header data in a variable
                             var headers = {
@@ -124,7 +125,7 @@
                                 vm.existTeam = response;
 
                                 // condition for pagination
-                                if (vm.existTeam.next == null) {
+                                if (vm.existTeam.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = vm.existTeam.count / 10;
                                 } else {
@@ -132,17 +133,17 @@
                                     vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
                                 }
 
-                                if (vm.existTeam.previous == null) {
+                                if (vm.existTeam.previous === null) {
                                     vm.isPrev = 'disabled';
                                 } else {
                                     vm.isPrev = '';
                                 }
                                 vm.stopLoader();
-                            })
+                            });
                         } else {
                             vm.stopLoader();
                         }
-                    }
+                    };
 
                 }
                 utilities.hideLoader();
@@ -169,14 +170,14 @@
                 vm.isLoader = true;
                 vm.loaderTitle = msg;
                 vm.newContainer.addClass('low-screen');
-            }
+            };
 
             // stop loader
             vm.stopLoader = function() {
                 vm.isLoader = false;
                 vm.loaderTitle = '';
                 vm.newContainer.removeClass('low-screen');
-            }
+            };
 
             vm.startLoader("Loading Teams");
 
@@ -185,17 +186,18 @@
             parameters.method = 'POST';
             parameters.data = {
                 "team_name": vm.team.name
-            }
+            };
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
+                    $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
                     var status = response.status;
                     var response = response.data;
                     vm.teamId = response.id;
                     vm.team.error = false;
                     vm.team.name = '';
-
                     vm.stopLoader();
+
                     vm.startExistLoader("Loading Teams");
                     var parameters = {};
                     parameters.url = 'hosts/challenge_host_team/';
@@ -212,7 +214,7 @@
 
 
                                 // condition for pagination
-                                if (vm.existTeam.next == null) {
+                                if (vm.existTeam.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = 1;
                                 } else {
@@ -220,7 +222,7 @@
                                     vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
                                 }
 
-                                if (vm.existTeam.previous == null) {
+                                if (vm.existTeam.previous === null) {
                                     vm.isPrev = 'disabled';
                                 } else {
                                     vm.isPrev = '';
@@ -245,12 +247,13 @@
 
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
+                    $rootScope.notify("error", "New team couldn't be created.");
                 }
             };
 
             utilities.sendRequest(parameters);
 
-        }
+        };
 
         vm.confirmDelete = function(ev, hostTeamId) {
             // Appending dialog to document.body to cover sidenav in docs app
@@ -267,14 +270,14 @@
                 var parameters = {};
                 parameters.url = 'hosts/remove_self_from_challenge_host/' + hostTeamId;
                 parameters.method = 'DELETE';
-                parameters.data = {}
+                parameters.data = {};
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
-
                         var status = response.status;
                         var response = response.data;
                         vm.team.error = false;
+                        $rootScope.notify("info", "You have removed yourself successfully");
 
                         var parameters = {};
                         parameters.url = 'hosts/challenge_host_team/';
@@ -289,7 +292,7 @@
 
 
                                     // condition for pagination
-                                    if (vm.existTeam.next == null) {
+                                    if (vm.existTeam.next === null) {
                                         vm.isNext = 'disabled';
                                         vm.currentPage = vm.existTeam.count / 10;
                                     } else {
@@ -297,17 +300,17 @@
                                         vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
                                     }
 
-                                    if (vm.existTeam.previous == null) {
+                                    if (vm.existTeam.previous === null) {
                                         vm.isPrev = 'disabled';
                                     } else {
                                         vm.isPrev = '';
                                     }
 
 
-                                    if (vm.existTeam.count == 0) {
+                                    if (vm.existTeam.count === 0) {
 
                                         vm.showPagination = false;
-                                        vm.paginationMsg = "No team exist for now, Start by creating a new team!"
+                                        vm.paginationMsg = "No team exist for now, Start by creating a new team!";
                                     } else {
                                         vm.showPagination = true;
                                         vm.paginationMsg = "";
@@ -316,13 +319,14 @@
 
                                 vm.stopExistLoader();
                             }
-                        }
+                        };
                         utilities.sendRequest(parameters);
                     },
                     onError: function(response) {
                         var status = response.status;
                         var error = response.data;
                         vm.stopExistLoader();
+                        $rootScope.notify("error", "couldn't remove you from the challenge");
                     }
                 };
 
@@ -351,16 +355,18 @@
                 parameters.method = 'POST';
                 parameters.data = {
                     "email": result
-                }
+                };
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
                         var response = response.data;
+                        $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
                     onError: function(response) {
                         var status = response.status;
                         var error = response.data;
+                        $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
                     }
                 };
 

@@ -39,14 +39,14 @@
             $rootScope.isLoader = true;
             $rootScope.loaderTitle = msg;
             vm.loginContainer.addClass('low-screen');
-        }
+        };
 
         // stop loader
         vm.stopLoader = function() {
             $rootScope.isLoader = false;
             $rootScope.loaderTitle = '';
             vm.loginContainer.removeClass('low-screen');
-        }
+        };
 
         vm.resetForm = function() {
             // getUser for signup
@@ -59,7 +59,7 @@
 
             //switch off form errors
             vm.isFormError = false;
-        }
+        };
 
         // Function to signup
         vm.userSignUp = function(signupFormValid) {
@@ -74,12 +74,13 @@
                     "password1": vm.regUser.password,
                     "password2": vm.regUser.confirm_password,
                     "email": vm.regUser.email
-                }
+                };
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 201) {
                             vm.isFormError = false;
-                            vm.regMsg = "Registered successfully, Login to continue!";
+                            // vm.regMsg = "Registered successfully, Login to continue!";
+                            $rootScope.notify("success", "Registered successfully, Login to continue!");
                             $state.go('auth.login');
                         } else {
                             console.log("Unhandled success");
@@ -118,13 +119,13 @@
                         }
                         vm.stopLoader();
                     }
-                }
+                };
                 utilities.sendRequest(parameters, "no-header");
             } else {
                 console.log("Form fields are not valid !");
                 vm.stopLoader();
             }
-        }
+        };
 
         // Function to login
         vm.userLogin = function(loginFormValid) {
@@ -137,7 +138,7 @@
                 parameters.data = {
                     "username": vm.getUser.name,
                     "password": vm.getUser.password,
-                }
+                };
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 200) {
@@ -172,7 +173,7 @@
                 console.log("Form fields are not valid !");
                 vm.stopLoader();
             }
-        }
+        };
 
         // function to Verify Email
         vm.verifyEmail = function() {
@@ -192,7 +193,7 @@
             };
 
             utilities.sendRequest(parameters, "no-header");
-        }
+        };
 
         // function to reset password
         vm.resetPassword = function(resetPassFormValid) {
@@ -203,7 +204,7 @@
                 parameters.method = 'POST';
                 parameters.data = {
                     "email": vm.getUser.email,
-                }
+                };
                 parameters.callback = {
                     onSuccess: function(response) {
                         vm.isMail = false;
@@ -224,7 +225,7 @@
                 console.log("Form fields are not valid !");
                 vm.stopLoader();
             }
-        }
+        };
 
         // function to reset password confirm
         vm.resetPasswordConfirm = function(resetconfirmFormValid) {
@@ -238,11 +239,12 @@
                     "new_password2": vm.getUser.new_password2,
                     "uid": $state.params.user_id,
                     "token": $state.params.reset_token,
-                }
+                };
 
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
+                        /* jshint shadow:true */
                         var response = response.data;
                         vm.isResetPassword = true;
                         vm.deliveredMsg = response.detail;
@@ -266,7 +268,7 @@
                             } else {
                                 console.log("Unhandled Error");
                             }
-                        } catch (error) {
+                        } catch (error) { // jshint ignore:line 
                             vm.FormError = "Something went wrong! Please refresh the page and try again.";
                         }
                         vm.stopLoader();
@@ -278,7 +280,12 @@
                 console.log("Form fields are not valid !");
                 vm.stopLoader();
             }
-        }
+        };
+
+        $rootScope.$on('$stateChangeStart', function() {
+            vm.resetForm();
+        });
+
     }
 
 })();

@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from base.models import (TimeStampedModel, )
+from base.utils import RandomFileName
 from participants.models import (ParticipantTeam, )
 
 
@@ -30,7 +31,8 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False)
-    evaluation_script = models.FileField(default=False, upload_to="evaluation_scripts")  # should be zip format
+    evaluation_script = models.FileField(
+        default=False, upload_to=RandomFileName("evaluation_scripts"))  # should be zip format
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin")
 
@@ -96,7 +98,7 @@ class ChallengePhase(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)")
     challenge = models.ForeignKey('Challenge')
     is_public = models.BooleanField(default=False)
-    test_annotation = models.FileField(upload_to="test_annotations")
+    test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"))
     max_submissions_per_day = models.PositiveIntegerField(default=100000)
     max_submissions = models.PositiveIntegerField(default=100000)
     codename = models.CharField(max_length=100, default="Phase Code Name")

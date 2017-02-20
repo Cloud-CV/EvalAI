@@ -1,13 +1,14 @@
 /**
  * Config for the router
  */
+/* jshint shadow:true */
 
 (function() {
     angular
         .module('evalai')
         .config(configure);
 
-    var baseUrl = "dist/views/"
+    var baseUrl = "dist/views/";
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider) {
 
@@ -25,7 +26,7 @@
             controller: 'MainCtrl',
             controllerAs: 'main',
             title: "Welcome"
-        }
+        };
 
         var auth = {
             name: "auth",
@@ -36,7 +37,7 @@
             abstract: true,
             authenticate: false,
             title: 'Auth'
-        }
+        };
 
         var login = {
             name: "auth.login",
@@ -45,7 +46,7 @@
             templateUrl: baseUrl + "/web/login.html",
             authenticate: false,
             title: 'Login'
-        }
+        };
 
         var signup = {
             name: "auth.signup",
@@ -54,7 +55,7 @@
             templateUrl: baseUrl + "/web/signup.html",
             authenticate: false,
             title: 'SignUp'
-        }
+        };
 
         var verify_email = {
             name: "auth.verify-email",
@@ -63,7 +64,7 @@
             templateUrl: baseUrl + "/web/verify-email.html",
             title: "Email Verify",
             authenticate: false
-        }
+        };
 
         var reset_password = {
             name: "auth.reset-password",
@@ -72,7 +73,7 @@
             templateUrl: baseUrl + "/web/reset-password.html",
             title: "Reset Password",
             authenticate: false
-        }
+        };
 
         var reset_password_confirm = {
             name: "auth.reset-password-confirm",
@@ -81,7 +82,7 @@
             templateUrl: baseUrl + "/web/reset-password-confirm.html",
             title: "Reset Password Confirm",
             authenticate: false
-        }
+        };
 
         var logout = {
             name: "auth.logout",
@@ -89,8 +90,8 @@
             url: "/logout",
             authenticate: false,
             title: 'Logout'
-        }
-        
+        };
+
         // main app 'web'
         var web = {
             name: "web",
@@ -100,7 +101,7 @@
             controllerAs: 'web',
             authenticate: true,
             abstract: true
-        }
+        };
 
         var dashboard = {
             name: "web.dashboard",
@@ -111,7 +112,7 @@
             controllerAs: 'dash',
             title: 'Dashboard',
             authenticate: true
-        }
+        };
 
         var teams = {
             name: "web.teams",
@@ -122,7 +123,7 @@
             controllerAs: 'teams',
             title: 'Participating Teams',
             authenticate: true
-        }
+        };
 
         var challenge_host_teams = {
             name: "web.challenge-host-teams",
@@ -133,7 +134,7 @@
             controllerAs: 'challengeHostTeams',
             title: 'Host Teams',
             authenticate: true
-        }
+        };
 
         var challenge_main = {
             name: "web.challenge-main",
@@ -144,7 +145,7 @@
             // controllerAs: 'challengeMain',
             redirectTo: "web.challenge-main.challenge-list",
             authenticate: true
-        }
+        };
 
         var challenge_create = {
             name: "web.challenge-create",
@@ -156,7 +157,7 @@
             controllerAs: 'challengeCreate',
             // redirectTo: "web.challenge-create.challenge-list",
             authenticate: true
-        }
+        };
 
         var challenge_list = {
             name: "web.challenge-main.challenge-list",
@@ -167,7 +168,7 @@
             controllerAs: 'challengeList',
             title: 'Challenges',
             authenticate: true
-        }
+        };
 
         var challenge_page = {
             name: "web.challenge-main.challenge-page",
@@ -178,7 +179,7 @@
             controllerAs: 'challenge',
             redirectTo: "web.challenge-main.challenge-page.overview",
             authenticate: true
-        }
+        };
 
         var overview = {
             name: "web.challenge-main.challenge-page.overview",
@@ -187,7 +188,7 @@
             templateUrl: baseUrl + "/web/challenge/overview.html",
             title: 'Overview',
             authenticate: true
-        }
+        };
 
         var evaluation = {
             name: "web.challenge-main.challenge-page.evaluation",
@@ -195,7 +196,7 @@
             templateUrl: baseUrl + "/web/challenge/evaluation.html",
             title: 'Evaluation',
             authenticate: true
-        }
+        };
 
         var phases = {
             name: "web.challenge-main.challenge-page.phases",
@@ -203,7 +204,7 @@
             templateUrl: baseUrl + "/web/challenge/phases.html",
             title: 'Phases',
             authenticate: true
-        }
+        };
 
         var participate = {
             name: "web.challenge-main.challenge-page.participate",
@@ -211,7 +212,7 @@
             templateUrl: baseUrl + "/web/challenge/participate.html",
             title: 'Participate',
             authenticate: true
-        }
+        };
 
         var submission = {
             name: "web.challenge-main.challenge-page.submission",
@@ -219,7 +220,7 @@
             templateUrl: baseUrl + "/web/challenge/submission.html",
             title: 'Submission',
             authenticate: true
-        }
+        };
 
         var my_submission = {
             name: "web.challenge-main.challenge-page.my-submission",
@@ -227,7 +228,7 @@
             templateUrl: baseUrl + "/web/challenge/my-submission.html",
             title: 'My Submission',
             authenticate: true
-        }
+        };
 
         var leaderboard = {
             name: "web.challenge-main.challenge-page.leaderboard",
@@ -235,7 +236,7 @@
             templateUrl: baseUrl + "/web/challenge/leaderboard.html",
             title: 'Leaderboard',
             authenticate: true
-        }
+        };
 
         var profile = {
             name: "web.profile",
@@ -246,7 +247,7 @@
             controller: 'ProfileCtrl',
             controllerAs: 'profile',
             authenticate: true
-        }
+        };
 
         var host_challenge = {
             name: "web.host-challenge",
@@ -257,7 +258,7 @@
             // controller: 'HostCtrl',
             // controllerAs: 'host',
             authenticate: true
-        }
+        };
 
         var permission_denied = {
             name: "web.permission-denied",
@@ -268,7 +269,7 @@
             controller: 'PermCtrl',
             controllerAs: 'perm',
             authenticate: true
-        }
+        };
 
         var change_password = {
             name: "web.change-password",
@@ -279,45 +280,44 @@
             controller: 'ChangePwdCtrl',
             controllerAs: 'changepwd',
             authenticate: true
-        }
+        };
 
         var error_404 = {
             name: "error-404",
             templateUrl: baseUrl + "/web/error-pages/error-404.html",
             title: "Error 404",
-        }
+        };
 
         var error_500 = {
             name: "error-500",
             templateUrl: baseUrl + "/web/error-pages/error-500.html",
             title: "Error 500",
-        }
-                
+        };
+
         var terms_and_conditions = {
-        	name: "terms_and_conditions",
-        	url: "/legals",
-        	templateUrl: baseUrl + "/web/terms-and-conditions.html",
-        	title: "Terms and Conditions"
-        }
+            name: "terms_and_conditions",
+            url: "/legals",
+            templateUrl: baseUrl + "/web/terms-and-conditions.html",
+            title: "Terms and Conditions"
+        };
 
         var about_us = {
             name: 'about-us',
             url: "/about",
             templateUrl: baseUrl + "/web/about-us.html",
             title: "About Us"
-        }
+        };
         var our_team = {
             name: 'our-team',
-            url: "/our-team",
+            url: "/team",
             templateUrl: baseUrl + "/web/our-team.html",
             title: "Our Team"
-        }
+        };
 
 
         // call all states here
         $stateProvider.state(home);
         $stateProvider.state(terms_and_conditions);
-        
 
         // auth configs
         $stateProvider.state(auth);
@@ -379,7 +379,7 @@
         .module('evalai')
         .run(runFunc);
 
-    function runFunc($rootScope, $state, utilities, $window, $location, $window) {
+    function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
 
         // Google Analytics Scripts
         $window.ga('create', 'UA-45466017-2', 'auto');
@@ -406,7 +406,7 @@
                 event.preventDefault();
             }
             // restrict authorized user too access login/signup page
-            else if (toState.authenticate == false && utilities.isAuthenticated()) {
+            else if (toState.authenticate === false && utilities.isAuthenticated()) {
                 // alert("")
                 $rootScope.isAuth = true;
                 $state.transitionTo("home");
@@ -420,7 +420,7 @@
         $rootScope.$on('$stateChangeStart', function(event, to, params) {
             if (to.redirectTo) {
                 event.preventDefault();
-                $state.go(to.redirectTo, params, { location: 'replace' })
+                $state.go(to.redirectTo, params, { location: 'replace' });
             }
         });
 
@@ -431,6 +431,19 @@
 
         });
 
+        $rootScope.notify = function(type, message, timeout) {
+            // function to pic timeout
+            function pick(arg, def) {
+                return (typeof arg == undefined ? def : arg);
+            }
+
+            timeout = pick(timeout, 3000);
+            toaster.pop({
+                type: type,
+                body: message,
+                timeout: timeout
+            });
+        };
 
         $rootScope.logout = function() {
             var userKey = utilities.getData('userKey');
@@ -445,6 +458,7 @@
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
+                    $rootScope.notify("info", "Logout Successfully");
                 },
                 onError: function(response) {
                     var status = response.status;
@@ -453,7 +467,7 @@
             };
 
             utilities.sendRequest(parameters);
-        }
+        };
 
         checkToken = function() {
             var userKey = utilities.getData('userKey');
@@ -470,7 +484,7 @@
                     var status = response.status;
                     var error = response.data;
                     if (status == 401) {
-                        alert("Timeout, Please login again to continue!")
+                        alert("Timeout, Please login again to continue!");
                         utilities.resetStorage();
                         $state.go("auth.login");
                         $rootScope.isAuth = false;
@@ -479,10 +493,10 @@
             };
 
             utilities.sendRequest(parameters);
-        }
+        };
 
-        if ($rootScope.isAuth == false) {
+        if (!$rootScope.isAuth) {
             // checkToken();
         }
-    };
+    }
 })();
