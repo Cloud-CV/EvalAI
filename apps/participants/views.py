@@ -26,8 +26,7 @@ from .serializers import (InviteParticipantToTeamSerializer,
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_list(request):
-""" Obtains a List of Participants."""
-
+    """ Obtains a List of Participants."""
     if request.method == 'GET':
         participant_teams_id = Participant.objects.filter(user_id=request.user).values_list('team_id', flat=True)
         participant_teams = ParticipantTeam.objects.filter(
@@ -57,8 +56,7 @@ def participant_team_list(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_detail(request, pk):
-""" Obtains the details of the Participant's Team."""
-
+    """ Obtains the details of the Participant's Team."""
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
     except ParticipantTeam.DoesNotExist:
@@ -97,8 +95,7 @@ def participant_team_detail(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def invite_participant_to_team(request, pk):
-""" API for inviting Participant to a Team"""
-
+    """ API for inviting Participant to a Team"""
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
     except ParticipantTeam.DoesNotExist:
@@ -121,9 +118,7 @@ def invite_participant_to_team(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def delete_participant_from_team(request, participant_team_pk, participant_pk):
-    """
-    Deletes a participant from a Participant Team
-    """
+    """Deletes a participant from a Participant Team"""
     try:
         participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
     except ParticipantTeam.DoesNotExist:
@@ -156,9 +151,7 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_teams_and_corresponding_challenges_for_a_participant(request):
-    """
-    Returns list of teams and corresponding challenges for a participant
-    """
+    """Returns list of teams and corresponding challenges for a participant"""
     # first get list of all the participants and teams related to the user
     participant_objs = Participant.objects.filter(user=request.user).prefetch_related('team')
 
@@ -186,9 +179,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def remove_self_from_participant_team(request, participant_team_pk):
-    """
-    A user can remove himself from the participant team.
-    """
+    """A user can remove himself from the participant team."""
     try:
         ParticipantTeam.objects.get(pk=participant_team_pk)
     except ParticipantTeam.DoesNotExist:
