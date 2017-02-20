@@ -26,6 +26,7 @@ from .serializers import (InviteParticipantToTeamSerializer,
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_list(request):
+""" Obtains a List of Participants."""
 
     if request.method == 'GET':
         participant_teams_id = Participant.objects.filter(user_id=request.user).values_list('team_id', flat=True)
@@ -56,6 +57,7 @@ def participant_team_list(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_detail(request, pk):
+""" Obtains the details of the Participant's Team."""
 
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
@@ -95,6 +97,7 @@ def participant_team_detail(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def invite_participant_to_team(request, pk):
+""" API for inviting Participant to a Team"""
 
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
