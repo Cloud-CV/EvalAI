@@ -1,7 +1,7 @@
 <div class="col s12 m4 offset-m4 left">
     <ul class="left">
-        <li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">LogIn</a></li>
-        <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">SignUp</a></li>
+        <li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Log In</a></li>
+        <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Sign Up</a></li>
         <!-- <li class="ev-horiz-list"><a ui-sref="auth.reset-password" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Forgot Password</a></li> -->
     </ul>
 </div>
@@ -12,7 +12,7 @@
         <div class="input-field align-left">
             <input type="text" id="name" name="name" ng-model="auth.getUser.name" ng-minlength="3" required>
             <span class="form-icon"><i class="fa fa-user"></i></span>
-            <label for="name">User Name (no space)*</label>
+            <label for="name">Username*</label>
             <div class="wrn-msg text-highlight" ng-messages="loginForm.name.$error" ng-if="loginForm.name.$touched || loginForm.$submitted">
                 <p ng-message="minlength">username is too short.</p>
                 <p ng-message="required">username is required.</p>
@@ -35,16 +35,16 @@
         </div> -->
             <br>
             <div class="col s6 align-left rm-gut">
-                <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit">LogIn</button>
+                <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit">Log In</button>
             </div>
             <div class="col s6 align-right right rm-gut">
-                <a ui-sref="auth.reset-password" class="light-link fg-pass">Forgotten Account?</a>
+                <a ui-sref="auth.reset-password" class="light-link fg-pass">Forgot Password?</a>
             </div>
         </div>
         <div ng-if="auth.isFormError" class="wrn-msg text-highlight align-left"> {{auth.FormError}}</div>
         <div>
             <p class="text-light-gray">
-                Or start with a new account <a class="white-link" ui-sref="auth.signup">SignUp</a>
+                Or start with a new account <a class="white-link" ui-sref="auth.signup">Sign Up</a>
             </p>
         </div>
     </form>
