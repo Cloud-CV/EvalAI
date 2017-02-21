@@ -9,12 +9,13 @@
                 <li><a class="waves-effect waves-dark main-header-link" ui-sref="home" ui-sref-active="active">Home</a></li>
                 <!-- show after authenticate user -->
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
-                <li><a class="waves-effect waves-dark main-header-link" ui-sref="challenges" ui-sref-active="active">Challenges</a></li>
-                <li><a class="waves-effect waves-dark main-header-link" ui-sref="github" ui-sref-active="active">Github</a></li>
+                <li><a class="waves-effect waves-dark main-header-link" ui-sref="about-us" ui-sref-active="active">About Us</a></li>
+                <li><a class="waves-effect waves-dark main-header-link" ui-sref="our-team" ui-sref-active="active">Team</a></li>
+                <li><a class="waves-effect waves-dark main-header-link" href="http://github.com/Cloud-CV/EvalAI" target="_blank">Contribute to EvalAI</a></li>
             </ul>
             <ul class="right hide-on-med-and-down">
-                <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active">Register</a></li>
-                <li ng-hide="isAuth"><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="auth.login" ui-sref-active="active">LogIn</a></li>
+                <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active">Sign Up</a></li>
+                <li ng-hide="isAuth"><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="auth.login" ui-sref-active="active">Log In</a></li>
                 <!-- show after authenticate user -->
                 <li ng-show="isAuth">
                     <a ng-click="header.profileDropdown($event)" class="dropdown-button waves-effect waves-dark main-header-link" data-activates='ev-dropdown' ui-sref-active="active">Hi <strong>{{header.user.name}}</strong> &nbsp; 
@@ -22,7 +23,7 @@
           </a>
                 </li>
                 <li ng-show="isAuth">
-                    <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="logout()">LogOut</div>
+                    <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="logout()">Logout</div>
                 </li>
             </ul>
             <!-- 
@@ -40,8 +41,8 @@
                     </div>
                 </li>
                 <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active"><i class="fa fa-home"></i>Home</a></li>
-                <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>LogIn</a></li>
-                <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>SignUp</a></li>
+                <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
+                <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>Sign Up</a></li>
                 <!-- show after authenticate user -->
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{header.user.name}}!</a></li>
