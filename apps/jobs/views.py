@@ -144,7 +144,7 @@ def leaderboard(request, challenge_phase_split_id):
             'id', 'submission__participant_team__team_name',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema')
 
-    sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: k['filtering_score'], reverse=True)
+    sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
 
     distinct_sorted_leaderboard_data = []
     team_list = []
