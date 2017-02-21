@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('DashCtrl', DashCtrl);
 
-    DashCtrl.$inject = ['utilities', '$state', '$rootScope'];
+    DashCtrl.$inject = ['utilities', '$state', '$rootScope', '$mdDialog'];
 
-    function DashCtrl(utilities, $state, $rootScope) {
+    function DashCtrl(utilities, $state, $rootScope, $mdDialog) {
         var vm = this;
 
         // get token
@@ -47,6 +47,16 @@
         };
 
         utilities.sendRequest(parameters);
+
+        vm.hostChallenge = function(ev) {
+
+            var alert = $mdDialog.alert()
+                .title('Host a challenge')
+                .textContent('Thanks for your interest in hosting a Challenge on EvalAI. We will release this feature soon!')
+                .ok('Close');
+
+            $mdDialog.show(alert);
+        };
     }
 
 })();

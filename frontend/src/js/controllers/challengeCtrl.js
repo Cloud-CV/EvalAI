@@ -27,6 +27,25 @@
         vm.showLeaderboardUpdate = false;
         vm.stopLeaderboard = function() {};
         vm.stop = function() {};
+        
+        // loader for existing teams
+        vm.isExistLoader = false;
+        vm.loaderTitle = '';
+        vm.loginContainer = angular.element('.exist-team-card');
+
+        // show loader
+        vm.startExistLoader = function(msg) {
+            vm.isExistLoader = true;
+            vm.loaderTitle = msg;
+            vm.loginContainer.addClass('low-screen');
+        };
+
+        // stop loader
+        vm.stopExistLoader = function() {
+            vm.isExistLoader = false;
+            vm.loaderTitle = '';
+            vm.loginContainer.removeClass('low-screen');
+        };
 
         var userKey = utilities.getData('userKey');
 
@@ -706,6 +725,100 @@
             };
 
             utilities.sendRequest(parameters);
+        };
+        
+        // function to create new team for participating in challenge
+        vm.createNewTeam = function() {
+            vm.isLoader = true;
+            vm.loaderTitle = '';
+            vm.newContainer = angular.element('.new-team-card');
+
+            // show loader
+            vm.startLoader = function(msg) {
+                vm.isLoader = true;
+                vm.loaderTitle = msg;
+                vm.newContainer.addClass('low-screen');
+            };
+
+            // stop loader
+            vm.stopLoader = function() {
+                vm.isLoader = false;
+                vm.loaderTitle = '';
+                vm.newContainer.removeClass('low-screen');
+            };
+
+            vm.startLoader("Loading Teams");
+
+            var parameters = {};
+            parameters.url = 'participants/participant_team';
+            parameters.method = 'POST';
+            parameters.data = {
+                "team_name": vm.team.name
+            };
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
+                    var status = response.status;
+                    var response = response.data;
+                    vm.team.error = false;
+                    vm.stopLoader();
+                    vm.team.name = '';
+
+                    vm.startExistLoader("Loading Teams");
+                    var parameters = {};
+                    parameters.url = 'participants/participant_team';
+                    parameters.method = 'GET';
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var response = response.data;
+                            if (status == 200) {
+                                vm.existTeam = response;
+                                vm.showPagination = true;
+                                vm.paginationMsg = '';
+
+
+                                // condition for pagination
+                                if (vm.existTeam.next === null) {
+                                    vm.isNext = 'disabled';
+                                    vm.currentPage = 1;
+                                } else {
+                                    vm.isNext = '';
+                                    vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
+                                }
+
+                                if (vm.existTeam.previous === null) {
+                                    vm.isPrev = 'disabled';
+                                } else {
+                                    vm.isPrev = '';
+                                }
+
+
+                                vm.stopExistLoader();
+                            }
+                        },
+                        onError: function(response) {
+                            var status = response.status;
+                            var error = response.data;
+                            vm.stopExistLoader();
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                },
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
+
+                    vm.team.error = error.team_name[0];
+                    vm.stopLoader();
+                    $rootScope.notify("error", "New team couldn't be created.");
+                }
+            };
+
+            utilities.sendRequest(parameters);
+
         };
 
         $scope.$on('$destroy', function() {

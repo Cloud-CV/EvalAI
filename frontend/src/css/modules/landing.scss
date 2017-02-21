@@ -88,8 +88,7 @@ section.bg-section {
 }
 
 .ev-details {
-    position: absolute;
-    top: 100vh;
+    position: relative;
     left: 0;
     height: 100vh;
     background-color: #fff;
@@ -295,4 +294,8 @@ section.bg-section {
     z-index: 0;
     bottom: 4px;
     transform: rotate(-4deg);
+}
+
+.grad-vh {
+    min-height: 100vh;
 }
