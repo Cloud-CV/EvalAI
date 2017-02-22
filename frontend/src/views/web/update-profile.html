@@ -6,29 +6,32 @@
                 <div class="ev-md-container ev-card-body update-profile-card">
                     <form name="updateprofileForm" ng-submit="updateprofile.updateProfile(updateprofileForm.$valid)" novalidate>
                         <div class="input-field align-left">
-                            <input id="username" name="username" type="text" class="text-dark-black dark-autofill w-400"  ng-model="updateprofile.user.username" required focus-if>
+                            <input id="username" name="username" type="text" class="text-dark-black dark-autofill w-400"  ng-model="updateprofile.user.username" ng-maxlength="30" required focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                             <label for="username" >Username</label>
                             <div class="wrn-msg text-highlight" ng-messages="updateprofileForm.username.$error" ng-if="updateprofileForm.username.$touched || updateprofileForm.$submitted" >
                                 <p ng-message="required">Username is required</p>
+                                <p ng-message="maxlength"> Username is too long </p>
                             </div>
                         </div>
 
                         <div class="input-field align-left">
-                            <input id="first_name" name="first_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateprofile.user.first_name" required>
+                            <input id="first_name" name="first_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateprofile.user.first_name" ng-maxlength="30" required>
                             <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                             <label for="first_name">First Name</label>
                             <div class="wrn-msg text-highlight"  ng-messages="updateprofileForm.first_name.$error"  ng-if="updateprofileForm.first_name.$touched || updateprofileForm.$submitted">
                                 <p ng-message="required">First Name is required</p>
+                                <p ng-message="maxlength"> First Name is too long </p>
                             </div>
                         </div>
 
                         <div class="input-field align-left">
-                            <input id="last_name" name="last_name" type="text" class="text-dark-black dark-autofill w-400"  ng-model="updateprofile.user.last_name" required >
+                            <input id="last_name" name="last_name" type="text" class="text-dark-black dark-autofill w-400"  ng-model="updateprofile.user.last_name" ng-maxlength="30" required >
                             <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                             <label for="last_name" >Last Name</label>
                             <div class="wrn-msg text-highlight" ng-messages="updateprofileForm.last_name.$error" ng-if="updateprofileForm.last_name.$touched || updateprofileForm.$submitted">
                                 <p ng-message="required">Last Name is required</p>
+                                <p ng-maxlength="maxlength"> Last Name is too long. </p>
                             </div>
                         </div>
 

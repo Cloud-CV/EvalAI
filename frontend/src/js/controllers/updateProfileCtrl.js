@@ -6,11 +6,11 @@
 
     angular
         .module('evalai')
-        .controller('UpdateProfileCtrl', UpdateProfileCtrl);
+        .controller('updateProfileCtrl', updateProfileCtrl);
 
-    UpdateProfileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    updateProfileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
 
-    function UpdateProfileCtrl(utilities, $state, $http, $rootScope) {
+    function updateProfileCtrl(utilities, $state, $http, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
@@ -18,19 +18,19 @@
         vm.user = {};
         vm.isFormError = false;
 
-        vm.changepassContainer = angular.element('.update-profile-card');
+        vm.updateprofileContainer = angular.element('.update-profile-card');
 
         vm.startLoader = function(msg) {
             $rootScope.isLoader = true;
             $rootScope.loaderTitle = msg;
-            vm.changepassContainer.addClass('low-screen');
+            vm.updateprofileContainer.addClass('low-screen');
         };
 
         // stop loader
         vm.stopLoader = function() {
             $rootScope.isLoader = false;
             $rootScope.loaderTitle = '';
-            vm.changepassContainer.removeClass('low-screen');
+            vm.updateprofileContainer.removeClass('low-screen');
         };
         // function to update Profile
         vm.updateProfile = function(resetconfirmFormValid) {
@@ -63,8 +63,8 @@
                             var isUsername_valid, isFirstname_valid, isLastname_valid;
                        try {
                                 isUsername_valid = typeof(response.data.username) !== 'undefined' ? true : false;
-                                isFirstname_valid = typeof(response.data.email) !== 'undefined' ? true : false;
-                                isLastname_valid = typeof(response.data.password1) !== 'undefined' ? true : false;
+                                isFirstname_valid = typeof(response.data.first_name) !== 'undefined' ? true : false;
+                                isLastname_valid = typeof(response.data.last_name) !== 'undefined' ? true : false;
                                 if (isUsername_valid) {
                                     vm.FormError = response.data.username[0];
                                 } else if (isFirstname_valid) {
@@ -73,11 +73,11 @@
                                     vm.FormError = response.data.last_name[0];
 
                                 } else {
-                                    console.log("Unhandled Error");
+                                    $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }
 
                             } catch (error) { // jshint ignore:line
-                                console.log(error);
+                                    $rootScope.notify("error", "Some error have occured . Please try again !");
                             }
                         }
                         
@@ -88,8 +88,8 @@
                 utilities.sendRequest(parameters);
 
             }else {
-              console.log("Form fields are not valid !");
-              vm.stopLoader();
+                $rootScope.notify("error", "Form Fields are not Valid!");
+                vm.stopLoader();
             }
         };
     }

@@ -323,7 +323,7 @@
             url: "/update-profile",
             templateUrl: baseUrl + "/web/update-profile.html",
             title: "Update Profile",
-            controller: 'UpdateProfileCtrl',
+            controller: 'updateProfileCtrl',
             controllerAs: 'updateprofile',
             authenticate: true
         };
