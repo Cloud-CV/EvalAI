@@ -5,7 +5,7 @@ from rest_framework.decorators import (api_view,
                                        throttle_classes,)
 
 from django.db.models.expressions import RawSQL
-from django.db.models import IntegerField
+from django.db.models import FloatField
 
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
@@ -140,11 +140,11 @@ def leaderboard(request, challenge_phase_split_id):
     leaderboard_data = LeaderboardData.objects.filter(
         challenge_phase_split=challenge_phase_split).order_by('created_at')
     leaderboard_data = leaderboard_data.annotate(
-        filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=IntegerField())).values(
+        filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema')
 
-    sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: k['filtering_score'], reverse=True)
+    sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
 
     distinct_sorted_leaderboard_data = []
     team_list = []

@@ -44,7 +44,7 @@
                                     <tr ng-repeat="key in challenge.leaderboard">
                                         <td>{{$index+1}}</td>
                                         <td>{{key.submission__participant_team__team_name}}</td>
-                                        <td ng-repeat="score in key.result track by $index">{{score}}</td>
+                                        <td ng-repeat="score in key.result track by $index" >{{score | number : 3}}</td>
                                     </tr>
                                 </tbody>
                             </table>

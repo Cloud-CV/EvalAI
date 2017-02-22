@@ -25,8 +25,9 @@
         vm.isValid = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
+        vm.poller = null;
         vm.stopLeaderboard = function() {};
-        vm.stop = function() {};
+        vm.stopFetchingSubmissions = function() {};
         
         // loader for existing teams
         vm.isExistLoader = false;
@@ -414,10 +415,8 @@
         vm.isResult = false;
 
         vm.getLeaderboard = function(phaseSplitId) {
-            var poller;
-
             vm.stopLeaderboard = function() {
-                $interval.cancel(poller);
+                $interval.cancel(vm.poller);
             };
             vm.stopLeaderboard();
 
@@ -472,7 +471,7 @@
             utilities.sendRequest(parameters);
             vm.startLeaderboard = function() {
                 vm.stopLeaderboard();
-                poller = $interval(function() {
+                vm.poller = $interval(function() {
                     var parameters = {};
                     parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/";
                     parameters.method = 'GET';
@@ -482,7 +481,7 @@
                         onSuccess: function(response) {
                             var status = response.status;
                             var response = response.data;
-                            if (vm.leaderboard.count !== response.count) {
+                            if (vm.leaderboard.count !== response.results.count) {
                                 vm.showLeaderboardUpdate = true;
                             }
                         },
@@ -502,11 +501,10 @@
         };
         vm.getResults = function(phaseId) {
 
-            var poller;
-            vm.stop = function() {
-                $interval.cancel(poller);
+            vm.stopFetchingSubmissions = function() {
+                $interval.cancel(vm.poller);
             };
-            vm.stop();
+            vm.stopFetchingSubmissions();
             vm.isResult = true;
             vm.phaseId = phaseId;
             // loader for exisiting teams
@@ -645,8 +643,8 @@
             // long polling (5s) for leaderboard
 
             vm.start = function() {
-                vm.stop();
-                poller = $interval(function() {
+                vm.stopFetchingSubmissions();
+                vm.poller = $interval(function() {
                     var parameters = {};
                     parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
                     parameters.method = 'GET';
@@ -656,8 +654,16 @@
                         onSuccess: function(response) {
                             var status = response.status;
                             var response = response.data;
-                            if (vm.submissionResult.count !== response.count) {
-                                vm.showUpdate = true;
+                            if (vm.submissionResult.results.count !== response.results.count){
+                                vm.showUpdate = true; 
+                            }
+                            else {
+                                for (var i = 0; i < response.results.length; i++) {
+                                    if (response.results[i].status !== vm.submissionResult.results[i].status) {
+                                        vm.showUpdate = true;
+                                        break;
+                                    }
+                                }
                             }
                         },
                         onError: function(response) {
@@ -822,14 +828,14 @@
         };
 
         $scope.$on('$destroy', function() {
-            vm.stop();
+            vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
         });
 
         $rootScope.$on('$stateChangeStart', function() {
             vm.phase = {};
             vm.isResult = false;
-            vm.stop();
+            vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
         });
     }
