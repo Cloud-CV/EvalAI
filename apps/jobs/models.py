@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
-from os.path import join
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
@@ -20,27 +18,6 @@ from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
 
 logger = logging.getLogger(__name__)
-
-# Whenever the migrations are being squashed, Please remove these functions.
-# Reason: During migrating django looks for its previous state,
-#         hence these functions were not removed to prevent this error.
-# "AttributeError: 'module' object has no attribute 'input_file_name'"
-
-
-def submission_root(instance):
-    return join('submission_files', 'submission_' + str(instance.pk))
-
-
-def input_file_name(instance, filename='input.txt'):
-    return join(submission_root(instance), filename)
-
-
-def stdout_file_name(instance, filename='stdout.txt'):
-    return join(submission_root(instance), filename)
-
-
-def stderr_file_name(instance, filename='stderr.txt'):
-    return join(submission_root(instance), filename)
 
 
 # submission.pk is not available when saving input_file
