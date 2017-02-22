@@ -1,0 +1,46 @@
+<section class="ev-sm-container ev-view ">
+    <div class="row">
+        <div class="col s12 m6">
+            <div class=" ev-card-panel ev-z-depth-5">
+                <div class="ev-md-container ev-panel-title"><strong>Update Profile</strong></div>
+                <div class="ev-md-container ev-card-body update-profile-card">
+                    <form name="updateprofileForm" ng-submit="updateprofile.updateProfile(updateprofileForm.$valid)" novalidate>
+                        <div class="input-field align-left">
+                            <input id="username" name="username" type="text" class="text-dark-black dark-autofill w-400"  ng-model="updateprofile.user.username" required focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                            <label for="username" >Username</label>
+                            <div class="wrn-msg text-highlight" ng-messages="updateprofileForm.username.$error" ng-if="updateprofileForm.username.$touched || updateprofileForm.$submitted" >
+                                <p ng-message="required">Username is required</p>
+                            </div>
+                        </div>
+
+                        <div class="input-field align-left">
+                            <input id="first_name" name="first_name" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateprofile.user.first_name" required>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                            <label for="first_name">First Name</label>
+                            <div class="wrn-msg text-highlight"  ng-messages="updateprofileForm.first_name.$error"  ng-if="updateprofileForm.first_name.$touched || updateprofileForm.$submitted">
+                                <p ng-message="required">First Name is required</p>
+                            </div>
+                        </div>
+
+                        <div class="input-field align-left">
+                            <input id="last_name" name="last_name" type="text" class="text-dark-black dark-autofill w-400"  ng-model="updateprofile.user.last_name" required >
+                            <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                            <label for="last_name" >Last Name</label>
+                            <div class="wrn-msg text-highlight" ng-messages="updateprofileForm.last_name.$error" ng-if="updateprofileForm.last_name.$touched || updateprofileForm.$submitted">
+                                <p ng-message="required">Last Name is required</p>
+                            </div>
+                        </div>
+
+
+                        <div class="align-left reg-control">
+                            <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Update Profile</button>
+                        </div>
+                        <div ng-if="updateprofile.isFormError" class="wrn-msg text-highlight align-right"> {{updateprofile.FormError}}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
