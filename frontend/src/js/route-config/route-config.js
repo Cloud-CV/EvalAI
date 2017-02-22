@@ -307,11 +307,19 @@
             templateUrl: baseUrl + "/web/about-us.html",
             title: "About Us"
         };
+        
         var our_team = {
             name: 'our-team',
             url: "/team",
             templateUrl: baseUrl + "/web/our-team.html",
             title: "Our Team"
+        };
+        
+        var contact_us = {
+        	name: 'contact-us',
+            url: "/contact",
+            templateUrl: baseUrl + "/web/contact-us.html",
+            title: "Contact Us"        	
         };
 
 
@@ -362,6 +370,7 @@
         $stateProvider.state(error_500);
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
+        $stateProvider.state(contact_us);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');

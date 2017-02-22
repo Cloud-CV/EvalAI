@@ -1,0 +1,60 @@
+<div class="white-bg view-container">
+    <main-header></main-header>
+    
+    <div class="grad-container">
+        <div class="row">
+            <div class="col s12 m8 l8">
+                    <br><br>
+                    <h4 align="center" class="text-dark-black"><strong>Contact Us</strong></h4>
+                    <form name="contactusForm" ng-submit="" id="contact-us" novalidate>
+        			<!-- Name -->
+        				<div class="input-field align-left">
+            				<input type="text" id="name" name="name" ng-minlength="3" required>
+            				<span class="form-icon"><i class="fa fa-user"></i></span>
+            				<label for="name">Name *</label>
+            				<div class="wrn-msg text-highlight" ng-messages="contactusForm.name.$error" ng-if="contactusForm.name.$touched || contactusForm.$submitted">
+                				<p ng-message="minlength">name is too short.</p>
+                				<p ng-message="required">name is required.</p>
+            				</div>
+        				</div>
+        			<!-- Email -->
+        				<div class="input-field align-left">
+            				<input type="text" id="email" name="email" required>
+            				<span class="form-icon"><i class="fa fa-envelope"></i></span>
+            				<label for="email">Email *</label>
+        				</div>
+        			<!-- Message -->
+        				<div class="input-field align-left">
+            				<input type="text" id="message" name="message" required>
+            				<span class="form-icon"><i class="fa fa-comment"></i></span>
+            				<label for="message">Message *</label>
+        				</div>	
+        				<div class="row">
+            				<br>
+            				<div class="col s6 align-left rm-gut">
+	                			<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit">Send</button>
+            				</div>
+        				</div>
+    				</form>
+            </div>
+            <div class="col s12 m4 l4 ">
+                <div class="rocket-container">
+                    <div class="rocket-anim">
+                        <img src="dist/images/rocket.png">
+                    </div>
+                    <div class="cloud-1">
+                        <img src="dist/images/cloud-1.png">
+                    </div>
+                    <div class="cloud-2">
+                        <img src="dist/images/cloud-2.png">
+                    </div>
+                    <div class="cloud-3">
+                        <img src="dist/images/cloud-1.png">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <landing-footer></landing-footer>
+</div>
