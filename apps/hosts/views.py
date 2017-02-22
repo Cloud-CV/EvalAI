@@ -22,7 +22,7 @@ from .serializers import (ChallengeHostSerializer,
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_team_list(request):
-
+    """ List the Teams for a challenge."""
     if request.method == 'GET':
         challenge_host_team_ids = ChallengeHost.objects.filter(user=request.user).values_list('team_name', flat=True)
         challenge_host_teams = ChallengeHostTeam.objects.filter(id__in=challenge_host_team_ids)
@@ -46,6 +46,7 @@ def challenge_host_team_list(request):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_team_detail(request, pk):
+    """" Lists the Detail of the Team participating in the challenge."""
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=pk)
     except ChallengeHostTeam.DoesNotExist:
@@ -85,7 +86,7 @@ def challenge_host_team_detail(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_list(request, challenge_host_team_pk):
-
+    """ Gives the Lists of Hosts hosting a challenge"""
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
@@ -124,6 +125,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_detail(request, challenge_host_team_pk, pk):
+    """ Gives the details of the host for a challenge"""
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
@@ -170,7 +172,7 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_challenge_host_team(request):
-
+    """A user can create a challenge for the host team."""
     serializer = ChallengeHostTeamSerializer(data=request.data,
                                              context={'request': request})
     if serializer.is_valid():
@@ -213,7 +215,7 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def invite_host_to_team(request, pk):
-
+    """ A user can invite the user to the host team."""
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=pk)
     except ChallengeHostTeam.DoesNotExist:

@@ -28,18 +28,22 @@ logger = logging.getLogger(__name__)
 
 
 def submission_root(instance):
+    """ Creating submissions for the challenge"""
     return join('submission_files', 'submission_' + str(instance.pk))
 
 
 def input_file_name(instance, filename='input.txt'):
+    """ Add input file name for the challenge"""
     return join(submission_root(instance), filename)
 
 
 def stdout_file_name(instance, filename='stdout.txt'):
+    """ Add output file for the challenge"""
     return join(submission_root(instance), filename)
 
 
 def stderr_file_name(instance, filename='stderr.txt'):
+    """ Add Standard Error file for the challenge."""
     return join(submission_root(instance), filename)
 
 
@@ -49,6 +53,7 @@ def stderr_file_name(instance, filename='stderr.txt'):
 # Because they will be saved only after a submission instance is saved(pk will be available)
 @receiver(pre_save, sender='jobs.Submission')
 def skip_saving_file(sender, instance, **kwargs):
+    """ Endpoint to skip svaing a file.""""
     if not instance.pk and not hasattr(instance, '_input_file'):
         setattr(instance, '_input_file', instance.input_file)
         instance.input_file = None
@@ -56,13 +61,14 @@ def skip_saving_file(sender, instance, **kwargs):
 
 @receiver(post_save, sender='jobs.Submission')
 def save_file(sender, instance, created, **kwargs):
+    """ Endpoint to save a file for the challenge."""
     if created and hasattr(instance, '_input_file'):
         instance.input_file = getattr(instance, '_input_file')
         instance.save()
 
 
 class Submission(TimeStampedModel):
-
+    """ Model for adding a submission for a challenge."""
     SUBMITTED = "submitted"
     RUNNING = "running"
     FAILED = "failed"
@@ -117,7 +123,7 @@ class Submission(TimeStampedModel):
         #     return None
 
     def save(self, *args, **kwargs):
-
+        """ API for saving a submission"""
         if hasattr(self, 'status'):
             if self.status == Submission.RUNNING:
                 self.started_at = timezone.now()

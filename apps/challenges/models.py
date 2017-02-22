@@ -10,7 +10,6 @@ from participants.models import (ParticipantTeam, )
 
 
 class Challenge(TimeStampedModel):
-
     """Model representing a hosted Challenge"""
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
@@ -73,6 +72,7 @@ class Challenge(TimeStampedModel):
 
 
 class DatasetSplit(TimeStampedModel):
+    """ Model Representing a dataset"""
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
 
@@ -85,7 +85,6 @@ class DatasetSplit(TimeStampedModel):
 
 
 class ChallengePhase(TimeStampedModel):
-
     """Model representing a Challenge Phase"""
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -128,7 +127,7 @@ class ChallengePhase(TimeStampedModel):
 
 
 class Leaderboard(TimeStampedModel):
-
+    """ Model representing a Leaderboard"""
     schema = JSONField()
 
     def __unicode__(self):
@@ -140,7 +139,7 @@ class Leaderboard(TimeStampedModel):
 
 
 class ChallengePhaseSplit(TimeStampedModel):
-
+    """ Model to represent Challenge phase split between Owner and Host."""
     # visibility options
     HOST = 1
     OWNER_AND_HOST = 2
@@ -169,7 +168,7 @@ class ChallengePhaseSplit(TimeStampedModel):
 
 
 class LeaderboardData(TimeStampedModel):
-
+    """ Model representing Leaderboard data"""
     challenge_phase_split = models.ForeignKey('ChallengePhaseSplit')
     submission = models.ForeignKey('jobs.Submission')
     leaderboard = models.ForeignKey('Leaderboard')
