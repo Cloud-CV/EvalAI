@@ -50,7 +50,6 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 200) {
-                            console.log("PROFILE UPDATED SUCCESSFULLY");
                             $rootScope.notify("success", "Profile Updated Successfully!");
                             // navigate to profile page
                             $state.go('web.profile');
