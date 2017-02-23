@@ -911,7 +911,6 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                                                    'Dummy file content', content_type='text/plain'),
                 max_submissions_per_day=100000,
                 max_submissions=100000,
-                
             )
 
     def tearDown(self):
