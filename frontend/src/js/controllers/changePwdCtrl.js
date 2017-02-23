@@ -55,6 +55,7 @@
                         vm.user.error = false;
                         console.log("PASSWORD CHANGED SUCCESSFULLY");
                         console.log(response);
+                        $rootScope.notify("success", "Your password has been changed successfully!");
                         vm.stopLoader();
                         // navigate to challenge page
                         // $state.go('web.challenge-page.overview');
