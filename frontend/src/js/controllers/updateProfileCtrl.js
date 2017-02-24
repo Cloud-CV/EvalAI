@@ -1,5 +1,5 @@
 // Invoking IIFE for teams
-/* jshint shadow:true */
+
 (function() {
 
     'use strict';
@@ -11,6 +11,7 @@
     updateProfileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
 
     function updateProfileCtrl(utilities, $state, $http, $rootScope) {
+        /* jshint validthis: true */
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
@@ -34,19 +35,19 @@
         };
         // function to update Profile
         vm.updateProfile = function(resetconfirmFormValid) {
-          if(resetconfirmFormValid){
+            if (resetconfirmFormValid) {
 
-            vm.startLoader("Updating Your Profile");
-            var parameters = {};
-            parameters.url = 'auth/user/';
-            parameters.method = 'PUT';
-            parameters.data = {
-                "username": vm.user.username,
-                "first_name": vm.user.first_name,
-                "last_name": vm.user.last_name,
-                "uid": $state.params.user_id,
-            };
-            parameters.token = userKey;
+                vm.startLoader("Updating Your Profile");
+                var parameters = {};
+                parameters.url = 'auth/user/';
+                parameters.method = 'PUT';
+                parameters.data = {
+                    "username": vm.user.username,
+                    "first_name": vm.user.first_name,
+                    "last_name": vm.user.last_name,
+                    "uid": $state.params.user_id,
+                };
+                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 200) {
@@ -61,7 +62,7 @@
                             vm.stopLoader();
                             vm.isFormError = true;
                             var isUsername_valid, isFirstname_valid, isLastname_valid;
-                       try {
+                            try {
                                 isUsername_valid = typeof(response.data.username) !== 'undefined' ? true : false;
                                 isFirstname_valid = typeof(response.data.first_name) !== 'undefined' ? true : false;
                                 isLastname_valid = typeof(response.data.last_name) !== 'undefined' ? true : false;
@@ -77,17 +78,17 @@
                                 }
 
                             } catch (error) { // jshint ignore:line
-                                    $rootScope.notify("error", "Some error have occured . Please try again !");
+                                $rootScope.notify("error", "Some error have occured . Please try again !");
                             }
                         }
-                        
+
                         vm.stopLoader();
                     }
                 };
 
                 utilities.sendRequest(parameters);
 
-            }else {
+            } else {
                 $rootScope.notify("error", "Form Fields are not Valid!");
                 vm.stopLoader();
             }
