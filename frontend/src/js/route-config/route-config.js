@@ -322,7 +322,6 @@
             title: "Contact Us"        	
         };
 
-
         // call all states here
         $stateProvider.state(home);
         $stateProvider.state(terms_and_conditions);
