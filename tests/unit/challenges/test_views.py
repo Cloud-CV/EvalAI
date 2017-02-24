@@ -908,7 +908,9 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   'Dummy file content', content_type='text/plain'),
+                max_submissions_per_day=100000,
+                max_submissions=100000,
             )
 
     def tearDown(self):
@@ -935,6 +937,8 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "codename": "Phase Code Name",
+                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+                "max_submissions": self.challenge_phase.max_submissions,
             }
         ]
 
@@ -1014,6 +1018,8 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1073,6 +1079,8 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
