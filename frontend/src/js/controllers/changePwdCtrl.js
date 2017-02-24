@@ -53,8 +53,7 @@
                         var status = response.status;
                         var response = response.data;
                         vm.user.error = false;
-                        console.log("PASSWORD CHANGED SUCCESSFULLY");
-                        console.log(response);
+                        $rootScope.notify("success", "Your password has been changed successfully!");
                         vm.stopLoader();
                         // navigate to challenge page
                         // $state.go('web.challenge-page.overview');
@@ -70,11 +69,11 @@
                             password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
                             password2_valid = typeof(response.data.new_password2) !== 'undefined' ? true : false;
                             if (oldpassword_valid) {
-                                vm.FormError = response.data.old_password[0] + " " + response.data.old_password[1];
+                                vm.FormError = Object.values(response.data.old_password).join(" ");
                             }else if (password1_valid) {
-                                vm.FormError = response.data.new_password1[0] + " " + response.data.new_password1[1];
+                                vm.FormError = Object.values(response.data.new_password1).join(" ");
                             } else if (password2_valid) {
-                                vm.FormError = response.data.new_password2[0] + " " + response.data.new_password2[1];
+                                vm.FormError = Object.values(response.data.new_password2).join(" ");
                             } else {
                                 console.log("Unhandled Error");
                             }
