@@ -31,7 +31,7 @@
                             <label for="last_name" >Last Name</label>
                             <div class="wrn-msg text-highlight" ng-messages="updateprofileForm.last_name.$error" ng-if="updateprofileForm.last_name.$touched || updateprofileForm.$submitted">
                                 <p ng-message="required">Last Name is required</p>
-                                <p ng-maxlength="maxlength"> Last Name is too long. </p>
+                                <p ng-message="maxlength"> Last Name is too long. </p>
                             </div>
                         </div>
 

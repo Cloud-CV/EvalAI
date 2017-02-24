@@ -1,4 +1,4 @@
-// Invoking IIFE for teams
+// Invoking IIFE for update profile
 
 (function() {
 
@@ -45,7 +45,6 @@
                     "username": vm.user.username,
                     "first_name": vm.user.first_name,
                     "last_name": vm.user.last_name,
-                    "uid": $state.params.user_id,
                 };
                 parameters.token = userKey;
                 parameters.callback = {
