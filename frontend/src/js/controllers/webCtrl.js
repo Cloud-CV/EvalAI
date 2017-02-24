@@ -1,5 +1,4 @@
 // Invoking IIFE for dashboard
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -50,20 +49,20 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
+                var details = response.data;
                 if (status == 200) {
-                    vm.name = response.username;
+                    vm.name = details.username;
 
-                    for (var i in response) {
-                        if (response[i] === "" || response[i] === undefined || response[i] === null) {
-                            response[i] = "-";
+                    for (var i in details) {
+                        if (details[i] === "" || details[i] === undefined || details[i] === null) {
+                            details[i] = "-";
                             vm.countLeft = vm.countLeft + 1;
                         }
                         count = count + 1;
                     }
                     vm.compPerc = parseInt((vm.countLeft / count) * 100);
 
-                    vm.user = response;
+                    vm.user = details;
                     vm.user.complete = 100 - vm.compPerc;
 
                 }

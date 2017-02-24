@@ -36,17 +36,13 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    /* jshint shadow:true */
-                    var response = response.data;
-                    console.log(response);
+                    var details = response.data;
                     // navigate to Challenge List Page
                     $state.go('web.challenge-main.challenge-list');
                 },
                 onError: function(response) {
                     var status = response.status;
                     var error = response.data;
-                    console.log("Error");
-                    console.log(error);
                     angular.forEach(error, function(value, key) {
                         if (key == 'title') {
                             vm.isValid.title = true;

@@ -1,5 +1,4 @@
 // Invoking IIFE for teams
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -54,9 +53,9 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
+                var details = response.data;
                 if (status == 200) {
-                    vm.existTeam = response;
+                    vm.existTeam = details;
 
                     if (vm.existTeam.count === 0) {
                         vm.showPagination = false;
@@ -120,7 +119,7 @@
                         parameters.callback = {
                             onSuccess: function(response) {
                                 var status = response.status;
-                                var response = response.data;
+                                var details = response.data;
                                 $state.go('web.challenge-page.overview');
                                 vm.stopLoader();
                             },
@@ -167,8 +166,8 @@
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
                                 var status = response.status;
-                                var response = response.data;
-                                vm.existTeam = response;
+                                var details = response.data;
+                                vm.existTeam = details;
 
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
@@ -238,7 +237,7 @@
                 onSuccess: function(response) {
                     $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
                     var status = response.status;
-                    var response = response.data;
+                    var details = response.data;
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team.name = '';
@@ -251,9 +250,9 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
-                            var response = response.data;
+                            var details = response.data;
                             if (status == 200) {
-                                vm.existTeam = response;
+                                vm.existTeam = details;
                                 vm.showPagination = true;
                                 vm.paginationMsg = '';
 
@@ -320,7 +319,7 @@
                     onSuccess: function(response) {
 
                         var status = response.status;
-                        var response = response.data;
+                        var details = response.data;
                         vm.team.error = false;
                         $rootScope.notify("info", "You have removed yourself successfully");
 
@@ -331,9 +330,9 @@
                         parameters.callback = {
                             onSuccess: function(response) {
                                 var status = response.status;
-                                var response = response.data;
+                                var details = response.data;
                                 if (status == 200) {
-                                    vm.existTeam = response;
+                                    vm.existTeam = details;
 
 
                                     // condition for pagination
@@ -406,13 +405,12 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
-                        var response = response.data;
+                        var details = response.data;
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
                     onError: function(response) {
                         var status = response.status;
                         var error = response.data;
-                        console.log(error);
                         $rootScope.notify("error", "couldn't invite " + parameters.data.email + ". Please try again.");
                     }
                 };

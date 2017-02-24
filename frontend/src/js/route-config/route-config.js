@@ -1,7 +1,6 @@
 /**
  * Config for the router
  */
-/* jshint shadow:true */
 
 (function() {
     angular
@@ -457,7 +456,7 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var response = response.data;
+                    var details = response.data;
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
@@ -481,7 +480,7 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var response = response.data;
+                    var details = response.data;
                 },
                 onError: function(response) {
                     var status = response.status;

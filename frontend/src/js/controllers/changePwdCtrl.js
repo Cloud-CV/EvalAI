@@ -1,5 +1,4 @@
 // Invoking IIFE for teams
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -51,7 +50,7 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
-                        var response = response.data;
+                        var details = response.data;
                         vm.user.error = false;
                         $rootScope.notify("success", "Your password has been changed successfully!");
                         vm.stopLoader();

@@ -1,5 +1,4 @@
 // Invoking IIFE for teams
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -54,9 +53,9 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
+                var details = response.data;
                 if (status == 200) {
-                    vm.existTeam = response;
+                    vm.existTeam = details;
 
                     if (vm.existTeam.count === 0) {
                         vm.showPagination = false;
@@ -121,8 +120,8 @@
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
                                 var status = response.status;
-                                var response = response.data;
-                                vm.existTeam = response;
+                                var details = response.data;
+                                vm.existTeam = details;
 
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
@@ -192,8 +191,8 @@
                 onSuccess: function(response) {
                     $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
                     var status = response.status;
-                    var response = response.data;
-                    vm.teamId = response.id;
+                    var details = response.data;
+                    vm.teamId = details.id;
                     vm.team.error = false;
                     vm.team.name = '';
                     vm.stopLoader();
@@ -206,9 +205,9 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
-                            var response = response.data;
+                            var details = response.data;
                             if (status == 200) {
-                                vm.existTeam = response;
+                                vm.existTeam = details;
                                 vm.showPagination = true;
                                 vm.paginationMsg = '';
 
@@ -275,7 +274,7 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
-                        var response = response.data;
+                        var details = response.data;
                         vm.team.error = false;
                         $rootScope.notify("info", "You have removed yourself successfully");
 
@@ -286,9 +285,9 @@
                         parameters.callback = {
                             onSuccess: function(response) {
                                 var status = response.status;
-                                var response = response.data;
+                                var details = response.data;
                                 if (status == 200) {
-                                    vm.existTeam = response;
+                                    vm.existTeam = details;
 
 
                                     // condition for pagination
@@ -360,7 +359,7 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
-                        var response = response.data;
+                        var details = response.data;
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
                     onError: function(response) {

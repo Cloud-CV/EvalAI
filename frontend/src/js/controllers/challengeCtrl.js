@@ -1,5 +1,4 @@
 // Invoking IIFE for challenge page
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -63,9 +62,9 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
-                vm.page = response;
-                vm.isActive = response.is_active;
+                var details = response.data;
+                vm.page = details;
+                vm.isActive = details.is_active;
 
 
                 if (vm.page.image === null) {
@@ -75,7 +74,7 @@
 
                 if (vm.isActive) {
 
-                    // get details of challenges corresponding to participant teams of that user
+                    // get details of challenges cordetailsing to participant teams of that user
                     var parameters = {};
                     parameters.url = 'participants/participant_teams/challenges/user';
                     parameters.method = 'GET';
@@ -84,7 +83,7 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
-                            var response = response.data;
+                            var details = response.data;
 
                             for (var i in response.challenge_participant_team_list) {
                                 if (response.challenge_participant_team_list[i].challenge !== null && response.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
@@ -110,9 +109,9 @@
                                 parameters.callback = {
                                     onSuccess: function(response) {
                                         var status = response.status;
-                                        var response = response.data;
+                                        var details = response.data;
                                         if (status == 200) {
-                                            vm.existTeam = response;
+                                            vm.existTeam = details;
 
                                             // clear error msg from storage
                                             utilities.deleteData('emailError');
@@ -166,7 +165,7 @@
                                                 parameters.callback = {
                                                     onSuccess: function(response) {
                                                         var status = response.status;
-                                                        var response = response.data;
+                                                        var details = response.data;
                                                         vm.isParticipated = true;
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.stopLoader();
@@ -214,8 +213,8 @@
                                                     $http.get(url, { headers: headers }).then(function(response) {
                                                         // reinitialized data
                                                         var status = response.status;
-                                                        var response = response.data;
-                                                        vm.existTeam = response;
+                                                        var details = response.data;
+                                                        vm.existTeam = details;
 
                                                         // condition for pagination
                                                         if (vm.existTeam.next === null) {
@@ -295,7 +294,7 @@
                                         parameters.callback = {
                                             onSuccess: function(response) {
                                                 var status = response.status;
-                                                var response = response.data;
+                                                var details = response.data;
                                                 // vm.input_file.name = '';
 
                                                 angular.forEach(
@@ -362,16 +361,16 @@
         utilities.sendRequest(parameters);
 
         // get details of the particular challenge phase
-        var parameters = {};
-        parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
-        parameters.method = 'GET';
-        parameters.data = {};
-        parameters.token = userKey;
-        parameters.callback = {
+        var param = {};
+        param.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
+        param.method = 'GET';
+        param.data = {};
+        param.token = userKey;
+        param.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
-                vm.phases = response;
+                var details = response.data;
+                vm.phases = details;
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
@@ -385,19 +384,19 @@
             }
         };
 
-        utilities.sendRequest(parameters);
+        utilities.sendRequest(param);
 
         // get details of the particular challenge phase split
-        var parameters = {};
-        parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
-        parameters.method = 'GET';
-        parameters.data = {};
-        parameters.token = userKey;
-        parameters.callback = {
+        var params = {};
+        params.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
+        params.method = 'GET';
+        params.data = {};
+        params.token = userKey;
+        params.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
-                vm.phaseSplits = response;
+                var details = response.data;
+                vm.phaseSplits = details;
                 utilities.hideLoader();
             },
             onError: function(response) {
@@ -409,7 +408,7 @@
             }
         };
 
-        utilities.sendRequest(parameters);
+        utilities.sendRequest(params);
 
         // my submissions
         vm.isResult = false;
@@ -454,8 +453,8 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var response = response.data;
-                    vm.leaderboard = response.results;
+                    var details = response.data;
+                    vm.leaderboard = details.results;
 
                     vm.startLeaderboard();
                     vm.stopLoader();
@@ -480,8 +479,8 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
-                            var response = response.data;
-                            if (vm.leaderboard.count !== response.results.count) {
+                            var details = response.data;
+                            if (vm.leaderboard.count !== details.results.count) {
                                 vm.showLeaderboardUpdate = true;
                             }
                         },
@@ -542,8 +541,8 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var response = response.data;
-                    vm.submissionResult = response;
+                    var details = response.data;
+                    vm.submissionResult = details;
                     vm.start();
 
                     if (vm.submissionResult.count === 0) {
@@ -604,8 +603,8 @@
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
                                 var status = response.status;
-                                var response = response.data;
-                                vm.submissionResult = response;
+                                var details = response.data;
+                                vm.submissionResult = details;
 
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
@@ -653,13 +652,13 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
-                            var response = response.data;
-                            if (vm.submissionResult.results.count !== response.results.count){
+                            var details = response.data;
+                            if (vm.submissionResult.results.count !== details.results.count){
                                 vm.showUpdate = true; 
                             }
                             else {
-                                for (var i = 0; i < response.results.length; i++) {
-                                    if (response.results[i].status !== vm.submissionResult.results[i].status) {
+                                for (var i = 0; i < details.results.length; i++) {
+                                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
                                         vm.showUpdate = true;
                                         break;
                                     }
@@ -692,8 +691,8 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var response = response.data;
-                    vm.submissionResult = response;
+                    var details = response.data;
+                    vm.submissionResult = details;
                     vm.showUpdate = false;
                     vm.stopLoader();
                 },
@@ -717,8 +716,8 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var response = response.data;
-                    vm.leaderboard = response.results;
+                    var details = response.data;
+                    vm.leaderboard = details.results;
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
@@ -766,7 +765,7 @@
                 onSuccess: function(response) {
                     $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
                     var status = response.status;
-                    var response = response.data;
+                    var details = response.data;
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team.name = '';
@@ -779,9 +778,9 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
-                            var response = response.data;
+                            var details = response.data;
                             if (status == 200) {
-                                vm.existTeam = response;
+                                vm.existTeam = details;
                                 vm.showPagination = true;
                                 vm.paginationMsg = '';
 

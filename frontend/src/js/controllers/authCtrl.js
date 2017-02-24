@@ -244,10 +244,9 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
-                        /* jshint shadow:true */
-                        var response = response.data;
+                        var details = response.data;
                         vm.isResetPassword = true;
-                        vm.deliveredMsg = response.detail;
+                        vm.deliveredMsg = details.detail;
                         vm.stopLoader();
                     },
                     onError: function(response) {
