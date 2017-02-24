@@ -226,6 +226,8 @@ gulp.task('configProd', function() {
         .pipe(ngConfig('evalai-config', {
             environment: 'production'
         }))
+        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(flags.production, uglify()))
         .pipe(gulp.dest('frontend/dist/js'))
 });
 
