@@ -321,6 +321,7 @@
             templateUrl: baseUrl + "/web/contact-us.html",
             title: "Contact Us"        	
         };
+        
 
         // call all states here
         $stateProvider.state(home);
