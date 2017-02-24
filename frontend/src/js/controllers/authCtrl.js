@@ -59,6 +59,9 @@
 
             //switch off form errors
             vm.isFormError = false;
+            
+            //reset form when link sent for reset password
+            vm.isMail = true;
         };
 
         // Function to signup
