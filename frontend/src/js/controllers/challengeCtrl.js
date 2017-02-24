@@ -361,12 +361,12 @@
         utilities.sendRequest(parameters);
 
         // get details of the particular challenge phase
-        var param = {};
-        param.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
-        param.method = 'GET';
-        param.data = {};
-        param.token = userKey;
-        param.callback = {
+        parameters = {};
+        parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
+        parameters.method = 'GET';
+        parameters.data = {};
+        parameters.token = userKey;
+        parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
                 var details = response.data;
@@ -384,15 +384,15 @@
             }
         };
 
-        utilities.sendRequest(param);
+        utilities.sendRequest(parameters);
 
         // get details of the particular challenge phase split
-        var params = {};
-        params.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
-        params.method = 'GET';
-        params.data = {};
-        params.token = userKey;
-        params.callback = {
+        parameters = {};
+        parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
+        parameters.method = 'GET';
+        parameters.data = {};
+        parameters.token = userKey;
+        parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
                 var details = response.data;
@@ -408,7 +408,7 @@
             }
         };
 
-        utilities.sendRequest(params);
+        utilities.sendRequest(parameters);
 
         // my submissions
         vm.isResult = false;
