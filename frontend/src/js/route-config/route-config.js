@@ -316,7 +316,7 @@
         };
         
         var contact_us = {
-        	name: 'contact-us',
+            name: 'contact-us',
             url: "/contact",
             templateUrl: baseUrl + "/web/contact-us.html",
             title: "Contact Us"        	
