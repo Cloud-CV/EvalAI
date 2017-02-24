@@ -85,8 +85,8 @@
                             var status = response.status;
                             var details = response.data;
 
-                            for (var i in response.challenge_participant_team_list) {
-                                if (response.challenge_participant_team_list[i].challenge !== null && response.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
+                            for (var i in details.challenge_participant_team_list) {
+                                if (details.challenge_participant_team_list[i].challenge !== null && details.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
                                     vm.isParticipated = true;
                                     break;
                                 }
