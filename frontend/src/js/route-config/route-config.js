@@ -10,7 +10,10 @@
 
     var baseUrl = "dist/views/";
 
-    function configure($stateProvider, $urlRouterProvider, $locationProvider) {
+    function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
+    	
+    	//in order to prevent 404 for trailing '/' in urls    	
+    	$urlMatcherFactoryProvider.strictMode(false);
 
         // formating hashed url
         $locationProvider.html5Mode({
