@@ -69,11 +69,11 @@
                             password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
                             password2_valid = typeof(response.data.new_password2) !== 'undefined' ? true : false;
                             if (oldpassword_valid) {
-                                vm.FormError = response.data.old_password[0] + " " + response.data.old_password[1];
+                                vm.FormError = Object.values(response.data.old_password).join(" ");
                             }else if (password1_valid) {
-                                vm.FormError = response.data.new_password1[0] + " " + response.data.new_password1[1];
+                                vm.FormError = Object.values(response.data.new_password1).join(" ");
                             } else if (password2_valid) {
-                                vm.FormError = response.data.new_password2[0] + " " + response.data.new_password2[1];
+                                vm.FormError = Object.values(response.data.new_password2).join(" ");
                             } else {
                                 console.log("Unhandled Error");
                             }

@@ -115,7 +115,9 @@ class ChallengePhaseTestCase(BaseTestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   'Dummy file content', content_type='text/plain'),
+                max_submissions_per_day=100000,
+                max_submissions=100000,
             )
 
     def tearDown(self):
