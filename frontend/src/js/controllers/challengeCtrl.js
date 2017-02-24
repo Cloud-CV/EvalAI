@@ -74,7 +74,7 @@
 
                 if (vm.isActive) {
 
-                    // get details of challenges cordetailsing to participant teams of that user
+                    // get details of challenges corresponding to participant teams of that user
                     var parameters = {};
                     parameters.url = 'participants/participant_teams/challenges/user';
                     parameters.method = 'GET';
