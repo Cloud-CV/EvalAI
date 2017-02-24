@@ -53,7 +53,6 @@
                         var status = response.status;
                         var response = response.data;
                         vm.user.error = false;
-                        console.log(response);
                         $rootScope.notify("success", "Your password has been changed successfully!");
                         vm.stopLoader();
                         // navigate to challenge page
