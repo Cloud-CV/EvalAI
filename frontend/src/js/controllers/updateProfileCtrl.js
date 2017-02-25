@@ -6,11 +6,11 @@
 
     angular
         .module('evalai')
-        .controller('updateProfileCtrl', updateProfileCtrl);
+        .controller('updateprofileCtrl', updateprofileCtrl);
 
-    updateProfileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    updateprofileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
 
-    function updateProfileCtrl(utilities, $state, $http, $rootScope) {
+    function updateprofileCtrl(utilities, $state, $http, $rootScope) {
         /* jshint validthis: true */
         var vm = this;
         var userKey = utilities.getData('userKey');
@@ -50,7 +50,7 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 200) {
-                            $rootScope.notify("success", "Profile Updated Successfully!");
+                            $rootScope.notify("success", "Profile updated successfully!");
                             // navigate to profile page
                             $state.go('web.profile');
                             vm.stopLoader();
@@ -88,7 +88,7 @@
                 utilities.sendRequest(parameters);
 
             } else {
-                $rootScope.notify("error", "Form Fields are not Valid!");
+                $rootScope.notify("error", "Form fields are not valid!");
                 vm.stopLoader();
             }
         };
