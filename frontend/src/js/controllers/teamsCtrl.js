@@ -118,13 +118,10 @@
                         parameters.token = userKey;
                         parameters.callback = {
                             onSuccess: function(response) {
-                                var status = response.status;
-                                var details = response.data;
                                 $state.go('web.challenge-page.overview');
                                 vm.stopLoader();
                             },
                             onError: function(response) {
-                                var status = response.status;
                                 var error = response.data;
                                 vm.existTeamError = "Please select a team";
                                 vm.stopLoader();
@@ -165,7 +162,6 @@
                             //Add headers with in your request
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
-                                var status = response.status;
                                 var details = response.data;
                                 vm.existTeam = details;
 
@@ -194,7 +190,6 @@
                 utilities.hideLoader();
             },
             onError: function(response) {
-                var status = response.status;
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -236,8 +231,6 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
-                    var status = response.status;
-                    var details = response.data;
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team.name = '';
@@ -277,15 +270,12 @@
                             }
                         },
                         onError: function(response) {
-                            var status = response.status;
-                            var error = response.data;
                             vm.stopExistLoader();
                         }
                     };
                     utilities.sendRequest(parameters);
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
 
                     vm.team.error = error.team_name[0];
@@ -318,7 +308,6 @@
                 parameters.callback = {
                     onSuccess: function(response) {
 
-                        var status = response.status;
                         var details = response.data;
                         vm.team.error = false;
                         $rootScope.notify("info", "You have removed yourself successfully");
@@ -367,8 +356,6 @@
                         utilities.sendRequest(parameters);
                     },
                     onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
                         vm.stopExistLoader();
                         $rootScope.notify("error", "couldn't remove you from the challenge");
                     }
@@ -404,13 +391,9 @@
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
-                        var status = response.status;
-                        var details = response.data;
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
                     onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
                         $rootScope.notify("error", "couldn't invite " + parameters.data.email + ". Please try again.");
                     }
                 };

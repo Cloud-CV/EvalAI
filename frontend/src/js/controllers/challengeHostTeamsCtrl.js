@@ -119,7 +119,6 @@
                             //Add headers with in your request
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
-                                var status = response.status;
                                 var details = response.data;
                                 vm.existTeam = details;
 
@@ -148,7 +147,6 @@
                 utilities.hideLoader();
             },
             onError: function(response) {
-                var status = response.status;
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -232,8 +230,6 @@
                             }
                         },
                         onError: function(response) {
-                            var status = response.status;
-                            var error = response.data;
                             vm.stopExistLoader();
                         }
                     };
@@ -241,9 +237,7 @@
 
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
-
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
                     $rootScope.notify("error", "New team couldn't be created.");
@@ -322,7 +316,6 @@
                         utilities.sendRequest(parameters);
                     },
                     onError: function(response) {
-                        var status = response.status;
                         var error = response.data;
                         vm.stopExistLoader();
                         $rootScope.notify("error", "couldn't remove you from the challenge");
@@ -358,12 +351,10 @@
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
-                        var status = response.status;
                         var details = response.data;
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
                     onError: function(response) {
-                        var status = response.status;
                         var error = response.data;
                         $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
                     }

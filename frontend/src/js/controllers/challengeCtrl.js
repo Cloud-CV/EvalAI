@@ -164,14 +164,12 @@
                                                 parameters.token = userKey;
                                                 parameters.callback = {
                                                     onSuccess: function(response) {
-                                                        var status = response.status;
                                                         var details = response.data;
                                                         vm.isParticipated = true;
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
-                                                        var status = response.status;
                                                         var error = response.data;
                                                         vm.existTeamError = "Please select a team";
                                                         vm.stopLoader();
@@ -212,7 +210,6 @@
                                                     //Add headers with in your request
                                                     $http.get(url, { headers: headers }).then(function(response) {
                                                         // reinitialized data
-                                                        var status = response.status;
                                                         var details = response.data;
                                                         vm.existTeam = details;
 
@@ -239,7 +236,6 @@
                                         utilities.hideLoader();
                                     },
                                     onError: function(response) {
-                                        var status = response.status;
                                         var error = response.data;
                                         utilities.storeData('emailError', error.detail);
                                         $state.go('web.permission-denied');
@@ -293,8 +289,6 @@
                                         parameters.token = userKey;
                                         parameters.callback = {
                                             onSuccess: function(response) {
-                                                var status = response.status;
-                                                var details = response.data;
                                                 // vm.input_file.name = '';
 
                                                 angular.forEach(
@@ -337,7 +331,6 @@
                             utilities.hideLoader();
                         },
                         onError: function(response) {
-                            var status = response.status;
                             var error = response.data;
                             utilities.hideLoader();
                         }
@@ -350,7 +343,6 @@
 
             },
             onError: function(response) {
-                var status = response.status;
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -368,7 +360,6 @@
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
-                var status = response.status;
                 var details = response.data;
                 vm.phases = details;
                 // navigate to challenge page
@@ -376,7 +367,6 @@
                 utilities.hideLoader();
             },
             onError: function(response) {
-                var status = response.status;
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -394,13 +384,11 @@
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
-                var status = response.status;
                 var details = response.data;
                 vm.phaseSplits = details;
                 utilities.hideLoader();
             },
             onError: function(response) {
-                var status = response.status;
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -452,7 +440,6 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    var status = response.status;
                     var details = response.data;
                     vm.leaderboard = details.results;
 
@@ -460,7 +447,6 @@
                     vm.stopLoader();
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
                     vm.leaderboard.error = error;
                     vm.stopLoader();
@@ -478,14 +464,12 @@
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
-                            var status = response.status;
                             var details = response.data;
                             if (vm.leaderboard.count !== details.results.count) {
                                 vm.showLeaderboardUpdate = true;
                             }
                         },
                         onError: function(response) {
-                            var status = response.status;
                             var error = response.data;
                             utilities.storeData('emailError', error.detail);
                             $state.go('web.permission-denied');
@@ -540,7 +524,6 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    var status = response.status;
                     var details = response.data;
                     vm.submissionResult = details;
                     vm.start();
@@ -602,7 +585,6 @@
                             //Add headers with in your request
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
-                                var status = response.status;
                                 var details = response.data;
                                 vm.submissionResult = details;
 
@@ -629,7 +611,6 @@
                     vm.stopLoader();
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
                     utilities.storeData('emailError', error.detail);
                     $state.go('web.permission-denied');
@@ -666,7 +647,6 @@
                             }
                         },
                         onError: function(response) {
-                            var status = response.status;
                             var error = response.data;
                             utilities.storeData('emailError', error.detail);
                             $state.go('web.permission-denied');
@@ -690,15 +670,12 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    var status = response.status;
                     var details = response.data;
                     vm.submissionResult = details;
                     vm.showUpdate = false;
                     vm.stopLoader();
                 },
                 onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
                     vm.stopLoader();
                 }
             };
@@ -715,14 +692,12 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    var status = response.status;
                     var details = response.data;
                     vm.leaderboard = details.results;
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
                     vm.leaderboard.error = error;
                     vm.stopLoader();
@@ -764,7 +739,6 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
-                    var status = response.status;
                     var details = response.data;
                     vm.team.error = false;
                     vm.stopLoader();
@@ -805,17 +779,13 @@
                             }
                         },
                         onError: function(response) {
-                            var status = response.status;
-                            var error = response.data;
                             vm.stopExistLoader();
                         }
                     };
                     utilities.sendRequest(parameters);
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
-
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
                     $rootScope.notify("error", "New team couldn't be created.");

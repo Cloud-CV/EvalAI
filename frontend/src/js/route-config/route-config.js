@@ -455,16 +455,12 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    var status = response.status;
-                    var details = response.data;
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
                     $rootScope.notify("info", "Logout Successfully");
                 },
                 onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
                 }
             };
 
@@ -479,12 +475,9 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    var status = response.status;
-                    var details = response.data;
                 },
                 onError: function(response) {
                     var status = response.status;
-                    var error = response.data;
                     if (status == 401) {
                         alert("Timeout, Please login again to continue!");
                         utilities.resetStorage();

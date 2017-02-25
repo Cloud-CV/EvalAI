@@ -38,7 +38,6 @@
 
         parameters.callback = {
             onSuccess: function(response) {
-                var status = response.status;
                 var data = response.data;
                 vm.currentList = data.results;
 
@@ -73,7 +72,6 @@
 
                 parameters.callback = {
                     onSuccess: function(response) {
-                        var status = response.status;
                         var data = response.data;
                         vm.upcomingList = data.results;
 
@@ -107,7 +105,6 @@
 
                         parameters.callback = {
                             onSuccess: function(response) {
-                                var status = response.status;
                                 var data = response.data;
                                 vm.pastList = data.results;
 
@@ -137,8 +134,6 @@
 
                             },
                             onError: function(response) {
-                                var status = response.status;
-                                var error = response.data;
                                 utilities.hideLoader();
                             }
                         };
@@ -147,8 +142,6 @@
 
                     },
                     onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
                         utilities.hideLoader();
                     }
                 };
@@ -157,8 +150,6 @@
 
             },
             onError: function(response) {
-                var status = response.status;
-                var error = response.data;
 
                 utilities.hideLoader();
             }

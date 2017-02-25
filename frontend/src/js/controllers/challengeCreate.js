@@ -35,13 +35,10 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    var status = response.status;
-                    var details = response.data;
                     // navigate to Challenge List Page
                     $state.go('web.challenge-main.challenge-list');
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
                     angular.forEach(error, function(value, key) {
                         if (key == 'title') {

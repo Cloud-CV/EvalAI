@@ -49,7 +49,6 @@
             parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
-                        var status = response.status;
                         var details = response.data;
                         vm.user.error = false;
                         $rootScope.notify("success", "Your password has been changed successfully!");
@@ -58,7 +57,6 @@
                         // $state.go('web.challenge-page.overview');
                     },
                     onError: function(response) {
-                        var status = response.status;
                         var error = response.data;
                         vm.user.error = "Failed";
                         vm.isFormError = true;

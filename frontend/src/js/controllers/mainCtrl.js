@@ -34,7 +34,6 @@
                 onError: function(response) {
 
                     var status = response.status;
-                    var error = response.data;
                     if (status == 401) {
                         alert("");
                         utilities.resetStorage();

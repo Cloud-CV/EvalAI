@@ -68,7 +68,6 @@
                 }
             },
             onError: function(response) {
-                var status = response.status;
                 var error = response.data;
                 alert("");
             }

@@ -243,14 +243,12 @@
 
                 parameters.callback = {
                     onSuccess: function(response) {
-                        var status = response.status;
                         var details = response.data;
                         vm.isResetPassword = true;
                         vm.deliveredMsg = details.detail;
                         vm.stopLoader();
                     },
                     onError: function(response) {
-                        var status = response.status;
                         var error = response.data;
                         var token_valid, password1_valid, password2_valid;
                         vm.isFormError = true;
