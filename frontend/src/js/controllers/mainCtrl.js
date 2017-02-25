@@ -1,5 +1,4 @@
 // Invoking IIFE
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -27,15 +26,14 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var response = response.data;
+                    var details = response.data;
                     if (status == 200) {
-                        vm.user.name = response.username;
+                        vm.user.name = details.username;
                     }
                 },
                 onError: function(response) {
 
                     var status = response.status;
-                    var error = response.data;
                     if (status == 401) {
                         alert("");
                         utilities.resetStorage();

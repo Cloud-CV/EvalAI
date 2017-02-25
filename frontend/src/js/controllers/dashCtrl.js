@@ -1,5 +1,4 @@
 // Invoking IIFE for dashboard
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -23,9 +22,9 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
+                var details = response.data;
                 if (status == 200) {
-                    vm.name = response.username;
+                    vm.name = details.username;
                 }
             },
             onError: function(response) {
