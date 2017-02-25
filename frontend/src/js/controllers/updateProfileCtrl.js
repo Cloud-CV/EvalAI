@@ -6,11 +6,11 @@
 
     angular
         .module('evalai')
-        .controller('updateprofileCtrl', updateprofileCtrl);
+        .controller('updateProfileCtrl', updateProfileCtrl);
 
-    updateprofileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    updateProfileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
 
-    function updateprofileCtrl(utilities, $state, $http, $rootScope) {
+    function updateProfileCtrl(utilities, $state, $http, $rootScope) {
         /* jshint validthis: true */
         var vm = this;
         var userKey = utilities.getData('userKey');
