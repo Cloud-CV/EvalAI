@@ -1,5 +1,4 @@
 // Invoking IIFE for teams
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -54,9 +53,9 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
+                var details = response.data;
                 if (status == 200) {
-                    vm.existTeam = response;
+                    vm.existTeam = details;
 
                     if (vm.existTeam.count === 0) {
                         vm.showPagination = false;
@@ -120,9 +119,8 @@
                             //Add headers with in your request
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
-                                var status = response.status;
-                                var response = response.data;
-                                vm.existTeam = response;
+                                var details = response.data;
+                                vm.existTeam = details;
 
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
@@ -149,7 +147,6 @@
                 utilities.hideLoader();
             },
             onError: function(response) {
-                var status = response.status;
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -192,8 +189,8 @@
                 onSuccess: function(response) {
                     $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
                     var status = response.status;
-                    var response = response.data;
-                    vm.teamId = response.id;
+                    var details = response.data;
+                    vm.teamId = details.id;
                     vm.team.error = false;
                     vm.team.name = '';
                     vm.stopLoader();
@@ -206,9 +203,9 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
-                            var response = response.data;
+                            var details = response.data;
                             if (status == 200) {
-                                vm.existTeam = response;
+                                vm.existTeam = details;
                                 vm.showPagination = true;
                                 vm.paginationMsg = '';
 
@@ -233,8 +230,6 @@
                             }
                         },
                         onError: function(response) {
-                            var status = response.status;
-                            var error = response.data;
                             vm.stopExistLoader();
                         }
                     };
@@ -242,9 +237,7 @@
 
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
-
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
                     $rootScope.notify("error", "New team couldn't be created.");
@@ -275,7 +268,7 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
-                        var response = response.data;
+                        var details = response.data;
                         vm.team.error = false;
                         $rootScope.notify("info", "You have removed yourself successfully");
 
@@ -286,9 +279,9 @@
                         parameters.callback = {
                             onSuccess: function(response) {
                                 var status = response.status;
-                                var response = response.data;
+                                var details = response.data;
                                 if (status == 200) {
-                                    vm.existTeam = response;
+                                    vm.existTeam = details;
 
 
                                     // condition for pagination
@@ -323,7 +316,6 @@
                         utilities.sendRequest(parameters);
                     },
                     onError: function(response) {
-                        var status = response.status;
                         var error = response.data;
                         vm.stopExistLoader();
                         $rootScope.notify("error", "couldn't remove you from the challenge");
@@ -359,12 +351,10 @@
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
-                        var status = response.status;
-                        var response = response.data;
+                        var details = response.data;
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
                     onError: function(response) {
-                        var status = response.status;
                         var error = response.data;
                         $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
                     }
