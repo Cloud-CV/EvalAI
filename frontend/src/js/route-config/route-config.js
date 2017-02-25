@@ -316,6 +316,17 @@
             title: "Our Team"
         };
 
+        var update_profile = {
+            name: "web.update-profile",
+            parent: "web",
+            url: "/update-profile",
+            templateUrl: baseUrl + "/web/update-profile.html",
+            title: "Update Profile",
+            controller: 'updateProfileCtrl',
+            controllerAs: 'updateProfile',
+            authenticate: true
+        };
+
 
         // call all states here
         $stateProvider.state(home);
@@ -364,6 +375,7 @@
         $stateProvider.state(error_500);
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
+        $stateProvider.state(update_profile);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
