@@ -309,11 +309,19 @@
             templateUrl: baseUrl + "/web/about-us.html",
             title: "About Us"
         };
+
         var our_team = {
             name: 'our-team',
             url: "/team",
             templateUrl: baseUrl + "/web/our-team.html",
             title: "Our Team"
+        };
+
+        var join_our_team = {
+            name: 'join-our-team',
+            url: "/join",
+            templateUrl: baseUrl + "/web/join-our-team.html",
+            title: "Join Our Team"
         };
 
         var update_profile = {
@@ -375,6 +383,7 @@
         $stateProvider.state(error_500);
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
+        $stateProvider.state(join_our_team);
         $stateProvider.state(update_profile);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
