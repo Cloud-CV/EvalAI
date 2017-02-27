@@ -1,7 +1,6 @@
 /**
  * Config for the router
  */
-/* jshint shadow:true */
 
 (function() {
     angular
@@ -317,6 +316,17 @@
             title: "Our Team"
         };
 
+        var update_profile = {
+            name: "web.update-profile",
+            parent: "web",
+            url: "/update-profile",
+            templateUrl: baseUrl + "/web/update-profile.html",
+            title: "Update Profile",
+            controller: 'updateProfileCtrl',
+            controllerAs: 'updateProfile',
+            authenticate: true
+        };
+
 
         // call all states here
         $stateProvider.state(home);
@@ -365,6 +375,7 @@
         $stateProvider.state(error_500);
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
+        $stateProvider.state(update_profile);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
@@ -456,16 +467,12 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
                     $rootScope.notify("info", "Logout Successfully");
                 },
                 onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
                 }
             };
 
@@ -480,12 +487,9 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
                 },
                 onError: function(response) {
                     var status = response.status;
-                    var error = response.data;
                     if (status == 401) {
                         alert("Timeout, Please login again to continue!");
                         utilities.resetStorage();
