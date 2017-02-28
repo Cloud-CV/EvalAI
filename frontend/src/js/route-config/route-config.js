@@ -319,7 +319,7 @@
 
         var join_our_team = {
             name: 'join-our-team',
-            url: "/join",
+            url: "/join-us",
             templateUrl: baseUrl + "/web/join-our-team.html",
             title: "Join Our Team"
         };
