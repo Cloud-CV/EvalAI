@@ -327,6 +327,13 @@
             authenticate: true
         };
 
+        var contact_us = {
+            name: "contact-us",
+            url: "/contact",
+            templateUrl: baseUrl + "/web/contact-us.html",
+            title: "Contact  Us"
+        };
+
 
         // call all states here
         $stateProvider.state(home);
@@ -376,6 +383,7 @@
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
         $stateProvider.state(update_profile);
+        $stateProvider.state(contact_us);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
