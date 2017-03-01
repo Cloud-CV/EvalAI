@@ -27,7 +27,7 @@
         vm.poller = null;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
-        
+
         // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
@@ -634,10 +634,9 @@
                         onSuccess: function(response) {
                             var status = response.status;
                             var details = response.data;
-                            if (vm.submissionResult.results.count !== details.results.count){
-                                vm.showUpdate = true; 
-                            }
-                            else {
+                            if (vm.submissionResult.results.count !== details.results.count) {
+                                vm.showUpdate = true;
+                            } else {
                                 for (var i = 0; i < details.results.length; i++) {
                                     if (details.results[i].status !== vm.submissionResult.results[i].status) {
                                         vm.showUpdate = true;
@@ -706,7 +705,7 @@
 
             utilities.sendRequest(parameters);
         };
-        
+
         // function to create new team for participating in challenge
         vm.createNewTeam = function() {
             vm.isLoader = true;
