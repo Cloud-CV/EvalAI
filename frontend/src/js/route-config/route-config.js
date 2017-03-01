@@ -479,7 +479,7 @@
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
-                    $rootScope.notify("info", "Logout Successfully");
+                    $rootScope.notify("info", "Successfully logged out!");
                 },
                 onError: function(response) {
                 }
