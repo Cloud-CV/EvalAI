@@ -24,9 +24,8 @@ class RandomFileName(object):
 
     def __call__(self, instance, filename):
         extension = os.path.splitext(filename)[1]
-        if instance.pk:
-            filename = '{}_{}{}'.format(instance.pk, uuid.uuid4(), extension)
-        else:
-            filename = '{}{}'.format(uuid.uuid4(), extension)
+        if 'id' in self.path and instance.pk:
+            self.path = self.path.format(id=instance.pk)
+        filename = '{}{}'.format(uuid.uuid4(), extension)
         filename = os.path.join(self.path, filename)
         return filename
