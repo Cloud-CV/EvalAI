@@ -39,6 +39,12 @@
             color: $highlight;
             background-color: rgba(0, 0, 0, 0);
         }
+        a.main-header-link {
+            i.fa {
+                position: fixed;
+                left: 20px;
+            }
+        }
     }
     nav.grad-shadow-1 {
         box-shadow: 0 0 10px $light-black;
