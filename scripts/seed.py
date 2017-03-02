@@ -12,6 +12,7 @@ import random
 
 from challenges.models import Challenge, ChallengePhase, DatasetSplit
 from hosts.models import ChallengeHostTeam, ChallengeHost
+from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
 from web.models import Team, Contact
 
@@ -34,7 +35,7 @@ def seed_challenge_host_team():
     fake = Factory.create()
     for i in range(20):
         user = random.choice(User.objects.filter(is_staff=False))
-        team_name="%s %ss" % (fake.city(), fake.color_name())
+        team_name = "%s %ss" % (fake.city(), fake.color_name())
         team=ChallengeHostTeam.objects.create(
             team_name=team_name,
             created_by=user,
@@ -47,8 +48,8 @@ def seed_participant_team():
     fake = Factory.create()
     for i in range(20):
         user = random.choice(User.objects.filter(is_staff=False))
-        team_name="%s %ss" % (fake.city(), fake.color_name())
-        team=ParticipantTeam.objects.create(
+        team_name = "%s %ss" % (fake.city(), fake.color_name())
+        team = ParticipantTeam.objects.create(
             team_name=team_name,
             created_by=user,
         )
@@ -64,6 +65,7 @@ def seed_challenge():
             description=fake.paragraph(),
             terms_and_conditions=fake.paragraph(),
             submission_guidelines=fake.paragraph(),
+            evaluation_details=fake.paragraph(),
             creator=random.choice(ChallengeHostTeam.objects.all()),
             published=fake.boolean(chance_of_getting_true=70),
             enable_forum=fake.boolean(chance_of_getting_true=70),
@@ -71,6 +73,12 @@ def seed_challenge():
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+    challenges = Challenge.objects.all()
+    for challenge in challenges:
+        participant_teams = ParticipantTeam.objects.order_by('?')[:random.choice(range(1,10))]
+        for participant_team in participant_teams:
+            challenge.participant_teams.add(participant_team)
+            challenge.save()
     print "Challenge model seeded"
 
 
@@ -80,17 +88,22 @@ def seed_challenge_phase():
     for challenge in challenges:
         start_date = challenge.start_date
         end_date = challenge.end_date
-        ChallengePhase.objects.create(
-            name="%s Phase" % (fake.first_name()),
-            description=fake.paragraph(),
-            leaderboard_public=fake.boolean(chance_of_getting_true=70),
-            is_public=fake.boolean(chance_of_getting_true=70),
-            start_date=start_date,
-            end_date=end_date - timedelta(days=1),
-            challenge=challenge,
-            test_annotation=SimpleUploadedFile(fake.file_name(extension="txt"),
-                                               'Dummy file content', content_type='text/plain')
-        )
+        number_of_phases = random.choice([1, 2, 3, 4])
+        total_challenge_time = end_date - start_date
+        single_phase_time = total_challenge_time / number_of_phases
+        for i in range(number_of_phases):
+            ChallengePhase.objects.create(
+                name="%s Phase" % (fake.first_name()),
+                description=fake.paragraph(),
+                leaderboard_public=fake.boolean(chance_of_getting_true=70),
+                is_public=fake.boolean(chance_of_getting_true=70),
+                start_date=start_date + (single_phase_time * i),
+                end_date=start_date + (single_phase_time * (i + 1)),
+                challenge=challenge,
+                test_annotation=SimpleUploadedFile(fake.file_name(extension="txt"),
+                                                   'Dummy file content', content_type='text/plain'),
+                codename="%s%d" % (fake.random_letter(), fake.random_int(min=0, max=999)),
+            )
     print "Challenge Phase model seeded."
 
 
@@ -105,7 +118,22 @@ def seed_dataset_splits():
 
 
 def seed_submission():
-    pass
+    fake = Factory.create()
+    challenge_phases = ChallengePhase.objects.all()
+    for challenge_phase in challenge_phases:
+        challenge_participant_teams = challenge_phase.challenge.participant_teams.all()
+        for challenge_participant_team in challenge_participant_teams:
+            participants = Participant.objects.filter(team=challenge_participant_team)
+            for participant in participants:
+                Submission.objects.create(
+                    participant_team=challenge_participant_team,
+                    challenge_phase=challenge_phase,
+                    created_by=participant.user,
+                    input_file=SimpleUploadedFile(fake.file_name(extension="txt"),
+                                                  'Dummy File content', content_type='text/plain'),
+                    status="submitting",
+                )
+    print "Submission model seeded."
 
 
 def seed_team():
@@ -140,5 +168,6 @@ seed_challenge_host_team()
 seed_participant_team()
 seed_challenge()
 seed_challenge_phase()
+seed_submission()
 seed_dataset_splits()
 seed_team()
