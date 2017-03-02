@@ -3,7 +3,7 @@
     <div class="ev-md-container center">
         <img ng-src="{{profile.imgUrl}}" height="80" width="auto">
         <div>{{profile.user.username}}</div>
-        <div class="text-light-gray	w-300">{{profile.user.email}}</div>
+        <div class="text-light-gray w-300">{{profile.user.email}}</div>
         <ul>
             <li>
                 <span class="text-light-gray fs-12">First Name<br> </span> {{profile.user.first_name}}
@@ -13,10 +13,6 @@
             </li>
             <li>
                 <span class="text-light-gray fs-12">Affiliated To<br></span> -
-            </li>
-            <li>
-                <input type="checkbox" class="filled-in fs-14" ng-model="auth.isSub" id="sub">
-                <label for="sub">Subscribe to email list</label>
             </li>
         </ul>
         <div class="text-highlight align-left">Profile Completed : <span class="text-white">{{profile.user.complete}}%</span></div>

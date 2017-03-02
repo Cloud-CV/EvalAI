@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('profileCtrl', profileCtrl);
 
-    profileCtrl.$inject = ['utilities', '$state', '$stateParams', '$rootScope'];
+    profileCtrl.$inject = ['utilities', '$rootScope'];
 
-    function profileCtrl(utilities, $state, $stateParams, $rootScope) {
+    function profileCtrl(utilities, $rootScope) {
         /* jshint validthis: true */
         var vm = this;
 
