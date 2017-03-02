@@ -14,7 +14,7 @@ from challenges.models import Challenge, ChallengePhase, DatasetSplit
 from hosts.models import ChallengeHostTeam, ChallengeHost
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
-from web.models import Team, Contact
+from web.models import Team
 
 
 def seed_user_and_mail():
@@ -55,7 +55,8 @@ def seed_participant_team():
         )
         Participant.objects.create(user=user, team=team, status="Self")
         number_of_participants = random.choice(range(1, 4))
-        partcipants_to_be = User.objects.exclude(username=user.username, is_staff=True).all().order_by('?')[:number_of_participants]
+        partcipants_to_be = User.objects.exclude(
+            username=user.username, is_staff=True).all().order_by('?')[:number_of_participants]
         for partcipant in partcipants_to_be:
             Participant.objects.create(user=partcipant, team=team, status="Accepted")
     print "Participant Team Model seeded."
@@ -79,7 +80,7 @@ def seed_challenge():
         )
     challenges = Challenge.objects.all()
     for challenge in challenges:
-        participant_teams = ParticipantTeam.objects.order_by('?')[:random.choice(range(1,10))]
+        participant_teams = ParticipantTeam.objects.order_by('?')[:random.choice(range(1, 10))]
         for participant_team in participant_teams:
             challenge.participant_teams.add(participant_team)
             challenge.save()
@@ -160,7 +161,7 @@ def seed_team():
                     content=open('frontend/src/images/deshraj-profile.jpg', 'rb').read(),
                     content_type='image/jpg'
                 ),
-                team_type=random.choice(['Core Team', 'Contributor',]),
+                team_type=random.choice(['Core Team', 'Contributor']),
                 visible=fake.boolean(chance_of_getting_true=70),
         )
     print "Team model seeded."
