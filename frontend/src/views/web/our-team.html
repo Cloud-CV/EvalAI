@@ -1,124 +1,69 @@
 <div class="white-bg view-container">
     <main-header></main-header>
     <div class="grad-container">
-        <h4 class="team-heading">Team Awesome!</h4>
+        <h4 class="team-heading">{{ourTeam.coreTeamType}}</h4>
         <div class="row">
-            <!-- integrate this card with API -->
-            <div class="col s12 l3 ">
+            <!-- This card is for Core Team -->
+            <div class="col s12 l3" ng-repeat="data in ourTeam.coreTeamDetails">
                 <div class="team-card">
                     <div class="team-link-head">
                         <span>
-    				<a href="http://deshraj.github.io/"><i class="fa fa-linkedin"></i></a>
-    			</span>
+                    <a ng-if="data.linkedin_url !== 'null'" href="{{data.linkedin_url}}"><i class="fa fa-linkedin"></i></a>
+                </span>
                         <span>
-    				<a href="http://deshraj.github.io/"><i class="fa fa-github"></i></a>
-    			</span>
+                    <a ng-if="data.github_url !== 'null'" href="{{data.github_url}}"><i class="fa fa-github"></i></a>
+                </span>
                         <span class="right link-team-user">
-    				<a href="http://deshraj.github.io/">deshraj.github.io</a>
-    			</span>
+                    <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}">My Profile</a>
+                </span>
                     </div>
                     <div class="team-bg">
-                        <img src="dist/images/deshraj-profile.jpg">
+                        <img src="{{data.background_image || '#'}}">
                     </div>
                     <div class="team-bg-over">
                         <img src="dist/images/team-over.png">
                     </div>
                     <div class="team-profile">
-                        <img src="dist/images/deshraj.png">
+                        <img src="{{data.headshot || 'dist/images/logo.png'}}">
                     </div>
                     <div class="team-player">
-                        <div><strong class="text-dark-black">Deshraj Yadav</strong></div>
-                        <div class="text-med-black">Because I love <i class="fa fa-beer"></i></div>
+                        <div><strong class="text-dark-black">{{data.name}}</strong></div>
+                        <div class="text-med-black">{{data.description}}<i class="fa fa-beer"></i></div>
                     </div>
                 </div>
             </div>
-            <!-- ///////////////// -->
-            <!-- dummy cards -->
-            <div class="col s12 l3 ">
+        </div>
+        <!-- This card is for Contributing Team -->
+        <h4 class="team-heading">{{ourTeam.contributingTeamType}}</h4>
+        <div class="row">
+            <div class="col s12 l3" ng-repeat="data in ourTeam.contributingTeamDetails">
                 <div class="team-card">
                     <div class="team-link-head">
                         <span>
-    				<a href="http://deshraj.github.io/"><i class="fa fa-linkedin"></i></a>
-    			</span>
+                    <a ng-if="data.linkedin_url !== 'null'" href="{{data.linkedin_url}}"><i class="fa fa-linkedin"></i></a>
+                </span>
                         <span>
-    				<a href="http://deshraj.github.io/"><i class="fa fa-github"></i></a>
-    			</span>
+                    <a ng-if="data.github_url !== 'null'" href="{{data.github_url}}"><i class="fa fa-github"></i></a>
+                </span>
                         <span class="right link-team-user">
-    				<a href="http://deshraj.github.io/">deshraj.github.io</a>
-    			</span>
+                    <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}">My Profile</a>
+                </span>
                     </div>
                     <div class="team-bg">
-                        <img src="dist/images/deshraj-profile.jpg">
+                        <img src="{{data.background_image || '#'}}">
                     </div>
                     <div class="team-bg-over">
                         <img src="dist/images/team-over.png">
                     </div>
                     <div class="team-profile">
-                        <img src="dist/images/deshraj.png">
+                        <img src="{{data.headshot || 'dist/images/logo.png'}}">
                     </div>
                     <div class="team-player">
-                        <div><strong class="text-dark-black">Deshraj Yadav</strong></div>
-                        <div class="text-med-black">Because I love <i class="fa fa-beer"></i></div>
+                        <div><strong class="text-dark-black">{{data.name}}</strong></div>
+                        <div class="text-med-black">{{data.description}}<i class="fa fa-beer"></i></div>
                     </div>
                 </div>
             </div>
-            <div class="col s12 l3 ">
-                <div class="team-card">
-                    <div class="team-link-head">
-                        <span>
-    				<a href="http://deshraj.github.io/"><i class="fa fa-linkedin"></i></a>
-    			</span>
-                        <span>
-    				<a href="http://deshraj.github.io/"><i class="fa fa-github"></i></a>
-    			</span>
-                        <span class="right link-team-user">
-    				<a href="http://deshraj.github.io/">deshraj.github.io</a>
-    			</span>
-                    </div>
-                    <div class="team-bg">
-                        <img src="dist/images/deshraj-profile.jpg">
-                    </div>
-                    <div class="team-bg-over">
-                        <img src="dist/images/team-over.png">
-                    </div>
-                    <div class="team-profile">
-                        <img src="dist/images/deshraj.png">
-                    </div>
-                    <div class="team-player">
-                        <div><strong class="text-dark-black">Deshraj Yadav</strong></div>
-                        <div class="text-med-black">Because I love <i class="fa fa-beer"></i></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12 l3 ">
-                <div class="team-card">
-                    <div class="team-link-head">
-                        <span>
-    				<a href="http://deshraj.github.io/"><i class="fa fa-linkedin"></i></a>
-    			</span>
-                        <span>
-    				<a href="http://deshraj.github.io/"><i class="fa fa-github"></i></a>
-    			</span>
-                        <span class="right link-team-user">
-    				<a href="http://deshraj.github.io/">deshraj.github.io</a>
-    			</span>
-                    </div>
-                    <div class="team-bg">
-                        <img src="dist/images/deshraj-profile.jpg">
-                    </div>
-                    <div class="team-bg-over">
-                        <img src="dist/images/team-over.png">
-                    </div>
-                    <div class="team-profile">
-                        <img src="dist/images/deshraj.png">
-                    </div>
-                    <div class="team-player">
-                        <div><strong class="text-dark-black">Deshraj Yadav</strong></div>
-                        <div class="text-med-black">Because I love <i class="fa fa-beer"></i></div>
-                    </div>
-                </div>
-            </div>
-            <!-- ////////////////////// -->
         </div>
     </div>
 </div>
