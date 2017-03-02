@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('ourTeamCtrl', ourTeamCtrl);
 
-    ourTeamCtrl.$inject = ['utilities', '$state', '$rootScope', '$mdDialog'];
+    ourTeamCtrl.$inject = ['utilities'];
 
-    function ourTeamCtrl(utilities, $state, $rootScope, $mdDialog) {
+    function ourTeamCtrl(utilities) {
         /* jshint validthis: true */
         var vm = this;
 
@@ -21,7 +21,7 @@
             onSuccess: function(response) {
                 var status = response.status;
                 var results = response.data;
-                if (status == 200) {
+                if ((status == 200) && results.length) {
                     var coreTeamList = [];
                     var contributingTeamList = [];
                     for (var i = 0; i < results.length; i++) {
@@ -36,6 +36,9 @@
                         vm.coreTeamDetails = coreTeamList;
                         vm.contributingTeamDetails = contributingTeamList;
                     }
+                }
+                else {
+                    vm.noTeamDisplay = "Team will be updated very soon !"
                 }
             }
         };

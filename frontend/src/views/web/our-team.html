@@ -3,6 +3,7 @@
     <div class="grad-container">
         <h4 class="team-heading">{{ourTeam.coreTeamType}}</h4>
         <div class="row">
+        <h5 ng-if="ourTeam.noTeamDisplay" class="team-heading">{{ourTeam.noTeamDisplay}}</h5>
             <!-- This card is for Core Team -->
             <div class="col s12 l3" ng-repeat="data in ourTeam.coreTeamDetails">
                 <div class="team-card">
