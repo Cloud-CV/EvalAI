@@ -44,3 +44,11 @@
         box-shadow: 0 0 10px $light-black;
     }
 }
+
+@media only screen and (max-width: $med-screen){
+    .main-header {
+        nav{
+            padding: 0px 30px;
+        }
+    }
+}
