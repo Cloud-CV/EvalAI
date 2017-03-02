@@ -89,9 +89,8 @@ section.bg-section {
 
 .ev-details {
     position: relative;
-    left: 0;
-    height: 100vh;
-    background-color: #fff;
+    box-shadow: 6px 0px 12px #e0e0e0;
+    padding: 0px 0px 40px 0px;
 }
 
 .full-view {
@@ -106,32 +105,6 @@ section.bg-section {
     top: 0px;
     z-index: 9;
     width: calc(100vw - 220px);
-}
-
-
-/*media queries*/
-
-@media only screen and (max-width: $med-screen) {
-    .dyn-header {
-        nav {
-            a.org-link {
-                float: right;
-                padding-right: 20px;
-            }
-        }
-    }
-    .ev-head {
-        margin-top: 40px;
-    }
-    .ev-head-small {
-        margin-top: 20px;
-    }
-    .ev-insight {
-        bottom: 0px;
-    }
-    .sim-header {
-        width: 100%;
-    }
 }
 
 .grad-head {
@@ -298,4 +271,51 @@ section.bg-section {
 
 .grad-vh {
     min-height: 100vh;
+}
+
+.landing-is {
+    font-size: 126px;
+    margin-top: 34px;
+}
+
+.is-line,
+.big-line {
+    display: block;
+    height: 2px;
+    width: 50px;
+    background: $highlight;
+    margin-top: 22px;
+}
+
+.big-line {
+    width: 100px;
+    height: 1px;
+    margin: 8px 0px 12px 0px;
+    background: $light-black;
+}
+
+
+/*media queries*/
+
+@media only screen and (max-width: $med-screen) {
+    .dyn-header {
+        nav {
+            a.org-link {
+                float: right;
+                padding-right: 20px;
+            }
+        }
+    }
+    .ev-head {
+        margin-top: 40px;
+    }
+    .ev-head-small {
+        margin-top: 20px;
+    }
+    .ev-insight {
+        bottom: 0px;
+    }
+    .sim-header {
+        width: 100%;
+    }
 }

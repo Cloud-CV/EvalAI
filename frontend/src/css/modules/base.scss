@@ -120,6 +120,14 @@ span.inline {
     background-color: $light-gray;
 }
 
+.ev-black-bg {
+    /*background-color: $grad-black;*/
+}
+
+.ev-super-light-bg {
+    background-color: $grad-super-light;
+}
+
 
 /*main intro page*/
 
@@ -710,6 +718,13 @@ input {
     input:checked + .info-text {
         display: block;
     }
+}
+
+
+/*default margins*/
+
+.mt-12 {
+    margin-top: 12px;
 }
 
 
