@@ -36,7 +36,7 @@ def seed_challenge_host_team():
     for i in range(20):
         user = random.choice(User.objects.filter(is_staff=False))
         team_name = "%s %ss" % (fake.city(), fake.color_name())
-        team=ChallengeHostTeam.objects.create(
+        team = ChallengeHostTeam.objects.create(
             team_name=team_name,
             created_by=user,
         )
@@ -54,6 +54,10 @@ def seed_participant_team():
             created_by=user,
         )
         Participant.objects.create(user=user, team=team, status="Self")
+        number_of_participants = random.choice(range(1, 4))
+        partcipants_to_be = User.objects.exclude(username=user.username, is_staff=True).all().order_by('?')[:number_of_participants]
+        for partcipant in partcipants_to_be:
+            Participant.objects.create(user=partcipant, team=team, status="Accepted")
     print "Participant Team Model seeded."
 
 
@@ -163,6 +167,7 @@ def seed_team():
 
 
 print "Starting database seeder, Hang on :)"
+
 seed_user_and_mail()
 seed_challenge_host_team()
 seed_participant_team()
