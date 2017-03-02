@@ -246,7 +246,7 @@
             url: "/profile",
             templateUrl: baseUrl + "/web/profile.html",
             title: "Profile",
-            controller: 'ProfileCtrl',
+            controller: 'profileCtrl',
             controllerAs: 'profile',
             authenticate: true
         };
