@@ -119,25 +119,15 @@ section.bg-section {
     width: 150px;
     padding-right: 50px;
     position: absolute;
+    left: 62%;
+    z-index: 0;
     /* margin: auto; */
     margin-top: 21vh;
-    right: 0;
-    z-index: 10;
     /*animation: rocket 4s alternate infinite;*/
     img {
         width: 100%;
     }
 }
-
-
-/*@keyframes rocket {
-    0% {
-        margin-top: 10vh;
-    }
-    100% {
-        margin-top: 35vh;
-    }
-}*/
 
 .insight-text {
     color: $light-black;
@@ -148,6 +138,10 @@ section.bg-section {
 
 .rocket-container {
     position: relative;
+}
+
+.small-cloud {
+    z-index: 0;
 }
 
 .cloud-1 {
@@ -163,11 +157,9 @@ section.bg-section {
 
 @keyframes cloud-one {
     0% {
-        /*right: 0;*/
         top: -100px;
     }
     100% {
-        /*right: 100px;*/
         top: 100vh;
     }
 }
@@ -186,11 +178,9 @@ section.bg-section {
 
 @keyframes cloud-two {
     0% {
-        /*right: 0;*/
         top: -140px;
     }
     100% {
-        /*right: 100px;*/
         top: 100vh;
     }
 }
@@ -208,11 +198,9 @@ section.bg-section {
 
 @keyframes cloud-three {
     0% {
-        /*right: 0;*/
         top: -120px;
     }
     100% {
-        /*right: 100px;*/
         top: 100vh;
     }
 }
@@ -230,11 +218,9 @@ section.bg-section {
 
 @keyframes cloud-four {
     0% {
-        /*right: 0;*/
         top: -80px;
     }
     100% {
-        /*right: 100px;*/
         top: 100vh;
     }
 }
@@ -253,11 +239,9 @@ section.bg-section {
 
 @keyframes bird {
     0% {
-        /*right: 0;*/
         top: -300px;
     }
     100% {
-        /*right: 100px;*/
         top: 100vh;
     }
 }
