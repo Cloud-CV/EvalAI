@@ -118,22 +118,15 @@ section.bg-section {
 .rocket-anim {
     width: 150px;
     padding-right: 50px;
-    position: absolute;
+    position: fixed;
+    left: 62%;
+    z-index: 0;
     /* margin: auto; */
+    margin-top: 21vh;
     right: 0;
-    z-index: 10;
-    animation: rocket 4s alternate infinite;
+    /*animation: rocket 4s alternate infinite;*/
     img {
         width: 100%;
-    }
-}
-
-@keyframes rocket {
-    0% {
-        margin-top: 10vh;
-    }
-    100% {
-        margin-top: 35vh;
     }
 }
 
@@ -148,12 +141,16 @@ section.bg-section {
     position: relative;
 }
 
+.small-cloud {
+    z-index: 0;
+}
+
 .cloud-1 {
     width: 80px;
     position: absolute;
     right: 0;
-    top: 10vh;
-    animation: cloud-one 4s alternate linear infinite;
+    top: -1-0px;
+    animation: cloud-one 7s linear infinite;
     img {
         width: 100%;
     }
@@ -161,24 +158,10 @@ section.bg-section {
 
 @keyframes cloud-one {
     0% {
-        /*right: 0;*/
-        width: 80px;
-    }
-    20% {
-        width: 90px
-    }
-    40% {
-        width: 80px;
-    }
-    60% {
-        width: 90px;
-    }
-    80% {
-        width: 80px
+        top: -100px;
     }
     100% {
-        /*right: 100px;*/
-        width: 90px;
+        top: 100vh;
     }
 }
 
@@ -186,8 +169,9 @@ section.bg-section {
     width: 100px;
     position: absolute;
     right: 150px;
-    top: 25vh;
-    animation: cloud-two 6s alternate linear infinite;
+    top: -140px;
+    animation: cloud-two 10s linear infinite;
+    animation-delay: 5s;
     img {
         width: 100%;
     }
@@ -195,33 +179,19 @@ section.bg-section {
 
 @keyframes cloud-two {
     0% {
-        /*right: 0;*/
-        width: 100px;
-    }
-    20% {
-        width: 90px
-    }
-    40% {
-        width: 100px;
-    }
-    60% {
-        width: 90px;
-    }
-    80% {
-        width: 100px
+        top: -140px;
     }
     100% {
-        /*right: 100px;*/
-        width: 90px;
+        top: 100vh;
     }
 }
 
 .cloud-3 {
     width: 100px;
     position: absolute;
-    right: -10px;
-    top: 35vh;
-    animation: cloud-three 6s alternate linear infinite;
+    right: -60px;
+    top: -120px;
+    animation: cloud-three 8s linear infinite;
     img {
         width: 100%;
     }
@@ -229,24 +199,51 @@ section.bg-section {
 
 @keyframes cloud-three {
     0% {
-        /*right: 0;*/
-        width: 70px;
-    }
-    20% {
-        width: 80px
-    }
-    40% {
-        width: 70px;
-    }
-    60% {
-        width: 80px;
-    }
-    80% {
-        width: 70px
+        top: -120px;
     }
     100% {
-        /*right: 100px;*/
-        width: 80px;
+        top: 100vh;
+    }
+}
+
+.cloud-4 {
+    width: 100px;
+    position: absolute;
+    right: 120px;
+    top: -120px;
+    animation: cloud-four 14s linear infinite;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes cloud-four {
+    0% {
+        top: -80px;
+    }
+    100% {
+        top: 100vh;
+    }
+}
+
+.bird-anim {
+    width: 200px;
+    position: absolute;
+    right: 0px;
+    top: -300px;
+    animation: bird 15s linear infinite;
+    animation-delay: 4s;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes bird {
+    0% {
+        top: -300px;
+    }
+    100% {
+        top: 100vh;
     }
 }
 
