@@ -468,7 +468,7 @@
                 return (typeof arg === undefined ? def : arg);
             }
 
-            timeout = pick(timeout, 4000);
+            timeout = pick(timeout, 3000);
             toaster.pop({
                 type: type,
                 body: message,
