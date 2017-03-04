@@ -477,10 +477,12 @@ def main():
         exchange=RABBITMQ_PARAMETERS.get('EXCHANGE_NAME', None),
         queue=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('NAME', None),
         routing_key='submission.*.*')
-    channel.basic_consume(process_submission_callback,
+    channel.basic_consume(
+        process_submission_callback,
         queue=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('NAME', None))
 
-    channel.queue_bind(exchange=RABBITMQ_PARAMETERS.get('EXCHANGE_NAME', None),
+    channel.queue_bind(
+        exchange=RABBITMQ_PARAMETERS.get('EXCHANGE_NAME', None),
         queue=add_challenge_queue_name, routing_key='challenge.add.*')
     channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
 
