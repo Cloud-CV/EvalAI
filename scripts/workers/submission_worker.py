@@ -48,7 +48,7 @@ from challenges.models import (Challenge,
                                LeaderboardData) # noqa
 
 from jobs.models import Submission          # noqa
-from settings.common import RABBITMQ_PARAMETERS
+from settings.common import RABBITMQ_PARAMETERS        # noqa
 
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'challenge_data')
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'submission_files')
