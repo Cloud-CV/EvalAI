@@ -9,3 +9,9 @@
 		box-shadow: 0 0 6px #9d9d9d;
 	}
 }
+
+@media only screen and (max-width: 992px) {
+  	#toast-container {
+		display: none;
+	}
+}
