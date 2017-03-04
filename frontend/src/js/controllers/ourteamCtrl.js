@@ -42,9 +42,7 @@
                     }
                 }
             },
-            onError: function(response) {
-                vm.noTeamDisplay = "Team will be updated very soon !";
-            }
+            onError: function(response) {}
         };
 
         utilities.sendRequest(parameters, "no-header");
