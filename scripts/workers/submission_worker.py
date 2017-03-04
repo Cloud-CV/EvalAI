@@ -48,7 +48,7 @@ from challenges.models import (Challenge,
                                LeaderboardData) # noqa
 
 from jobs.models import Submission          # noqa
-
+from settings.common import RABBITMQ_PARAMETERS
 
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'challenge_data')
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'submission_files')
@@ -446,12 +446,13 @@ def main():
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     load_active_challenges()
-
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='localhost'))
+        host=RABBITMQ_PARAMETERS.get('HOST', None)))
 
     channel = connection.channel()
-    channel.exchange_declare(exchange='evalai_submissions', type='topic')
+    channel.exchange_declare(
+        exchange=RABBITMQ_PARAMETERS.get('EXCHANGE_NAME', None),
+        type=RABBITMQ_PARAMETERS.get('EXCHANGE_TYPE', None))
 
     # name can be a combination of hostname + process id
     # host name : to easily identify that the worker is running on which instance
@@ -459,7 +460,9 @@ def main():
     add_challenge_queue_name = '{hostname}_{process_id}'.format(hostname=socket.gethostname(),
                                                                 process_id=str(os.getpid()))
 
-    channel.queue_declare(queue='submission_task_queue', durable=True)
+    channel.queue_declare(
+        queue=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('NAME', None),
+        durable=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('DURABLE', None))
 
     # reason for using `exclusive` instead of `autodelete` is that
     # challenge addition queue should have only have one consumer on the connection
@@ -470,10 +473,15 @@ def main():
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
 
-    channel.queue_bind(exchange='evalai_submissions', queue='submission_task_queue', routing_key='submission.*.*')
-    channel.basic_consume(process_submission_callback, queue='submission_task_queue')
+    channel.queue_bind(
+        exchange=RABBITMQ_PARAMETERS.get('EXCHANGE_NAME', None),
+        queue=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('NAME', None),
+        routing_key='submission.*.*')
+    channel.basic_consume(process_submission_callback,
+        queue=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('NAME', None))
 
-    channel.queue_bind(exchange='evalai_submissions', queue=add_challenge_queue_name, routing_key='challenge.add.*')
+    channel.queue_bind(exchange=RABBITMQ_PARAMETERS.get('EXCHANGE_NAME', None),
+        queue=add_challenge_queue_name, routing_key='challenge.add.*')
     channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
 
     channel.start_consuming()
