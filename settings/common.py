@@ -264,7 +264,7 @@ CACHES = {
 
 RABBITMQ_PARAMETERS = {
     'HOST': 'localhost',
-    'EVALAI_EXCHANGE':{
+    'EVALAI_EXCHANGE': {
         'NAME': 'evalai_submissions',
         'TYPE': 'topic',
     },
