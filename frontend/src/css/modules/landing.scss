@@ -118,12 +118,11 @@ section.bg-section {
 .rocket-anim {
     width: 150px;
     padding-right: 50px;
-    position: fixed;
+    position: absolute;
     left: 62%;
     z-index: 0;
     /* margin: auto; */
     margin-top: 21vh;
-    right: 0;
     /*animation: rocket 4s alternate infinite;*/
     img {
         width: 100%;
