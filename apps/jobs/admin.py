@@ -4,7 +4,7 @@ from base.admin import TimeStampedAdmin
 
 
 
-@admin.register(Submission)
+
 class SubmissionAdmin(TimeStampedAdmin):
     list_display = ('participant_team', 'challenge_phase', 'created_by', 'status', 'is_public',
                     'submission_number', 'submitted_at', 'input_file', 'stdout_file', 'stderr_file')
