@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from base.admin import TimeStampedAdmin
-
+from .models import Submission
 
 
 class SubmissionAdmin(TimeStampedAdmin):
