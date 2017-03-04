@@ -3,7 +3,7 @@
     
 	<div class="grad-container">
 		<div class="row">
-			<div class="col s12 m8 ev-col-margin-50">
+			<div class="col s12 m8 ev-mt-50">
 				<h4 class="text-dark-black align-center"><strong>Contact Us</strong></h4>
 				<form name="contactusForm" ng-submit="" id="contact-us" novalidate>
 					<!-- Name -->
@@ -36,22 +36,7 @@
 					</div>
 				</form>
 			</div>
-			<div class="col s12 m4 ">
-				<div class="rocket-container">
-					<div class="rocket-anim">
-						<img src="dist/images/rocket.png">
-					</div>
-					<div class="cloud-1">
-						<img src="dist/images/cloud-1.png">
-					</div>
-					<div class="cloud-2">
-						<img src="dist/images/cloud-2.png">
-					</div>
-					<div class="cloud-3">
-						<img src="dist/images/cloud-1.png">
-					</div>
-				</div>
-			</div>
+			<div ng-include="'dist/views/web/partials/rocket-container.html'"></div>
 		</div>
 	</div>
 	<!-- Footer -->
