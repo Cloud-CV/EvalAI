@@ -97,7 +97,6 @@
 
             };
 
-            console.log(vm.user);
         }
 
         function link(scope, element, attrs, $window) {
