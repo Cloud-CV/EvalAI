@@ -17,7 +17,7 @@ from os.path import dirname, join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
-
+from django.conf import settings
 # need to add django project path in sys path
 # root directory : where manage.py lives
 # worker is present in root-directory/scripts/workers
@@ -48,7 +48,6 @@ from challenges.models import (Challenge,
                                LeaderboardData) # noqa
 
 from jobs.models import Submission          # noqa
-from settings.common import RABBITMQ_PARAMETERS        # noqa
 
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'challenge_data')
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'submission_files')
@@ -59,7 +58,7 @@ PHASE_ANNOTATION_FILE_PATH = join(PHASE_DATA_DIR, '{annotation_file}')
 SUBMISSION_DATA_DIR = join(SUBMISSION_DATA_BASE_DIR, 'submission_{submission_id}')
 SUBMISSION_INPUT_FILE_PATH = join(SUBMISSION_DATA_DIR, '{input_file}')
 CHALLENGE_IMPORT_STRING = 'challenge_data.challenge_{challenge_id}'
-
+RABBITMQ_PARAMETERS = settings.RABBITMQ_PARAMETERS
 EVALUATION_SCRIPTS = {}
 
 # map of challenge id : phase id : phase annotation file name
@@ -447,12 +446,12 @@ def main():
 
     load_active_challenges()
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=RABBITMQ_PARAMETERS.get('HOST', None)))
+        host=RABBITMQ_PARAMETERS['HOST']))
 
     channel = connection.channel()
     channel.exchange_declare(
-        exchange=RABBITMQ_PARAMETERS.get('EXCHANGE_NAME', None),
-        type=RABBITMQ_PARAMETERS.get('EXCHANGE_TYPE', None))
+        exchange=RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+        type=RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['TYPE'])
 
     # name can be a combination of hostname + process id
     # host name : to easily identify that the worker is running on which instance
@@ -461,8 +460,8 @@ def main():
                                                                 process_id=str(os.getpid()))
 
     channel.queue_declare(
-        queue=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('NAME', None),
-        durable=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('DURABLE', None))
+        queue=RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
+        durable=True)
 
     # reason for using `exclusive` instead of `autodelete` is that
     # challenge addition queue should have only have one consumer on the connection
@@ -474,15 +473,15 @@ def main():
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
 
     channel.queue_bind(
-        exchange=RABBITMQ_PARAMETERS.get('EXCHANGE_NAME', None),
-        queue=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('NAME', None),
+        exchange=RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+        queue=RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
         routing_key='submission.*.*')
     channel.basic_consume(
         process_submission_callback,
-        queue=RABBITMQ_PARAMETERS.get('SUBMISSION_QUEUE', None).get('NAME', None))
+        queue=RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'])
 
     channel.queue_bind(
-        exchange=RABBITMQ_PARAMETERS.get('EXCHANGE_NAME', None),
+        exchange=RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
         queue=add_challenge_queue_name, routing_key='challenge.add.*')
     channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
 
