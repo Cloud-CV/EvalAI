@@ -318,7 +318,7 @@
                     onError: function(response) {
                         var error = response.data;
                         vm.stopExistLoader();
-                        $rootScope.notify("error", "couldn't remove you from the challenge");
+                        $rootScope.notify("error", "Couldn't remove you from the challenge");
                     }
                 };
 
@@ -356,7 +356,7 @@
                     },
                     onError: function(response) {
                         var error = response.data;
-                        $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
+                        $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.");
                     }
                 };
 
