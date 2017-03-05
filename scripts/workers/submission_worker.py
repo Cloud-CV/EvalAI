@@ -58,7 +58,6 @@ PHASE_ANNOTATION_FILE_PATH = join(PHASE_DATA_DIR, '{annotation_file}')
 SUBMISSION_DATA_DIR = join(SUBMISSION_DATA_BASE_DIR, 'submission_{submission_id}')
 SUBMISSION_INPUT_FILE_PATH = join(SUBMISSION_DATA_DIR, '{input_file}')
 CHALLENGE_IMPORT_STRING = 'challenge_data.challenge_{challenge_id}'
-RABBITMQ_PARAMETERS = settings.RABBITMQ_PARAMETERS
 EVALUATION_SCRIPTS = {}
 
 # map of challenge id : phase id : phase annotation file name
@@ -446,12 +445,12 @@ def main():
 
     load_active_challenges()
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=RABBITMQ_PARAMETERS['HOST']))
+        host=settings.RABBITMQ_PARAMETERS['HOST']))
 
     channel = connection.channel()
     channel.exchange_declare(
-        exchange=RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        type=RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['TYPE'])
+        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+        type=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['TYPE'])
 
     # name can be a combination of hostname + process id
     # host name : to easily identify that the worker is running on which instance
@@ -460,7 +459,7 @@ def main():
                                                                 process_id=str(os.getpid()))
 
     channel.queue_declare(
-        queue=RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
+        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
         durable=True)
 
     # reason for using `exclusive` instead of `autodelete` is that
@@ -473,15 +472,15 @@ def main():
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
 
     channel.queue_bind(
-        exchange=RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
+        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
         routing_key='submission.*.*')
     channel.basic_consume(
         process_submission_callback,
-        queue=RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'])
+        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'])
 
     channel.queue_bind(
-        exchange=RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
         queue=add_challenge_queue_name, routing_key='challenge.add.*')
     channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
 
