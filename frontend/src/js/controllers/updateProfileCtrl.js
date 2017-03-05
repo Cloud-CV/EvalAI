@@ -33,6 +33,28 @@
             $rootScope.loaderTitle = '';
             vm.updateprofileContainer.removeClass('low-screen');
         };
+
+        // To get the previous profile data
+        var parameters = {};
+        parameters.url = 'auth/user/';
+        parameters.method = 'GET';
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function(response) {
+                var status = response.status;
+                var result = response.data;
+                if (status == 200) {
+                    vm.user = result;
+                }
+
+            },
+            onError: function(response) {
+                $rootScope.notify("error", "Error in loading old profile, please try again.");
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
         // function to update Profile
         vm.updateProfile = function(resetconfirmFormValid) {
             if (resetconfirmFormValid) {
