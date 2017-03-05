@@ -82,7 +82,6 @@
                         var status = response.status;
                         var error = response.data;
                         if (status == 401) {
-                            alert("");
                             utilities.resetStorage();
                             $state.go("auth.login");
                             $rootScope.isAuth = false;
@@ -320,7 +319,6 @@
                     var self = this;
                     // initialized mobile sidebar
                     angular.element(".links-section-outer").bind('scroll', function() {
-                        // alert("")
                         if (this.scrollTop >= 5) {
                             angular.element(".side-intro").addClass('z-depth-3');
                         } else {
