@@ -1,0 +1,19 @@
+#!/bin/sh
+if [ $# -eq 0 ]
+    then
+        echo "Id of pull request not supplied"
+        exit 0
+fi
+
+remote=${2-upstream}
+echo "Setting remote values as $remote"
+
+#fetching pull request
+fetch="git fetch $remote pull/$1/head:review-$1"
+echo "Exectuting $fetch"
+eval $fetch
+
+#switiching to branch review-<pull_request_id>
+checkout="git checkout review-$1"
+echo "Exectuting $checkout"
+eval $checkout
