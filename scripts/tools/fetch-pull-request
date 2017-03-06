@@ -1,37 +1,13 @@
 #!/bin/bash
-set -e -x
-if [ $# -eq 0 ]; then
-    echo "Pull request id not given"
+if [ "$1" == "--help" ]; then
+    printf "Usage: fetch-pull-request [--help] pull_request_id [remote=upstream] \n\n Locally fetch a pull request and test it. \n Remote is set to upstream by default.\n"
+    exit 1
+elif [ $# -eq 0 ]; then
+    echo "Pull request id not given."
+    exit 1
+else
+    set -e -x
+    remote=${2:-upstream}
+    git fetch $remote pull/$1/head:review-$1
+    git checkout review-$1
 fi
-
-remote=${2:-upstream}
-git fetch $remote pull/$1/head:review-$1
-
-git checkout review-$1
-
-
-usage="$(basename "$0") [-h] [-s n] -- program to calculate the answer to life, the universe and everything
-
-where:
-    -h  show this help text
-    -s  set the seed value (default: 42)"
-
-seed=42
-while getopts ':hs:' option; do
-  case "$option" in
-    h) echo "$usage"
-       exit
-       ;;
-    s) seed=$OPTARG
-       ;;
-    :) printf "missing argument for -%s\n" "$OPTARG" >&2
-       echo "$usage" >&2
-       exit 1
-       ;;
-   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
-       echo "$usage" >&2
-       exit 1
-       ;;
-  esac
-done
-shift $((OPTIND - 1))
