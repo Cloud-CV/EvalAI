@@ -261,3 +261,12 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
     }
 }
+
+RABBITMQ_PARAMETERS = {
+    'HOST': 'localhost',
+    'EVALAI_EXCHANGE': {
+        'NAME': 'evalai_submissions',
+        'TYPE': 'topic',
+    },
+    'SUBMISSION_QUEUE': 'submission_task_queue',
+}
