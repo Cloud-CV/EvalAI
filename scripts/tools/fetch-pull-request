@@ -6,7 +6,7 @@ if [ $# -eq 0 ]
 fi
 
 remote=${2-upstream}
-echo "Setting remote values as $remote"
+echo "Setting remote value as $remote"
 
 #fetching pull request
 fetch="git fetch $remote pull/$1/head:review-$1"
