@@ -1,19 +1,37 @@
-#!/bin/sh
-if [ $# -eq 0 ]
-    then
-        echo "Id of pull request not supplied"
-        exit 0
+#!/bin/bash
+set -e -x
+if [ $# -eq 0 ]; then
+    echo "Pull request id not given"
 fi
 
-remote=${2-upstream}
-echo "Setting remote values as $remote"
+remote=${2:-upstream}
+git fetch $remote pull/$1/head:review-$1
 
-#fetching pull request
-fetch="git fetch $remote pull/$1/head:review-$1"
-echo "Exectuting $fetch"
-eval $fetch
+git checkout review-$1
 
-#switiching to branch review-<pull_request_id>
-checkout="git checkout review-$1"
-echo "Exectuting $checkout"
-eval $checkout
+
+usage="$(basename "$0") [-h] [-s n] -- program to calculate the answer to life, the universe and everything
+
+where:
+    -h  show this help text
+    -s  set the seed value (default: 42)"
+
+seed=42
+while getopts ':hs:' option; do
+  case "$option" in
+    h) echo "$usage"
+       exit
+       ;;
+    s) seed=$OPTARG
+       ;;
+    :) printf "missing argument for -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+  esac
+done
+shift $((OPTIND - 1))
