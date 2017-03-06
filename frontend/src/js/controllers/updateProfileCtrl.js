@@ -49,7 +49,7 @@
 
             },
             onError: function(response) {
-                $rootScope.notify("error", "Error in loading old profile, please try again.");
+                $rootScope.notify("error", "Error in loading profile, please try again later !");
             }
         };
 
