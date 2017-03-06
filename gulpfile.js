@@ -325,7 +325,7 @@ gulp.task('watch', function() {
     livereload.listen();
 
     // Watch any files in dist/, reload on change
-    gulp.watch(['frontend/dist/**']).on('change', livereload.changed);
+    gulp.watch(['frontend/dist/**'], ['lint']).on('change', livereload.changed);
 
 });
 
