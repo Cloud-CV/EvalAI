@@ -22,5 +22,10 @@ eslint config file.
 				allow: ["warn", "error"] 
 			}
 		],
+		"semi": [2, 
+			"always", { 
+				"omitLastInOneLineBlock": true 
+			}
+		],
 	},
 }
