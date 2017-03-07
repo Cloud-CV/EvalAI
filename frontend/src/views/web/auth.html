@@ -1,21 +1,28 @@
-<!-- dynamic header for home page-->
-<dyn-header></dyn-header>
-<!-- background hero section -->
-<section class="bg-section">
-    <div class="bg-image"></div>
-</section>
-<!-- background hero section -->
-<section class="bg-section">
-    <div class="bg-image"></div>
-</section>
-<eval-loader></eval-loader>
-<!--auth container -->
-<section class="ev-container auth-container center">
-    <div class="ev-head-small">
-        <div class="row">
-            <div class="reg-alert col s12 m4 offset-m4 align-left text-highlight w-300">{{auth.regMsg}}</div>
-            <!-- render login/signup form here -->
-            <div class="ui-view"></div>
-        </div>
-    </div>
-</section>
+<div class="white-bg view-container flex-body">
+	<main-header></main-header>
+	<!-- EvalAI into -->
+	<div class="ev-container auth-container content">
+		<!--auth container -->
+		<div class="ev-head-small">
+			<div class="row">
+				<div class="col s12 m8">
+					<div class="row">            			
+						<div class="reg-alert col s12 m4 offset-m4 align-left text-highlight w-300">{{auth.regMsg}}</div>
+						<!-- render login/signup form here -->
+						<div class="ui-view"></div>
+					</div>
+				</div>
+				<!--<div ng-include="'dist/views/web/partials/rocket-container.html'"></div>--> 
+				<div class="col s12 m4 l4 ">
+					<div class="rocket-container">
+						<div class="spaceman">
+							<img src="dist/images/spaceman.png">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Footer -->
+	<landing-footer></landing-footer>
+</div>
