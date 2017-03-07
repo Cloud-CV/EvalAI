@@ -10,8 +10,8 @@
     var baseUrl = "dist/views/";
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
-    	
-    	//in order to prevent 404 for trailing '/' in urls    	
+
+    	//in order to prevent 404 for trailing '/' in urls
     	$urlMatcherFactoryProvider.strictMode(false);
 
         // formating hashed url
@@ -438,7 +438,6 @@
             }
             // restrict authorized user too access login/signup page
             else if (toState.authenticate === false && utilities.isAuthenticated()) {
-                // alert("")
                 $rootScope.isAuth = true;
                 $state.transitionTo("home");
                 event.preventDefault();
@@ -458,7 +457,8 @@
         $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
             // Save the route title
             $rootScope.pageTitle = $state.current.title;
-            // alert($rootScope.pageTitle)
+            // Scroll to top
+            $window.scrollTo(0, 0);
 
         });
 
