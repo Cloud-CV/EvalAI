@@ -1,6 +1,5 @@
 a.active-auth {
-	color: $highlight;
-	background-color: rgba(0, 0, 0, 0);
+    color: #fff;
 }
 
 .ev-horiz-list {
@@ -13,10 +12,7 @@ a.active-auth {
 }
 
 .auth-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 70px 100px 40px 100px;
-    clear: both;
+    transition: all 0.2s ease-in-out;
 }
 
 .wrn-msg {
