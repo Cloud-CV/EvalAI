@@ -6,12 +6,13 @@
                 <div class="ev-md-container ev-card-body update-profile-card">
                     <form name="updateProfileForm" ng-submit="updateProfile.updateProfile(updateProfileForm.$valid)" novalidate>
                         <div class="input-field align-left">
-                            <input id="username" name="username" type="text" class="text-dark-black dark-autofill w-400"  ng-model="updateProfile.user.username" ng-maxlength="30" required focus-if>
+                            <input id="username" name="username" type="text" class="text-dark-black dark-autofill w-400"  ng-model="updateProfile.user.username" ng-maxlength="30" ng-minlength="3" required focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                             <label for="username" >Username</label>
                             <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.username.$error" ng-if="updateProfileForm.username.$touched || updateProfileForm.$submitted" >
                                 <p ng-message="required">Username is required</p>
                                 <p ng-message="maxlength"> Username is too long </p>
+                                <p ng-message="minlength"> Username is too short </p>
                             </div>
                         </div>
 
@@ -21,7 +22,7 @@
                             <label for="first_name">First Name</label>
                             <div class="wrn-msg text-highlight"  ng-messages="updateProfileForm.first_name.$error"  ng-if="updateProfileForm.first_name.$touched || updateProfileForm.$submitted">
                                 <p ng-message="required">First Name is required</p>
-                                <p ng-message="maxlength"> First Name is too long </p>
+                                <p ng-message="maxlength"> First Name is too long</p>
                             </div>
                         </div>
 

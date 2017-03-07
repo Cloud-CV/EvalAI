@@ -118,12 +118,11 @@ section.bg-section {
 .rocket-anim {
     width: 150px;
     padding-right: 50px;
-    position: fixed;
+    position: absolute;
     left: 62%;
     z-index: 0;
     /* margin: auto; */
     margin-top: 21vh;
-    right: 0;
     /*animation: rocket 4s alternate infinite;*/
     img {
         width: 100%;
@@ -289,6 +288,39 @@ section.bg-section {
     height: 1px;
     margin: 8px 0px 12px 0px;
     background: $light-black;
+}
+
+
+/*space man*/
+
+.spaceman {
+    width: 200px;
+    position: absolute;
+    right: 0px;
+    top: 100px;
+    animation: spaceman-anim 4s alternate linear infinite;
+    img {
+        width: 100%;
+    }
+}
+
+@keyframes spaceman-anim {
+    0% {
+        transform: rotate(0deg);
+        top: 100px;
+    }
+    30% {
+        transform: rotate(20deg);
+        top: 150px;
+    }
+    70% {
+        transform: rotate(0deg);
+        top: 190px;
+    }
+    100% {
+        transform: rotate(-10deg);
+        top: 240px;
+    }
 }
 
 

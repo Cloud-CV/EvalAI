@@ -106,6 +106,13 @@ span.inline {
 }
 
 
+/*margin for column*/
+
+.ev-mt-50 {
+    margin-top: 50px;
+}
+
+
 /*bg color*/
 
 .ev-dark-bg {
@@ -725,6 +732,19 @@ input {
 
 .mt-12 {
     margin-top: 12px;
+}
+
+
+/*flex prop*/
+
+.flex-body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
 }
 
 

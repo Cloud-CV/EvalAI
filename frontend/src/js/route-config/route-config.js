@@ -10,8 +10,8 @@
     var baseUrl = "dist/views/";
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
-    	
-    	//in order to prevent 404 for trailing '/' in urls    	
+
+    	//in order to prevent 404 for trailing '/' in urls
     	$urlMatcherFactoryProvider.strictMode(false);
 
         // formating hashed url
@@ -246,7 +246,7 @@
             url: "/profile",
             templateUrl: baseUrl + "/web/profile.html",
             title: "Profile",
-            controller: 'ProfileCtrl',
+            controller: 'profileCtrl',
             controllerAs: 'profile',
             authenticate: true
         };
@@ -336,6 +336,13 @@
             authenticate: true
         };
 
+        var contact_us = {
+            name: "contact-us",
+            url: "/contact",
+            templateUrl: baseUrl + "/web/contact-us.html",
+            title: "Contact Us"
+        };
+
 
         // call all states here
         $stateProvider.state(home);
@@ -386,6 +393,7 @@
         $stateProvider.state(our_team);
         $stateProvider.state(join_our_team);
         $stateProvider.state(update_profile);
+        $stateProvider.state(contact_us);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
@@ -431,7 +439,6 @@
             }
             // restrict authorized user too access login/signup page
             else if (toState.authenticate === false && utilities.isAuthenticated()) {
-                // alert("")
                 $rootScope.isAuth = true;
                 $state.transitionTo("home");
                 event.preventDefault();
@@ -451,7 +458,8 @@
         $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
             // Save the route title
             $rootScope.pageTitle = $state.current.title;
-            // alert($rootScope.pageTitle)
+            // Scroll to top
+            $window.scrollTo(0, 0);
 
         });
 
@@ -461,7 +469,7 @@
                 return (typeof arg === undefined ? def : arg);
             }
 
-            timeout = pick(timeout, 4000);
+            timeout = pick(timeout, 3000);
             toaster.pop({
                 type: type,
                 body: message,

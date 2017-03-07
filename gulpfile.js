@@ -8,9 +8,7 @@ var gulp = require('gulp'),
     sass = require('gulp-ruby-sass'),
     autoprefixer = require('gulp-autoprefixer'),
     cssnano = require('gulp-cssnano'),
-    jshint = require('gulp-jshint'),
     eslint = require('gulp-eslint'),
-    stylish = require('jshint-stylish'),
     angularPlugin = require('eslint-plugin-angular'),
     gulp_if = require('gulp-if'),
     uglify = require('gulp-uglify'),
@@ -29,8 +27,6 @@ var gulp = require('gulp'),
     prettyError = require('gulp-prettyerror'),
     path = require('path'),
     inject = require('gulp-inject'),
-    // path = require('gulp-path'),
-    // conf = require('./conf')(gulp),
     _ = require('lodash');
 
 
@@ -112,7 +108,6 @@ gulp.task('js', function() {
 
     var app = gulp.src('frontend/src/js/app.js')
         .pipe(prettyError())
-        .pipe(jshint.reporter('default'))
         .pipe(concat('app.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
@@ -120,7 +115,6 @@ gulp.task('js', function() {
 
     var configs = gulp.src('frontend/src/js/route-config/*.js')
         .pipe(prettyError())
-        .pipe(jshint.reporter('default'))
         .pipe(concat('route-config.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
@@ -128,7 +122,6 @@ gulp.task('js', function() {
 
     var controllers = gulp.src('frontend/src/js/controllers/*.js')
         .pipe(prettyError())
-        .pipe(jshint.reporter('default'))
         .pipe(concat('controllers.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
@@ -136,7 +129,6 @@ gulp.task('js', function() {
 
     var directives = gulp.src('frontend/src/js/directives/*.js')
         .pipe(prettyError())
-        .pipe(jshint.reporter('default'))
         .pipe(concat('directives.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
@@ -144,7 +136,6 @@ gulp.task('js', function() {
 
     var filters = gulp.src('frontend/src/js/filters/*.js')
         .pipe(prettyError())
-        .pipe(jshint.reporter('default'))
         .pipe(concat('filters.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
@@ -152,7 +143,6 @@ gulp.task('js', function() {
 
     var services = gulp.src('frontend/src/js/services/*.js')
         .pipe(prettyError())
-        .pipe(jshint.reporter('default'))
         .pipe(concat('services.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
@@ -238,8 +228,10 @@ var lint_path = {
 
 gulp.task('lint', [], function() {
     return gulp.src(lint_path.js)
-        .pipe(jshint({ "esversion": 6 }))
-        .pipe(jshint.reporter('jshint-stylish'))
+        .pipe(eslint({}))
+        .pipe(eslint.format())
+        // uncommenting the line below will break the gulp task in case of error.
+        // .pipe(eslint.failAfterError())
 });
 
 // cleaning build process- run clean before deploy and rebuild files again
@@ -325,7 +317,7 @@ gulp.task('watch', function() {
     livereload.listen();
 
     // Watch any files in dist/, reload on change
-    gulp.watch(['frontend/dist/**']).on('change', livereload.changed);
+    gulp.watch(['frontend/dist/**'], ['lint']).on('change', livereload.changed);
 
 });
 

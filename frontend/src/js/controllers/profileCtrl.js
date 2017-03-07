@@ -6,12 +6,20 @@
 
     angular
         .module('evalai')
-        .controller('ProfileCtrl', ProfileCtrl);
+        .controller('profileCtrl', profileCtrl);
 
-    ProfileCtrl.$inject = ['utilities', '$state', '$stateParams'];
+    profileCtrl.$inject = ['utilities', '$rootScope'];
 
-    function ProfileCtrl(utilities, $state, $stateParams) {
+    function profileCtrl(utilities, $rootScope) {
+        /* jshint validthis: true */
         var vm = this;
+
+        vm.user = {};
+        vm.countLeft = 0;
+        vm.compPerc = 0;
+        var count = 0;
+
+        utilities.hideLoader();
 
         vm.imgUrlObj = {
             ironman: "dist/images/ironman.png",
@@ -22,20 +30,48 @@
         };
 
         var hasImage = utilities.getData('avatar');
-        if(!hasImage){
+        if (!hasImage) {
             vm.imgUrl = _.sample(vm.imgUrlObj);
             utilities.storeData('avatar', vm.imgUrl);
-        }
-        else{
+        } else {
             vm.imgUrl = utilities.getData('avatar');
         }
-        
-        // pich random avatar
-        // var imgPath = {
-        //     ironman: '../../images/ironman.png';
-        // }
 
-        // vm.name = "check"				
+        angular.element().find(".side-intro").addClass("z-depth-3");
+
+        // get token
+        var userKey = utilities.getData('userKey');
+
+        var parameters = {};
+        parameters.url = 'auth/user/';
+        parameters.method = 'GET';
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function(response) {
+                var status = response.status;
+                var result = response.data;
+                if (status == 200) {
+                    for (var i in result) {
+                        if (result[i] === "" || result[i] === undefined || result[i] === null) {
+                            result[i] = "-";
+                            vm.countLeft = vm.countLeft + 1;
+                        }
+                        count = count + 1;
+                    }
+                    vm.compPerc = parseInt((vm.countLeft / count) * 100);
+
+                    vm.user = result;
+                    vm.user.complete = 100 - vm.compPerc;
+
+                }
+            },
+            onError: function(response) {
+                var error = response.data;
+                $rootScope.notify("error", "Some error have occured , please try again !");
+            }
+        };
+
+        utilities.sendRequest(parameters);
     }
 
 })();
