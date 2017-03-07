@@ -15,15 +15,12 @@
         };
         return directive;
 
-        function link(scope, element, attrs) {
+        function link() {
             function headerComp() {
-                /* jshint validthis: true */
-                var self = this;
                 this.init();
             }
             headerComp.prototype = {
                 init: function() {
-                    var self = this;
                     // initialized mobile sidebar
                     angular.element(".button-collapse").sideNav({
                         menuWidth: 200,
@@ -32,7 +29,6 @@
                     });
                 }
             };
-            var headerObj = new headerComp();
         }
     }
 })();
@@ -44,7 +40,7 @@
         .module('evalai')
         .directive('mainHeader', dynHeader);
 
-    function dynHeader($document) {
+    function dynHeader() {
         var directive = {
             link: link,
             templateUrl: 'dist/views/web/partials/main-header.html',
@@ -55,8 +51,7 @@
         };
         return directive;
 
-        function controller($scope, $element, $attrs, $http, utilities, $window) {
-            /* jshint validthis: true */
+        function controller($scope, $element, $attrs, $http, utilities, $rootScope, $state) {
             var vm = this;
 
             vm.user = {};
@@ -80,7 +75,6 @@
                     onError: function(response) {
 
                         var status = response.status;
-                        var error = response.data;
                         if (status == 401) {
                             utilities.resetStorage();
                             $state.go("auth.login");
@@ -91,22 +85,19 @@
 
                 utilities.sendRequest(parameters);
             }
-            vm.profileDropdown = function(ev) {
+            vm.profileDropdown = function() {
                 angular.element(".dropdown-button").dropdown();
 
             };
 
         }
 
-        function link(scope, element, attrs, $window) {
+        function link(scope) {
             function headerComp() {
-                /* jshint validthis: true */
-                var self = this;
                 this.init();
             }
             headerComp.prototype = {
                 init: function() {
-                    var self = this;
                     // initialized mobile sidebar
                     angular.element(".button-collapse").sideNav({
                         menuWidth: 200,
@@ -126,7 +117,6 @@
                     });
                 }
             };
-            var headerObj = new headerComp();
         }
     }
 })();
@@ -197,16 +187,13 @@
         };
         return directive;
 
-        function link(scope, element, attrs) {
+        function link() {
             function evalLoader() {
-                /* jshint validthis: true */
-                var self = this;
                 this.init();
             }
             evalLoader.prototype = {
                 init: function() {}
             };
-            var evalLoaderObj = new evalLoader();
         }
     }
 })();
@@ -224,10 +211,8 @@
         };
         return directive;
 
-        function link(scope, element, attrs) {
+        function link() {
             function loaderComp() {
-                /* jshint validthis: true */
-                var self = this;
                 this.init();
             }
             loaderComp.prototype = {
@@ -235,7 +220,6 @@
                     angular.element("#sim-loader").hide();
                 }
             };
-            var loaderCompObj = new loaderComp();
         }
     }
 })();
@@ -272,15 +256,12 @@
         };
         return directive;
 
-        function link(scope, element, attrs) {
+        function link() {
             function headerComp() {
-                /* jshint validthis: true */
-                var self = this;
                 this.init();
             }
             headerComp.prototype = {
                 init: function() {
-                    var self = this;
                     // initialized mobile sidebar
                     angular.element(".button-collapse").sideNav({
                         menuWidth: 200,
@@ -289,7 +270,6 @@
                     });
                 }
             };
-            var headerObj = new headerComp();
         }
     }
 })();
@@ -308,15 +288,12 @@
         };
         return directive;
 
-        function link(scope, element, attrs) {
+        function link(scope) {
             function shadowComp() {
-                /* jshint validthis: true */
-                var self = this;
                 this.init();
             }
             shadowComp.prototype = {
                 init: function() {
-                    var self = this;
                     // initialized mobile sidebar
                     angular.element(".links-section-outer").bind('scroll', function() {
                         if (this.scrollTop >= 5) {
@@ -328,7 +305,6 @@
                     });
                 }
             };
-            var shadowCompObj = new shadowComp();
         }
     }
 })();
@@ -346,23 +322,18 @@
         };
         return directive;
 
-        function link(scope, element, attrs) {
+        function link() {
             function slideComp() {
-                /* jshint validthis: true */
-                var self = this;
                 this.init();
             }
             slideComp.prototype = {
                 init: function() {
-                    /* jshint validthis: true */
-                    var self = this;
                     // initialized mobile sidebar
                     angular.element(".profile-sidebar").animate({
                         'left': '219px'
                     }, 200);
                 }
             };
-            var slideCompObj = new slideComp();
         }
     }
 })();
