@@ -320,7 +320,6 @@
                                                 } else {
                                                     vm.subErrors.msg = error.error;
                                                 }
-                                                utilities.resetStorage();
                                                 vm.stopLoader();
                                             }
                                         };
