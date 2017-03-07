@@ -11,7 +11,7 @@
     updateProfileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
 
     function updateProfileCtrl(utilities, $state, $http, $rootScope) {
-        /* jshint validthis: true */
+        /*  validthis: true */
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
@@ -76,7 +76,7 @@
                                     $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }
 
-                            } catch (error) { // jshint ignore:line
+                            } catch (error) { //  ignore:line
                                 $rootScope.notify("error", "Some error have occured . Please try again !");
                             }
                         }

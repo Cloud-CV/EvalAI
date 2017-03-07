@@ -24,7 +24,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
-INSTALLED_APPS += [ # noqa: ignore=F405
+INSTALLED_APPS += [  # noqa: ignore=F405
     'django_spaghetti',
     'autofixture'
 ]
