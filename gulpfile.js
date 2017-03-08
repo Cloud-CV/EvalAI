@@ -242,7 +242,7 @@ gulp.task('lint', [], function() {
         .pipe(eslint({}))
         .pipe(eslint.format())
         // uncommenting the line below will break the gulp task in case of error.
-        // .pipe(eslint.failAfterError())
+        .pipe(eslint.failAfterError())
 });
 
 // cleaning build process- run clean before deploy and rebuild files again
@@ -334,7 +334,7 @@ gulp.task('watch', function() {
 
 
 // Start a server for serving frontend
-gulp.task('connect', function() {
+gulp.task('connect', ['lint'], function() {
     connect.server({
         root: 'frontend/',
         port: 8888,
@@ -372,5 +372,5 @@ gulp.task('prod', function(callback) {
 
 // Runserver for development
 gulp.task('dev:runserver', function(callback) {
-    runSequence('dev', 'lint', 'connect', 'watch', callback);
+    runSequence('dev', 'connect', 'watch', callback);
 });
