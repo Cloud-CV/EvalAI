@@ -1,0 +1,32 @@
+/*
+eslint config file. 
+*/
+
+{
+	"env": {
+		"es6": 1,
+		"browser": 1
+	},
+
+	"globals": {
+		"angular":1,
+		"jquery": 1,
+		"$": 1,
+		"_": 1,
+	},
+
+	"extends": "eslint:recommended",
+
+	"rules": {
+		"no-console": [
+			"error", { 
+				allow: ["warn", "error"] 
+			}
+		],
+		"semi": [2, 
+			"always", { 
+				"omitLastInOneLineBlock": true 
+			}
+		],
+	},
+}
