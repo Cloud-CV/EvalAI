@@ -20,6 +20,7 @@
     "gulp-connect": "^5.0.0",
     "gulp-cssnano": "^2.1.2",
     "gulp-debug": "^3.0.0",
+    "gulp-eslint": "^3.0.1",
     "gulp-html-minifier": "^0.1.8",
     "gulp-imagemin": "^3.0.3",
     "gulp-jshint": "^2.0.4",
