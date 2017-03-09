@@ -37,8 +37,6 @@
             vm.imgUrl = utilities.getData('avatar');
         }
 
-        angular.element().find(".side-intro").addClass("z-depth-3");
-
         // get token
         var userKey = utilities.getData('userKey');
 
