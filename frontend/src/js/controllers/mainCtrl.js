@@ -45,7 +45,7 @@
 
             utilities.sendRequest(parameters);
         }
-        vm.hostChallenge = function() {
+        vm.hostChallenge = function(ev) {
 
             var alert = $mdDialog.alert()
                 .title('Host a challenge')
@@ -55,7 +55,7 @@
             $mdDialog.show(alert);
         };
 
-        vm.profileDropdown = function() {
+        vm.profileDropdown = function(ev) {
             angular.element(".dropdown-button").dropdown();
 
         };

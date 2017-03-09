@@ -18,6 +18,7 @@
         vm.page = {};
         vm.isParticipated = false;
         vm.isActive = false;
+        var flag = 0;
         vm.phases = {};
         vm.phaseSplits = {};
         vm.isValid = {};
@@ -60,6 +61,7 @@
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
+                var status = response.status;
                 var details = response.data;
                 vm.page = details;
                 vm.isActive = details.is_active;
@@ -80,6 +82,7 @@
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
+                            var status = response.status;
                             var details = response.data;
 
                             for (var i in details.challenge_participant_team_list) {
@@ -160,12 +163,14 @@
                                                 parameters.method = 'POST';
                                                 parameters.token = userKey;
                                                 parameters.callback = {
-                                                    onSuccess: function() {
+                                                    onSuccess: function(response) {
+                                                        var details = response.data;
                                                         vm.isParticipated = true;
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.stopLoader();
                                                     },
-                                                    onError: function() {
+                                                    onError: function(response) {
+                                                        var error = response.data;
                                                         vm.existTeamError = "Please select a team";
                                                         vm.stopLoader();
                                                     }
@@ -283,7 +288,7 @@
 
                                         parameters.token = userKey;
                                         parameters.callback = {
-                                            onSuccess: function() {
+                                            onSuccess: function(response) {
                                                 // vm.input_file.name = '';
 
                                                 angular.forEach(
@@ -325,7 +330,8 @@
                             }
                             utilities.hideLoader();
                         },
-                        onError: function() {
+                        onError: function(response) {
+                            var error = response.data;
                             utilities.hideLoader();
                         }
                     };
@@ -626,6 +632,7 @@
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
+                            var status = response.status;
                             var details = response.data;
                             if (vm.submissionResult.results.count !== details.results.count) {
                                 vm.showUpdate = true;
@@ -667,7 +674,7 @@
                     vm.showUpdate = false;
                     vm.stopLoader();
                 },
-                onError: function() {
+                onError: function(response) {
                     vm.stopLoader();
                 }
             };
@@ -729,8 +736,9 @@
             };
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function() {
+                onSuccess: function(response) {
                     $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
+                    var details = response.data;
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team.name = '';
@@ -769,7 +777,7 @@
                                 vm.stopExistLoader();
                             }
                         },
-                        onError: function() {
+                        onError: function(response) {
                             vm.stopExistLoader();
                         }
                     };

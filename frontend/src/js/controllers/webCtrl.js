@@ -10,7 +10,7 @@
 
     WebCtrl.$inject = ['utilities', '$state', '$stateParams', '$rootScope'];
 
-    function WebCtrl() {
+    function WebCtrl(utilities, $state, $stateParams, $rootScope) {
 
     }
 

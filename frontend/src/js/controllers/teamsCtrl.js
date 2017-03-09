@@ -117,11 +117,12 @@
                         parameters.method = 'POST';
                         parameters.token = userKey;
                         parameters.callback = {
-                            onSuccess: function() {
+                            onSuccess: function(response) {
                                 $state.go('web.challenge-page.overview');
                                 vm.stopLoader();
                             },
-                            onError: function() {
+                            onError: function(response) {
+                                var error = response.data;
                                 vm.existTeamError = "Please select a team";
                                 vm.stopLoader();
                             }
@@ -228,7 +229,7 @@
             };
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function() {
+                onSuccess: function(response) {
                     $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
@@ -268,7 +269,7 @@
                                 vm.stopExistLoader();
                             }
                         },
-                        onError: function() {
+                        onError: function(response) {
                             vm.stopExistLoader();
                         }
                     };
@@ -305,8 +306,9 @@
                 parameters.data = {};
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function() {
+                    onSuccess: function(response) {
 
+                        var details = response.data;
                         vm.team.error = false;
                         $rootScope.notify("info", "You have removed yourself successfully");
 
@@ -353,7 +355,7 @@
                         };
                         utilities.sendRequest(parameters);
                     },
-                    onError: function() {
+                    onError: function(response) {
                         vm.stopExistLoader();
                         $rootScope.notify("error", "couldn't remove you from the challenge");
                     }
@@ -362,6 +364,7 @@
                 utilities.sendRequest(parameters);
 
             }, function() {
+                console.log("Operation defered");
             });
         };
 
@@ -378,6 +381,7 @@
                 .cancel('Cancel');
 
             $mdDialog.show(confirm).then(function(result) {
+                console.log(result);
                 var parameters = {};
                 parameters.url = 'participants/participant_team/' + participantTeamId + '/invite';
                 parameters.method = 'POST';
@@ -386,16 +390,17 @@
                 };
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function() {
+                    onSuccess: function(response) {
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
-                    onError: function() {
+                    onError: function(response) {
                         $rootScope.notify("error", "couldn't invite " + parameters.data.email + ". Please try again.");
                     }
                 };
 
                 utilities.sendRequest(parameters);
             }, function() {
+                console.log("Operation Aborted");
             });
         };
     }
