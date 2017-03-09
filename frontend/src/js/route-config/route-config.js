@@ -314,7 +314,8 @@
             name: 'our-team',
             url: "/team",
             templateUrl: baseUrl + "/web/our-team.html",
-            title: "Our Team"
+            controller: 'ourTeamCtrl',
+            controllerAs: 'ourTeam'
         };
 
         var join_our_team = {
