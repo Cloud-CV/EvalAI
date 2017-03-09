@@ -13,6 +13,7 @@
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
+        var challengePk = 1;
 
         utilities.showLoader();
 
@@ -187,6 +188,7 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
+                    var status = response.status;
                     var details = response.data;
                     vm.teamId = details.id;
                     vm.team.error = false;
@@ -227,7 +229,7 @@
                                 vm.stopExistLoader();
                             }
                         },
-                        onError: function() {
+                        onError: function(response) {
                             vm.stopExistLoader();
                         }
                     };
@@ -264,7 +266,9 @@
                 parameters.data = {};
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function() {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var details = response.data;
                         vm.team.error = false;
                         $rootScope.notify("info", "You have removed yourself successfully");
 
@@ -311,7 +315,8 @@
                         };
                         utilities.sendRequest(parameters);
                     },
-                    onError: function() {
+                    onError: function(response) {
+                        var error = response.data;
                         vm.stopExistLoader();
                         $rootScope.notify("error", "Couldn't remove you from the challenge");
                     }
@@ -320,6 +325,7 @@
                 utilities.sendRequest(parameters);
 
             }, function() {
+                console.log("Operation defered");
             });
         };
 
@@ -344,10 +350,12 @@
                 };
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function() {
+                    onSuccess: function(response) {
+                        var details = response.data;
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
-                    onError: function() {
+                    onError: function(response) {
+                        var error = response.data;
                         $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.");
                     }
                 };

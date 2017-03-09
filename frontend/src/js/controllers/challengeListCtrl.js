@@ -8,7 +8,7 @@
 
     ChallengeListCtrl.$inject = ['utilities', '$state', '$stateParams', '$rootScope'];
 
-    function ChallengeListCtrl(utilities) {
+    function ChallengeListCtrl(utilities, $state, $stateParams, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -133,7 +133,7 @@
                                 utilities.hideLoader();
 
                             },
-                            onError: function() {
+                            onError: function(response) {
                                 utilities.hideLoader();
                             }
                         };
@@ -141,7 +141,7 @@
                         utilities.sendRequest(parameters);
 
                     },
-                    onError: function() {
+                    onError: function(response) {
                         utilities.hideLoader();
                     }
                 };
@@ -149,7 +149,7 @@
                 utilities.sendRequest(parameters);
 
             },
-            onError: function() {
+            onError: function(response) {
 
                 utilities.hideLoader();
             }
