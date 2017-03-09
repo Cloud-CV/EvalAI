@@ -2,7 +2,7 @@
     <main-header></main-header>
     <div class="content">
         <div class="grad-container">
-            <h4 class="team-heading">{{ourTeam.coreTeamType}}</h4>
+            <h4 class="team-heading center-align">{{ourTeam.coreTeamType}}</h4>
             <div class="row">
                 <h5 ng-if="ourTeam.noTeamDisplay" class="team-heading">{{ourTeam.noTeamDisplay}}</h5>
                 <!-- This card is for Core Team -->
@@ -36,7 +36,7 @@
                 </div>
             </div>
             <!-- This card is for Contributing Team -->
-            <h4 class="team-heading">{{ourTeam.contributingTeamType}}</h4>
+            <h4 class="team-heading center-align">{{ourTeam.contributingTeamType}}</h4>
             <div class="row">
                 <div class="col s12 l3" ng-repeat="data in ourTeam.contributingTeamDetails">
                     <div class="team-card">
