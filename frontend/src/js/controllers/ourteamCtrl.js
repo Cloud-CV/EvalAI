@@ -42,7 +42,7 @@
                     }
                 }
             },
-            onError: function(response) {}
+            onError: function() {}
         };
 
         utilities.sendRequest(parameters, "no-header");
