@@ -101,7 +101,6 @@ def create_challenge_phases(challenge, number_of_phases):
 
 
 def create_leaderboard():
-    fake = Factory.create()
     leaderboard = Leaderboard.objects.create(
         schema="Some random JSON"
     )
