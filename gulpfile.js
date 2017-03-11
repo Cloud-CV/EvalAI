@@ -172,7 +172,7 @@ gulp.task('images', function() {
 // Fonts
 gulp.task('fonts', function() {
     var font = gulp.src([
-            'bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*'
+            'bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*', 'frontend/src/fonts/*'
         ])
         .pipe(gulp.dest('frontend/dist/fonts/'));
 
