@@ -11,7 +11,6 @@
     profileCtrl.$inject = ['utilities', '$rootScope'];
 
     function profileCtrl(utilities, $rootScope) {
-        /* jshint validthis: true */
         var vm = this;
 
         vm.user = {};

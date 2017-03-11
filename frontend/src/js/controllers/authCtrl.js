@@ -256,7 +256,7 @@
                             } else if (password2_valid) {
                                 vm.FormError = Object.values(response.data.new_password2).join(" ");
                             }
-                        } catch (error) { // jshint ignore:line 
+                        } catch (error) { 
                             vm.FormError = "Something went wrong! Please refresh the page and try again.";
                         }
                         vm.stopLoader();

@@ -17,7 +17,6 @@
 
         function link() {
             function headerComp() {
-                /* jshint validthis: true */
                 this.init();
             }
             headerComp.prototype = {
@@ -54,7 +53,6 @@
         return directive;
 
         function controller($scope, $element, $attrs, $http, utilities, $state, $rootScope) {
-            /* jshint validthis: true */
             var vm = this;
 
             vm.user = {};
@@ -97,7 +95,6 @@
 
         function link(scope) {
             function headerComp() {
-                /* jshint validthis: true */
                 this.init();
             }
             headerComp.prototype = {
@@ -194,7 +191,6 @@
 
         function link() {
             function evalLoader() {
-                /* jshint validthis: true */
                 this.init();
             }
             evalLoader.prototype = {
@@ -220,7 +216,6 @@
 
         function link() {
             function loaderComp() {
-                /* jshint validthis: true */
                 this.init();
             }
             loaderComp.prototype = {
@@ -267,7 +262,6 @@
 
         function link() {
             function headerComp() {
-                /* jshint validthis: true */
                 this.init();
             }
             headerComp.prototype = {
@@ -301,7 +295,6 @@
 
         function link(scope) {
             function shadowComp() {
-                /* jshint validthis: true */
                 this.init();
             }
             shadowComp.prototype = {
@@ -337,12 +330,10 @@
 
         function link() {
             function slideComp() {
-                /* jshint validthis: true */
                 this.init();
             }
             slideComp.prototype = {
                 init: function() {
-                    /* jshint validthis: true */
                     // initialized mobile sidebar
                     angular.element(".profile-sidebar").animate({
                         'left': '219px'
