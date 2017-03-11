@@ -9,7 +9,7 @@
 
     PermCtrl.$inject = ['utilities', '$state'];
 
-    function PermCtrl(utilities) {
+    function PermCtrl(utilities, $state, $stateParams) {
         var vm = this;
 
         // message for not verified users

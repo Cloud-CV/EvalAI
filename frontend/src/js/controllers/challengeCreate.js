@@ -9,7 +9,7 @@
 
     ChallengeCreateCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
 
-    function ChallengeCreateCtrl(utilities, $state) {
+    function ChallengeCreateCtrl(utilities, $state, $http, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var hostTeamId = utilities.getData('challengeHostTeamPk');
@@ -34,7 +34,7 @@
 
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function() {
+                onSuccess: function(response) {
                     // navigate to Challenge List Page
                     $state.go('web.challenge-main.challenge-list');
                 },

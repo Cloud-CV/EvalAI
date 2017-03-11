@@ -10,9 +10,9 @@
     var baseUrl = "dist/views/";
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
-        
-        //in order to prevent 404 for trailing '/' in urls    	
-        $urlMatcherFactoryProvider.strictMode(false);
+
+    	//in order to prevent 404 for trailing '/' in urls
+    	$urlMatcherFactoryProvider.strictMode(false);
 
         // formating hashed url
         $locationProvider.html5Mode({
@@ -415,7 +415,7 @@
 
         // Google Analytics Scripts
         $window.ga('create', 'UA-45466017-2', 'auto');
-        $rootScope.$on('$stateChangeSuccess', function() {
+        $rootScope.$on('$stateChangeSuccess', function(event) {
             $window.ga('send', 'pageview', $location.path());
         });
 
@@ -430,7 +430,7 @@
 
         $rootScope.isAuth = false;
         // check for valid user
-        $rootScope.$on('$stateChangeStart', function(event, toState) {
+        $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
             if (toState.authenticate && !utilities.isAuthenticated()) {
                 $rootScope.isAuth = false;
                 // User isn’t authenticated
@@ -455,7 +455,7 @@
             }
         });
 
-        $rootScope.$on('$stateChangeSuccess', function() {
+        $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
             // Save the route title
             $rootScope.pageTitle = $state.current.title;
             // Scroll to top
@@ -484,27 +484,27 @@
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function() {
+                onSuccess: function(response) {
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
                     $rootScope.notify("info", "Successfully logged out!");
                 },
-                onError: function() {
+                onError: function(response) {
                 }
             };
 
             utilities.sendRequest(parameters);
         };
 
-        $rootScope.checkToken = function() {
+        checkToken = function() {
             var userKey = utilities.getData('userKey');
             var parameters = {};
             parameters.url = 'auth/user/';
             parameters.method = 'GET';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function() {
+                onSuccess: function(response) {
                 },
                 onError: function(response) {
                     var status = response.status;
