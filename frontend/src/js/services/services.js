@@ -11,7 +11,7 @@
 
     utilities.$inject = ['$http', 'EnvironmentConfig', '$rootScope'];
 
-    function utilities($http, EnvironmentConfig, $rootScope) {
+    function utilities($http, EnvironmentConfig) {
 
         // factory for API calls
     /* jshint validthis: true */
@@ -50,7 +50,7 @@
                     'Content-Type': undefined,
                     'Authorization': "Token " + token
                 };
-                req.transformRequest = function(data, headersGetterFunction) {
+                req.transformRequest = function(data) {
                     return data;
                 };
 

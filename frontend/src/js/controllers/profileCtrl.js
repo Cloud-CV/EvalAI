@@ -65,8 +65,7 @@
 
                 }
             },
-            onError: function(response) {
-                var error = response.data;
+            onError: function() {
                 $rootScope.notify("error", "Some error have occured , please try again !");
             }
         };
