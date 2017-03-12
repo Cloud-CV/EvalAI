@@ -7,7 +7,7 @@
         .module('evalai')
         .controller('PermCtrl', PermCtrl);
 
-    PermCtrl.$inject = ['utilities', '$state'];
+    PermCtrl.$inject = ['utilities'];
 
     function PermCtrl(utilities) {
         var vm = this;

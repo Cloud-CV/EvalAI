@@ -29,7 +29,7 @@
                     });
                 }
             };
-            var headerObj = new headerComp(); // eslint-disable-line
+            new headerComp();
         }
     }
 })();
@@ -118,7 +118,7 @@
                     });
                 }
             };
-            var headerObj = new headerComp(); // eslint-disable-line
+            new headerComp();
         }
     }
 })();
@@ -196,7 +196,7 @@
             evalLoader.prototype = {
                 init: function() {}
             };
-            var evalLoaderObj = new evalLoader(); // eslint-disable-line
+            new evalLoader();
         }
     }
 })();
@@ -223,7 +223,7 @@
                     angular.element("#sim-loader").hide();
                 }
             };
-            var loaderCompObj = new loaderComp(); // eslint-disable-line
+            new loaderComp();
         }
     }
 })();
@@ -274,7 +274,7 @@
                     });
                 }
             };
-            var headerObj = new headerComp(); // eslint-disable-line
+            new headerComp();
         }
     }
 })();
@@ -310,7 +310,7 @@
                     });
                 }
             };
-            var shadowCompObj = new shadowComp(); // eslint-disable-line
+            new shadowComp();
         }
     }
 })();
@@ -340,7 +340,7 @@
                     }, 200);
                 }
             };
-            var slideCompObj = new slideComp(); // eslint-disable-line
+            new slideComp();
         }
     }
 })();

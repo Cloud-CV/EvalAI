@@ -7,7 +7,7 @@
         .module('evalai')
         .controller('ChallengeCreateCtrl', ChallengeCreateCtrl);
 
-    ChallengeCreateCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    ChallengeCreateCtrl.$inject = ['utilities', '$state'];
 
     function ChallengeCreateCtrl(utilities, $state) {
         var vm = this;
