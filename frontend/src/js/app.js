@@ -10,7 +10,6 @@ angular
 		'focus-if',
 		'ngSanitize',
 		'ngFileUpload',
-		'toaster',
-        'angularModalService'
-
+                'toaster',
+                'angularModalService'
 	]);
