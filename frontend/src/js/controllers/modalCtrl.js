@@ -4,11 +4,11 @@
 
     angular
         .module('evalai')
-        .controller('modalCtrl', modalcont);
+        .controller('modalCtrl', modalCtrl);
 
-    modalcont.$inject = ['utilities', '$state', '$http', '$rootScope', 'close'];
+    modalCtrl.$inject = ['utilities', '$state', '$http', '$rootScope', 'close'];
 
-    function modalcont(utilities, $state, $http, $rootScope, close) {
+    function modalCtrl(utilities, $state, $http, $rootScope, close) {
         var vm = this;
         vm.close = close;
     }
