@@ -290,6 +290,19 @@ section.bg-section {
     background: $light-black;
 }
 
+/*flex for landing other pages*/
+
+.flex-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.flex-content{
+	flex: 1;
+    min-height: 100vh;
+}
+
 
 /*space man*/
 
