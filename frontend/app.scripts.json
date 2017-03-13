@@ -14,7 +14,8 @@
       "ng-focus-if",
       "ng-sanitize",
       "ng-file-upload",
-      "AngularJS-Toaster"
+      "AngularJS-Toaster",
+      "angular-modal-service"
 
     ]
   },
@@ -32,7 +33,8 @@
        "ng-focus-if": "bower_components/ng-focus-if/focusIf.min.js",
        "ng-sanitize": "bower_components/angular-sanitize/angular-sanitize.min.js",
        "ng-file-upload": "bower_components/ng-file-upload/ng-file-upload.min.js",
-       "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.js"
+       "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.js",
+       "angular-modal-service": "bower_components/angular-modal-service/dst/angular-modal-service.min.js"
 
      }
 }
