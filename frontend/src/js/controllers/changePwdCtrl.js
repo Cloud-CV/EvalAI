@@ -56,7 +56,6 @@
                             templateUrl: "dist/views/web/partials/modal.html",
                             controller: "modalCtrl",
                             controllerAs: "modalc",
-                            bodyClass: "custom-modal-open"
                         }).then(function(modal) {
                             modal.close.then(function() {
                             });
