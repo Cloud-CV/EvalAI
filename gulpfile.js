@@ -28,12 +28,12 @@ var gulp = require('gulp'),
     prettyError = require('gulp-prettyerror'),
     path = require('path'),
     inject = require('gulp-inject'),
-    _ = require('lodash');
+    _ = require('lodash'),
+    karma_server = require('karma').Server;
 
 
 var scripts = require('./frontend/app.scripts.json');
 var styles = require('./frontend/app.styles.json');
-
 
 //include all bower scripts files
 gulp.task('vendorjs', function() {
@@ -269,6 +269,13 @@ gulp.task('lint', [], function() {
         }))
 });
 
+// js unit test
+gulp.task('test', function(done) {
+    new karma_server({
+        configFile: __dirname + '/karma.conf.js'
+    }, done).start();
+});
+
 // cleaning build process- run clean before deploy and rebuild files again
 gulp.task('clean', function() {
     return del(['frontend/dist/'], { force: true });
@@ -355,7 +362,6 @@ gulp.task('watch', function() {
     gulp.watch(['frontend/dist/**'], ['lint']).on('change', livereload.changed);
 
 });
-
 
 // Start a server for serving frontend
 gulp.task('connect', ['lint'], function() {
