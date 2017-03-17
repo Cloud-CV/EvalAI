@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$state', '$stateParams', '$rootScope'];
+    ChallengeListCtrl.$inject = ['utilities'];
 
-    function ChallengeListCtrl(utilities, $state, $stateParams, $rootScope) {
+    function ChallengeListCtrl(utilities) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -133,7 +133,7 @@
                                 utilities.hideLoader();
 
                             },
-                            onError: function(response) {
+                            onError: function() {
                                 utilities.hideLoader();
                             }
                         };
@@ -141,7 +141,7 @@
                         utilities.sendRequest(parameters);
 
                     },
-                    onError: function(response) {
+                    onError: function() {
                         utilities.hideLoader();
                     }
                 };
@@ -149,7 +149,7 @@
                 utilities.sendRequest(parameters);
 
             },
-            onError: function(response) {
+            onError: function() {
 
                 utilities.hideLoader();
             }
