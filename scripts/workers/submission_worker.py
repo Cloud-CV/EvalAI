@@ -481,7 +481,7 @@ def main():
 
     channel.queue_bind(
         exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=add_challenge_queue_name, routing_key='challenge.add.*')
+        queue=add_challenge_queue_name, routing_key='challenge.*.*')
     channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
 
     channel.start_consuming()
