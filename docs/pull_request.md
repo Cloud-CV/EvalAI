@@ -1,6 +1,6 @@
 # Pull Request
 
-To contribute for CloudCV in EvalAI is a facile task. Please follow these steps in order to get started :-)
+Contributing to EvalAI is a facile task. Please follow these steps in order to get started.
 
 **Step 1 : Fork**
 
@@ -8,10 +8,10 @@ To contribute for CloudCV in EvalAI is a facile task. Please follow these steps 
 
 **Step 2 : Picking up a issue**
 
-1. Pick up a suitable issue that you find will be facile for you to fix. Moreover, you can also 
-take the issues based on their labels. Almost every issue is marked with a label according to its difficulty.
+1. Pick up a suitable issue that you find will be easy for you to fix. Moreover, you can also 
+take the issues based on their labels. All the issues are marked with a label according to its difficulty.
 
-2. After selecting any issue, mention any mentor’s name there and ask him to assign it to you.
+2. After selecting any issue, ask the maintainers of the project to assign it to you and they will assign it based on its availability.
 
 3. Once it gets assigned , [create](https://git-scm.com/docs/git-checkout) a branch from your fork’s updated master branch using the following command
 `git checkout -b branch_name`
@@ -40,17 +40,16 @@ for example,
 `git fetch upstream`
 `git rebase upstream/master`
 
-3. After rebasing, forcefully push the changes on your forked repository.
+3. After rebasing, push the changes on your forked repository.
 `git push origin branch_name`
 
-4. After pushing the code, create a pull request.
+4. After pushing the code, create a Pull Request.
 
-5. At the time of creation of pullrequest, create a comment with [these](https://help.github.com/articles/closing-issues-via-commit-messages/) keywords and also mention any mentor’s name for reviewing it.
+5. At the time of creation of Pull Request, create a comment with [these](https://help.github.com/articles/closing-issues-via-commit-messages/) keywords and also mention any maintainers name for reviewing it.
 
 **Note:** 
 
 - If you find that there is some relevant content to be mentioned or any doubts to be asked, then also mention these things in the comment.
-- After the reviews from the mentor, fix the changes as suggested & push the code on the same branch after adding & committing.
+- After the reviews from the maintainer, fix the changes as suggested & push the code on the same branch after adding & committing.
 
-Once you complete the above steps, you have successfully created your a Pull Request to EvalAI.
-
+Once you complete the above steps, you have successfully created a Pull Request to EvalAI.
