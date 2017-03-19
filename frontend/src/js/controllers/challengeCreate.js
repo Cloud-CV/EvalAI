@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeCreateCtrl', ChallengeCreateCtrl);
 
-    ChallengeCreateCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    ChallengeCreateCtrl.$inject = ['utilities', '$state'];
 
-    function ChallengeCreateCtrl(utilities, $state, $http, $rootScope) {
+    function ChallengeCreateCtrl(utilities, $state) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var hostTeamId = utilities.getData('challengeHostTeamPk');
@@ -34,7 +34,7 @@
 
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function() {
                     // navigate to Challenge List Page
                     $state.go('web.challenge-main.challenge-list');
                 },

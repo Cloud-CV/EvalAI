@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('PermCtrl', PermCtrl);
 
-    PermCtrl.$inject = ['utilities', '$state'];
+    PermCtrl.$inject = ['utilities'];
 
-    function PermCtrl(utilities, $state, $stateParams) {
+    function PermCtrl(utilities) {
         var vm = this;
 
         // message for not verified users

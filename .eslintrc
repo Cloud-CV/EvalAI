@@ -11,7 +11,8 @@ eslint config file.
 	"globals": {
 		"angular":1,
 		"jquery": 1,
-		"$": 1
+		"$": 1,
+		"_": 1
 	},
 
 	"extends": "eslint:recommended",
