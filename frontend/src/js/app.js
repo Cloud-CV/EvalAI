@@ -11,5 +11,5 @@ angular
 		'ngSanitize',
 		'ngFileUpload',
 		'toaster'
-		
+
 	]);
