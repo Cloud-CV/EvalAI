@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChangePwdCtrl', ChangePwdCtrl);
 
-    ChangePwdCtrl.$inject = ['utilities', '$state', '$http', '$rootScope', 'ModalService'];
+    ChangePwdCtrl.$inject = ['utilities', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function ChangePwdCtrl(utilities, $state, $http, $rootScope, ModalService) {
+    function ChangePwdCtrl(utilities, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
@@ -52,14 +52,16 @@
                         var details = response.data;
                         vm.user.error = false;
 
-                        ModalService.showModal({
-                            templateUrl: "dist/views/web/partials/modal.html",
-                            controller: "modalCtrl",
-                            controllerAs: "modalc",
-                        }).then(function(modal) {
-                            modal.close.then(function() {
-                            });
+                        var confirm = $mdDialog.confirm()
+                            .title('Password successfully changed')
+                            .textContent('Do you want to Login again or stay?')
+                            .ok('Login again')
+                            .cancel('Stay');
+
+                        $mdDialog.show(confirm).then(function(){
+                                $rootScope.logout();
                         });
+
                         $rootScope.notify("success", "Your password has been changed successfully!");
                         vm.stopLoader();
                         // navigate to challenge page
