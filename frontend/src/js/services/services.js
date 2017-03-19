@@ -77,7 +77,6 @@
         };
 
         // user verification auth service
-
         this.isAuthenticated = function() {
             if (this.getData('userKey')) {
                 return true;

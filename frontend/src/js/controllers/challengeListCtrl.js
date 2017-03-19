@@ -6,7 +6,7 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$state', '$stateParams', '$rootScope'];
+    ChallengeListCtrl.$inject = ['utilities'];
 
     function ChallengeListCtrl(utilities) {
         var vm = this;

@@ -10,8 +10,8 @@
     var baseUrl = "dist/views/";
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
-        
-        //in order to prevent 404 for trailing '/' in urls    	
+
+        //in order to prevent 404 for trailing '/' in urls
         $urlMatcherFactoryProvider.strictMode(false);
 
         // formating hashed url
@@ -314,7 +314,8 @@
             name: 'our-team',
             url: "/team",
             templateUrl: baseUrl + "/web/our-team.html",
-            title: "Our Team"
+            controller: 'ourTeamCtrl',
+            controllerAs: 'ourTeam'
         };
 
         var join_our_team = {

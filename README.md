@@ -38,12 +38,13 @@ Follow this guide to setup your development machine.
     ```
     cp settings/dev.sample.py settings/dev.py
     ```
-    Use your linux system username and password for fields `USER` and `PASSWORD` in `dev.py` file.
+    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
 
 5. Create an empty postgres database and run database migration.
 
     ```
-    createdb evalai
+    sudo -i -u (username)
+        createdb evalai
     python manage.py migrate --settings=settings.dev
     ```
 
@@ -60,7 +61,10 @@ Follow this guide to setup your development machine.
     npm install
     bower install
     ```
-
+    If you running npm install behind a proxy server, use
+    ```
+    npm config set proxy http://proxy:port 
+    ```
 8. Now to connect to dev server at http://127.0.0.1:8888 (for serving frontend)
 
     ```

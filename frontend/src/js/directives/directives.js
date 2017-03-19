@@ -29,6 +29,7 @@
                     });
                 }
             };
+            new headerComp();
         }
     }
 })();
@@ -51,7 +52,7 @@
         };
         return directive;
 
-        function controller($scope, $element, $attrs, $http, utilities, $rootScope, $state) {
+        function controller($scope, $element, $attrs, $http, utilities, $state, $rootScope) {
             var vm = this;
 
             vm.user = {};
@@ -117,6 +118,7 @@
                     });
                 }
             };
+            new headerComp();
         }
     }
 })();
@@ -194,6 +196,7 @@
             evalLoader.prototype = {
                 init: function() {}
             };
+            new evalLoader();
         }
     }
 })();
@@ -220,6 +223,7 @@
                     angular.element("#sim-loader").hide();
                 }
             };
+            new loaderComp();
         }
     }
 })();
@@ -270,6 +274,7 @@
                     });
                 }
             };
+            new headerComp();
         }
     }
 })();
@@ -305,6 +310,7 @@
                     });
                 }
             };
+            new shadowComp();
         }
     }
 })();
@@ -334,6 +340,7 @@
                     }, 200);
                 }
             };
+            new slideComp();
         }
     }
 })();
