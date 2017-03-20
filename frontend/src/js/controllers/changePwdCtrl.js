@@ -48,8 +48,7 @@
             };
             parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
+                    onSuccess: function() {
                         vm.user.error = false;
                         $rootScope.notify("success", "Your password has been changed successfully!");
                         vm.stopLoader();
@@ -57,7 +56,6 @@
                         // $state.go('web.challenge-page.overview');
                     },
                     onError: function(response) {
-                        var error = response.data;
                         vm.user.error = "Failed";
                         vm.isFormError = true;
                         var oldpassword_valid ,password1_valid, password2_valid;
@@ -71,10 +69,8 @@
                                 vm.FormError = Object.values(response.data.new_password1).join(" ");
                             } else if (password2_valid) {
                                 vm.FormError = Object.values(response.data.new_password2).join(" ");
-                            } else {
-                                console.log("Unhandled Error");
                             }
-                        } catch (error) { // jshint ignore:line
+                        } catch (error) { 
                             vm.FormError = "Something went wrong! Please refresh the page and try again.";
                         }
                         vm.stopLoader();
@@ -84,7 +80,6 @@
                 utilities.sendRequest(parameters);
 
             }else {
-              console.log("Form fields are not valid !");
               vm.stopLoader();
             }
         };
