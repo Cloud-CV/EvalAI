@@ -1,0 +1,44 @@
+/*grad button style*/
+
+.grad-btn {
+    border-radius: 20px;
+}
+
+.grad-btn-dark {
+    background: $med-gray;
+    font-weight: $rob-reg;
+    color: #fff;
+    box-shadow: 0px 4px 8px #9d9d9d;
+    &:hover {
+        box-shadow: 0px 0px 8px #9d9d9d;
+    }
+}
+
+
+/*font styles*/
+
+.fs-14 {
+    font-size: 14px;
+}
+
+
+/*bg color*/
+
+.white-bg {
+    background-color: #fff;
+}
+
+.view-container {
+    min-height: 100vh;
+}
+
+.grad-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 100px 40px 100px;
+    clear: both;
+}
+
+.rm-grad-pad {
+    padding: 30px 100px 30px 100px;
+}

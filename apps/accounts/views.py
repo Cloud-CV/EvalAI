@@ -1,5 +1,7 @@
 from django.contrib.auth import logout
 from django.urls import reverse
+from django.views.generic import View
+from django.shortcuts import render
 
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -13,13 +15,11 @@ from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthe
 import requests
 
 
-class ConfirmEmailView(APIView):
+class ConfirmEmailView(View):
     """
-    APIView for confirming email after registration
+    View for conforming email after registration
     """
-    permission_classes = (AllowAny,)
-    allowed_methods = ('GET', 'OPTIONS', 'HEAD')
-
+    
     def get(self, request, *args, **kwargs):
         post_data = {
             'key': kwargs['key'],
@@ -27,8 +27,8 @@ class ConfirmEmailView(APIView):
 
         requests.post(request.build_absolute_uri(
             reverse("rest_verify_email")), data=post_data)
-        return Response({'message': "Email verified successfully"}, status=status.HTTP_200_OK)
 
+        return render(request, 'account/email-verification-done.html')
 
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated,))

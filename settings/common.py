@@ -65,6 +65,8 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_docs',
     'rest_framework_expiring_authtoken',
+    'sass_processor',
+    'materialize',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -138,7 +140,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = "/media/"
 
@@ -269,3 +271,11 @@ RABBITMQ_PARAMETERS = {
     },
     'SUBMISSION_QUEUE': 'submission_task_queue',
 }
+
+SASS_PROCESSOR_INCLUDE_FILE_PATTERN = r'^.+\.scss$'
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'sass_processor.finders.CssFinder',
+]
