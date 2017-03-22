@@ -79,6 +79,8 @@ guide to setup your development machine.
 .. toctree::
    :maxdepth: 2
 
+   includeme
+
 .. include:: contribution.rst
 
 Indices and tables
