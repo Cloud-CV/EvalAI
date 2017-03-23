@@ -1,7 +1,7 @@
 <div class="white-bg view-container flex-body">
     <main-header></main-header>
     <div class="content">
-        <div class="grad-container">
+        <div class="grad-container grad-vh">
             <h4 class="team-heading center-align">{{ourTeam.coreTeamType}}</h4>
             <div class="row">
                 <h5 ng-if="ourTeam.noTeamDisplay" class="team-heading">{{ourTeam.noTeamDisplay}}</h5>
@@ -16,7 +16,7 @@
                     <a ng-if="data.github_url !== 'null'" href="{{data.github_url}}"><i class="fa fa-github"></i></a>
                 </span>
                             <span class="right link-team-user">
-                    <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}">My Profile</a>
+                    <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}">Personal Website</a>
                 </span>
                         </div>
                         <div class="team-bg">
@@ -48,7 +48,7 @@
                     <a ng-if="data.github_url !== 'null'" href="{{data.github_url}}"><i class="fa fa-github"></i></a>
                 </span>
                             <span class="right link-team-user">
-                    <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}">My Profile</a>
+                    <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}">Personal Website</a>
                 </span>
                         </div>
                         <div class="team-bg">
