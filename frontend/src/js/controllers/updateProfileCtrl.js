@@ -47,7 +47,7 @@
                 }
 
             },
-            onError: function(response) {
+            onError: function() {
                 $rootScope.notify("error", "Error in loading profile, please try again later !");
             }
         };
