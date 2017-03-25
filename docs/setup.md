@@ -9,7 +9,7 @@ This section guides first-time contributor through installing the EvalAI develop
 ```shell
 sudo apt-get install git
 ```
-Fedora
+<br>Fedora
 ```shell
 sudo yum install git-all
 ```
