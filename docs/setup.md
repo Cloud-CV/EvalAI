@@ -2,30 +2,56 @@
 
 This section guides first-time contributor through installing the EvalAI development environment on Ubuntu(recommended 14.04)
 
-###Step 1: Install prerequisites
+### Step 1: Install prerequisites
 
 * Install git
-
+Ubuntu
 ```shell
 sudo apt-get install git
 ```
+Fedora
+```shell
+sudo yum install git-all
+```
 
 * Install postgres
-
+Ubuntu
 ```shell
 sudo apt-get install postgresql libpq-dev
 ```
+Fedora
+```shell
+sudo yum install postgresql postgresql-devel
+```
+If you still encounter issues with pg_config, you may need to add it to your PATH, e.g.:
+```shell
+export PATH=$PATH:/usr/pgsql-x.x/bin
+```
+where x.x is your version, such as /usr/pgsql-9.5./bin.
 
 * Install rabbitmq
-
+Ubuntu
 ```shell
 echo 'deb http://www.rabbitmq.com/debian/ stable main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
 sudo apt-get update
 sudo apt-get install rabbitmq-server
 ```
+Fedora
+```shell
+#use the below commands to get Erlang on our system:
+wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+sudo rpm -Uvh remi-release-6*.rpm epel-release-6*.rpm
+# Finally, download and install Erlang:
+sudo yum install -y erlang
+Once we have Erlang, we can continue with installing RabbitMQ:
+wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.2.2/rabbitmq-server-3.2.2-1.noarch.rpm
+rpm --import http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
+sudo yum install rabbitmq-server-3.2.2-1.noarch.rpm
+```
 
 * Install virtualenv
-
+Ubuntu
 ```shell
 # only if pip is not installed
 sudo apt-get install python-pip python-dev build-essential
@@ -34,8 +60,16 @@ sudo pip install --upgrade pip
 # upgrade virtualenv
 sudo pip install --upgrade virtualenv
 ```
+Fedora
+```shell
+sudo yum -y install python-pip python-devel groupinstall 'Development Tools'
+# upgrade pip, not necessary
+sudo pip install --upgrade pip
+# upgrade virtualenv
+sudo pip install --upgrade virtualenv
+```
 
-###Step 2: Get EvalAI code
+### Step 2: Get EvalAI code
 
 If you haven't already created an ssh key and added it to your GitHub account,
 you should do that now by following [these
@@ -52,7 +86,7 @@ git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 Don't forget to replace YOUR_GITHUB_USER_NAME with your git username.
 
 
-###Step 3: Setup code base
+### Step 3: Setup code base
 
 * Create a python virtual environment and install python dependencies.
 
@@ -80,13 +114,19 @@ python manage.py migrate --settings=settings.dev
 ```
 
 * For setting up frontend, run
-
+Ububtu
 ```shell
 npm install
 bower install
 ```
+Fedora
+```shell
+curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
+sudo yum install nodejs
+npm install -g bower
+```
 
-###Step 4: Start the development environment
+### Step 4: Start the development environment
 
 * To run backend development server at `http://127.0.0.1:8000`[http://127.0.0.1:8000]
 
