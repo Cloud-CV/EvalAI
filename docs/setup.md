@@ -5,7 +5,7 @@ This section guides first-time contributor through installing the EvalAI develop
 ### Step 1: Install prerequisites
 
 * Install git
-*Ubuntu
+<br>Ubuntu
 ```shell
 sudo apt-get install git
 ```
@@ -15,7 +15,7 @@ sudo yum install git-all
 ```
 
 * Install postgres
-*Ubuntu
+<br>Ubuntu
 ```shell
 sudo apt-get install postgresql libpq-dev
 ```
@@ -30,7 +30,7 @@ export PATH=$PATH:/usr/pgsql-x.x/bin
 where x.x is your version, such as /usr/pgsql-9.5./bin.
 
 * Install rabbitmq
-*Ubuntu
+<br>Ubuntu
 ```shell
 echo 'deb http://www.rabbitmq.com/debian/ stable main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
 sudo apt-get update
@@ -51,7 +51,7 @@ sudo yum install rabbitmq-server-3.2.2-1.noarch.rpm
 ```
 
 * Install virtualenv
-*Ubuntu
+<br>Ubuntu
 ```shell
 # only if pip is not installed
 sudo apt-get install python-pip python-dev build-essential
@@ -114,7 +114,7 @@ python manage.py migrate --settings=settings.dev
 ```
 
 * For setting up frontend, run
-*Ububtu
+* Ububtu
 ```shell
 npm install
 bower install
