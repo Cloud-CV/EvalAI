@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to EvalAI’s documentation! &mdash; EvalAI 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="EvalAI 0.0.1 documentation" href="#"/>
+        <link rel="next" title="&lt;no title&gt;" href="includeme.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> EvalAI
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to EvalAI&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#how-to-setup">How to setup</a></li>
+<li><a class="reference internal" href="#contributing-guidelines">Contributing guidelines</a><ul>
+<li><a class="reference internal" href="#setting-things-up">Setting things up</a></li>
+<li><a class="reference internal" href="#finding-something-to-work-on">Finding something to work on</a></li>
+<li><a class="reference internal" href="#instructions-to-submit-code">Instructions to submit code</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">EvalAI</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Welcome to EvalAI&#8217;s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-evalai-s-documentation">
+<h1>Welcome to EvalAI&#8217;s documentation!<a class="headerlink" href="#welcome-to-evalai-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://travis-ci.org/Cloud-CV/EvalAI"><img alt="Build Status" src="https://travis-ci.org/Cloud-CV/EvalAI.svg?branch=master" /></a> <a class="reference external" href="https://coveralls.io/github/Cloud-CV/EvalAI"><img alt="Coverage Status" src="https://coveralls.io/repos/github/Cloud-CV/EvalAI/badge.svg" /></a> <a class="reference external" href="https://requires.io/github/Cloud-CV/EvalAI/requirements/?branch=master"><img alt="Requirements Status" src="https://requires.io/github/Cloud-CV/EvalAI/requirements.svg?branch=master" /></a> <a class="reference external" href="https://landscape.io/github/Cloud-CV/EvalAI/master"><img alt="Code Health" src="https://landscape.io/github/Cloud-CV/EvalAI/master/landscape.svg?style=flat" /></a>
+<a class="reference external" href="https://codeclimate.com/github/Cloud-CV/EvalAI"><img alt="Code Climate" src="https://codeclimate.com/github/Cloud-CV/EvalAI/badges/gpa.svg" /></a></p>
+<p>EvalAI is an open source web application that helps researchers,
+students and data-scientists to create, collaborate and participate in
+various AI challenges organized round the globe.</p>
+<div class="section" id="how-to-setup">
+<h2>How to setup<a class="headerlink" href="#how-to-setup" title="Permalink to this headline">¶</a></h2>
+<p>Setting up EvalAI on your local machine is really easy. Follow this
+guide to setup your development machine.</p>
+<ol class="arabic">
+<li><p class="first">Install <a class="reference external" href="https://git-scm.com/downloads">git</a>, <a class="reference external" href="http://www.postgresql.org/download/">postgresql</a> and <a class="reference external" href="https://virtualenv.pypa.io/">virtualenv</a>, in your computer, if
+you don’t have it already.</p>
+</li>
+<li><p class="first">Get the source code on your machine via git.</p>
+<div class="code shell highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">Cloud</span><span class="o">-</span><span class="n">CV</span><span class="o">/</span><span class="n">EvalAI</span><span class="o">.</span><span class="n">git</span> <span class="n">evalai</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a python virtual environment and install python dependencies.</p>
+<div class="code shell highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">evalai</span>
+<span class="n">virtualenv</span> <span class="n">venv</span>
+<span class="n">source</span> <span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>  <span class="c1"># run this command everytime before working on project</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">/</span><span class="n">dev</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Rename <code class="docutils literal"><span class="pre">settings/dev.sample.py</span></code> as <code class="docutils literal"><span class="pre">dev.py</span></code> and change credential
+in <code class="docutils literal"><span class="pre">setting/dev.py</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="n">settings</span><span class="o">/</span><span class="n">dev</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">py</span> <span class="n">settings</span><span class="o">/</span><span class="n">dev</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Use your linux system username and password for fields <code class="docutils literal"><span class="pre">USER</span></code> and
+<code class="docutils literal"><span class="pre">PASSWORD</span></code> in <code class="docutils literal"><span class="pre">dev.py</span></code> file.</p>
+</li>
+<li><p class="first">Create an empty postgres database and run database migration.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">createdb</span> <span class="n">evalai</span>
+<span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">migrate</span> <span class="o">--</span><span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">dev</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">That’s it. Now you can run development server at
+<a class="reference external" href="http://127.0.0.1:8000">http://127.0.0.1:8000</a></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span> <span class="n">runserver</span> <span class="o">--</span><span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">dev</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="contributing-guidelines">
+<h2>Contributing guidelines<a class="headerlink" href="#contributing-guidelines" title="Permalink to this headline">¶</a></h2>
+<p>Thank you for your interest in contributing to EvalAI! Here are a few
+pointers about how you can help.</p>
+<div class="section" id="setting-things-up">
+<h3>Setting things up<a class="headerlink" href="#setting-things-up" title="Permalink to this headline">¶</a></h3>
+<p>To set up the development environment, follow the instructions in
+README.</p>
+</div>
+<div class="section" id="finding-something-to-work-on">
+<h3>Finding something to work on<a class="headerlink" href="#finding-something-to-work-on" title="Permalink to this headline">¶</a></h3>
+<p>The issue tracker of EvalAI a good place to start. If you find something
+that interests you, comment on the thread and we’ll help get you
+started.</p>
+<p>Alternatively, if you come across a new bug on the site, please file a
+new issue and comment if you would like to be assigned. The existing
+issues are tagged with one or more labels, based on the part of the
+website it touches, its importance etc., that can help you in selecting
+one.</p>
+<p>If neither of these seem appealing, please post on our channel and we
+will help find you something else to work on.</p>
+</div>
+<div class="section" id="instructions-to-submit-code">
+<h3>Instructions to submit code<a class="headerlink" href="#instructions-to-submit-code" title="Permalink to this headline">¶</a></h3>
+<p>Before you submit code, please talk to us via the issue tracker so we
+know you are working on it.</p>
+<p>Our central development branch is development. Coding is done on feature
+branches based off of development and merged into it once stable and
+reviewed. To submit code, follow these steps:</p>
+<ol class="arabic">
+<li><p class="first">Create a new branch off of development. Select a descriptive branch
+name. We highly encourage to use <cite>autopep8</cite> to follow the PEP8 styling. Run the following command before creating the pull request:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">autopep8</span> <span class="o">--</span><span class="ow">in</span><span class="o">-</span><span class="n">place</span> <span class="o">--</span><span class="n">exclude</span> <span class="n">venv</span><span class="p">,</span><span class="n">docs</span> <span class="o">--</span><span class="n">recursive</span> <span class="o">.</span>
+
+<span class="n">git</span> <span class="n">fetch</span> <span class="n">upstream</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">merge</span> <span class="n">upstream</span><span class="o">/</span><span class="n">master</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">your</span><span class="o">-</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Commit and push code to your branch:</p>
+<ul>
+<li><p class="first">Commits should be self-contained and contain a descriptive commit
+message.</p>
+</li>
+<li><p class="first">Please make sure your code is well-formatted and adheres to PEP8
+conventions (for Python) and the airbnb style guide (for
+JavaScript). For others (Lua, prototxt etc.) please ensure that
+the code is well-formatted and the style consistent.</p>
+</li>
+<li><p class="first">Please ensure that your code is well tested.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>git commit -a -m “{{commit_message}}”
+git push origin {{branch_name}}
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p class="first">Once the code is pushed, create a pull request:</p>
+<ul class="simple">
+<li>On your Github fork, select your branch and click “New pull
+request”. Select “master” as the base branch and your branch in
+the “compare” dropdown. If the code is mergeable (you get a
+message saying “Able to merge”), go ahead and create the pull
+request.</li>
+<li>Check back after some time to see if the Travis checks have
+passed, if not you should click on “Details” link on your PR
+thread at the right of “The Travis CI build failed”, which will
+take you to the dashboard for your PR. You will see what failed /
+stalled, and will need to resolve them.</li>
+<li>If your checks have passed, your PR will be assigned a reviewer
+who will review your code and provide comments. Please address
+each review comment by pushing new commits to the same branch (the
+PR will automatically update, so you don’t need to submit a new
+one). Once you are done, comment below each review comment marking
+it as “Done”. Feel free to use the thread to have a discussion
+about comments that you don’t understand completely or don’t agree
+with.</li>
+<li>Once all comments are addressed, the reviewer will give an LGTM (‘looks good to me’) and merge the PR.</li>
+</ul>
+</li>
+</ol>
+<p>Congratulations, you have successfully contributed to Project EvalAI!</p>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="includeme.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, CloudCV Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>&lt;no title&gt; &mdash; EvalAI 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="EvalAI 0.0.1 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> EvalAI
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul class="simple">
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">EvalAI</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/setup.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p>## How to setup</p>
+<p>This section guides first-time contributor through installing the EvalAI development environment on Ubuntu(recommended 14.04)</p>
+<p>###Step 1: Install prerequisites</p>
+<ul class="simple">
+<li>Install git</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">git</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>Install postgres</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">postgresql</span> <span class="pre">libpq-dev</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>Install rabbitmq</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">echo</span> <span class="pre">'deb</span> <span class="pre">http://www.rabbitmq.com/debian/</span> <span class="pre">stable</span> <span class="pre">main'</span> <span class="pre">|</span> <span class="pre">sudo</span> <span class="pre">tee</span> <span class="pre">/etc/apt/sources.list.d/rabbitmq.list</span>
+<span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">update</span>
+<span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">rabbitmq-server</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>Install virtualenv</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">#</span> <span class="pre">only</span> <span class="pre">if</span> <span class="pre">pip</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">installed</span>
+<span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">python-pip</span> <span class="pre">python-dev</span> <span class="pre">build-essential</span>
+<span class="pre">#</span> <span class="pre">upgrade</span> <span class="pre">pip,</span> <span class="pre">not</span> <span class="pre">necessary</span>
+<span class="pre">sudo</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">pip</span>
+<span class="pre">#</span> <span class="pre">upgrade</span> <span class="pre">virtualenv</span>
+<span class="pre">sudo</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">virtualenv</span>
+<span class="pre">`</span></code></p>
+<p>###Step 2: Get EvalAI code</p>
+<p>If you haven&#8217;t already created an ssh key and added it to your GitHub account,
+you should do that now by following [these
+instructions](<a class="reference external" href="https://help.github.com/articles/connecting-to-github-with-ssh/">https://help.github.com/articles/connecting-to-github-with-ssh/</a>).</p>
+<ul class="simple">
+<li>In your browser, visit [<a class="reference external" href="https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI">https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI</a>) and click the <cite>fork</cite> button. You will need to be logged in to GitHub to do this.</li>
+<li>Open Terminal and clone your fork by</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">git</span> <span class="pre">clone</span> <span class="pre">git&#64;github.com:YOUR_GITHUB_USER_NAME/EvalAI.git</span> <span class="pre">evalai</span>
+<span class="pre">`</span></code></p>
+<p>Don&#8217;t forget to replace YOUR_GITHUB_USER_NAME with your git username.</p>
+<p>###Step 3: Setup code base</p>
+<ul class="simple">
+<li>Create a python virtual environment and install python dependencies.</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">cd</span> <span class="pre">evalai</span>
+<span class="pre">virtualenv</span> <span class="pre">venv</span>
+<span class="pre">source</span> <span class="pre">venv/bin/activate</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements/dev.txt</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>Rename <cite>settings/dev.sample.py</cite> as <cite>dev.py</cite></li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">cp</span> <span class="pre">settings/dev.sample.py</span> <span class="pre">settings/dev.py</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>Create an empty postgres database and run database migration.</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">createdb</span> <span class="pre">evalai</span> <span class="pre">-U</span> <span class="pre">postgres</span>
+<span class="pre">#</span> <span class="pre">update</span> <span class="pre">postgres</span> <span class="pre">user</span> <span class="pre">password</span>
+<span class="pre">psql</span> <span class="pre">-U</span> <span class="pre">postgres</span> <span class="pre">-c</span> <span class="pre">&quot;ALTER</span> <span class="pre">USER</span> <span class="pre">postgres</span> <span class="pre">PASSWORD</span> <span class="pre">'postgres';&quot;</span>
+<span class="pre">#</span> <span class="pre">run</span> <span class="pre">migrations</span>
+<span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">migrate</span> <span class="pre">--settings=settings.dev</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>For setting up frontend, run</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">npm</span> <span class="pre">install</span>
+<span class="pre">bower</span> <span class="pre">install</span>
+<span class="pre">`</span></code></p>
+<p>###Step 4: Start the development environment</p>
+<ul class="simple">
+<li>To run backend development server at <a href="#id1"><span class="problematic" id="id2">`</span></a><a class="reference external" href="http://127.0.0.1">http://127.0.0.1</a>:8000`[<a class="reference external" href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>]</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">#</span> <span class="pre">activate</span> <span class="pre">virtual</span> <span class="pre">environment</span> <span class="pre">if</span> <span class="pre">not</span> <span class="pre">activated</span>
+<span class="pre">source</span> <span class="pre">venv/bin/activate</span>
+<span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">runserver</span> <span class="pre">--settings=settings.dev</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>To run frontend development server for at <a href="#id3"><span class="problematic" id="id4">`</span></a><a class="reference external" href="http://127.0.0.1">http://127.0.0.1</a>:8888`[<a class="reference external" href="http://127.0.0.1:8888">http://127.0.0.1:8888</a>]</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">gulp</span> <span class="pre">dev:runserver</span>
+<span class="pre">`</span></code></p>
+<p>### Common Errors</p>
+<p>#### Error: You need to install postgresql-server-dev-X.Y for building a server-side extension or libpq-dev for building a client-side application.</p>
+<p>__Solution__: Install libpq-dev</p>
+<p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">libpq-dev</span>
+<span class="pre">`</span></code></p>
+<p>Possible solutions for the same problem can be found at [link]</p>
+<p>[link]: <a class="reference external" href="http://stackoverflow.com/a/28938258/2534102">http://stackoverflow.com/a/28938258/2534102</a>
+[backend]: <a class="reference external" href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>
+[frontend]: <a class="reference external" href="http://127.0.0.1:8888">http://127.0.0.1:8888</a></p>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, CloudCV Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
