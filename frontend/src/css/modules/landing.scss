@@ -87,10 +87,15 @@ section.bg-section {
     background-color: $dark-gray;
 }
 
-.ev-details {
+.ev-details,
+.ev-reverse-details {
     position: relative;
     box-shadow: 6px 0px 12px #e0e0e0;
     padding: 0px 0px 40px 0px;
+}
+
+.ev-reverse-details {
+    box-shadow: none;
 }
 
 .full-view {
@@ -320,6 +325,20 @@ section.bg-section {
     100% {
         transform: rotate(-10deg);
         top: 240px;
+    }
+}
+
+.challenge-logo {
+    img {
+        width: 80px;
+        vertical-align: middle;
+    }
+}
+
+a.view-more {
+    color: $highlight;
+    &:hover {
+        color: $highlight-dark;
     }
 }
 
