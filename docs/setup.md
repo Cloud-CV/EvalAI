@@ -1,5 +1,6 @@
 ## How to setup
 ## Ubuntu Installation Instructions
+## Fedora Installation Instructions
 ### Step 1: Install prerequisites
 
 * Install git
@@ -100,7 +101,6 @@ python manage.py runserver --settings=settings.dev
 gulp dev:runserver
 ```
 
-## Fedora Installation Instructions
 ### Step 1: Install prerequisites
 
 * Install git
