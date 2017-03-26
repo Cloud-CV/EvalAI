@@ -1,6 +1,8 @@
-## How to setup
+### EvalAI can run on Linux, Cloud, Windows, and macOS platforms. Use the following list to choose the best installation path for you. The links under *Platform* take you straight to the installation instructions for that platform.
+
+- [Ubuntu](#ubuntu-installation-instructions)
+- [Fedora](#fedora-installation-instructions)
 ## Ubuntu Installation Instructions
-## Fedora Installation Instructions
 ### Step 1: Install prerequisites
 
 * Install git
@@ -100,7 +102,7 @@ python manage.py runserver --settings=settings.dev
 ```
 gulp dev:runserver
 ```
-
+## Fedora Installation Instructions
 ### Step 1: Install prerequisites
 
 * Install git
