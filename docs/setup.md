@@ -132,7 +132,7 @@ wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 sudo rpm -Uvh remi-release-6*.rpm epel-release-6*.rpm
 # Finally, download and install Erlang:
 sudo yum install -y erlang
-Once we have Erlang, we can continue with installing RabbitMQ:
+#Once we have Erlang, we can continue with installing RabbitMQ:
 wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.2.2/rabbitmq-server-3.2.2-1.noarch.rpm
 rpm --import http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
 sudo yum install rabbitmq-server-3.2.2-1.noarch.rpm
