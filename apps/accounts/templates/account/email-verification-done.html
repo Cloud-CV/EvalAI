@@ -1,8 +1,7 @@
 {% load static %}
-{% load sass_tags %}
 
 <head>
-  <link href="{% sass_src 'accounts/css/main.scss' %}" rel="stylesheet" type="text/css" />
+  <link type="text/css" rel="stylesheet" href="{% static 'accounts/css/main.css' %}">
   <link type="text/css" rel="stylesheet" href="{% static 'materialize/bin/materialize.css' %}"  media="screen,projection"/>
 </head>
 
