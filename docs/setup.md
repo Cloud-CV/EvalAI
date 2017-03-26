@@ -1,8 +1,5 @@
 ## How to setup
-
-This section guides first-time contributor through installing the EvalAI development environment on
-## Ubuntu(recommended 14.04)
-
+## Ubuntu Installation Instructions
 ### Step 1: Install prerequisites
 
 * Install git
@@ -103,8 +100,7 @@ python manage.py runserver --settings=settings.dev
 gulp dev:runserver
 ```
 
-And this section guides first-time contributor through installing the EvalAI development environment on 
-## Fedora(recommended 23+)
+## Fedora Installation Instructions
 ### Step 1: Install prerequisites
 
 * Install git
