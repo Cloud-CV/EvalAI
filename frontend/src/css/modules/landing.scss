@@ -128,7 +128,7 @@ section.bg-section {
     z-index: 0;
     /* margin: auto; */
     margin-top: 21vh;
-    /*animation: rocket 4s alternate infinite;*/
+    animation: rocket 3s alternate infinite;
     img {
         width: 100%;
     }
@@ -157,6 +157,16 @@ section.bg-section {
     animation: cloud-one 7s linear infinite;
     img {
         width: 100%;
+    }
+}
+
+@keyframes rocket {
+    0% {
+        transform: rotate(4deg);
+    }
+   
+    100% {
+        transform: rotate(-4deg);
     }
 }
 
