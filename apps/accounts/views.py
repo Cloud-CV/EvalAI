@@ -15,7 +15,7 @@ import requests
 
 class ConfirmEmailView(View):
     """
-    View for conforming email after registration
+    View for confirming email after registration
     """
 
     def get(self, request, *args, **kwargs):
