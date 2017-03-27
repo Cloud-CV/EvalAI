@@ -274,7 +274,11 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             created_by=self.challenge_host_team.created_by,
             status='submitted',
-            input_file=self.challenge_phase.test_annotation
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
         )
 
     def test_challenge_submission_when_challenge_does_not_exist(self):
@@ -349,6 +353,10 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 'created_by': self.submission.created_by.pk,
                 'status': self.submission.status,
                 'input_file': "http://testserver%s" % (self.submission.input_file.url),
+                'method_name': self.submission.method_name,
+                'method_description': self.submission.method_description,
+                'project_url': self.submission.project_url,
+                'publication_url': self.submission.publication_url,
                 'stdout_file': None,
                 'stderr_file': None,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
