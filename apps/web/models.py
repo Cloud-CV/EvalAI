@@ -32,13 +32,13 @@ class Team(models.Model):
     )
 
     name = models.CharField(max_length=100)
-    email = models.EmailField(max_length=70, null=True)
+    email = models.EmailField(max_length=70, null=True, blank=True)
     description = models.TextField(null=True)
     headshot = models.ImageField(upload_to="headshots", null=True, blank=True)
     visible = models.BooleanField(default=True)
-    github_url = models.CharField(max_length=200, null=True)
-    linkedin_url = models.CharField(max_length=200, null=True)
-    personal_website = models.CharField(max_length=200, null=True)
+    github_url = models.CharField(max_length=200, null=True, blank=True)
+    linkedin_url = models.CharField(max_length=200, null=True, blank=True)
+    personal_website = models.CharField(max_length=200, null=True, blank=True)
     background_image = models.ImageField(upload_to="bg-images", null=True, blank=True)
     team_type = models.CharField(choices=TEAM_TYPE_OPTIONS, max_length=50)
 
