@@ -17,6 +17,9 @@ class ChallengeHostTeam(TimeStampedModel):
     def __unicode__(self):
         return "%s: %s" % (self.team_name, self.created_by)
 
+    def __str__(self):
+        return "%s" % self.team_name
+
     class Meta:
         app_label = 'hosts'
         db_table = 'challenge_host_teams'
