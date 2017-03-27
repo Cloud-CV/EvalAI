@@ -147,8 +147,8 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
+@permission_classes((IsChallengeCreator,))
 def disable_challenge(request, pk):
-
     try:
         challenge = Challenge.objects.get(pk=pk)
     except Challenge.DoesNotExist:
