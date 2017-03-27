@@ -13,6 +13,7 @@ class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
     title = models.CharField(max_length=100)
+    short_description = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     terms_and_conditions = models.TextField(null=True, blank=True)
     submission_guidelines = models.TextField(null=True, blank=True)
