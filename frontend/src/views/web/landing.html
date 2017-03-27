@@ -35,17 +35,47 @@
                 <img src="dist/images/cloud2.png">
             </div>
         </section>
-        <!-- details section -->
+        <!-- challenge section -->
         <section class="ev-container ev-details text-med-black ev-super-light-bg" id="ev-scroll-down">
             <div class="grad-container text-med-black ">
                 <div class="row">
                     <div class="col s6">
-                        <h4 class="mons-med-font"><div>W h a t</div><div class="mt-12">I s</div><div class="mt-12">E v a l A I ?</div></h4>
-                        <div class="is-line"></div>
+                        <h4 class="mons-med-font">
+                        <div>Featured Challenge</div>
+                        </h4>
+                        <p>
+                            Explore other past, ongoing and upcoming challneges too.
+                        </p>
+                        
+                        <div> <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-light fs-14 mt-12" ui-sref="web.challenge-main">View All</a></div>
+                        <!-- <div class="is-line"></div> -->
                     </div>
                     <div class="col s6">
-                        <p><span class="text-dark-black w-500 mons-med-font">EvalAI is an open-source web platform for organizing and participating in competitions to push the state of the art on AI tasks.</span>
-<!--                             <ul class="text-med-black">
+                        <div class="challenge-logo">
+                            <img ng-src="{{main.challengeList.results[0].image}}"> &nbsp;
+                            <h4 class="grad-span">{{main.challengeList.results[0].title}}</h4>
+                        </div>
+                        <p>
+                            <span class="w-500 text-light-black mons-med-font">Organized by: </span> <span class="w-500 mons-med-font">{{main.challengeList.results[0].creator.team_name}}</span></p>
+                        <p><span class="text-dark-black mons-reg-font">{{main.challengeList.results[0].short_description}}<span ng-if="main.isMore">...</span></span>
+                        </p>
+                        <p>
+                            <span class="w-500 text-light-black mons-med-font">Status: </span> <span class="w-500 mons-med-font"> In Progress</span>
+                            <span class="right"><a class="view-more mons-reg-font" ui-sref="web.challenge-main.challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- details section -->
+        <section class="ev-container ev-reverse-details text-med-black " id="ev-scroll-down">
+            <div class="grad-container text-med-black ">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="align-center">
+                            <h4 class="mons-med-font"><div>What is EvalAI all about?</h4>
+                            <p><span class="text-dark-black w-500 mons-med-font">EvalAI is an open-source web platform for organizing and participating in competitions to push the state of the art on AI tasks.</span>
+                                <!-- <ul class="text-med-black">
                                 <li>
                                     EvailAI details one performance on Artificial Intelligence challenges
                                     <div class="big-line"></div>
@@ -59,7 +89,8 @@
                                     <div class="big-line"></div>
                                 </li>
                             </ul> -->
-                        </p>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
