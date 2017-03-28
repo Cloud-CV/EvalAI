@@ -75,6 +75,9 @@ class Submission(TimeStampedModel):
     stderr_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     execution_time_limit = models.PositiveIntegerField(default=300)
     method_name = models.CharField(max_length=1000, null=True)
+    method_description = models.TextField(blank=True, null=True)
+    publication_url = models.CharField(max_length=1000, null=True)
+    project_url = models.CharField(max_length=1000, null=True)
 
     def __unicode__(self):
         return '{}'.format(self.id)
