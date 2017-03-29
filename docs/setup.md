@@ -1,3 +1,4 @@
+## How to setup
 EvalAI can run on Linux, Cloud, Windows, and macOS platforms. Use the following list to choose the best installation path for you. The links under *Platform* take you straight to the installation instructions for that platform.
 
 - [Ubuntu](#ubuntu-installation-instructions)
