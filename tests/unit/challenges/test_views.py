@@ -432,25 +432,6 @@ class DisableChallengeTest(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
         )
 
-        # Create a temporary user who hosts the challenge but is not the creator
-        self.user2 = User.objects.create(
-            username="user2",
-            email="user2@test.com",
-            password="secret_password_2")
-
-        EmailAddress.objects.create(
-            user=self.user2,
-            email='user2@test.com',
-            primary=True,
-            verified=True)
-
-        # user2 is also a host of self.challenge
-        self.challenge_host = ChallengeHost.objects.create(
-            user=self.user2,
-            team_name=self.challenge_host_team1,
-            status=ChallengeHost.ACCEPTED,
-            permissions=ChallengeHost.ADMIN)
-
         self.url = reverse_lazy('challenges:disable_challenge',
                                 kwargs={'pk': self.challenge.pk})
 
@@ -468,22 +449,27 @@ class DisableChallengeTest(BaseAPITestClass):
         self.url = reverse_lazy('challenges:disable_challenge',
                                 kwargs={'pk': self.challenge2.pk})
         expected = {
-            'detail': 'Sorry, you are not allowed to perform this operation!'
+            'error': 'Sorry, you are not allowed to perform this operation!'
         }
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(response.data.values()[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_disable_challenge_when_user_is_not_creator(self):
         self.url = reverse_lazy('challenges:disable_challenge',
                                 kwargs={'pk': self.challenge2.pk})
+        # Now allot self.user as also a host of self.challenge_host_team1
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team1,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
         expected = {
-            'detail': 'Sorry, you are not allowed to perform this operation!'
+            'error': 'Sorry, you are not allowed to perform this operation!'
         }
-        alt_client = APIClient(enforce_csrf_checks=True)
-        alt_client.force_authenticate(user=self.user2)
-        response = alt_client.post(self.url, {})
-        self.assertEqual(response.data, expected)
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data.values()[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
