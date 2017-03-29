@@ -21,3 +21,4 @@ omit =
     */middleware/*
     frontend/
     settings/prod.py
+    settings/staging.py
