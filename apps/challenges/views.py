@@ -145,26 +145,18 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
 
 @throttle_classes([UserRateThrottle])
 @api_view(['POST'])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def disable_challenge(request, pk):
-
     try:
         challenge = Challenge.objects.get(pk=pk)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    challenge_host_team = challenge.creator
-
-    if challenge_host_team.created_by == request.user:
-        challenge.is_disabled = True
-        challenge.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    else:
-        response_data = {
-            'error': 'Sorry, you do not have permission to disable this challenge'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    challenge.is_disabled = True
+    challenge.save()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @throttle_classes([AnonRateThrottle])
