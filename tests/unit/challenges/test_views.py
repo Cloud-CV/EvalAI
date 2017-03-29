@@ -443,17 +443,34 @@ class DisableChallengeTest(BaseAPITestClass):
         self.url = reverse_lazy('challenges:disable_challenge',
                                 kwargs={'pk': self.challenge.pk + 2})
         response = self.client.post(self.url, {})
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_when_user_does_not_have_permission_to_disable_particular_challenge(self):
         self.url = reverse_lazy('challenges:disable_challenge',
                                 kwargs={'pk': self.challenge2.pk})
         expected = {
-            'error': 'Sorry, you do not have permission to disable this challenge'
+            'error': 'Sorry, you are not allowed to perform this operation!'
         }
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disable_challenge_when_user_is_not_creator(self):
+        self.url = reverse_lazy('challenges:disable_challenge',
+                                kwargs={'pk': self.challenge2.pk})
+        # Now allot self.user as also a host of self.challenge_host_team1
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team1,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
+        expected = {
+            'error': 'Sorry, you are not allowed to perform this operation!'
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class GetAllChallengesTest(BaseAPITestClass):

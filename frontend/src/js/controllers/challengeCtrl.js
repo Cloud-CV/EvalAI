@@ -14,6 +14,10 @@
         vm.phaseId = null;
         vm.phaseSplitId = null;
         vm.input_file = null;
+        vm.methodName = null;
+        vm.methodDesc = null;
+        vm.projectUrl = null;
+        vm.publicationUrl = null;
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
@@ -276,8 +280,14 @@
                                         parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                                         parameters.method = 'POST';
                                         var formData = new FormData();
+                                        console.log(vm.projectUrl);
+                                        console.log(vm.publicationUrl);
                                         formData.append("status", "submitting");
                                         formData.append("input_file", vm.input_file);
+                                        formData.append("method_name", vm.methodName);
+                                        formData.append("method_description", vm.methodDesc);
+                                        formData.append("project_url", vm.projectUrl);
+                                        formData.append("publication_url", vm.publicationUrl);
 
                                         parameters.data = formData;
 
@@ -297,6 +307,10 @@
 
 
                                                 vm.phaseId = null;
+                                                vm.methodName = null;
+                                                vm.methodDesc = null;
+                                                vm.projectUrl = null;
+                                                vm.publicationUrl = null;
                                                 // vm.subErrors.msg = "Your submission has been recorded succesfully!";
                                                 $rootScope.notify("success", "Your submission has been recorded succesfully!");
 
@@ -307,6 +321,10 @@
                                                 var error = response.data;
 
                                                 vm.phaseId = null;
+                                                vm.methodName = null;
+                                                vm.methodDesc = null;
+                                                vm.projectUrl = null;
+                                                vm.publicationUrl = null;
                                                 if (status == 404) {
 
                                                     vm.subErrors.msg = "Please select phase!";
