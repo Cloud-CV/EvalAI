@@ -35,7 +35,7 @@ class Team(models.Model):
     email = models.EmailField(max_length=70, null=True, blank=True)
     description = models.TextField(null=True)
     headshot = models.ImageField(upload_to="headshots", null=True, blank=True)
-    visible = models.BooleanField(default=True)
+    visible = models.BooleanField(default=False)
     github_url = models.CharField(max_length=200, null=True, blank=True)
     linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     personal_website = models.CharField(max_length=200, null=True, blank=True)
