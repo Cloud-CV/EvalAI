@@ -13,8 +13,12 @@ class IsChallengeCreator(permissions.BasePermission):
 
         if request.method in permissions.SAFE_METHODS:
             return True
-        elif request.method in ['DELETE', 'PATCH', 'PUT']:
-            challenge = Challenge.objects.get(pk=request.parser_context['kwargs']['pk'])
+        elif request.method in ['DELETE', 'PATCH', 'PUT', 'POST']:
+            try:
+                challenge = Challenge.objects.get(pk=request.parser_context['kwargs']['pk'])
+            except Challenge.DoesNotExist:
+                return False
+
             if request.user.id == challenge.creator.created_by.id:
                 return True
             else:
