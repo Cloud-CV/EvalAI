@@ -90,7 +90,7 @@ bower install
 
 ### Step 4: Start the development environment
 
-* To run backend development server at `http://127.0.0.1:8000`[http://127.0.0.1:8000]
+* To run backend development server at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ```
 # activate virtual environment if not activated
@@ -98,7 +98,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at `http://127.0.0.1:8888`[http://127.0.0.1:8888]
+* To run frontend development server for at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ```
 gulp dev:runserver
@@ -201,7 +201,7 @@ npm install -g bower
 
 ### Step 4: Start the development environment
 
-* To run backend development server at `http://127.0.0.1:8000`[http://127.0.0.1:8000]
+* To run backend development server at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ```
 # activate virtual environment if not activated
@@ -209,7 +209,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at `http://127.0.0.1:8888`[http://127.0.0.1:8888]
+* To run frontend development server for at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ```
 gulp dev:runserver
