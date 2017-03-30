@@ -17,19 +17,17 @@
                     <div ng-if="!showPagination" class="page-msg">{{challengeHostTeams.paginationMsg}}</div>
                     <ul class="collapsible" data-collapsible="accordion">
                         <li ng-repeat="(key, value) in challengeHostTeams.existTeam.results">
-                            <div class="collapsible-header"> <i class="fa fa-users" aria-hidden="true"></i>
+                            <div class="collapsible-header"> <i class="fa fa-lg fa-users" aria-hidden="true"></i>
                                 <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
                                     <a ng-click="challengeHostTeams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
                                     <a ng-click="challengeHostTeams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
                                     <br>
-                                    <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
+                                    <strong class="text-med-black">Created by: </strong>{{value.created_by}}</div>
                                 <div class="clearfix"></div>
                             </div>
                             <div class="collapsible-body">
                                 <h6>Participants:</h6>
-                                <p ng-repeat="member in value.members">
-                                    {{member.user}}
-                                </p>
+                                <p ng-repeat="member in value.members">{{member.user}}</p>
                             </div>
                         </li>
                     </ul>

@@ -47,7 +47,7 @@
 
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
-        }
+        };
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
