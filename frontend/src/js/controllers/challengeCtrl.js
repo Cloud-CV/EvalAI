@@ -502,6 +502,15 @@
             vm.stopFetchingSubmissions();
             vm.isResult = true;
             vm.phaseId = phaseId;
+
+            var all_phases = vm.phases.results;
+            for(var i=0; i<vm.phases.results.length; i++){
+                if (all_phases[i].id == phaseId){
+                    vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    break;
+                }
+            }
+
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
