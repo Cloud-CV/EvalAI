@@ -3,10 +3,12 @@
         &.collapsible {
             border: 0;
             box-shadow: none;
+            li {
+                box-shadow: 0 0 5px #e0e0e0;
+            }
         }
         li {
             margin: 20px 0px;
-            box-shadow: 0 0 5px #e0e0e0;
             min-height: 40px;
             .collapsible-header {
                 border-bottom: 0;
