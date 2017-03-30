@@ -251,6 +251,7 @@
         };
 
         vm.confirmDelete = function(ev, hostTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove yourself?')
@@ -327,6 +328,7 @@
         };
 
         vm.inviteOthers = function(ev, hostTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
                 .title('Invite others to this Team')
