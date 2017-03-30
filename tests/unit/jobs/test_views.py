@@ -279,6 +279,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             method_description="Test Description",
             project_url="http://testserver/",
             publication_url="http://testserver/",
+            is_public=True,
         )
 
     def test_challenge_submission_when_challenge_does_not_exist(self):
@@ -360,6 +361,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 'stdout_file': None,
                 'stderr_file': None,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+                "is_public": self.submission.is_public,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
