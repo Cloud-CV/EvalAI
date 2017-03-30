@@ -45,6 +45,10 @@
             vm.loginContainer.removeClass('low-screen');
         };
 
+        vm.activateCollapsible = function() {
+            angular.element('.collapsible').collapsible();
+        }
+
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
         parameters.method = 'GET';
@@ -60,7 +64,7 @@
                         vm.showPagination = false;
                         vm.paginationMsg = "No team exist for now, Start by creating a new team!";
                     } else {
-
+                        vm.activateCollapsible();
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
@@ -319,8 +323,7 @@
 
                 utilities.sendRequest(parameters);
 
-            }, function() {
-            });
+            }, function() {});
         };
 
         vm.inviteOthers = function(ev, hostTeamId) {
