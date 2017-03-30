@@ -18,15 +18,17 @@
                     <ul class="collapsible" data-collapsible="accordion">
                         <li ng-repeat="(key, value) in challengeHostTeams.existTeam.results">
                             <div class="collapsible-header"> <i class="fa fa-lg fa-users" aria-hidden="true"></i>
-                                <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
+                                <div class="show-member-title pointer">
+                                    <span><b class="text-med-black">Team: </b>{{value.team_name}}</span>
                                     <a ng-click="challengeHostTeams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
                                     <a ng-click="challengeHostTeams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
                                     <br>
-                                    <strong class="text-med-black">Created by: </strong>{{value.created_by}}</div>
+                                    <span><b class="text-med-black">Created by: </b>{{value.created_by}}</span>
+                                </div>
                                 <div class="clearfix"></div>
                             </div>
                             <div class="collapsible-body">
-                                <h6>Participants:</h6>
+                                <h6><b>Participants:</b></h6>
                                 <p ng-repeat="member in value.members">{{member.user}}</p>
                             </div>
                         </li>
