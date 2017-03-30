@@ -210,6 +210,17 @@ gulp.task('configDev', function() {
         .pipe(gulp.dest('frontend/dist/js'))
 });
 
+// config for staging server
+gulp.task('configStaging', function() {
+    gulp.src('frontend/src/js/config.json')
+        .pipe(ngConfig('evalai-config', {
+            environment: 'staging'
+        }))
+        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(flags.production, uglify()))
+        .pipe(gulp.dest('frontend/dist/js'))
+});
+
 // config for prod server
 gulp.task('configProd', function() {
     gulp.src('frontend/src/js/config.json')
@@ -345,6 +356,12 @@ var flags = {
 gulp.task('dev', function(callback) {
     runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configDev'], 'inject', callback);
 
+});
+
+// staging task
+gulp.task('staging', function(callback) {
+    flags.production = false; //Making this 'true' enables file compression. This will be done after js test integration
+    runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configStaging'], 'inject', callback);
 });
 
 // production task
