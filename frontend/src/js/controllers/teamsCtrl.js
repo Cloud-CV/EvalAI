@@ -46,6 +46,10 @@
             vm.loginContainer.removeClass('low-screen');
         };
 
+        vm.activateCollapsible = function() {
+            angular.element('.collapsible').collapsible();
+        };
+
         var parameters = {};
         parameters.url = 'participants/participant_team';
         parameters.method = 'GET';
@@ -61,7 +65,7 @@
                         vm.showPagination = false;
                         vm.paginationMsg = "No team exist for now, Start by creating a new team!";
                     } else {
-
+                        vm.activateCollapsible();
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
@@ -288,6 +292,7 @@
         };
 
         vm.confirmDelete = function(ev, participantTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove yourself?')
@@ -367,6 +372,7 @@
 
 
         vm.inviteOthers = function(ev, participantTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.prompt()
                 .title('Invite others to this team')
