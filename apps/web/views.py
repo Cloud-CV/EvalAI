@@ -73,6 +73,6 @@ def our_team(request):
         serializer = TeamSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            response_data = {'message', 'The contributor has been added.'}
+            response_data = {'message', 'Successfully added the contributor.'}
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

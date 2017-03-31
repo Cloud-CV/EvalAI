@@ -57,13 +57,13 @@ class CreateTeamMember(APITestCase):
             'personal_website': 'www.testuser.com',
         }
 
-    def test_add_contributor_test(self):
+    def test_create_team_member(self):
         # TODO add 'Header' and 'Background image' to testing
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Team.objects.all().count(), 1)
 
-        team = Team.objects.get()
+        team = Team.objects.get(name=self.data['name'])
         result = {
             'name': team.name,
             'email': team.email,
