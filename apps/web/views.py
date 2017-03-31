@@ -10,7 +10,7 @@ from rest_framework.decorators import (api_view,
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
-from .serializers import ContactSerializer, TeamSerializer, ContributorSerializer
+from .serializers import ContactSerializer, TeamSerializer
 
 
 def home(request, template_name="index.html"):
@@ -70,7 +70,7 @@ def our_team(request):
         return Response(response_data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
         request.data['team_type'] = Team.CONTRIBUTOR
-        serializer = ContributorSerializer(data=request.data)
+        serializer = TeamSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             response_data = {'message', 'The contributor has been added.'}

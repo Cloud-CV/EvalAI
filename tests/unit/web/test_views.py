@@ -105,6 +105,7 @@ class GetTeamTest(APITestCase):
             {
                 "name": self.team.name,
                 "headshot": "http://testserver%s" % self.team.headshot.url,
+                "email": self.team.email,
                 "background_image": "http://testserver%s" % self.team.background_image.url,
                 "github_url": self.team.github_url,
                 "linkedin_url": self.team.linkedin_url,
