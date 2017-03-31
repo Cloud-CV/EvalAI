@@ -49,21 +49,21 @@ class CreateContactMessage(BaseAPITestCase):
 class CreateTeamMember(APITestCase):
     def setUp(self):
         self.url = reverse_lazy('web:our_team')
-        self.contributor = {
-            'name': 'John Snow',
-            'email': 'john@snow.com',
-            'github_url': 'www.github.com/johnsnow',
-            'linkedin_url': 'www.linkedin.com/johnsnow',
-            'personal_website': 'www.johnsnow.com',
+        self.data = {
+            'name': 'Test User',
+            'email': 'test@user.com',
+            'github_url': 'www.github.com/testuser',
+            'linkedin_url': 'www.linkedin.com/testuser',
+            'personal_website': 'www.testuser.com',
         }
 
     def test_add_contributor_test(self):
         # TODO add 'Header' and 'Background image' to testing
-        response = self.client.post(self.url, self.contributor)
+        response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(Team.objects.all()), 1)
+        self.assertEqual(Team.objects.all().count(), 1)
 
-        team = Team.objects.all()[0]
+        team = Team.objects.get()
         result = {
             'name': team.name,
             'email': team.email,
@@ -71,7 +71,7 @@ class CreateTeamMember(APITestCase):
             'linkedin_url': team.linkedin_url,
             'personal_website': team.personal_website,
         }
-        self.assertEqual(self.contributor, result)
+        self.assertEqual(self.data, result)
         self.assertEqual(Team.CONTRIBUTOR, team.team_type)
 
 
@@ -79,23 +79,23 @@ class GetTeamTest(APITestCase):
     def setUp(self):
         self.url = reverse_lazy('web:our_team')
         self.team = Team.objects.create(
-            name='John Snow',
-            email='john@snow.com',
-            description='An awesome description for John Snow',
+            name='Test User',
+            email='test@user.com',
+            description='An awesome description for Test User',
             headshot=SimpleUploadedFile(
                 name='test_headshot.jpg',
                 content=open('frontend/src/images/deshraj.png', 'rb').read(),
                 content_type='image/png'
             ),
-            github_url='www.github.com/johnsnow',
-            linkedin_url='www.linkedin.com/johnsnow',
-            personal_website='www.johnsnow.com',
+            github_url='www.github.com/testuser',
+            linkedin_url='www.linkedin.com/testuser',
+            personal_website='www.testuser.com',
             background_image=SimpleUploadedFile(
                 name='test_background_image.jpg',
                 content=open('frontend/src/images/deshraj-profile.jpg', 'rb').read(),
                 content_type='image/jpg'
             ),
-            team_type='Core Team',
+            team_type=Team.CORE_TEAM,
             visible=True,
         )
 
