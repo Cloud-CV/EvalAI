@@ -46,6 +46,35 @@ class CreateContactMessage(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+class CreateTeamMember(APITestCase):
+    def setUp(self):
+        self.url = reverse_lazy('web:our_team')
+        self.contributor = {
+            'name': 'John Snow',
+            'email': 'john@snow.com',
+            'github_url': 'www.github.com/johnsnow',
+            'linkedin_url': 'www.linkedin.com/johnsnow',
+            'personal_website': 'www.johnsnow.com',
+        }
+
+    def test_add_contributor_test(self):
+        # TODO add 'Header' and 'Background image' to testing
+        response = self.client.post(self.url, self.contributor)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(Team.objects.all()), 1)
+
+        team = Team.objects.all()[0]
+        result = {
+            'name': team.name,
+            'email': team.email,
+            'github_url': team.github_url,
+            'linkedin_url': team.linkedin_url,
+            'personal_website': team.personal_website,
+        }
+        self.assertEqual(self.contributor, result)
+        self.assertEqual(Team.CONTRIBUTOR, team.team_type)
+
+
 class GetTeamTest(APITestCase):
     def setUp(self):
         self.url = reverse_lazy('web:our_team')

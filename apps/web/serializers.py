@@ -16,3 +16,10 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = ('name', 'description', 'headshot', 'background_image', 'github_url', 'linkedin_url',
                   'personal_website', 'team_type')
+
+
+class ContributorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ('name', 'email', 'headshot', 'background_image', 'github_url', 'linkedin_url',
+                  'personal_website', 'team_type')

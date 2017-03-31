@@ -10,7 +10,7 @@ from rest_framework.decorators import (api_view,
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
-from .serializers import ContactSerializer, TeamSerializer
+from .serializers import ContactSerializer, TeamSerializer, ContributorSerializer
 
 
 def home(request, template_name="index.html"):
@@ -60,10 +60,19 @@ def contact_us(request):
 
 
 @throttle_classes([AnonRateThrottle])
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes((permissions.AllowAny,))
 def our_team(request):
-    teams = Team.objects.all()
-    serializer = TeamSerializer(teams, many=True, context={'request': request})
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
+    if request.method == 'GET':
+        teams = Team.objects.all()
+        serializer = TeamSerializer(teams, many=True, context={'request': request})
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        request.data['team_type'] = Team.CONTRIBUTOR
+        serializer = ContributorSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            response_data = {'message', 'The contributor has been added.'}
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
