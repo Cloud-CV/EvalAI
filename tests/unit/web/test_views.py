@@ -57,7 +57,7 @@ class CreateTeamMember(APITestCase):
             'personal_website': 'www.testuser.com',
         }
 
-    def test_create_team_member(self):
+    def test_create_team_member_default_team_type(self):
         # TODO add 'Header' and 'Background image' to testing
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -73,6 +73,24 @@ class CreateTeamMember(APITestCase):
         }
         self.assertEqual(self.data, result)
         self.assertEqual(Team.CONTRIBUTOR, team.team_type)
+
+    def test_create_team_member_custom_team_type(self):
+        # TODO add 'Header' and 'Background image' to testing
+        self.data['team_type'] = Team.CORE_TEAM
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Team.objects.all().count(), 1)
+
+        team = Team.objects.get(name=self.data['name'])
+        result = {
+            'name': team.name,
+            'email': team.email,
+            'github_url': team.github_url,
+            'linkedin_url': team.linkedin_url,
+            'personal_website': team.personal_website,
+            'team_type': team.team_type
+        }
+        self.assertEqual(self.data, result)
 
 
 class GetTeamTest(APITestCase):

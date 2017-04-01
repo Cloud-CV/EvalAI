@@ -69,7 +69,8 @@ def our_team(request):
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        request.data['team_type'] = Team.CONTRIBUTOR
+        # team_type is set to Team.CONTRIBUTOR by default and can be overridden by the requester
+        request.data['team_type'] = request.data.get('team_type', Team.CONTRIBUTOR)
         serializer = TeamSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
