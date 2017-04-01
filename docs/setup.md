@@ -98,7 +98,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+* To run frontend development server for at [http://127.0.0.1:8000](http://127.0.0.1:8888)
 
 ```
 gulp dev:runserver
@@ -209,7 +209,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+* To run frontend development server for at [http://127.0.0.1:8000](http://127.0.0.1:8888)
 
 ```
 gulp dev:runserver
