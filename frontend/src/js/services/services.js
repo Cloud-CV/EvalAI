@@ -42,7 +42,7 @@
             if (header == 'header') {
                 req.headers = headers;
             }
-            if (method == "POST" || method == "PUT") {
+            if (method == "POST" || method == "PUT" || method == "PATCH") {
                 req.data = data;
             }
 

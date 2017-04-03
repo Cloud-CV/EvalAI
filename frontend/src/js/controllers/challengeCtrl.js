@@ -25,6 +25,7 @@
         vm.phases = {};
         vm.phaseSplits = {};
         vm.isValid = {};
+        vm.submissionVisibility = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -545,6 +546,11 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.submissionResult = details;
+
+                    for (var i=0; i<details.results.length; i++){
+                        vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                    }
+
                     vm.start();
 
                     if (vm.submissionResult.count === 0) {
@@ -652,7 +658,13 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
-                            if (vm.submissionResult.results.count !== details.results.count) {
+
+                            // Set the is_public flag corresponding to each submission
+                            for (var i=0; i<details.results.length; i++){
+                                vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                            }
+
+                            if (vm.submissionResult.results.length !== details.results.length) {
                                 vm.showUpdate = true;
                             } else {
                                 for (var i = 0; i < details.results.length; i++) {
@@ -688,6 +700,12 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
+
+                    // Set the is_public flag corresponding to each submission
+                    for (var i=0; i<details.results.length; i++){
+                        vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                    }
+
                     vm.submissionResult = details;
                     vm.showUpdate = false;
                     vm.stopLoader();
@@ -810,6 +828,31 @@
 
             utilities.sendRequest(parameters);
 
+        };
+
+        vm.changeSubmissionVisibility = function(submission_id) {
+            var parameters = {};
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "is_public": vm.submissionVisibility[submission_id]
+            };
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    // vm.leaderboard = details.results;
+                    // vm.startLeaderboard();
+                    // vm.stopLoader();
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    // vm.leaderboard.error = error;
+                    // vm.stopLoader();
+                }
+            };
+
+            utilities.sendRequest(parameters);
         };
 
         $scope.$on('$destroy', function() {
