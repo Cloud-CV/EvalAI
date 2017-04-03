@@ -146,7 +146,7 @@ class Submission(TimeStampedModel):
                     logger.info("Permission Denied: The maximum number of submission for today has been reached")
                     raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
 
-            self.is_public = (True if self.challenge_phase.leaderboard_public else False)
+            self.is_public = (True if self.challenge_phase.is_submission_public else False)
 
             self.status = Submission.SUBMITTED
 
