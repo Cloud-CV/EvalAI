@@ -547,7 +547,7 @@
                     var details = response.data;
                     vm.submissionResult = details;
 
-                    for (var i=0; i<details.results.length; i++){
+                    for (var i = 0; i < details.results.length; i++){
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                     }
 
@@ -660,14 +660,14 @@
                             var details = response.data;
 
                             // Set the is_public flag corresponding to each submission
-                            for (var i=0; i<details.results.length; i++){
+                            for (var i = 0; i < details.results.length; i++){
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                             }
 
                             if (vm.submissionResult.results.length !== details.results.length) {
                                 vm.showUpdate = true;
                             } else {
-                                for (var i = 0; i < details.results.length; i++) {
+                                for (i = 0; i < details.results.length; i++) {
                                     if (details.results[i].status !== vm.submissionResult.results[i].status) {
                                         vm.showUpdate = true;
                                         break;
@@ -702,7 +702,7 @@
                     var details = response.data;
 
                     // Set the is_public flag corresponding to each submission
-                    for (var i=0; i<details.results.length; i++){
+                    for (var i = 0; i < details.results.length; i++){
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                     }
 
@@ -839,16 +839,9 @@
             };
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response) {
-                    var details = response.data;
-                    // vm.leaderboard = details.results;
-                    // vm.startLeaderboard();
-                    // vm.stopLoader();
+                onSuccess: function() {
                 },
-                onError: function(response) {
-                    var error = response.data;
-                    // vm.leaderboard.error = error;
-                    // vm.stopLoader();
+                onError: function() {
                 }
             };
 
