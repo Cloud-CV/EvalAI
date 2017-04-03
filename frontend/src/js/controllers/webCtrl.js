@@ -14,7 +14,6 @@
         var vm = this;
 
         vm.user = {};
-        var count = 0;
 
         utilities.hideLoader();
 
@@ -35,8 +34,7 @@
                     vm.name = result.username;
                 }
             },
-            onError: function(response) {
-                var error = response.data;
+            onError: function() {
                 $rootScope.notify("error", "Some error have occured , please try again !");
             }
         };
