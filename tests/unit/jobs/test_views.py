@@ -347,6 +347,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                                         'challenge_phase_id': self.challenge_phase.pk})
         expected = [
             {
+                'id': self.submission.id,
                 'participant_team': self.submission.participant_team.pk,
                 'participant_team_name': self.submission.participant_team.team_name,
                 'execution_time': self.submission.execution_time,

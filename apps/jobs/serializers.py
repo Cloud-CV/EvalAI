@@ -12,7 +12,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         context = kwargs.get('context')
-        if context and context.get('request').method != 'GET':
+        if context and context.get('request').method == 'POST':
             created_by = context.get('request').user
             kwargs['data']['created_by'] = created_by.pk
 
@@ -26,7 +26,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Submission
-        fields = ('participant_team', 'participant_team_name', 'execution_time', 'challenge_phase',
+        fields = ('id', 'participant_team', 'participant_team_name', 'execution_time', 'challenge_phase',
                   'created_by', 'status', 'input_file', 'stdout_file', 'stderr_file', 'submitted_at',
                   'method_name', 'method_description', 'project_url', 'publication_url', 'is_public', )
 
