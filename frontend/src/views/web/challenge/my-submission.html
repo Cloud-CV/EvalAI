@@ -42,6 +42,7 @@
                                         <th data-field="file">Stdout File</th>
                                         <th data-field="file">Stderr File</th>
                                         <th data-field="file">Submitted At</th>
+                                        <th ng-if="challenge.currentPhaseLeaderboardPublic" data-field="file">Show on Leaderboard</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -53,6 +54,12 @@
                                         <td><a href="{{key.stdout_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                         <td><a href="{{key.stderr_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                         <td>{{key.submitted_at | date:'medium'}}</td>
+                                        <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
+                                            <input ng-checked="key.is_public" ng-if="key.status == 'finished'" ng-model="challenge.submissionVisibility[key.id]" type="checkbox" id="isPublic{{ key.id }}" ng-change="challenge.changeSubmissionVisibility(key.id)" />
+                                            <label for="isPublic{{ key.id }}"></label>
+                                            <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
+                                            </div>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
