@@ -76,6 +76,9 @@ RAVEN_CONFIG = {
     'release': raven.fetch_git_sha(os.path.dirname(os.pardir)),
 }
 
+# https://docs.djangoproject.com/en/1.10/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 LOGGING['root'] = {                                     # noqa
     'level': 'INFO',
     'handlers': ['console', 'sentry', 'logfile'],
