@@ -73,6 +73,10 @@ class Submission(TimeStampedModel):
     input_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"))
     stdout_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     stderr_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    submission_result_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    submission_metadata_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     execution_time_limit = models.PositiveIntegerField(default=300)
     method_name = models.CharField(max_length=1000, null=True)
     method_description = models.TextField(blank=True, null=True)
