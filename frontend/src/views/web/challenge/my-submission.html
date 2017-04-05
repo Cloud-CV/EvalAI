@@ -39,6 +39,7 @@
                                         <th data-field="status">Status</th>
                                         <th class="align-center" data-field="status">Execution Time (sec.)</th>
                                         <th data-field="file">Submitted File</th>
+                                        <th data-field="file">Result File</th>
                                         <th data-field="file">Stdout File</th>
                                         <th data-field="file">Stderr File</th>
                                         <th data-field="file">Submitted At</th>
@@ -51,8 +52,12 @@
                                         <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
                                         <td class="align-center">{{key.execution_time}}</td>
                                         <td><a href="{{key.input_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                                        <td ng-if="key.submission_result_file"><a href="{{key.submission_result_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                                        <td ng-if="!key.submission_result_file">None</td>
                                         <td><a href="{{key.stdout_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                                        <td ng-if="!key.stdout_file">None</td>
                                         <td><a href="{{key.stderr_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                                        <td ng-if="!key.stderr_file">None</td>
                                         <td>{{key.submitted_at | date:'medium'}}</td>
                                         <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
                                             <input ng-checked="key.is_public" ng-if="key.status == 'finished'" ng-model="challenge.submissionVisibility[key.id]" type="checkbox" id="isPublic{{ key.id }}" ng-change="challenge.changeSubmissionVisibility(key.id)" />
