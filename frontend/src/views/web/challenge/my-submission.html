@@ -56,7 +56,7 @@
                                         <td ng-if="!key.submission_result_file">None</td>
                                         <td><a href="{{key.stdout_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                         <td ng-if="!key.stdout_file">None</td>
-                                        <td><a href="{{key.stderr_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                                        <td ng-if="key.stderr_file"><a href="{{key.stderr_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                                         <td ng-if="!key.stderr_file">None</td>
                                         <td>{{key.submitted_at | date:'medium'}}</td>
                                         <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
