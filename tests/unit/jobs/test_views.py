@@ -361,7 +361,6 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 'publication_url': self.submission.publication_url,
                 'stdout_file': None,
                 'stderr_file': None,
-                'submission_metadata_file': None,
                 'submission_result_file': None,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
                 "is_public": self.submission.is_public,
