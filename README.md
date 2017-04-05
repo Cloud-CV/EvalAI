@@ -89,6 +89,45 @@ Follow this guide to setup your development machine.
     ```
     python scripts/workers/submission_worker.py
     ```
+#### Using Docker
+
+You can also use Docker Compose to run all the components of EvalAI together. The steps are:
+
+1. Get the source code on to your machine via git.
+
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai
+    ```
+
+2. Rename `settings/dev.sample.py` to `dev.py` and change the `DATABASES` credentials in `settings/dev.py` as given below.
+
+    ```
+    cp settings/dev.sample.py settings/dev.py
+    ```
+    
+    ```python
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'HOST': 'db',
+        'PORT': 5432,
+       }
+    }
+    ```
+
+3. Build the Docker containers. This might take a while.
+
+    ```
+    docker-compose -f docker-compose.dev.yml build
+    ```
+    
+4. Finally, run your containers with `docker-compose` and you should be able to access EvalAI at `localhost:8888`.
+
+    ```
+    docker-compose -f docker-compose.dev.yml up
+    ```
 
 ## Contribution guidelines
 
