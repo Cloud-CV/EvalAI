@@ -31,6 +31,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
                   'method_name', 'method_description', 'project_url', 'publication_url', 'is_public',
                   'submission_result_file',)
 
+
     def get_participant_team_name(self, obj):
         return obj.participant_team.team_name
 
