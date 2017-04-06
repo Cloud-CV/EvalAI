@@ -14,6 +14,17 @@
     }
 }
 
+.grad-btn-light {
+    background: $highlight;
+    font-weight: $rob-reg;
+    color: #fff;
+    box-shadow: 0px 4px 8px #9d9d9d;
+    &:hover {
+        box-shadow: 0px 0px 8px #9d9d9d;
+        background: $highlight;
+    }
+}
+
 
 /*font styles*/
 
@@ -37,4 +48,12 @@
     margin: 0 auto;
     padding: 80px 100px 40px 100px;
     clear: both;
+}
+
+.rm-grad-pad {
+    padding: 30px 100px 30px 100px;
+}
+
+.grad-span {
+    display: inline;
 }

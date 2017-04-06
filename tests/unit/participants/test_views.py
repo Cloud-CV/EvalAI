@@ -460,6 +460,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
         self.challenge1 = Challenge.objects.create(
             title='Test Challenge 1',
+            short_description='Short description for test challenge 1',
             description='Description for test challenge 1',
             terms_and_conditions='Terms and conditions for test challenge 1',
             submission_guidelines='Submission guidelines for test challenge 1',
@@ -473,6 +474,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
         self.challenge2 = Challenge.objects.create(
             title='Test Challenge 2',
+            short_description='Short description for test challenge 2',
             description='Description for test challenge 2',
             terms_and_conditions='Terms and conditions for test challenge 2',
             submission_guidelines='Submission guidelines for test challenge 2',
@@ -496,6 +498,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "id": self.challenge1.id,
                         "title": self.challenge1.title,
                         "description": self.challenge1.description,
+                        "short_description": self.challenge1.short_description,
                         "terms_and_conditions": self.challenge1.terms_and_conditions,
                         "submission_guidelines": self.challenge1.submission_guidelines,
                         "evaluation_details": self.challenge1.evaluation_details,

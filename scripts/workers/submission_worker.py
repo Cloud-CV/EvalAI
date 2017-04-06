@@ -17,7 +17,7 @@ from os.path import dirname, join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
-
+from django.conf import settings
 # need to add django project path in sys path
 # root directory : where manage.py lives
 # worker is present in root-directory/scripts/workers
@@ -49,7 +49,6 @@ from challenges.models import (Challenge,
 
 from jobs.models import Submission          # noqa
 
-
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'challenge_data')
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'submission_files')
 CHALLENGE_DATA_DIR = join(CHALLENGE_DATA_BASE_DIR, 'challenge_{challenge_id}')
@@ -59,7 +58,6 @@ PHASE_ANNOTATION_FILE_PATH = join(PHASE_DATA_DIR, '{annotation_file}')
 SUBMISSION_DATA_DIR = join(SUBMISSION_DATA_BASE_DIR, 'submission_{submission_id}')
 SUBMISSION_INPUT_FILE_PATH = join(SUBMISSION_DATA_DIR, '{input_file}')
 CHALLENGE_IMPORT_STRING = 'challenge_data.challenge_{challenge_id}'
-
 EVALUATION_SCRIPTS = {}
 
 # map of challenge id : phase id : phase annotation file name
@@ -310,7 +308,9 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
                         "key2":45,
                      }
                   }
-               ]
+               ],
+               "submission_metadata": {'foo': 'bar'},
+               "submission_result": ['foo', 'bar'],
             }
         '''
         if 'result' in submission_output:
@@ -381,6 +381,14 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
         stderr_content = stderr.read()
         submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
 
+    # Save submission_result_file
+    submission_result = submission_output.get('submission_result', '')
+    submission.submission_result_file.save('submission_result.txt', ContentFile(submission_result))
+
+    # Save submission_metadata_file
+    submission_metadata = submission_output.get('submission_metadata', '')
+    submission.submission_metadata_file.save('submission_metadata.txt', ContentFile(submission_metadata))
+
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
 
@@ -446,12 +454,13 @@ def main():
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     load_active_challenges()
-
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='localhost'))
+        host=settings.RABBITMQ_PARAMETERS['HOST']))
 
     channel = connection.channel()
-    channel.exchange_declare(exchange='evalai_submissions', type='topic')
+    channel.exchange_declare(
+        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+        type=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['TYPE'])
 
     # name can be a combination of hostname + process id
     # host name : to easily identify that the worker is running on which instance
@@ -459,7 +468,9 @@ def main():
     add_challenge_queue_name = '{hostname}_{process_id}'.format(hostname=socket.gethostname(),
                                                                 process_id=str(os.getpid()))
 
-    channel.queue_declare(queue='submission_task_queue', durable=True)
+    channel.queue_declare(
+        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
+        durable=True)
 
     # reason for using `exclusive` instead of `autodelete` is that
     # challenge addition queue should have only have one consumer on the connection
@@ -470,10 +481,17 @@ def main():
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
 
-    channel.queue_bind(exchange='evalai_submissions', queue='submission_task_queue', routing_key='submission.*.*')
-    channel.basic_consume(process_submission_callback, queue='submission_task_queue')
+    channel.queue_bind(
+        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
+        routing_key='submission.*.*')
+    channel.basic_consume(
+        process_submission_callback,
+        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'])
 
-    channel.queue_bind(exchange='evalai_submissions', queue=add_challenge_queue_name, routing_key='challenge.add.*')
+    channel.queue_bind(
+        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+        queue=add_challenge_queue_name, routing_key='challenge.*.*')
     channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
 
     channel.start_consuming()

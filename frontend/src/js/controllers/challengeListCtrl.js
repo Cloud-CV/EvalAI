@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$state', '$stateParams', '$rootScope'];
+    ChallengeListCtrl.$inject = ['utilities'];
 
-    function ChallengeListCtrl(utilities, $state, $stateParams, $rootScope) {
+    function ChallengeListCtrl(utilities) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -38,7 +38,6 @@
 
         parameters.callback = {
             onSuccess: function(response) {
-                var status = response.status;
                 var data = response.data;
                 vm.currentList = data.results;
 
@@ -73,7 +72,6 @@
 
                 parameters.callback = {
                     onSuccess: function(response) {
-                        var status = response.status;
                         var data = response.data;
                         vm.upcomingList = data.results;
 
@@ -107,7 +105,6 @@
 
                         parameters.callback = {
                             onSuccess: function(response) {
-                                var status = response.status;
                                 var data = response.data;
                                 vm.pastList = data.results;
 
@@ -136,9 +133,7 @@
                                 utilities.hideLoader();
 
                             },
-                            onError: function(response) {
-                                var status = response.status;
-                                var error = response.data;
+                            onError: function() {
                                 utilities.hideLoader();
                             }
                         };
@@ -146,9 +141,7 @@
                         utilities.sendRequest(parameters);
 
                     },
-                    onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
+                    onError: function() {
                         utilities.hideLoader();
                     }
                 };
@@ -156,9 +149,7 @@
                 utilities.sendRequest(parameters);
 
             },
-            onError: function(response) {
-                var status = response.status;
-                var error = response.data;
+            onError: function() {
 
                 utilities.hideLoader();
             }

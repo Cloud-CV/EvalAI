@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
-from os.path import join
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
@@ -20,27 +18,6 @@ from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
 
 logger = logging.getLogger(__name__)
-
-# Whenever the migrations are being squashed, Please remove these functions.
-# Reason: During migrating django looks for its previous state,
-#         hence these functions were not removed to prevent this error.
-# "AttributeError: 'module' object has no attribute 'input_file_name'"
-
-
-def submission_root(instance):
-    return join('submission_files', 'submission_' + str(instance.pk))
-
-
-def input_file_name(instance, filename='input.txt'):
-    return join(submission_root(instance), filename)
-
-
-def stdout_file_name(instance, filename='stdout.txt'):
-    return join(submission_root(instance), filename)
-
-
-def stderr_file_name(instance, filename='stderr.txt'):
-    return join(submission_root(instance), filename)
 
 
 # submission.pk is not available when saving input_file
@@ -93,10 +70,18 @@ class Submission(TimeStampedModel):
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
-    input_file = models.FileField(upload_to=RandomFileName("submission_files/submission"))
-    stdout_file = models.FileField(upload_to=RandomFileName("submission_files/submission"), null=True, blank=True)
-    stderr_file = models.FileField(upload_to=RandomFileName("submission_files/submission"), null=True, blank=True)
+    input_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"))
+    stdout_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    stderr_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    submission_result_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    submission_metadata_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     execution_time_limit = models.PositiveIntegerField(default=300)
+    method_name = models.CharField(max_length=1000, null=True)
+    method_description = models.TextField(blank=True, null=True)
+    publication_url = models.CharField(max_length=1000, null=True)
+    project_url = models.CharField(max_length=1000, null=True)
 
     def __unicode__(self):
         return '{}'.format(self.id)
@@ -160,12 +145,18 @@ class Submission(TimeStampedModel):
                     challenge_phase=self.challenge_phase,
                     submitted_at__gte=datetime.date.today()).count()
 
+                failed_count = Submission.objects.filter(
+                    challenge_phase=self.challenge_phase,
+                    participant_team=self.participant_team,
+                    status=Submission.FAILED,
+                    submitted_at__gte=datetime.date.today()).count()
+
                 if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
                         (self.challenge_phase.max_submissions_per_day == 0)):
                     logger.info("Permission Denied: The maximum number of submission for today has been reached")
                     raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
 
-            self.is_public = (True if self.challenge_phase.leaderboard_public else False)
+            self.is_public = (True if self.challenge_phase.is_submission_public else False)
 
             self.status = Submission.SUBMITTED
 

@@ -10,6 +10,45 @@
 }
 
 
+/*needed fonts*/
+
+@font-face {
+    font-family: "geo";
+    src: url("../fonts/Geometos.ttf");
+}
+
+@font-face {
+    font-family: "mons-lig";
+    src: url("../fonts/Montserrat-Light.ttf");
+}
+
+@font-face {
+    font-family: "mons-med";
+    src: url("../fonts/Montserrat-Medium.ttf");
+}
+
+@font-face {
+    font-family: "mons-reg";
+    src: url("../fonts/Montserrat-Regular.ttf");
+}
+
+.geo-font {
+    font-family: 'geo';
+}
+
+.mons-lig-font {
+    font-family: 'mons-lig';
+}
+
+.mons-med-font {
+    font-family: 'mons-med';
+}
+
+.mons-reg-font {
+    font-family: 'mons-reg';
+}
+
+
 /* autofill transparent */
 
 input:-webkit-autofill,
@@ -26,6 +65,11 @@ input.dark-autofill:-webkit-autofill:focus,
 input.dark-autofill:-webkit-autofill:active {
     transition: background-color 5000s ease-in-out 0s;
     -webkit-text-fill-color: #4d4d4d !important;
+}
+
+body,
+html {
+    font-family: 'mons-reg';
 }
 
 a {
@@ -106,6 +150,13 @@ span.inline {
 }
 
 
+/*margin for column*/
+
+.ev-mt-50 {
+    margin-top: 50px;
+}
+
+
 /*bg color*/
 
 .ev-dark-bg {
@@ -118,6 +169,14 @@ span.inline {
 
 .ev-light-bg {
     background-color: $light-gray;
+}
+
+.ev-black-bg {
+    /*background-color: $grad-black;*/
+}
+
+.ev-super-light-bg {
+    background-color: $grad-super-light;
 }
 
 
@@ -710,6 +769,26 @@ input {
     input:checked + .info-text {
         display: block;
     }
+}
+
+
+/*default margins*/
+
+.mt-12 {
+    margin-top: 12px;
+}
+
+
+/*flex prop*/
+
+.flex-body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
 }
 
 

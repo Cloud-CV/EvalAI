@@ -24,7 +24,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Challenge
-        fields = ('id', 'title', 'description', 'terms_and_conditions',
+        fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
                   'submission_guidelines', 'evaluation_details',
                   'image', 'start_date', 'end_date', 'creator',
                   'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',)
@@ -44,7 +44,8 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChallengePhase
         fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
-                  'end_date', 'challenge', 'is_public', 'is_active', 'codename')
+                  'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
+                  'is_public', 'is_active', 'codename')
 
 
 class DatasetSplitSerializer(serializers.ModelSerializer):

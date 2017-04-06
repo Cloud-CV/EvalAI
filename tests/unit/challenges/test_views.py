@@ -41,6 +41,7 @@ class BaseAPITestClass(APITestCase):
 
         self.challenge = Challenge.objects.create(
             title='Test Challenge',
+            short_description='Short description for test challenge',
             description='Description for test challenge',
             terms_and_conditions='Terms and conditions for test challenge',
             submission_guidelines='Submission guidelines for test challenge',
@@ -79,6 +80,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "id": self.challenge.pk,
                 "title": self.challenge.title,
                 "description": self.challenge.description,
+                "short_description": self.challenge.short_description,
                 "terms_and_conditions": self.challenge.terms_and_conditions,
                 "submission_guidelines": self.challenge.submission_guidelines,
                 "evaluation_details": self.challenge.evaluation_details,
@@ -120,6 +122,7 @@ class CreateChallengeTest(BaseAPITestClass):
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
         self.data = {
             'title': 'New Test Challenge',
+            'short_description': 'Short description for new test challenge',
             'description': 'Description for new test challenge',
             'terms_and_conditions': 'Terms and conditions for new test challenge',
             'submission_guidelines': 'Submission guidelines for new test challenge',
@@ -163,6 +166,7 @@ class GetParticularChallenge(BaseAPITestClass):
         expected = {
             "id": self.challenge.pk,
             "title": self.challenge.title,
+            "short_description": self.challenge.short_description,
             "description": self.challenge.description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.challenge.submission_guidelines,
@@ -230,6 +234,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
         expected = {
             "id": self.challenge.pk,
             "title": self.partial_update_challenge_title,
+            "short_description": self.challenge.short_description,
             "description": self.challenge.description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.challenge.submission_guidelines,
@@ -254,6 +259,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
         expected = {
             "id": self.challenge.pk,
             "title": self.update_challenge_title,
+            "short_description": self.challenge.short_description,
             "description": self.challenge.description,
             "terms_and_conditions": self.challenge.terms_and_conditions,
             "submission_guidelines": self.update_submission_guidelines,
@@ -329,6 +335,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
 
         self.challenge2 = Challenge.objects.create(
             title='Some Test Challenge',
+            short_description='Short description for some test challenge',
             description='Description for some test challenge',
             terms_and_conditions='Terms and conditions for some test challenge',
             submission_guidelines='Submission guidelines for some test challenge',
@@ -413,6 +420,7 @@ class DisableChallengeTest(BaseAPITestClass):
 
         self.challenge2 = Challenge.objects.create(
             title='Other Test Challenge',
+            short_description='Short description for other test challenge',
             description='Description for other test challenge',
             terms_and_conditions='Terms and conditions for other test challenge',
             submission_guidelines='Submission guidelines for other test challenge',
@@ -435,17 +443,34 @@ class DisableChallengeTest(BaseAPITestClass):
         self.url = reverse_lazy('challenges:disable_challenge',
                                 kwargs={'pk': self.challenge.pk + 2})
         response = self.client.post(self.url, {})
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_when_user_does_not_have_permission_to_disable_particular_challenge(self):
         self.url = reverse_lazy('challenges:disable_challenge',
                                 kwargs={'pk': self.challenge2.pk})
         expected = {
-            'error': 'Sorry, you do not have permission to disable this challenge'
+            'error': 'Sorry, you are not allowed to perform this operation!'
         }
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_disable_challenge_when_user_is_not_creator(self):
+        self.url = reverse_lazy('challenges:disable_challenge',
+                                kwargs={'pk': self.challenge2.pk})
+        # Now allot self.user as also a host of self.challenge_host_team1
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team1,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
+        expected = {
+            'error': 'Sorry, you are not allowed to perform this operation!'
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class GetAllChallengesTest(BaseAPITestClass):
@@ -459,6 +484,7 @@ class GetAllChallengesTest(BaseAPITestClass):
         # Present challenge
         self.challenge2 = Challenge.objects.create(
             title='Test Challenge 2',
+            short_description='Short description for test challenge 2',
             description='Description for test challenge 2',
             terms_and_conditions='Terms and conditions for test challenge 2',
             submission_guidelines='Submission guidelines for test challenge 2',
@@ -473,6 +499,7 @@ class GetAllChallengesTest(BaseAPITestClass):
         # Past Challenge challenge
         self.challenge3 = Challenge.objects.create(
             title='Test Challenge 3',
+            short_description='Short description for test challenge 2',
             description='Description for test challenge 3',
             terms_and_conditions='Terms and conditions for test challenge 3',
             submission_guidelines='Submission guidelines for test challenge 3',
@@ -487,6 +514,7 @@ class GetAllChallengesTest(BaseAPITestClass):
         # Future challenge
         self.challenge4 = Challenge.objects.create(
             title='Test Challenge 4',
+            short_description='Short description for test challenge 4',
             description='Description for test challenge 4',
             terms_and_conditions='Terms and conditions for test challenge 4',
             submission_guidelines='Submission guidelines for test challenge 4',
@@ -503,6 +531,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             {
                 "id": self.challenge3.pk,
                 "title": self.challenge3.title,
+                "short_description": self.challenge3.short_description,
                 "description": self.challenge3.description,
                 "terms_and_conditions": self.challenge3.terms_and_conditions,
                 "submission_guidelines": self.challenge3.submission_guidelines,
@@ -533,6 +562,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             {
                 "id": self.challenge2.pk,
                 "title": self.challenge2.title,
+                "short_description": self.challenge2.short_description,
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
@@ -563,6 +593,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             {
                 "id": self.challenge4.pk,
                 "title": self.challenge4.title,
+                "short_description": self.challenge4.short_description,
                 "description": self.challenge4.description,
                 "terms_and_conditions": self.challenge4.terms_and_conditions,
                 "submission_guidelines": self.challenge4.submission_guidelines,
@@ -593,6 +624,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             {
                 "id": self.challenge2.pk,
                 "title": self.challenge2.title,
+                "short_description": self.challenge2.short_description,
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
@@ -613,6 +645,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             {
                 "id": self.challenge3.pk,
                 "title": self.challenge3.title,
+                "short_description": self.challenge3.short_description,
                 "description": self.challenge3.description,
                 "terms_and_conditions": self.challenge3.terms_and_conditions,
                 "submission_guidelines": self.challenge3.submission_guidelines,
@@ -633,6 +666,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             {
                 "id": self.challenge4.pk,
                 "title": self.challenge4.title,
+                "short_description": self.challenge4.short_description,
                 "description": self.challenge4.description,
                 "terms_and_conditions": self.challenge4.terms_and_conditions,
                 "submission_guidelines": self.challenge4.submission_guidelines,
@@ -671,6 +705,7 @@ class GetChallengeByPk(BaseAPITestClass):
 
         self.challenge3 = Challenge.objects.create(
             title='Test Challenge 3',
+            short_description='Short description for test challenge 3',
             description='Description for test challenge 3',
             terms_and_conditions='Terms and conditions for test challenge 3',
             submission_guidelines='Submission guidelines for test challenge 3',
@@ -710,6 +745,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
 
         self.challenge2 = Challenge.objects.create(
             title='Some Test Challenge',
+            short_description='Short description for some test challenge',
             description='Description for some test challenge',
             terms_and_conditions='Terms and conditions for some test challenge',
             submission_guidelines='Submission guidelines for some test challenge',
@@ -738,6 +774,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         expected = [{
             "id": self.challenge2.pk,
             "title": self.challenge2.title,
+            "short_description": self.challenge2.short_description,
             "description": self.challenge2.description,
             "terms_and_conditions": self.challenge2.terms_and_conditions,
             "submission_guidelines": self.challenge2.submission_guidelines,
@@ -766,6 +803,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         expected = [{
             "id": self.challenge2.pk,
             "title": self.challenge2.title,
+            "short_description": self.challenge2.short_description,
             "description": self.challenge2.description,
             "terms_and_conditions": self.challenge2.terms_and_conditions,
             "submission_guidelines": self.challenge2.submission_guidelines,
@@ -794,6 +832,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         expected = [{
             "id": self.challenge2.pk,
             "title": self.challenge2.title,
+            "short_description": self.challenge2.short_description,
             "description": self.challenge2.description,
             "terms_and_conditions": self.challenge2.terms_and_conditions,
             "submission_guidelines": self.challenge2.submission_guidelines,
@@ -823,6 +862,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             {
                 "id": self.challenge.pk,
                 "title": self.challenge.title,
+                "short_description": self.challenge.short_description,
                 "description": self.challenge.description,
                 "terms_and_conditions": self.challenge.terms_and_conditions,
                 "submission_guidelines": self.challenge.submission_guidelines,
@@ -843,6 +883,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             {
                 "id": self.challenge2.pk,
                 "title": self.challenge2.title,
+                "short_description": self.challenge2.short_description,
                 "description": self.challenge2.description,
                 "terms_and_conditions": self.challenge2.terms_and_conditions,
                 "submission_guidelines": self.challenge2.submission_guidelines,
@@ -908,7 +949,9 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   'Dummy file content', content_type='text/plain'),
+                max_submissions_per_day=100000,
+                max_submissions=100000,
             )
 
     def tearDown(self):
@@ -935,6 +978,8 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_public": self.challenge_phase.is_public,
                 "is_active": True,
                 "codename": "Phase Code Name",
+                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+                "max_submissions": self.challenge_phase.max_submissions,
             }
         ]
 
@@ -1014,6 +1059,8 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1073,6 +1120,8 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)

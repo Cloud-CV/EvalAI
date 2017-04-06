@@ -1,5 +1,4 @@
 // Invoking IIFE for teams
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -14,7 +13,6 @@
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
-        var challengePk = 1;
 
         utilities.showLoader();
 
@@ -47,6 +45,10 @@
             vm.loginContainer.removeClass('low-screen');
         };
 
+        vm.activateCollapsible = function() {
+            angular.element('.collapsible').collapsible();
+        };
+
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
         parameters.method = 'GET';
@@ -54,15 +56,15 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
+                var details = response.data;
                 if (status == 200) {
-                    vm.existTeam = response;
+                    vm.existTeam = details;
 
                     if (vm.existTeam.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No team exist for now, Start by creating a new team!";
                     } else {
-
+                        vm.activateCollapsible();
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
@@ -120,9 +122,8 @@
                             //Add headers with in your request
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
-                                var status = response.status;
-                                var response = response.data;
-                                vm.existTeam = response;
+                                var details = response.data;
+                                vm.existTeam = details;
 
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
@@ -149,7 +150,6 @@
                 utilities.hideLoader();
             },
             onError: function(response) {
-                var status = response.status;
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -191,9 +191,8 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
-                    var status = response.status;
-                    var response = response.data;
-                    vm.teamId = response.id;
+                    var details = response.data;
+                    vm.teamId = details.id;
                     vm.team.error = false;
                     vm.team.name = '';
                     vm.stopLoader();
@@ -206,9 +205,9 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
-                            var response = response.data;
+                            var details = response.data;
                             if (status == 200) {
-                                vm.existTeam = response;
+                                vm.existTeam = details;
                                 vm.showPagination = true;
                                 vm.paginationMsg = '';
 
@@ -232,9 +231,7 @@
                                 vm.stopExistLoader();
                             }
                         },
-                        onError: function(response) {
-                            var status = response.status;
-                            var error = response.data;
+                        onError: function() {
                             vm.stopExistLoader();
                         }
                     };
@@ -242,9 +239,7 @@
 
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
-
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
                     $rootScope.notify("error", "New team couldn't be created.");
@@ -256,6 +251,7 @@
         };
 
         vm.confirmDelete = function(ev, hostTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove yourself?')
@@ -273,9 +269,7 @@
                 parameters.data = {};
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function(response) {
-                        var status = response.status;
-                        var response = response.data;
+                    onSuccess: function() {
                         vm.team.error = false;
                         $rootScope.notify("info", "You have removed yourself successfully");
 
@@ -286,9 +280,9 @@
                         parameters.callback = {
                             onSuccess: function(response) {
                                 var status = response.status;
-                                var response = response.data;
+                                var details = response.data;
                                 if (status == 200) {
-                                    vm.existTeam = response;
+                                    vm.existTeam = details;
 
 
                                     // condition for pagination
@@ -322,22 +316,19 @@
                         };
                         utilities.sendRequest(parameters);
                     },
-                    onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
+                    onError: function() {
                         vm.stopExistLoader();
-                        $rootScope.notify("error", "couldn't remove you from the challenge");
+                        $rootScope.notify("error", "Couldn't remove you from the challenge");
                     }
                 };
 
                 utilities.sendRequest(parameters);
 
-            }, function() {
-                console.log("Operation defered");
-            });
+            }, function() {});
         };
 
         vm.inviteOthers = function(ev, hostTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
                 .title('Invite others to this Team')
@@ -358,15 +349,11 @@
                 };
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function(response) {
-                        var status = response.status;
-                        var response = response.data;
+                    onSuccess: function() {
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
-                    onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
-                        $rootScope.notify("error", "couldn't invite" + parameters.data.email + ". Please try again.");
+                    onError: function() {
+                        $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.");
                     }
                 };
 

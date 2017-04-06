@@ -1,5 +1,4 @@
 // Invoking IIFE for teams
-/* jshint shadow:true */
 (function() {
 
     'use strict';
@@ -47,6 +46,10 @@
             vm.loginContainer.removeClass('low-screen');
         };
 
+        vm.activateCollapsible = function() {
+            angular.element('.collapsible').collapsible();
+        };
+
         var parameters = {};
         parameters.url = 'participants/participant_team';
         parameters.method = 'GET';
@@ -54,15 +57,15 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
+                var details = response.data;
                 if (status == 200) {
-                    vm.existTeam = response;
+                    vm.existTeam = details;
 
                     if (vm.existTeam.count === 0) {
                         vm.showPagination = false;
                         vm.paginationMsg = "No team exist for now, Start by creating a new team!";
                     } else {
-
+                        vm.activateCollapsible();
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
@@ -118,15 +121,11 @@
                         parameters.method = 'POST';
                         parameters.token = userKey;
                         parameters.callback = {
-                            onSuccess: function(response) {
-                                var status = response.status;
-                                var response = response.data;
+                            onSuccess: function() {
                                 $state.go('web.challenge-page.overview');
                                 vm.stopLoader();
                             },
-                            onError: function(response) {
-                                var status = response.status;
-                                var error = response.data;
+                            onError: function() {
                                 vm.existTeamError = "Please select a team";
                                 vm.stopLoader();
                             }
@@ -166,9 +165,8 @@
                             //Add headers with in your request
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
-                                var status = response.status;
-                                var response = response.data;
-                                vm.existTeam = response;
+                                var details = response.data;
+                                vm.existTeam = details;
 
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
@@ -195,7 +193,6 @@
                 utilities.hideLoader();
             },
             onError: function(response) {
-                var status = response.status;
                 var error = response.data;
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
@@ -235,10 +232,8 @@
             };
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function() {
                     $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
-                    var status = response.status;
-                    var response = response.data;
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team.name = '';
@@ -251,9 +246,9 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
-                            var response = response.data;
+                            var details = response.data;
                             if (status == 200) {
-                                vm.existTeam = response;
+                                vm.existTeam = details;
                                 vm.showPagination = true;
                                 vm.paginationMsg = '';
 
@@ -277,16 +272,13 @@
                                 vm.stopExistLoader();
                             }
                         },
-                        onError: function(response) {
-                            var status = response.status;
-                            var error = response.data;
+                        onError: function() {
                             vm.stopExistLoader();
                         }
                     };
                     utilities.sendRequest(parameters);
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
 
                     vm.team.error = error.team_name[0];
@@ -300,6 +292,7 @@
         };
 
         vm.confirmDelete = function(ev, participantTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove yourself?')
@@ -317,10 +310,8 @@
                 parameters.data = {};
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function() {
 
-                        var status = response.status;
-                        var response = response.data;
                         vm.team.error = false;
                         $rootScope.notify("info", "You have removed yourself successfully");
 
@@ -331,9 +322,9 @@
                         parameters.callback = {
                             onSuccess: function(response) {
                                 var status = response.status;
-                                var response = response.data;
+                                var details = response.data;
                                 if (status == 200) {
-                                    vm.existTeam = response;
+                                    vm.existTeam = details;
 
 
                                     // condition for pagination
@@ -367,9 +358,7 @@
                         };
                         utilities.sendRequest(parameters);
                     },
-                    onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
+                    onError: function() {
                         vm.stopExistLoader();
                         $rootScope.notify("error", "couldn't remove you from the challenge");
                     }
@@ -378,12 +367,12 @@
                 utilities.sendRequest(parameters);
 
             }, function() {
-                console.log("Operation defered");
             });
         };
 
 
         vm.inviteOthers = function(ev, participantTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.prompt()
                 .title('Invite others to this team')
@@ -395,7 +384,6 @@
                 .cancel('Cancel');
 
             $mdDialog.show(confirm).then(function(result) {
-                console.log(result);
                 var parameters = {};
                 parameters.url = 'participants/participant_team/' + participantTeamId + '/invite';
                 parameters.method = 'POST';
@@ -404,22 +392,16 @@
                 };
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function(response) {
-                        var status = response.status;
-                        var response = response.data;
+                    onSuccess: function() {
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
-                    onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
-                        console.log(error);
+                    onError: function() {
                         $rootScope.notify("error", "couldn't invite " + parameters.data.email + ". Please try again.");
                     }
                 };
 
                 utilities.sendRequest(parameters);
             }, function() {
-                console.log("Operation Aborted");
             });
         };
     }

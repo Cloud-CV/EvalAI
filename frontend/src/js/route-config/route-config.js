@@ -1,7 +1,6 @@
 /**
  * Config for the router
  */
-/* jshint shadow:true */
 
 (function() {
     angular
@@ -10,7 +9,10 @@
 
     var baseUrl = "dist/views/";
 
-    function configure($stateProvider, $urlRouterProvider, $locationProvider) {
+    function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
+
+        //in order to prevent 404 for trailing '/' in urls
+        $urlMatcherFactoryProvider.strictMode(false);
 
         // formating hashed url
         $locationProvider.html5Mode({
@@ -244,7 +246,7 @@
             url: "/profile",
             templateUrl: baseUrl + "/web/profile.html",
             title: "Profile",
-            controller: 'ProfileCtrl',
+            controller: 'profileCtrl',
             controllerAs: 'profile',
             authenticate: true
         };
@@ -307,11 +309,38 @@
             templateUrl: baseUrl + "/web/about-us.html",
             title: "About Us"
         };
+
         var our_team = {
             name: 'our-team',
             url: "/team",
             templateUrl: baseUrl + "/web/our-team.html",
-            title: "Our Team"
+            controller: 'ourTeamCtrl',
+            controllerAs: 'ourTeam'
+        };
+
+        var join_our_team = {
+            name: 'join-our-team',
+            url: "/join-us",
+            templateUrl: baseUrl + "/web/join-our-team.html",
+            title: "Join Our Team"
+        };
+
+        var update_profile = {
+            name: "web.update-profile",
+            parent: "web",
+            url: "/update-profile",
+            templateUrl: baseUrl + "/web/update-profile.html",
+            title: "Update Profile",
+            controller: 'updateProfileCtrl',
+            controllerAs: 'updateProfile',
+            authenticate: true
+        };
+
+        var contact_us = {
+            name: "contact-us",
+            url: "/contact",
+            templateUrl: baseUrl + "/web/contact-us.html",
+            title: "Contact Us"
         };
 
 
@@ -362,6 +391,9 @@
         $stateProvider.state(error_500);
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
+        $stateProvider.state(join_our_team);
+        $stateProvider.state(update_profile);
+        $stateProvider.state(contact_us);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
@@ -383,7 +415,7 @@
 
         // Google Analytics Scripts
         $window.ga('create', 'UA-45466017-2', 'auto');
-        $rootScope.$on('$stateChangeSuccess', function(event) {
+        $rootScope.$on('$stateChangeSuccess', function() {
             $window.ga('send', 'pageview', $location.path());
         });
 
@@ -398,7 +430,7 @@
 
         $rootScope.isAuth = false;
         // check for valid user
-        $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+        $rootScope.$on('$stateChangeStart', function(event, toState) {
             if (toState.authenticate && !utilities.isAuthenticated()) {
                 $rootScope.isAuth = false;
                 // User isn’t authenticated
@@ -407,7 +439,6 @@
             }
             // restrict authorized user too access login/signup page
             else if (toState.authenticate === false && utilities.isAuthenticated()) {
-                // alert("")
                 $rootScope.isAuth = true;
                 $state.transitionTo("home");
                 event.preventDefault();
@@ -424,10 +455,11 @@
             }
         });
 
-        $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+        $rootScope.$on('$stateChangeSuccess', function() {
             // Save the route title
             $rootScope.pageTitle = $state.current.title;
-            // alert($rootScope.pageTitle)
+            // Scroll to top
+            $window.scrollTo(0, 0);
 
         });
 
@@ -437,7 +469,7 @@
                 return (typeof arg === undefined ? def : arg);
             }
 
-            timeout = pick(timeout, 4000);
+            timeout = pick(timeout, 3000);
             toaster.pop({
                 type: type,
                 body: message,
@@ -452,37 +484,28 @@
             parameters.method = 'POST';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
+                onSuccess: function() {
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
-                    $rootScope.notify("info", "Logout Successfully");
+                    $rootScope.notify("info", "Successfully logged out!");
                 },
-                onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
-                }
+                onError: function() {}
             };
 
             utilities.sendRequest(parameters);
         };
 
-        checkToken = function() {
+        $rootScope.checkToken = function() {
             var userKey = utilities.getData('userKey');
             var parameters = {};
             parameters.url = 'auth/user/';
             parameters.method = 'GET';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                },
+                onSuccess: function() {},
                 onError: function(response) {
                     var status = response.status;
-                    var error = response.data;
                     if (status == 401) {
                         alert("Timeout, Please login again to continue!");
                         utilities.resetStorage();

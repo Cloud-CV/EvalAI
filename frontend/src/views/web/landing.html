@@ -1,67 +1,101 @@
-<div class="white-bg view-container">
+<div class="white-bg view-container flex-body">
     <main-header></main-header>
-    <!-- EvalAI into -->
-    <div class="grad-container grad-vh">
-        <div class="row">
-            <div class="col s12 m6 ">
-                <div class="grad-head ">
-                    <h4 class="text-dark-black"><strong>EvalAI</strong></h4>
-                    <p class="text-med-black">Building platforms for reproducible AI research</p>
-                    <div class="landing-buttons">
-                        <ul class="inline-list hide-on-med-and-down">
-                            <li>
-                                <a ng-click="main.hostChallenge($event)" href="javascript:void(0)" class="dark-link"><strong>Host Challenge</strong></a>
-                            </li>
-                            <li><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="web.challenge-main">Participate</a></li>
-                        </ul>
-                    </div>
-                    <div class="landing-buttons">
-                        <a href="#" scroll-to="ev-scroll-down" duration="2000" class="insight-text">
-        See More
-        <i class="fa fa-chevron-circle-down"></i>
-    </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12 m6 ">
-                <div class="rocket-container">
-                    <div class="rocket-anim">
-                        <img src="dist/images/rocket.png">
-                    </div>
-                    <div class="cloud-1">
-                        <img src="dist/images/cloud-1.png">
-                    </div>
-                    <div class="cloud-2">
-                        <img src="dist/images/cloud-2.png">
-                    </div>
-                    <div class="cloud-3">
-                        <img src="dist/images/cloud-1.png">
+    <div class="content">
+        <!-- EvalAI into -->
+        <div class="grad-container grad-vh">
+            <div class="row">
+                <div class="col s12 m6 ">
+                    <div class="grad-head ">
+                        <h4 class="text-dark-black"><strong>EvalAI</strong></h4>
+                        <p class="text-med-black">Making evaluation easier and faster!</p>
+                        <div class="landing-buttons">
+                            <ul class="inline-list hide-on-med-and-down">
+                                <li>
+                                    <a ng-click="main.hostChallenge($event)" href="javascript:void(0)" class="dark-link"><strong>Host Challenge</strong></a>
+                                </li>
+                                <li><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="web.challenge-main">Participate</a></li>
+                            </ul>
+                        </div>
+                        <div class="landing-buttons">
+                            <a href="#" scroll-to="ev-scroll-down" duration="2000" class="insight-text">See More
+                            <i class="fa fa-chevron-circle-down"></i>
+                        </a>
+                        </div>
                     </div>
                 </div>
+                <div ng-include="'dist/views/web/partials/rocket-container.html'"></div>
             </div>
         </div>
+        <!-- Scroll direction -->
+        <section class="ev-container center ev-insight">
+            <div class="cloud-big cloud-big-1">
+                <img src="dist/images/cloud1.png">
+            </div>
+            <div class="cloud-big cloud-big-2">
+                <img src="dist/images/cloud2.png">
+            </div>
+        </section>
+        <!-- challenge section -->
+        <section class="ev-container ev-details text-med-black ev-super-light-bg" id="ev-scroll-down">
+            <div class="grad-container text-med-black ">
+                <div class="row">
+                    <div class="col s6">
+                        <h4 class="mons-med-font">
+                        <div>Featured Challenge</div>
+                        </h4>
+                        <p>
+                            Explore other past, ongoing and upcoming challneges too.
+                        </p>
+                        
+                        <div> <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-light fs-14 mt-12" ui-sref="web.challenge-main">View All</a></div>
+                        <!-- <div class="is-line"></div> -->
+                    </div>
+                    <div class="col s6">
+                        <div class="challenge-logo">
+                            <img ng-src="{{main.challengeList.results[0].image}}"> &nbsp;
+                            <h4 class="grad-span">{{main.challengeList.results[0].title}}</h4>
+                        </div>
+                        <p>
+                            <span class="w-500 text-light-black mons-med-font">Organized by: </span> <span class="w-500 mons-med-font">{{main.challengeList.results[0].creator.team_name}}</span></p>
+                        <p><span class="text-dark-black mons-reg-font">{{main.challengeList.results[0].short_description}}<span ng-if="main.isMore">...</span></span>
+                        </p>
+                        <p>
+                            <span class="w-500 text-light-black mons-med-font">Status: </span> <span class="w-500 mons-med-font"> In Progress</span>
+                            <span class="right"><a class="view-more mons-reg-font" ui-sref="web.challenge-main.challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- details section -->
+        <section class="ev-container ev-reverse-details text-med-black " id="ev-scroll-down">
+            <div class="grad-container text-med-black ">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="align-center">
+                            <h4 class="mons-med-font"><div>What is EvalAI all about?</h4>
+                            <p><span class="text-dark-black w-500 mons-med-font">EvalAI is an open-source web platform for organizing and participating in competitions to push the state of the art on AI tasks.</span>
+                                <!-- <ul class="text-med-black">
+                                <li>
+                                    EvailAI details one performance on Artificial Intelligence challenges
+                                    <div class="big-line"></div>
+                                </li>
+                                <li>
+                                    EvailAI details two performance on Artificial Intelligence challenges
+                                    <div class="big-line"></div>
+                                </li>
+                                <li>
+                                    EvailAI details three performance on Artificial Intelligence challenges
+                                    <div class="big-line"></div>
+                                </li>
+                            </ul> -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- footer -->
+        </section>
     </div>
-    <!-- Scroll direction -->
-    <section class="ev-container center ev-insight">
-        <div class="cloud-big cloud-big-1">
-            <img src="dist/images/cloud1.png">
-        </div>
-        <div class="cloud-big cloud-big-2">
-            <img src="dist/images/cloud2.png">
-        </div>
-    </section>
-    <!-- details section -->
-    <section class="ev-container ev-details text-med-black" id="ev-scroll-down">
-        <div class="container">
-            <h4 align="center" class="text-dark-black"><strong>What is EvalAI?</strong></h4>
-            <p class="text-med-black fs-18"><b>EvalAI is an open-source web platform enabling researchers to organize and participate in competitions to push state-of-the-art performance on Artificial Intelligence challenges.</b> These challenges and benchmarks are essential for accurate evaluation of algorithms for a particular challenge. As the number of public datasets increase and more algorithms are published, it is becoming increasingly difficult to compare different approaches for a particular task. By providing a robust, scalable and a highly configurable platform, it is easy to create challenges with your own dataset, evaluation protocol and a leaderboard. EvalAI avoids the need to run many baselines on several different datasets and makes it easier for researchers to perform exhaustive quantitative analysis in an efficient, reliable way. </p>
-            <br>
-            <h4 align="center" class="text-dark-black"><strong>How it Works</strong></h4>
-            <p align="center" class="text-med-black fs-18">1. Create a Team</p>
-            <p align="center" class="text-med-black fs-18">2. Host or Participate in Challenges</p>
-            <p align="center" class="text-med-black fs-18">3. Make Submissions</p>
-        </div>
-        <!-- footer -->
-    </section>
     <landing-footer></landing-footer>
 </div>
