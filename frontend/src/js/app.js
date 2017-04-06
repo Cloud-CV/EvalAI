@@ -8,5 +8,8 @@ angular
 		'evalai-config',
 		'smoothScroll',
 		'focus-if',
-		'ngSanitize'
+		'ngSanitize',
+		'ngFileUpload',
+		'toaster'
+
 	]);

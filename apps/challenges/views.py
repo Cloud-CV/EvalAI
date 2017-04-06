@@ -12,11 +12,14 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from hosts.models import ChallengeHost, ChallengeHostTeam
+from hosts.utils import get_challenge_host_teams_for_user
 from participants.models import Participant, ParticipantTeam
+from participants.utils import get_participant_teams_for_user
 
-from .models import Challenge, ChallengePhase
+
+from .models import Challenge, ChallengePhase, ChallengePhaseSplit
 from .permissions import IsChallengeCreator
-from .serializers import ChallengeSerializer, ChallengePhaseSerializer
+from .serializers import ChallengeSerializer, ChallengePhaseSerializer, ChallengePhaseSplitSerializer
 
 
 @throttle_classes([UserRateThrottle])
@@ -33,19 +36,19 @@ def challenge_list(request, challenge_host_team_pk):
     if request.method == 'GET':
         challenge = Challenge.objects.filter(creator=challenge_host_team)
         paginator, result_page = paginated_queryset(challenge, request)
-        serializer = ChallengeSerializer(result_page, many=True)
+        serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
     elif request.method == 'POST':
-
         if not ChallengeHost.objects.filter(user=request.user, team_name_id=challenge_host_team_pk).exists():
             response_data = {
                 'error': 'Sorry, you do not belong to this Host Team!'}
             return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = ChallengeSerializer(data=request.data,
-                                         context={'challenge_host_team': challenge_host_team})
+                                         context={'challenge_host_team': challenge_host_team,
+                                                  'request': request})
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
@@ -71,7 +74,7 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        serializer = ChallengeSerializer(challenge)
+        serializer = ChallengeSerializer(challenge, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -79,12 +82,14 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         if request.method == 'PATCH':
             serializer = ChallengeSerializer(challenge,
                                              data=request.data,
-                                             context={'challenge_host_team': challenge_host_team},
+                                             context={'challenge_host_team': challenge_host_team,
+                                                      'request': request},
                                              partial=True)
         else:
             serializer = ChallengeSerializer(challenge,
                                              data=request.data,
-                                             context={'challenge_host_team': challenge_host_team})
+                                             context={'challenge_host_team': challenge_host_team,
+                                                      'request': request})
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
@@ -140,26 +145,18 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
 
 @throttle_classes([UserRateThrottle])
 @api_view(['POST'])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def disable_challenge(request, pk):
-
     try:
         challenge = Challenge.objects.get(pk=pk)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    challenge_host_team = challenge.creator
-
-    if challenge_host_team.created_by == request.user:
-        challenge.is_disabled = True
-        challenge.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    else:
-        response_data = {
-            'error': 'Sorry, you do not have permission to disable this challenge'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    challenge.is_disabled = True
+    challenge.save()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @throttle_classes([AnonRateThrottle])
@@ -187,7 +184,7 @@ def get_all_challenges(request, challenge_time):
 
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(result_page, many=True)
+    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
@@ -200,12 +197,51 @@ def get_challenge_by_pk(request, pk):
     """
     try:
         challenge = Challenge.objects.get(pk=pk)
-        serializer = ChallengeSerializer(challenge)
+        serializer = ChallengeSerializer(challenge, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     except:
         response_data = {'error': 'Challenge does not exist!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenges_based_on_teams(request):
+    q_params = {}
+    participant_team_id = request.query_params.get('participant_team', None)
+    challenge_host_team_id = request.query_params.get('host_team', None)
+    mode = request.query_params.get('mode', None)
+
+    if not participant_team_id and not challenge_host_team_id and not mode:
+        response_data = {'error': 'Invalid url pattern!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # either mode should be there or one of paricipant team and host team
+    if mode and (participant_team_id or challenge_host_team_id):
+        response_data = {'error': 'Invalid url pattern!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if participant_team_id:
+        q_params['participant_teams__pk'] = participant_team_id
+    if challenge_host_team_id:
+        q_params['creator__id'] = challenge_host_team_id
+
+    if mode == 'participant':
+        participant_team_ids = get_participant_teams_for_user(request.user)
+        q_params['participant_teams__pk__in'] = participant_team_ids
+
+    elif mode == 'host':
+        host_team_ids = get_challenge_host_teams_for_user(request.user)
+        q_params['creator__id__in'] = host_team_ids
+
+    challenge = Challenge.objects.filter(**q_params)
+    paginator, result_page = paginated_queryset(challenge, request)
+    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)
 
 
 @throttle_classes([UserRateThrottle])
@@ -278,3 +314,22 @@ def challenge_phase_detail(request, challenge_pk, pk):
     elif request.method == 'DELETE':
         challenge_phase.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@throttle_classes([AnonRateThrottle])
+@api_view(['GET'])
+def challenge_phase_split_list(request, challenge_pk):
+    """
+    Returns the list of Challenge Phase Splits for a particular challenge
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    challenge_phase_split = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
+    paginator, result_page = paginated_queryset(challenge_phase_split, request)
+    serializer = ChallengePhaseSplitSerializer(result_page, many=True)
+    response_data = serializer.data
+    return paginator.get_paginated_response(response_data)

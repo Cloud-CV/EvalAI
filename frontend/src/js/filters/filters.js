@@ -3,7 +3,7 @@
 // filter to get ceiling value
 (function() {
 
-    'use strict'
+    'use strict';
 
     angular
         .module('evalai')
@@ -16,5 +16,3 @@
     }
 
 })();
-
-

@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 
 from django.utils import timezone
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from base.models import (TimeStampedModel, )
-from hosts.models import (ChallengeHostTeam, )  # noqa
+from base.utils import RandomFileName
 from participants.models import (ParticipantTeam, )
 
 
@@ -12,6 +13,7 @@ class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
     title = models.CharField(max_length=100)
+    short_description = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     terms_and_conditions = models.TextField(null=True, blank=True)
     submission_guidelines = models.TextField(null=True, blank=True)
@@ -30,7 +32,8 @@ class Challenge(TimeStampedModel):
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False)
-    evaluation_script = models.FileField(default=False, upload_to="evaluation_scripts")  # should be zip format
+    evaluation_script = models.FileField(
+        default=False, upload_to=RandomFileName("evaluation_scripts"))  # should be zip format
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin")
 
@@ -70,6 +73,18 @@ class Challenge(TimeStampedModel):
         return False
 
 
+class DatasetSplit(TimeStampedModel):
+    name = models.CharField(max_length=100)
+    codename = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'dataset_split'
+
+
 class ChallengePhase(TimeStampedModel):
 
     """Model representing a Challenge Phase"""
@@ -82,13 +97,17 @@ class ChallengePhase(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)")
     challenge = models.ForeignKey('Challenge')
     is_public = models.BooleanField(default=False)
-    test_annotation = models.FileField(upload_to="test_annotations")
+    is_submission_public = models.BooleanField(default=False)
+    test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"))
     max_submissions_per_day = models.PositiveIntegerField(default=100000)
     max_submissions = models.PositiveIntegerField(default=100000)
+    codename = models.CharField(max_length=100, default="Phase Code Name")
+    dataset_split = models.ManyToManyField(DatasetSplit, blank=True, through='ChallengePhaseSplit')
 
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_phase'
+        unique_together = (('codename', 'challenge'),)
 
     def __str__(self):
         """Returns the name of Phase"""
@@ -108,3 +127,59 @@ class ChallengePhase(TimeStampedModel):
         if self.start_date < timezone.now() and self.end_date > timezone.now():
             return True
         return False
+
+
+class Leaderboard(TimeStampedModel):
+
+    schema = JSONField()
+
+    def __unicode__(self):
+        return "%s" % (self.id)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'leaderboard'
+
+
+class ChallengePhaseSplit(TimeStampedModel):
+
+    # visibility options
+    HOST = 1
+    OWNER_AND_HOST = 2
+    PUBLIC = 3
+
+    VISIBILITY_OPTIONS = (
+        (HOST, 'host'),
+        (OWNER_AND_HOST, 'owner and host'),
+        (PUBLIC, 'public'),
+    )
+
+    challenge_phase = models.ForeignKey('ChallengePhase')
+    dataset_split = models.ForeignKey('DatasetSplit')
+    leaderboard = models.ForeignKey('Leaderboard')
+    visibility = models.PositiveSmallIntegerField(
+        choices=VISIBILITY_OPTIONS,
+        default=PUBLIC
+    )
+
+    def __unicode__(self):
+        return "%s : %s" % (self.challenge_phase.name, self.dataset_split.name)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'challenge_phase_split'
+
+
+class LeaderboardData(TimeStampedModel):
+
+    challenge_phase_split = models.ForeignKey('ChallengePhaseSplit')
+    submission = models.ForeignKey('jobs.Submission')
+    leaderboard = models.ForeignKey('Leaderboard')
+    result = JSONField()
+
+    def __unicode__(self):
+        return "%s : %s" % (self.challenge_phase_split, self.submission)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'leaderboard_data'

@@ -274,7 +274,12 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             created_by=self.challenge_host_team.created_by,
             status='submitted',
-            input_file=self.challenge_phase.test_annotation
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
         )
 
     def test_challenge_submission_when_challenge_does_not_exist(self):
@@ -342,11 +347,23 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                                         'challenge_phase_id': self.challenge_phase.pk})
         expected = [
             {
+                'id': self.submission.id,
                 'participant_team': self.submission.participant_team.pk,
+                'participant_team_name': self.submission.participant_team.team_name,
+                'execution_time': self.submission.execution_time,
                 'challenge_phase': self.submission.challenge_phase.pk,
                 'created_by': self.submission.created_by.pk,
                 'status': self.submission.status,
-                'input_file': self.submission.input_file
+                'input_file': "http://testserver%s" % (self.submission.input_file.url),
+                'method_name': self.submission.method_name,
+                'method_description': self.submission.method_description,
+                'project_url': self.submission.project_url,
+                'publication_url': self.submission.publication_url,
+                'stdout_file': None,
+                'stderr_file': None,
+                'submission_result_file': None,
+                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+                "is_public": self.submission.is_public,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)

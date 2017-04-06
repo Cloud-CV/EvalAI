@@ -1,5 +1,4 @@
 // Invoking IIFE for dashboard
-
 (function() {
 
     'use strict';
@@ -8,9 +7,9 @@
         .module('evalai')
         .controller('DashCtrl', DashCtrl);
 
-    DashCtrl.$inject = ['utilities', '$state', '$rootScope'];
+    DashCtrl.$inject = ['utilities', '$state', '$rootScope', '$mdDialog'];
 
-    function DashCtrl(utilities, $state, $rootScope) {
+    function DashCtrl(utilities, $state, $rootScope, $mdDialog) {
         var vm = this;
 
         // get token
@@ -23,9 +22,9 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var status = response.status;
-                var response = response.data;
+                var details = response.data;
                 if (status == 200) {
-                    vm.name = response.username;
+                    vm.name = details.username;
                 }
             },
             onError: function(response) {
@@ -37,7 +36,7 @@
                     // navigate to permissions denied page
                     $state.go('web.permission-denied');
                 } else if (status == 401) {
-                    alert("Timeout, Please login again to continue!")
+                    alert("Timeout, Please login again to continue!");
                     utilities.resetStorage();
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
@@ -47,6 +46,16 @@
         };
 
         utilities.sendRequest(parameters);
+
+        vm.hostChallenge = function() {
+
+            var alert = $mdDialog.alert()
+                .title('Host a challenge')
+                .textContent('Thanks for your interest in hosting a Challenge on EvalAI. We will release this feature soon!')
+                .ok('Close');
+
+            $mdDialog.show(alert);
+        };
     }
 
 })();

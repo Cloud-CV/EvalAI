@@ -21,5 +21,8 @@ urlpatterns = [
         name='get_all_challenges'),
     url(r'challenge/(?P<pk>[0-9]+)/',
         views.get_challenge_by_pk, name='get_challenge_by_pk'),
-
+    url(r'challenge$', views.get_challenges_based_on_teams,
+        name='get_challenges_based_on_teams'),
+    url(r'(?P<challenge_pk>[0-9]+)/challenge_phase_split$', views.challenge_phase_split_list,
+        name='challenge_phase_split_list'),
 ]

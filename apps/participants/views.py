@@ -17,7 +17,8 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ParticipantTeamSerializer,
                           ChallengeParticipantTeam,
                           ChallengeParticipantTeamList,
-                          ChallengeParticipantTeamListSerializer,)
+                          ChallengeParticipantTeamListSerializer,
+                          ParticipantTeamDetailSerializer,)
 
 
 @throttle_classes([UserRateThrottle])
@@ -31,7 +32,7 @@ def participant_team_list(request):
         participant_teams = ParticipantTeam.objects.filter(
             id__in=participant_teams_id)
         paginator, result_page = paginated_queryset(participant_teams, request)
-        serializer = ParticipantTeamSerializer(result_page, many=True)
+        serializer = ParticipantTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
@@ -63,7 +64,7 @@ def participant_team_detail(request, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        serializer = ParticipantTeamSerializer(participant_team)
+        serializer = ParticipantTeamDetailSerializer(participant_team)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -161,15 +162,18 @@ def get_teams_and_corresponding_challenges_for_a_participant(request):
     challenge_participated_teams = []
     for participant_obj in participant_objs:
         participant_team = participant_obj.team
-        try:
-            challenge = Challenge.objects.get(
-                participant_teams=participant_team)
-        except Challenge.DoesNotExist:
+
+        challenges = Challenge.objects.filter(
+            participant_teams=participant_team)
+
+        if challenges.count():
+            for challenge in challenges:
+                challenge_participated_teams.append(ChallengeParticipantTeam(
+                    challenge, participant_team))
+        else:
             challenge = None
-
-        challenge_participated_teams.append(ChallengeParticipantTeam(
-            challenge, participant_team))
-
+            challenge_participated_teams.append(ChallengeParticipantTeam(
+                challenge, participant_team))
     serializer = ChallengeParticipantTeamListSerializer(ChallengeParticipantTeamList(challenge_participated_teams))
     return Response(serializer.data, status=status.HTTP_200_OK)
 

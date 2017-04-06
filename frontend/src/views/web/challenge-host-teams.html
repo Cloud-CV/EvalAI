@@ -14,33 +14,43 @@
                     </div>
                 </div>
                 <div class="ev-md-container ev-card-body exist-team-card">
-                    <ul>
+                    <div ng-if="!showPagination" class="page-msg">{{challengeHostTeams.paginationMsg}}</div>
+                    <ul class="collapsible" data-collapsible="accordion">
                         <li ng-repeat="(key, value) in challengeHostTeams.existTeam.results">
-                            <i class="fa fa-users" aria-hidden="true"></i>
-                            <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}<i class="fa fa-plus list-icon text-highlight w-300 right"></i>
-                                <br>
-                                <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
-                            <div class="clearfix"></div>
-                        </li>
-                        <section class="pagination">
-                            <div class="row rm-gut">
-                                <div class="col s12 m6 ">
-                                    <a ng-class="challengeHostTeams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.previous)">
-                                        <i class="fa fa-chevron-left"></i>
-                                    </a>
-                                    <span class="pagination-title"> <strong class="text-med-black"> Page {{challengeHostTeams.currentPage | ceil}} of {{challengeHostTeams.existTeam.count/10 | ceil}} </strong></span>
-                                    <a ng-class="challengeHostTeams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.next)">
-                                        <i class="fa fa-chevron-right"></i>
-                                    </a>
+                            <div class="collapsible-header"> <i class="fa fa-lg fa-users" aria-hidden="true"></i>
+                                <div class="show-member-title pointer">
+                                    <span><b class="text-med-black">Team: </b>{{value.team_name}}</span>
+                                    <a ng-click="challengeHostTeams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
+                                    <a ng-click="challengeHostTeams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
+                                    <br>
+                                    <span><b class="text-med-black">Created by: </b>{{value.created_by}}</span>
                                 </div>
-                                <div class="col s12 m6 ">
-                                    <div class="align-right ">
-                                        <span class="text-dark-black"><strong >{{challengeHostTeams.existTeamError}}</strong></span>
-                                    </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="collapsible-body">
+                                <h6><b>Team Members:</b></h6>
+                                <p ng-repeat="member in value.members">{{member.user}}</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <section class="pagination" ng-if="challengeHostTeams.showPagination">
+                        <div class="row rm-gut">
+                            <div class="col s12 m6 ">
+                                <a ng-class="challengeHostTeams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.previous)">
+                                    <i class="fa fa-chevron-left"></i>
+                                </a>
+                                <span class="pagination-title"> <strong class="text-med-black"> Page {{challengeHostTeams.currentPage | ceil}} of {{challengeHostTeams.existTeam.count/10 | ceil}} </strong></span>
+                                <a ng-class="challengeHostTeams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.next)">
+                                    <i class="fa fa-chevron-right"></i>
+                                </a>
+                            </div>
+                            <div class="col s12 m6 ">
+                                <div class="align-right ">
+                                    <span class="text-dark-black"><strong >{{challengeHostTeams.existTeamError}}</strong></span>
                                 </div>
                             </div>
-                        </section>
-                    </ul>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>
@@ -62,7 +72,7 @@
                         <div class="input-field align-left">
                             <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeHostTeams.team.name" focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                            <label for="name" data-error="wrong" data-success="right">Team Name (no space)*</label>
+                            <label for="name" data-error="wrong" data-success="right">Team Name*</label>
                             <div class="wrn-msg text-highlight" ng-show="challengeHostTeams.team.error">{{challengeHostTeams.team.error}}</div>
                         </div>
                         <div class="align-left reg-control">

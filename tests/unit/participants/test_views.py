@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -51,12 +54,40 @@ class GetParticipantTeamTest(BaseAPITestClass):
             team=self.participant_team
         )
 
+        self.user2 = User.objects.create(
+            username='user2',
+            email='user2@platform.com',
+            password='user2_password')
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email='user2@platform.com',
+            primary=True,
+            verified=True)
+
+        self.participant2 = Participant.objects.create(
+            user=self.user2,
+            status=Participant.ACCEPTED,
+            team=self.participant_team)
+
     def test_get_challenge(self):
         expected = [
             {
                 "id": self.participant_team.pk,
                 "team_name": self.participant_team.team_name,
-                "created_by": self.user.username
+                "created_by": self.user.username,
+                "members": [
+                    {
+                        "member_name": self.participant.user.username,
+                        "status": self.participant.status,
+                        "member_id": self.participant.user.id
+                    },
+                    {
+                        "member_name": self.participant2.user.username,
+                        "status": self.participant2.status,
+                        "member_id": self.participant2.user.id
+                    }
+                ]
             }
         ]
 
@@ -79,6 +110,19 @@ class CreateParticipantTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_create_participant_team_with_team_name_same_as_with_existing_team(self):
+
+        expected = {
+            "team_name": ["participant team with this team name already exists."]
+        }
+
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # Creating team with same team name
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, expected)
+
     def test_create_participant_team_with_no_data(self):
         del self.data['team_name']
         response = self.client.post(self.url, self.data)
@@ -92,11 +136,44 @@ class GetParticularParticipantTeam(BaseAPITestClass):
         self.url = reverse_lazy('participants:get_participant_team_details',
                                 kwargs={'pk': self.participant_team.pk})
 
+        self.user2 = User.objects.create(
+            username='user2',
+            email='user2@platform.com',
+            password='user2_password')
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email='user2@platform.com',
+            primary=True,
+            verified=True)
+
+        self.participant1 = Participant.objects.create(
+            user=self.user,
+            status=Participant.SELF,
+            team=self.participant_team)
+
+        self.participant2 = Participant.objects.create(
+            user=self.user2,
+            status=Participant.ACCEPTED,
+            team=self.participant_team)
+
     def test_get_particular_participant_team(self):
         expected = {
             "id": self.participant_team.pk,
             "team_name": self.participant_team.team_name,
-            "created_by": self.user.username
+            "created_by": self.user.username,
+            "members": [
+                {
+                    "member_name": self.participant1.user.username,
+                    "status": self.participant1.status,
+                    "member_id": self.participant1.user.id
+                },
+                {
+                    "member_name": self.participant2.user.username,
+                    "status": self.participant2.status,
+                    "member_id": self.participant2.user.id
+                }
+            ]
         }
 
         response = self.client.get(self.url, {})
@@ -383,23 +460,31 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
         self.challenge1 = Challenge.objects.create(
             title='Test Challenge 1',
+            short_description='Short description for test challenge 1',
             description='Description for test challenge 1',
             terms_and_conditions='Terms and conditions for test challenge 1',
             submission_guidelines='Submission guidelines for test challenge 1',
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False)
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
 
         self.challenge2 = Challenge.objects.create(
             title='Test Challenge 2',
+            short_description='Short description for test challenge 2',
             description='Description for test challenge 2',
             terms_and_conditions='Terms and conditions for test challenge 2',
             submission_guidelines='Submission guidelines for test challenge 2',
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False)
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            )
 
     def test_get_teams_and_corresponding_challenges_for_a_participant(self):
 
@@ -413,20 +498,23 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "id": self.challenge1.id,
                         "title": self.challenge1.title,
                         "description": self.challenge1.description,
+                        "short_description": self.challenge1.short_description,
                         "terms_and_conditions": self.challenge1.terms_and_conditions,
                         "submission_guidelines": self.challenge1.submission_guidelines,
                         "evaluation_details": self.challenge1.evaluation_details,
                         "image": self.challenge1.image,
-                        "start_date": self.challenge1.start_date,
-                        "end_date": self.challenge1.end_date,
+                        "start_date":
+                            "{0}{1}".format(self.challenge1.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                        "end_date": "{0}{1}".format(self.challenge1.end_date.isoformat(), 'Z').replace("+00:00", ""),
                         "creator": {
                             "id": self.challenge_host_team.id,
                             "team_name": self.challenge_host_team.team_name,
                             "created_by": self.challenge_host_team.created_by.username
-                        },
+                            },
                         "published": self.challenge1.published,
                         "enable_forum": self.challenge1.enable_forum,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
+                        "is_active": True
                     },
                     "participant_team": {
                         "id": self.participant_team1.id,

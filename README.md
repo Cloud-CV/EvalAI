@@ -15,7 +15,7 @@ EvalAI is an open source web application that helps researchers, students and da
 Setting up EvalAI on your local machine is really easy.
 Follow this guide to setup your development machine.
 
-1. Install [git], [postgresql] and [virtualenv], in your computer, if you don't have it already.
+1. Install [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
@@ -38,11 +38,12 @@ Follow this guide to setup your development machine.
     ```
     cp settings/dev.sample.py settings/dev.py
     ```
-    Use your linux system username and password for fields `USER` and `PASSWORD` in `dev.py` file.
+    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
 
 5. Create an empty postgres database and run database migration.
 
     ```
+    sudo -i -u (username)
     createdb evalai
     python manage.py migrate --settings=settings.dev
     ```
@@ -60,23 +61,22 @@ Follow this guide to setup your development machine.
     npm install
     bower install
     ```
-
-8. To build static files(development) type
+    If you running npm install behind a proxy server, use
+    ```
+    npm config set proxy http://proxy:port 
+    ```
+8. Now to connect to dev server at http://127.0.0.1:8888 (for serving frontend)
 
     ```
-    gulp dev
+    gulp dev:runserver
     ```
 
-9. That's it, Now to connect to dev server at http://127.0.0.1:8888 (for serving frontend)
+9. That's it, Open web browser and hit the url `http://127.0.0.1:8888`.
+
+10. (Optional) If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:
 
     ```
-    gulp connect
-    ```
-
-10. To check for static files change run gulp watch task in new terminal window
-
-    ```
-    gulp watch
+    python scripts/workers/submission_worker.py
     ```
 
 ## Contribution guidelines
@@ -87,3 +87,4 @@ If you are interested in contributing to EvalAI, follow your [contribution guide
 [virtualenv]: https://virtualenv.pypa.io/
 [postgresql]: http://www.postgresql.org/download/
 [postgresqlhelp]: http://bobbyong.com/blog/installing-postgresql-on-windoes/
+[rabbitmq]: https://www.rabbitmq.com/

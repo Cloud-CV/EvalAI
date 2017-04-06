@@ -7,13 +7,22 @@
 
       <ul class="right hide-on-med-and-down">
         <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active">Home</a></li>
-        <li><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active">LogIn</a></li>
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active">SignUp</a></li>
+       
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active">Log In</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active">Sign Up</a></li>
         <!-- show after authenticate user -->
-        <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active">Hi {{main.user.name}}!</a></li>
+        <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
+        <li ng-show="isAuth">
+          <a ng-init="main.profileDropdown($event)" class="dropdown-button waves-effect waves-dark" data-activates='ev-dropdown' ui-sref-active="active">Hi {{main.user.name}}! &nbsp; <i class="fa fa-caret-down text-light-gray icon"></i></a>
+        </li>
       </ul>
-      
+
+      <ul id="ev-dropdown" class="dropdown-content">
+        <li><a class="waves-effect waves-dark" ui-sref="web.change-password"> Change Password </a></li>
+        <li><a class="waves-effect waves-dark" href="#!">Update Profile</a></li>
+        <li><a class="waves-effect waves-dark" ng-click="logout()">Logout</li>
+      </ul>
+
       <ul class="side-nav" id="mobile-demo">
         <li>
           <div class="userView">
@@ -23,10 +32,10 @@
           </div>
         </li>
         <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active"><i class="fa fa-home"></i>Home</a></li>
-        <li><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>LogIn</a></li>
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>SignUp</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>Sign Up</a></li>
         <!-- show after authenticate user -->
+        <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
         <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{main.user.name}}!</a></li>
       </ul>
 

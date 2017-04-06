@@ -14,42 +14,38 @@
                     </div>
                 </div>
                 <div class="ev-md-container ev-card-body exist-team-card">
-                    <form>
-                        <ul>
-                            <li ng-repeat="(key, value) in teams.existTeam.results">
-                                <!--<input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="teams.teamId">-->
-                                <i class="fa fa-users" aria-hidden="true" id="{{value.id}}" value="{{value.id}}" ng-model="teams.teamId"></i>
-                                <label for="{{value.id}}"></label>
-                                <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
-                                <a ng-click="teams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
-                                <a ng-click="teams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
+                    <div ng-if="!showPagination" class="page-msg">{{teams.paginationMsg}}</div>
+                    <ul class="collapsible" data-collapsible="accordion">
+                        <li ng-repeat="(key, value) in teams.existTeam.results">
+                            <div class="collapsible-header"> <i class="fa fa-lg fa-users" aria-hidden="true"></i>
+                                <div class="show-member-title pointer">
+                                    <span><b class="text-med-black">Team: </b>{{value.team_name}}</span>
+                                    <a ng-click="teams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
+                                    <a ng-click="teams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
                                     <br>
-                                    <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
-                                <div class="clearfix"></div>
-                            </li>
-                            <section class="pagination">
-                                <div class="row rm-gut">
-                                    <div class="col s12 m6 ">
-                                        <a ng-class="teams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="teams.load(teams.existTeam.previous)">
-                                            <i class="fa fa-chevron-left"></i>
-                                        </a>
-                                        <span class="pagination-title"> <strong class="text-med-black"> Page {{teams.currentPage | ceil}} of {{teams.existTeam.count/10 | ceil}} </strong></span>
-                                        <a ng-class="teams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="teams.load(teams.existTeam.next)">
-                                            <i class="fa fa-chevron-right"></i>
-                                        </a>
-                                    </div>
-                                    <!-- <div class="col s12 m6 ">
-                                        <div class="align-right ">
-                                            <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="teams.selectExistTeam()" value="Submit">Participate</button>
-                                            <br>
-                                            <br>
-                                            <span class="text-dark-black"><strong >{{teams.existTeamError}}</strong></span>
-                                        </div>
-                                    </div> -->
+                                    <span><b class="text-med-black">Created by: </b>{{value.created_by}}</span>
                                 </div>
-                            </section>
-                        </ul>
-                    </form>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="collapsible-body">
+                                <h6><b>Team Members:</b></h6>
+                                <p ng-repeat="member in value.members">{{member.member_name}}</p>
+                            </div>
+                        </li>
+                    </ul>
+                    <section class="pagination" ng-if="teams.showPagination">
+                        <div class="row rm-gut">
+                            <div class="col s12 m6 ">
+                                <a ng-class="teams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="teams.load(teams.existTeam.previous)">
+                                    <i class="fa fa-chevron-left"></i>
+                                </a>
+                                <span class="pagination-title"> <strong class="text-med-black"> Page {{teams.currentPage | ceil}} of {{teams.existTeam.count/10 | ceil}} </strong></span>
+                                <a ng-class="teams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="teams.load(teams.existTeam.next)">
+                                    <i class="fa fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>
@@ -71,7 +67,7 @@
                         <div class="input-field align-left">
                             <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="teams.team.name" focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                            <label for="name" data-error="wrong" data-success="right">Team Name (no space)*</label>
+                            <label for="name" data-error="wrong" data-success="right">Team Name*</label>
                             <div class="wrn-msg text-highlight" ng-show="teams.team.error">{{teams.team.error}}</div>
                         </div>
                         <div class="align-left reg-control">
@@ -85,13 +81,12 @@
         </div>
     </div>
 </section>
-
 <!-- Dialog Box Code -->
 <div style="visibility: hidden">
-<div class="md-dialog-container" id="myDialog">
-  <md-dialog layout-padding>
-    <h2></h2>
-    <p></p>
-  </md-dialog>
-</div>
+    <div class="md-dialog-container" id="myDialog">
+        <md-dialog layout-padding>
+            <h2></h2>
+            <p></p>
+        </md-dialog>
+    </div>
 </div>

@@ -1,0 +1,45 @@
+<div class="white-bg view-container flex-body">
+	<main-header></main-header>
+    <div class="content">
+		<div class="grad-container grad-vh">
+			<div class="row">
+				<div class="col s12 m8 ev-mt-50">
+					<h4 class="text-dark-black align-center"><strong>Contact Us</strong></h4>
+					<form name="contactusForm" ng-submit="" id="contact-us" novalidate>
+						<!-- Name -->
+						<div class="input-field align-left">
+							<input type="text" id="name" name="name" ng-minlength="3" required>
+							<span class="form-icon"><i class="fa fa-user"></i></span>
+							<label for="name">Name *</label>
+							<div class="wrn-msg text-highlight" ng-messages="contactusForm.name.$error" ng-if="contactusForm.name.$touched || contactusForm.$submitted">
+								<p ng-message="minlength">name is too short.</p>
+								<p ng-message="required">name is required.</p>
+							</div>
+						</div>
+						<!-- Email -->
+						<div class="input-field align-left">
+							<input type="text" id="email" name="email" required>
+							<span class="form-icon"><i class="fa fa-envelope"></i></span>
+							<label for="email">Email *</label>
+						</div>
+						<!-- Message -->
+						<div class="input-field align-left">
+							<textarea class="materialize-textarea" id="message" name="message" required></textarea>
+							<span class="form-icon"><i class="fa fa-comment"></i></span>
+							<label for="message">Message *</label>
+						</div>	
+						<div class="row">
+							<br>
+							<div class="col s6 align-left rm-gut">
+								<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit">Send</button>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div ng-include="'dist/views/web/partials/rocket-container.html'"></div>
+			</div>
+		</div>
+	</div>
+	<!-- Footer -->
+	<landing-footer></landing-footer>
+</div>

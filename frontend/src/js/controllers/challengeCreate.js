@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeCreateCtrl', ChallengeCreateCtrl);
 
-    ChallengeCreateCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    ChallengeCreateCtrl.$inject = ['utilities', '$state'];
 
-    function ChallengeCreateCtrl(utilities, $state, $http, $rootScope) {
+    function ChallengeCreateCtrl(utilities, $state) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var hostTeamId = utilities.getData('challengeHostTeamPk');
@@ -30,22 +30,16 @@
                 "anonymous_leaderboard": vm.anonymous_leaderboard,
                 "start_date": vm.start_date,
                 "end_date": vm.end_date
-            }
+            };
 
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                    console.log(response);
+                onSuccess: function() {
                     // navigate to Challenge List Page
                     $state.go('web.challenge-main.challenge-list');
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
-                    console.log("Error");
-                    console.log(error);
                     angular.forEach(error, function(value, key) {
                         if (key == 'title') {
                             vm.isValid.title = true;
@@ -79,12 +73,12 @@
                             vm.isValid.end_date = true;
                             vm.wrnMsg.end_date = value[0];
                         }
-                    })
+                    });
                 }
             };
 
             utilities.sendRequest(parameters);
-        }
+        };
     }
 
 })();

@@ -2,9 +2,11 @@
     display: block;
     height: 100vh;
     width: 220px;
-    background-color: $dark-gray;
+    
+    background: $dark-gray;
     color: #fff;
     z-index: 10;
+    top: 0px;
 }
 
 .side-logo {

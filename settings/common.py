@@ -82,12 +82,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'evalai.urls'
 
-TEMPLATE_PATH = os.path.join(BASE_DIR, 'frontend')
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [TEMPLATE_PATH],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -141,6 +140,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
 
 SITE_ID = 1
 
@@ -162,7 +162,10 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/minute',
         'user': '100/minute'
-    }
+    },
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
 }
 
 # ALLAUTH SETTINGS
@@ -256,4 +259,13 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
     }
+}
+
+RABBITMQ_PARAMETERS = {
+    'HOST': 'localhost',
+    'EVALAI_EXCHANGE': {
+        'NAME': 'evalai_submissions',
+        'TYPE': 'topic',
+    },
+    'SUBMISSION_QUEUE': 'submission_task_queue',
 }

@@ -9,7 +9,7 @@
 
     AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
 
-    function AuthCtrl(utilities, $state, $rootScope, $timeout) {
+    function AuthCtrl(utilities, $state, $rootScope) {
         var vm = this;
 
         vm.isRem = false;
@@ -19,7 +19,10 @@
         vm.regUser = {};
         // useDetails for login
         vm.getUser = {};
-        vm.isResetPassword = true;
+        vm.isResetPassword = false;
+        // form error
+        vm.isFormError = false;
+        vm.FormError = {};
 
 
         // default parameters
@@ -36,14 +39,14 @@
             $rootScope.isLoader = true;
             $rootScope.loaderTitle = msg;
             vm.loginContainer.addClass('low-screen');
-        }
+        };
 
         // stop loader
         vm.stopLoader = function() {
             $rootScope.isLoader = false;
             $rootScope.loaderTitle = '';
             vm.loginContainer.removeClass('low-screen');
-        }
+        };
 
         vm.resetForm = function() {
             // getUser for signup
@@ -53,275 +56,223 @@
 
             //reset error msg
             vm.wrnMsg = {};
-        }
 
-        vm.passwordChecks = function(password1, password2) {
-            var password1_len = password1.length;
-            var password2_len = password2.length;
-            var context = {};
+            //switch off form errors
+            vm.isFormError = false;
+            
+            //reset form when link sent for reset password
+            vm.isMail = true;
+        };
 
-            if (password1_len >= 8 && password2_len >= 8)
-            {
-                if (password1 === password2)
-                {
-                    context.confirmMsg = "Passwords Match !";
-                    context.status = true;
-                    return context;
-                }
-                else {
-                    context.confirmMsg = "Passwords do not Match !";
-                    context.status = false;
-                    return context;
-                }
-            }
-            else {
-                context.confirmMsg = "Password is less than 8 characters !";
-                context.status = false;
-                return context;
-            }
-        }
-
-        // getting signup
-        vm.userSignUp = function() {
-            vm.isValid = {};
-            var msg = "Setting up your details!"
-            vm.startLoader(msg);
-
-            // call utility service
-            var parameters = {};
-            parameters.url = 'auth/registration/';
-            parameters.method = 'POST';
-            parameters.data = {
-                "username": vm.regUser.name,
-                "password1": vm.regUser.password,
-                "password2": vm.regUser.confirm,
-                "email": vm.regUser.email
-            }
-            vm.passwordCheck = vm.passwordChecks(parameters.data.password1, parameters.data.password2);
-            if (vm.passwordCheck.status)
-            {
+        // Function to signup
+        vm.userSignUp = function(signupFormValid) {
+            if (signupFormValid) {
+                vm.startLoader("Setting up your details!");
+                // call utility service
+                var parameters = {};
+                parameters.url = 'auth/registration/';
+                parameters.method = 'POST';
+                parameters.data = {
+                    "username": vm.regUser.name,
+                    "password1": vm.regUser.password,
+                    "password2": vm.regUser.confirm_password,
+                    "email": vm.regUser.email
+                };
                 parameters.callback = {
                     onSuccess: function(response) {
-                        var status = response.status;
-                        var response = response.data;
-                        if (status == 201) {
-                            vm.regUser = {};
-                            vm.wrnMsg = {};
-                            vm.isValid = {};
-                            vm.confirmMsg = ''
-                            vm.regMsg = "Registered successfully, Login to continue!";
+                        if (response.status == 201) {
+                            vm.isFormError = false;
+                            // vm.regMsg = "Registered successfully, Login to continue!";
+                            $rootScope.notify("success", "Registered successfully. Please verify your email address!");
                             $state.go('auth.login');
+                        }
+                        vm.stopLoader();
+                    },
+                    onError: function(response) {
+                        if (response.status == 400) {
+                            vm.stopLoader();
+                            vm.isFormError = true;
+                            var non_field_errors, isUsername_valid, isEmail_valid, isPassword1_valid, isPassword2_valid;
+                            try {
+                                non_field_errors = typeof(response.data.non_field_errors) !== 'undefined' ? true : false;
+                                isUsername_valid = typeof(response.data.username) !== 'undefined' ? true : false;
+                                isEmail_valid = typeof(response.data.email) !== 'undefined' ? true : false;
+                                isPassword1_valid = typeof(response.data.password1) !== 'undefined' ? true : false;
+                                isPassword2_valid = typeof(response.data.password2) !== 'undefined' ? true : false;
+                                if (non_field_errors) {
+                                    vm.FormError = response.data.non_field_errors[0];
+                                } else if (isUsername_valid) {
+                                    vm.FormError = response.data.username[0];
+                                } else if (isEmail_valid) {
+                                    vm.FormError = response.data.email[0];
+                                } else if (isPassword1_valid) {
+                                    vm.FormError = response.data.password1[0];
+                                } else if (isPassword2_valid) {
+                                    vm.FormError = response.data.password2[0];
+
+                                }
+
+                            } catch (error) { /*eslint no-console: ["error", {allow: ["warn", "error"]}]*/
+                                console.error(error);
+                            }
+                        }
+                        vm.stopLoader();
+                    }
+                };
+                utilities.sendRequest(parameters, "no-header");
+            } else {
+                vm.stopLoader();
+            }
+        };
+
+        // Function to login
+        vm.userLogin = function(loginFormValid) {
+            if (loginFormValid) {
+                vm.startLoader("Taking you to EvalAI!");
+                // call utility service
+                var parameters = {};
+                parameters.url = 'auth/login/';
+                parameters.method = 'POST';
+                parameters.data = {
+                    "username": vm.getUser.name,
+                    "password": vm.getUser.password,
+                };
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        if (response.status == 200) {
+                            utilities.storeData('userKey', response.data.token);
+                            $state.go('web.dashboard');
                             vm.stopLoader();
                         } else {
-                            alert("Network Problem");
+                            alert("Something went wrong");
                             vm.stopLoader();
                         }
                     },
                     onError: function(response) {
-                        var status = response.status;
-                        var error = response.data;
-                        if (status == 400) {
-                            vm.stopLoader();
-                            vm.isConfirm = false;
-                            vm.confirmMsg = "Please correct above marked fields!"
-                            angular.forEach(error, function(value, key) {
-                                if (key == 'email') {
-                                    vm.isValid.email = true;
-                                    vm.wrnMsg.email = value[0]
+                        if (response.status == 400) {
+                            vm.isFormError = true;
+                            var non_field_errors;
+                            try {
+                                non_field_errors = typeof(response.data.non_field_errors) !== 'undefined' ? true : false;
+                                if (non_field_errors) {
+                                    vm.FormError = response.data.non_field_errors[0];
                                 }
-                                if (key == 'password1') {
-                                    vm.isValid.password = true;
-                                    vm.wrnMsg.password = value[0];
-                                }
-                                if (key == 'password2' || key == 'non_field_errors') {
-                                    vm.isValid.confirm = true;
-                                    vm.wrnMsg.confirm = value[0];
-                                }
-                                if (key == 'username') {
-                                    vm.isValid.username = true;
-                                    vm.wrnMsg.username = value[0];
-                                }
-                            })
-                            vm.stopLoader();
+                            } catch (error) { /*eslint no-console: ["error", {allow: ["warn", "error"]}]*/
+                                console.error(error);
+                            }
                         }
+                        vm.stopLoader();
+                    }
+                };
+                utilities.sendRequest(parameters, "no-header");
+            } else {
+                vm.stopLoader();
+            }
+        };
+
+        // function to Verify Email
+        vm.verifyEmail = function() {
+            vm.startLoader("Verifying Your Email");
+            var parameters = {};
+            parameters.url = 'auth/registration/account-confirm-email/' + $state.params.email_conf_key + '/';
+            parameters.method = 'GET';
+            parameters.callback = {
+                onSuccess: function() {
+                    vm.email_verify_msg = "Your email has been verified successfully";
+                    vm.stopLoader();
+                },
+                onError: function() {
+                    vm.email_verify_msg = "Something went wrong!! Please try again.";
+                    vm.stopLoader();
+                }
+            };
+
+            utilities.sendRequest(parameters, "no-header");
+        };
+
+        // function to reset password
+        vm.resetPassword = function(resetPassFormValid) {
+            if (resetPassFormValid) {
+                vm.startLoader("Sending Mail");
+                var parameters = {};
+                parameters.url = 'auth/password/reset/';
+                parameters.method = 'POST';
+                parameters.data = {
+                    "email": vm.getUser.email,
+                };
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        vm.isMail = false;
+                        vm.getUser.error = false;
+                        vm.isFormError = false;
+                        vm.deliveredMsg = response.data.success;
+                        vm.getUser.email = '';
+                        vm.stopLoader();
+                    },
+                    onError: function() {
+                        vm.isFormError = true;
+                        vm.FormError = "Something went wrong. Please try again";
+                        vm.stopLoader();
+                    }
+                };
+                utilities.sendRequest(parameters, "no-header");
+            } else {
+                vm.stopLoader();
+            }
+        };
+
+        // function to reset password confirm
+        vm.resetPasswordConfirm = function(resetconfirmFormValid) {
+            if (resetconfirmFormValid) {
+                vm.startLoader("Resetting Your Password");
+                var parameters = {};
+                parameters.url = 'auth/password/reset/confirm/';
+                parameters.method = 'POST';
+                parameters.data = {
+                    "new_password1": vm.getUser.new_password1,
+                    "new_password2": vm.getUser.new_password2,
+                    "uid": $state.params.user_id,
+                    "token": $state.params.reset_token,
+                };
+
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        vm.isResetPassword = true;
+                        vm.deliveredMsg = details.detail;
+                        vm.stopLoader();
+                    },
+                    onError: function(response) {
+                        var token_valid, password1_valid, password2_valid;
+                        vm.isFormError = true;
+                        try {
+                            token_valid = typeof(response.data.token) !== 'undefined' ? true : false;
+                            password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
+                            password2_valid = typeof(response.data.new_password2) !== 'undefined' ? true : false;
+                            if (token_valid) {
+                                vm.FormError = "this link has been already used or expired.";
+                            } else if (password1_valid) {
+                                vm.FormError = Object.values(response.data.new_password1).join(" ");
+                            } else if (password2_valid) {
+                                vm.FormError = Object.values(response.data.new_password2).join(" ");
+                            }
+                        } catch (error) { 
+                            vm.FormError = "Something went wrong! Please refresh the page and try again.";
+                        }
+                        vm.stopLoader();
                     }
                 };
 
-                    utilities.sendRequest(parameters, "no-header");
-            }
-            else {
-                vm.confirmMsg = vm.passwordCheck.confirmMsg;
+                utilities.sendRequest(parameters, "no-header");
+            } else {
                 vm.stopLoader();
             }
-        }
+        };
 
-        // login user
-        vm.userLogin = function() {
-            vm.isValid = {};
-            var token = null;
-            var msg = "Taking you to EvalAI!"
-            vm.startLoader(msg);
+        $rootScope.$on('$stateChangeStart', function() {
+            vm.resetForm();
+        });
 
-            // call utility service
-            var parameters = {};
-            parameters.url = 'auth/login/';
-            parameters.method = 'POST';
-            parameters.data = {
-                "username": vm.getUser.name,
-                "password": vm.getUser.password,
-            }
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                    if (status == 200) {
-                        vm.getUser = {};
-                        vm.wrnMsg = {};
-                        vm.isValid = {};
-                        vm.confirmMsg = ''
-                        vm.regMsg = "";
-                        utilities.storeData('userKey', response.token);
-                        utilities.storeData('isRem', vm.isRem);
-                        token = response.key;
-
-                        // setting timout for token (7days)
-                        // var timeNow = (new Date()).getTime();
-                        // utilities.storeData('tokenTime', timeNow);
-                        utilities.isAuthenticated();
-
-                        $state.go('web.dashboard');
-
-                        vm.stopLoader();
-                    } else {
-                        alert("Something went wrong");
-                        vm.stopLoader();
-                    }
-                },
-                onError: function(response) {
-
-                    var status = response.status;
-                    var error = response.data;
-                    if (status == 400) {
-                        vm.stopLoader();
-                        vm.isConfirm = false;
-                        vm.wrnMsg.cred = "Please correct above marked fields!"
-                        angular.forEach(error, function(value, key) {
-                            if (key == 'non_field_errors') {
-                                vm.isValid.cred = true;
-                                vm.wrnMsg.cred = value[0]
-                            }
-                            if (key == 'password') {
-                                vm.isValid.password = true;
-                                vm.wrnMsg.password = value[0];
-                            }
-                            if (key == 'username') {
-                                vm.isValid.username = true;
-                                vm.wrnMsg.username = value[0];
-                            }
-                        })
-                        vm.stopLoader();
-                    }
-
-                }
-            };
-
-            utilities.sendRequest(parameters, "no-header");
-        }
-
-        // function to reset password
-        vm.resetPassword = function() {
-            vm.startLoader("Sending Mail");
-            var parameters = {};
-            parameters.url = 'auth/password/reset/';
-            parameters.method = 'POST';
-            parameters.data = {
-                "email": vm.getUser.email,
-            }
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                    vm.isMail = false;
-                    vm.getUser.error = false;
-                    console.log("Password reset email sent to the user");
-                    console.log(response);
-                    vm.deliveredMsg = response.success;
-                    vm.getUser.email = '';
-                    vm.wrnMsg = {};
-                    vm.stopLoader();
-
-                },
-                onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
-                    vm.getUser.error = "Failed";
-                    if (status == 400) {
-                        console.log("ERROR Occured");
-                        console.log(error);
-                        angular.forEach(error, function(value, key) {
-                            if (key == 'email') {
-                                vm.isValid.email = true;
-                                vm.wrnMsg.email = value[0];
-                            }
-                        })
-                    }
-                    vm.stopLoader();
-                }
-            };
-
-            utilities.sendRequest(parameters, "no-header");
-        }
-
-        // function to reset password confirm
-        vm.resetPasswordConfirm = function() {
-            vm.startLoader("Resetting Your Password");
-            var parameters = {};
-            parameters.url = 'auth/password/reset/confirm/';
-            parameters.method = 'POST';
-            parameters.data = {
-                "new_password1": vm.getUser.new_password1,
-                "new_password2": vm.getUser.new_password2,
-                "uid": $state.params.user_id,
-                "token": $state.params.reset_token,
-            }
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var status = response.status;
-                    var response = response.data;
-                    vm.isResetPassword = false;
-                    vm.deliveredMsg = response.detail;
-                    vm.stopLoader();
-                    $timeout(function() {
-                        $state.go("auth.login");
-                    }, 2000);
-                },
-                onError: function(response) {
-                    var status = response.status;
-                    var error = response.data;
-                    var token_valid, password1_valid, password2_valid;
-                    try {
-                        vm.isResetPassword = false;
-                        token_valid = typeof(response.data.token) !== 'undefined' ? true : false;
-                        password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
-                        password2_valid = typeof(response.data.new_password2) !== 'undefined' ? true : false;
-                        if (token_valid) {
-                            vm.deliveredMsg = "this link has been already used or expired.";
-                        } else if (password1_valid) {
-                            vm.deliveredMsg = response.data.new_password1[0] + " " + response.data.new_password1[1];
-                        } else if (password2_valid) {
-                            vm.deliveredMsg = response.data.new_password2[0] + " " + response.data.new_password2[1];
-                        } else {
-                            console.log("Unhandled Error");
-                        }
-                    } catch (error) {
-                        vm.deliveredMsg = "Something went wrong! Please refresh the page and try again.";
-                    }
-                    vm.stopLoader();
-                }
-            };
-
-            utilities.sendRequest(parameters, "no-header");
-        }
     }
 
 })();

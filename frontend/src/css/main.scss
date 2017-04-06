@@ -12,9 +12,12 @@
 @import "modules/auth.scss";
 @import "modules/error_404.scss";
 @import "modules/error_500.scss";
+@import "modules/dyn_header_dropdown.scss";
 @import "modules/header.scss";
 @import "modules/sidebar.scss";
 @import "modules/footer.scss";
+@import "modules/about-us.scss";
+@import "modules/notification.scss";
 
 /*web files*/
 
@@ -22,3 +25,8 @@
 @import "modules/teams.scss";
 @import "modules/challenge.scss";
 @import "modules/profile.scss";
+
+/*new css files*/
+
+@import "core/grad-base.scss";
+@import "modules/main-header.scss"

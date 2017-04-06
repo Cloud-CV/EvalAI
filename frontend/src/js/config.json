@@ -4,9 +4,14 @@
             "API": "http://localhost:8000/api/"
         }
     },
+    "staging": {
+        "EnvironmentConfig": {
+            "API": "http://api.evalai.cloudcv.org/api/"
+        }
+    },
     "production": {
         "EnvironmentConfig": {
-            "API": "http://evalai.cloudcv.org:8080/api/"
+            "API": "https://evalapi.cloudcv.org/api/"
         }
     }
 }

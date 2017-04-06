@@ -1,0 +1,15 @@
+.dropdown-content {
+    margin-top: 64px;
+    right: 0;
+    left: auto !important;
+    min-width: 160px;
+    background-color: rgba(0, 0, 0, 0.2);
+    li {
+        text-align: right;
+    }
+}
+
+#ev-dropdown li a:hover {
+    background-color: white;
+    color: $dark-gray;
+}

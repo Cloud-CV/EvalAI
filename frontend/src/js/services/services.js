@@ -11,63 +11,54 @@
 
     utilities.$inject = ['$http', 'EnvironmentConfig', '$rootScope'];
 
-    function utilities($http, EnvironmentConfig, $rootScope) {
+    function utilities($http, EnvironmentConfig) {
 
         // factory for API calls
-        this.sendRequest = function(parameters, header) {
+        this.sendRequest = function(parameters, header, type) {
             var url = EnvironmentConfig.API + parameters.url;
             var data = parameters.data;
             var token = parameters.token;
             var method = parameters.method;
             var successCallback = parameters.callback.onSuccess;
             var errorCallback = parameters.callback.onError;
-            // alert(EnvironmentConfig.API)
-            var headers = {
-                'Authorization': "Token " + token
-            };
+
+            // check for authenticated calls
+            if (parameters.token != null) {
+                var headers = {
+                    'Authorization': "Token " + token
+                };
+            }
 
             // function to check for applying header
             function pick(arg, def) {
                 return (typeof arg == 'undefined' ? def : arg);
-            };
-
-            header = pick(header, 'header');
-
-            if (method == "POST" && header == 'header') {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    data: data,
-                    headers: headers
-                };
-            } else if (method == "POST" && header == 'no-header') {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    data: data
-                };
-            } else if (method == "GET") {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    headers: headers
-                };
-            } else if (method == "PUT") {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    data: data,
-                    headers: headers
-                };
-            } else if (method == "DELETE") {
-                var req = {
-                    method: parameters.method,
-                    url: url,
-                    headers: headers
-                };
             }
 
-            req.timeout = 6000;
+            header = pick(header, 'header');
+            var req = {
+                method: method,
+                url: url,
+            };
+            if (header == 'header') {
+                req.headers = headers;
+            }
+            if (method == "POST" || method == "PUT" || method == "PATCH") {
+                req.data = data;
+            }
+
+            // for file upload
+            if (method == "POST" && type == "upload") {
+                // alert("")
+                headers = {
+                    'Content-Type': undefined,
+                    'Authorization': "Token " + token
+                };
+                req.transformRequest = function(data) {
+                    return data;
+                };
+
+                req.headers = headers;
+            }
 
             $http(req)
                 .then(successCallback, errorCallback);
@@ -78,7 +69,7 @@
         };
 
         this.getData = function(key) {
-            if (localStorage.getItem(key) == null) {
+            if (localStorage.getItem(key) === null) {
                 return false;
             } else {
                 return JSON.parse(localStorage.getItem(key));
