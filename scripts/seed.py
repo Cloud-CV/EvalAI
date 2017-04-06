@@ -10,7 +10,6 @@ from allauth.account.models import EmailAddress
 from datetime import timedelta
 from faker import Factory
 
-import random
 import os
 
 from challenges.models import Challenge, ChallengePhase, DatasetSplit, Leaderboard, ChallengePhaseSplit
@@ -34,7 +33,7 @@ def create_admin_user():
 
 
 def create_user(username=""):
-    fake = Factory.create()
+    Factory.create()
     password = "password"
     email = "%s@gmail.com" % (username)
     user = User.objects.create_user(
@@ -63,21 +62,21 @@ def create_challenge_host_team(user):
 def create_challenges(number_of_challenges=3, host_team=None):
     fake = Factory.create()
     for i in xrange(number_of_challenges):
-        if (i%3 == 0):
+        if (i % 3 == 0):
             create_challenge_object("%s Challenge" % (
                 fake.first_name()),
                 timezone.now() - timedelta(days=100),
                 timezone.now() + timedelta(days=500),
                 host_team
             )
-        elif (i%3 == 1):
+        elif (i % 3 == 1):
             create_challenge_object("%s Challenge" % (
                 fake.first_name()),
                 timezone.now() - timedelta(days=500),
                 timezone.now() - timedelta(days=100),
                 host_team
             )
-        elif (i%3 == 2):
+        elif (i % 3 == 2):
             create_challenge_object("%s Challenge" % (
                 fake.first_name()),
                 timezone.now() + timedelta(days=100),
@@ -89,7 +88,7 @@ def create_challenges(number_of_challenges=3, host_team=None):
 def create_challenge_object(title, start_date, end_date, host_team):
     fake = Factory.create()
     evaluation_script = open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'string_matching.zip'), 'rb')
-    created_challenge = Challenge.objects.create(
+    Challenge.objects.create(
         title=title,
         short_description=fake.paragraph(),
         description=fake.paragraph(),
@@ -128,9 +127,8 @@ def create_challenge_phases(number_of_phases=1):
 
 
 def create_leaderboard():
-    import json
     schema = {
-        'labels': ['score',],
+        'labels': ['score', ],
         'default_order_by': 'score',
     }
     leaderboard = Leaderboard.objects.create(
@@ -142,8 +140,9 @@ def create_leaderboard():
 
 def create_dataset_splits(number_of_splits):
     for i in range(number_of_splits):
-        name = "Split %d" % (DATASET_SPLIT_ITERATOR+1)
-        codename = "%s%d" % ('split', DATASET_SPLIT_ITERATOR+1)
+        global DATASET_SPLIT_ITERATOR
+        name = "Split %d" % (DATASET_SPLIT_ITERATOR + 1)
+        codename = "%s%d" % ('split', DATASET_SPLIT_ITERATOR + 1)
         DatasetSplit.objects.create(
             name=name,
             codename=codename,
