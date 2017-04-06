@@ -145,6 +145,12 @@ class Submission(TimeStampedModel):
                     challenge_phase=self.challenge_phase,
                     submitted_at__gte=datetime.date.today()).count()
 
+                failed_count = Submission.objects.filter(
+                    challenge_phase=self.challenge_phase,
+                    participant_team=self.participant_team,
+                    status=Submission.FAILED,
+                    submitted_at__gte=datetime.date.today()).count()
+
                 if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
                         (self.challenge_phase.max_submissions_per_day == 0)):
                     logger.info("Permission Denied: The maximum number of submission for today has been reached")
