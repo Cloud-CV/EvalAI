@@ -142,12 +142,13 @@ def create_leaderboard():
 
 def create_dataset_splits(number_of_splits):
     for i in range(number_of_splits):
-        name = "Split %d" % (i+1)
-        codename = "%s%d" % ('split', i+1)
+        name = "Split %d" % (DATASET_SPLIT_ITERATOR+1)
+        codename = "%s%d" % ('split', DATASET_SPLIT_ITERATOR+1)
         DatasetSplit.objects.create(
             name=name,
             codename=codename,
         )
+        DATASET_SPLIT_ITERATOR += 1
         print "Dataset Split created with \n name: %s \n codename: %s" % (name, codename)
 
 
@@ -180,6 +181,7 @@ print "Starting database seeder, Hang on :)"
 NUMBER_OF_CHALLENGES = 1
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
+DATASET_SPLIT_ITERATOR = 0
 
 create_admin_user()
 host_user = create_user(username="host")
