@@ -503,8 +503,8 @@
             vm.phaseId = phaseId;
 
             var all_phases = vm.phases.results;
-            for(var i=0; i<vm.phases.results.length; i++){
-                if (all_phases[i].id == phaseId){
+            for (var i = 0; i < vm.phases.results.length; i++) {
+                if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
                     break;
                 }
@@ -547,7 +547,7 @@
                     var details = response.data;
                     vm.submissionResult = details;
 
-                    for (var i = 0; i < details.results.length; i++){
+                    for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                     }
 
@@ -660,7 +660,7 @@
                             var details = response.data;
 
                             // Set the is_public flag corresponding to each submission
-                            for (var i = 0; i < details.results.length; i++){
+                            for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                             }
 
@@ -689,6 +689,17 @@
         };
 
         vm.refreshSubmissionData = function() {
+
+            // get submissions of a particular challenge phase
+
+            if (!vm.isResult) {
+
+                vm.isNext = '';
+                vm.isPrev = '';
+                vm.currentPage = '';
+                vm.showPagination = false;
+            }
+
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
             var parameters = {};
@@ -700,9 +711,37 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
+                    vm.submissionResult = details;
+
+                    if (vm.submissionResult.count === 0) {
+                        vm.showPagination = false;
+                        vm.paginationMsg = "No results found";
+                    } else {
+
+                        vm.showPagination = true;
+                        vm.paginationMsg = "";
+                    }
+
+                    if (vm.submissionResult.next === null) {
+                        vm.isNext = 'disabled';
+                    } else {
+                        vm.isNext = '';
+
+                    }
+                    if (vm.submissionResult.previous === null) {
+                        vm.isPrev = 'disabled';
+                    } else {
+                        vm.isPrev = '';
+                    }
+                    if (vm.submissionResult.next !== null) {
+                        vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                    } else {
+                        vm.currentPage = 1;
+                    }
+
 
                     // Set the is_public flag corresponding to each submission
-                    for (var i = 0; i < details.results.length; i++){
+                    for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                     }
 
@@ -839,10 +878,8 @@
             };
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function() {
-                },
-                onError: function() {
-                }
+                onSuccess: function() {},
+                onError: function() {}
             };
 
             utilities.sendRequest(parameters);
