@@ -21,5 +21,11 @@ ADD ./ /code/
 
 RUN pip install -r requirements/dev.txt
 
+ENV POSTGRES_NAME="postgres"
+ENV POSTGRES_USER="postgres"
+ENV POSTGRES_PASSWORD="postgres"
+ENV POSTGRES_HOST="db"
+ENV POSTGRES_PORT=5432
+
 CMD ["sh", "/code/docker/dev/django/container-start.sh"]
 EXPOSE 8000
