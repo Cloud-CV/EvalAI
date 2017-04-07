@@ -99,22 +99,10 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     git clone https://github.com/Cloud-CV/EvalAI.git evalai
     ```
 
-2. Rename `settings/dev.sample.py` to `dev.py` and change the `DATABASES` credentials in `settings/dev.py` as given below.
+2. Rename `settings/dev.sample.py` to `dev.py`.
 
     ```
     cp settings/dev.sample.py settings/dev.py
-    ```
-    
-    ```python
-    DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'HOST': 'db',
-        'PORT': 5432,
-       }
-    }
     ```
 
 3. Build the Docker containers. This might take a while.
