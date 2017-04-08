@@ -241,8 +241,16 @@ gulp.task('lint', [], function() {
     return gulp.src(lint_path.js)
         .pipe(eslint({}))
         .pipe(eslint.format())
-        // uncommenting the line below will break the gulp task in case of error.
-        .pipe(eslint.failAfterError())
+        .pipe(eslint.results(function(results) { 
+            connect.serverClose(); // Close the server initially.
+            var countError = results.errorCount; // Get the count of lint errors.
+            var countWarning = results.warningCount; // Get the count of lint warnings.
+            if (countError === 0) { // If there are no errors.
+                if (countWarning === 0) { // If there are no warnings.
+                    gulp.start('connect'); // Connect the server again.
+                }
+            }
+        }))
 });
 
 // cleaning build process- run clean before deploy and rebuild files again
@@ -372,5 +380,5 @@ gulp.task('prod', function(callback) {
 
 // Runserver for development
 gulp.task('dev:runserver', function(callback) {
-    runSequence('dev', 'connect', 'watch', callback);
+    runSequence('dev', 'watch', callback);
 });
