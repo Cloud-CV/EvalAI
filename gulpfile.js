@@ -342,7 +342,7 @@ gulp.task('watch', function() {
 
 
 // Start a server for serving frontend
-gulp.task('connect', ['lint'], function() {
+gulp.task('connect', [], function() {
     connect.server({
         root: 'frontend/',
         port: 8888,
