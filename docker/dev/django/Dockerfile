@@ -19,13 +19,9 @@ WORKDIR /code
 
 ADD ./ /code/
 
-RUN pip install -r requirements/dev.txt
+COPY settings/dev.sample.py /code/settings/dev.py
 
-ENV POSTGRES_NAME="postgres"
-ENV POSTGRES_USER="postgres"
-ENV POSTGRES_PASSWORD="postgres"
-ENV POSTGRES_HOST="db"
-ENV POSTGRES_PORT=5432
+RUN pip install -r requirements/dev.txt
 
 CMD ["sh", "/code/docker/dev/django/container-start.sh"]
 EXPOSE 8000
