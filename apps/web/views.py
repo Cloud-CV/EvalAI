@@ -35,7 +35,7 @@ def internal_server_error(request):
 
 
 @throttle_classes([AnonRateThrottle, ])
-@api_view(['POST', 'GET' ])
+@api_view(['POST', 'GET'])
 @permission_classes((permissions.AllowAny,))
 def contact_us(request):
     try:
