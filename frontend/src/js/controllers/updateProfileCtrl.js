@@ -11,7 +11,6 @@
     updateProfileCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
 
     function updateProfileCtrl(utilities, $state, $http, $rootScope) {
-        /* jshint validthis: true */
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
@@ -33,6 +32,28 @@
             $rootScope.loaderTitle = '';
             vm.updateprofileContainer.removeClass('low-screen');
         };
+
+        // To get the previous profile data
+        var parameters = {};
+        parameters.url = 'auth/user/';
+        parameters.method = 'GET';
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function(response) {
+                var status = response.status;
+                var result = response.data;
+                if (status == 200) {
+                    vm.user = result;
+                }
+
+            },
+            onError: function() {
+                $rootScope.notify("error", "Error in loading profile, please try again later !");
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
         // function to update Profile
         vm.updateProfile = function(resetconfirmFormValid) {
             if (resetconfirmFormValid) {
@@ -76,7 +97,7 @@
                                     $rootScope.notify("error", "Some error have occured . Please try again !");
                                 }
 
-                            } catch (error) { // jshint ignore:line
+                            } catch (error) {
                                 $rootScope.notify("error", "Some error have occured . Please try again !");
                             }
                         }

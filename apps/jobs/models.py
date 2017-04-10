@@ -73,8 +73,15 @@ class Submission(TimeStampedModel):
     input_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"))
     stdout_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     stderr_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    submission_result_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    submission_metadata_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     execution_time_limit = models.PositiveIntegerField(default=300)
     method_name = models.CharField(max_length=1000, null=True)
+    method_description = models.TextField(blank=True, null=True)
+    publication_url = models.CharField(max_length=1000, null=True)
+    project_url = models.CharField(max_length=1000, null=True)
 
     def __unicode__(self):
         return '{}'.format(self.id)
@@ -138,12 +145,18 @@ class Submission(TimeStampedModel):
                     challenge_phase=self.challenge_phase,
                     submitted_at__gte=datetime.date.today()).count()
 
+                failed_count = Submission.objects.filter(
+                    challenge_phase=self.challenge_phase,
+                    participant_team=self.participant_team,
+                    status=Submission.FAILED,
+                    submitted_at__gte=datetime.date.today()).count()
+
                 if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
                         (self.challenge_phase.max_submissions_per_day == 0)):
                     logger.info("Permission Denied: The maximum number of submission for today has been reached")
                     raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
 
-            self.is_public = (True if self.challenge_phase.leaderboard_public else False)
+            self.is_public = (True if self.challenge_phase.is_submission_public else False)
 
             self.status = Submission.SUBMITTED
 

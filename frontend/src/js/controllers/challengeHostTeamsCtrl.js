@@ -13,7 +13,6 @@
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
-        var challengePk = 1;
 
         utilities.showLoader();
 
@@ -46,6 +45,10 @@
             vm.loginContainer.removeClass('low-screen');
         };
 
+        vm.activateCollapsible = function() {
+            angular.element('.collapsible').collapsible();
+        };
+
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
         parameters.method = 'GET';
@@ -61,7 +64,7 @@
                         vm.showPagination = false;
                         vm.paginationMsg = "No team exist for now, Start by creating a new team!";
                     } else {
-
+                        vm.activateCollapsible();
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
@@ -188,7 +191,6 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     $rootScope.notify("success", "New team- '" + vm.team.name + "' has been created");
-                    var status = response.status;
                     var details = response.data;
                     vm.teamId = details.id;
                     vm.team.error = false;
@@ -229,7 +231,7 @@
                                 vm.stopExistLoader();
                             }
                         },
-                        onError: function(response) {
+                        onError: function() {
                             vm.stopExistLoader();
                         }
                     };
@@ -249,6 +251,7 @@
         };
 
         vm.confirmDelete = function(ev, hostTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove yourself?')
@@ -266,9 +269,7 @@
                 parameters.data = {};
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function(response) {
-                        var status = response.status;
-                        var details = response.data;
+                    onSuccess: function() {
                         vm.team.error = false;
                         $rootScope.notify("info", "You have removed yourself successfully");
 
@@ -315,8 +316,7 @@
                         };
                         utilities.sendRequest(parameters);
                     },
-                    onError: function(response) {
-                        var error = response.data;
+                    onError: function() {
                         vm.stopExistLoader();
                         $rootScope.notify("error", "Couldn't remove you from the challenge");
                     }
@@ -324,12 +324,11 @@
 
                 utilities.sendRequest(parameters);
 
-            }, function() {
-                console.log("Operation defered");
-            });
+            }, function() {});
         };
 
         vm.inviteOthers = function(ev, hostTeamId) {
+            ev.stopPropagation();
             // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
                 .title('Invite others to this Team')
@@ -350,12 +349,10 @@
                 };
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
+                    onSuccess: function() {
                         $rootScope.notify("success", parameters.data.email + " has been invited successfully");
                     },
-                    onError: function(response) {
-                        var error = response.data;
+                    onError: function() {
                         $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.");
                     }
                 };

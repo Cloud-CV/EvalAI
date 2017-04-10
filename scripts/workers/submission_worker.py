@@ -308,7 +308,9 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
                         "key2":45,
                      }
                   }
-               ]
+               ],
+               "submission_metadata": {'foo': 'bar'},
+               "submission_result": ['foo', 'bar'],
             }
         '''
         if 'result' in submission_output:
@@ -378,6 +380,14 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     with open(stderr_file, 'r') as stderr:
         stderr_content = stderr.read()
         submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
+
+    # Save submission_result_file
+    submission_result = submission_output.get('submission_result', '')
+    submission.submission_result_file.save('submission_result.txt', ContentFile(submission_result))
+
+    # Save submission_metadata_file
+    submission_metadata = submission_output.get('submission_metadata', '')
+    submission.submission_metadata_file.save('submission_metadata.txt', ContentFile(submission_metadata))
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
@@ -481,7 +491,7 @@ def main():
 
     channel.queue_bind(
         exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=add_challenge_queue_name, routing_key='challenge.add.*')
+        queue=add_challenge_queue_name, routing_key='challenge.*.*')
     channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
 
     channel.start_consuming()

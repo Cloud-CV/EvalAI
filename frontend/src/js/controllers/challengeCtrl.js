@@ -14,14 +14,18 @@
         vm.phaseId = null;
         vm.phaseSplitId = null;
         vm.input_file = null;
+        vm.methodName = null;
+        vm.methodDesc = null;
+        vm.projectUrl = null;
+        vm.publicationUrl = null;
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
         vm.isActive = false;
-        var flag = 0;
         vm.phases = {};
         vm.phaseSplits = {};
         vm.isValid = {};
+        vm.submissionVisibility = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -61,7 +65,6 @@
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
-                var status = response.status;
                 var details = response.data;
                 vm.page = details;
                 vm.isActive = details.is_active;
@@ -82,7 +85,6 @@
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
-                            var status = response.status;
                             var details = response.data;
 
                             for (var i in details.challenge_participant_team_list) {
@@ -163,14 +165,12 @@
                                                 parameters.method = 'POST';
                                                 parameters.token = userKey;
                                                 parameters.callback = {
-                                                    onSuccess: function(response) {
-                                                        var details = response.data;
+                                                    onSuccess: function() {
                                                         vm.isParticipated = true;
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.stopLoader();
                                                     },
-                                                    onError: function(response) {
-                                                        var error = response.data;
+                                                    onError: function() {
                                                         vm.existTeamError = "Please select a team";
                                                         vm.stopLoader();
                                                     }
@@ -283,12 +283,16 @@
                                         var formData = new FormData();
                                         formData.append("status", "submitting");
                                         formData.append("input_file", vm.input_file);
+                                        formData.append("method_name", vm.methodName);
+                                        formData.append("method_description", vm.methodDesc);
+                                        formData.append("project_url", vm.projectUrl);
+                                        formData.append("publication_url", vm.publicationUrl);
 
                                         parameters.data = formData;
 
                                         parameters.token = userKey;
                                         parameters.callback = {
-                                            onSuccess: function(response) {
+                                            onSuccess: function() {
                                                 // vm.input_file.name = '';
 
                                                 angular.forEach(
@@ -302,6 +306,10 @@
 
 
                                                 vm.phaseId = null;
+                                                vm.methodName = null;
+                                                vm.methodDesc = null;
+                                                vm.projectUrl = null;
+                                                vm.publicationUrl = null;
                                                 // vm.subErrors.msg = "Your submission has been recorded succesfully!";
                                                 $rootScope.notify("success", "Your submission has been recorded succesfully!");
 
@@ -312,6 +320,10 @@
                                                 var error = response.data;
 
                                                 vm.phaseId = null;
+                                                vm.methodName = null;
+                                                vm.methodDesc = null;
+                                                vm.projectUrl = null;
+                                                vm.publicationUrl = null;
                                                 if (status == 404) {
 
                                                     vm.subErrors.msg = "Please select phase!";
@@ -330,8 +342,7 @@
                             }
                             utilities.hideLoader();
                         },
-                        onError: function(response) {
-                            var error = response.data;
+                        onError: function() {
                             utilities.hideLoader();
                         }
                     };
@@ -490,6 +501,15 @@
             vm.stopFetchingSubmissions();
             vm.isResult = true;
             vm.phaseId = phaseId;
+
+            var all_phases = vm.phases.results;
+            for(var i=0; i<vm.phases.results.length; i++){
+                if (all_phases[i].id == phaseId){
+                    vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    break;
+                }
+            }
+
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
@@ -526,6 +546,11 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.submissionResult = details;
+
+                    for (var i = 0; i < details.results.length; i++){
+                        vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                    }
+
                     vm.start();
 
                     if (vm.submissionResult.count === 0) {
@@ -632,12 +657,17 @@
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
-                            var status = response.status;
                             var details = response.data;
-                            if (vm.submissionResult.results.count !== details.results.count) {
+
+                            // Set the is_public flag corresponding to each submission
+                            for (var i = 0; i < details.results.length; i++){
+                                vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                            }
+
+                            if (vm.submissionResult.results.length !== details.results.length) {
                                 vm.showUpdate = true;
                             } else {
-                                for (var i = 0; i < details.results.length; i++) {
+                                for (i = 0; i < details.results.length; i++) {
                                     if (details.results[i].status !== vm.submissionResult.results[i].status) {
                                         vm.showUpdate = true;
                                         break;
@@ -670,11 +700,17 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
+
+                    // Set the is_public flag corresponding to each submission
+                    for (var i = 0; i < details.results.length; i++){
+                        vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                    }
+
                     vm.submissionResult = details;
                     vm.showUpdate = false;
                     vm.stopLoader();
                 },
-                onError: function(response) {
+                onError: function() {
                     vm.stopLoader();
                 }
             };
@@ -736,9 +772,8 @@
             };
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function(response) {
+                onSuccess: function() {
                     $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
-                    var details = response.data;
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team.name = '';
@@ -777,7 +812,7 @@
                                 vm.stopExistLoader();
                             }
                         },
-                        onError: function(response) {
+                        onError: function() {
                             vm.stopExistLoader();
                         }
                     };
@@ -793,6 +828,24 @@
 
             utilities.sendRequest(parameters);
 
+        };
+
+        vm.changeSubmissionVisibility = function(submission_id) {
+            var parameters = {};
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "is_public": vm.submissionVisibility[submission_id]
+            };
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function() {
+                },
+                onError: function() {
+                }
+            };
+
+            utilities.sendRequest(parameters);
         };
 
         $scope.$on('$destroy', function() {

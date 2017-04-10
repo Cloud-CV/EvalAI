@@ -47,7 +47,7 @@
 
         utilities.sendRequest(parameters);
 
-        vm.hostChallenge = function(ev) {
+        vm.hostChallenge = function() {
 
             var alert = $mdDialog.alert()
                 .title('Host a challenge')

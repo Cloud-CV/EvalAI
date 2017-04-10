@@ -108,6 +108,72 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@throttle_classes([UserRateThrottle])
+@api_view(['PATCH'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def change_submission_visibility(request, challenge_id, challenge_phase_id, submission_id):
+    """API Endpoint for making a submission to a challenge"""
+
+    # check if the challenge exists or not
+    try:
+        challenge = Challenge.objects.get(pk=challenge_id)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # check if the challenge phase exists or not
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            pk=challenge_phase_id, challenge=challenge)
+    except ChallengePhase.DoesNotExist:
+        response_data = {'error': 'Challenge Phase does not exist'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not challenge.is_active:
+        response_data = {'error': 'Challenge is not active'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # check if challenge phase is public and accepting solutions
+    if not challenge_phase.is_public:
+        response_data = {
+            'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge_id)
+
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'You haven\'t participated in the challenge'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        submission = Submission.objects.get(participant_team=participant_team,
+                                            challenge_phase=challenge_phase, id=submission_id)
+    except Submission.DoesNotExist:
+        response_data = {'error': 'Submission does not exist'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    print request.data
+    serializer = SubmissionSerializer(submission,
+                                      data=request.data,
+                                      context={
+                                               'participant_team': participant_team,
+                                               'challenge_phase': challenge_phase,
+                                               'request': request
+                                      },
+                                      partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
 def leaderboard(request, challenge_phase_split_id):
@@ -138,7 +204,7 @@ def leaderboard(request, challenge_phase_split_id):
 
     # Get all the successful submissions related to the challenge phase split
     leaderboard_data = LeaderboardData.objects.filter(
-        challenge_phase_split=challenge_phase_split).order_by('created_at')
+        challenge_phase_split=challenge_phase_split, submission__is_public=True).order_by('created_at')
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',
