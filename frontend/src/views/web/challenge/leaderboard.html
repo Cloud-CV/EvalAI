@@ -17,13 +17,13 @@
                             <span class="text-white">Page is Outdated, Click to update&nbsp; <i class="fa fa-refresh text-highlight"></i></span>
                         </div>
                         <div class="col s12">
-                            <strong>Please select from following Public Challenge Phase Dataset Splits!</strong>
+                            <strong>Please select from following Challenge Phase</strong>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col xs12 s6">
-                            <span><md-select ng-model="challenge.phase.name" placeholder="Challenge Phase Split" class="rm-margin">
-                            <md-option ng-click="challenge.getLeaderboard(key.id)" value="{{key.id}}" ng-repeat="key in challenge.phaseSplits.results" ng-show="{{key.visibility}}==3">{{key.challenge_phase_name}} : {{key.dataset_split_name}}</md-option>
+                            <span><md-select ng-model="challenge.phase.name" placeholder="Challenge Phase" class="rm-margin">
+                            <md-option ng-click="challenge.getLeaderboard(key.id)" value="{{key.id}}" ng-repeat="key in challenge.phaseSplits.results" ng-show="{{key.visibility}}==3">{{key.challenge_phase_name}}</md-option>
                         </md-select></span>
                         </div>
                     </div>
