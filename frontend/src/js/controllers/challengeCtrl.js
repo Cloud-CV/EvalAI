@@ -651,7 +651,7 @@
                 vm.stopFetchingSubmissions();
                 vm.poller = $interval(function() {
                     var parameters = {};
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
+                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.token = userKey;
@@ -704,7 +704,7 @@
             vm.submissionResult = {};
             var parameters = {};
 
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
