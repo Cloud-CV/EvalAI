@@ -75,7 +75,7 @@ class Challenge(TimeStampedModel):
 
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
-    codename = models.CharField(max_length=100)
+    codename = models.CharField(max_length=100, unique=True)
 
     def __unicode__(self):
         return self.name
