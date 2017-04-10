@@ -22,7 +22,7 @@ def create_user(is_admin, username=""):
     else:
         email = "%s@example.com" % (username)
     user = User.objects.create_user(
-        email= email,
+        email=email,
         username=username,
         password="password",
         is_staff=is_admin,
@@ -49,22 +49,22 @@ def create_challenges(number_of_challenges=3, host_team=None):
     for i in xrange(number_of_challenges):
         if (i % 3 == 0):
             create_challenge("{} Challenge".format(fake.first_name()),
-                timezone.now() - timedelta(days=100),
-                timezone.now() + timedelta(days=500),
-                host_team
-            )
+                             timezone.now() - timedelta(days=100),
+                             timezone.now() + timedelta(days=500),
+                             host_team
+                             )
         elif (i % 3 == 1):
             create_challenge("{} Challenge" % (fake.first_name()),
-                timezone.now() - timedelta(days=500),
-                timezone.now() - timedelta(days=100),
-                host_team
-            )
+                             timezone.now() - timedelta(days=500),
+                             timezone.now() - timedelta(days=100),
+                             host_team
+                             )
         elif (i % 3 == 2):
             create_challenge("{} Challenge" % (fake.first_name()),
-                timezone.now() + timedelta(days=100),
-                timezone.now() + timedelta(days=500),
-                host_team
-            )
+                             timezone.now() + timedelta(days=100),
+                             timezone.now() + timedelta(days=500),
+                             host_team
+                             )
 
 
 def create_challenge(title, start_date, end_date, host_team):
