@@ -189,4 +189,4 @@ def run():
             for dataset_split in dataset_splits:
                 create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split)
     participant_user = create_user(is_admin=False, username="participant")
-    participant_team = create_participant_team(user=participant_user)
+    create_participant_team(user=participant_user)
