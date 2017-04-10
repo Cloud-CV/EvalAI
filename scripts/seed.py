@@ -14,6 +14,13 @@ from challenges.models import Challenge, ChallengePhase, DatasetSplit, Leaderboa
 from hosts.models import ChallengeHostTeam, ChallengeHost
 from participants.models import Participant, ParticipantTeam
 
+fake = Factory.create()
+
+NUMBER_OF_CHALLENGES = 1
+NUMBER_OF_PHASES = 2
+NUMBER_OF_DATASET_SPLITS = 2
+DATASET_SPLIT_ITERATOR = 0
+
 
 def create_user(is_admin, username=""):
     if is_admin:
@@ -89,7 +96,7 @@ def create_challenge(title, start_date, end_date, host_team):
                                                                                             start_date, end_date)
 
 
-def create_challenge_phases(number_of_phases=1):
+def create_challenge_phases(challenge, number_of_phases=1):
     challenge_phases = []
     for i in range(number_of_phases):
         name = "{} Phase".format(fake.first_name())
@@ -163,36 +170,23 @@ def create_participant_team(user):
     return team
 
 
-print "Starting database seeder, Hang on :)"
+def run():
+    create_user(is_admin=True)
+    host_user = create_user(is_admin=False, username="host")
+    challenge_host_team = create_challenge_host_team(user=host_user)
+    create_challenges(number_of_challenges=NUMBER_OF_CHALLENGES, host_team=challenge_host_team)
 
-fake = Factory.create()
-
-NUMBER_OF_CHALLENGES = 1
-NUMBER_OF_PHASES = 2
-NUMBER_OF_DATASET_SPLITS = 2
-DATASET_SPLIT_ITERATOR = 0
-
-create_user(is_admin=True)
-host_user = create_user(is_admin=False, username="host")
-challenge_host_team = create_challenge_host_team(user=host_user)
-create_challenges(number_of_challenges=NUMBER_OF_CHALLENGES, host_team=challenge_host_team)
-
-challenges = Challenge.objects.all()
-for challenge in challenges:
-
-    # Create a leaderboard object for each challenge
-    leaderboard = create_leaderboard()
-
-    # Create Phases for a challenge
-    challenge_phases = create_challenge_phases(number_of_phases=NUMBER_OF_PHASES)
-
-    # Create Dataset Split for each Challenge
-    dataset_splits = create_dataset_splits(number_of_splits=NUMBER_OF_DATASET_SPLITS)
-
-    # Create Challenge Phase Split for each Phase and Dataset Split
-    for challenge_phase in challenge_phases:
-        for dataset_split in dataset_splits:
-            create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split)
-
-participant_user = create_user(is_admin=False, username="participant")
-participant_team = create_participant_team(user=participant_user)
+    challenges = Challenge.objects.all()
+    for challenge in challenges:
+        # Create a leaderboard object for each challenge
+        leaderboard = create_leaderboard()
+        # Create Phases for a challenge
+        challenge_phases = create_challenge_phases(challenge, number_of_phases=NUMBER_OF_PHASES)
+        # Create Dataset Split for each Challenge
+        dataset_splits = create_dataset_splits(number_of_splits=NUMBER_OF_DATASET_SPLITS)
+        # Create Challenge Phase Split for each Phase and Dataset Split
+        for challenge_phase in challenge_phases:
+            for dataset_split in dataset_splits:
+                create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split)
+    participant_user = create_user(is_admin=False, username="participant")
+    participant_team = create_participant_team(user=participant_user)
