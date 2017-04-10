@@ -98,7 +98,7 @@ class ChallengePhase(TimeStampedModel):
     challenge = models.ForeignKey('Challenge')
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
-    test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"))
+    test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"), default=False)
     max_submissions_per_day = models.PositiveIntegerField(default=100000)
     max_submissions = models.PositiveIntegerField(default=100000)
     codename = models.CharField(max_length=100, default="Phase Code Name")
