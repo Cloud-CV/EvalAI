@@ -45,7 +45,6 @@ DEFAULT_APPS = [
 ]
 
 OUR_APPS = [
-    'evalai',
     'accounts',
     'analytics',
     'base',
