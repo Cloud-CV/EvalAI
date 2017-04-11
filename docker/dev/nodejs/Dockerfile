@@ -26,6 +26,6 @@ RUN n stable
 RUN npm install
 RUN bower install --allow-root
 
-RUN gulp dev
+RUN gulp dev:runserver
 
 EXPOSE 8888
