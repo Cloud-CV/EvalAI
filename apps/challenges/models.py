@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.db.models import signals
 
-from base.models import (TimeStampedModel, )
+from base.models import (TimeStampedModel, extra_args, create_post_model_field, )
 from base.utils import RandomFileName
 from participants.models import (ParticipantTeam, )
 
@@ -13,6 +14,12 @@ from participants.models import (ParticipantTeam, )
 class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
+
+    def __init__(self, *args, **kwargs):
+        super(Challenge, self).__init__(*args, **kwargs)
+        self._original_evaluation_script = self.evaluation_script
+
+
     title = models.CharField(max_length=100)
     short_description = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -74,6 +81,9 @@ class Challenge(TimeStampedModel):
         return False
 
 
+signals.post_save.connect(extra_args(fragment_name="evaluation_script")(create_post_model_field), sender=Challenge, weak=False)
+
+
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100, unique=True)
@@ -89,6 +99,11 @@ class DatasetSplit(TimeStampedModel):
 class ChallengePhase(TimeStampedModel):
 
     """Model representing a Challenge Phase"""
+    def __init__(self, *args, **kwargs):
+        super(ChallengePhase, self).__init__(*args, **kwargs)
+        self._original_test_annotation = self.test_annotation
+
+
     name = models.CharField(max_length=100)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
@@ -128,6 +143,9 @@ class ChallengePhase(TimeStampedModel):
         if self.start_date < timezone.now() and self.end_date > timezone.now():
             return True
         return False
+
+
+signals.post_save.connect(extra_args(fragment_name="test_annotation")(create_post_model_field), sender=ChallengePhase, weak=False)
 
 
 class Leaderboard(TimeStampedModel):
