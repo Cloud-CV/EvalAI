@@ -19,7 +19,6 @@ class Challenge(TimeStampedModel):
         super(Challenge, self).__init__(*args, **kwargs)
         self._original_evaluation_script = self.evaluation_script
 
-
     title = models.CharField(max_length=100)
     short_description = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -81,7 +80,8 @@ class Challenge(TimeStampedModel):
         return False
 
 
-signals.post_save.connect(extra_args(fragment_name="evaluation_script")(create_post_model_field), sender=Challenge, weak=False)
+signals.post_save.connect(extra_args(fragment_name="evaluation_script")(create_post_model_field),
+                                    sender=Challenge, weak=False)
 
 
 class DatasetSplit(TimeStampedModel):
@@ -102,7 +102,6 @@ class ChallengePhase(TimeStampedModel):
     def __init__(self, *args, **kwargs):
         super(ChallengePhase, self).__init__(*args, **kwargs)
         self._original_test_annotation = self.test_annotation
-
 
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -145,7 +144,8 @@ class ChallengePhase(TimeStampedModel):
         return False
 
 
-signals.post_save.connect(extra_args(fragment_name="test_annotation")(create_post_model_field), sender=ChallengePhase, weak=False)
+signals.post_save.connect(extra_args(fragment_name="test_annotation")(create_post_model_field),
+                                    sender=ChallengePhase, weak=False)
 
 
 class Leaderboard(TimeStampedModel):

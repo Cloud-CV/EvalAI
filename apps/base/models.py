@@ -1,6 +1,11 @@
 from __future__ import unicode_literals
 
+import logging
+
 from django.db import models
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 
 class TimeStampedModel(models.Model):
@@ -26,6 +31,6 @@ def extra_args(fragment_name, *args, **kwargs):
 
 def create_post_model_field(sender, instance, fragment_name, **kwargs):
     if getattr(instance, "_original_" + str(fragment_name)) is False:
-        print str(fragment_name) + " is added first time !"
+        logger.info(str(fragment_name) + " is added first time !")
     else:
-        print str(fragment_name) + " is changed !"
+        logger.info(str(fragment_name) + " is changed !")
