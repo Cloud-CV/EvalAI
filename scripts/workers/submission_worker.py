@@ -366,6 +366,15 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     # after the execution is finished, set `status` to finished and hence `completed_at`
     if submission_output:
         submission.output = submission_output
+
+        # Save submission_result_file
+        submission_result = submission_output.get('submission_result', '')
+        submission.submission_result_file.save('submission_result.txt', ContentFile(submission_result))
+
+        # Save submission_metadata_file
+        submission_metadata = submission_output.get('submission_metadata', '')
+        submission.submission_metadata_file.save('submission_metadata.txt', ContentFile(submission_metadata))
+
     submission.save()
 
     stderr.close()
@@ -380,14 +389,6 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     with open(stderr_file, 'r') as stderr:
         stderr_content = stderr.read()
         submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
-
-    # Save submission_result_file
-    submission_result = submission_output.get('submission_result', '')
-    submission.submission_result_file.save('submission_result.txt', ContentFile(submission_result))
-
-    # Save submission_metadata_file
-    submission_metadata = submission_output.get('submission_metadata', '')
-    submission.submission_metadata_file.save('submission_metadata.txt', ContentFile(submission_metadata))
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
