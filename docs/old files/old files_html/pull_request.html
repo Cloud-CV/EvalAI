@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &#8212; EvalAI 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="top" title="EvalAI 1.0 documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p># Pull Request</p>
+<p>Contributing to EvalAI is a facile task. Please follow these steps in order to get started.</p>
+<p><strong>Step 1 : Fork</strong></p>
+<ol class="arabic simple">
+<li>Fork the EvalAI repository from [EvalAI](<a class="reference external" href="https://github.com/Cloud-CV/EvalAI">https://github.com/Cloud-CV/EvalAI</a>) link.</li>
+</ol>
+<p><strong>Step 2 : Picking up a issue</strong></p>
+<p>1. Pick up a suitable issue that you find will be easy for you to fix. Moreover, you can also
+take the issues based on their labels. All the issues are marked with a label according to its difficulty.</p>
+<ol class="arabic simple" start="2">
+<li>After selecting any issue, ask the maintainers of the project to assign it to you and they will assign it based on its availability.</li>
+</ol>
+<p>3. Once it gets assigned , [create](<a class="reference external" href="https://git-scm.com/docs/git-checkout">https://git-scm.com/docs/git-checkout</a>) a branch from your fork’s updated master branch using the following command
+<cite>git checkout -b branch_name</cite></p>
+<ol class="arabic simple" start="4">
+<li>Start working on the issue.</li>
+</ol>
+<p><strong>Step 3: Committing Your Changes</strong></p>
+<ol class="arabic simple">
+<li>After making the required feature as asked in the issue, you need to add your files to local git repository.</li>
+<li>To add your files , following commands can be handy</li>
+</ol>
+<ul class="simple">
+<li>To add only modified files <cite>git add -u</cite></li>
+<li>To add a new file <cite>git add file_path_from_local_git_repository</cite></li>
+<li>To add all files <cite>git add .</cite></li>
+</ul>
+<p>3. Once you have added your files, you need to commit your changes. Always <strong>create a very meaningful commit message related to the feature that you have added. Try to write the commit message in present imperative tense. Also namespace the commit message so that it becomes self explanatory by just looking at the commit message.</strong>
+for example,
+&gt; Docs: Add verbose setup docs for ubuntu</p>
+<p><strong>Step 4: Creating a [Pull Request](https://help.github.com/articles/about-pull-requests/)</strong></p>
+<ol class="arabic simple">
+<li>Before creating a Pull Request, you need to first rebase your branch with the [upstream](<a class="reference external" href="http://stackoverflow.com/questions/9257533/what-is-the-difference-between-origin-and-upstream-on-github">http://stackoverflow.com/questions/9257533/what-is-the-difference-between-origin-and-upstream-on-github</a>) master.</li>
+</ol>
+<p>2. To [rebase](<a class="reference external" href="https://git-scm.com/book/en/v2/Git-Branching-Rebasing">https://git-scm.com/book/en/v2/Git-Branching-Rebasing</a>) your branch, use following commands
+<cite>git fetch upstream</cite>
+<cite>git rebase upstream/master</cite></p>
+<p>3. After rebasing, push the changes on your forked repository.
+<cite>git push origin branch_name</cite></p>
+<ol class="arabic simple" start="4">
+<li>After pushing the code, create a Pull Request.</li>
+<li>At the time of creation of Pull Request, create a comment with [these](<a class="reference external" href="https://help.github.com/articles/closing-issues-via-commit-messages/">https://help.github.com/articles/closing-issues-via-commit-messages/</a>) keywords and also mention any maintainers name for reviewing it.</li>
+</ol>
+<p><strong>Note:</strong></p>
+<ul class="simple">
+<li>If you find that there is some relevant content to be mentioned or any doubts to be asked, then also mention these things in the comment.</li>
+<li>After the reviews from the maintainer, fix the changes as suggested &amp; push the code on the same branch after adding &amp; committing.</li>
+</ul>
+<p>Once you complete the above steps, you have successfully created a Pull Request to EvalAI.</p>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/old files/pull_request.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, CloudCV Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.8</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="../_sources/old files/pull_request.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
