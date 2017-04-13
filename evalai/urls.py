@@ -20,9 +20,9 @@ from django.views.generic.base import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 
-from allauth.account.views import ConfirmEmailView
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 
+from accounts.views import ConfirmEmailView
 from web import views
 
 handler404 = 'web.views.page_not_found'
