@@ -490,8 +490,7 @@
                     $rootScope.isAuth = false;
                     $rootScope.notify("info", "Successfully logged out!");
                 },
-                onError: function() {
-                }
+                onError: function() {}
             };
 
             utilities.sendRequest(parameters);
@@ -504,8 +503,7 @@
             parameters.method = 'GET';
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function() {
-                },
+                onSuccess: function() {},
                 onError: function(response) {
                     var status = response.status;
                     if (status == 401) {

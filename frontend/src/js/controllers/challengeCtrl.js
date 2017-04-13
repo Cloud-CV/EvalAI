@@ -14,6 +14,10 @@
         vm.phaseId = null;
         vm.phaseSplitId = null;
         vm.input_file = null;
+        vm.methodName = null;
+        vm.methodDesc = null;
+        vm.projectUrl = null;
+        vm.publicationUrl = null;
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
@@ -21,6 +25,7 @@
         vm.phases = {};
         vm.phaseSplits = {};
         vm.isValid = {};
+        vm.submissionVisibility = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -278,6 +283,10 @@
                                         var formData = new FormData();
                                         formData.append("status", "submitting");
                                         formData.append("input_file", vm.input_file);
+                                        formData.append("method_name", vm.methodName);
+                                        formData.append("method_description", vm.methodDesc);
+                                        formData.append("project_url", vm.projectUrl);
+                                        formData.append("publication_url", vm.publicationUrl);
 
                                         parameters.data = formData;
 
@@ -297,6 +306,10 @@
 
 
                                                 vm.phaseId = null;
+                                                vm.methodName = null;
+                                                vm.methodDesc = null;
+                                                vm.projectUrl = null;
+                                                vm.publicationUrl = null;
                                                 // vm.subErrors.msg = "Your submission has been recorded succesfully!";
                                                 $rootScope.notify("success", "Your submission has been recorded succesfully!");
 
@@ -307,6 +320,10 @@
                                                 var error = response.data;
 
                                                 vm.phaseId = null;
+                                                vm.methodName = null;
+                                                vm.methodDesc = null;
+                                                vm.projectUrl = null;
+                                                vm.publicationUrl = null;
                                                 if (status == 404) {
 
                                                     vm.subErrors.msg = "Please select phase!";
@@ -484,6 +501,15 @@
             vm.stopFetchingSubmissions();
             vm.isResult = true;
             vm.phaseId = phaseId;
+
+            var all_phases = vm.phases.results;
+            for (var i = 0; i < vm.phases.results.length; i++) {
+                if (all_phases[i].id == phaseId) {
+                    vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    break;
+                }
+            }
+
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
@@ -520,6 +546,11 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.submissionResult = details;
+
+                    for (var i = 0; i < details.results.length; i++) {
+                        vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                    }
+
                     vm.start();
 
                     if (vm.submissionResult.count === 0) {
@@ -620,17 +651,23 @@
                 vm.stopFetchingSubmissions();
                 vm.poller = $interval(function() {
                     var parameters = {};
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
+                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
-                            if (vm.submissionResult.results.count !== details.results.count) {
+
+                            // Set the is_public flag corresponding to each submission
+                            for (var i = 0; i < details.results.length; i++) {
+                                vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                            }
+
+                            if (vm.submissionResult.results.length !== details.results.length) {
                                 vm.showUpdate = true;
                             } else {
-                                for (var i = 0; i < details.results.length; i++) {
+                                for (i = 0; i < details.results.length; i++) {
                                     if (details.results[i].status !== vm.submissionResult.results[i].status) {
                                         vm.showUpdate = true;
                                         break;
@@ -652,17 +689,62 @@
         };
 
         vm.refreshSubmissionData = function() {
+
+            // get submissions of a particular challenge phase
+
+            if (!vm.isResult) {
+
+                vm.isNext = '';
+                vm.isPrev = '';
+                vm.currentPage = '';
+                vm.showPagination = false;
+            }
+
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
             var parameters = {};
 
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
+                    vm.submissionResult = details;
+
+                    if (vm.submissionResult.count === 0) {
+                        vm.showPagination = false;
+                        vm.paginationMsg = "No results found";
+                    } else {
+
+                        vm.showPagination = true;
+                        vm.paginationMsg = "";
+                    }
+
+                    if (vm.submissionResult.next === null) {
+                        vm.isNext = 'disabled';
+                    } else {
+                        vm.isNext = '';
+
+                    }
+                    if (vm.submissionResult.previous === null) {
+                        vm.isPrev = 'disabled';
+                    } else {
+                        vm.isPrev = '';
+                    }
+                    if (vm.submissionResult.next !== null) {
+                        vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                    } else {
+                        vm.currentPage = 1;
+                    }
+
+
+                    // Set the is_public flag corresponding to each submission
+                    for (var i = 0; i < details.results.length; i++) {
+                        vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                    }
+
                     vm.submissionResult = details;
                     vm.showUpdate = false;
                     vm.stopLoader();
@@ -785,6 +867,22 @@
 
             utilities.sendRequest(parameters);
 
+        };
+
+        vm.changeSubmissionVisibility = function(submission_id) {
+            var parameters = {};
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "is_public": vm.submissionVisibility[submission_id]
+            };
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function() {},
+                onError: function() {}
+            };
+
+            utilities.sendRequest(parameters);
         };
 
         $scope.$on('$destroy', function() {

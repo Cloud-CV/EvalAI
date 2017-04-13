@@ -13,6 +13,7 @@ class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
     title = models.CharField(max_length=100)
+    short_description = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     terms_and_conditions = models.TextField(null=True, blank=True)
     submission_guidelines = models.TextField(null=True, blank=True)
@@ -74,7 +75,7 @@ class Challenge(TimeStampedModel):
 
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
-    codename = models.CharField(max_length=100)
+    codename = models.CharField(max_length=100, unique=True)
 
     def __unicode__(self):
         return self.name
@@ -96,7 +97,8 @@ class ChallengePhase(TimeStampedModel):
         null=True, blank=True, verbose_name="End Date (UTC)")
     challenge = models.ForeignKey('Challenge')
     is_public = models.BooleanField(default=False)
-    test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"))
+    is_submission_public = models.BooleanField(default=False)
+    test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"), default=False)
     max_submissions_per_day = models.PositiveIntegerField(default=100000)
     max_submissions = models.PositiveIntegerField(default=100000)
     codename = models.CharField(max_length=100, default="Phase Code Name")

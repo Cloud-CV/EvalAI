@@ -21,9 +21,13 @@
             var method = parameters.method;
             var successCallback = parameters.callback.onSuccess;
             var errorCallback = parameters.callback.onError;
-            var headers = {
-                'Authorization': "Token " + token
-            };
+
+            // check for authenticated calls
+            if (parameters.token != null) {
+                var headers = {
+                    'Authorization': "Token " + token
+                };
+            }
 
             // function to check for applying header
             function pick(arg, def) {
@@ -38,7 +42,7 @@
             if (header == 'header') {
                 req.headers = headers;
             }
-            if (method == "POST" || method == "PUT") {
+            if (method == "POST" || method == "PUT" || method == "PATCH") {
                 req.data = data;
             }
 
@@ -93,7 +97,7 @@
             angular.element("#sim-loader").show();
             angular.element(".web-container").addClass('low-screen');
         };
-        
+
         this.hideLoader = function() {
             angular.element("#sim-loader").fadeOut();
             angular.element(".web-container").removeClass('low-screen');

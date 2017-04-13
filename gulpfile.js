@@ -210,6 +210,17 @@ gulp.task('configDev', function() {
         .pipe(gulp.dest('frontend/dist/js'))
 });
 
+// config for staging server
+gulp.task('configStaging', function() {
+    gulp.src('frontend/src/js/config.json')
+        .pipe(ngConfig('evalai-config', {
+            environment: 'staging'
+        }))
+        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(flags.production, uglify()))
+        .pipe(gulp.dest('frontend/dist/js'))
+});
+
 // config for prod server
 gulp.task('configProd', function() {
     gulp.src('frontend/src/js/config.json')
@@ -230,8 +241,16 @@ gulp.task('lint', [], function() {
     return gulp.src(lint_path.js)
         .pipe(eslint({}))
         .pipe(eslint.format())
-        // uncommenting the line below will break the gulp task in case of error.
-        // .pipe(eslint.failAfterError())
+        .pipe(eslint.results(function(results) { 
+            connect.serverClose(); // Close the server initially.
+            var countError = results.errorCount; // Get the count of lint errors.
+            var countWarning = results.warningCount; // Get the count of lint warnings.
+            if (countError === 0) { // If there are no errors.
+                if (countWarning === 0) { // If there are no warnings.
+                    gulp.start('connect'); // Connect the server again.
+                }
+            }
+        }))
 });
 
 // cleaning build process- run clean before deploy and rebuild files again
@@ -323,7 +342,7 @@ gulp.task('watch', function() {
 
 
 // Start a server for serving frontend
-gulp.task('connect', function() {
+gulp.task('connect', [], function() {
     connect.server({
         root: 'frontend/',
         port: 8888,
@@ -347,6 +366,12 @@ gulp.task('dev', function(callback) {
 
 });
 
+// staging task
+gulp.task('staging', function(callback) {
+    flags.production = false; //Making this 'true' enables file compression. This will be done after js test integration
+    runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configStaging'], 'inject', callback);
+});
+
 // production task
 gulp.task('prod', function(callback) {
     flags.production = false; //Making this 'true' enables file compression. This will be done after js test integration
@@ -355,5 +380,5 @@ gulp.task('prod', function(callback) {
 
 // Runserver for development
 gulp.task('dev:runserver', function(callback) {
-    runSequence('dev', 'lint', 'connect', 'watch', callback);
+    runSequence('dev', 'watch', callback);
 });

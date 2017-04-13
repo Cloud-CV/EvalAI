@@ -44,7 +44,7 @@ Follow this guide to setup your development machine.
 
     ```
     sudo -i -u (username)
-        createdb evalai
+    createdb evalai
     python manage.py migrate --settings=settings.dev
     ```
 
