@@ -48,14 +48,25 @@ Follow this guide to setup your development machine.
     python manage.py migrate --settings=settings.dev
     ```
 
-6. That's it. Now you can run development server at http://127.0.0.1:8000 (for serving backend)
+6. Seed the database with some fake data to work with.
+    
+    ```
+    python manage.py seed --settings=settings.dev
+    ```
+    This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
+    
+    **SUPERUSER-** username: `admin` password: `password`  
+    **HOST USER-** username: `host` password: `password`  
+    **PARTICIPANT USER-** username: `participant` password: `password`    
+    
+7. That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
 
     ```
     python manage.py runserver --settings=settings.dev
     ```
 
 
-7. Open a new terminal window with node(6.9.2) and ruby(gem) install on your machine and type
+8. Open a new terminal window with node(6.9.2) and ruby(gem) install on your machine and type
 
     ```
     npm install
@@ -65,15 +76,15 @@ Follow this guide to setup your development machine.
     ```
     npm config set proxy http://proxy:port 
     ```
-8. Now to connect to dev server at http://127.0.0.1:8888 (for serving frontend)
+9. Now to connect to dev server at [http://127.0.0.1:8888] (for serving frontend)
 
     ```
     gulp dev:runserver
     ```
 
-9. That's it, Open web browser and hit the url `http://127.0.0.1:8888`.
+10. That's it, Open web browser and hit the url [http://127.0.0.1:8888].
 
-10. (Optional) If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:
+11. (Optional) If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:
 
     ```
     python scripts/workers/submission_worker.py
@@ -88,3 +99,5 @@ If you are interested in contributing to EvalAI, follow your [contribution guide
 [postgresql]: http://www.postgresql.org/download/
 [postgresqlhelp]: http://bobbyong.com/blog/installing-postgresql-on-windoes/
 [rabbitmq]: https://www.rabbitmq.com/
+[http://127.0.0.1:8888]: http://127.0.0.1:8888
+[http://127.0.0.1:8000]: http://127.0.0.1:8000
