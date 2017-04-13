@@ -276,7 +276,6 @@ def challenge_phase_list(request, challenge_pk):
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-@IsChallengeCreator((permissions.BasePermission))
 def challenge_phase_detail(request, challenge_pk, pk):
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
