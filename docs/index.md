@@ -11,6 +11,12 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   README
+   docs/setup
+   docs/migrations
+   docs/contributions
+   docs/pull_request
+
 
 
 Indices and tables
