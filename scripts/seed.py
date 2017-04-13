@@ -1,6 +1,7 @@
 # Command to run : python manage.py shell --settings=settings.dev  < scripts/seed.py
-from datetime import timedelta
 import os
+
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
