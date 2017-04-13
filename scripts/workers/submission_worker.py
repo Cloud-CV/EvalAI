@@ -365,15 +365,17 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
 
     # after the execution is finished, set `status` to finished and hence `completed_at`
     if submission_output:
-        submission.output = submission_output
+        output = {}
+        output['result'] = submission_output.get('result', '')
+        submission.output = output
 
         # Save submission_result_file
         submission_result = submission_output.get('submission_result', '')
-        submission.submission_result_file.save('submission_result.txt', ContentFile(submission_result))
+        submission.submission_result_file.save('submission_result.json', ContentFile(submission_result))
 
         # Save submission_metadata_file
         submission_metadata = submission_output.get('submission_metadata', '')
-        submission.submission_metadata_file.save('submission_metadata.txt', ContentFile(submission_metadata))
+        submission.submission_metadata_file.save('submission_metadata.json', ContentFile(submission_metadata))
 
     submission.save()
 
