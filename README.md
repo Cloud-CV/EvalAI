@@ -59,7 +59,7 @@ Follow this guide to setup your development machine.
     **HOST USER-** username: `host` password: `password`  
     **PARTICIPANT USER-** username: `participant` password: `password`    
     
-7. That's it. Now you can run development server at http://127.0.0.1:8000 (for serving backend)
+7. That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
 
     ```
     python manage.py runserver --settings=settings.dev
@@ -76,13 +76,13 @@ Follow this guide to setup your development machine.
     ```
     npm config set proxy http://proxy:port 
     ```
-9. Now to connect to dev server at http://127.0.0.1:8888 (for serving frontend)
+9. Now to connect to dev server at [http://127.0.0.1:8888] (for serving frontend)
 
     ```
     gulp dev:runserver
     ```
 
-10. That's it, Open web browser and hit the url `http://127.0.0.1:8888`.
+10. That's it, Open web browser and hit the url [http://127.0.0.1:8888].
 
 11. (Optional) If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:
 
@@ -99,3 +99,5 @@ If you are interested in contributing to EvalAI, follow your [contribution guide
 [postgresql]: http://www.postgresql.org/download/
 [postgresqlhelp]: http://bobbyong.com/blog/installing-postgresql-on-windoes/
 [rabbitmq]: https://www.rabbitmq.com/
+[http://127.0.0.1:8888]: http://127.0.0.1:8888
+[http://127.0.0.1:8000]: http://127.0.0.1:8000
