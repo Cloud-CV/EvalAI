@@ -26,7 +26,8 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 # DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
 INSTALLED_APPS += [ # noqa: ignore=F405
     'django_spaghetti',
-    'autofixture'
+    'autofixture',
+    'django_extensions'
 ]
 
 SPAGHETTI_SAUCE = {
