@@ -4,6 +4,7 @@ autopep8==1.2.4
 coverage==4.2
 coveralls==1.1
 django-autofixture==0.12.1
+django-extensions==1.7.8
 flake8==3.0.4
 pytest-cov==2.4.0
 pytest==3.0.3
@@ -12,3 +13,4 @@ sphinx-autobuild==0.6.0
 sphinx-rtd-theme==0.1.9
 pytest-django==3.1.2
 django-spaghetti-and-meatballs==0.2.2
+Faker==0.7.7
