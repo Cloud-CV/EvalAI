@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &#8212; EvalAI 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="EvalAI 1.0 documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p>## Migrations</p>
+<dl class="docutils">
+<dt>&gt; Migrations are Django’s way of propagating changes you make to your models (adding a field, deleting a model, etc.) into your database schema. They’re designed to be mostly automatic, but you’ll need to know when to make migrations, when to run them, and the common problems you might run into.</dt>
+<dd><ul class="first last simple">
+<li>Django Migration [Docs](<a class="reference external" href="https://docs.djangoproject.com/en/1.10/topics/migrations/#module-django.db.migrations">https://docs.djangoproject.com/en/1.10/topics/migrations/#module-django.db.migrations</a>)</li>
+</ul>
+</dd>
+</dl>
+<p>### Creating a migration</p>
+<ul class="simple">
+<li>We prefer that you create migrations per app and the change should be concerned with a single issue or feature.</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">#</span> <span class="pre">migration</span> <span class="pre">only</span> <span class="pre">for</span> <span class="pre">jobs</span> <span class="pre">app</span>
+<span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">makemigrations</span> <span class="pre">jobs</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>Always create named migrations. You can name migrations by passing <cite>-n</cite> or <cite>&#8211;name</cite> argument</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">makemigrations</span> <span class="pre">jobs</span> <span class="pre">-n=execution_time_limit</span>
+<span class="pre">#</span> <span class="pre">or</span>
+<span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">makemigrations</span> <span class="pre">jobs</span> <span class="pre">--name=execution_time_limit</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>While creating migrations on local environment don&#8217;t forget to add development settings.</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">makemigrations</span> <span class="pre">--settings=settings.dev</span>
+<span class="pre">`</span></code></p>
+<p>So a complete named migration for jobs app where in a execution time limit field is added to <cite>Submission</cite> model, will look like</p>
+<p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">makemigrations</span> <span class="pre">jobs</span> <span class="pre">--name=execution_time_limit</span> <span class="pre">--settings=settings.dev</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li>Files create after running <cite>makemigrations</cite> should be committed along with other files</li>
+<li>While creating a migration for your concerned change it may happen that some other changes are also there in the migration file. Like adding a <cite>execution_time_limit</cite> field on <cite>Submission</cite> model also brings in the change for <cite>when_made_public</cite> being added. In that case, open an [new issue](<a class="reference external" href="https://github.com/Cloud-CV/EvalAI/issues/new">https://github.com/Cloud-CV/EvalAI/issues/new</a>) and clearly mention the issue over there. If possible fix the issue yourself, by opening a new branch and creating migrations only for the concerned part. Idea here is that a commit should only include its concerned migration changes and nothing else.</li>
+</ul>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/migrations.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, CloudCV Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.8</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/migrations.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
