@@ -21,16 +21,16 @@ class TimeStampedModel(models.Model):
         app_label = 'base'
 
 
-def extra_args(fragment_name, *args, **kwargs):
-    def extra_args_inner1(f, *args, **kwargs):
-        def extra_args_inner2(sender, instance, **kwargs):
-            f(sender, instance, fragment_name=fragment_name, **kwargs)
-        return extra_args_inner2
-    return extra_args_inner1
+def extra_args(field_name, *args, **kwargs):
+    def extra_args_decorator(f, *args, **kwargs):
+        def extra_args_wrapper(sender, instance, **kwargs):
+            f(sender, instance, field_name=field_name, **kwargs)
+        return extra_args_wrapper
+    return extra_args_decorator
 
 
-def create_post_model_field(sender, instance, fragment_name, **kwargs):
-    if getattr(instance, "_original_" + str(fragment_name)) is False:
-        logger.info(str(fragment_name) + " is added first time !")
+def create_post_model_field(sender, instance, field_name, **kwargs):
+    if getattr(instance, "_original_{}".format(field_name)) is False:
+        logger.info("{} is added first time !".format(field_name))
     else:
-        logger.info(str(fragment_name) + " is changed !")
+        logger.info("{} is changed !".format(field_name))

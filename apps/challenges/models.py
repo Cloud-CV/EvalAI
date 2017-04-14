@@ -80,7 +80,7 @@ class Challenge(TimeStampedModel):
         return False
 
 
-signals.post_save.connect(extra_args(fragment_name="evaluation_script")
+signals.post_save.connect(extra_args(field_name="evaluation_script")
                                     (create_post_model_field), sender=Challenge, weak=False)
 
 
@@ -144,7 +144,7 @@ class ChallengePhase(TimeStampedModel):
         return False
 
 
-signals.post_save.connect(extra_args(fragment_name="test_annotation")
+signals.post_save.connect(extra_args(field_name="test_annotation")
                                     (create_post_model_field), sender=ChallengePhase, weak=False)
 
 
