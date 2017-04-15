@@ -21,12 +21,22 @@ class TimeStampedModel(models.Model):
         app_label = 'base'
 
 
+"""
+The decorator below is used to pass model field names to django signals function.
+"""
+
+
 def extra_args(field_name, *args, **kwargs):
     def extra_args_decorator(f, *args, **kwargs):
         def extra_args_wrapper(sender, instance, **kwargs):
             f(sender, instance, field_name=field_name, **kwargs)
         return extra_args_wrapper
     return extra_args_decorator
+
+
+"""
+The function below is used to log the change when any attribute of model field instance is changed.
+"""
 
 
 def create_post_model_field(sender, instance, field_name, **kwargs):
