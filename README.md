@@ -89,7 +89,7 @@ Follow this guide to setup your development machine.
     ```
     python scripts/workers/submission_worker.py
     ```
-#### Using Docker
+### Using Docker
 
 You can also use Docker Compose to run all the components of EvalAI together. The steps are:
 
