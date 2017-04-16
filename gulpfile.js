@@ -380,5 +380,5 @@ gulp.task('prod', function(callback) {
 
 // Runserver for development
 gulp.task('dev:runserver', function(callback) {
-    runSequence('dev', 'watch', callback);
+    runSequence('dev', 'watch', 'lint', callback);
 });
