@@ -2,6 +2,16 @@ version: "2"
 services:
   db:
     image: postgres
+  rabbitmq:
+    container_name: rabbitmq
+    hostname: rabbit
+    build:
+      context: ./
+      dockerfile: docker/dev/rabbitmq/Dockerfile
+    ports:
+      - "15672:15672"
+    volumes:
+      - "./enabled_plugins:/etc/rabbitmq/enabled_plugins"
   django:
     container_name: django
     hostname: django
@@ -15,6 +25,7 @@ services:
         - "8000:8000"
     depends_on:
       - db
+      - rabbitmq
   nodejs:
     container_name: nodejs
     hostname: nodejs
