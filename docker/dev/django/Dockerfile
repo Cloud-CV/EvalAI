@@ -23,5 +23,6 @@ COPY settings/dev.sample.py /code/settings/dev.py
 
 RUN pip install -r requirements/dev.txt
 
+RUN
 CMD ["sh", "/code/docker/dev/django/container-start.sh"]
 EXPOSE 8000
