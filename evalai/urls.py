@@ -46,6 +46,10 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                    TemplateView.as_view(
                        template_name="password_reset_confirm.html"),
                    name='password_reset_confirm'),
+               url(r'^api/auth/email-confirmed/$',
+                   TemplateView.as_view(
+                       template_name="account/email_confirm.html"),
+                   name='email_confirm_done'),
                url(r'^api/accounts/',
                    include('accounts.urls',
                            namespace='accounts')),
