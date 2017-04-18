@@ -39,10 +39,15 @@ def internal_server_error(request):
 @permission_classes((permissions.AllowAny,))
 def contact_us(request):
     try:
-        if request.method == 'POST':
+        try:
             user = User.objects.get(username=request.user)
             name = user.username
             email = user.email
+        except:
+            response_data = {'error': 'You are not a authenticated user.'}
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        if request.method == 'POST':
             request_data = {"name": name, "email": email}
             request_data['message'] = request.data['message']
             serializer = ContactSerializer(data=request_data)
@@ -53,9 +58,6 @@ def contact_us(request):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         elif request.method == 'GET':
-            user = User.objects.get(username=request.user)
-            name = user.username
-            email = user.email
             response_data = {"name": name, "email": email}
             return Response(response_data, status=status.HTTP_200_OK)
 
