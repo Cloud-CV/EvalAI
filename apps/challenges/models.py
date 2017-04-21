@@ -41,7 +41,7 @@ class Challenge(TimeStampedModel):
         app_label = 'challenges'
         db_table = 'challenge'
 
-    def __str__(self):
+    def __unicode__(self):
         """Returns the title of Challenge"""
         return self.title
 
@@ -109,7 +109,7 @@ class ChallengePhase(TimeStampedModel):
         db_table = 'challenge_phase'
         unique_together = (('codename', 'challenge'),)
 
-    def __str__(self):
+    def __unicode__(self):
         """Returns the name of Phase"""
         return self.name
 

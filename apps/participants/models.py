@@ -26,7 +26,7 @@ class Participant(TimeStampedModel):
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
     team = models.ForeignKey('ParticipantTeam', related_name='participants', null=True)
 
-    def __str__(self):
+    def __unicode__(self):
         return '{}'.format(self.user)
 
     class Meta:
@@ -39,7 +39,7 @@ class ParticipantTeam(TimeStampedModel):
     team_name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(User, null=True)
 
-    def __str__(self):
+    def __unicode__(self):
         return '{}'.format(self.team_name)
 
     class Meta:
