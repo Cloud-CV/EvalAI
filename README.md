@@ -92,7 +92,7 @@ Follow this guide to setup your development machine.
 
 ## Contribution guidelines
 
-If you are interested in contributing to EvalAI, follow your [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
+If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
 
 [git]: https://git-scm.com/downloads
 [virtualenv]: https://virtualenv.pypa.io/

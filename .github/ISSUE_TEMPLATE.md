@@ -1,4 +1,4 @@
-_Thanks for taking the time to report a bug in the EvalAI project, or propose a new feature! Before filing a new issue, please do a quick search to check that it hasn't already been filed on the [issue tracker](https://github.com/Cloud-CV/EvalAI/issues)._
+_Thanks for taking the time to report a bug in the EvalAI project, or propose a new feature! Before creating a new issue, please do a quick search to check that it hasn't already been filed on the [issue tracker](https://github.com/Cloud-CV/EvalAI/issues)._
 
 If you'd like to report a bug, please include the following information:
 - the expected behaviour
