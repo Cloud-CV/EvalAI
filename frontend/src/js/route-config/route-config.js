@@ -318,11 +318,11 @@
             controllerAs: 'ourTeam'
         };
 
-        var join_our_team = {
-            name: 'join-our-team',
-            url: "/join-us",
-            templateUrl: baseUrl + "/web/join-our-team.html",
-            title: "Join Our Team"
+        var get_involved = {
+            name: 'get-involved',
+            url: "/get-involved",
+            templateUrl: baseUrl + "/web/get-involved.html",
+            title: "Get Involved"
         };
 
         var update_profile = {
@@ -391,7 +391,7 @@
         $stateProvider.state(error_500);
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
-        $stateProvider.state(join_our_team);
+        $stateProvider.state(get_involved);
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
 
