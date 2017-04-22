@@ -200,7 +200,7 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     try:
-        challenge_host = ChallengeHost.objects.filter(user=request.user.id, team_name__pk=challenge_host_team_pk)
+        challenge_host = ChallengeHostTeam.objects.filter(created_by=request.user.id, pk=challenge_host_team_pk)
         challenge_host.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     except:
