@@ -296,11 +296,11 @@
             title: "Error 500",
         };
 
-        var terms_and_conditions = {
-            name: "terms_and_conditions",
-            url: "/legals",
-            templateUrl: baseUrl + "/web/terms-and-conditions.html",
-            title: "Terms and Conditions"
+        var privacy_policy = {
+            name: "privacy_policy",
+            url: "/privacy-policy",
+            templateUrl: baseUrl + "/web/privacy-policy.html",
+            title: "Privacy Policy"
         };
 
         var about_us = {
@@ -346,7 +346,7 @@
 
         // call all states here
         $stateProvider.state(home);
-        $stateProvider.state(terms_and_conditions);
+        $stateProvider.state(privacy_policy);
 
         // auth configs
         $stateProvider.state(auth);
