@@ -22,7 +22,7 @@ services:
       dockerfile: docker/dev/django/Dockerfile
     command: /code/docker/dev/django/container-start.sh
     ports:
-        - "8000:8000"
+      - "8000:8000"
     depends_on:
       - db
       - rabbitmq
@@ -38,4 +38,6 @@ services:
     environment:
       NODE_ENV: development
     ports:
-        - "8888:8888"
+      - "8888:8888"
+    depends_on:
+      - django
