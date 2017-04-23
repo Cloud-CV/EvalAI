@@ -1,0 +1,57 @@
+.ev-modal {
+    display: block;
+    width: 600px;
+    max-width: 100%;
+    height: 250px;
+    max-height: 100%;
+
+    position: fixed;
+    z-index: 999;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    background: white;
+    box-shadow: 0 0 60px 10px rgba(0, 0, 0, 0.9);
+
+    animation-name: animatetop;
+}
+
+.ev-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.ev-modal-guts {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+.ev-modal-header {
+    padding: 2px 10px;
+    background: $dark-gray;
+    color: white;
+}
+
+.ev-modal-body {
+    padding: 10px;
+}
+
+.ev-modal-footer {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    padding: 10px 10px;
+}
