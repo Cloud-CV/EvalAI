@@ -53,7 +53,10 @@
                     <div class="col s6">
                         <div class="challenge-logo">
                             <img ng-src="{{main.challengeList.results[0].image}}"> &nbsp;
-                            <h4 class="grad-span">{{main.challengeList.results[0].title}}</h4>
+                            <h4 class="grad-span">
+                                <a ng-show="isAuth" ui-sref="web.challenge-main.challenge-page({challengeId:main.challengeList.results[0].id})">{{main.challengeList.results[0].title}}</a>
+                                <a ng-show="!isAuth" ui-sref="featured-challenge-page({challengeId:main.challengeList.results[0].id})">{{main.challengeList.results[0].title}}</a>
+                            </h4>
                         </div>
                         <p>
                             <span class="w-500 text-light-black mons-med-font">Organized by: </span> <span class="w-500 mons-med-font">{{main.challengeList.results[0].creator.team_name}}</span></p>
@@ -61,7 +64,10 @@
                         </p>
                         <p>
                             <span class="w-500 text-light-black mons-med-font">Status: </span> <span class="w-500 mons-med-font"> In Progress</span>
-                            <span class="right"><a class="view-more mons-reg-font" ui-sref="web.challenge-main.challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a></span>
+                            <span class="right">
+                                <a ng-show="isAuth" class="view-more mons-reg-font" ui-sref="web.challenge-main.challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a>
+                                <a ng-show="!isAuth" class="view-more mons-reg-font" ui-sref="featured-challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a>
+                            </span>
                         </p>
                     </div>
                 </div>
