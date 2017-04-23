@@ -160,7 +160,7 @@ class GetParticularChallenge(BaseAPITestClass):
         super(GetParticularChallenge, self).setUp()
         self.url = reverse_lazy('challenges:get_challenge_detail',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk,
-                                        'pk': self.challenge.pk})
+                                        'challenge_pk': self.challenge.pk})
 
     def test_get_particular_challenge(self):
         expected = {
@@ -191,7 +191,7 @@ class GetParticularChallenge(BaseAPITestClass):
     def test_particular_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_challenge_detail',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk,
-                                        'pk': self.challenge.pk + 1})
+                                        'challenge_pk': self.challenge.pk + 1})
         expected = {
             'error': 'Challenge does not exist'
         }
@@ -202,7 +202,7 @@ class GetParticularChallenge(BaseAPITestClass):
     def test_particular_challenge_host_team_for_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_challenge_detail',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk + 1,
-                                        'pk': self.challenge.pk})
+                                        'challenge_pk': self.challenge.pk})
         expected = {
             'error': 'ChallengeHostTeam does not exist'
         }
@@ -217,7 +217,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
         super(UpdateParticularChallenge, self).setUp()
         self.url = reverse_lazy('challenges:get_challenge_detail',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk,
-                                        'pk': self.challenge.pk})
+                                        'challenge_pk': self.challenge.pk})
 
         self.partial_update_challenge_title = 'Partial Update Test Challenge'
         self.update_challenge_title = 'Update Test Challenge'
@@ -293,7 +293,7 @@ class DeleteParticularChallenge(BaseAPITestClass):
         super(DeleteParticularChallenge, self).setUp()
         self.url = reverse_lazy('challenges:get_challenge_detail',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk,
-                                        'pk': self.challenge.pk})
+                                        'challenge_pk': self.challenge.pk})
 
     def test_particular_challenge_delete(self):
         response = self.client.delete(self.url, {})
@@ -475,7 +475,7 @@ class DisableChallengeTest(BaseAPITestClass):
         )
 
         self.url = reverse_lazy('challenges:disable_challenge',
-                                kwargs={'pk': self.challenge.pk})
+                                kwargs={'challenge_pk': self.challenge.pk})
 
     def test_disable_a_challenge(self):
         response = self.client.post(self.url, {})
@@ -483,13 +483,13 @@ class DisableChallengeTest(BaseAPITestClass):
 
     def test_particular_challenge_for_disable_does_not_exist(self):
         self.url = reverse_lazy('challenges:disable_challenge',
-                                kwargs={'pk': self.challenge.pk + 2})
+                                kwargs={'challenge_pk': self.challenge.pk + 2})
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_when_user_does_not_have_permission_to_disable_particular_challenge(self):
         self.url = reverse_lazy('challenges:disable_challenge',
-                                kwargs={'pk': self.challenge2.pk})
+                                kwargs={'challenge_pk': self.challenge2.pk})
         expected = {
             'error': 'Sorry, you are not allowed to perform this operation!'
         }
@@ -499,7 +499,7 @@ class DisableChallengeTest(BaseAPITestClass):
 
     def test_disable_challenge_when_user_is_not_creator(self):
         self.url = reverse_lazy('challenges:disable_challenge',
-                                kwargs={'pk': self.challenge2.pk})
+                                kwargs={'challenge_pk': self.challenge2.pk})
         # Now allot self.user as also a host of self.challenge_host_team1
         self.challenge_host = ChallengeHost.objects.create(
             user=self.user,
