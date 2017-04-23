@@ -66,6 +66,7 @@ class Submission(TimeStampedModel):
     submission_number = models.PositiveIntegerField(default=0)
     download_count = models.IntegerField(default=0)
     output = models.TextField(blank=True, null=True)
+    output_metadata = models.TextField(blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
