@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChangePwdCtrl', ChangePwdCtrl);
 
-    ChangePwdCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    ChangePwdCtrl.$inject = ['utilities', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function ChangePwdCtrl(utilities, $state, $http, $rootScope) {
+    function ChangePwdCtrl(utilities, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
@@ -50,6 +50,17 @@
                 parameters.callback = {
                     onSuccess: function() {
                         vm.user.error = false;
+
+                        var confirm = $mdDialog.confirm()
+                            .title('Password successfully changed')
+                            .textContent('Do you want to Login again or stay?')
+                            .ok('Login again')
+                            .cancel('Stay');
+
+                        $mdDialog.show(confirm).then(function(){
+                                $rootScope.logout();
+                        });
+
                         $rootScope.notify("success", "Your password has been changed successfully!");
                         vm.stopLoader();
                         // navigate to challenge page
