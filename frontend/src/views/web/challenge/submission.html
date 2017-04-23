@@ -29,7 +29,7 @@
                                 <div class="file-field input-field col s6">
                                     <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
                                         <span>Upload File</span>
-                                        <input type="file" ngf-select ng-model="challenge.input_file" name="challenge.input_file">
+                                        <input type="file" ngf-select ng-model="challenge.input_file" name="challenge.input_file" accept=".json">
                                     </div>
                                     <div class="file-path-wrapper">
                                         <input class="file-path validate" type="text">
@@ -41,7 +41,7 @@
                                 <div class="input-field align-left col s6">
                                     <input type="text" id="methodName" name="methodName" ng-model="challenge.methodName" required>
                                     <span class="form-icon"><i class="fa fa-text"></i></span>
-                                    <label for="methodName">Method name *</label>
+                                    <label for="methodName">Method Name *</label>
                                 </div>
                             </div>
 
@@ -57,14 +57,14 @@
                                 <div class="input-field align-left col s6">
                                     <input type="text" id="projectUrl" name="projectUrl" ng-model="challenge.projectUrl" required>
                                     <span class="form-icon"><i class="fa fa-text"></i></span>
-                                    <label for="projectUrl">Project URL *</label>
+                                    <label for="projectUrl">Project URL (Enter N/A if not applicable)</label>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="input-field align-left col s6">
                                     <input type="text" id="publicationUrl" name="publicationUrl" ng-model="challenge.publicationUrl" required>
                                     <span class="form-icon"><i class="fa fa-text"></i></span>
-                                    <label for="publicationUrl">Publication URL *</label>
+                                    <label for="publicationUrl">Publication URL (Enter N/A if not applicable)</label>
                                 </div>                                
                             </div>
 
