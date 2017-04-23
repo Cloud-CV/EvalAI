@@ -61,7 +61,10 @@
                         </p>
                         <p>
                             <span class="w-500 text-light-black mons-med-font">Status: </span> <span class="w-500 mons-med-font"> In Progress</span>
-                            <span class="right"><a class="view-more mons-reg-font" ui-sref="web.challenge-main.challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a></span>
+                            <span class="right">
+                                <a ng-show="isAuth" class="view-more mons-reg-font" ui-sref="web.challenge-main.challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a>
+                                <a ng-show="!isAuth" class="view-more mons-reg-font" ui-sref="featured-challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a>
+                            </span>
                         </p>
                     </div>
                 </div>
