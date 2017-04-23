@@ -80,7 +80,6 @@ guide to setup your development machine.
    :maxdepth: 2
 
    includeme
-
 .. include:: contribution.rst
 
 Indices and tables

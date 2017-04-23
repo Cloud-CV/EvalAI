@@ -1,0 +1,319 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>&lt;no title&gt; &mdash; EvalAI 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="EvalAI 0.0.1 documentation" href="index.html"/>
+        <link rel="prev" title="Welcome to EvalAI’s documentation!" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> EvalAI
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul class="simple">
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">EvalAI</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>&lt;no title&gt;</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/includeme.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p># EvalAI</p>
+<p>[![Join the chat at <a class="reference external" href="https://gitter.im/Cloud-CV/EvalAI](https://badges.gitter.im/Cloud-CV/EvalAI.svg)](https://gitter.im/Cloud-CV/EvalAI?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge">https://gitter.im/Cloud-CV/EvalAI](https://badges.gitter.im/Cloud-CV/EvalAI.svg)](https://gitter.im/Cloud-CV/EvalAI?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge</a>)
+[![Build Status](<a class="reference external" href="https://travis-ci.org/Cloud-CV/EvalAI.svg?branch=master)](https://travis-ci.org/Cloud-CV/EvalAI">https://travis-ci.org/Cloud-CV/EvalAI.svg?branch=master)](https://travis-ci.org/Cloud-CV/EvalAI</a>)
+[![Coverage Status](<a class="reference external" href="https://coveralls.io/repos/github/Cloud-CV/EvalAI/badge.svg)](https://coveralls.io/github/Cloud-CV/EvalAI">https://coveralls.io/repos/github/Cloud-CV/EvalAI/badge.svg)](https://coveralls.io/github/Cloud-CV/EvalAI</a>)
+[![Requirements Status](<a class="reference external" href="https://requires.io/github/Cloud-CV/EvalAI/requirements.svg?branch=master)](https://requires.io/github/Cloud-CV/EvalAI/requirements/">https://requires.io/github/Cloud-CV/EvalAI/requirements.svg?branch=master)](https://requires.io/github/Cloud-CV/EvalAI/requirements/</a>?branch=master)
+[![Code Health](<a class="reference external" href="https://landscape.io/github/Cloud-CV/EvalAI/master/landscape.svg?style=flat)](https://landscape.io/github/Cloud-CV/EvalAI/master">https://landscape.io/github/Cloud-CV/EvalAI/master/landscape.svg?style=flat)](https://landscape.io/github/Cloud-CV/EvalAI/master</a>)
+[![Code Climate](<a class="reference external" href="https://codeclimate.com/github/Cloud-CV/EvalAI/badges/gpa.svg)](https://codeclimate.com/github/Cloud-CV/EvalAI">https://codeclimate.com/github/Cloud-CV/EvalAI/badges/gpa.svg)](https://codeclimate.com/github/Cloud-CV/EvalAI</a>)</p>
+<p>EvalAI is an open source web application that helps researchers, students and data-scientists to create, collaborate and participate in various AI challenges organized round the globe.</p>
+<p>## How to setup</p>
+<p>Setting up EvalAI on your local machine is really easy.
+Follow this guide to setup your development machine.</p>
+<p>1. Install [git], [postgresql] version &gt;= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don&#8217;t have it already.
+<em>If you are having trouble with postgresql on Windows check this link [postgresqlhelp].</em></p>
+<ol class="arabic" start="2">
+<li><p class="first">Get the source code on your machine via git.</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/Cloud-CV/EvalAI.git</span> <span class="pre">evalai</span>
+<span class="pre">`</span></code></p>
+</div></blockquote>
+</li>
+<li><p class="first">Create a python virtual environment and install python dependencies.</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">`shell</span>
+<span class="pre">cd</span> <span class="pre">evalai</span>
+<span class="pre">virtualenv</span> <span class="pre">venv</span>
+<span class="pre">source</span> <span class="pre">venv/bin/activate</span>&#160; <span class="pre">#</span> <span class="pre">run</span> <span class="pre">this</span> <span class="pre">command</span> <span class="pre">everytime</span> <span class="pre">before</span> <span class="pre">working</span> <span class="pre">on</span> <span class="pre">project</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements/dev.txt</span>
+<span class="pre">`</span></code></p>
+</div></blockquote>
+</li>
+<li><p class="first">Rename <cite>settings/dev.sample.py</cite> as <cite>dev.py</cite> and change credential in <cite>settings/dev.py</cite></p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">cp</span> <span class="pre">settings/dev.sample.py</span> <span class="pre">settings/dev.py</span>
+<span class="pre">`</span></code>
+Use your postgres username and password for fields <cite>USER</cite> and <cite>PASSWORD</cite> in <cite>dev.py</cite> file.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Create an empty postgres database and run database migration.</p>
+<blockquote>
+<div><p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
+sudo -i -u (username)</p>
+<blockquote>
+<div><p>createdb evalai</p>
+</div></blockquote>
+<p>python manage.py migrate &#8211;settings=settings.dev
+<a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+</div></blockquote>
+</li>
+<li><p class="first">That&#8217;s it. Now you can run development server at <a class="reference external" href="http://127.0.0.1:8000">http://127.0.0.1:8000</a> (for serving backend)</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">runserver</span> <span class="pre">--settings=settings.dev</span>
+<span class="pre">`</span></code></p>
+</div></blockquote>
+</li>
+<li><p class="first">Open a new terminal window with node(6.9.2) and ruby(gem) install on your machine and type</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">npm</span> <span class="pre">install</span>
+<span class="pre">bower</span> <span class="pre">install</span>
+<span class="pre">`</span></code>
+If you running npm install behind a proxy server, use
+<code class="docutils literal"><span class="pre">`</span>
+<span class="pre">npm</span> <span class="pre">config</span> <span class="pre">set</span> <span class="pre">proxy</span> <span class="pre">http://proxy:port</span>
+<span class="pre">`</span></code></p>
+</div></blockquote>
+</li>
+<li><p class="first">Now to connect to dev server at <a class="reference external" href="http://127.0.0.1:8888">http://127.0.0.1:8888</a> (for serving frontend)</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">gulp</span> <span class="pre">dev:runserver</span>
+<span class="pre">`</span></code></p>
+</div></blockquote>
+</li>
+<li><p class="first">That&#8217;s it, Open web browser and hit the url <cite>http://127.0.0.1:8888</cite>.</p>
+</li>
+<li><p class="first">(Optional) If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:</p>
+<p><code class="docutils literal"><span class="pre">`</span>
+<span class="pre">python</span> <span class="pre">scripts/workers/submission_worker.py</span>
+<span class="pre">`</span></code></p>
+</li>
+</ol>
+<p>## Contribution guidelines</p>
+<p>If you are interested in contributing to EvalAI, follow your [contribution guidelines](<a class="reference external" href="https://github.com/Cloud-CV/EvalAI/blob/master/CONTRIBUTING.md">https://github.com/Cloud-CV/EvalAI/blob/master/CONTRIBUTING.md</a>).</p>
+<p>[git]: <a class="reference external" href="https://git-scm.com/downloads">https://git-scm.com/downloads</a>
+[virtualenv]: <a class="reference external" href="https://virtualenv.pypa.io/">https://virtualenv.pypa.io/</a>
+[postgresql]: <a class="reference external" href="http://www.postgresql.org/download/">http://www.postgresql.org/download/</a>
+[postgresqlhelp]: <a class="reference external" href="http://bobbyong.com/blog/installing-postgresql-on-windoes/">http://bobbyong.com/blog/installing-postgresql-on-windoes/</a>
+[rabbitmq]: <a class="reference external" href="https://www.rabbitmq.com/">https://www.rabbitmq.com/</a></p>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to EvalAI’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, CloudCV Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
