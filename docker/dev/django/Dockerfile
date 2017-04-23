@@ -1,5 +1,5 @@
 FROM python:2.7
-MAINTAINER Deshraj
+MAINTAINER CloudCV
 ENV PYTHONUNBUFFERED 1
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -23,6 +23,5 @@ COPY settings/dev.sample.py /code/settings/dev.py
 
 RUN pip install -r requirements/dev.txt
 
-RUN
 CMD ["sh", "/code/docker/dev/django/container-start.sh"]
 EXPOSE 8000
