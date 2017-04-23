@@ -1,5 +1,5 @@
 FROM ubuntu:14.04
-MAINTAINER Deshraj
+MAINTAINER CloudCV
 
 RUN apt-get update -qq && apt-get install -y build-essential git curl
 RUN apt-get install nodejs-legacy -y
@@ -26,6 +26,7 @@ RUN n stable
 RUN npm install
 RUN bower install --allow-root
 
-RUN gulp dev:runserver
+#RUN gulp dev:runserver
+CMD ["gulp", "dev:runserver"]
 
 EXPOSE 8888
