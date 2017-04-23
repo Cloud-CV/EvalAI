@@ -63,7 +63,7 @@
 
                     if (vm.existTeam.count === 0) {
                         vm.showPagination = false;
-                        vm.paginationMsg = "No team exist for now, Start by creating a new team!";
+                        vm.paginationMsg = "No team exists for now, start by creating a new team!";
                     } else {
                         vm.activateCollapsible();
                         vm.showPagination = true;
@@ -346,7 +346,7 @@
                                     if (vm.existTeam.count === 0) {
 
                                         vm.showPagination = false;
-                                        vm.paginationMsg = "No team exist for now, Start by creating a new team!";
+                                        vm.paginationMsg = "No team exists for now, start by creating a new team!";
                                     } else {
                                         vm.showPagination = true;
                                         vm.paginationMsg = "";

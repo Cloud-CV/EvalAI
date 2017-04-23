@@ -3,15 +3,9 @@
         <div class="nav-wrapper">
             <a href="#" data-activates="mobile-demo" class="button-collapse main-header-link"><i class="fa fa-bars"></i></a>
             <ul class="hide-on-med-and-down">
-                <li>
-                    <a class="light-link org-link main-header-link" href="http://www.cloudcv.org/"><img src="dist/images/logo.png" class="cloudcv-logo" alt="cloudcv logo" /></a>
-                </li>
                 <li><a class="waves-effect waves-dark main-header-link" ui-sref="home" ui-sref-active="active">Home</a></li>
                 <!-- show after authenticate user -->
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
-                <li><a class="waves-effect waves-dark main-header-link" ui-sref="about-us" ui-sref-active="active">About Us</a></li>
-                <li><a class="waves-effect waves-dark main-header-link" ui-sref="our-team" ui-sref-active="active">Team</a></li>
-                <li><a class="waves-effect waves-dark main-header-link" href="http://github.com/Cloud-CV/EvalAI" target="_blank">Contribute to EvalAI</a></li>
             </ul>
             <ul class="right hide-on-med-and-down">
                 <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active">Sign Up</a></li>
@@ -26,23 +20,16 @@
                     <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="logout()">Logout</div>
                 </li>
             </ul>
-            <!-- 
-      <ul id="ev-dropdown" class="dropdown-content">
-        <li><a class="waves-effect waves-dark" ui-sref="web.change-password"> Change Password </a></li>
-        <li><a class="waves-effect waves-dark" href="#!">Update Profile</a></li>
-        <li><a class="waves-effect waves-dark" ng-click="logout()">Logout</li>
-      </ul> -->
             <ul class="side-nav" id="mobile-demo">
                 <li>
                     <div class="userView">
                         <div class="background"></div>
                         <a><span class="white-text name">EvalAI</span></a>
-                        <a href="http://www.cloudcv.org/"><span class="w-300 text-light-gray">www.cloudcv.org</span></a>
                     </div>
                 </li>
                 <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active"><i class="fa fa-home"></i>Home</a></li>
-                <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
                 <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>Sign Up</a></li>
+                <li ng-hide="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
                 <!-- show after authenticate user -->
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{header.user.name}}!</a></li>

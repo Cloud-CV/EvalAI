@@ -317,6 +317,11 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             username='someuser3',
             password='some_secret_password')
 
+        # user invited to the participant team
+        self.user4 = User.objects.create(
+            username='someuser4',
+            password='some_secret_password')
+
         self.challenge_host_team2 = ChallengeHostTeam.objects.create(
             team_name='Some Test Challenge Host Team',
             created_by=self.user2)
@@ -351,17 +356,31 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             team_name='Some Participant Team',
             created_by=self.user3)
 
+        self.participant_team3 = ParticipantTeam.objects.create(
+            team_name='Some Participant Team by User 4',
+            created_by=self.user4)
+
         self.participant2 = Participant.objects.create(
             user=self.user3,
             status=Participant.SELF,
             team=self.participant_team2)
+
+        self.participant3 = Participant.objects.create(
+            user=self.user4,
+            status=Participant.ACCEPTED,
+            team=self.participant_team2)
+
+        self.participant4 = Participant.objects.create(
+            user=self.user4,
+            status=Participant.SELF,
+            team=self.participant_team3)
 
     def test_map_challenge_and_participant_team_together(self):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # to check when the api is hit again
         expected = {
-            'message': 'Team already exists',
+            'error': 'Team already exists',
             'challenge_id': self.challenge.pk,
             'participant_team_id': self.participant_team.pk
         }
@@ -374,7 +393,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
                                 kwargs={'challenge_pk': self.challenge2.pk,
                                         'participant_team_pk': self.participant_team2.pk})
         expected = {
-            'message': 'Sorry, You cannot participate in your own challenge!',
+            'error': 'Sorry, You cannot participate in your own challenge!',
             'challenge_id': self.challenge2.pk,
             'participant_team_id': self.participant_team2.pk
         }
@@ -396,10 +415,33 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
     def test_particular_participant_team_for_mapping_with_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'participant_team_pk': self.participant_team.pk + 2})
+                                        'participant_team_pk': self.participant_team.pk + 3})
         expected = {
             'error': 'ParticipantTeam does not exist'
         }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_add_participant_team_to_challenge_when_some_members_have_already_participated(self):
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'participant_team_pk': self.participant_team2.pk})
+
+        self.client.post(self.url, {})
+
+        expected = {
+            'error': 'Sorry, other team member(s) have already participated in the Challenge.'
+            ' Please participate with a different team!',
+            'challenge_id': self.challenge.pk,
+            'participant_team_id': self.participant_team3.pk,
+        }
+
+        # submitting the request again as a new team
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
