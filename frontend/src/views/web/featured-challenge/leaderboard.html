@@ -19,8 +19,8 @@
                     </div>
                     <div class="row">
                         <div class="col xs12 s6">
-                            <span><md-select ng-model="featured_challenge.phase.name" placeholder="Challenge Phase" class="rm-margin">
-                            <md-option ng-click="featured_challenge.getLeaderboard(key.id)" value="{{key.id}}" ng-repeat="key in featured_challenge.phaseSplits.results" ng-show="{{key.visibility}}==3">{{key.challenge_phase_name}}</md-option>
+                            <span><md-select ng-model="featured_challenge.phase_name" placeholder="Challenge Phase" class="rm-margin">
+                            <md-option ui-sref="featured-challenge-page.phase-leaderboard({phaseSplitId:key.id})" value="{{key.id}}" ng-repeat="key in featured_challenge.phaseSplits.results" ng-show="{{key.visibility}}==3">{{key.challenge_phase_name}}</md-option>
                         </md-select></span>
                         </div>
                     </div>
@@ -41,7 +41,7 @@
                                     <tr ng-repeat="key in featured_challenge.leaderboard">
                                         <td>{{$index+1}}</td>
                                         <td>{{key.submission__participant_team__team_name}}</td>
-                                        <td ng-repeat="score in key.result track by $index" >{{score | number : 3}}</td>
+                                        <td ng-repeat="score in key.result track by $index">{{score | number : 3}}</td>
                                     </tr>
                                 </tbody>
                             </table>

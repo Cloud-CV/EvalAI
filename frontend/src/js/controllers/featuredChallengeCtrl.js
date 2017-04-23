@@ -152,6 +152,7 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
+                    vm.phase_name = vm.phaseSplitId;
                     vm.stopLoader();
                 },
                 onError: function(response) {
@@ -163,6 +164,10 @@
 
             utilities.sendRequest(parameters);
         };
+
+        if (vm.phaseSplitId) {
+            vm.getLeaderboard(vm.phaseSplitId);
+        }
     }
 
 })();
