@@ -14,7 +14,7 @@ from base.utils import paginated_queryset
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import get_challenge_host_teams_for_user
 from participants.models import Participant, ParticipantTeam
-from participants.utils import get_participant_teams_for_user
+from participants.utils import get_participant_teams_for_user, has_user_participated_in_challenge
 
 
 from .models import Challenge, ChallengePhase, ChallengePhaseSplit
@@ -130,12 +130,19 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         team__id=participant_team_pk).values_list('user', flat=True))
 
     if challenge_host_team_user_ids & participant_team_user_ids:
-        response_data = {'message': 'Sorry, You cannot participate in your own challenge!',
+        response_data = {'error': 'Sorry, You cannot participate in your own challenge!',
                          'challenge_id': int(challenge_pk), 'participant_team_id': int(participant_team_pk)}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    for user in participant_team_user_ids:
+        if has_user_participated_in_challenge(user, challenge_pk):
+            response_data = {'error': 'Sorry, other team member(s) have already participated in the Challenge.'
+                             ' Please participate with a different team!',
+                             'challenge_id': int(challenge_pk), 'participant_team_id': int(participant_team_pk)}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     if participant_team.challenge_set.filter(id=challenge_pk).exists():
-        response_data = {'message': 'Team already exists', 'challenge_id': int(challenge_pk),
+        response_data = {'error': 'Team already exists', 'challenge_id': int(challenge_pk),
                          'participant_team_id': int(participant_team_pk)}
         return Response(response_data, status=status.HTTP_200_OK)
     else:
