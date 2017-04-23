@@ -60,7 +60,7 @@ def challenge_list(request, challenge_host_team_pk):
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_detail(request, challenge_host_team_pk, pk):
+def challenge_detail(request, challenge_host_team_pk, challenge_pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
@@ -68,7 +68,7 @@ def challenge_detail(request, challenge_host_team_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge = Challenge.objects.get(pk=pk)
+        challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -154,9 +154,9 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
-def disable_challenge(request, pk):
+def disable_challenge(request, challenge_pk):
     try:
-        challenge = Challenge.objects.get(pk=pk)
+        challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -253,7 +253,7 @@ def get_challenges_based_on_teams(request):
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_list(request, challenge_pk):
     try:
@@ -281,7 +281,7 @@ def challenge_phase_list(request, challenge_pk):
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_detail(request, challenge_pk, pk):
     try:
