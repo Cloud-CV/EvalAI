@@ -14,6 +14,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 
 CORS_ORIGIN_WHITELIST = (
     'evalai.cloudcv.org',
+    'evalai.s3.amazonaws.com',
 )
 
 DATABASES = {

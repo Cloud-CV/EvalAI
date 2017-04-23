@@ -170,8 +170,13 @@
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.stopLoader();
                                                     },
-                                                    onError: function() {
-                                                        vm.existTeamError = "Please select a team";
+                                                    onError: function(response) {
+                                                        if (response.data['detail']){
+                                                            var error = response.data['detail'];
+                                                        } else if (response.data['error']) {
+                                                            error = response.data['error'];
+                                                        }
+                                                        $rootScope.notify("error", error);
                                                         vm.stopLoader();
                                                     }
                                                 };
