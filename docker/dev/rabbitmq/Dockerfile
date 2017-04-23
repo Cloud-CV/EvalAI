@@ -1,5 +1,7 @@
 FROM rabbitmq
-MAINTAINER varunagrawal
+MAINTAINER CloudCV
+
+RUN apt-get update && apt-get install -y python
 
 RUN mkdir /code
 ADD . /code
