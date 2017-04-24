@@ -31,3 +31,14 @@ def get_participant_team_id_of_user_for_a_challenge(user, challenge_id):
         if Challenge.objects.filter(pk=challenge_id, participant_teams=participant_team).exists():
             return participant_team
     return None
+
+
+def get_list_of_challenges_for_participant_team(participant_teams=[]):
+    """Returns list of challenges participated by a team"""
+    return Challenge.objects.filter(participant_teams__in=participant_teams)
+
+
+def get_list_of_challenges_participated_by_a_user(user):
+    """Returns list of challenges participated by a user"""
+    participant_teams = get_participant_teams_for_user(user)
+    return get_list_of_challenges_for_participant_team(participant_teams)
