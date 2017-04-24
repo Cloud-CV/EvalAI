@@ -261,7 +261,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
 
     def test_invite_participant_to_team_with_all_data(self):
         expected = {
-            'message': 'User has been added successfully to the team'
+            'message': 'User has been successfully added to the team!'
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
