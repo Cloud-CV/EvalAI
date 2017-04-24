@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge
-from hosts.models import ChallengeHostTeam
+from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import ParticipantTeam, Participant
 
 
@@ -650,6 +650,35 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
             status=Participant.SELF,
             team=self.participant_team)
 
+        # user who create a challenge host team
+        self.user2 = User.objects.create(
+            username='someuser2',
+            password='some_secret_password')
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name='Some Test Challenge Host Team',
+            created_by=self.user2)
+
+        self.challenge_host2 = ChallengeHost.objects.create(
+            user=self.user2,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
+        self.challenge = Challenge.objects.create(
+            title='Some Test Challenge',
+            short_description='Short description for some test challenge',
+            description='Description for some test challenge',
+            terms_and_conditions='Terms and conditions for some test challenge',
+            submission_guidelines='Submission guidelines for some test challenge',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
         self.url = reverse_lazy('participants:remove_self_from_participant_team',
                                 kwargs={'participant_team_pk': self.participant_team.pk
                                         })
@@ -660,7 +689,7 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
                                         })
 
         expected = {
-            'error': 'ParticipantTeam does not exist'
+            'error': 'ParticipantTeam does not exist!'
         }
 
         response = self.client.delete(self.url, {})
@@ -673,3 +702,14 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
                                         })
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_when_participant_team_has_taken_part_in_challenges(self):
+        self.challenge.participant_teams.add(self.participant_team)
+
+        expected = {
+            'error': 'Sorry, you cannot delete this team since it has took part in challenge(s)!'
+        }
+
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

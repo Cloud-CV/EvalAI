@@ -213,15 +213,20 @@ def remove_self_from_participant_team(request, participant_team_pk):
     A user can remove himself from the participant team.
     """
     try:
-        ParticipantTeam.objects.get(pk=participant_team_pk)
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
     except ParticipantTeam.DoesNotExist:
-        response_data = {'error': 'ParticipantTeam does not exist'}
+        response_data = {'error': 'ParticipantTeam does not exist!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        participant = Participant.objects.get(user=request.user.id, team__pk=participant_team_pk)
+        participant = Participant.objects.get(user=request.user, team__pk=participant_team_pk)
+    except:
+        response_data = {'error': 'Sorry, you do not belong to this team!'}
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    if get_list_of_challenges_for_participant_team([participant_team]).exists():
+        response_data = {'error': 'Sorry, you cannot delete this team since it has took part in challenge(s)!'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
         participant.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    except:
-        response_data = {'error': 'Sorry, you do not belong to this team.'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
