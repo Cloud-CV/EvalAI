@@ -67,6 +67,83 @@
                     </div>
                 </div>
             </div>
+            <!-- Section for adding new contributors -->
+            <div class="row">
+				<div class="col s12 offset-m2 m8 ev-mt-50">
+					<h4 class="text-dark-black align-center"><strong>Add a contributor</strong></h4>
+					<form name="addContributorForm" ng-submit="ourTeam.addNewContributor(addContributorForm.$valid)" id="add-contributor">
+						<!-- Name -->
+						<div class="input-field align-left">
+							<input type="text" id="name" name="name" ng-minlength="3" ng-model="ourTeam.contributor.name" required>
+							<span class="form-icon"><i class="fa fa-user"></i></span>
+							<label for="name">Name *</label>
+							<div class="wrn-msg text-highlight" ng-messages="addContributorForm.name.$error"
+                                 ng-if="addContributorForm.name.$touched || addContributorForm.$submitted">
+								<p ng-message="minlength">Name is too short.</p>
+							</div>
+						</div>
+                        <!-- Email -->
+                        <div class="input-field align-left">
+                            <input type="email" id="email" name="email" ng-model="ourTeam.contributor.email">
+                            <span class="form-icon"><i class="fa fa-envelope"></i></span>
+                            <label for="email">Email</label>
+                            <div class="wrn-msg text-highlight" ng-messages="addContributorForm.email.$error" ng-if="addContributorForm.email.$touched || addContributorForm.$submitted">
+                                <p ng-message="email">Please enter valid email address.</p>
+                            </div>
+                        </div>
+                        <!-- Headshot -->
+                        <!-- TODO enable headshot upload (currently disabled both inputs and buttons) -->
+                        <div class="file-field input-field">
+                            <div disabled class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                                <span>Upload File</span>
+                                <input disabled type="file" id="headshot" ngf-select ng-model="ourTeam.contributor.headshot" name="ourTeam.contributor.headshot">
+                            </div>
+                            <div class="file-path-wrapper input-field">
+                                <input disabled placeholder="Select a headshot image (not supported yet)" class="file-path validate" type="text">
+                            </div>
+                        </div>
+                        <!-- GitHub URL -->
+						<div class="input-field align-left">
+							<input type="text" id="github_url" name="github_url" ng-model="ourTeam.contributor.github_url">
+							<span class="form-icon"><i class="fa fa-github"></i></span>
+							<label for="github_url">GitHub URL</label>
+						</div>
+                        <!-- LinkedIn URL -->
+						<div class="input-field align-left">
+							<input type="text" id="linkedin_url" name="linkedin_url" ng-model="ourTeam.contributor.linkedin_url">
+							<span class="form-icon"><i class="fa fa-linkedin"></i></span>
+							<label for="linkedin_url">LinkedIn URL</label>
+						</div>
+                        <!-- Personal Website -->
+						<div class="input-field align-left">
+							<input type="text" id="personal_website" name="personal_website" ng-model="ourTeam.contributor.personal_website">
+							<span class="form-icon"><i class="fa fa-globe"></i></span>
+							<label for="personal_website">Personal Website</label>
+						</div>
+                        <!-- Background image -->
+                        <!-- TODO enable background image upload (currently disabled both inputs and buttons) -->
+                        <div class="file-field input-field">
+                            <div disabled class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                                <span>Upload File</span>
+                                <input disabled type="file" id="background" ngf-select ng-model="ourTeam.contributor.background_image" name="ourTeam.contributor.background_image">
+                            </div>
+                            <div class="file-path-wrapper input-field">
+                                <input disabled placeholder="Select a background image (not supported yet)" class="file-path validate" type="text">
+                            </div>
+                        </div>
+                        <!-- An extra field for errors that came from server interaction -->
+                        <div class="text-highlight">
+                            <strong>{{ourTeam.subErrors.msg}}</strong>
+                        </div>
+						<div class="row">
+							<br>
+							<div class="col s6 align-left rm-gut">
+								<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit">Submit</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
         </div>
     </div>
     <!-- footer -->
