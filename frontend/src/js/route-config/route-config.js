@@ -344,6 +344,67 @@
         };
 
 
+        var featured_challenge_page = {
+            name: "featured-challenge-page",
+            url: "/featured-challenges/:challengeId",
+            templateUrl: baseUrl + "/web/featured-challenge/challenge-page.html",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            redirectTo: "featured-challenge-page.overview",
+            authenticate: false
+        };
+
+        var featured_challenge_overview = {
+            name: "featured-challenge-page.overview",
+            parent: "featured-challenge-page",
+            url: "/overview",
+            templateUrl: baseUrl + "/web/featured-challenge/overview.html",
+            title: 'Overview',
+            authenticate: false
+        };
+
+        var featured_challenge_evaluation = {
+            name: "featured-challenge-page.evaluation",
+            url: "/evaluation",
+            templateUrl: baseUrl + "/web/featured-challenge/evaluation.html",
+            title: 'Evaluation',
+            authenticate: false
+        };
+
+        var featured_challenge_phases = {
+            name: "featured-challenge-page.phases",
+            url: "/phases",
+            templateUrl: baseUrl + "/web/featured-challenge/phases.html",
+            title: 'Phases',
+            authenticate: false
+        };
+
+        var featured_challenge_participate = {
+            name: "featured-challenge-page.participate",
+            url: "/participate",
+            templateUrl: baseUrl + "/web/featured-challenge/participate.html",
+            title: 'Participate',
+            authenticate: false
+        };
+
+        var featured_challenge_leaderboard = {
+            name: "featured-challenge-page.leaderboard",
+            url: "/leaderboard",
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard',
+            authenticate: false
+        };
+
+        var featured_challenge_phase_leaderboard = {
+            name: "featured-challenge-page.phase-leaderboard",
+            url: "/leaderboard/:phaseSplitId",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard',
+            authenticate: false
+        };
+
         // call all states here
         $stateProvider.state(home);
         $stateProvider.state(privacy_policy);
@@ -381,6 +442,15 @@
         $stateProvider.state(submission);
         $stateProvider.state(my_submission);
         $stateProvider.state(leaderboard);
+
+        // featured challenge details
+        $stateProvider.state(featured_challenge_page);
+        $stateProvider.state(featured_challenge_overview);
+        $stateProvider.state(featured_challenge_evaluation);
+        $stateProvider.state(featured_challenge_phases);
+        $stateProvider.state(featured_challenge_participate);
+        $stateProvider.state(featured_challenge_leaderboard);
+        $stateProvider.state(featured_challenge_phase_leaderboard);
 
         $stateProvider.state(host_challenge);
 
