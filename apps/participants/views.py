@@ -134,7 +134,7 @@ def invite_participant_to_team(request, pk):
     if serializer.is_valid():
         serializer.save()
         response_data = {
-            'message': 'User has been added successfully to the team'}
+            'message': 'User has been successfully added to the team!'}
         return Response(response_data, status=status.HTTP_202_ACCEPTED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
