@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
@@ -19,6 +21,8 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ChallengeParticipantTeamList,
                           ChallengeParticipantTeamListSerializer,
                           ParticipantTeamDetailSerializer,)
+from .utils import (get_list_of_challenges_for_participant_team,
+                    get_list_of_challenges_participated_by_a_user,)
 
 
 @throttle_classes([UserRateThrottle])
@@ -100,6 +104,28 @@ def invite_participant_to_team(request, pk):
         participant_team = ParticipantTeam.objects.get(pk=pk)
     except ParticipantTeam.DoesNotExist:
         response_data = {'error': 'ParticipantTeam does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    email = request.data.get('email')
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        response_data = {'error': 'User does not exist with this email address!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    invited_user_participated_challenges = get_list_of_challenges_participated_by_a_user(
+        user).values_list("id", flat=True)
+    team_participated_challenges = get_list_of_challenges_for_participant_team(
+        [participant_team]).values_list("id", flat=True)
+
+    if set(invited_user_participated_challenges) & set(team_participated_challenges):
+        """
+        Condition to check if the user has already participated in challenges where
+        the inviting participant has participated. If this is the case,
+        then the user cannot be invited since he cannot participate in a challenge
+        via two teams.
+        """
+        response_data = {'error': 'Sorry, cannot invite user to the team!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     serializer = InviteParticipantToTeamSerializer(data=request.data,
