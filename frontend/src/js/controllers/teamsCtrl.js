@@ -392,11 +392,13 @@
                 };
                 parameters.token = userKey;
                 parameters.callback = {
-                    onSuccess: function() {
-                        $rootScope.notify("success", parameters.data.email + " has been invited successfully");
+                    onSuccess: function(response) {
+                        var message = response.data['message'];
+                        $rootScope.notify("success", message);
                     },
-                    onError: function() {
-                        $rootScope.notify("error", "couldn't invite " + parameters.data.email + ". Please try again.");
+                    onError: function(response) {
+                        var error = response.data['error'];
+                        $rootScope.notify("error", error);
                     }
                 };
 
