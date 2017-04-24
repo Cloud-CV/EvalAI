@@ -358,9 +358,10 @@
                         };
                         utilities.sendRequest(parameters);
                     },
-                    onError: function() {
+                    onError: function(response) {
+                        var error = response.data['error'];
                         vm.stopExistLoader();
-                        $rootScope.notify("error", "couldn't remove you from the challenge");
+                        $rootScope.notify("error", error);
                     }
                 };
 
