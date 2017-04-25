@@ -707,7 +707,7 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
 
         expected = {
-            'error': 'Sorry, you cannot delete this team since it has took part in challenge(s)!'
+            'error': 'Sorry, you cannot delete this team since it has taken part in challenge(s)!'
         }
 
         response = self.client.delete(self.url, {})
