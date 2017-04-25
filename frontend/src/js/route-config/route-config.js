@@ -315,7 +315,8 @@
             url: "/team",
             templateUrl: baseUrl + "/web/our-team.html",
             controller: 'ourTeamCtrl',
-            controllerAs: 'ourTeam'
+            controllerAs: 'ourTeam',
+            title: "Team"
         };
 
         var get_involved = {

@@ -225,7 +225,7 @@ def remove_self_from_participant_team(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
     if get_list_of_challenges_for_participant_team([participant_team]).exists():
-        response_data = {'error': 'Sorry, you cannot delete this team since it has took part in challenge(s)!'}
+        response_data = {'error': 'Sorry, you cannot delete this team since it has taken part in challenge(s)!'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     else:
         participant.delete()
