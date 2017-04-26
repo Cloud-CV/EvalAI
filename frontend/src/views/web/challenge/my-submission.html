@@ -36,6 +36,7 @@
                                 <thead>
                                     <tr>
                                         <th data-field="team">Team Name</th>
+                                        <th data-field="method-name">Method Name</th>
                                         <th data-field="status">Status</th>
                                         <th class="align-center" data-field="status">Execution Time (sec.)</th>
                                         <th data-field="file">Submitted File</th>
@@ -49,6 +50,7 @@
                                 <tbody>
                                     <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
                                         <td>{{key.participant_team_name}}</td>
+                                        <td>{{key.method_name}}</td>
                                         <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
                                         <td class="align-center">{{key.execution_time}}</td>
 
