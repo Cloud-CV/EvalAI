@@ -351,8 +351,7 @@
             templateUrl: baseUrl + "/web/featured-challenge/challenge-page.html",
             controller: 'FeaturedChallengeCtrl',
             controllerAs: 'featured_challenge',
-            redirectTo: "featured-challenge-page.overview",
-            // authenticate: false
+            redirectTo: "featured-challenge-page.overview"
         };
 
         var featured_challenge_overview = {
@@ -360,40 +359,35 @@
             parent: "featured-challenge-page",
             url: "/overview",
             templateUrl: baseUrl + "/web/featured-challenge/overview.html",
-            title: 'Overview',
-            // authenticate: false
+            title: 'Overview'
         };
 
         var featured_challenge_evaluation = {
             name: "featured-challenge-page.evaluation",
             url: "/evaluation",
             templateUrl: baseUrl + "/web/featured-challenge/evaluation.html",
-            title: 'Evaluation',
-            // authenticate: false
+            title: 'Evaluation'
         };
 
         var featured_challenge_phases = {
             name: "featured-challenge-page.phases",
             url: "/phases",
             templateUrl: baseUrl + "/web/featured-challenge/phases.html",
-            title: 'Phases',
-            // authenticate: false
+            title: 'Phases'
         };
 
         var featured_challenge_participate = {
             name: "featured-challenge-page.participate",
             url: "/participate",
             templateUrl: baseUrl + "/web/featured-challenge/participate.html",
-            title: 'Participate',
-            // authenticate: false
+            title: 'Participate'
         };
 
         var featured_challenge_leaderboard = {
             name: "featured-challenge-page.leaderboard",
             url: "/leaderboard",
             templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
-            title: 'Leaderboard',
-            // authenticate: false
+            title: 'Leaderboard'
         };
 
         var featured_challenge_phase_leaderboard = {
@@ -402,8 +396,7 @@
             controller: 'FeaturedChallengeCtrl',
             controllerAs: 'featured_challenge',
             templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
-            title: 'Leaderboard',
-            // authenticate: false
+            title: 'Leaderboard'
         };
 
         // call all states here
