@@ -352,7 +352,7 @@
             controller: 'FeaturedChallengeCtrl',
             controllerAs: 'featured_challenge',
             redirectTo: "featured-challenge-page.overview",
-            authenticate: false
+            // authenticate: false
         };
 
         var featured_challenge_overview = {
@@ -361,7 +361,7 @@
             url: "/overview",
             templateUrl: baseUrl + "/web/featured-challenge/overview.html",
             title: 'Overview',
-            authenticate: false
+            // authenticate: false
         };
 
         var featured_challenge_evaluation = {
@@ -369,7 +369,7 @@
             url: "/evaluation",
             templateUrl: baseUrl + "/web/featured-challenge/evaluation.html",
             title: 'Evaluation',
-            authenticate: false
+            // authenticate: false
         };
 
         var featured_challenge_phases = {
@@ -377,7 +377,7 @@
             url: "/phases",
             templateUrl: baseUrl + "/web/featured-challenge/phases.html",
             title: 'Phases',
-            authenticate: false
+            // authenticate: false
         };
 
         var featured_challenge_participate = {
@@ -385,7 +385,7 @@
             url: "/participate",
             templateUrl: baseUrl + "/web/featured-challenge/participate.html",
             title: 'Participate',
-            authenticate: false
+            // authenticate: false
         };
 
         var featured_challenge_leaderboard = {
@@ -393,7 +393,7 @@
             url: "/leaderboard",
             templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
             title: 'Leaderboard',
-            authenticate: false
+            // authenticate: false
         };
 
         var featured_challenge_phase_leaderboard = {
@@ -403,7 +403,7 @@
             controllerAs: 'featured_challenge',
             templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
             title: 'Leaderboard',
-            authenticate: false
+            // authenticate: false
         };
 
         // call all states here
