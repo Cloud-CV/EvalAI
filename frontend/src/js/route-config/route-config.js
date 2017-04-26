@@ -228,7 +228,7 @@
             name: "web.challenge-main.challenge-page.my-submission",
             url: "/my-submission",
             templateUrl: baseUrl + "/web/challenge/my-submission.html",
-            title: 'My Submission',
+            title: 'My Submissions',
             authenticate: true
         };
 
