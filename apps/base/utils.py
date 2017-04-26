@@ -26,6 +26,9 @@ class RandomFileName(object):
         extension = os.path.splitext(filename)[1]
         if 'id' in self.path and instance.pk:
             self.path = self.path.format(id=instance.pk)
+        elif 'id' not in self.path and instance.pk:
+            path = "submission_files/submission_{id}"
+            self.path = path.format(id=instance.pk)
         filename = '{}{}'.format(uuid.uuid4(), extension)
         filename = os.path.join(self.path, filename)
         return filename
