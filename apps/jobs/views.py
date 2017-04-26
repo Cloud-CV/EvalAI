@@ -287,7 +287,9 @@ def remaining_submission(request, challenge_phase_id, participant_team_id, chall
         dttomorrow = dtnow + datetime.timedelta(days=1)
         midnight = dttomorrow.replace(hour=0, minute=0, second=0, microsecond=1)
         remaining_time = midnight - dtnow
-        response_data = {'message': 'You have exhausted the submission limit for today !', 'remaining_time': str(remaining_time)}
+        response_data = {'message': 'You have exhausted the submission limit for today !',
+                         'remaining_time': str(remaining_time)
+                         }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         remaining_submission_per_day = max_submission_per_day - (submissions_done_today_count - failed_count)
