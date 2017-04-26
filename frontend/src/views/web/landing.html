@@ -54,8 +54,7 @@
                         <div class="challenge-logo">
                             <img ng-src="{{main.challengeList.results[0].image}}"> &nbsp;
                             <h4 class="grad-span">
-                                <a ng-show="isAuth" ui-sref="web.challenge-main.challenge-page({challengeId:main.challengeList.results[0].id})">{{main.challengeList.results[0].title}}</a>
-                                <a ng-show="!isAuth" ui-sref="featured-challenge-page({challengeId:main.challengeList.results[0].id})">{{main.challengeList.results[0].title}}</a>
+                                <a ui-sref="featured-challenge-page({challengeId:main.challengeList.results[0].id})">{{main.challengeList.results[0].title}}</a>
                             </h4>
                         </div>
                         <p>
