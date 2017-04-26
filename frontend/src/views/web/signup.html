@@ -14,8 +14,8 @@
             <span class="form-icon"><i class="fa fa-user"></i></span>
             <label for="name">Username*</label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.name.$error" ng-if="signupForm.name.$touched || signupForm.$submitted">
-                <p ng-message="minlength">username is too short.</p>
-                <p ng-message="required">username is required.</p>
+                <p ng-message="minlength">Username is too short.</p>
+                <p ng-message="required">Username is required.</p>
             </div>
         </div>
         <!-- email -->
@@ -25,7 +25,7 @@
             <label for="email">Email</label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.email.$error" ng-if="signupForm.email.$touched || signupForm.$submitted">
                 <p ng-message="email">Please enter valid email address.</p>
-                <p ng-message="required">email address is required.</p>
+                <p ng-message="required">Email address is required.</p>
             </div>
         </div>
         <!-- password -->
@@ -34,8 +34,8 @@
             <span class="form-icon"><i class="fa fa-key"></i></span>
             <label for="password">Password (min 8 characters) *</label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.password.$error" ng-if="signupForm.password.$touched || signupForm.$submitted">
-                <p ng-message="minlength">password is less than 8 characters.</p>
-                <p ng-message="required">password is required.</p>
+                <p ng-message="minlength">Password is less than 8 characters.</p>
+                <p ng-message="required">Password is required.</p>
             </div>
         </div>
         <!-- confirm password -->
@@ -44,9 +44,9 @@
             <span class="form-icon"><i class="fa fa-check-circle"></i></span>
             <label for="confirm_password">Confirm Password *</label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.confirm_password.$error" ng-if="signupForm.confirm_password.$touched || signupForm.$submitted">
-                <p ng-message="compareTo">Password do not match</p>
-                <p ng-message="minlength">password is less than 8 characters.</p>
-                <p ng-message="required">password confirmation is required.</p>
+                <p ng-message="compareTo">Passwords do not match</p>
+                <p ng-message="minlength">Password is less than 8 characters.</p>
+                <p ng-message="required">Password confirmation is required.</p>
             </div>
         </div>
         <!-- submit button -->
@@ -56,7 +56,7 @@
         <div ng-if="auth.isFormError" class="text-highlight align-left"> {{auth.FormError}}</div>
         <div>
             <p class="text-light-gray">
-                Already have an account <a class="white-link" ui-sref="auth.login">Log In</a>
+                Already have an account? <a class="white-link" ui-sref="auth.login">Log In</a>
             </p>
         </div>
     </form>

@@ -817,7 +817,7 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function() {
-                    $rootScope.notify("success", "Team- " + vm.team.name + " has been created successfully!");
+                    $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team.name = '';
