@@ -238,19 +238,19 @@ def leaderboard(request, challenge_phase_split_id):
 @authentication_classes((ExpiringTokenAuthentication,))
 def remaining_submission(request, challenge_phase_id, participant_team_id, challenge_id):
     try:
-        challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_id)
+        ChallengePhase.objects.get(pk=challenge_phase_id)
     except ChallengePhase.DoesNotExist:
         response_data = {'error': 'Challenge Phase does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+        ParticipantTeam.objects.get(pk=participant_team_id)
     except ParticipantTeam.DoesNotExist:
         response_data = {'error': 'Participant Team does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge = Challenge.objects.get(pk=challenge_id)
+        Challenge.objects.get(pk=challenge_id)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -264,7 +264,7 @@ def remaining_submission(request, challenge_phase_id, participant_team_id, chall
     failed_count = Submission.objects.filter(
         challenge_phase=challenge_phase_id,
         participant_team=participant_team_id,
-        challenge_phase__challenge=challenge_id, 
+        challenge_phase__challenge=challenge_id,
         status=Submission.FAILED,
         submitted_at__gte=datetime.date.today()).count()
 
@@ -283,12 +283,16 @@ def remaining_submission(request, challenge_phase_id, participant_team_id, chall
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if (submissions_done_today_count - failed_count) >= max_submission_per_day or max_submission_per_day == 0:
-        response_data = {'message': 'You have exhausted the submission limit for today !'}
+        dtnow = datetime.datetime.now()
+        dttomorrow = dtnow + datetime.timedelta(days=1)
+        midnight = dttomorrow.replace(hour=0, minute=0, second=0, microsecond=1)
+        remaining_time = midnight - dtnow
+        response_data = {'message': 'You have exhausted the submission limit for today !', 'remaining_time': str(remaining_time)}
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         remaining_submission_per_day = max_submission_per_day - (submissions_done_today_count - failed_count)
         remaining_submission = max_submission - (submissions_done_today_count - failed_count)
         response_data = {'remaining_submission_per_day': remaining_submission_per_day,
-                         'remaining_submission' : remaining_submission
+                         'remaining_submission': remaining_submission
                          }
         return Response(response_data, status=status.HTTP_200_OK)
