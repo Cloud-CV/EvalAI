@@ -6,7 +6,7 @@
         <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
-                        <img class="bg-img" ng-src="{{challenge.background_image}}">
+                        <img class="bg-img" ng-src="{{challenge.image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
@@ -29,7 +29,7 @@
         <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
-                        <img class="bg-img" ng-src="{{challenge.background_image}}">
+                        <img class="bg-img" ng-src="{{challenge.image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
@@ -53,7 +53,7 @@
             <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
-                        <img class="bg-img" ng-src="{{challenge.background_image}}">
+                        <img class="bg-img" ng-src="{{challenge.image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
