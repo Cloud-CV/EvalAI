@@ -172,7 +172,7 @@
                                                     },
                                                     onError: function(response) {
                                                         if (response.data['detail']){
-                                                            var error = response.data['detail'];
+                                                            var error = "Please select a team first!";
                                                         } else if (response.data['error']) {
                                                             error = response.data['error'];
                                                         }
