@@ -20,7 +20,7 @@ services:
     build: 
       context: ./
       dockerfile: docker/dev/django/Dockerfile
-    command: /code/docker/dev/django/container-start.sh
+#    command: /code/docker/dev/django/container-start.sh
     ports:
       - "8000:8000"
     depends_on:
@@ -32,7 +32,7 @@ services:
     build:
       context: ./
       dockerfile: docker/dev/nodejs/Dockerfile
-    command: /code/docker/dev/nodejs/container-start.sh
+#    command: /code/docker/dev/nodejs/container-start.sh
     volumes:
       - .:/code
     environment:
