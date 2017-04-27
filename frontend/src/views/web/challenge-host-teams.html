@@ -70,7 +70,7 @@
                 <div class="ev-md-container ev-card-body new-team-card">
                     <form ng-submit="challengeHostTeams.createNewTeam()">
                         <div class="input-field align-left">
-                            <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeHostTeams.team.name" pattern="/^[a-z0-9]+$/i" focus-if>
+                            <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeHostTeams.team.name" ng-pattern="/^[A-Za-z0-9]*$/" focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                             <label for="name" data-error="wrong" data-success="right">Team Name*</label>
                             <div class="wrn-msg text-highlight" ng-show="challengeHostTeams.team.error">{{challengeHostTeams.team.error}}</div>
