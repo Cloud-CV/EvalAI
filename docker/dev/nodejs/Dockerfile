@@ -10,10 +10,12 @@ RUN gem install sass
 RUN mkdir /code
 
 # Add dependencies
-ADD ./frontend /code
+ADD ./frontend /code/frontend
 ADD ./package.json /code
 ADD ./bower.json /code
 ADD ./gulpfile.js /code
+ADD ./.eslintrc /code
+
 WORKDIR /code
 
 # Install Prerequisites
