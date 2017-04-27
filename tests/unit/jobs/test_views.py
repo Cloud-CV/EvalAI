@@ -379,9 +379,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
     def setUp(self):
         super(GetRemainingSubmissionTest, self).setUp()
         self.url = reverse_lazy('jobs:remaining_submission',
-                                 kwargs={'challenge_phase_id': self.challenge_phase.pk,
-                                         'challenge_id': self.challenge.pk,
-                                         'participant_team_id': self.participant_team.pk})
+                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                        'challenge_id': self.challenge.pk,
+                                        'participant_team_id': self.participant_team.pk})
 
         self.submission1 = Submission.objects.create(
             participant_team=self.participant_team,
@@ -411,9 +411,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('jobs:remaining_submission',
-                                 kwargs={'challenge_phase_id': self.challenge_phase.pk,
-                                         'challenge_id': self.challenge.pk,
-                                         'participant_team_id': self.participant_team.pk})
+                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                        'challenge_id': self.challenge.pk,
+                                        'participant_team_id': self.participant_team.pk})
 
         self.challenge.delete()
 
@@ -427,9 +427,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:remaining_submission',
-                                 kwargs={'challenge_phase_id': self.challenge_phase.pk,
-                                         'challenge_id': self.challenge.pk,
-                                         'participant_team_id': self.participant_team.pk})
+                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                        'challenge_id': self.challenge.pk,
+                                        'participant_team_id': self.participant_team.pk})
 
         self.challenge_phase.delete()
 
@@ -443,9 +443,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:remaining_submission',
-                                 kwargs={'challenge_phase_id': self.challenge_phase.pk,
-                                         'challenge_id': self.challenge.pk,
-                                         'participant_team_id': self.participant_team.pk})
+                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                        'challenge_id': self.challenge.pk,
+                                        'participant_team_id': self.participant_team.pk})
 
         self.participant_team.delete()
 
@@ -459,9 +459,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_participant_team_hasnt_participated_in_challenge(self):
         self.url = reverse_lazy('jobs:remaining_submission',
-                                 kwargs={'challenge_phase_id': self.challenge_phase.pk,
-                                         'challenge_id': self.challenge.pk,
-                                         'participant_team_id': self.participant_team.pk})
+                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                        'challenge_id': self.challenge.pk,
+                                        'participant_team_id': self.participant_team.pk})
 
         expected = {
             'error': 'You haven\'t participated in the challenge'
@@ -473,9 +473,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission(self):
         self.url = reverse_lazy('jobs:remaining_submission',
-                                 kwargs={'challenge_phase_id': self.challenge_phase.pk,
-                                         'challenge_id': self.challenge.pk,
-                                         'participant_team_id': self.participant_team.pk})
+                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                        'challenge_id': self.challenge.pk,
+                                        'participant_team_id': self.participant_team.pk})
 
         submissions_done_today_count = Submission.objects.filter(
                     challenge_phase__challenge=self.challenge.pk,
@@ -490,7 +490,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                     status='failed',
                     submitted_at__gte=datetime.date.today()).count()
 
-        remaining_submission_per_day = self.challenge_phase.max_submissions_per_day - (submissions_done_today_count - failed_count)
+        max_submissions_per_day = self.challenge_phase.max_submissions_per_day
+
+        remaining_submission_per_day = max_submissions_per_day - (submissions_done_today_count - failed_count)
         remaining_submission = self.challenge_phase.max_submissions - (submissions_done_today_count - failed_count)
 
         expected = {
@@ -506,9 +508,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_time_when_limit_is_exhausted(self):
         self.url = reverse_lazy('jobs:remaining_submission',
-                                 kwargs={'challenge_phase_id': self.challenge_phase.pk,
-                                         'challenge_id': self.challenge.pk,
-                                         'participant_team_id': self.participant_team.pk})
+                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                        'challenge_id': self.challenge.pk,
+                                        'participant_team_id': self.participant_team.pk})
 
         submissions_done_today_count = Submission.objects.filter(
                     challenge_phase__challenge=self.challenge.pk,
