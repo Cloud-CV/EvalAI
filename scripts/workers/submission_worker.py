@@ -458,7 +458,7 @@ def main():
 
     load_active_challenges()
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=settings.RABBITMQ_PARAMETERS['HOST']))
+        host=settings.RABBITMQ_PARAMETERS['HOST'], heartbeat_interval=0))
 
     channel = connection.channel()
     channel.exchange_declare(
