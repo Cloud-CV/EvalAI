@@ -238,22 +238,37 @@ def leaderboard(request, challenge_phase_split_id):
 @authentication_classes((ExpiringTokenAuthentication,))
 def remaining_submission(request, challenge_phase_id, participant_team_id, challenge_id):
     try:
+        Challenge.objects.get(pk=challenge_id)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
         ChallengePhase.objects.get(pk=challenge_phase_id)
     except ChallengePhase.DoesNotExist:
         response_data = {'error': 'Challenge Phase does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         ParticipantTeam.objects.get(pk=participant_team_id)
     except ParticipantTeam.DoesNotExist:
-        response_data = {'error': 'Participant Team does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        response_data = {'error': 'Participant team does not exist'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge_id)
 
     try:
-        Challenge.objects.get(pk=challenge_id)
-    except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        ParticipantTeam.objects.get(pk=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'You haven\'t participated in the challenge'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    max_submission_per_day = ChallengePhase.objects.get(
+            pk=challenge_phase_id).max_submissions_per_day
+
+    max_submission = ChallengePhase.objects.get(
+            pk=challenge_phase_id).max_submissions
 
     submissions_done_today_count = Submission.objects.filter(
         challenge_phase__challenge=challenge_id,
@@ -268,27 +283,13 @@ def remaining_submission(request, challenge_phase_id, participant_team_id, chall
         status=Submission.FAILED,
         submitted_at__gte=datetime.date.today()).count()
 
-    try:
-        max_submission_per_day = ChallengePhase.objects.get(
-            pk=challenge_phase_id).max_submissions_per_day
-    except:
-        response_data = {'error': 'Max submissions limit for this challenge phase for today does not exist !'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    try:
-        max_submission = ChallengePhase.objects.get(
-            pk=challenge_phase_id).max_submissions
-    except:
-        response_data = {'error': 'Max submissions limit for this challenge phase does not exist !'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
     if (submissions_done_today_count - failed_count) >= max_submission_per_day or max_submission_per_day == 0:
         dtnow = datetime.datetime.now()
         dttomorrow = dtnow + datetime.timedelta(days=1)
-        midnight = dttomorrow.replace(hour=0, minute=0, second=0, microsecond=1)
+        midnight = dttomorrow.replace(hour=0, minute=0, second=0)
         remaining_time = midnight - dtnow
-        response_data = {'message': 'You have exhausted the submission limit for today !',
-                         'remaining_time': str(remaining_time)
+        response_data = {'message': 'You have exhausted the submission limit for today',
+                         'remaining_time': remaining_time.total_seconds()
                          }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
