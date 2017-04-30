@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import contextlib
 import django
 import importlib
+import logging
 import os
 import pika
 import requests
@@ -35,6 +36,7 @@ DJANGO_SETTINGS_MODULE = 'settings.dev'
 if len(sys.argv) == 2:
     DJANGO_SETTINGS_MODULE = sys.argv[1]
 
+logger = logging.getLogger(__name__)
 
 sys.path.insert(0, DJANGO_PROJECT_PATH)
 
@@ -102,7 +104,7 @@ def download_and_extract_file(url, download_location):
     try:
         response = requests.get(url)
     except Exception as e:
-        print 'Failed to fetch file from {}, error {}'.format(url, e)
+        logger.error('Failed to fetch file from {}, error {}'.format(url, e))
         traceback.print_exc()
         response = None
 
@@ -119,7 +121,7 @@ def download_and_extract_zip_file(url, download_location, extract_location):
     try:
         response = requests.get(url)
     except Exception as e:
-        print 'Failed to fetch file from {}, error {}'.format(url, e)
+        logger.error('Failed to fetch file from {}, error {}'.format(url, e))
         response = None
 
     if response and response.status_code == 200:
@@ -133,7 +135,7 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         try:
             os.remove(download_location)
         except Exception as e:
-            print 'Failed to remove zip file {}, error {}'.format(download_location, e)
+            logger.error('Failed to remove zip file {}, error {}'.format(download_location, e))
             traceback.print_exc()
 
 
@@ -232,7 +234,7 @@ def extract_submission_data(submission_id):
     try:
         submission = Submission.objects.get(id=submission_id)
     except Submission.DoesNotExist:
-        print 'Submission {} does not exist'.format(submission_id)
+        logger.critical('Submission {} does not exist'.format(submission_id))
         traceback.print_exc()
 
     submission_input_file = submission.input_file.url
@@ -405,7 +407,7 @@ def process_submission_message(message):
     try:
         challenge_phase = ChallengePhase.objects.get(id=phase_id)
     except ChallengePhase.DoesNotExist:
-        print 'Challenge Phase {} does not exist'.format(phase_id)
+        logger.critical('Challenge Phase {} does not exist'.format(phase_id))
         traceback.print_exc()
 
     user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
@@ -419,7 +421,7 @@ def process_add_challenge_message(message):
     try:
         challenge = Challenge.objects.get(id=challenge_id)
     except Challenge.DoesNotExist:
-        print 'Challenge {} does not exist'.format(challenge_id)
+        logger.critical('Challenge {} does not exist'.format(challenge_id))
         traceback.print_exc()
 
     phases = challenge.challengephase_set.all()
@@ -428,30 +430,30 @@ def process_add_challenge_message(message):
 
 def process_submission_callback(ch, method, properties, body):
     try:
-        print(" [x] Received %r" % body, properties, method)
+        logger.info("[x] Received %r" % body, properties, method)
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.iteritems())
         process_submission_message(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
-        print 'Error in receiving message from submission queue with error {}'.format(e)
+        logger.error('Error in receiving message from submission queue with error {}'.format(e))
         traceback.print_exc()
 
 
 def add_challenge_callback(ch, method, properties, body):
     try:
-        print(" [x] Received %r" % body, properties, method)
+        logger.info("[x] Received %r" % body, properties, method)
         body = yaml.safe_load(body)
         process_add_challenge_message(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
-        print 'Error in receiving message from add challenge queue with error {}'.format(e)
+        logger.error('Error in receiving message from add challenge queue with error {}'.format(e))
         traceback.print_exc()
 
 
 def main():
 
-    print 'Using {0} as temp directory to store data'.format(BASE_TEMP_DIR)
+    logger.info('Using {0} as temp directory to store data'.format(BASE_TEMP_DIR))
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
 
     sys.path.append(COMPUTE_DIRECTORY_PATH)
@@ -479,7 +481,7 @@ def main():
     # challenge addition queue should have only have one consumer on the connection
     # that creates it.
     channel.queue_declare(queue=add_challenge_queue_name, durable=True, exclusive=True)
-    print(' [*] Waiting for messages. To exit press CTRL+C')
+    logger.info('[*] Waiting for messages. To exit press CTRL+C')
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
