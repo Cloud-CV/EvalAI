@@ -236,6 +236,11 @@ def extract_submission_data(submission_id):
     except Submission.DoesNotExist:
         logger.critical('Submission {} does not exist'.format(submission_id))
         traceback.print_exc()
+        # return from here so that the message can be acked
+        # This also indicates that we don't want to take action
+        # for message corresponding to which submission entry
+        # does not exist
+        return None
 
     submission_input_file = submission.input_file.url
     submission_input_file = return_file_url_per_environment(submission_input_file)
@@ -404,11 +409,16 @@ def process_submission_message(message):
     submission_id = message.get('submission_id')
     submission_instance = extract_submission_data(submission_id)
 
+    # so that the further execution does not happen
+    if not submission_instance:
+        return
+
     try:
         challenge_phase = ChallengePhase.objects.get(id=phase_id)
     except ChallengePhase.DoesNotExist:
         logger.critical('Challenge Phase {} does not exist'.format(phase_id))
         traceback.print_exc()
+        return
 
     user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
                                      os.path.basename(submission_instance.input_file.name))
