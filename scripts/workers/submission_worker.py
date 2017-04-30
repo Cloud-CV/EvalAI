@@ -430,7 +430,7 @@ def process_add_challenge_message(message):
 
 def process_submission_callback(ch, method, properties, body):
     try:
-        logger.info("[x] Received %r" % body, properties, method)
+        logger.info("[x] Received submission message %s" % body)
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.iteritems())
         process_submission_message(body)
@@ -442,7 +442,7 @@ def process_submission_callback(ch, method, properties, body):
 
 def add_challenge_callback(ch, method, properties, body):
     try:
-        logger.info("[x] Received %r" % body, properties, method)
+        logger.info("[x] Received add challenge message %s" % body)
         body = yaml.safe_load(body)
         process_add_challenge_message(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
