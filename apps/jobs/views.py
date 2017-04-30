@@ -156,7 +156,6 @@ def change_submission_visibility(request, challenge_id, challenge_phase_id, subm
         response_data = {'error': 'Submission does not exist'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-    print request.data
     serializer = SubmissionSerializer(submission,
                                       data=request.data,
                                       context={
