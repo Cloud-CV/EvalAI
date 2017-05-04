@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
 
-    function ChallengeCtrl(utilities, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -38,18 +38,9 @@
         vm.loginContainer = angular.element('.exist-team-card');
 
         // show loader
-        vm.startExistLoader = function(msg) {
-            vm.isExistLoader = true;
-            vm.loaderTitle = msg;
-            vm.loginContainer.addClass('low-screen');
-        };
-
+        vm.startExistLoader =  loaderService.startExistLoader;
         // stop loader
-        vm.stopExistLoader = function() {
-            vm.isExistLoader = false;
-            vm.loaderTitle = '';
-            vm.loginContainer.removeClass('low-screen');
-        };
+        vm.stopExistLoader = loaderService.stopExistLoader;
 
         var userKey = utilities.getData('userKey');
 
@@ -144,20 +135,7 @@
                                                 vm.loginContainer = angular.element('.exist-team-card');
 
                                                 // show loader
-                                                vm.startLoader = function(msg) {
-                                                    vm.isExistLoader = true;
-                                                    vm.loaderTitle = msg;
-                                                    vm.loginContainer.addClass('low-screen');
-                                                };
-
-                                                // stop loader
-                                                vm.stopLoader = function() {
-                                                    vm.isExistLoader = false;
-                                                    vm.loaderTitle = '';
-                                                    vm.loginContainer.removeClass('low-screen');
-                                                };
-
-                                                vm.startLoader("Loading Teams");
+                                                vm.startExistLoader("Loading Teams");
                                                 // loader end
 
                                                 var parameters = {};
@@ -171,7 +149,7 @@
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
-                                                        if (response.data['detail']){
+                                                        if (response.data['detail']) {
                                                             var error = "Please select a team first!";
                                                         } else if (response.data['error']) {
                                                             error = response.data['error'];
@@ -232,7 +210,7 @@
                                                         } else {
                                                             vm.isPrev = '';
                                                         }
-                                                        vm.stopLoader();
+                                                        vm.stopExistLoader();
                                                     });
                                                 }
                                             };
@@ -252,99 +230,9 @@
 
                             }
                             // This condition means that the user is eligible to make submissions
-                            else if (vm.isParticipated) {
-                                vm.makeSubmission = function() {
+                            // else if (vm.isParticipated) {
 
-                                    var fileVal = angular.element(".file-path").val();
-
-                                    if (fileVal === null || fileVal === "") {
-                                        vm.subErrors.msg = "Please upload file!";
-                                    } else {
-                                        vm.isExistLoader = true;
-                                        vm.loaderTitle = '';
-                                        vm.loginContainer = angular.element('.exist-team-card');
-
-                                        // show loader
-                                        vm.startLoader = function(msg) {
-                                            vm.isExistLoader = true;
-                                            vm.loaderTitle = msg;
-                                            vm.loginContainer.addClass('low-screen');
-                                        };
-
-                                        // stop loader
-                                        vm.stopLoader = function() {
-                                            vm.isExistLoader = false;
-                                            vm.loaderTitle = '';
-                                            vm.loginContainer.removeClass('low-screen');
-                                        };
-
-                                        vm.startLoader("Making Submission");
-                                        if (vm.input_file) {
-                                            // vm.upload(vm.input_file);
-                                        }
-                                        var parameters = {};
-                                        parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
-                                        parameters.method = 'POST';
-                                        var formData = new FormData();
-                                        formData.append("status", "submitting");
-                                        formData.append("input_file", vm.input_file);
-                                        formData.append("method_name", vm.methodName);
-                                        formData.append("method_description", vm.methodDesc);
-                                        formData.append("project_url", vm.projectUrl);
-                                        formData.append("publication_url", vm.publicationUrl);
-
-                                        parameters.data = formData;
-
-                                        parameters.token = userKey;
-                                        parameters.callback = {
-                                            onSuccess: function() {
-                                                // vm.input_file.name = '';
-
-                                                angular.forEach(
-                                                    angular.element("input[type='file']"),
-                                                    function(inputElem) {
-                                                        angular.element(inputElem).val(null);
-                                                    }
-                                                );
-
-                                                angular.element(".file-path").val(null);
-
-
-                                                vm.phaseId = null;
-                                                vm.methodName = null;
-                                                vm.methodDesc = null;
-                                                vm.projectUrl = null;
-                                                vm.publicationUrl = null;
-                                                // vm.subErrors.msg = "Your submission has been recorded succesfully!";
-                                                $rootScope.notify("success", "Your submission has been recorded succesfully!");
-
-                                                vm.stopLoader();
-                                            },
-                                            onError: function(response) {
-                                                var status = response.status;
-                                                var error = response.data;
-
-                                                vm.phaseId = null;
-                                                vm.methodName = null;
-                                                vm.methodDesc = null;
-                                                vm.projectUrl = null;
-                                                vm.publicationUrl = null;
-                                                if (status == 404) {
-
-                                                    vm.subErrors.msg = "Please select phase!";
-                                                } else if (status == 400) {
-                                                    vm.subErrors.msg = error.input_file[0];
-                                                } else {
-                                                    vm.subErrors.msg = error.error;
-                                                }
-                                                vm.stopLoader();
-                                            }
-                                        };
-
-                                        utilities.sendRequest(parameters, 'header', 'upload');
-                                    }
-                                };
-                            }
+                            // }
                             utilities.hideLoader();
                         },
                         onError: function() {
@@ -367,6 +255,103 @@
         };
 
         utilities.sendRequest(parameters);
+
+        vm.makeSubmission = function() {
+            if (vm.isParticipated) {
+
+
+                var fileVal = angular.element(".file-path").val();
+
+                if (fileVal === null || fileVal === "") {
+                    vm.subErrors.msg = "Please upload file!";
+                } else {
+                    vm.isExistLoader = true;
+                    vm.loaderTitle = '';
+                    vm.loginContainer = angular.element('.exist-team-card');
+
+                    // show loader
+                    vm.startLoader = function(msg) {
+                        vm.isExistLoader = true;
+                        vm.loaderTitle = msg;
+                        vm.loginContainer.addClass('low-screen');
+                    };
+
+                    // stop loader
+                    vm.stopLoader = function() {
+                        vm.isExistLoader = false;
+                        vm.loaderTitle = '';
+                        vm.loginContainer.removeClass('low-screen');
+                    };
+
+                    vm.startLoader("Making Submission");
+                    if (vm.input_file) {
+                        // vm.upload(vm.input_file);
+                    }
+                    var parameters = {};
+                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
+                    parameters.method = 'POST';
+                    var formData = new FormData();
+                    formData.append("status", "submitting");
+                    formData.append("input_file", vm.input_file);
+                    formData.append("method_name", vm.methodName);
+                    formData.append("method_description", vm.methodDesc);
+                    formData.append("project_url", vm.projectUrl);
+                    formData.append("publication_url", vm.publicationUrl);
+
+                    parameters.data = formData;
+
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function() {
+                            // vm.input_file.name = '';
+
+                            angular.forEach(
+                                angular.element("input[type='file']"),
+                                function(inputElem) {
+                                    angular.element(inputElem).val(null);
+                                }
+                            );
+
+                            angular.element(".file-path").val(null);
+
+
+                            vm.phaseId = null;
+                            vm.methodName = null;
+                            vm.methodDesc = null;
+                            vm.projectUrl = null;
+                            vm.publicationUrl = null;
+                            // vm.subErrors.msg = "Your submission has been recorded succesfully!";
+                            $rootScope.notify("success", "Your submission has been recorded succesfully!");
+
+                            vm.stopLoader();
+                        },
+                        onError: function(response) {
+                            var status = response.status;
+                            var error = response.data;
+
+                            vm.phaseId = null;
+                            vm.methodName = null;
+                            vm.methodDesc = null;
+                            vm.projectUrl = null;
+                            vm.publicationUrl = null;
+                            if (status == 404) {
+
+                                vm.subErrors.msg = "Please select phase!";
+                            } else if (status == 400) {
+                                vm.subErrors.msg = error.input_file[0];
+                            } else {
+                                vm.subErrors.msg = error.error;
+                            }
+                            vm.stopLoader();
+                        }
+                    };
+
+                    utilities.sendRequest(parameters, 'header', 'upload');
+                }
+            }
+        };
+
+
 
         // get details of the particular challenge phase
         parameters = {};

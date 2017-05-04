@@ -13,6 +13,7 @@
         var vm = this;
 
         vm.isRem = false;
+        vm.isAuth = false;
         vm.isMail = true;
         vm.userMail = '';
         // getUser for signup

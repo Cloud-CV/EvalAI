@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('FeaturedChallengeCtrl', FeaturedChallengeCtrl);
 
-    FeaturedChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams'];
+    FeaturedChallengeCtrl.$inject = ['utilities', 'loaderService','$scope', '$state', '$http', '$stateParams'];
 
-    function FeaturedChallengeCtrl(utilities, $scope, $state, $http, $stateParams) {
+    function FeaturedChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseSplitId = $stateParams.phaseSplitId;
@@ -30,19 +30,9 @@
         vm.loginContainer = angular.element('.exist-team-card');
 
         // show loader
-        vm.startExistLoader = function(msg) {
-            vm.isExistLoader = true;
-            vm.loaderTitle = msg;
-            vm.loginContainer.addClass('low-screen');
-        };
-
+        vm.startExistLoader = loaderService.startExistLoader;
         // stop loader
-        vm.stopExistLoader = function() {
-            vm.isExistLoader = false;
-            vm.loaderTitle = '';
-            vm.loginContainer.removeClass('low-screen');
-        };
-
+        vm.stopExistLoader = loaderService.stopExistLoader;
         vm.subErrors = {};
 
         utilities.showLoader();
@@ -126,21 +116,8 @@
             vm.loaderTitle = '';
             vm.loginContainer = angular.element('.exist-team-card');
 
-            // show loader
-            vm.startLoader = function(msg) {
-                vm.isExistLoader = true;
-                vm.loaderTitle = msg;
-                vm.loginContainer.addClass('low-screen');
-            };
 
-            // stop loader
-            vm.stopLoader = function() {
-                vm.isExistLoader = false;
-                vm.loaderTitle = '';
-                vm.loginContainer.removeClass('low-screen');
-            };
-
-            vm.startLoader("Loading Leaderboard Items");
+            vm.startExistLoader("Loading Leaderboard Items");
 
             // Show leaderboard
             vm.leaderboard = {};
@@ -158,7 +135,7 @@
                 onError: function(response) {
                     var error = response.data;
                     vm.leaderboard.error = error;
-                    vm.stopLoader();
+                    vm.stopExistLoader();
                 }
             };
 

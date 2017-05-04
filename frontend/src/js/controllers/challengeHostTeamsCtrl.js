@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeHostTeamsCtrl', ChallengeHostTeamsCtrl);
 
-    ChallengeHostTeamsCtrl.$inject = ['utilities', '$state', '$http', '$rootScope', '$mdDialog'];
+    ChallengeHostTeamsCtrl.$inject = ['utilities', 'loaderService', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function ChallengeHostTeamsCtrl(utilities, $state, $http, $rootScope, $mdDialog) {
+    function ChallengeHostTeamsCtrl(utilities, loaderService, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -30,20 +30,12 @@
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loginContainer = angular.element('.exist-team-card');
-
-        // show loader
-        vm.startExistLoader = function(msg) {
-            vm.isExistLoader = true;
-            vm.loaderTitle = msg;
-            vm.loginContainer.addClass('low-screen');
-        };
+         // show loader
+        vm.startExistLoader = loaderService.startExistLoader;
 
         // stop loader
-        vm.stopExistLoader = function() {
-            vm.isExistLoader = false;
-            vm.loaderTitle = '';
-            vm.loginContainer.removeClass('low-screen');
-        };
+        vm.stopExistLoader = loaderService.stopExistLoader;
+
 
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
@@ -97,21 +89,7 @@
                         vm.loaderTitle = '';
                         vm.loginContainer = angular.element('.exist-team-card');
 
-                        // show loader
-                        vm.startLoader = function(msg) {
-                            vm.isExistLoader = true;
-                            vm.loaderTitle = msg;
-                            vm.loginContainer.addClass('low-screen');
-                        };
-
-                        // stop loader
-                        vm.stopLoader = function() {
-                            vm.isExistLoader = false;
-                            vm.loaderTitle = '';
-                            vm.loginContainer.removeClass('low-screen');
-                        };
-
-                        vm.startLoader("Loading Teams");
+                        vm.startExistLoader("Loading Teams");
                         if (url !== null) {
 
                             //store the header data in a variable
@@ -139,10 +117,10 @@
                                 } else {
                                     vm.isPrev = '';
                                 }
-                                vm.stopLoader();
+                                vm.stopExistLoader();
                             });
                         } else {
-                            vm.stopLoader();
+                            vm.stopExistLoader();
                         }
                     };
 
