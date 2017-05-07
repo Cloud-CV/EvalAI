@@ -12,7 +12,7 @@
                 <li ng-hide="isAuth"><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="auth.login" ui-sref-active="active">Log In</a></li>
                 <!-- show after authenticate user -->
                 <li ng-show="isAuth">
-                    <a ng-click="header.profileDropdown($event)" class="dropdown-button waves-effect waves-dark main-header-link" data-activates='ev-dropdown' ui-sref-active="active">Hi <strong>{{header.user.name}}</strong> &nbsp; 
+                    <a ng-click="header.profileDropdown($event)" class="dropdown-button waves-effect waves-dark main-header-link" data-activates='ev-dropdown' ui-sref="web.profile" ui-sref-active="active">Hi <strong>{{header.user.name}}</strong> &nbsp; 
           <!-- <i class="fa fa-caret-down text-light-gray icon"></i> -->
           </a>
                 </li>
