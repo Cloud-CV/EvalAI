@@ -1,4 +1,5 @@
 import datetime
+import pytz
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -8,6 +9,7 @@ from rest_framework.decorators import (api_view,
 
 from django.db.models.expressions import RawSQL
 from django.db.models import FloatField
+from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
@@ -28,6 +30,7 @@ from participants.utils import (
 from .models import Submission
 from .sender import publish_submission_message
 from .serializers import SubmissionSerializer
+from .utils import get_challenge_object, get_challenge_phase_object, get_participant_team_object
 
 
 @throttle_classes([UserRateThrottle])
@@ -236,66 +239,59 @@ def leaderboard(request, challenge_phase_split_id):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def remaining_submission(request, challenge_phase_id, participant_team_id, challenge_id):
-    try:
-        Challenge.objects.get(pk=challenge_id)
-    except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge does not exist'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+def get_remaining_submissions(request, challenge_phase_pk, participant_team_pk, challenge_pk):
+    challenge = get_challenge_object(challenge_pk)
+    if challenge is not None:
+        return challenge
+
+    challenge_phase = get_challenge_phase_object(challenge_phase_pk)
+    if isinstance(challenge_phase, Response):
+        return challenge_phase
+
+    participant_team = get_participant_team_object(participant_team_pk)
+    if participant_team is not None:
+        return participant_team
+    
+    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge_pk)
 
     try:
-        ChallengePhase.objects.get(pk=challenge_phase_id)
-    except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'Challenge Phase does not exist'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        ParticipantTeam.objects.get(pk=participant_team_id)
-    except ParticipantTeam.DoesNotExist:
-        response_data = {'error': 'Participant team does not exist'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
-        request.user, challenge_id)
-
-    try:
-        ParticipantTeam.objects.get(pk=participant_team_id)
+        ParticipantTeam.objects.get(pk=participant_team_pk)
     except ParticipantTeam.DoesNotExist:
         response_data = {'error': 'You haven\'t participated in the challenge'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-    max_submission_per_day = ChallengePhase.objects.get(
-            pk=challenge_phase_id).max_submissions_per_day
+    max_submission_per_day = challenge_phase.max_submissions_per_day
 
-    max_submission = ChallengePhase.objects.get(
-            pk=challenge_phase_id).max_submissions
+    max_submission = challenge_phase.max_submissions
 
     submissions_done_today_count = Submission.objects.filter(
-        challenge_phase__challenge=challenge_id,
-        participant_team=participant_team_id,
-        challenge_phase=challenge_phase_id,
-        submitted_at__gte=datetime.date.today()).count()
+        challenge_phase__challenge=challenge_pk,
+        participant_team=participant_team_pk,
+        challenge_phase=challenge_phase_pk,
+        submitted_at__gte=timezone.now().date()).count()
 
-    failed_count = Submission.objects.filter(
-        challenge_phase=challenge_phase_id,
-        participant_team=participant_team_id,
-        challenge_phase__challenge=challenge_id,
+    failed_submissions_count = Submission.objects.filter(
+        challenge_phase=challenge_phase_pk,
+        participant_team=participant_team_pk,
+        challenge_phase__challenge=challenge_pk,
         status=Submission.FAILED,
-        submitted_at__gte=datetime.date.today()).count()
+        submitted_at__gte=timezone.now().date()).count()
 
-    if (submissions_done_today_count - failed_count) >= max_submission_per_day or max_submission_per_day == 0:
-        dtnow = datetime.datetime.now()
-        dttomorrow = dtnow + datetime.timedelta(days=1)
-        midnight = dttomorrow.replace(hour=0, minute=0, second=0)
-        remaining_time = midnight - dtnow
-        response_data = {'message': 'You have exhausted the submission limit for today',
-                         'remaining_time': remaining_time.total_seconds()
+    if (submissions_done_today_count - failed_submissions_count) >= max_submission_per_day or max_submission_per_day == 0:
+        date_time_now = timezone.now()
+        date_time_tomorrow = date_time_now.date() + datetime.timedelta(1)
+        utc = pytz.UTC
+        midnight = utc.localize(datetime.datetime.combine(date_time_tomorrow, datetime.time()))
+        remaining_time = midnight - date_time_now
+        response_data = {'message': 'You have exhausted today\'s submission limit',
+                         'remaining_time': remaining_time
                          }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
-        remaining_submission_per_day = max_submission_per_day - (submissions_done_today_count - failed_count)
-        remaining_submission = max_submission - (submissions_done_today_count - failed_count)
-        response_data = {'remaining_submission_per_day': remaining_submission_per_day,
-                         'remaining_submission': remaining_submission
+        remaining_submissions_today_count = max_submission_per_day - (submissions_done_today_count - failed_submissions_count)
+        remaining_submission_count = max_submission - (submissions_done_today_count - failed_submissions_count)
+        response_data = {'remaining_submissions_today_count': remaining_submissions_today_count,
+                         'remaining_submission': remaining_submission_count
                          }
         return Response(response_data, status=status.HTTP_200_OK)
