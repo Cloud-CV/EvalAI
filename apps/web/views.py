@@ -52,7 +52,7 @@ def contact_us(request):
 
     if request.method == 'POST':
         request_data = {"name": name, "email": email}
-        request_data['message'] = request.data['message']
+        request_data['message'] = request.POST.get('message')
         serializer = ContactSerializer(data=request_data)
         if serializer.is_valid():
             serializer.save()
