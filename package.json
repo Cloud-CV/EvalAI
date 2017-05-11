@@ -26,6 +26,7 @@
     "gulp-livereload": "^3.8.1",
     "gulp-notify": "^2.2.0",
     "gulp-prettyerror": "^1.1.1",
+    "gulp-purifycss": "^0.2.0",
     "gulp-rename": "^1.2.2",
     "gulp-ruby-sass": "^2.1.0",
     "gulp-uglify": "^2.0.0",
