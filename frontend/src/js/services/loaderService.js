@@ -1,7 +1,3 @@
-/**
- * Created by aayush on 5/13/17.
- */
-
 
      angular
          .module('evalai')
