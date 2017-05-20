@@ -1,11 +1,11 @@
-<div class="col s12 m4 offset-m4 left">
+<div class="col s12 m6 offset-m3 left">
     <ul class="left">
         <li class="ev-horiz-list"><a ui-sref="auth.login" class="dark-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Log In</a></li>
         <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Sign Up</a></li>
         <!-- <li class="ev-horiz-list"><a ui-sref="auth.reset-password" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Forgot Password</a></li> -->
     </ul>
 </div>
-<div class="col s12 m4 offset-m4">
+<div class="col s12 m6 offset-m3">
     <!-- login form -->
     <form name="loginForm" ng-submit="auth.userLogin(loginForm.$valid)" id="log-in" novalidate>
         <!-- username -->
@@ -44,7 +44,7 @@
         <div ng-if="auth.isFormError" class="wrn-msg text-highlight align-left"> {{auth.FormError}}</div>
         <div>
             <p class="text-light-gray">
-                <a class="highlight-link" ui-sref="auth.signup">Sign Up</a> with a new account
+                <span class="text-med-black">Start with a new account </span><a class="highlight-link" ui-sref="auth.signup" ng-click="auth.resetForm()"> Sign Up</a>
             </p>
         </div>
     </form>
