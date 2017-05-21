@@ -1,6 +1,6 @@
 <!-- define all main links here for navigation -->
-<div class="ev-sidebar ev-fixed z-depth-3 fixed" id="sidebarToggle">
-    <div class="side-intro ev-md-container fixed">
+<div class="ev-sidebar ev-fixed  fixed hide-on-med-and-down">
+    <!--    <div class="side-intro ev-md-container fixed">
         <scroll-shadow></scroll-shadow>
         <div class="w-400 side-logo"><a ui-sref="home" ui-sref-active="active">EvalAI</a></div>
         <div class="w-300 text-light-gray">Welcome {{web.name}}!</div>
@@ -47,53 +47,37 @@
                 </li>
             </ul>
         </div>
-    </div>
-</div>
-<!-- define all main links here for navigation -->
-<div class="ev-sidebar ev-fixed z-depth-3 fixed hide-on-med-and-down">
-    <div class="side-intro ev-md-container fixed">
-        <!-- <scroll-shadow></scroll-shadow> -->
-        <div class="w-400 side-logo"><a class="white-text" ui-sref="home" ui-sref-active="active">EvalAI</a></div>
-        <div class="w-300 text-light-gray">Welcome {{web.name}}!</div>
-    </div>
+    </div> -->
     <div class="links-section-outer">
-        <div class="links-section ">
-            <ul class="nav-links">
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.dashboard" ui-sref-active="side-active-link">
-                        <i class="fa fa-signal side-link-icon"></i> Dashboard</a>
-                </li>
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.challenge-main" ui-sref-active="side-active-link">
-                        <i class="fa fa-fire side-link-icon"></i> All Challenges</a>
-                </li>
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.teams" ui-sref-active="side-active-link">
-                        <i class="fa fa-users side-link-icon"></i> My Participant Teams</a>
-                </li>
-
-                <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.challenge-host-teams" ui-sref-active="side-active-link">
-                        <i class="fa fa-paper-plane side-link-icon"></i>My Host Teams</a>
-                </li>
-            </ul>
+        <div class="links-section">
             <ul>
-                <li class="text-highlight side-title w-500 ">My Details</li>
                 <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.profile" ui-sref-active="side-active-link">
-                        <i class="fa fa-user side-link-icon"></i> My Profile</a>
+                    <a class=" text-light-black" ui-sref="web.dashboard" ui-sref-active="side-active-link">
+                        <div>
+                            <i class="fa fa-signal side-link-icon"></i>
+                        </div>
+                        <div class="sidebar-title">Dashboard</div>
+                    </a>
                 </li>
                 <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.update-profile" ui-sref-active="side-active-link">
-                        <i class="fa fa-pencil side-link-icon"></i> Update Profile</a>
+                    <a class="text-light-black " ui-sref="web.challenge-main" ui-sref-active="side-active-link">
+                        <div>
+                            <i class="fa fa-fire side-link-icon"></i>
+                        </div>
+                        <div class="sidebar-title">All Challenges</div>
+                    </a>
                 </li>
                 <li>
-                    <a class="waves-effect waves-dark text-light-gray ev-md-container" ui-sref="web.change-password" ui-sref-active="side-active-link">
-                        <i class="fa fa-pencil side-link-icon"></i> Change Password</a>
+                    <a class="text-light-black" ui-sref="web.teams" ui-sref-active="side-active-link">
+                        <div><i class="fa fa-users side-link-icon"></i></div>
+                        <div class="sidebar-title">Participant Teams</div>
+                    </a>
                 </li>
                 <li>
-                    <a class="waves-effect waves-dark pointer text-light-gray ev-md-container" ng-click="logout()" ui-sref-active="side-active-link">
-                        <i class="fa fa-sign-out side-link-icon"></i> Logout</a>
+                    <a class="text-light-black" ui-sref="web.challenge-host-teams" ui-sref-active="side-active-link">
+                        <div><i class="fa fa-paper-plane side-link-icon"></i></div>
+                        <div class="sidebar-title">Host Teams</div>
+                    </a>
                 </li>
             </ul>
         </div>

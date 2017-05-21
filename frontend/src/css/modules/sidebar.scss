@@ -1,12 +1,13 @@
 .ev-sidebar {
     display: block;
-    height: 100vh;
+    height: calc(100vh - 120px);
     width: 220px;
-    
-    background: $dark-gray;
+    border-right: 1px solid #dcdcdc;
+    background-color: rgba(0, 0, 0, 0);
     color: #fff;
     z-index: 10;
-    top: 0px;
+    top: 98px;
+    text-align: center;
 }
 
 .side-logo {
@@ -19,7 +20,7 @@
 
 .links-section-outer {
     overflow: auto;
-    height: calc(100% - 100px);
+    height: 100%;
 }
 
 .links-section {
@@ -28,32 +29,36 @@
     }
     li {
         a {
-            padding: 15px 40px 15px 30px;
+            padding: 20px 30px 20px 30px;
             word-wrap: break-word;
             position: relative;
             display: block;
             width: 100%;
             height: 100%;
             font-size: 14px;
+            transition: all 0.2s ease-in-out;
+            border-right: 1px solid transparent;
         }
         a:hover {
-            color: #fff;
+            color: $highlight;
+        }
+        a.side-active-link {
+            /*background-color: $dust-gray;*/
+            color: $med-black;
+            border-right: 1px solid $highlight;
         }
     }
 }
 
-.side-active-link {
-    background-color: $dust-gray;
-    color: #fff;
-}
-
 .side-link-icon {
-    position: absolute;
-    right: 20px;
-    margin-top: 2px;
+    font-size: 30px;
 }
 
 .side-title {
     padding: 20px 20px 10px 30px;
     font-size: 12px;
+}
+
+.sidebar-title {
+    font-size: 14px;
 }

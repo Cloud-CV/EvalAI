@@ -167,6 +167,7 @@
                                                 parameters.callback = {
                                                     onSuccess: function() {
                                                         vm.isParticipated = true;
+
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.stopLoader();
                                                     },
