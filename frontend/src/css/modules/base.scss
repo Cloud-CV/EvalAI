@@ -449,12 +449,15 @@ a.white-link:hover {
     color: $link-hover-dark;
 }
 
-a.light-link {
-    color: $med-link;
+a.highlight-link {
+    color: $highlight;
 }
 
-a.light-link:hover {
-    color: $light-link;
+a.light-link {
+    color: $med-link;
+    &:hover {
+        color: $highlight;
+    }
 }
 
 a.med-link {
@@ -628,13 +631,9 @@ input[type="checkbox"].filled-in:not(:checked) + label:after {
     color: #000;
 }
 
-input[type=password],
-input[type=email] {
-    border-bottom: 1px solid $light-gray;
-}
-
 input {
     font-weight: 300;
+    border-bottom: 1px solid $light-gray;
 }
 
 .input-field input[type=email]:focus + .form-icon,
