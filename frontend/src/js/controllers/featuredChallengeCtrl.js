@@ -27,12 +27,12 @@
         // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
-        vm.loginContainer = angular.element('.exist-team-card');
+        vm.loaderContainer = angular.element('.exist-team-card');
 
         // show loader
-        vm.startExistLoader = loaderService.startExistLoader;
+        vm.startLoader = loaderService.startLoader;
         // stop loader
-        vm.stopExistLoader = loaderService.stopExistLoader;
+        vm.stopLoader = loaderService.stopLoader;
         vm.subErrors = {};
 
         utilities.showLoader();
@@ -114,10 +114,10 @@
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
-            vm.loginContainer = angular.element('.exist-team-card');
+            vm.loaderContainer = angular.element('.exist-team-card');
 
 
-            vm.startExistLoader("Loading Leaderboard Items");
+            vm.startLoader("Loading Leaderboard Items");
 
             // Show leaderboard
             vm.leaderboard = {};
@@ -125,7 +125,7 @@
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/";
             parameters.method = 'GET';
             parameters.data = {};
-                parameters.callback = {
+            parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
@@ -135,7 +135,7 @@
                 onError: function(response) {
                     var error = response.data;
                     vm.leaderboard.error = error;
-                    vm.stopExistLoader();
+                    vm.stopLoader();
                 }
             };
 

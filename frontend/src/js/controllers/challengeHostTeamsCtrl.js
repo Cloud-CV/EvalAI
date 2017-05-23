@@ -29,12 +29,12 @@
         // loader for existng teams// loader for exisiting teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
-        vm.loginContainer = angular.element('.exist-team-card');
+        vm.loaderContainer = angular.element('.exist-team-card');
          // show loader
-        vm.startExistLoader = loaderService.startExistLoader;
+        vm.startLoader = loaderService.startLoader;
 
         // stop loader
-        vm.stopExistLoader = loaderService.stopExistLoader;
+        vm.stopLoader = loaderService.stopLoader;
 
 
         vm.activateCollapsible = function() {
@@ -87,9 +87,9 @@
                         // loader for exisiting teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
-                        vm.loginContainer = angular.element('.exist-team-card');
+                        vm.loaderContainer = angular.element('.exist-team-card');
 
-                        vm.startExistLoader("Loading Teams");
+                        vm.startLoader("Loading Teams");
                         if (url !== null) {
 
                             //store the header data in a variable
@@ -117,10 +117,10 @@
                                 } else {
                                     vm.isPrev = '';
                                 }
-                                vm.stopExistLoader();
+                                vm.stopLoader();
                             });
                         } else {
-                            vm.stopExistLoader();
+                            vm.stopLoader();
                         }
                     };
 
@@ -175,7 +175,7 @@
                     vm.team.name = '';
                     vm.stopLoader();
 
-                    vm.startExistLoader("Loading Teams");
+                    vm.startLoader("Loading Teams");
                     var parameters = {};
                     parameters.url = 'hosts/challenge_host_team/';
                     parameters.method = 'GET';
@@ -206,11 +206,11 @@
                                 }
 
 
-                                vm.stopExistLoader();
+                                vm.stopLoader();
                             }
                         },
                         onError: function() {
-                            vm.stopExistLoader();
+                            vm.stopLoader();
                         }
                     };
                     utilities.sendRequest(parameters);
@@ -240,7 +240,7 @@
                 .cancel("No");
 
             $mdDialog.show(confirm).then(function() {
-                vm.startExistLoader();
+                vm.startLoader();
                 var parameters = {};
                 parameters.url = 'hosts/remove_self_from_challenge_host/' + hostTeamId;
                 parameters.method = 'DELETE';
@@ -289,13 +289,13 @@
                                     }
                                 }
 
-                                vm.stopExistLoader();
+                                vm.stopLoader();
                             }
                         };
                         utilities.sendRequest(parameters);
                     },
                     onError: function() {
-                        vm.stopExistLoader();
+                        vm.stopLoader();
                         $rootScope.notify("error", "Couldn't remove you from the challenge");
                     }
                 };

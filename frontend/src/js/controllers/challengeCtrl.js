@@ -35,12 +35,12 @@
         // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
-        vm.loginContainer = angular.element('.exist-team-card');
+        vm.loaderContainer = angular.element('.exist-team-card');
 
         // show loader
-        vm.startExistLoader =  loaderService.startExistLoader;
+        vm.startLoader =  loaderService.startLoader;
         // stop loader
-        vm.stopExistLoader = loaderService.stopExistLoader;
+        vm.stopLoader = loaderService.stopLoader;
 
         var userKey = utilities.getData('userKey');
 
@@ -132,10 +132,10 @@
                                                 // loader for exisiting teams
                                                 vm.isExistLoader = true;
                                                 vm.loaderTitle = '';
-                                                vm.loginContainer = angular.element('.exist-team-card');
+                                                vm.loaderContainer = angular.element('.exist-team-card');
 
                                                 // show loader
-                                                vm.startExistLoader("Loading Teams");
+                                                vm.startLoader("Loading Teams");
                                                 // loader end
 
                                                 var parameters = {};
@@ -166,21 +166,8 @@
                                                 // loader for exisiting teams
                                                 vm.isExistLoader = true;
                                                 vm.loaderTitle = '';
-                                                vm.loginContainer = angular.element('.exist-team-card');
+                                                vm.loaderContainer = angular.element('.exist-team-card');
 
-                                                // show loader
-                                                vm.startLoader = function(msg) {
-                                                    vm.isExistLoader = true;
-                                                    vm.loaderTitle = msg;
-                                                    vm.loginContainer.addClass('low-screen');
-                                                };
-
-                                                // stop loader
-                                                vm.stopLoader = function() {
-                                                    vm.isExistLoader = false;
-                                                    vm.loaderTitle = '';
-                                                    vm.loginContainer.removeClass('low-screen');
-                                                };
 
                                                 vm.startLoader("Loading Teams");
                                                 if (url !== null) {
@@ -210,7 +197,7 @@
                                                         } else {
                                                             vm.isPrev = '';
                                                         }
-                                                        vm.stopExistLoader();
+                                                        vm.stopLoader();
                                                     });
                                                 }
                                             };
@@ -267,21 +254,8 @@
                 } else {
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
-                    vm.loginContainer = angular.element('.exist-team-card');
+                    vm.loaderContainer = angular.element('.exist-team-card');
 
-                    // show loader
-                    vm.startLoader = function(msg) {
-                        vm.isExistLoader = true;
-                        vm.loaderTitle = msg;
-                        vm.loginContainer.addClass('low-screen');
-                    };
-
-                    // stop loader
-                    vm.stopLoader = function() {
-                        vm.isExistLoader = false;
-                        vm.loaderTitle = '';
-                        vm.loginContainer.removeClass('low-screen');
-                    };
 
                     vm.startLoader("Making Submission");
                     if (vm.input_file) {
@@ -413,21 +387,7 @@
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
-            vm.loginContainer = angular.element('.exist-team-card');
-
-            // show loader
-            vm.startLoader = function(msg) {
-                vm.isExistLoader = true;
-                vm.loaderTitle = msg;
-                vm.loginContainer.addClass('low-screen');
-            };
-
-            // stop loader
-            vm.stopLoader = function() {
-                vm.isExistLoader = false;
-                vm.loaderTitle = '';
-                vm.loginContainer.removeClass('low-screen');
-            };
+            vm.loaderContainer = angular.element('.exist-team-card');
 
             vm.startLoader("Loading Leaderboard Items");
 
@@ -503,21 +463,7 @@
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
-            vm.loginContainer = angular.element('.exist-team-card');
-
-            // show loader
-            vm.startLoader = function(msg) {
-                vm.isExistLoader = true;
-                vm.loaderTitle = msg;
-                vm.loginContainer.addClass('low-screen');
-            };
-
-            // stop loader
-            vm.stopLoader = function() {
-                vm.isExistLoader = false;
-                vm.loaderTitle = '';
-                vm.loginContainer.removeClass('low-screen');
-            };
+            vm.loaderContainer = angular.element('.exist-team-card');
 
             vm.startLoader("Loading Submissions");
 
@@ -573,21 +519,7 @@
                         // loader for exisiting teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
-                        vm.loginContainer = angular.element('.exist-team-card');
-
-                        // show loader
-                        vm.startLoader = function(msg) {
-                            vm.isExistLoader = true;
-                            vm.loaderTitle = msg;
-                            vm.loginContainer.addClass('low-screen');
-                        };
-
-                        // stop loader
-                        vm.stopLoader = function() {
-                            vm.isExistLoader = false;
-                            vm.loaderTitle = '';
-                            vm.loginContainer.removeClass('low-screen');
-                        };
+                        vm.loaderContainer = angular.element('.exist-team-card');
 
                         vm.startLoader("Loading Submissions");
                         if (url !== null) {
@@ -777,20 +709,6 @@
             vm.loaderTitle = '';
             vm.newContainer = angular.element('.new-team-card');
 
-            // show loader
-            vm.startLoader = function(msg) {
-                vm.isLoader = true;
-                vm.loaderTitle = msg;
-                vm.newContainer.addClass('low-screen');
-            };
-
-            // stop loader
-            vm.stopLoader = function() {
-                vm.isLoader = false;
-                vm.loaderTitle = '';
-                vm.newContainer.removeClass('low-screen');
-            };
-
             vm.startLoader("Loading Teams");
 
             var parameters = {};
@@ -807,7 +725,7 @@
                     vm.stopLoader();
                     vm.team.name = '';
 
-                    vm.startExistLoader("Loading Teams");
+                    vm.startLoader("Loading Teams");
                     var parameters = {};
                     parameters.url = 'participants/participant_team';
                     parameters.method = 'GET';
@@ -838,11 +756,11 @@
                                 }
 
 
-                                vm.stopExistLoader();
+                                vm.stopLoader();
                             }
                         },
                         onError: function() {
-                            vm.stopExistLoader();
+                            vm.stopLoader();
                         }
                     };
                     utilities.sendRequest(parameters);

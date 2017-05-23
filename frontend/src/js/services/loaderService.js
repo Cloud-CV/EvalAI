@@ -6,17 +6,17 @@
          function loaderService() {
 
              //start loader
-             this.startExistLoader = function(msg) {
+             this.startLoader = function(msg) {
                  this.isExistLoader = true;
                  this.loaderTitle = msg;
-                 this.loginContainer.addClass('low-screen');
+                 this.loaderContainer.addClass('low-screen');
              };
 
              // stop loader
-             this.stopExistLoader = function() {
+             this.stopLoader = function() {
                  this.isExistLoader = false;
                  this.loaderTitle = '';
-                 this.loginContainer.removeClass('low-screen');
+                 this.loaderContainer.removeClass('low-screen');
              };
 
              return this;
