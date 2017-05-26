@@ -2,8 +2,8 @@
     display: block;
     height: calc(100vh - 120px);
     width: 220px;
-    border-right: 1px solid #dcdcdc;
-    background-color: rgba(0, 0, 0, 0);
+    border-right: 1px solid $grad-light-black;
+    background-color: $transparent;
     color: #fff;
     z-index: 10;
     top: 98px;
@@ -38,14 +38,14 @@
             font-size: 14px;
             transition: all 0.2s ease-in-out;
             border-right: 1px solid transparent;
-        }
-        a:hover {
-            color: $highlight;
-        }
-        a.side-active-link {
-            /*background-color: $dust-gray;*/
-            color: $med-black;
-            border-right: 1px solid $highlight;
+            &:hover {
+                color: $highlight;
+            }
+            &.side-active-link {
+                /*background-color: $dust-gray;*/
+                color: $med-black;
+                border-right: 1px solid $highlight;
+            }
         }
     }
 }
