@@ -13,6 +13,7 @@
         var vm = this;
 
         vm.isRem = false;
+        vm.isAuth = false;
         vm.isMail = true;
         vm.userMail = '';
         // getUser for signup
@@ -59,7 +60,7 @@
 
             //switch off form errors
             vm.isFormError = false;
-            
+
             //reset form when link sent for reset password
             vm.isMail = true;
         };
@@ -256,7 +257,7 @@
                             } else if (password2_valid) {
                                 vm.FormError = Object.values(response.data.new_password2).join(" ");
                             }
-                        } catch (error) { 
+                        } catch (error) {
                             vm.FormError = "Something went wrong! Please refresh the page and try again.";
                         }
                         vm.stopLoader();

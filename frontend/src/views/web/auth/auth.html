@@ -1,0 +1,38 @@
+<!-- loader init -->
+<eval-loader></eval-loader>
+<!--auth parent view -->
+<section class="auth-container ">
+    <!-- graphic animated view -->
+    <div class="graphic-cont">
+        <img class="star-img star1" src="dist/images/star1.png">
+        <img class="star-img star2" src="dist/images/star2.png">
+        <div class="moon">
+            <img src="dist/images/moon.png">
+        </div>
+        <div class="sun">
+            <img src="dist/images/sun.png">
+        </div>
+        <div class="auth-cloud-cont">
+            <img src="dist/images/auth-cloud.png">
+        </div>
+        <div class="ufo">
+            <img src="dist/images/spaceman.png">
+        </div>
+    </div>
+    <!-- rendering auth children here -->
+    <div class="auth-cont">
+        <div class="row">
+            <div class="col s12 m4 offset-m4">
+                <div class="left">
+                    <h5><strong><a ui-sref="home" class="dark-link">EvalAI</a></strong></h5>
+                    <p class="text-med-gray auth-home">Evaluating state of the art in AI!</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="reg-alert col s12 m4 offset-m4 align-left text-highlight w-300">{{auth.regMsg}}</div>
+            <div class="ui-view"></div>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+</section>

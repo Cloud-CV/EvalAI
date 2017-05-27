@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('TeamsCtrl', TeamsCtrl);
 
-    TeamsCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$rootScope', '$mdDialog'];
+    TeamsCtrl.$inject = ['utilities','loaderService', '$scope', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function TeamsCtrl(utilities, $scope, $state, $http, $rootScope, $mdDialog) {
+    function TeamsCtrl(utilities,loaderService, $scope, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -30,21 +30,11 @@
         // loader for existng teams// loader for exisiting teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
-        vm.loginContainer = angular.element('.exist-team-card');
+        vm.loaderContainer = angular.element('.exist-team-card');
 
         // show loader
-        vm.startExistLoader = function(msg) {
-            vm.isExistLoader = true;
-            vm.loaderTitle = msg;
-            vm.loginContainer.addClass('low-screen');
-        };
-
-        // stop loader
-        vm.stopExistLoader = function() {
-            vm.isExistLoader = false;
-            vm.loaderTitle = '';
-            vm.loginContainer.removeClass('low-screen');
-        };
+        vm.startLoader = loaderService.startLoader;
+        vm.stopLoader = loaderService.stopLoader;
 
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
@@ -97,21 +87,8 @@
                         // loader for exisiting teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
-                        vm.loginContainer = angular.element('.exist-team-card');
+                        vm.loaderContainer = angular.element('.exist-team-card');
 
-                        // show loader
-                        vm.startLoader = function(msg) {
-                            vm.isExistLoader = true;
-                            vm.loaderTitle = msg;
-                            vm.loginContainer.addClass('low-screen');
-                        };
-
-                        // stop loader
-                        vm.stopLoader = function() {
-                            vm.isExistLoader = false;
-                            vm.loaderTitle = '';
-                            vm.loginContainer.removeClass('low-screen');
-                        };
 
                         vm.startLoader("Loading Teams");
                         // loader end
@@ -138,21 +115,8 @@
                         // loader for exisiting teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
-                        vm.loginContainer = angular.element('.exist-team-card');
+                        vm.loaderContainer = angular.element('.exist-team-card');
 
-                        // show loader
-                        vm.startLoader = function(msg) {
-                            vm.isExistLoader = true;
-                            vm.loaderTitle = msg;
-                            vm.loginContainer.addClass('low-screen');
-                        };
-
-                        // stop loader
-                        vm.stopLoader = function() {
-                            vm.isExistLoader = false;
-                            vm.loaderTitle = '';
-                            vm.loginContainer.removeClass('low-screen');
-                        };
 
                         vm.startLoader("Loading Teams");
                         if (url !== null) {
@@ -204,23 +168,11 @@
 
         // function to create new team
         vm.createNewTeam = function() {
-            vm.isLoader = true;
+            vm.isExistLoader = true;
             vm.loaderTitle = '';
-            vm.newContainer = angular.element('.new-team-card');
+            vm.loaderContainer = angular.element('.new-team-card');
 
             // show loader
-            vm.startLoader = function(msg) {
-                vm.isLoader = true;
-                vm.loaderTitle = msg;
-                vm.newContainer.addClass('low-screen');
-            };
-
-            // stop loader
-            vm.stopLoader = function() {
-                vm.isLoader = false;
-                vm.loaderTitle = '';
-                vm.newContainer.removeClass('low-screen');
-            };
 
             vm.startLoader("Loading Teams");
 
@@ -238,7 +190,7 @@
                     vm.stopLoader();
                     vm.team.name = '';
 
-                    vm.startExistLoader("Loading Teams");
+                    vm.startLoader("Loading Teams");
                     var parameters = {};
                     parameters.url = 'participants/participant_team';
                     parameters.method = 'GET';
@@ -269,11 +221,11 @@
                                 }
 
 
-                                vm.stopExistLoader();
+                                vm.stopLoader();
                             }
                         },
                         onError: function() {
-                            vm.stopExistLoader();
+                            vm.stopLoader();
                         }
                     };
                     utilities.sendRequest(parameters);
@@ -303,7 +255,7 @@
                 .cancel("No");
 
             $mdDialog.show(confirm).then(function() {
-                vm.startExistLoader();
+                vm.startLoader();
                 var parameters = {};
                 parameters.url = 'participants/remove_self_from_participant_team/' + participantTeamId;
                 parameters.method = 'DELETE';
@@ -353,14 +305,14 @@
                                     }
                                 }
 
-                                vm.stopExistLoader();
+                                vm.stopLoader();
                             }
                         };
                         utilities.sendRequest(parameters);
                     },
                     onError: function(response) {
                         var error = response.data['error'];
-                        vm.stopExistLoader();
+                        vm.stopLoader();
                         $rootScope.notify("error", error);
                     }
                 };

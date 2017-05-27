@@ -134,7 +134,7 @@ class Leaderboard(TimeStampedModel):
     schema = JSONField()
 
     def __unicode__(self):
-        return "%s" % (self.id)
+        return '{}'.format(self.id)
 
     class Meta:
         app_label = 'challenges'
@@ -163,7 +163,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     )
 
     def __unicode__(self):
-        return "%s : %s" % (self.challenge_phase.name, self.dataset_split.name)
+        return '{0} : {1}'.format(self.challenge_phase.name, self.dataset_split.name)
 
     class Meta:
         app_label = 'challenges'
@@ -178,7 +178,7 @@ class LeaderboardData(TimeStampedModel):
     result = JSONField()
 
     def __unicode__(self):
-        return "%s : %s" % (self.challenge_phase_split, self.submission)
+        return '{0} : {1}'.format(self.challenge_phase_split, self.submission)
 
     class Meta:
         app_label = 'challenges'
