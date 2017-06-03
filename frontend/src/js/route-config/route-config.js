@@ -33,7 +33,7 @@
         var auth = {
             name: "auth",
             url: "/auth",
-            templateUrl: baseUrl + "/web/auth.html",
+            templateUrl: baseUrl + "/web/auth/auth.html",
             controller: 'AuthCtrl',
             controllerAs: 'auth',
             abstract: true,
@@ -45,7 +45,7 @@
             name: "auth.login",
             parent: "auth",
             url: "/login",
-            templateUrl: baseUrl + "/web/login.html",
+            templateUrl: baseUrl + "/web/auth/login.html",
             authenticate: false,
             title: 'Login'
         };
@@ -54,7 +54,7 @@
             name: "auth.signup",
             parent: "auth",
             url: "/signup",
-            templateUrl: baseUrl + "/web/signup.html",
+            templateUrl: baseUrl + "/web/auth/signup.html",
             authenticate: false,
             title: 'SignUp'
         };
@@ -63,7 +63,7 @@
             name: "auth.verify-email",
             parent: "auth",
             url: "/api/auth/registration/account-confirm-email/:email_conf_key",
-            templateUrl: baseUrl + "/web/verify-email.html",
+            templateUrl: baseUrl + "/web/auth/verify-email.html",
             title: "Email Verify",
             authenticate: false
         };
@@ -72,7 +72,7 @@
             name: "auth.reset-password",
             parent: "auth",
             url: "/reset-password",
-            templateUrl: baseUrl + "/web/reset-password.html",
+            templateUrl: baseUrl + "/web/auth/reset-password.html",
             title: "Reset Password",
             authenticate: false
         };
@@ -81,7 +81,7 @@
             name: "auth.reset-password-confirm",
             parent: "auth",
             url: "/api/password/reset/confirm/:user_id/:reset_token",
-            templateUrl: baseUrl + "/web/reset-password-confirm.html",
+            templateUrl: baseUrl + "/web/auth/reset-password-confirm.html",
             title: "Reset Password Confirm",
             authenticate: false
         };
@@ -220,7 +220,7 @@
             name: "web.challenge-main.challenge-page.submission",
             url: "/submission",
             templateUrl: baseUrl + "/web/challenge/submission.html",
-            title: 'Submission',
+            title: 'Submit',
             authenticate: true
         };
 
@@ -228,7 +228,7 @@
             name: "web.challenge-main.challenge-page.my-submission",
             url: "/my-submission",
             templateUrl: baseUrl + "/web/challenge/my-submission.html",
-            title: 'My Submission',
+            title: 'My Submissions',
             authenticate: true
         };
 
@@ -296,11 +296,11 @@
             title: "Error 500",
         };
 
-        var terms_and_conditions = {
-            name: "terms_and_conditions",
-            url: "/legals",
-            templateUrl: baseUrl + "/web/terms-and-conditions.html",
-            title: "Terms and Conditions"
+        var privacy_policy = {
+            name: "privacy_policy",
+            url: "/privacy-policy",
+            templateUrl: baseUrl + "/web/privacy-policy.html",
+            title: "Privacy Policy"
         };
 
         var about_us = {
@@ -315,14 +315,15 @@
             url: "/team",
             templateUrl: baseUrl + "/web/our-team.html",
             controller: 'ourTeamCtrl',
-            controllerAs: 'ourTeam'
+            controllerAs: 'ourTeam',
+            title: "Team"
         };
 
-        var join_our_team = {
-            name: 'join-our-team',
-            url: "/join-us",
-            templateUrl: baseUrl + "/web/join-our-team.html",
-            title: "Join Our Team"
+        var get_involved = {
+            name: 'get-involved',
+            url: "/get-involved",
+            templateUrl: baseUrl + "/web/get-involved.html",
+            title: "Get Involved"
         };
 
         var update_profile = {
@@ -344,9 +345,63 @@
         };
 
 
+        var featured_challenge_page = {
+            name: "featured-challenge-page",
+            url: "/featured-challenges/:challengeId",
+            templateUrl: baseUrl + "/web/featured-challenge/challenge-page.html",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            redirectTo: "featured-challenge-page.overview"
+        };
+
+        var featured_challenge_overview = {
+            name: "featured-challenge-page.overview",
+            parent: "featured-challenge-page",
+            url: "/overview",
+            templateUrl: baseUrl + "/web/featured-challenge/overview.html",
+            title: 'Overview'
+        };
+
+        var featured_challenge_evaluation = {
+            name: "featured-challenge-page.evaluation",
+            url: "/evaluation",
+            templateUrl: baseUrl + "/web/featured-challenge/evaluation.html",
+            title: 'Evaluation'
+        };
+
+        var featured_challenge_phases = {
+            name: "featured-challenge-page.phases",
+            url: "/phases",
+            templateUrl: baseUrl + "/web/featured-challenge/phases.html",
+            title: 'Phases'
+        };
+
+        var featured_challenge_participate = {
+            name: "featured-challenge-page.participate",
+            url: "/participate",
+            templateUrl: baseUrl + "/web/featured-challenge/participate.html",
+            title: 'Participate'
+        };
+
+        var featured_challenge_leaderboard = {
+            name: "featured-challenge-page.leaderboard",
+            url: "/leaderboard",
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard'
+        };
+
+        var featured_challenge_phase_leaderboard = {
+            name: "featured-challenge-page.phase-leaderboard",
+            url: "/leaderboard/:phaseSplitId",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard'
+        };
+
         // call all states here
         $stateProvider.state(home);
-        $stateProvider.state(terms_and_conditions);
+        $stateProvider.state(privacy_policy);
 
         // auth configs
         $stateProvider.state(auth);
@@ -382,6 +437,15 @@
         $stateProvider.state(my_submission);
         $stateProvider.state(leaderboard);
 
+        // featured challenge details
+        $stateProvider.state(featured_challenge_page);
+        $stateProvider.state(featured_challenge_overview);
+        $stateProvider.state(featured_challenge_evaluation);
+        $stateProvider.state(featured_challenge_phases);
+        $stateProvider.state(featured_challenge_participate);
+        $stateProvider.state(featured_challenge_leaderboard);
+        $stateProvider.state(featured_challenge_phase_leaderboard);
+
         $stateProvider.state(host_challenge);
 
         $stateProvider.state(profile);
@@ -391,7 +455,7 @@
         $stateProvider.state(error_500);
         $stateProvider.state(about_us);
         $stateProvider.state(our_team);
-        $stateProvider.state(join_our_team);
+        $stateProvider.state(get_involved);
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
 

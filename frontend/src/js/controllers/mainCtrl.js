@@ -83,7 +83,7 @@
 
             var alert = $mdDialog.alert()
                 .title('Host a challenge')
-                .textContent('Thanks for your interest in hosting a Challenge on EvalAI. We will release this feature soon!')
+                .htmlContent('Please send an email to <a href="mailto:admin@cloudcv.org" class="blue-text">admin@cloudcv.org</a> with the details of the challenge and we will get back soon.')
                 .ok('Close');
 
             $mdDialog.show(alert);

@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge
-from hosts.models import ChallengeHostTeam
+from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import ParticipantTeam, Participant
 
 
@@ -261,7 +261,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
 
     def test_invite_participant_to_team_with_all_data(self):
         expected = {
-            'message': 'User has been added successfully to the team'
+            'message': 'User has been successfully added to the team!'
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -270,7 +270,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
     def test_invite_participant_to_team_with_no_data(self):
         del self.data['email']
         response = self.client.post(self.url, self.data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_invite_self_to_team(self):
         self.data = {
@@ -290,13 +290,11 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
             'email': 'userwhichdoesnotexist@platform.com'
         }
         expected = {
-            'email': [
-                'User does not exist'
-            ]
+            'error': 'User does not exist with this email address!'
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_particular_participant_team_for_invite_does_not_exist(self):
         self.url = reverse_lazy('participants:invite_participant_to_team',
@@ -305,6 +303,89 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
             'error': 'ParticipantTeam does not exist'
         }
         response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_invite_participant_to_team_when_user_cannot_be_invited(self):
+        '''
+        NOTE
+        user: host user
+        user1: participant 1
+        user2: participant 2
+        '''
+        self.user2 = User.objects.create(
+            username='user2',
+            email='user2@platform.com',
+            password='user2_password')
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email='user2@platform.com',
+            primary=True,
+            verified=True)
+
+        self.user3 = User.objects.create(
+            username='user3',
+            email='user3@platform.com',
+            password='user3_password')
+
+        EmailAddress.objects.create(
+            user=self.user3,
+            email='user3@platform.com',
+            primary=True,
+            verified=True)
+
+        self.participant_team2 = ParticipantTeam.objects.create(
+            team_name='Participant Team created by user 2',
+            created_by=self.user2)
+
+        self.participant_team3 = ParticipantTeam.objects.create(
+            team_name='Participant Team created by user 3',
+            created_by=self.user3)
+
+        self.participant2 = Participant.objects.create(
+            user=self.user2,
+            status=Participant.ACCEPTED,
+            team=self.participant_team2)
+
+        self.participant3 = Participant.objects.create(
+            user=self.user3,
+            status=Participant.ACCEPTED,
+            team=self.participant_team3)
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name='Test Challenge Host Team',
+            created_by=self.user)
+
+        self.challenge = Challenge.objects.create(
+            title='Test Challenge',
+            short_description='Short description for test challenge',
+            description='Description for test challenge',
+            terms_and_conditions='Terms and conditions for test challenge',
+            submission_guidelines='Submission guidelines for test challenge',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.client.force_authenticate(user=self.user2)
+
+        self.challenge.participant_teams.add(self.participant_team2)
+        self.challenge.participant_teams.add(self.participant_team3)
+
+        self.data = {
+            'email': self.user3.email
+        }
+        self.url = reverse_lazy('participants:invite_participant_to_team',
+                                kwargs={'pk': self.participant_team2.pk})
+
+        expected = {
+            'error': 'Sorry, cannot invite user to the team!'
+        }
+        response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -569,6 +650,35 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
             status=Participant.SELF,
             team=self.participant_team)
 
+        # user who create a challenge host team
+        self.user2 = User.objects.create(
+            username='someuser2',
+            password='some_secret_password')
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name='Some Test Challenge Host Team',
+            created_by=self.user2)
+
+        self.challenge_host2 = ChallengeHost.objects.create(
+            user=self.user2,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
+        self.challenge = Challenge.objects.create(
+            title='Some Test Challenge',
+            short_description='Short description for some test challenge',
+            description='Description for some test challenge',
+            terms_and_conditions='Terms and conditions for some test challenge',
+            submission_guidelines='Submission guidelines for some test challenge',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
         self.url = reverse_lazy('participants:remove_self_from_participant_team',
                                 kwargs={'participant_team_pk': self.participant_team.pk
                                         })
@@ -579,7 +689,7 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
                                         })
 
         expected = {
-            'error': 'ParticipantTeam does not exist'
+            'error': 'ParticipantTeam does not exist!'
         }
 
         response = self.client.delete(self.url, {})
@@ -592,3 +702,14 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
                                         })
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_when_participant_team_has_taken_part_in_challenges(self):
+        self.challenge.participant_teams.add(self.participant_team)
+
+        expected = {
+            'error': 'Sorry, you cannot delete this team since it has taken part in challenge(s)!'
+        }
+
+        response = self.client.delete(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

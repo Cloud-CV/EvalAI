@@ -1,15 +1,14 @@
 <div class="dyn-header padding-lr-header">
   <nav>
     <div class="nav-wrapper">
-
-      <a class="light-link org-link" href="http://www.cloudcv.org/"><img src="dist/images/logo.png" class="cloudcv-logo" alt="cloudcv logo" /> www.cloudcv.org</a>
       <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="fa fa-bars"></i></a>
 
-      <ul class="right hide-on-med-and-down">
+      <ul class="left hide-on-med-and-down">
         <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active">Home</a></li>
-       
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active">Log In</a></li>
+      </ul>
+      <ul class="right hide-on-med-and-down">
         <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active">Sign Up</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active">Log In</a></li>
         <!-- show after authenticate user -->
         <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
         <li ng-show="isAuth">
@@ -28,12 +27,11 @@
           <div class="userView">
             <div class="background"></div>
             <a><span class="white-text name">EvalAI</span></a>
-            <a href="http://www.cloudcv.org/"><span class="w-300 text-light-gray">www.cloudcv.org</span></a>
           </div>
         </li>
         <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active"><i class="fa fa-home"></i>Home</a></li>
-        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
         <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>Sign Up</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
         <!-- show after authenticate user -->
         <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
         <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{main.user.name}}!</a></li>

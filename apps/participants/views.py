@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
@@ -19,6 +21,8 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ChallengeParticipantTeamList,
                           ChallengeParticipantTeamListSerializer,
                           ParticipantTeamDetailSerializer,)
+from .utils import (get_list_of_challenges_for_participant_team,
+                    get_list_of_challenges_participated_by_a_user,)
 
 
 @throttle_classes([UserRateThrottle])
@@ -102,13 +106,35 @@ def invite_participant_to_team(request, pk):
         response_data = {'error': 'ParticipantTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    email = request.data.get('email')
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        response_data = {'error': 'User does not exist with this email address!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    invited_user_participated_challenges = get_list_of_challenges_participated_by_a_user(
+        user).values_list("id", flat=True)
+    team_participated_challenges = get_list_of_challenges_for_participant_team(
+        [participant_team]).values_list("id", flat=True)
+
+    if set(invited_user_participated_challenges) & set(team_participated_challenges):
+        """
+        Condition to check if the user has already participated in challenges where
+        the inviting participant has participated. If this is the case,
+        then the user cannot be invited since he cannot participate in a challenge
+        via two teams.
+        """
+        response_data = {'error': 'Sorry, cannot invite user to the team!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     serializer = InviteParticipantToTeamSerializer(data=request.data,
                                                    context={'participant_team': participant_team,
                                                             'request': request})
     if serializer.is_valid():
         serializer.save()
         response_data = {
-            'message': 'User has been added successfully to the team'}
+            'message': 'User has been successfully added to the team!'}
         return Response(response_data, status=status.HTTP_202_ACCEPTED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -187,15 +213,20 @@ def remove_self_from_participant_team(request, participant_team_pk):
     A user can remove himself from the participant team.
     """
     try:
-        ParticipantTeam.objects.get(pk=participant_team_pk)
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
     except ParticipantTeam.DoesNotExist:
-        response_data = {'error': 'ParticipantTeam does not exist'}
+        response_data = {'error': 'ParticipantTeam does not exist!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        participant = Participant.objects.get(user=request.user.id, team__pk=participant_team_pk)
+        participant = Participant.objects.get(user=request.user, team__pk=participant_team_pk)
+    except:
+        response_data = {'error': 'Sorry, you do not belong to this team!'}
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    if get_list_of_challenges_for_participant_team([participant_team]).exists():
+        response_data = {'error': 'Sorry, you cannot delete this team since it has taken part in challenge(s)!'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
         participant.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    except:
-        response_data = {'error': 'Sorry, you do not belong to this team.'}
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)

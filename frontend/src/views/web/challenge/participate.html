@@ -1,6 +1,6 @@
 <section  ng-if="challenge.isActive" class="ev-sm-container ev-view challenge-container">
     <div ng-if="challenge.isParticipated" class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
-        <p><strong>You have already challenged in the Challenge!</strong></p>
+        <p><strong>You have already participated in the challenge with a team!</strong></p>
     </div>
     <div ng-if="!challenge.isParticipated">
         <div class="row">
@@ -41,7 +41,8 @@
                                         </div>
                                         <div class="col s12 m6 ">
                                             <div class="align-right ">
-                                                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.selectExistTeam()" value="Submit">Participate</button>
+                                                <button ng-if="challenge.existTeam.results.length" class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.selectExistTeam()" value="Submit">Participate</button>
+                                                <button ng-if="!challenge.existTeam.results.length" class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.selectExistTeam()" value="Submit" disabled>Participate</button>
                                                 <br>
                                                 <br>
                                                 <span class="text-dark-black"><strong >{{challenge.existTeamError}}</strong></span>
@@ -55,32 +56,32 @@
                 </div>
             </div>
             <div class="col s12 m6">
-            	<div class=" ev-card-panel ev-z-depth-5">
-                	<div class="ev-md-container ev-panel-title"><strong>Create a New Team</strong></div>
-                		<div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
-                    		<div class="loader">
-                        		<div></div>
-                        		<div></div>
-                        		<div></div>
-                        		<div></div>
-                        		<div></div>
-                    		</div>
-                		</div>
-                	<div class="ev-md-container ev-card-body new-team-card">
-                    	<form ng-submit="challenge.createNewTeam()">
-                        	<div class="input-field align-left">
-                        	    <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge.team.name" focus-if>
-                        	    <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                        	    <label for="name" data-error="wrong" data-success="right">Team Name (no space)*</label>
-                        	    <div class="wrn-msg text-highlight" ng-show="teams.team.error">{{challenge.team.error}}</div>
-                        	</div>
-                        	<div class="align-left reg-control">
-                            	<button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Create Participating Team</button>
-                        	</div>
-                    	</form>
-                	</div>
-            	</div>
-        	</div>
+                <div class=" ev-card-panel ev-z-depth-5">
+                    <div class="ev-md-container ev-panel-title"><strong>Create a New Team</strong></div>
+                        <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
+                            <div class="loader">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </div>
+                    <div class="ev-md-container ev-card-body new-team-card">
+                        <form ng-submit="challenge.createNewTeam()">
+                            <div class="input-field align-left">
+                                <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge.team.name" ng-pattern="/^[\w -]*$/" focus-if>
+                                <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                                <label for="name" data-error="wrong" data-success="right">Team Name*</label>
+                                <div class="wrn-msg text-highlight" ng-show="teams.team.error">{{challenge.team.error}}</div>
+                            </div>
+                            <div class="align-left reg-control">
+                                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Create Participaant Team</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>

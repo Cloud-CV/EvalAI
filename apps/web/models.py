@@ -12,7 +12,7 @@ class Contact(TimeStampedModel):
     message = models.CharField(max_length=500,)
 
     def __unicode__(self):
-        return "%s: %s: %s" % (self.name, self.email, self.message)
+        return '{0}: {1}: {2}'.format(self.name, self.email, self.message)
 
     class Meta:
         app_label = 'web'

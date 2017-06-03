@@ -15,7 +15,7 @@ class IsChallengeCreator(permissions.BasePermission):
             return True
         elif request.method in ['DELETE', 'PATCH', 'PUT', 'POST']:
             try:
-                challenge = Challenge.objects.get(pk=request.parser_context['kwargs']['pk'])
+                challenge = Challenge.objects.get(pk=request.parser_context['kwargs']['challenge_pk'])
             except Challenge.DoesNotExist:
                 return False
 

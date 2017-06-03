@@ -53,5 +53,4 @@ class TestStringMethods(BaseAPITestClass):
 
         url = reverse_lazy('hosts:invite_host_to_team',
                            kwargs={'pk': self.challenge_host_team.pk})
-        print url
         self.assertEqual(url, '/api/hosts/challenge_host_teams/' + str(self.challenge_host_team.pk) + '/invite')

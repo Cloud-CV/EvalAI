@@ -1,6 +1,6 @@
 <div class="col s12 m4 offset-m4 left">
     <ul class="left">
-        <li class="ev-horiz-list"><a ui-sref="auth.login" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Log In</a></li>
+        <li class="ev-horiz-list"><a ui-sref="auth.login" class="dark-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Log In</a></li>
         <li class="ev-horiz-list"><a ui-sref="auth.signup" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Sign Up</a></li>
         <!-- <li class="ev-horiz-list"><a ui-sref="auth.reset-password" class="light-link" ui-sref-active="active-auth" ng-click="auth.resetForm()">Forgot Password</a></li> -->
     </ul>
@@ -10,22 +10,22 @@
     <form name="loginForm" ng-submit="auth.userLogin(loginForm.$valid)" id="log-in" novalidate>
         <!-- username -->
         <div class="input-field align-left">
-            <input type="text" id="name" name="name" ng-model="auth.getUser.name" ng-minlength="3" required>
-            <span class="form-icon"><i class="fa fa-user"></i></span>
+            <input type="text" id="name" class="dark-autofill" name="name" ng-model="auth.getUser.name" ng-minlength="3" required>
+            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
             <label for="name">Username*</label>
             <div class="wrn-msg text-highlight" ng-messages="loginForm.name.$error" ng-if="loginForm.name.$touched || loginForm.$submitted">
-                <p ng-message="minlength">username is too short.</p>
-                <p ng-message="required">username is required.</p>
+                <p ng-message="minlength">Username is too short.</p>
+                <p ng-message="required">Username is required.</p>
             </div>
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input type="password" id="password" name="password" ng-model="auth.getUser.password" autocomplete="new-password" ng-minlength="8" required>
-            <span class="form-icon"><i class="fa fa-key"></i></span>
+            <input type="password" id="password" class="dark-autofill" name="password" ng-model="auth.getUser.password" autocomplete="new-password" ng-minlength="8" required>
+            <span class="form-icon form-icon-dark"><i class="fa fa-key"></i></span>
             <label for="password">Password (min 8 characters) *</label>
             <div class="wrn-msg text-highlight" ng-messages="loginForm.password.$error" ng-if="loginForm.password.$touched || loginForm.$submitted">
-                <p ng-message="minlength">password is less than 8 characters.</p>
-                <p ng-message="required">password is required.</p>
+                <p ng-message="minlength">Password is less than 8 characters.</p>
+                <p ng-message="required">Password is required.</p>
             </div>
         </div>
         <div class="row">
@@ -35,7 +35,7 @@
         </div> -->
             <br>
             <div class="col s6 align-left rm-gut">
-                <button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit">Log In</button>
+                <button class="waves-effect waves-dark btn ev-btn-dark grad-btn grad-btn-dark w-300" type="submit">Log In</button>
             </div>
             <div class="col s6 align-right right rm-gut">
                 <a ui-sref="auth.reset-password" class="light-link fg-pass">Forgot Password?</a>
@@ -44,7 +44,7 @@
         <div ng-if="auth.isFormError" class="wrn-msg text-highlight align-left"> {{auth.FormError}}</div>
         <div>
             <p class="text-light-gray">
-                Or start with a new account <a class="white-link" ui-sref="auth.signup">Sign Up</a>
+                <a class="highlight-link" ui-sref="auth.signup">Sign Up</a> with a new account
             </p>
         </div>
     </form>

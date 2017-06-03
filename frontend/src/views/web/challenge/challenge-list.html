@@ -6,16 +6,15 @@
         <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
-                        <img class="bg-img" ng-src="{{challenge.background_image}}">
+                        <img class="bg-img" ng-src="{{challenge.image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong><span class="inline" ng-bind-html="challenge.short_description  | limitTo:50"></span></strong>{{challenge.isLarge}}</p>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Starts at</strong>
+                        <p><strong class="text-light-black fs-12">Starts on</strong>
                             <br> <strong>{{challenge.start_date | date:'medium'}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Ends at</strong>
+                        <p><strong class="text-light-black fs-12">Ends on</strong>
                             <br> <strong>{{challenge.end_date | date:'medium'}}</strong></p> 
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
@@ -30,16 +29,15 @@
         <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
-                        <img class="bg-img" ng-src="{{challenge.background_image}}">
+                        <img class="bg-img" ng-src="{{challenge.image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong><span class="inline" ng-bind-html="challenge.description  | limitTo:50"></span></strong>{{challenge.isLarge}}</p>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Starts at</strong>
+                        <p><strong class="text-light-black fs-12">Starts on</strong>
                             <br> <strong>{{challenge.start_date | date:'medium'}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Ends at</strong>
+                        <p><strong class="text-light-black fs-12">Ends on</strong>
                             <br> <strong>{{challenge.end_date | date:'medium'}}</strong></p>    
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
@@ -55,16 +53,15 @@
             <a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
-                        <img class="bg-img" ng-src="{{challenge.background_image}}">
+                        <img class="bg-img" ng-src="{{challenge.image}}">
                         <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                     </div>
                     <div class="card-content">
-                        <p><strong><span class="inline" ng-bind-html="challenge.description  | limitTo:50"></span></strong>{{challenge.isLarge}}</p>
                         <p><strong class="text-light-black fs-12">Organized by</strong>
                             <br> <strong>{{challenge.creator.team_name}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Starts at</strong>
+                        <p><strong class="text-light-black fs-12">Starts on</strong>
                             <br> <strong>{{challenge.start_date | date:'medium'}}</strong></p>
-                        <p><strong class="text-light-black fs-12">Ends at</strong>
+                        <p><strong class="text-light-black fs-12">Ends on</strong>
                             <br> <strong>{{challenge.end_date | date:'medium'}}</strong></p> 
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
