@@ -50,7 +50,7 @@ def create_user(is_admin, username=""):
 def create_challenge_host_team(user):
     """
     Creates challenge host team and returns it.
-    
+
     A challenge host team must be created by the above user with the parameters team name.
     Also create a challenge host with with user, team, status and permissions.
 
@@ -95,9 +95,9 @@ def create_challenge(title, start_date, end_date, host_team):
     """
     Creates a challenge.
 
-    Add a challenge with the parameters title, short_description, description, terms_ and_condition,
+    Add a challenge with the parameters title, short_description, description, terms_and_condition,
     submission_guidelines, evaluation_details, evaluation_script, creator, published, enable_forum,
-    anonymous leaderboard, start_date and end_ date.
+    anonymous leaderboard, start_date and end_date.
     """
     evaluation_script = open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'string_matching.zip'), 'rb')
     Challenge.objects.create(
