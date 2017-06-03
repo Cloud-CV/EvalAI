@@ -35,7 +35,7 @@ class CreateContactMessage(BaseAPITestCase):
             username='someuser',
             email="user@test.com",
             password='secret_password')
-        
+
         self.data = {
             'name': self.user.username,
             'email': self.user.email,
