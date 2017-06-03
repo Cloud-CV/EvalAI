@@ -24,6 +24,9 @@ DATASET_SPLIT_ITERATOR = 0
 
 
 def create_user(is_admin, username=""):
+    """
+    Function to create superuser, participant user and host user and it returns the created user.
+    """
     if is_admin:
         username = "admin"
         email = "admin@example.com"
@@ -42,6 +45,9 @@ def create_user(is_admin, username=""):
 
 
 def create_challenge_host_team(user):
+    """
+    Function to create challenge host team and it returns the created team.
+    """
     team_name = "{} Host Team".format(fake.city())
     team = ChallengeHostTeam.objects.create(
         team_name=team_name,
@@ -54,6 +60,9 @@ def create_challenge_host_team(user):
 
 
 def create_challenges(number_of_challenges=3, host_team=None):
+    """
+    Function to create three challenges i.e. past challenge, on-going challenge, upcoming challenge.
+    """
     for i in xrange(number_of_challenges):
         if (i % 3 == 0):
             create_challenge("{} Challenge".format(fake.first_name()),
@@ -76,6 +85,9 @@ def create_challenges(number_of_challenges=3, host_team=None):
 
 
 def create_challenge(title, start_date, end_date, host_team):
+    """
+    Function to create a fake challenge.
+    """
     evaluation_script = open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'string_matching.zip'), 'rb')
     Challenge.objects.create(
         title=title,
@@ -98,6 +110,9 @@ def create_challenge(title, start_date, end_date, host_team):
 
 
 def create_challenge_phases(challenge, number_of_phases=1):
+    """
+    Function to create fake challenge phases and returns the created phase.
+    """
     challenge_phases = []
     for i in range(number_of_phases):
         name = "{} Phase".format(fake.first_name())
@@ -121,6 +136,9 @@ def create_challenge_phases(challenge, number_of_phases=1):
 
 
 def create_leaderboard():
+    """
+    Function to create leaderboard and returns the created leaderboard.
+    """
     schema = {
         'labels': ['score', ],
         'default_order_by': 'score',
@@ -133,6 +151,9 @@ def create_leaderboard():
 
 
 def create_dataset_splits(number_of_splits):
+    """
+    Function to create multiple dataset splits and also returns the created split.
+    """
     dataset_splits = []
     for i in range(number_of_splits):
         global DATASET_SPLIT_ITERATOR
@@ -149,6 +170,9 @@ def create_dataset_splits(number_of_splits):
 
 
 def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
+    """
+    Function to create a single challenge phase split.
+    """
     ChallengePhaseSplit.objects.create(
         challenge_phase=challenge_phase,
         leaderboard=leaderboard,
@@ -160,6 +184,9 @@ def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
 
 
 def create_participant_team(user):
+    """
+    Function to create participant team and also returns the created team.
+    """
     team_name = "{} Participant Team".format(fake.city())
     team = ParticipantTeam.objects.create(
         team_name=team_name,
