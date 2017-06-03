@@ -68,7 +68,7 @@ def create_challenge_host_team(user):
 
 def create_challenges(number_of_challenges=3, host_team=None):
     """
-    Creates past challenge, on-going challenge, upcoming challenge.
+    Creates past challenge, on-going challenge and upcoming challenge.
     """
     for i in xrange(number_of_challenges):
         if (i % 3 == 0):
@@ -122,11 +122,9 @@ def create_challenge(title, start_date, end_date, host_team):
 
 def create_challenge_phases(challenge, number_of_phases=1):
     """
-    Creates a challenge phase and returns it.
-
-    Now create challenge phases for the above created challenge with parameters name,
-    description, leaderboard_public, is_public, start_date, end_date, challenge,
-    Test_annotation, codename.
+    Create challenge phases for the created challenges with parameters name,
+    description, leaderboard_public, is_public, start_date, end_date,
+    challenge, test_annotation, codename.
     """
     challenge_phases = []
     for i in range(number_of_phases):
@@ -167,7 +165,7 @@ def create_leaderboard():
 
 def create_dataset_splits(number_of_splits):
     """
-    Creates dataset splits and returns it..
+    Creates dataset splits and returns it.
     """
     dataset_splits = []
     for i in range(number_of_splits):
@@ -217,11 +215,16 @@ def create_participant_team(user):
 
 
 def run():
+    # Create superuser
     create_user(is_admin=True)
+    # Create host user
     host_user = create_user(is_admin=False, username="host")
+    # Create challenge host team with challenge host
     challenge_host_team = create_challenge_host_team(user=host_user)
+    # Create challenge
     create_challenges(number_of_challenges=NUMBER_OF_CHALLENGES, host_team=challenge_host_team)
 
+    # Fetch all the created challenges
     challenges = Challenge.objects.all()
     for challenge in challenges:
         # Create a leaderboard object for each challenge
