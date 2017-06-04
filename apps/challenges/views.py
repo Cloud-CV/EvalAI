@@ -375,7 +375,7 @@ def get_all_submissions_of_challenge(request, challenge_pk):
     submission = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
     paginator, result_page = paginated_queryset(submission, request)
     try:
-        serializer = SubmissionSerializer(result_page, many=True)
+        serializer = SubmissionSerializer(result_page, many=True, context={'request': request})
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
     except:
