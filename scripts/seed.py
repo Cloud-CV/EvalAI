@@ -26,9 +26,6 @@ DATASET_SPLIT_ITERATOR = 0
 def create_user(is_admin, username=""):
     """
     Creates superuser, participant user, host user and returns it.
-
-    To create a user, we must enter username, email and password of the user.
-    The email address then must be verified by the user.
     """
     if is_admin:
         username = "admin"
@@ -50,10 +47,6 @@ def create_user(is_admin, username=""):
 def create_challenge_host_team(user):
     """
     Creates challenge host team and returns it.
-
-    A challenge host team must be created by the above user with the parameters team name.
-    Also create a challenge host with with user, team, status and permissions.
-
     """
     team_name = "{} Host Team".format(fake.city())
     team = ChallengeHostTeam.objects.create(
@@ -94,10 +87,6 @@ def create_challenges(number_of_challenges=3, host_team=None):
 def create_challenge(title, start_date, end_date, host_team):
     """
     Creates a challenge.
-
-    Add a challenge with the parameters title, short_description, description, terms_and_condition,
-    submission_guidelines, evaluation_details, evaluation_script, creator, published, enable_forum,
-    anonymous leaderboard, start_date and end_date.
     """
     evaluation_script = open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'string_matching.zip'), 'rb')
     Challenge.objects.create(
@@ -122,9 +111,7 @@ def create_challenge(title, start_date, end_date, host_team):
 
 def create_challenge_phases(challenge, number_of_phases=1):
     """
-    Create challenge phases for the created challenges with parameters name,
-    description, leaderboard_public, is_public, start_date, end_date,
-    challenge, test_annotation, codename.
+    Creates challenge phases for the created challenges and returns it.
     """
     challenge_phases = []
     for i in range(number_of_phases):
@@ -185,9 +172,6 @@ def create_dataset_splits(number_of_splits):
 def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
     """
     Creates a challenge phase split.
-
-    After creating the challenge phase and dataset split
-    we create challenge phase split with parameters challenge_phase, leaderboard, dataset_split and visibility.
     """
     ChallengePhaseSplit.objects.create(
         challenge_phase=challenge_phase,
