@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -30,15 +31,34 @@ class CreateContactMessage(BaseAPITestCase):
         super(CreateContactMessage, self).setUp()
         self.url = reverse_lazy('web:contact_us')
 
+        self.user = User.objects.create(
+            username='someuser',
+            email="user@test.com",
+            password='secret_password')
+
         self.data = {
-            'name': 'New Message',
-            'email': 'newuser@test.com',
-            'message': 'New Message for Conatct'
+            'name': self.user.username,
+            'email': self.user.email,
+            'message': 'Sample contact message'
         }
 
+    def test_get_user_data(self):
+        expected = {
+            'name': self.user.username,
+            'email': self.user.email,
+        }
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(expected, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_create_contact_message_with_all_data(self):
-        response = self.client.post(self.url, self.data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        if self.data['message']:
+            response = self.client.post(self.url, self.data)
+            expected = {'message': 'We have received your request and will contact you shortly.'}
+            self.assertEqual(response.data, expected)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_contact_message_with_no_data(self):
         del self.data['message']
@@ -102,7 +122,7 @@ class GetTeamTest(APITestCase):
             description='An awesome description for Test User',
             headshot=SimpleUploadedFile(
                 name='test_headshot.jpg',
-                content=open('frontend/src/images/deshraj.png', 'rb').read(),
+                content=open('frontend/src/images/rocket.png', 'rb').read(),
                 content_type='image/png'
             ),
             github_url='www.github.com/testuser',
@@ -110,7 +130,7 @@ class GetTeamTest(APITestCase):
             personal_website='www.testuser.com',
             background_image=SimpleUploadedFile(
                 name='test_background_image.jpg',
-                content=open('frontend/src/images/deshraj-profile.jpg', 'rb').read(),
+                content=open('frontend/src/images/rocket.png', 'rb').read(),
                 content_type='image/jpg'
             ),
             team_type=Team.CORE_TEAM,
