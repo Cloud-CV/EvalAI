@@ -18,12 +18,8 @@ eslint config file.
 	"extends": "eslint:recommended",
 
 	"rules": {
-		"no-console": [
-			"error", { 
-				allow: ["warn", "error"] 
-			}
-		],
-		"semi": [2, 
+		"no-console": "warn",
+		"semi": ["error", 
 			"always", { 
 				"omitLastInOneLineBlock": true 
 			}
