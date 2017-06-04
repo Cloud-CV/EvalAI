@@ -5,12 +5,12 @@
 			<div class="row">
 				<div class="col s12 m8 ev-mt-50">
 					<h4 class="text-dark-black align-center"><strong>Contact Us</strong></h4>
-					<form name="contactusForm" ng-submit="" id="contact-us" novalidate>
+					<form name="contactusForm" ng-submit="contactUs.contactUs(contactusForm.$valid)" id="contact-us" novalidate>
 						<!-- Name -->
 						<div class="input-field align-left">
-							<input type="text" id="name" name="name" ng-minlength="3" required>
+							<input type="text" id="name" name="name" ng-minlength="3" ng-model="contactUs.user.name"  ng-disabled="contactUs.user.name"  required focus-if="contactUs.user.name">
 							<span class="form-icon"><i class="fa fa-user"></i></span>
-							<label for="name">Name *</label>
+							<label class="active" for="name">Name *</label>
 							<div class="wrn-msg text-highlight" ng-messages="contactusForm.name.$error" ng-if="contactusForm.name.$touched || contactusForm.$submitted">
 								<p ng-message="minlength">name is too short.</p>
 								<p ng-message="required">name is required.</p>
@@ -18,21 +18,23 @@
 						</div>
 						<!-- Email -->
 						<div class="input-field align-left">
-							<input type="text" id="email" name="email" required>
+							<input type="text" id="email" name="email" ng-model="contactUs.user.email" ng-disabled="contactUs.user.email" required focus-if="contactUs.user.email" >
 							<span class="form-icon"><i class="fa fa-envelope"></i></span>
-							<label for="email">Email *</label>
+							<label class="active" for="email">Email *</label>
 						</div>
 						<!-- Message -->
 						<div class="input-field align-left">
-							<textarea class="materialize-textarea" id="message" name="message" required></textarea>
+							<textarea class="materialize-textarea" id="message" name="message" ng-model="contactUs.user.message" required></textarea>
 							<span class="form-icon"><i class="fa fa-comment"></i></span>
 							<label for="message">Message *</label>
 						</div>	
 						<div class="row">
 							<br>
 							<div class="col s6 align-left rm-gut">
-								<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit">Send</button>
+								<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">Send</button>
 							</div>
+							<div ng-if="contactUs.isFormError" class="wrn-msg text-highlight align-right"> {{contactUs.FormError}}
+                        </div>
 						</div>
 					</form>
 				</div>
