@@ -361,9 +361,7 @@ def get_all_submissions_of_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     try:
-        user = User.objects.get(username=request.user)
-        challenge_host = ChallengeHost.objects.get(user=user)
-        challenge_host_team = ChallengeHostTeam.objects.get(challengehost=challenge_host)
+        challenge_host_team = ChallengeHostTeam.objects.get(created_by=request.user)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'You are not a challenge host'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -371,13 +369,13 @@ def get_all_submissions_of_challenge(request, challenge_pk):
     try:
         challenge_created_by_host = Challenge.objects.get(pk=challenge_pk, creator=challenge_host_team)
     except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge {} is not created by {}'.format(challenge_pk, challenge_host)}
+        response_data = {'error': 'Challenge {} is not created by {}'.format(challenge_pk, challenge_host_team)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     submission = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
     paginator, result_page = paginated_queryset(submission, request)
     try:
-        serializer = SubmissionSerializer(result_page, many=True, context={'request': request})
+        serializer = SubmissionSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
     except:
