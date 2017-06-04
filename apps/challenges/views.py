@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.utils import timezone
 
 from rest_framework import permissions, status
@@ -344,7 +343,8 @@ def challenge_phase_split_list(request, challenge_pk):
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
-@throttle_classes([UserRateThrottle,])
+
+@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -367,7 +367,7 @@ def get_all_submissions_of_challenge(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        challenge_created_by_host = Challenge.objects.get(pk=challenge_pk, creator=challenge_host_team)
+        Challenge.objects.get(pk=challenge_pk, creator=challenge_host_team)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge {} is not created by {}'.format(challenge_pk, challenge_host_team)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)

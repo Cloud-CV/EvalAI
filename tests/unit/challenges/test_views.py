@@ -1431,11 +1431,11 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             email='user7@test.com',
             primary=True,
             verified=True)
-        
+
         self.challenge_host_team7 = ChallengeHostTeam.objects.create(
             team_name='Other Test Challenge Host Team7',
             created_by=self.user7
-        )        
+        )
         self.challenge_host_team5 = ChallengeHostTeam.objects.create(
             team_name='Other Test Challenge Host Team5',
             created_by=self.user5
@@ -1498,14 +1498,13 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             is_public=True,
         )
 
-
     def test_get_all_submissions_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk+10})
         expected = {
             'error': 'Challenge {} does not exist'.format(self.challenge5.pk+10)
         }
-        response = self.client.get(self.url, {}) 
+        response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
