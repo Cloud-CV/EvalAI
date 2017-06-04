@@ -15,8 +15,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge, ChallengePhase, DatasetSplit, ChallengePhaseSplit, Leaderboard
-from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
+from jobs.models import Submission
+from participants.models import Participant, ParticipantTeam
 
 
 class BaseAPITestClass(APITestCase):
@@ -1391,3 +1392,172 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class GetAllSubmissionsTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetAllSubmissionsTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk})
+
+        self.user5 = User.objects.create(
+            username='otheruser',
+            password='other_secret_password'
+        )
+
+        self.user6 = User.objects.create(
+            username='not a challenge host',
+            password='secret password')
+
+        self.user7 = User.objects.create(
+            username='not a challenge host of challenge5',
+            password='secret password')
+
+        EmailAddress.objects.create(
+            user=self.user5,
+            email='user5@test.com',
+            primary=True,
+            verified=True)
+
+        EmailAddress.objects.create(
+            user=self.user6,
+            email='user6@test.com',
+            primary=True,
+            verified=True)
+
+        EmailAddress.objects.create(
+            user=self.user7,
+            email='user7@test.com',
+            primary=True,
+            verified=True)
+        
+        self.challenge_host_team7 = ChallengeHostTeam.objects.create(
+            team_name='Other Test Challenge Host Team7',
+            created_by=self.user7
+        )        
+        self.challenge_host_team5 = ChallengeHostTeam.objects.create(
+            team_name='Other Test Challenge Host Team5',
+            created_by=self.user5
+        )
+
+        # Now allot self.user as also a host of self.challenge_host_team1
+        self.challenge_host5 = ChallengeHost.objects.create(
+            user=self.user5,
+            team_name=self.challenge_host_team5,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN
+        )
+
+        self.challenge5 = Challenge.objects.create(
+            title='Other Test Challenge',
+            short_description='Short description for other test challenge',
+            description='Description for other test challenge',
+            terms_and_conditions='Terms and conditions for other test challenge',
+            submission_guidelines='Submission guidelines for other test challenge',
+            creator=self.challenge_host_team5,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.participant_team6 = ParticipantTeam.objects.create(
+            team_name='Participant Team for Challenge5',
+            created_by=self.user6)
+
+        self.participant = Participant.objects.create(
+            user=self.user6,
+            status=Participant.SELF,
+            team=self.participant_team6)
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase5 = ChallengePhase.objects.create(
+                name='Challenge Phase',
+                description='Description for Challenge Phase',
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge5,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain')
+            )
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team6,
+            challenge_phase=self.challenge_phase5,
+            created_by=self.challenge_host_team5.created_by,
+            status='submitted',
+            input_file=self.challenge_phase5.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+
+    def test_get_all_submissions_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
+                                kwargs={'challenge_pk': self.challenge5.pk+10})
+        expected = {
+            'error': 'Challenge {} does not exist'.format(self.challenge5.pk+10)
+        }
+        response = self.client.get(self.url, {}) 
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_submission_when_challenge_is_not_created_by_host(self):
+        self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
+                                kwargs={'challenge_pk': self.challenge5.pk})
+        expected = {
+            'error': 'Challenge {} is not created by {}'.format(self.challenge5.pk, self.challenge_host_team7)
+        }
+        self.client.force_authenticate(user=self.user7)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_submission_when_user_is_not_in_challenge_host_team(self):
+        self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
+                                kwargs={'challenge_pk': self.challenge5.pk})
+
+        self.client.force_authenticate(user=self.user6)
+        expected = {
+            'error': 'You are not a challenge host'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_all_submissions_of_challenge(self):
+        self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
+                                kwargs={'challenge_pk': self.challenge5.pk})
+        self.client.force_authenticate(user=self.user5)
+        expected = [
+            {
+                'id': self.submission.id,
+                'participant_team': self.submission.participant_team.pk,
+                'participant_team_name': self.submission.participant_team.team_name,
+                'execution_time': self.submission.execution_time,
+                'challenge_phase': self.submission.challenge_phase.pk,
+                'created_by': self.submission.created_by.pk,
+                'status': self.submission.status,
+                'input_file': "http://testserver%s" % (self.submission.input_file.url),
+                'method_name': self.submission.method_name,
+                'method_description': self.submission.method_description,
+                'project_url': self.submission.project_url,
+                'publication_url': self.submission.publication_url,
+                'stdout_file': None,
+                'stderr_file': None,
+                'submission_result_file': None,
+                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+                "is_public": self.submission.is_public,
+            }
+        ]
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
