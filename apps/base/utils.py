@@ -4,6 +4,7 @@ import uuid
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
 
+from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 
 
@@ -32,3 +33,14 @@ class RandomFileName(object):
         filename = '{}{}'.format(uuid.uuid4(), extension)
         filename = os.path.join(self.path, filename)
         return filename
+
+
+def get_model_object(model_name):
+    def get_model_by_pk(pk):
+        try:
+            model_object = model_name.objects.get(pk=pk)
+            return model_object
+        except model_name.DoesNotExist:
+            raise NotFound('{} {} does not exist'.format(model_name.__name__, pk))
+    get_model_by_pk.__name__ = "get_{}_object".format(model_name)
+    return get_model_by_pk
