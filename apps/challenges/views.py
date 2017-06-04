@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.utils import timezone
 
 from rest_framework import permissions, status
@@ -13,6 +14,8 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import get_challenge_host_teams_for_user
+from jobs.models import Submission
+from jobs.serializers import SubmissionSerializer
 from participants.models import Participant, ParticipantTeam
 from participants.utils import get_participant_teams_for_user, has_user_participated_in_challenge
 
@@ -340,3 +343,42 @@ def challenge_phase_split_list(request, challenge_pk):
     serializer = ChallengePhaseSplitSerializer(result_page, many=True)
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
+
+@throttle_classes([UserRateThrottle,])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_all_submissions_of_challenge(request, challenge_pk):
+    """
+    Returns all the submissions for a particular Challenge.
+
+    Note: Can only be accessed by respective Challenge Hosts.
+    """
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        user = User.objects.get(username=request.user)
+        challenge_host = ChallengeHost.objects.get(user=user)
+        challenge_host_team = ChallengeHostTeam.objects.get(challengehost=challenge_host)
+    except ChallengeHostTeam.DoesNotExist:
+        response_data = {'error': 'You are not a challenge host'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        challenge_created_by_host = Challenge.objects.get(pk=challenge_pk, creator=challenge_host_team)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge {} is not created by {}'.format(challenge_pk, challenge_host)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    submission = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
+    paginator, result_page = paginated_queryset(submission, request)
+    try:
+        serializer = SubmissionSerializer(result_page, many=True, context={'request': request})
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+    except:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
