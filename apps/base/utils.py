@@ -42,5 +42,5 @@ def get_model_object(model_name):
             return model_object
         except model_name.DoesNotExist:
             raise NotFound('{} {} does not exist'.format(model_name.__name__, pk))
-    get_model_by_pk.__name__ = "get_{}_object".format(model_name.__name__.lower())
+    get_model_by_pk.__name__ = 'get_{}_object'.format(model_name.__name__.lower())
     return get_model_by_pk
