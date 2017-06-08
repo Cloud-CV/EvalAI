@@ -194,8 +194,10 @@ class ChallengeConfiguration(TimeStampedModel):
     challenge = models.OneToOneField(Challenge)
     zip_configuration = models.FileField(upload_to=RandomFileName("zip_configuration_files/challenge_zip"))
     is_created = models.BooleanField(default=False)
-    stdout_file = models.FileField(upload_to=RandomFileName("zip_configuration_files/challenge_zip"), null=True, blank=True)
-    stderr_file = models.FileField(upload_to=RandomFileName("zip_configuration_files/challenge_zip"), null=True, blank=True)
+    stdout_file = models.FileField(upload_to=RandomFileName("zip_configuration_files/challenge_zip"),
+                                   null=True, blank=True)
+    stderr_file = models.FileField(upload_to=RandomFileName("zip_configuration_files/challenge_zip"),
+                                   null=True, blank=True)
 
     class Meta:
         app_label = 'challenges'
