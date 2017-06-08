@@ -61,35 +61,33 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
         return obj.leaderboard.schema
 
 
-class GetSubmissionSerializer(serializers.ModelSerializer):
+class ViewSubmissionSerializer(serializers.ModelSerializer):
 
-    participant_team_name = serializers.SerializerMethodField()
-    challenge_phase_name = serializers.SerializerMethodField()
-    created_by_name = serializers.SerializerMethodField()
-    participant_team_email = serializers.SerializerMethodField()
+    participant_team = serializers.SerializerMethodField()
+    challenge_phase = serializers.SerializerMethodField()
+    created_by = serializers.SerializerMethodField()
+    participant_team_members_email_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Submission
-        fields = ('id', 'participant_team_name', 'challenge_phase_name', 'created_by_name', 'status', 'is_public',
+        fields = ('id', 'participant_team', 'challenge_phase', 'created_by', 'status', 'is_public',
                   'submission_number', 'submitted_at', 'execution_time', 'input_file', 'stdout_file',
-                  'stderr_file', 'submission_result_file', 'submission_metadata_file', 'participant_team_email',)
+                  'stderr_file', 'submission_result_file', 'submission_metadata_file', 'participant_team_members_email_id',)
 
-    def get_participant_team_name(self, obj):
+    def get_participant_team(self, obj):
         return obj.participant_team.team_name
 
-    def get_challenge_phase_name(self, obj):
+    def get_challenge_phase(self, obj):
         return obj.challenge_phase.name
 
-    def get_created_by_name(self, obj):
+    def get_created_by(self, obj):
         return obj.created_by.username
 
-    def get_participant_team_email(self, obj):
-        email = []
+    def get_participant_team_members_email_id(self, obj):
         try:
             participant_team = ParticipantTeam.objects.get(team_name=obj.participant_team.team_name)
         except ParticipantTeam.DoesNotExist:
             return 'Participant team does not exist'
-        participants = Participant.objects.filter(team=participant_team)
-        for participant in participants:
-            email.append(User.objects.get(pk=participant.user_id).email)
-        return email
+
+        participant_ids = Participant.objects.filter(team=participant_team).values_list('user_id', flat=True)
+        return User.objects.filter(id__in=participant_ids).values_list('email', flat=True)
