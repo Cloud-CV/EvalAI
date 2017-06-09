@@ -8,7 +8,7 @@
 					<form name="contactusForm" ng-submit="contactUs.contactUs(contactusForm.$valid)" id="contact-us" novalidate>
 						<!-- Name -->
 						<div class="input-field align-left">
-							<input type="text" id="name" name="name" ng-minlength="3" ng-model="contactUs.user.name"  ng-disabled="contactUs.user.name"  required focus-if="contactUs.user.name">
+							<input type="text" id="name" name="name" ng-minlength="3" ng-model="contactUs.user.name"  ng-disabled="contactUs.isDisabled"  required focus-if="contactUs.user.name">
 							<span class="form-icon"><i class="fa fa-user"></i></span>
 							<label class="active" for="name">Name *</label>
 							<div class="wrn-msg text-highlight" ng-messages="contactusForm.name.$error" ng-if="contactusForm.name.$touched || contactusForm.$submitted">
@@ -18,7 +18,7 @@
 						</div>
 						<!-- Email -->
 						<div class="input-field align-left">
-							<input type="text" id="email" name="email" ng-model="contactUs.user.email" ng-disabled="contactUs.user.email" required focus-if="contactUs.user.email" >
+							<input type="text" id="email" name="email" ng-model="contactUs.user.email" ng-disabled="contactUs.isDisabled" required focus-if="contactUs.user.email" >
 							<span class="form-icon"><i class="fa fa-envelope"></i></span>
 							<label class="active" for="email">Email *</label>
 						</div>

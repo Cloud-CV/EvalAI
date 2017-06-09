@@ -40,8 +40,8 @@
                 var result = response.data;
                 if (status == 200) {
                     vm.user = result;
+                    vm.isDisabled = true;
                 }
-
             },
             onError: function() {
             }
@@ -54,6 +54,7 @@
             if (resetconfirmFormValid) {
 
                 var parameters = {};
+                vm.isDisabled = false;
                 parameters.url = 'web/contact/';
                 parameters.method = 'POST';
                 parameters.data = {
@@ -75,16 +76,16 @@
                         if (response.status == 400) {
                             vm.stopLoader();
                             vm.isFormError = true;
-                            var isUsername_valid, isEmail_valid, isMessage_valid;
+                            var isUsernameValid, isEmailValid, isMessageValid;
                             try {
-                                isUsername_valid = typeof(response.data.name) !== 'undefined' ? true : false;
-                                isEmail_valid = typeof(response.data.email) !== 'undefined' ? true : false;
-                                isMessage_valid = typeof(response.data.message) !== 'undefined' ? true : false;
-                                if (isUsername_valid) {
+                                isUsernameValid = typeof(response.data.name) !== 'undefined' ? true : false;
+                                isEmailValid = typeof(response.data.email) !== 'undefined' ? true : false;
+                                isMessageValid = typeof(response.data.message) !== 'undefined' ? true : false;
+                                if (isUsernameValid) {
                                     vm.FormError = response.data.name[0];
-                                } else if (isEmail_valid) {
+                                } else if (isEmailValid) {
                                     vm.FormError = response.data.email[0];
-                                } else if (isMessage_valid) {
+                                } else if (isMessageValid) {
                                     vm.FormError = response.data.message[0];
 
                                 } else {
