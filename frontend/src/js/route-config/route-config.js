@@ -33,7 +33,7 @@
         var auth = {
             name: "auth",
             url: "/auth",
-            templateUrl: baseUrl + "/web/auth.html",
+            templateUrl: baseUrl + "/web/auth/auth.html",
             controller: 'AuthCtrl',
             controllerAs: 'auth',
             abstract: true,
@@ -45,7 +45,7 @@
             name: "auth.login",
             parent: "auth",
             url: "/login",
-            templateUrl: baseUrl + "/web/login.html",
+            templateUrl: baseUrl + "/web/auth/login.html",
             authenticate: false,
             title: 'Login'
         };
@@ -54,7 +54,7 @@
             name: "auth.signup",
             parent: "auth",
             url: "/signup",
-            templateUrl: baseUrl + "/web/signup.html",
+            templateUrl: baseUrl + "/web/auth/signup.html",
             authenticate: false,
             title: 'SignUp'
         };
@@ -63,7 +63,7 @@
             name: "auth.verify-email",
             parent: "auth",
             url: "/api/auth/registration/account-confirm-email/:email_conf_key",
-            templateUrl: baseUrl + "/web/verify-email.html",
+            templateUrl: baseUrl + "/web/auth/verify-email.html",
             title: "Email Verify",
             authenticate: false
         };
@@ -72,7 +72,7 @@
             name: "auth.reset-password",
             parent: "auth",
             url: "/reset-password",
-            templateUrl: baseUrl + "/web/reset-password.html",
+            templateUrl: baseUrl + "/web/auth/reset-password.html",
             title: "Reset Password",
             authenticate: false
         };
@@ -81,7 +81,7 @@
             name: "auth.reset-password-confirm",
             parent: "auth",
             url: "/api/password/reset/confirm/:user_id/:reset_token",
-            templateUrl: baseUrl + "/web/reset-password-confirm.html",
+            templateUrl: baseUrl + "/web/auth/reset-password-confirm.html",
             title: "Reset Password Confirm",
             authenticate: false
         };

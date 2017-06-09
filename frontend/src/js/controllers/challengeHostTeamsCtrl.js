@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeHostTeamsCtrl', ChallengeHostTeamsCtrl);
 
-    ChallengeHostTeamsCtrl.$inject = ['utilities', '$state', '$http', '$rootScope', '$mdDialog'];
+    ChallengeHostTeamsCtrl.$inject = ['utilities', 'loaderService', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function ChallengeHostTeamsCtrl(utilities, $state, $http, $rootScope, $mdDialog) {
+    function ChallengeHostTeamsCtrl(utilities, loaderService, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -29,21 +29,13 @@
         // loader for existng teams// loader for exisiting teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
-        vm.loginContainer = angular.element('.exist-team-card');
-
-        // show loader
-        vm.startExistLoader = function(msg) {
-            vm.isExistLoader = true;
-            vm.loaderTitle = msg;
-            vm.loginContainer.addClass('low-screen');
-        };
+        vm.loaderContainer = angular.element('.exist-team-card');
+         // show loader
+        vm.startLoader = loaderService.startLoader;
 
         // stop loader
-        vm.stopExistLoader = function() {
-            vm.isExistLoader = false;
-            vm.loaderTitle = '';
-            vm.loginContainer.removeClass('low-screen');
-        };
+        vm.stopLoader = loaderService.stopLoader;
+
 
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
@@ -95,21 +87,7 @@
                         // loader for exisiting teams
                         vm.isExistLoader = true;
                         vm.loaderTitle = '';
-                        vm.loginContainer = angular.element('.exist-team-card');
-
-                        // show loader
-                        vm.startLoader = function(msg) {
-                            vm.isExistLoader = true;
-                            vm.loaderTitle = msg;
-                            vm.loginContainer.addClass('low-screen');
-                        };
-
-                        // stop loader
-                        vm.stopLoader = function() {
-                            vm.isExistLoader = false;
-                            vm.loaderTitle = '';
-                            vm.loginContainer.removeClass('low-screen');
-                        };
+                        vm.loaderContainer = angular.element('.exist-team-card');
 
                         vm.startLoader("Loading Teams");
                         if (url !== null) {
@@ -197,7 +175,7 @@
                     vm.team.name = '';
                     vm.stopLoader();
 
-                    vm.startExistLoader("Loading Teams");
+                    vm.startLoader("Loading Teams");
                     var parameters = {};
                     parameters.url = 'hosts/challenge_host_team/';
                     parameters.method = 'GET';
@@ -228,11 +206,11 @@
                                 }
 
 
-                                vm.stopExistLoader();
+                                vm.stopLoader();
                             }
                         },
                         onError: function() {
-                            vm.stopExistLoader();
+                            vm.stopLoader();
                         }
                     };
                     utilities.sendRequest(parameters);
@@ -262,7 +240,7 @@
                 .cancel("No");
 
             $mdDialog.show(confirm).then(function() {
-                vm.startExistLoader();
+                vm.startLoader();
                 var parameters = {};
                 parameters.url = 'hosts/remove_self_from_challenge_host/' + hostTeamId;
                 parameters.method = 'DELETE';
@@ -311,13 +289,13 @@
                                     }
                                 }
 
-                                vm.stopExistLoader();
+                                vm.stopLoader();
                             }
                         };
                         utilities.sendRequest(parameters);
                     },
                     onError: function() {
-                        vm.stopExistLoader();
+                        vm.stopLoader();
                         $rootScope.notify("error", "Couldn't remove you from the challenge");
                     }
                 };

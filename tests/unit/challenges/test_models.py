@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 
@@ -8,8 +9,10 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import Challenge, ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard, LeaderboardData
 from hosts.models import ChallengeHostTeam
+from jobs.models import Submission
+from participants.models import ParticipantTeam
 
 
 class BaseTestCase(TestCase):
@@ -37,11 +40,42 @@ class BaseTestCase(TestCase):
             end_date=timezone.now() + timedelta(days=1),
             anonymous_leaderboard=False)
 
+        try:
+            os.makedirs('/tmp/evalai')
+        except OSError:
+            pass
 
-class ChalengeTestCase(BaseTestCase):
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase = ChallengePhase.objects.create(
+                name='Challenge Phase',
+                description='Description for Challenge Phase',
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain'),
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
+
+        self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
+
+        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
+
+        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+                dataset_split=self.dataset_split,
+                challenge_phase=self.challenge_phase,
+                leaderboard=self.leaderboard,
+                visibility=ChallengePhaseSplit.PUBLIC
+            )
+
+
+class ChallengeTestCase(BaseTestCase):
 
     def setUp(self):
-        super(ChalengeTestCase, self).setUp()
+        super(ChallengeTestCase, self).setUp()
 
         try:
             os.makedirs('/tmp/evalai')
@@ -96,29 +130,24 @@ class ChalengeTestCase(BaseTestCase):
                          self.challenge.get_end_date())
 
 
+class DatasetSplitTestCase(BaseTestCase):
+
+    def setUp(self):
+        super(DatasetSplitTestCase, self).setUp()
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Name",
+            codename="Codename",
+        )
+
+    def test__str__(self):
+        self.assertEqual(self.dataset_split.name,
+                         self.dataset_split.__str__())
+
+
 class ChallengePhaseTestCase(BaseTestCase):
 
     def setUp(self):
         super(ChallengePhaseTestCase, self).setUp()
-        try:
-            os.makedirs('/tmp/evalai')
-        except OSError:
-            pass
-
-        with self.settings(MEDIA_ROOT='/tmp/evalai'):
-            self.challenge_phase = ChallengePhase.objects.create(
-                name='Challenge Phase',
-                description='Description for Challenge Phase',
-                leaderboard_public=False,
-                is_public=False,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
-                challenge=self.challenge,
-                test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain'),
-                max_submissions_per_day=100000,
-                max_submissions=100000,
-            )
 
     def tearDown(self):
         shutil.rmtree('/tmp/evalai')
@@ -142,3 +171,60 @@ class ChallengePhaseTestCase(BaseTestCase):
     def test_get_end_date(self):
         self.assertEqual(self.challenge_phase.end_date,
                          self.challenge_phase.get_end_date())
+
+
+class LeaderboardTestCase(BaseTestCase):
+
+    def setUp(self):
+        super(LeaderboardTestCase, self).setUp()
+        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({"hello": "world"}))
+
+    def test__str__(self):
+        instance_id = str(self.leaderboard.id)
+        self.assertEqual(instance_id,
+                         self.leaderboard.__str__())
+
+
+class ChallengePhaseSplitTestCase(BaseTestCase):
+
+    def setUp(self):
+        super(ChallengePhaseSplitTestCase, self).setUp()
+
+    def tearDown(self):
+        shutil.rmtree('/tmp/evalai')
+
+    def test__str__(self):
+        challenge_phase_name = self.challenge_phase_split.challenge_phase.name
+        dataset_split_name = self.challenge_phase_split.dataset_split.name
+        string_to_compare = '{} : {}'.format(challenge_phase_name, dataset_split_name)
+        self.assertEqual(string_to_compare,
+                         self.challenge_phase_split.__str__())
+
+
+class LeaderboardDataTestCase(BaseTestCase):
+
+    def setUp(self):
+        super(LeaderboardDataTestCase, self).setUp()
+
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name='Participant Team for Challenge',
+            created_by=self.user)
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            is_public=True,
+        )
+
+        self.leaderboard_data = LeaderboardData.objects.create(
+                challenge_phase_split=self.challenge_phase_split,
+                submission=self.submission,
+                leaderboard=self.leaderboard,
+                result=json.dumps({'hello': 'world'}),)
+
+    def test__str__(self):
+        self.assertEqual('{0} : {1}'.format(self.challenge_phase_split, self.submission),
+                         self.leaderboard_data.__str__())

@@ -21,11 +21,7 @@
         utilities.hideLoader();
 
         vm.imgUrlObj = {
-            ironman: "dist/images/ironman.png",
-            hulk: "dist/images/hulk.png",
-            women: "dist/images/women.png",
-            bird: "dist/images/bird.png",
-            captain: "dist/images/captain.png"
+            profilePic: "dist/images/spaceman.png"
         };
 
         var hasImage = utilities.getData('avatar');
