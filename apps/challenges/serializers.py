@@ -87,15 +87,15 @@ class LeaderboardSerializer(serializers.ModelSerializer):
     """
     Serialize the Leaderboard Model.
     """
-  class Meta:
-    model = Leaderboard
-    fields = '__all__'
+    class Meta:
+        model = Leaderboard
+        fields = '__all__'
 
 
 class ZipFileCreateChallengeSerializer(ChallengeSerializer):
     """
     Serialize the Challenge Model and is used to create challenge using zip file uploaded by user.
-    """ 
+    """
     class Meta:
         model = Challenge
         fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
@@ -105,7 +105,7 @@ class ZipFileCreateChallengeSerializer(ChallengeSerializer):
 
 class ZipFileCreateChallengePhaseSplitSerializer(serializers.ModelSerializer):
     """
-    Serialize the ChallengePhaseSplits Model and is used to create challenge phase splits 
+    Serialize the ChallengePhaseSplits Model and is used to create challenge phase splits
     using zip file uploaded by user.
     """
     class Meta:
