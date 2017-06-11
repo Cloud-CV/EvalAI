@@ -191,12 +191,12 @@ class ChallengeConfiguration(TimeStampedModel):
     Model to store zip file for challenge creation.
     """
     user = models.ForeignKey(User)
-    challenge = models.OneToOneField(Challenge)
-    zip_configuration = models.FileField(upload_to=RandomFileName("zip_configuration_files/challenge_zip"))
+    challenge = models.OneToOneField(Challenge, null=True, blank=True)
+    zip_configuration = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'))
     is_created = models.BooleanField(default=False)
-    stdout_file = models.FileField(upload_to=RandomFileName("zip_configuration_files/challenge_zip"),
+    stdout_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
                                    null=True, blank=True)
-    stderr_file = models.FileField(upload_to=RandomFileName("zip_configuration_files/challenge_zip"),
+    stderr_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
                                    null=True, blank=True)
 
     class Meta:
