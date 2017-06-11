@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from django.contrib.auth.models import User
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -183,3 +184,21 @@ class LeaderboardData(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'leaderboard_data'
+
+
+class ChallengeConfiguration(TimeStampedModel):
+    """
+    Model to store zip file for challenge creation.
+    """
+    user = models.ForeignKey(User)
+    challenge = models.OneToOneField(Challenge, null=True, blank=True)
+    zip_configuration = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'))
+    is_created = models.BooleanField(default=False)
+    stdout_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
+                                   null=True, blank=True)
+    stderr_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
+                                   null=True, blank=True)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'challenge_zip_configuration'
