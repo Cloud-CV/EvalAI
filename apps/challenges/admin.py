@@ -2,7 +2,13 @@ from django.contrib import admin
 
 from base.admin import TimeStampedAdmin
 
-from .models import Challenge, ChallengePhase, DatasetSplit, Leaderboard, ChallengePhaseSplit, LeaderboardData
+from .models import (Challenge,
+                     ChallengeConfiguration,
+                     ChallengePhase,
+                     ChallengePhaseSplit,
+                     DatasetSplit,
+                     Leaderboard,
+                     LeaderboardData,)
 
 
 @admin.register(Challenge)
@@ -45,3 +51,10 @@ class LeaderboardDataAdmin(TimeStampedAdmin):
     list_display = ("challenge_phase_split", "submission", "leaderboard", "result")
     list_filter = ("challenge_phase_split", "submission", "leaderboard", "result")
     search_fields = ("challenge_phase_split", "submission", "leaderboard", "result")
+
+
+@admin.register(ChallengeConfiguration)
+class ChallengeConfigurationAdmin(TimeStampedAdmin):
+    list_display = ('user', 'challenge', 'is_created', 'zip_configuration',)
+    list_filter = ('user', 'is_created',)
+    search_fields = ('user', 'challenge',)
