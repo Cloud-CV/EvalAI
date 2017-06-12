@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('contactUsCtrl', contactUsCtrl);
 
-    contactUsCtrl.$inject = ['utilities', '$state', '$http', '$rootScope'];
+    contactUsCtrl.$inject = ['utilities', 'loaderService', '$state', '$http', '$rootScope'];
 
-    function contactUsCtrl(utilities, $state, $http, $rootScope) {
+    function contactUsCtrl(utilities, loaderService, $state, $http, $rootScope) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.wrnMsg = {};
@@ -18,16 +18,11 @@
         vm.user = {};
         vm.isFormError = false;
 
-        vm.startLoader = function(msg) {
-            $rootScope.isLoader = true;
-            $rootScope.loaderTitle = msg;
-        };
+        // start loader
+        vm.startLoader =  loaderService.startLoader;
 
         // stop loader
-        vm.stopLoader = function() {
-            $rootScope.isLoader = false;
-            $rootScope.loaderTitle = '';
-        };
+        vm.stopLoader = loaderService.stopLoader;
 
         // To get the previous profile data
         var parameters = {};
@@ -74,13 +69,12 @@
                     },
                     onError: function(response) {
                         if (response.status == 400) {
-                            vm.stopLoader();
                             vm.isFormError = true;
                             var isUsernameValid, isEmailValid, isMessageValid;
                             try {
-                                isUsernameValid = typeof(response.data.name) !== 'undefined' ? true : false;
-                                isEmailValid = typeof(response.data.email) !== 'undefined' ? true : false;
-                                isMessageValid = typeof(response.data.message) !== 'undefined' ? true : false;
+                                isUsernameValid = response.data.name !== undefined ? true : false;
+                                isEmailValid = response.data.email !== undefined ? true : false;
+                                isMessageValid = response.data.message !== undefined ? true : false;
                                 if (isUsernameValid) {
                                     vm.FormError = response.data.name[0];
                                 } else if (isEmailValid) {
