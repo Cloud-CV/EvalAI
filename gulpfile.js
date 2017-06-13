@@ -29,11 +29,12 @@ var gulp = require('gulp'),
     path = require('path'),
     inject = require('gulp-inject'),
     _ = require('lodash'),
-    karma_server = require('karma').Server;
+    Server = require('karma').Server;
 
 
 var scripts = require('./frontend/app.scripts.json');
 var styles = require('./frontend/app.styles.json');
+
 
 //include all bower scripts files
 gulp.task('vendorjs', function() {
@@ -269,13 +270,6 @@ gulp.task('lint', [], function() {
         }))
 });
 
-// js unit test
-gulp.task('test', function(done) {
-    new karma_server({
-        configFile: __dirname + '/karma.conf.js'
-    }, done).start();
-});
-
 // cleaning build process- run clean before deploy and rebuild files again
 gulp.task('clean', function() {
     return del(['frontend/dist/'], { force: true });
@@ -363,6 +357,26 @@ gulp.task('watch', function() {
 
 });
 
+/**
+ * Run test once and exit
+ */
+gulp.task('test', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true
+  }, done).start();
+});
+
+/**
+ * Watch for file changes and re-run tests on each change
+ */
+gulp.task('test:watch', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js'
+  }, done).start();
+});
+
+
 // Start a server for serving frontend
 gulp.task('connect', ['lint'], function() {
     // initially close the existance server if exists
@@ -404,5 +418,5 @@ gulp.task('prod', function(callback) {
 
 // Runserver for development
 gulp.task('dev:runserver', function(callback) {
-    runSequence('dev', 'connect', 'watch', callback);
+    runSequence('dev', 'connect', 'watch', 'test:watch', callback);
 });
