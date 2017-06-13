@@ -31,7 +31,7 @@ class RandomFileName(object):
 
     def __call__(self, instance, filename):
         extension = os.path.splitext(filename)[1]
-        if 'id' in self.path and instance.pk:
+        if 'id' in self.path or instance.pk:
             self.path = self.path.format(id=instance.pk)
         elif 'id' not in self.path and instance.pk:
             path = "submission_files/submission_{id}"
