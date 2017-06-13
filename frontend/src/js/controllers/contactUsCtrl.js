@@ -83,11 +83,11 @@
                                     vm.FormError = response.data.message[0];
 
                                 } else {
-                                    $rootScope.notify("error", "Some error have occured . Please try again !");
+                                    $rootScope.notify("error", "Some error occured. Please try again!");
                                 }
 
                             } catch (error) {
-                                $rootScope.notify("error", "Some error have occured . Please try again !");
+                                $rootScope.notify("error", "Some error occured. Please try again!");
                             }
                         }
 
