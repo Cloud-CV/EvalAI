@@ -1,12 +1,14 @@
-FROM rabbitmq
+FROM python:2.7
 MAINTAINER CloudCV
+ENV PYTHONUNBUFFERED 1
 
-RUN apt-get update && apt-get install -y python python-pip python-dev libpq-dev libjpeg-dev
+RUN apt-get update && apt-get install -y python python-pip python-dev libpq-dev libjpeg-dev libyaml-dev libffi-dev
 
 RUN mkdir /code
-ADD . /code
+ADD ./ /code/
 WORKDIR /code
 
-RUN pip install -r requirements/common.txt
+RUN pip install -U cffi service_identity
+RUN pip install -r requirements/dev.txt
 
-ENTRYPOINT ["python", "scripts/workers/submission_worker.py"]
+CMD ["python", "scripts/workers/submission_worker.py"]
