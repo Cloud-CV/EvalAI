@@ -43,6 +43,8 @@ sys.path.insert(0, DJANGO_PROJECT_PATH)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
+DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
+
 from challenges.models import (Challenge,
                                ChallengePhase,
                                ChallengePhaseSplit,
@@ -162,7 +164,8 @@ def create_dir_as_python_package(directory):
 def return_file_url_per_environment(url):
 
     if DJANGO_SETTINGS_MODULE == "settings.dev":
-        url = "{0}{1}".format("http://localhost:8000", url)
+        base_url = "http://{0}:8000".format(DJANGO_SERVER)
+        url = "{0}{1}".format(base_url, url)
 
     elif DJANGO_SETTINGS_MODULE == "settings.test":
         url = "{0}{1}".format("http://testserver", url)
