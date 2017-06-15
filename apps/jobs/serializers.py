@@ -61,7 +61,7 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
         return obj.leaderboard.schema
 
 
-class ViewSubmissionSerializer(serializers.ModelSerializer):
+class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
 
     participant_team = serializers.SerializerMethodField()
     challenge_phase = serializers.SerializerMethodField()
