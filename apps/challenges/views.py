@@ -398,7 +398,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # Case 1: If user doesn't participated in the challenge.
-    if not user_is_participant:
+    if not user_is_participant and not user_is_challenge_host:
         response_data = {'error': 'You haven\'t participated in the challenge'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
