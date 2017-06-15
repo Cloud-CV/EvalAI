@@ -4,7 +4,7 @@
 (function() {
 
     'use strict';
-    
+
     angular
         .module('evalai')
         .service('utilities', utilities);

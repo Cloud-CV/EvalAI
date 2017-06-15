@@ -19,7 +19,7 @@ module.exports = function(config) {
             'frontend/src/js/app.js',
             'frontend/src/js/route-config/*.js',
             'frontend/src/**/*.js',
-            'frontend/test/**/*.test.js'
+            'frontend/tests/**/*.test.js'
         ],
 
 
