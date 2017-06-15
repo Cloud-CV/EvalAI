@@ -1,9 +1,13 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse_lazy
+from django.utils import timezone
 
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge
+from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from participants.models import ParticipantTeam
 
@@ -31,6 +35,21 @@ class BaseAPITestClass(APITestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False)
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase = ChallengePhase.objects.create(
+                name='Challenge Phase',
+                description='Description for Challenge Phase',
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain'),
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+            )
 
         self.participant_team = ParticipantTeam.objects.create(
             team_name='Participant Team for Challenge',
@@ -64,9 +83,9 @@ class TestChallengeUrls(BaseAPITestClass):
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/challenge_phase')
 
         url = reverse_lazy('challenges:get_challenge_phase_detail',
-                           kwargs={'challenge_pk': self.challenge.pk, 'pk': self.challenge.pk})
+                           kwargs={'challenge_pk': self.challenge.pk, 'pk': self.challenge_phase.pk})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/challenge_phase/' +
-                         str(self.challenge.pk))
+                         str(self.challenge_phase.pk))
 
         url = reverse_lazy('challenges:get_challenge_by_pk', kwargs={'pk': self.challenge.pk})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/')
