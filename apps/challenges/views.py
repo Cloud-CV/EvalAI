@@ -14,7 +14,7 @@ from base.utils import paginated_queryset
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import get_challenge_host_teams_for_user, is_user_a_host_of_challenge
 from jobs.models import Submission
-from jobs.serializers import SubmissionSerializer
+from jobs.serializers import SubmissionSerializer, ChallengeSubmissionManagementSerializer
 from participants.models import Participant, ParticipantTeam
 from participants.utils import (get_participant_teams_for_user,
                                 has_user_participated_in_challenge,
@@ -368,7 +368,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if challenge_host_team exists or not.
-    if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge):
+    if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
         submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submissions, request)
         try:
