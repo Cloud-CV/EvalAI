@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import paginated_queryset, get_model_object
 from challenges.models import (
     ChallengePhase,
     Challenge,
@@ -30,7 +30,6 @@ from participants.utils import (
 from .models import Submission
 from .sender import publish_submission_message
 from .serializers import SubmissionSerializer
-from .utils import get_challenge_object, get_challenge_phase_object, get_participant_team_object
 
 
 @throttle_classes([UserRateThrottle])
@@ -239,19 +238,13 @@ def leaderboard(request, challenge_phase_split_id):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_remaining_submissions(request, challenge_phase_pk, participant_team_pk, challenge_pk):
-    challenge = get_challenge_object(challenge_pk)
-    if challenge is not None:
-        return challenge
+def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
+    challenge_model = get_model_object(Challenge)
+    challenge = challenge_model(challenge_pk)
 
-    challenge_phase = get_challenge_phase_object(challenge_phase_pk)
-    if isinstance(challenge_phase, Response):
-        return challenge_phase
+    challenge_phase_model = get_model_object(ChallengePhase)
+    challenge_phase = challenge_phase_model(challenge_phase_pk)
 
-    participant_team = get_participant_team_object(participant_team_pk)
-    if participant_team is not None:
-        return participant_team
-    
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge_pk)
 
@@ -278,20 +271,26 @@ def get_remaining_submissions(request, challenge_phase_pk, participant_team_pk, 
         status=Submission.FAILED,
         submitted_at__gte=timezone.now().date()).count()
 
-    if (submissions_done_today_count - failed_submissions_count) >= max_submission_per_day or max_submission_per_day == 0:
+    if ((submissions_done_today_count - failed_submissions_count) >= max_submission_per_day
+            or (max_submission_per_day == 0)):
         date_time_now = timezone.now()
         date_time_tomorrow = date_time_now.date() + datetime.timedelta(1)
         utc = pytz.UTC
-        midnight = utc.localize(datetime.datetime.combine(date_time_tomorrow, datetime.time()))
+        midnight = utc.localize(datetime.datetime.combine(
+            date_time_tomorrow, datetime.time()))
         remaining_time = midnight - date_time_now
         response_data = {'message': 'You have exhausted today\'s submission limit',
                          'remaining_time': remaining_time
                          }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
-        remaining_submissions_today_count = max_submission_per_day - (submissions_done_today_count - failed_submissions_count)
-        remaining_submission_count = max_submission - (submissions_done_today_count - failed_submissions_count)
+        remaining_submissions_today_count = (max_submission_per_day -
+                                             (submissions_done_today_count -
+                                              failed_submissions_count)
+                                             )
+        remaining_submission_count = max_submission - \
+            (submissions_done_today_count - failed_submissions_count)
         response_data = {'remaining_submissions_today_count': remaining_submissions_today_count,
-                         'remaining_submission': remaining_submission_count
+                         'remaining_submissions': remaining_submission_count
                          }
         return Response(response_data, status=status.HTTP_200_OK)
