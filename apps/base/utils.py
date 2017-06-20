@@ -3,7 +3,6 @@ import re
 import uuid
 
 from django.conf import settings
-from django.utils.deconstruct import deconstructible
 
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
@@ -25,7 +24,6 @@ def paginated_queryset(queryset, request, pagination_class=PageNumberPagination(
     return (paginator, result_page)
 
 
-@deconstructible
 class RandomFileName(object):
     def __init__(self, path):
         self.path = path
@@ -33,14 +31,11 @@ class RandomFileName(object):
     def __call__(self, instance, filename):
         extension = os.path.splitext(filename)[1]
         if 'id' in self.path and instance.pk:
-            self.path = self.path.format(id=instance.pk)
-        elif bool(re.search(r'\d', self.path)) and instance.pk:
-            old_instance_id = re.match('.*?([0-9]+)$', self.path).group(1)
-            temp_path = self.path.split(old_instance_id)
-            path = '{}{id}'.format(temp_path[0], id=instance.pk)
-            self.path = path
+            path = self.path.format(id=instance.pk)
+        else:
+            path = self.path
         filename = '{}{}'.format(uuid.uuid4(), extension)
-        filename = os.path.join(self.path, filename)
+        filename = os.path.join(path, filename)
         return filename
 
 
