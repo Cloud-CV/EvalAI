@@ -7,7 +7,7 @@
         .module('evalai')
         .config(configure);
 
-    var baseUrl = "dist/views/";
+    var baseUrl = "dist/views";
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
 
