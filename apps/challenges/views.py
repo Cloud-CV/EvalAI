@@ -10,7 +10,7 @@ from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthe
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import paginated_queryset, get_model_object
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import get_challenge_host_teams_for_user, is_user_a_host_of_challenge
 from jobs.models import Submission
@@ -354,18 +354,15 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
     Returns all the submissions for a particular challenge
     """
     # check if challenge exists or not.
-    try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
-    except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    challenge_model = get_model_object(Challenge)
+    challenge = challenge_model(challenge_pk)
 
     # check if challenge phase exists or not.
     try:
         challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk, challenge=challenge)
     except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'Challenge Phase does not exist'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # check if challenge_host_team exists or not.
     if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
@@ -379,14 +376,14 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the user is a participant of the challenge
-    elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge):
+    elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
 
         # get participant team object for the user for a particular challenge.
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
                 request.user, challenge_pk)
 
         submissions = Submission.objects.filter(participant_team=participant_team_pk,
-                                               challenge_phase=challenge_phase).order_by('-submitted_at')
+                                                challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submissions, request)
         try:
             serializer = SubmissionSerializer(result_page, many=True, context={'request': request})
@@ -395,7 +392,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
         except:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # when use is neither host not participant of the challenge
+    # when user is neither host not participant of the challenge
     else:
         response_data = {'error': 'You are neither host nor participant of the challenge!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

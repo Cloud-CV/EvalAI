@@ -1398,17 +1398,16 @@ class GetAllSubmissionsTest(BaseAPITestClass):
 
     def setUp(self):
         super(GetAllSubmissionsTest, self).setUp()
-        self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
-                                kwargs={'challenge_pk': self.challenge.pk})
 
         self.user5 = User.objects.create(
             username='otheruser',
-            password='other_secret_password'
-        )
+            password='other_secret_password',
+            email='user5@test.com',)
 
         self.user6 = User.objects.create(
             username='not a challenge host',
-            password='secret password')
+            password='secret password',
+            email='user6@test.com',)
 
         self.user7 = User.objects.create(
             username='not a challenge host of challenge5',
@@ -1449,6 +1448,15 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             permissions=ChallengeHost.ADMIN
         )
 
+        self.participant_team6 = ParticipantTeam.objects.create(
+            team_name='Participant Team for Challenge5',
+            created_by=self.user6)
+
+        self.participant6 = Participant.objects.create(
+            user=self.user6,
+            status=Participant.ACCEPTED,
+            team=self.participant_team6)
+
         self.challenge5 = Challenge.objects.create(
             title='Other Test Challenge',
             short_description='Short description for other test challenge',
@@ -1463,14 +1471,10 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
         )
 
-        self.participant_team6 = ParticipantTeam.objects.create(
-            team_name='Participant Team for Challenge5',
-            created_by=self.user6)
-
-        self.participant = Participant.objects.create(
-            user=self.user6,
-            status=Participant.SELF,
-            team=self.participant_team6)
+        try:
+            os.makedirs('/tmp/evalai')
+        except OSError:
+            pass
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge_phase5 = ChallengePhase.objects.create(
@@ -1484,57 +1488,78 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
                                                    'Dummy file content', content_type='text/plain')
             )
-
-        self.submission = Submission.objects.create(
-            participant_team=self.participant_team6,
-            challenge_phase=self.challenge_phase5,
-            created_by=self.challenge_host_team5.created_by,
-            status='submitted',
-            input_file=self.challenge_phase5.test_annotation,
-            method_name="Test Method",
-            method_description="Test Description",
-            project_url="http://testserver/",
-            publication_url="http://testserver/",
-            is_public=True,
-        )
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.submission = Submission.objects.create(
+                participant_team=self.participant_team6,
+                challenge_phase=self.challenge_phase5,
+                created_by=self.challenge_host_team5.created_by,
+                status='submitted',
+                input_file=SimpleUploadedFile('test_sample_file.txt',
+                                                       'Dummy file content', content_type='text/plain'),
+                method_name="Test Method",
+                method_description="Test Description",
+                project_url="http://testserver/",
+                publication_url="http://testserver/",
+                is_public=True,
+            )
+        self.client.force_authenticate(user=self.user6)
 
     def test_get_all_submissions_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
-                                kwargs={'challenge_pk': self.challenge5.pk+10})
+                                kwargs={'challenge_pk': self.challenge5.pk+10,
+                                        'challenge_phase_pk':self.challenge_phase5.pk})
         expected = {
-            'error': 'Challenge {} does not exist'.format(self.challenge5.pk+10)
+            'detail': 'Challenge {} does not exist'.format(self.challenge5.pk+10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_submission_when_challenge_is_not_created_by_host(self):
+    def test_get_all_submissions_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
-                                kwargs={'challenge_pk': self.challenge5.pk})
+                                kwargs={'challenge_pk': self.challenge5.pk,
+                                        'challenge_phase_pk':self.challenge_phase5.pk+10})
         expected = {
-            'error': 'Challenge {} is not created by {}'.format(self.challenge5.pk, self.challenge_host_team7)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase5.pk+10)
         }
-        self.client.force_authenticate(user=self.user7)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_submission_when_user_is_not_in_challenge_host_team(self):
+    def test_get_all_submissions_when_user_is_host_of_challenge(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
-                                kwargs={'challenge_pk': self.challenge5.pk})
-
-        self.client.force_authenticate(user=self.user6)
-        expected = {
-            'error': 'You are not a challenge host'
-        }
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_get_all_submissions_of_challenge(self):
-        self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
-                                kwargs={'challenge_pk': self.challenge5.pk})
+                                kwargs={'challenge_pk': self.challenge5.pk,
+                                        'challenge_phase_pk':self.challenge_phase5.pk})
         self.client.force_authenticate(user=self.user5)
+        participant_ids = Participant.objects.filter(team=self.participant_team6).values_list('user_id', flat=True)
+
+        expected = [
+            {
+                'id': self.submission.id,
+                'participant_team': self.submission.participant_team.team_name,
+                'challenge_phase': self.submission.challenge_phase.name,
+                'created_by': self.submission.created_by.username,
+                'status': self.submission.status,
+                "is_public": self.submission.is_public,
+                "submission_number": self.submission.submission_number,
+                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+                'execution_time': self.submission.execution_time,
+                'input_file': "http://testserver%s" % (self.submission.input_file.url),
+                'stdout_file': None,
+                'stderr_file': None,
+                'submission_result_file': None,
+                'submission_metadata_file': None,
+                "participant_team_members_email_ids": User.objects.filter(id__in=participant_ids).values_list('email', flat=True),
+            }
+        ]
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_all_submissions_when_user_is_participant_of_challenge(self):
+        self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
+                                kwargs={'challenge_pk': self.challenge5.pk,
+                                        'challenge_phase_pk':self.challenge_phase5.pk})
         expected = [
             {
                 'id': self.submission.id,
@@ -1556,7 +1581,22 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
             }
         ]
-
+        self.challenge5.participant_teams.add(self.participant_team6)
+        self.challenge5.save()
         response = self.client.get(self.url, {})
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_all_submissions_when_user_is_neither_host_nor_participant_of_challenge(self):
+        self.client.force_authenticate(user=self.user7)
+        self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
+                                kwargs={'challenge_pk': self.challenge5.pk,
+                                        'challenge_phase_pk':self.challenge_phase5.pk})
+        expected = {
+            'error': 'You are neither host nor participant of the challenge!'
+        }
+        self.challenge5.participant_teams.add(self.participant_team6)
+        self.challenge5.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
