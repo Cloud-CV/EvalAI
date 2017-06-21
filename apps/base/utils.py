@@ -1,5 +1,4 @@
 import os
-import re
 import uuid
 
 from django.conf import settings
@@ -30,10 +29,9 @@ class RandomFileName(object):
 
     def __call__(self, instance, filename):
         extension = os.path.splitext(filename)[1]
+        path = self.path
         if 'id' in self.path and instance.pk:
             path = self.path.format(id=instance.pk)
-        else:
-            path = self.path
         filename = '{}{}'.format(uuid.uuid4(), extension)
         filename = os.path.join(path, filename)
         return filename
