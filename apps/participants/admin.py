@@ -17,7 +17,7 @@ class ParticipantAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     """
     list_display = ('user', 'status', 'team')
     search_fields = ('user', 'status', 'team')
-    list_filter = ('user', 'status', 'team')
+    list_filter = ('status', 'team')
 
 
 @admin.register(ParticipantTeam)
