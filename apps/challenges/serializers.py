@@ -31,22 +31,6 @@ class ChallengeSerializer(serializers.ModelSerializer):
                   'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',)
 
 
-class ChallengeConfigurationSerializer(serializers.ModelSerializer):
-    """
-    Serialize the Challenge Configuration Model.
-    """
-    def __init__(self, *args, **kwargs):
-        super(ChallengeConfigurationSerializer, self).__init__(*args, **kwargs)
-        context = kwargs.get('context')
-        if context:
-            user = context.get('user')
-            kwargs['data']['user'] = user.pk
-
-    class Meta:
-        model = ChallengeConfiguration
-        fields = ('zip_configuration', 'user',)
-
-
 class ChallengePhaseSerializer(serializers.ModelSerializer):
 
     is_active = serializers.ReadOnlyField()
@@ -63,6 +47,13 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
                   'is_public', 'is_active', 'codename')
+
+
+class DatasetSplitSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DatasetSplit
+        fields = '__all__'
 
 
 class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
@@ -82,11 +73,20 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
         return obj.challenge_phase.name
 
 
-class DatasetSplitSerializer(serializers.ModelSerializer):
+class ChallengeConfigurationSerializer(serializers.ModelSerializer):
+    """
+    Serialize the ChallengeConfiguration Model.
+    """
+    def __init__(self, *args, **kwargs):
+        super(ChallengeConfigurationSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get('context')
+        if context:
+            user = context.get('user')
+            kwargs['data']['user'] = user.pk
 
     class Meta:
-        model = DatasetSplit
-        fields = '__all__'
+        model = ChallengeConfiguration
+        fields = ('zip_configuration', 'user',)
 
 
 class LeaderboardSerializer(serializers.ModelSerializer):
@@ -100,7 +100,7 @@ class LeaderboardSerializer(serializers.ModelSerializer):
 
 class ZipConfigurationChallengeSerializer(ChallengeSerializer):
     """
-    Serialize the Challenge Model and is used to create challenge using zip file uploaded by user.
+    Serializer used for creating challenge through zip file.
     """
     class Meta:
         model = Challenge
@@ -111,8 +111,7 @@ class ZipConfigurationChallengeSerializer(ChallengeSerializer):
 
 class ZipFileCreateChallengePhaseSplitSerializer(serializers.ModelSerializer):
     """
-    Serialize the ChallengePhaseSplit Model and is used to create challenge phase splits
-    using zip file uploaded by user.
+    Serializer used for creating challenge phase split through zip file.
     """
     class Meta:
         model = ChallengePhaseSplit
