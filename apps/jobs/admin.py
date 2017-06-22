@@ -6,6 +6,7 @@ from .models import Submission
 
 from import_export.admin import ImportExportModelAdmin
 
+
 @admin.register(Submission)
 class SubmissionAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     list_display = ('participant_team', 'challenge_phase', 'created_by', 'status', 'is_public',

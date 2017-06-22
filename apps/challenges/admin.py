@@ -12,6 +12,7 @@ from .models import (Challenge,
 
 from import_export.admin import ImportExportModelAdmin
 
+
 @admin.register(Challenge)
 class ChallengeAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     list_display = ("title", "start_date", "end_date", "creator", "published", "enable_forum", "anonymous_leaderboard")

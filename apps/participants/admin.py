@@ -8,6 +8,7 @@ from .models import (
 
 from import_export.admin import ImportExportModelAdmin
 
+
 @admin.register(Participant)
 class ParticipantAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     """
