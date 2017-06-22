@@ -353,18 +353,18 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
     """
     Returns all the submissions for a particular challenge
     """
-    # check if challenge exists or not.
+    # To check for the corresponding challenge from challenge_pk.
     challenge_model = get_model_object(Challenge)
     challenge = challenge_model(challenge_pk)
 
-    # check if challenge phase exists or not.
+    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk, challenge=challenge)
     except ChallengePhase.DoesNotExist:
         response_data = {'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    # check if challenge_host_team exists or not.
+    # To check for the user as a host of the challenge from the request and challenge_pk.
     if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
         submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submissions, request)
@@ -375,7 +375,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
         except:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # check if the user is a participant of the challenge
+    # To check for the user as a participant of the challenge from the request and challenge_pk.
     elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
 
         # get participant team object for the user for a particular challenge.
@@ -392,7 +392,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
         except:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # when user is neither host not participant of the challenge
+    # when user is neither host not participant of the challenge.
     else:
         response_data = {'error': 'You are neither host nor participant of the challenge!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
