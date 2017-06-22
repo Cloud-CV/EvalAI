@@ -11,7 +11,6 @@ from import_export.admin import ImportExportModelAdmin
 @admin.register(ChallengeHostTeam)
 class ChallengeHostTeamModelAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     list_display = ("team_name", "created_by")
-    list_filter = ("created_by", )
     search_fields = ("team_name", "created_by")
 
 
