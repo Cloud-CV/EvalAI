@@ -6,9 +6,10 @@ from .models import (
     ParticipantTeam,
 )
 
+from import_export.admin import ImportExportModelAdmin
 
 @admin.register(Participant)
-class ParticipantAdmin(TimeStampedAdmin):
+class ParticipantAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     """
     An abstract base class which provides an
     interface to display user and team status.
@@ -19,7 +20,7 @@ class ParticipantAdmin(TimeStampedAdmin):
 
 
 @admin.register(ParticipantTeam)
-class ParticipantTeamAdmin(TimeStampedAdmin):
+class ParticipantTeamAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     """
     A class which provides interface to display
     and filter team names.
