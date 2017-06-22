@@ -80,8 +80,8 @@ class Challenge(TimeStampedModel):
         return False
 
 
-signals.post_save.connect(model_field_name(field_name='evaluation_script')
-                         (create_post_model_field), sender=Challenge, weak=False)
+signals.post_save.connect(model_field_name(field_name='evaluation_script')(create_post_model_field),
+                          sender=Challenge, weak=False)
 
 
 class DatasetSplit(TimeStampedModel):
@@ -144,8 +144,8 @@ class ChallengePhase(TimeStampedModel):
         return False
 
 
-signals.post_save.connect(model_field_name(field_name='test_annotation')
-                         (create_post_model_field), sender=ChallengePhase, weak=False)
+signals.post_save.connect(model_field_name(field_name='test_annotation')(create_post_model_field),
+                          sender=ChallengePhase, weak=False)
 
 
 class Leaderboard(TimeStampedModel):
