@@ -37,21 +37,20 @@ class ChallengePhaseAdmin(TimeStampedAdmin, ImportExportModelAdmin):
 @admin.register(Leaderboard)
 class LeaderboardAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     list_display = ("id", "schema")
-    list_filter = ("id",)
     search_fields = ("id",)
 
 
 @admin.register(ChallengePhaseSplit)
 class ChallengePhaseSplitAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     list_display = ("id", "challenge_phase", "dataset_split", "leaderboard", "visibility")
-    list_filter = ("id", "challenge_phase", "dataset_split", "leaderboard", "visibility")
+    list_filter = ("challenge_phase", "dataset_split", "leaderboard", "visibility")
     search_fields = ("challenge_phase", "dataset_split", "leaderboard")
 
 
 @admin.register(LeaderboardData)
 class LeaderboardDataAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     list_display = ("challenge_phase_split", "submission", "leaderboard", "result")
-    list_filter = ("challenge_phase_split", "submission", "leaderboard", "result")
+    list_filter = ("challenge_phase_split", "leaderboard",)
     search_fields = ("challenge_phase_split", "submission", "leaderboard", "result")
 
 
