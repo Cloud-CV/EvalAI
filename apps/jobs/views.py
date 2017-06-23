@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset, get_model_object
+from base.utils import paginated_queryset
 from challenges.models import (
     ChallengePhase,
     Challenge,
@@ -258,14 +258,14 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
     submissions_done_today_count = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
-        participant_team=participant_team_pk,
         challenge_phase=challenge_phase_pk,
+        participant_team=participant_team_pk,
         submitted_at__gte=timezone.now().date()).count()
 
     failed_submissions_count = Submission.objects.filter(
+        challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
         participant_team=participant_team_pk,
-        challenge_phase__challenge=challenge_pk,
         status=Submission.FAILED,
         submitted_at__gte=timezone.now().date()).count()
 
@@ -282,7 +282,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
             date_time_tomorrow, datetime.time()))
         # Subtract the current time from the midnight time to get the remaining time for the next day's submissions.
         remaining_time = midnight - date_time_now
-        # Return the remaining time with a message. 
+        # Return the remaining time with a message.
         response_data = {'message': 'You have exhausted today\'s submission limit',
                          'remaining_time': remaining_time
                          }
