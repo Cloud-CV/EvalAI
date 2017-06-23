@@ -73,7 +73,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
         return obj.challenge_phase.name
 
 
-class ChallengeConfigurationSerializer(serializers.ModelSerializer):
+class ChallengeConfigSerializer(serializers.ModelSerializer):
     """
     Serialize the ChallengeConfiguration Model.
     """
@@ -98,7 +98,7 @@ class LeaderboardSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ZipConfigurationChallengeSerializer(ChallengeSerializer):
+class ZipChallengeSerializer(ChallengeSerializer):
     """
     Serializer used for creating challenge through zip file.
     """
@@ -109,7 +109,7 @@ class ZipConfigurationChallengeSerializer(ChallengeSerializer):
                   'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',)
 
 
-class ZipFileCreateChallengePhaseSplitSerializer(serializers.ModelSerializer):
+class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
     """
     Serializer used for creating challenge phase split through zip file.
     """
