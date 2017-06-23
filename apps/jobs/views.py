@@ -1,5 +1,4 @@
 import datetime
-import pytz
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -275,7 +274,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
             or (max_submission_per_day == 0)):
         date_time_now = timezone.now()
         date_time_tomorrow = date_time_now.date() + datetime.timedelta(1)
-        utc = pytz.UTC
+        utc = timezone.utc
         midnight = utc.localize(datetime.datetime.combine(
             date_time_tomorrow, datetime.time()))
         remaining_time = midnight - date_time_now
