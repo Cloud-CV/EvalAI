@@ -455,28 +455,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
-
-        submissions_done_today_count = Submission.objects.filter(
-                    challenge_phase__challenge=self.challenge.pk,
-                    participant_team=self.participant_team.pk,
-                    challenge_phase=self.challenge_phase.pk,
-                    submitted_at__gte=datetime.date.today()).count()
-
-        failed_count = Submission.objects.filter(
-                    challenge_phase=self.challenge_phase.pk,
-                    participant_team=self.participant_team.pk,
-                    challenge_phase__challenge=self.challenge.pk,
-                    status='failed',
-                    submitted_at__gte=datetime.date.today()).count()
-
-        max_submissions_per_day = self.challenge_phase.max_submissions_per_day
-
-        remaining_submission_per_day = max_submissions_per_day - (submissions_done_today_count - failed_count)
-        remaining_submission = self.challenge_phase.max_submissions - (submissions_done_today_count - failed_count)
-
         expected = {
-            'remaining_submissions_today_count': remaining_submission_per_day,
-            'remaining_submissions': remaining_submission
+            'remaining_submissions_today_count': 99998,
+            'remaining_submissions': 99998
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -489,32 +470,12 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
-
-        submissions_done_today_count = Submission.objects.filter(
-                    challenge_phase__challenge=self.challenge.pk,
-                    participant_team=self.participant_team.pk,
-                    challenge_phase=self.challenge_phase.pk,
-                    submitted_at__gte=datetime.date.today()).count()
-
-        failed_count = Submission.objects.filter(
-                    challenge_phase__challenge=self.challenge.pk,
-                    participant_team=self.participant_team.pk,
-                    challenge_phase=self.challenge_phase.pk,
-                    status='failed',
-                    submitted_at__gte=datetime.date.today()).count()
-
         setattr(self.challenge_phase, 'max_submissions_per_day', '1')
         self.challenge_phase.save()
-        max_submissions_per_day = self.challenge_phase.max_submissions_per_day
-        if (submissions_done_today_count - failed_count) >= int(max_submissions_per_day):
-            dtnow = datetime.datetime.now()
-            dttomorrow = dtnow + datetime.timedelta(days=1)
-            midnight = dttomorrow.replace(hour=0, minute=0, second=0)
-            remaining_time = midnight - dtnow
-            if remaining_time.total_seconds() > 0:
-                expected = {
-                    'message': 'You have exhausted today\'s submission limit',
-                }
+
+        expected = {
+            'message': 'You have exhausted today\'s submission limit',
+        }
 
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
