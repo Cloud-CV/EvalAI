@@ -239,7 +239,7 @@ def leaderboard(request, challenge_phase_split_id):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     challenge_model = get_model_object(Challenge)
-    challenge = challenge_model(challenge_pk)
+    challenge_model(challenge_pk)
 
     challenge_phase_model = get_model_object(ChallengePhase)
     challenge_phase = challenge_phase_model(challenge_phase_pk)
