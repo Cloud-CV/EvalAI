@@ -410,13 +410,11 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
     def test_get_remaining_submission_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
-                                        'challenge_pk': self.challenge.pk})
+                                        'challenge_pk': self.challenge.pk+1})
 
         expected = {
-            'detail': 'Challenge {} does not exist'.format(self.challenge.pk)
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+1)
         }
-
-        self.challenge.delete()
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -424,14 +422,12 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk+1,
                                         'challenge_pk': self.challenge.pk})
 
         expected = {
-            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk)
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+1)
         }
-
-        self.challenge_phase.delete()
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -469,7 +465,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
-        setattr(self.challenge_phase, 'max_submissions_per_day', '1')
+        setattr(self.challenge_phase, 'max_submissions_per_day', 1)
         self.challenge_phase.save()
 
         expected = {

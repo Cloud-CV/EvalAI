@@ -248,7 +248,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         request.user, challenge_pk)
 
     # Conditional check for the existence of participant team of the user.
-    if participant_team_pk is None:
+    if not participant_team_pk:
         response_data = {'error': 'You haven\'t participated in the challenge'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
