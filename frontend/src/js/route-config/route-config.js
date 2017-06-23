@@ -7,7 +7,7 @@
         .module('evalai')
         .config(configure);
 
-    var baseUrl = "dist/views/";
+    var baseUrl = "dist/views";
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
 
@@ -341,7 +341,9 @@
             name: "contact-us",
             url: "/contact",
             templateUrl: baseUrl + "/web/contact-us.html",
-            title: "Contact Us"
+            title: "Contact Us",
+            controller: 'contactUsCtrl',
+            controllerAs: 'contactUs'
         };
 
 

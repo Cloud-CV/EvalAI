@@ -2,6 +2,7 @@ asgi-redis==0.14.1
 channels==0.17.2
 daphne==0.15.0
 django==1.10.2
+django-import-export==0.5.1
 djangorestframework==3.5.2
 djangorestframework-expiring-authtoken==0.1.4
 django-rest-auth[with_social]
