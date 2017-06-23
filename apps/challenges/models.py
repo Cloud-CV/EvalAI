@@ -3,10 +3,14 @@ from __future__ import unicode_literals
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from base.models import (TimeStampedModel, )
 from base.utils import RandomFileName
 from participants.models import (ParticipantTeam, )
+
+from .sender import publish_challenge_edit_message
 
 
 class Challenge(TimeStampedModel):
@@ -71,6 +75,14 @@ class Challenge(TimeStampedModel):
         if self.start_date < timezone.now() and self.end_date > timezone.now():
             return True
         return False
+
+
+@receiver(post_save, sender=Challenge)
+def publish_message_on_change(instance, created=False, **kwargs):
+    if not created:
+        #  Publish message when an existing challenge is edited
+        challenge_id = instance.pk
+        publish_challenge_edit_message(challenge_id=challenge_id)
 
 
 class DatasetSplit(TimeStampedModel):
