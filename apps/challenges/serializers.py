@@ -78,7 +78,7 @@ class ChallengeConfigSerializer(serializers.ModelSerializer):
     Serialize the ChallengeConfiguration Model.
     """
     def __init__(self, *args, **kwargs):
-        super(ChallengeConfigurationSerializer, self).__init__(*args, **kwargs)
+        super(ChallengeConfigSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get('context')
         if context:
             user = context.get('user')
