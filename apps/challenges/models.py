@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 
+from django.contrib.auth.models import User
 from django.utils import timezone
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.db.models import signals
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from base.models import (TimeStampedModel, )
+from base.models import (TimeStampedModel, model_field_name, create_post_model_field, )
 from base.utils import RandomFileName
 from participants.models import (ParticipantTeam, )
 
@@ -16,6 +18,11 @@ from .sender import publish_challenge_edit_message
 class Challenge(TimeStampedModel):
 
     """Model representing a hosted Challenge"""
+
+    def __init__(self, *args, **kwargs):
+        super(Challenge, self).__init__(*args, **kwargs)
+        self._original_evaluation_script = self.evaluation_script
+
     title = models.CharField(max_length=100)
     short_description = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -84,6 +91,9 @@ def publish_message_on_change(instance, created=False, **kwargs):
         challenge_id = instance.pk
         publish_challenge_edit_message(challenge_id=challenge_id)
 
+signals.post_save.connect(model_field_name(field_name='evaluation_script')(create_post_model_field),
+                          sender=Challenge, weak=False)
+
 
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
@@ -100,6 +110,10 @@ class DatasetSplit(TimeStampedModel):
 class ChallengePhase(TimeStampedModel):
 
     """Model representing a Challenge Phase"""
+    def __init__(self, *args, **kwargs):
+        super(ChallengePhase, self).__init__(*args, **kwargs)
+        self._original_test_annotation = self.test_annotation
+
     name = models.CharField(max_length=100)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
@@ -139,6 +153,10 @@ class ChallengePhase(TimeStampedModel):
         if self.start_date < timezone.now() and self.end_date > timezone.now():
             return True
         return False
+
+
+signals.post_save.connect(model_field_name(field_name='test_annotation')(create_post_model_field),
+                          sender=ChallengePhase, weak=False)
 
 
 class Leaderboard(TimeStampedModel):
@@ -195,3 +213,21 @@ class LeaderboardData(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'leaderboard_data'
+
+
+class ChallengeConfiguration(TimeStampedModel):
+    """
+    Model to store zip file for challenge creation.
+    """
+    user = models.ForeignKey(User)
+    challenge = models.OneToOneField(Challenge, null=True, blank=True)
+    zip_configuration = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'))
+    is_created = models.BooleanField(default=False)
+    stdout_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
+                                   null=True, blank=True)
+    stderr_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
+                                   null=True, blank=True)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'challenge_zip_configuration'

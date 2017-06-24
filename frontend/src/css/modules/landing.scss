@@ -107,9 +107,10 @@ section.bg-section {
 
 .sim-header {
     font-size: 18px;
-    top: 0px;
-    z-index: 9;
-    width: calc(100vw - 220px);
+    top: 0;
+    left: 0;
+    z-index: 1001;
+    width: 100%;
 }
 
 .grad-head {
@@ -164,7 +165,6 @@ section.bg-section {
     0% {
         transform: rotate(4deg);
     }
-   
     100% {
         transform: rotate(-4deg);
     }
@@ -364,7 +364,7 @@ a.view-more {
             }
         }
     }
-    .ev-head {
+    .head {
         margin-top: 40px;
     }
     .ev-head-small {

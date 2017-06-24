@@ -371,3 +371,109 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class GetRemainingSubmissionTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetRemainingSubmissionTest, self).setUp()
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                        'challenge_id': self.challenge.pk})
+
+        self.submission1 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission2 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='failed',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+    def test_get_remaining_submission_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_pk': self.challenge.pk+1})
+
+        expected = {
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+1)
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_remaining_submission_when_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk+1,
+                                        'challenge_pk': self.challenge.pk})
+
+        expected = {
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+1)
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_remaining_submission_when_participant_team_hasnt_participated_in_challenge(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_pk': self.challenge.pk})
+
+        expected = {
+            'error': 'You haven\'t participated in the challenge'
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_remaining_submission(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_pk': self.challenge.pk})
+        expected = {
+            'remaining_submissions_today_count': 99998,
+            'remaining_submissions': 99998
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submission_time_when_limit_is_exhausted(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_pk': self.challenge.pk})
+        setattr(self.challenge_phase, 'max_submissions_per_day', 1)
+        self.challenge_phase.save()
+
+        expected = {
+            'message': 'You have exhausted today\'s submission limit',
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['message'], expected['message'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

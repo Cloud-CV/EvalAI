@@ -3,11 +3,16 @@
         <div class="nav-wrapper padding-sm-lr-header">
             <a href="#" data-activates="sidebarToggle" class="button-collapse text-med-gray hide-on-med-and-down"><i class="fa fa-bars"></i></a>
             <ul class="left ">
-                <li class="text-med-gray"><strong></strong>{{pageTitle}}</li>
+             <li class="text-med-gray"><a class="waves-effect waves-dark dark-link ev-header-overflow" ui-sref="home"> <span class="hide-on-small-only">EvalAI</span></a></li>
+                <!-- <li class="text-med-gray">{{pageTitle}}</li> -->
             </ul>
             <ul class="right">
-                <li><a class="waves-effect waves-dark med-link ev-header-overflow" ui-sref="home"><i class="fa fa-home"></i> <span class="hide-on-small-only">Home</span></a></li>
-                <li><a class="waves-effect waves-dark med-link ev-header-overflow" href="http://www.cloudcv.org/"><i class="fa fa-link"></i> <span class="hide-on-small-only">www.cloudcv.org</span></a></li>
+                <li class="text-med-gray"><a class="waves-effect waves-dark dark-link ev-header-overflow" ui-sref="web.profile"> <span class="hide-on-small-only"><span class="text-light-black">Hi</span> {{web.name}} </span></a></li>
+
+              
+                <li>
+                     <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="logout()">Logout</div>
+                </li>
             </ul>
         </div>
     </nav>

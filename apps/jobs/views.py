@@ -1,3 +1,5 @@
+import datetime
+
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
@@ -6,6 +8,7 @@ from rest_framework.decorators import (api_view,
 
 from django.db.models.expressions import RawSQL
 from django.db.models import FloatField
+from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
@@ -19,6 +22,7 @@ from challenges.models import (
     Challenge,
     ChallengePhaseSplit,
     LeaderboardData,)
+from challenges.utils import get_challenge_model, get_challenge_phase_model
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -228,3 +232,72 @@ def leaderboard(request, challenge_phase_split_id):
     paginator, result_page = paginated_queryset(distinct_sorted_leaderboard_data, request)
     response_data = result_page
     return paginator.get_paginated_response(response_data)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
+
+    get_challenge_model(challenge_pk)
+
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge_pk)
+
+    # Conditional check for the existence of participant team of the user.
+    if not participant_team_pk:
+        response_data = {'error': 'You haven\'t participated in the challenge'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    max_submission_per_day = challenge_phase.max_submissions_per_day
+
+    max_submission = challenge_phase.max_submissions
+
+    submissions_done_today_count = Submission.objects.filter(
+        challenge_phase__challenge=challenge_pk,
+        challenge_phase=challenge_phase_pk,
+        participant_team=participant_team_pk,
+        submitted_at__gte=timezone.now().date()).count()
+
+    failed_submissions_count = Submission.objects.filter(
+        challenge_phase__challenge=challenge_pk,
+        challenge_phase=challenge_phase_pk,
+        participant_team=participant_team_pk,
+        status=Submission.FAILED,
+        submitted_at__gte=timezone.now().date()).count()
+
+    # Checks if today's successfull submission is greater than or equal to max submission per day.
+    if ((submissions_done_today_count - failed_submissions_count) >= max_submission_per_day
+            or (max_submission_per_day == 0)):
+        # Get the UTC time of the instant when the above condition is true.
+        date_time_now = timezone.now()
+        # Calculate the next day's date.
+        date_time_tomorrow = date_time_now.date() + datetime.timedelta(1)
+        utc = timezone.utc
+        # Get the midnight time of the day i.e. 12:00 AM of next day.
+        midnight = utc.localize(datetime.datetime.combine(
+            date_time_tomorrow, datetime.time()))
+        # Subtract the current time from the midnight time to get the remaining time for the next day's submissions.
+        remaining_time = midnight - date_time_now
+        # Return the remaining time with a message.
+        response_data = {'message': 'You have exhausted today\'s submission limit',
+                         'remaining_time': remaining_time
+                         }
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        # Calculate the remaining submissions for today.
+        remaining_submissions_today_count = (max_submission_per_day -
+                                             (submissions_done_today_count -
+                                              failed_submissions_count)
+                                             )
+        # calculate the remaining submissions from total submissions.
+        remaining_submission_count = max_submission - \
+            (submissions_done_today_count - failed_submissions_count)
+        # Return the above calculated data.
+        response_data = {'remaining_submissions_today_count': remaining_submissions_today_count,
+                         'remaining_submissions': remaining_submission_count
+                         }
+        return Response(response_data, status=status.HTTP_200_OK)

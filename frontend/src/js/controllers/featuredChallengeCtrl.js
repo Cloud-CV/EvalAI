@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('FeaturedChallengeCtrl', FeaturedChallengeCtrl);
 
-    FeaturedChallengeCtrl.$inject = ['utilities', '$scope', '$state', '$http', '$stateParams'];
+    FeaturedChallengeCtrl.$inject = ['utilities', 'loaderService','$scope', '$state', '$http', '$stateParams'];
 
-    function FeaturedChallengeCtrl(utilities, $scope, $state, $http, $stateParams) {
+    function FeaturedChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseSplitId = $stateParams.phaseSplitId;
@@ -27,22 +27,12 @@
         // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
-        vm.loginContainer = angular.element('.exist-team-card');
+        vm.loaderContainer = angular.element('.exist-team-card');
 
         // show loader
-        vm.startExistLoader = function(msg) {
-            vm.isExistLoader = true;
-            vm.loaderTitle = msg;
-            vm.loginContainer.addClass('low-screen');
-        };
-
+        vm.startLoader = loaderService.startLoader;
         // stop loader
-        vm.stopExistLoader = function() {
-            vm.isExistLoader = false;
-            vm.loaderTitle = '';
-            vm.loginContainer.removeClass('low-screen');
-        };
-
+        vm.stopLoader = loaderService.stopLoader;
         vm.subErrors = {};
 
         utilities.showLoader();
@@ -124,21 +114,8 @@
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
-            vm.loginContainer = angular.element('.exist-team-card');
+            vm.loaderContainer = angular.element('.exist-team-card');
 
-            // show loader
-            vm.startLoader = function(msg) {
-                vm.isExistLoader = true;
-                vm.loaderTitle = msg;
-                vm.loginContainer.addClass('low-screen');
-            };
-
-            // stop loader
-            vm.stopLoader = function() {
-                vm.isExistLoader = false;
-                vm.loaderTitle = '';
-                vm.loginContainer.removeClass('low-screen');
-            };
 
             vm.startLoader("Loading Leaderboard Items");
 
@@ -148,7 +125,7 @@
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/";
             parameters.method = 'GET';
             parameters.data = {};
-                parameters.callback = {
+            parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
