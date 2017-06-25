@@ -1495,7 +1495,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 created_by=self.challenge_host_team5.created_by,
                 status='submitted',
                 input_file=SimpleUploadedFile('test_sample_file.txt',
-                                                       'Dummy file content', content_type='text/plain'),
+                                              'Dummy file content', content_type='text/plain'),
                 method_name="Test Method",
                 method_description="Test Description",
                 project_url="http://testserver/",
@@ -1507,7 +1507,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
     def test_get_all_submissions_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk+10,
-                                        'challenge_phase_pk':self.challenge_phase5.pk})
+                                        'challenge_phase_pk': self.challenge_phase5.pk})
         expected = {
             'detail': 'Challenge {} does not exist'.format(self.challenge5.pk+10)
         }
@@ -1518,7 +1518,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
     def test_get_all_submissions_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk,
-                                        'challenge_phase_pk':self.challenge_phase5.pk+10})
+                                        'challenge_phase_pk': self.challenge_phase5.pk+10})
         expected = {
             'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase5.pk+10)
         }
@@ -1529,9 +1529,10 @@ class GetAllSubmissionsTest(BaseAPITestClass):
     def test_get_all_submissions_when_user_is_host_of_challenge(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk,
-                                        'challenge_phase_pk':self.challenge_phase5.pk})
+                                        'challenge_phase_pk': self.challenge_phase5.pk})
         self.client.force_authenticate(user=self.user5)
-        participant_ids = Participant.objects.filter(team=self.participant_team6).values_list('user_id', flat=True)
+        participant_id = Participant.objects.filter(team=self.participant_team6).values_list('user_id', flat=True)
+        participant_team_members_email_ids = User.objects.filter(id__in=participant_id).values_list('email', flat=True)
 
         expected = [
             {
@@ -1549,7 +1550,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 'stderr_file': None,
                 'submission_result_file': None,
                 'submission_metadata_file': None,
-                "participant_team_members_email_ids": User.objects.filter(id__in=participant_ids).values_list('email', flat=True),
+                "participant_team_members_email_ids": participant_team_members_email_ids,
             }
         ]
         response = self.client.get(self.url, {})
@@ -1559,7 +1560,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
     def test_get_all_submissions_when_user_is_participant_of_challenge(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk,
-                                        'challenge_phase_pk':self.challenge_phase5.pk})
+                                        'challenge_phase_pk': self.challenge_phase5.pk})
+        self.client.force_authenticate(user=self.user6)
         expected = [
             {
                 'id': self.submission.id,
@@ -1591,7 +1593,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.client.force_authenticate(user=self.user7)
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk,
-                                        'challenge_phase_pk':self.challenge_phase5.pk})
+                                        'challenge_phase_pk': self.challenge_phase5.pk})
         expected = {
             'error': 'You are neither host nor participant of the challenge!'
         }

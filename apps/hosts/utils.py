@@ -16,4 +16,3 @@ def is_user_a_host_of_challenge(user, challenge_pk):
 
 
 get_challenge_host_team_model = get_model_object(ChallengeHostTeam)
-
