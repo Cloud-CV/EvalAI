@@ -81,8 +81,8 @@ class ChallengeConfigSerializer(serializers.ModelSerializer):
         super(ChallengeConfigSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get('context')
         if context:
-            user = context.get('user')
-            kwargs['data']['user'] = user.pk
+            request = context.get('request')
+            kwargs['data']['user'] = request.user.pk
 
     class Meta:
         model = ChallengeConfiguration
