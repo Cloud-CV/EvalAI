@@ -1531,8 +1531,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                                 kwargs={'challenge_pk': self.challenge5.pk,
                                         'challenge_phase_pk': self.challenge_phase5.pk})
         self.client.force_authenticate(user=self.user5)
-        participant_id = Participant.objects.filter(team=self.participant_team6).values_list('user_id', flat=True)
-        participant_team_members_email_ids = User.objects.filter(id__in=participant_id).values_list('email', flat=True)
 
         expected = [
             {
@@ -1550,7 +1548,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 'stderr_file': None,
                 'submission_result_file': None,
                 'submission_metadata_file': None,
-                "participant_team_members_email_ids": participant_team_members_email_ids,
+                "participant_team_members_email_ids": ['user6@test.com'],
             }
         ]
         response = self.client.get(self.url, {})

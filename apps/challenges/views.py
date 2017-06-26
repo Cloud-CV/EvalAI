@@ -10,7 +10,8 @@ from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthe
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset, get_model_object
+from base.utils import paginated_queryset
+from challenges.utils import get_challenge_model
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import get_challenge_host_teams_for_user, is_user_a_host_of_challenge
 from jobs.models import Submission
@@ -354,8 +355,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
     Returns all the submissions for a particular challenge
     """
     # To check for the corresponding challenge from challenge_pk.
-    challenge_model = get_model_object(Challenge)
-    challenge = challenge_model(challenge_pk)
+    challenge = get_challenge_model(challenge_pk)
 
     # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
     try:
@@ -366,6 +366,10 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 
     # To check for the user as a host of the challenge from the request and challenge_pk.
     if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
+        
+        # Filter submissions on the basis of challenge for host for now. Later on, the support for query
+        # parameters like challenge phase, date is to be added.
+
         submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submissions, request)
         try:
@@ -382,6 +386,8 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
                 request.user, challenge_pk)
 
+        
+        # Filter submissions on the basis of challenge phase for a participant.
         submissions = Submission.objects.filter(participant_team=participant_team_pk,
                                                 challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submissions, request)
