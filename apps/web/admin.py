@@ -8,7 +8,6 @@ from .models import Contact, Team
 @admin.register(Contact)
 class ContactAdmin(TimeStampedAdmin):
     list_display = ("name", "email", "message",)
-    list_filter = ("email",)
     search_fields = ("email",)
 
 

@@ -2,11 +2,12 @@ from rest_framework import serializers
 
 from hosts.serializers import ChallengeHostTeamSerializer
 
-from .models import (
-                     Challenge,
+from .models import (Challenge,
+                     ChallengeConfiguration,
                      ChallengePhase,
                      ChallengePhaseSplit,
-                     DatasetSplit,)
+                     DatasetSplit,
+                     Leaderboard,)
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
@@ -63,7 +64,6 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePhaseSplit
-        fields = '__all__'
         fields = ('id', 'dataset_split', 'challenge_phase', 'challenge_phase_name', 'dataset_split_name', 'visibility')
 
     def get_dataset_split_name(self, obj):
@@ -71,3 +71,48 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
     def get_challenge_phase_name(self, obj):
         return obj.challenge_phase.name
+
+
+class ChallengeConfigSerializer(serializers.ModelSerializer):
+    """
+    Serialize the ChallengeConfiguration Model.
+    """
+    def __init__(self, *args, **kwargs):
+        super(ChallengeConfigSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get('context')
+        if context:
+            request = context.get('request')
+            kwargs['data']['user'] = request.user.pk
+
+    class Meta:
+        model = ChallengeConfiguration
+        fields = ('zip_configuration', 'user',)
+
+
+class LeaderboardSerializer(serializers.ModelSerializer):
+    """
+    Serialize the Leaderboard Model.
+    """
+    class Meta:
+        model = Leaderboard
+        fields = '__all__'
+
+
+class ZipChallengeSerializer(ChallengeSerializer):
+    """
+    Serializer used for creating challenge through zip file.
+    """
+    class Meta:
+        model = Challenge
+        fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
+                  'submission_guidelines', 'start_date', 'end_date', 'creator',
+                  'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',)
+
+
+class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
+    """
+    Serializer used for creating challenge phase split through zip file.
+    """
+    class Meta:
+        model = ChallengePhaseSplit
+        fields = '__all__'
