@@ -807,7 +807,6 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    console.log(details);
 
                     vm.submissionResult = details;
 

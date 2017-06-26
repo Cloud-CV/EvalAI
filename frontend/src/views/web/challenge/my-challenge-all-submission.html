@@ -28,19 +28,19 @@
                         </div>
                     </div>
                 </div>
-                <div class=" ev-card-body-all-submission exist-team-card">
+                <div class=" ev-card-body exist-team-card">
                     <div class="row">
-                        <div class="col s12">
+                        <div class="col s12 all-submission-table-scroll">
                             <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                            <table ng-if="challenge.isResult" class="highlight">
+                            <table ng-if="challenge.isResult" class="highlight all-submission-table">
                                 <thead>
                                     <tr>
-                                        <th data-field="team">Team Name</th>
-                                        <th data-field="method-name">Challenge Phase</th>
+                                        <th class="align-center" data-field="team">Team Name</th>
+                                        <th class="align-center" data-field="method-name">Challenge Phase</th>
                                         <th data-field="status">Status</th>
                                         <th data-field="created-by">Created By </th>
                                         <th class="align-center" data-field="status">Execution Time (sec.)</th>
-                                        <th data-field="submission-number"> Submission Number </th>
+                                        <th class="align-center" data-field="submission-number"> Submission Number </th>
                                         <th data-field="file">Submitted File</th>
                                         <th data-field="file">Result File</th>
                                         <th data-field="file">Stdout File</th>
