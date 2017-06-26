@@ -66,14 +66,14 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
     participant_team = serializers.SerializerMethodField()
     challenge_phase = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField()
-    participant_team_members_email_id = serializers.SerializerMethodField()
+    participant_team_members_email_ids = serializers.SerializerMethodField()
 
     class Meta:
         model = Submission
         fields = ('id', 'participant_team', 'challenge_phase', 'created_by', 'status', 'is_public',
                   'submission_number', 'submitted_at', 'execution_time', 'input_file', 'stdout_file',
                   'stderr_file', 'submission_result_file', 'submission_metadata_file',
-                  'participant_team_members_email_id',)
+                  'participant_team_members_email_ids',)
 
     def get_participant_team(self, obj):
         return obj.participant_team.team_name
