@@ -127,6 +127,17 @@
             authenticate: true
         };
 
+        var host_analytics = {
+            name: "web.host-analytics",
+            parent: "web",
+            url: "/host-analytics",
+            templateUrl: baseUrl + "/web/analytics/host-analytics.html",
+            controller: 'AnalyticsCtrl',
+            controllerAs: 'analytics',
+            title: 'Host Challenge Analytics',
+            authenticate: true
+        };
+
         var challenge_host_teams = {
             name: "web.challenge-host-teams",
             parent: "web",
@@ -417,6 +428,7 @@
         // web main configs.
         $stateProvider.state(web);
         $stateProvider.state(dashboard);
+        $stateProvider.state(host_analytics);
         $stateProvider.state(teams);
 
         // challenge host teams

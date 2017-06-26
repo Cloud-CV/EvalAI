@@ -1,0 +1,104 @@
+<section class="ev-md-container">
+    <div class="row">
+        <div class="col s12">
+            <h3 class="fs-20">Host challenges Analytics Dashboard.</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12 m5">
+            <!-- <h4 class="fs-16">Select Your Host Team</h4> -->
+            <!-- <ul> -->
+            <!-- <li class="analytics-list" ng-repeat="item in analytics.hostTeam">
+                    <div class="small-title fs-12 text-light-black">Team Name</div>
+                    {{item.team_name}}
+                </li> -->
+            <!-- <li class="analytics-list analytics-team-input" ng-repeat="(key, value) in analytics.hostTeam">
+                    <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="analytics.teamId">
+                    <label for="{{value.id}}">
+                    <div class="show-member-title pointer">{{value.team_name}}
+                       </div>
+                       </label>
+                    <div class="clearfix"></div> -->
+            <!--      <div class="small-title fs-12 text-light-black show-member-title pointer">Team Name</div>
+                     {{value.team_name}} -->
+            <!--  </li>
+            </ul> -->
+            <h4 class="fs-16">Select challenge to view Analysis </h4>
+            <div class="main-title">
+                Total Challenges hosted {{analytics.challengeListCount}}
+            </div>
+            <ul>
+                <!-- <li class="analytics-list" ng-repeat="item in analytics.hostTeam">
+                    <div class="small-title fs-12 text-light-black">Team Name</div>
+                    {{item.team_name}}
+                </li> -->
+                <li class="analytics-list analytics-team-input" ng-repeat="(key, value) in analytics.challengeList">
+                    <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="analytics.challengeId">
+                    <label for="{{value.id}}">
+                        <div class="show-member-title pointer">{{value.title}} <span class="text-light-black">hosted by</span> {{value.creator.team_name}}
+                        </div>
+                    </label>
+                    <!-- <div class="clearfix"></div> -->
+                </li>
+            </ul>
+            <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14 show-analytics-btn" ng-click="analytics.showChallengeAnalysis()">Show Analysis &nbsp;<i class="fa fa-chevron-right"></i> </div>
+        </div>
+        <div class="col s12 m7">
+            <h4 class="fs-16">Challenge Analysis</h4>
+            <div class="main-title analytics-challenge-title" ng-if="!analytics.isTeamSelected">Please select host team for challenge analysis.</div>
+            <div class="analytics-details" ng-if="analytics.isTeamSelected">
+                <div class="row">
+                    <div class="col s12 m4 l2">
+                        <div class="image-container analytics-image">
+                            <img ng-show="analytics.currentChallengeDetails.image!==null" ng-src='{{analytics.currentChallengeDetails.image}}'>
+                        </div>
+                    </div>
+                    <div class="col m8 l10">
+                        <div class="card-content analytics-card-content ">
+                            <h3 class="fs-20">{{analytics.currentChallengeDetails.title}}</span>
+                       </h3>
+                            <span class="text-light-black">Hosted by: </span> {{analytics.currentChallengeDetails.creator.team_name}}
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="main-title">
+                	Total Challenges hosted by {{analytics.currentTeamName}}
+                </div> -->
+                <!-- <h4 class=" analytics-details-head text-dark-black">{{analytics.currentChallengeDetails}}</h4> -->
+                <div class="analytics-challenge-card">
+                    <div class="main-title fs-12">
+                        Short Description
+                    </div>
+                    <p class="no-top-para">
+                        {{analytics.currentChallengeDetails.short_description}}
+                    </p>
+                </div>
+                <div class="analytics-challenge-card">
+                    <div class="main-title fs-12">
+                        Phases and Submission
+                    </div>
+                    <div class="analytics-phases-card" ng-repeat="item in analytics.currentPhase">
+                        <p class="no-top-para">
+                            {{item.name}}
+                        </p>
+                        <div class="text-light-black fs-12">
+                            Start-End Date
+                        </div>
+                        <p class="no-top-para">
+                            {{item.start_date | date:'medium'}} - {{item.end_date | date:'medium'}}
+                        </p>
+                        <div class="text-light-black fs-12">
+                            Total Submission
+                        </div>
+                        <p class="no-top-para">
+                            {{analytics.totalSubmission[$index]}} 25
+                        </p>
+                        <div class="short-hr-line"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="ev-md-container">
+</section>

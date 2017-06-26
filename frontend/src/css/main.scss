@@ -9,6 +9,7 @@
 /*core files*/
 
 @import "modules/landing.scss";
+@import "modules/analytics.scss";
 @import "modules/auth.scss";
 @import "modules/error_404.scss";
 @import "modules/error_500.scss";
@@ -21,6 +22,7 @@
 
 /*web files*/
 
+@import "modules/dashboard.scss";
 @import "modules/web.scss";
 @import "modules/teams.scss";
 @import "modules/challenge.scss";
@@ -29,4 +31,4 @@
 /*new css files*/
 
 @import "core/grad-base.scss";
-@import "modules/main-header.scss"
+@import "modules/main-header.scss";
