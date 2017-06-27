@@ -98,7 +98,6 @@ class BaseAPITestClass(APITestCase):
             publication_url="http://testserver/",
             is_public=True,
         )
-        
         self.client.force_authenticate(user=self.user)
 
 
@@ -106,7 +105,7 @@ class TestAnalyticsUrls(BaseAPITestClass):
 
     def test_analytics_urls(self):
         url = reverse_lazy('analytics:get_submission_stats',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk})
+                            kwargs={'challenge_phase_pk': self.challenge_phase.pk})
         self.assertEqual(url, '/api/analytics/challenge_phase/{}/submission'.format(self.challenge_phase.pk))
 
         resolver = resolve('/api/analytics/challenge_phase/{}/submission'.format(self.challenge_phase.pk))

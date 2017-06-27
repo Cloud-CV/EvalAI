@@ -98,7 +98,6 @@ class BaseAPITestClass(APITestCase):
             publication_url="http://testserver/",
             is_public=True,
         )
-        
         self.client.force_authenticate(user=self.user)
 
 
