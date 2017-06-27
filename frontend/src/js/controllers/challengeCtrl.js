@@ -793,6 +793,66 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.showRemainingSubmissions = function() {
+            var parameters = {};
+            vm.remainingSubmissions = {};
+            vm.remainingTime = {};
+            vm.hours = {};
+            vm.minutes = {};
+            vm.remainingSeconds = {};
+            vm.hoursLeft = {};
+            vm.minutesLeft = {};
+            vm.showClock = false;
+            vm.showSubmissionNumbers = false;
+            parameters.url = "jobs/"+ vm.challengeId + "/phases/"+ vm.phaseId + "/remaining-submissions/";
+            parameters.method = 'GET';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var details = response.data;
+                    if (status === 200) {
+                        if (details.remaining_submissions_today_count > 0) {
+                        vm.remainingSubmissions = details;
+                        vm.showSubmissionNumbers = true;
+                        } else {
+                            vm.message = details;
+                            vm.showClock = true;
+                            vm.countDownTimer = function() {
+                                vm.remainingTime = vm.message.remaining_time;
+                                vm.days = Math.floor(vm.remainingTime/24/60/60);
+                                vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days*86400));
+                                vm.hours = Math.floor(vm.hoursLeft/3600);
+                                vm.minutesLeft = Math.floor((vm.hoursLeft) - (vm.hours*3600));
+                                vm.minutes = Math.floor(vm.minutesLeft/60);
+                                vm.remainingSeconds = Math.floor(vm.remainingTime % 60);
+                                if (vm.remainingSeconds < 10) {
+                                    vm.remainingSeconds = "0" + vm.remainingSeconds;
+                                }
+                                if (vm.remainingTime === 0) {
+                                    vm.showSubmissionNumbers = true;
+                                }
+                                else {
+                                    vm.remainingSeconds--;
+                                }
+                            };
+                            setInterval(function() {
+                                $rootScope.$apply(vm.countDownTimer);
+                                }, 1000);
+                                vm.countDownTimer();
+                        }
+                    }
+                    
+
+                },
+                onError: function() {
+
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
+
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
