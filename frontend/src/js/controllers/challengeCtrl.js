@@ -797,11 +797,6 @@
             var parameters = {};
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
-            vm.hours = {};
-            vm.minutes = {};
-            vm.remainingSeconds = {};
-            vm.hoursLeft = {};
-            vm.minutesLeft = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
             parameters.url = "jobs/"+ vm.challengeId + "/phases/"+ vm.phaseId + "/remaining-submissions/";
@@ -842,16 +837,14 @@
                                 vm.countDownTimer();
                         }
                     }
-                    
-
                 },
                 onError: function() {
-
+                    vm.stopLoader();
+                    $rootScope.notify("error", "Some error occured. Please try again.");
                 }
             };
             utilities.sendRequest(parameters);
         };
-
 
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
