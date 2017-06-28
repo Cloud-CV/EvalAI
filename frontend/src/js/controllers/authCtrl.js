@@ -24,7 +24,8 @@
         // form error
         vm.isFormError = false;
         vm.FormError = {};
-
+        // to store the next redirect route
+        vm.redirectUrl = {};
 
         // default parameters
         vm.isLoader = false;
@@ -142,11 +143,10 @@
                     onSuccess: function(response) {
                         if (response.status == 200) {
                             utilities.storeData('userKey', response.data.token);
-                            $state.go('web.dashboard');
+                            $state.go($rootScope.previousState);
                             vm.stopLoader();
                         } else {
                             alert("Something went wrong");
-                            vm.stopLoader();
                         }
                     },
                     onError: function(response) {
@@ -273,7 +273,5 @@
         $rootScope.$on('$stateChangeStart', function() {
             vm.resetForm();
         });
-
     }
-
 })();
