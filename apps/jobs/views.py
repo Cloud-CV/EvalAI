@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import paginated_queryset, StandardResultSetPagination
 from challenges.models import (
     ChallengePhase,
     Challenge,
@@ -229,7 +229,10 @@ def leaderboard(request, challenge_phase_split_id):
     for item in distinct_sorted_leaderboard_data:
         item['result'] = [item['result'][index.lower()] for index in leaderboard_labels]
 
-    paginator, result_page = paginated_queryset(distinct_sorted_leaderboard_data, request)
+    paginator, result_page = paginated_queryset(
+                                                distinct_sorted_leaderboard_data,
+                                                request,
+                                                pagination_class=StandardResultSetPagination())
     response_data = result_page
     return paginator.get_paginated_response(response_data)
 
