@@ -8,11 +8,17 @@ from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 
 
-def paginated_queryset(queryset, request):
+class StandardResultSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+
+def paginated_queryset(queryset, request, pagination_class=PageNumberPagination()):
     '''
         Return a paginated result for a queryset
     '''
-    paginator = PageNumberPagination()
+    paginator = pagination_class
     paginator.page_size = settings.REST_FRAMEWORK['PAGE_SIZE']
     result_page = paginator.paginate_queryset(queryset, request)
     return (paginator, result_page)

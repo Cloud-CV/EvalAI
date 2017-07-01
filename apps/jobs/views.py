@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import paginated_queryset, StandardResultSetPagination
 from challenges.models import (
     ChallengePhase,
     Challenge,
@@ -81,6 +81,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         # check if the challenge is active or not
         if not challenge.is_active:
             response_data = {'error': 'Challenge is not active'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        # check if challenge phase is active
+        if not challenge_phase.is_active:
+            response_data = {
+                'error': 'Sorry, cannot accept submissions since challenge phase is not active'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # check if challenge phase is public and accepting solutions
@@ -229,7 +235,10 @@ def leaderboard(request, challenge_phase_split_id):
     for item in distinct_sorted_leaderboard_data:
         item['result'] = [item['result'][index.lower()] for index in leaderboard_labels]
 
-    paginator, result_page = paginated_queryset(distinct_sorted_leaderboard_data, request)
+    paginator, result_page = paginated_queryset(
+                                                distinct_sorted_leaderboard_data,
+                                                request,
+                                                pagination_class=StandardResultSetPagination())
     response_data = result_page
     return paginator.get_paginated_response(response_data)
 
