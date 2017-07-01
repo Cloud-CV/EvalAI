@@ -83,6 +83,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             response_data = {'error': 'Challenge is not active'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+        # check if challenge phase is active
+        if not challenge_phase.is_active:
+            response_data = {
+                'error': 'Sorry, cannot accept submissions since challenge phase is not active'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
         # check if challenge phase is public and accepting solutions
         if not challenge_phase.is_public:
             response_data = {
