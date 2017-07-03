@@ -40,13 +40,17 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
         context = kwargs.get('context')
         if context:
             challenge = context.get('challenge')
-            kwargs['data']['challenge'] = challenge.pk
+            if challenge:
+                kwargs['data']['challenge'] = challenge.pk
+            test_annotation = context.get('test_annotation')
+            if test_annotation:
+                kwargs['data']['test_annotation'] = test_annotation
 
     class Meta:
         model = ChallengePhase
         fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
-                  'is_public', 'is_active', 'codename')
+                  'is_public', 'is_active', 'codename', 'test_annotation',)
 
 
 class DatasetSplitSerializer(serializers.ModelSerializer):
@@ -102,11 +106,23 @@ class ZipChallengeSerializer(ChallengeSerializer):
     """
     Serializer used for creating challenge through zip file.
     """
+    def __init__(self, *args, **kwargs):
+        super(ZipChallengeSerializer, self).__init__(*args, **kwargs)
+
+        context = kwargs.get('context')
+        if context:
+            image = context.get('image')
+            if image:
+                kwargs['data']['image'] = image
+            evaluation_script = context.get('evaluation_script')
+            if evaluation_script:
+                kwargs['data']['evaluation_script'] = evaluation_script
+
     class Meta:
         model = Challenge
         fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
-                  'submission_guidelines', 'start_date', 'end_date', 'creator',
-                  'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',)
+                  'submission_guidelines', 'start_date', 'end_date', 'creator', 'evaluation_details',
+                  'published', 'enable_forum', 'anonymous_leaderboard', 'image', 'is_active', 'evaluation_script',)
 
 
 class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
