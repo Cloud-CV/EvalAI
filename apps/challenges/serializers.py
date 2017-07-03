@@ -40,15 +40,17 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
         context = kwargs.get('context')
         if context:
             challenge = context.get('challenge')
-            test_annotation_file = context.get('test_annotation_file')
-            kwargs['data']['challenge'] = challenge.pk
-            kwargs['data']['test_annotation'] = test_annotation_file
+            if challenge:
+                kwargs['data']['challenge'] = challenge.pk
+            test_annotation = context.get('test_annotation')
+            if test_annotation:
+                kwargs['data']['test_annotation'] = test_annotation
 
     class Meta:
         model = ChallengePhase
         fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
-                  'is_public', 'is_active', 'codename', 'test_annotation')
+                  'is_public', 'is_active', 'codename', 'test_annotation',)
 
 
 class DatasetSplitSerializer(serializers.ModelSerializer):
