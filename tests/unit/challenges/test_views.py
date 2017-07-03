@@ -1534,20 +1534,20 @@ class GetAllSubmissionsTest(BaseAPITestClass):
 
         expected = [
             {
-                'id': self.submission.id,
-                'participant_team': self.submission.participant_team.team_name,
-                'challenge_phase': self.submission.challenge_phase.name,
-                'created_by': self.submission.created_by.username,
-                'status': self.submission.status,
+                "id": self.submission.id,
+                "participant_team": self.submission.participant_team.team_name,
+                "challenge_phase": self.submission.challenge_phase.name,
+                "created_by": self.submission.created_by.username,
+                "status": self.submission.status,
                 "is_public": self.submission.is_public,
                 "submission_number": self.submission.submission_number,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
                 'execution_time': self.submission.execution_time,
-                'input_file': "http://testserver%s" % (self.submission.input_file.url),
-                'stdout_file': None,
-                'stderr_file': None,
-                'submission_result_file': None,
-                'submission_metadata_file': None,
+                "input_file": "http://testserver%s" % (self.submission.input_file.url),
+                "stdout_file": None,
+                "stderr_file": None,
+                "submission_result_file": None,
+                "submission_metadata_file": None,
                 "participant_team_members_email_ids": ['user6@test.com'],
             }
         ]

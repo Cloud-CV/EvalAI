@@ -366,7 +366,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 
     # To check for the user as a host of the challenge from the request and challenge_pk.
     if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
-        
+
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
 
@@ -386,7 +386,6 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
                 request.user, challenge_pk)
 
-        
         # Filter submissions on the basis of challenge phase for a participant.
         submissions = Submission.objects.filter(participant_team=participant_team_pk,
                                                 challenge_phase=challenge_phase).order_by('-submitted_at')
