@@ -12,7 +12,7 @@
                 <li ng-if="!isAuth"><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="auth.login" ui-sref-active="active">Log In</a></li>
                 <!-- show after authenticate user -->
                 <li ng-if="isAuth">
-                    <a ng-click="header.profileDropdown($event)" class="dropdown-button waves-effect waves-dark main-header-link" data-activates='ev-dropdown' ui-sref-active="active">Hi <strong>{{header.user.name}}</strong> &nbsp;
+                    <a ng-click="header.profileDropdown($event)" class="dropdown-button waves-effect waves-dark main-header-link" data-activates='ev-dropdown' ui-sref="web.profile" ui-sref-active="active">Hi <strong>{{header.user.name}}</strong> &nbsp;
                     </a>
                 </li>
                 <li ng-if="isAuth">
@@ -31,7 +31,7 @@
                 <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
                 <!-- show after authenticate user -->
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
-                <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{header.user.name}}!</a></li>
+                <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.profile" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{header.user.name}}!</a></li>
             </ul>
         </div>
     </nav>
