@@ -115,7 +115,6 @@ class ZipChallengeSerializer(ChallengeSerializer):
         kwargs['data']['image'] = image
         kwargs['data']['evaluation_script'] = evaluation_script
 
-
     class Meta:
         model = Challenge
         fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
