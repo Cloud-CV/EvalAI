@@ -5,6 +5,7 @@ from django.conf import settings
 
 from challenges.utils import get_file_content
 
+
 class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
