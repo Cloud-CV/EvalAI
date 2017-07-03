@@ -112,10 +112,11 @@ class ZipChallengeSerializer(ChallengeSerializer):
         context = kwargs.get('context')
         if context:
             image = context.get('image')
+            if image:
+                kwargs['data']['image'] = image
             evaluation_script = context.get('evaluation_script')
-
-        kwargs['data']['image'] = image
-        kwargs['data']['evaluation_script'] = evaluation_script
+            if evaluation_script:
+                kwargs['data']['evaluation_script'] = evaluation_script
 
     class Meta:
         model = Challenge
