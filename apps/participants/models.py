@@ -42,6 +42,10 @@ class ParticipantTeam(TimeStampedModel):
     def __unicode__(self):
         return '{}'.format(self.team_name)
 
+    def get_all_participants_email(self):
+        email_ids = Participant.objects.filter(team=self).values_list('user__email', flat=True)
+        return list(email_ids)
+
     class Meta:
         app_label = 'participants'
         db_table = 'participant_team'
