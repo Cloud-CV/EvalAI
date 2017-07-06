@@ -122,7 +122,7 @@
             // Show leaderboard
             vm.leaderboard = {};
             var parameters = {};
-            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/";
+            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
