@@ -1034,6 +1034,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "test_annotation": self.challenge_phase.test_annotation.url,
             }
         ]
 
@@ -1056,6 +1057,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "test_annotation": self.challenge_phase.test_annotation.url,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -1191,6 +1193,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
+            "test_annotation": self.challenge_phase.test_annotation.url,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1263,6 +1266,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
+            "test_annotation": self.challenge_phase.test_annotation.url,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
