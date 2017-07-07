@@ -91,4 +91,4 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             return 'Participant team does not exist'
 
         participant_ids = Participant.objects.filter(team=participant_team).values_list('user_id', flat=True)
-        return User.objects.filter(id__in=participant_ids).values_list('email', flat=True)
+        return list(User.objects.filter(id__in=participant_ids).values_list('email', flat=True))
