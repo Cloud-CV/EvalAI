@@ -808,8 +808,8 @@
                     var details = response.data;
                     if (status === 200) {
                         if (details.remaining_submissions_today_count > 0) {
-                        vm.remainingSubmissions = details;
-                        vm.showSubmissionNumbers = true;
+                            vm.remainingSubmissions = details;
+                            vm.showSubmissionNumbers = true;
                         } else {
                             vm.message = details;
                             vm.showClock = true;
@@ -831,7 +831,7 @@
                                     vm.remainingSeconds--;
                                 }
                             };
-                            setInterval(function() {
+                            $interval(function() {
                                 $rootScope.$apply(vm.countDownTimer);
                                 }, 1000);
                                 vm.countDownTimer();
