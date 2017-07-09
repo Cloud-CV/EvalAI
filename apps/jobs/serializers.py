@@ -92,3 +92,12 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
 
         participant_ids = Participant.objects.filter(team=participant_team).values_list('user_id', flat=True)
         return list(User.objects.filter(id__in=participant_ids).values_list('email', flat=True))
+
+
+class SubmissionCount(object):
+    def __init__(self, submission_count):
+        self.submission_count = submission_count
+
+
+class SubmissionCountSerializer(serializers.Serializer):
+    submission_count = serializers.IntegerField()
