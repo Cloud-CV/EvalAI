@@ -105,3 +105,34 @@ class GetParticipantTeamTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class GetParticipantCountTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetParticipantCountTest, self).setUp()
+        self.url = reverse_lazy('analytics:get_participant_count',
+                                kwargs={'challenge_pk': self.challenge.pk})
+
+        self.challenge.participant_teams.add(self.participant_team)
+
+    def test_get_participant_team_count(self):
+
+        expected = {
+            "participant_count": 1
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_participant_team_count_when_challenge_doe_not_exist(self):
+
+        self.url = reverse_lazy('analytics:get_participant_count',
+                                kwargs={'challenge_pk': self.challenge.pk + 1})
+
+        expected = {
+            "detail": "Challenge {} does not exist".format(self.challenge.pk + 1)
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

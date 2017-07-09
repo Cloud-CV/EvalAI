@@ -111,3 +111,12 @@ class ParticipantTeamCount(object):
 
 class ParticipantTeamCountSerializer(serializers.Serializer):
     participant_team_count = serializers.IntegerField()
+
+
+class ParticipantCount(object):
+    def __init__(self, participant_count):
+        self.participant_count = participant_count
+
+
+class ParticipantCountSerializer(serializers.Serializer):
+    participant_count = serializers.IntegerField()
