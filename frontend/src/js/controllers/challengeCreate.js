@@ -36,7 +36,7 @@
                 }
                 if (vm.input_file) {
                     var parameters = {};
-                    parameters.url = 'challenges/challenge/' + hostTeamId + '/zip_upload/';
+                    parameters.url = 'challenges/challenge/challenge_host_team/' + hostTeamId + '/zip_upload/';
                     parameters.method = 'POST';
                     var formData = new FormData();
                     formData.append("zip_configuration", vm.input_file);
