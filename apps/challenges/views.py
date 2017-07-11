@@ -181,7 +181,7 @@ def get_all_challenges(request, challenge_time):
         response_data = {'error': 'Wrong url pattern!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    q_params = {'published': True}
+    q_params = {'published': True, 'approved_by_admin': True}
     if challenge_time.lower() == "past":
         q_params['end_date__lt'] = timezone.now()
 
