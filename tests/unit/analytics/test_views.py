@@ -1,15 +1,20 @@
+import os
+import shutil
+
 from datetime import timedelta
 
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge
+from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHost, ChallengeHostTeam
+from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
 
 
@@ -73,7 +78,28 @@ class BaseAPITestClass(APITestCase):
             status=Participant.SELF,
             team=self.participant_team)
 
+        try:
+            os.makedirs('/tmp/evalai')
+        except OSError:
+            pass
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase = ChallengePhase.objects.create(
+                name='Challenge Phase',
+                description='Description for Challenge Phase',
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain')
+            )
+
         self.client.force_authenticate(user=self.user)
+
+    def tearDown(self):
+        shutil.rmtree('/tmp/evalai')
 
 
 class GetParticipantTeamTest(BaseAPITestClass):
@@ -105,3 +131,124 @@ class GetParticipantTeamTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class GetParticipantCountTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetParticipantCountTest, self).setUp()
+        self.url = reverse_lazy('analytics:get_participant_count',
+                                kwargs={'challenge_pk': self.challenge.pk})
+
+        self.challenge.participant_teams.add(self.participant_team)
+
+    def test_get_participant_team_count(self):
+
+        expected = {
+            "participant_count": 1
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_participant_team_count_when_challenge_doe_not_exist(self):
+
+        self.url = reverse_lazy('analytics:get_participant_count',
+                                kwargs={'challenge_pk': self.challenge.pk + 1})
+
+        expected = {
+            "detail": "Challenge {} does not exist".format(self.challenge.pk + 1)
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class GetSubmissionCountForChallengeTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetSubmissionCountForChallengeTest, self).setUp()
+        self.url = reverse_lazy('analytics:get_submission_count',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'duration': 'DAILY'})
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+    def test_get_participant_team_count_when_challenge_doe_not_exist(self):
+
+        self.url = reverse_lazy('analytics:get_submission_count',
+                                kwargs={'challenge_pk': self.challenge.pk + 1,
+                                        'duration': 'DAILY'})
+
+        expected = {
+            "detail": "Challenge {} does not exist".format(self.challenge.pk + 1)
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_incorrect_url_pattern_submission_count(self):
+        self.url = reverse_lazy('analytics:get_submission_count',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'duration': 'INCORRECT'})
+        expected = {
+            'error': 'Wrong URL pattern!'
+        }
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+
+    def test_get_daily_submission_count(self):
+        self.url = reverse_lazy('analytics:get_submission_count',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'duration': 'DAILY'})
+        expected = {
+            "submission_count": 1
+        }
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
+    def test_get_weekly_submission_count(self):
+        self.url = reverse_lazy('analytics:get_submission_count',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'duration': 'WEEKLY'})
+        expected = {
+            "submission_count": 1
+        }
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
+    def test_get_monthly_submission_count(self):
+        self.url = reverse_lazy('analytics:get_submission_count',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'duration': 'MONTHLY'})
+        expected = {
+            "submission_count": 1
+        }
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+
+    def test_get_all_submission_count(self):
+        self.url = reverse_lazy('analytics:get_submission_count',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'duration': 'ALL'})
+        expected = {
+            "submission_count": 1
+        }
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
