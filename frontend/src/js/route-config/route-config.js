@@ -152,7 +152,7 @@
         var challenge_create = {
             name: "web.challenge-create",
             parent: "web",
-            url: "/challenges/create",
+            url: "/challenge-create",
             templateUrl: baseUrl + "/web/challenge-create.html",
             title: 'Create Challenge',
             controller: 'ChallengeCreateCtrl',
