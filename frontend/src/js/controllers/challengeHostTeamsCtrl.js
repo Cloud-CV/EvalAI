@@ -25,6 +25,8 @@
         vm.isPrev = '';
         vm.team.error = false;
         vm.showPagination = false;
+        vm.hostTeamId = null;
+        vm.challengeHostTeamId = null;
 
         // loader for existng teams// loader for exisiting teams
         vm.isExistLoader = false;
@@ -338,6 +340,12 @@
                 utilities.sendRequest(parameters);
             });
         };
+
+    vm.storeChallengeHostTeamId = function() {
+
+        utilities.storeData('challengeHostTeamId', vm.challengeHostTeamId);
+        $state.go('web.challenge-create');
+    };
 
     }
 

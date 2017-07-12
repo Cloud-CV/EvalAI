@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col s12 m6">
             <div class=" ev-card-panel ev-z-depth-5">
-                <div class="ev-md-container ev-panel-title"><strong>My Existing Host Teams</strong></div>
+                <div class="ev-md-container ev-panel-title"><strong>Select a Challenge Host Team</strong></div>
                 <div class="loader-container card-loader-container" id="loader" ng-show="challengeHostTeams.isExistLoader" class="fade">
                     <!-- <div class="text-dark-gray center w-300 loader-title">{{challengeHostTeams.loaderTitle}}</div> -->
                     <div class="loader">
@@ -17,7 +17,9 @@
                     <div ng-if="!showPagination" class="page-msg">{{challengeHostTeams.paginationMsg}}</div>
                     <ul class="collapsible" data-collapsible="accordion">
                         <li ng-repeat="(key, value) in challengeHostTeams.existTeam.results">
-                            <div class="collapsible-header"> <i class="fa fa-lg fa-users" aria-hidden="true"></i>
+                            <div class="collapsible-header">
+                                <input type="radio" name="selectHostTeam" class="with-gap selectTeam" id="{{value.id}}" value={{value.id}} ng-model="challengeHostTeams.challengeHostTeamId">
+                                <label for="{{value.id}}"></label>
                                 <div class="show-member-title pointer">
                                     <span><b class="text-med-black">Team: </b>{{value.team_name}}</span>
                                     <a ng-click="challengeHostTeams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
@@ -44,6 +46,9 @@
                                     <i class="fa fa-chevron-right"></i>
                                 </a>
                             </div>
+                        <div class="align-right reg-control">
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-if="challengeHostTeams.challengeHostTeamId" type="submit" value="Submit" ng-click="challengeHostTeams.storeChallengeHostTeamId()">Next</button>
+                        </div>
                             <div class="col s12 m6 ">
                                 <div class="align-right ">
                                     <span class="text-dark-black"><strong >{{challengeHostTeams.existTeamError}}</strong></span>
