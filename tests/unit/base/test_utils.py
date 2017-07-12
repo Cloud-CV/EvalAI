@@ -14,7 +14,7 @@ from base.utils import RandomFileName
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
-from participants.models import Participant, ParticipantTeam 
+from participants.models import Participant, ParticipantTeam
 
 
 class BaseAPITestClass(APITestCase):
