@@ -28,7 +28,8 @@ var gulp = require('gulp'),
     prettyError = require('gulp-prettyerror'),
     path = require('path'),
     inject = require('gulp-inject'),
-    _ = require('lodash');
+    _ = require('lodash'),
+    Server = require('karma').Server;
 
 
 var scripts = require('./frontend/app.scripts.json');
@@ -356,6 +357,25 @@ gulp.task('watch', function() {
 
 });
 
+/**
+ * Run test once and exit
+ */
+gulp.task('test', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true
+  }, done).start();
+});
+
+/**
+ * Watch for file changes and re-run tests on each change
+ */
+gulp.task('test:watch', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js'
+  }, done).start();
+});
+
 
 // Start a server for serving frontend
 gulp.task('connect', ['lint'], function() {
@@ -398,5 +418,5 @@ gulp.task('prod', function(callback) {
 
 // Runserver for development
 gulp.task('dev:runserver', function(callback) {
-    runSequence('dev', 'connect', 'watch', callback);
+    runSequence('dev', 'connect', 'watch', 'test:watch', callback);
 });
