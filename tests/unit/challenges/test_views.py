@@ -3,9 +3,11 @@ import os
 import shutil
 
 from datetime import timedelta
+from os.path import join
 
-from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.urlresolvers import reverse_lazy
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
@@ -14,10 +16,15 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge, ChallengePhase, DatasetSplit, ChallengePhaseSplit, Leaderboard
+from challenges.models import (Challenge,
+                               ChallengeConfiguration,
+                               ChallengePhase,
+                               ChallengePhaseSplit,
+                               DatasetSplit,
+                               Leaderboard,)
+from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
-from participants.models import Participant, ParticipantTeam
 
 
 class BaseAPITestClass(APITestCase):
@@ -1399,6 +1406,146 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class CreateChallengeUsingZipFile(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
+        self.user = User.objects.create(
+            username='host',
+            email='host@test.com',
+            password='secret_password')
+
+        EmailAddress.objects.create(
+            user=self.user,
+            email='user@test.com',
+            primary=True,
+            verified=True)
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name='Test Challenge Host Team',
+            created_by=self.user)
+
+        self.path = join(settings.BASE_DIR, 'examples', 'example1', 'test_zip_file')
+
+        self.challenge = Challenge.objects.create(
+            title='Challenge Title',
+            short_description='Short description of the challenge (preferably 140 characters)',
+            description=open(join(self.path, 'description.html'), 'rb').read().decode('utf-8'),
+            terms_and_conditions=open(join(self.path, 'terms_and_conditions.html'), 'rb').read().decode('utf-8'),
+            submission_guidelines=open(join(self.path, 'submission_guidelines.html'), 'rb').read().decode('utf-8'),
+            evaluation_details=open(join(self.path, 'evaluation_details.html'), 'rb').read().decode('utf-8'),
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase = ChallengePhase.objects.create(
+                name='Challenge Phase',
+                description=open(join(self.path, 'challenge_phase_description.html'), 'rb').read().decode('utf-8'),
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile(open(join(self.path, 'test_annotation.txt'), 'rb').name,
+                                                   open(join(self.path, 'test_annotation.txt'), 'rb').read(),
+                                                   content_type='text/plain')
+            )
+        self.dataset_split = DatasetSplit.objects.create(name="Name of the dataset split",
+                                                         codename="codename of dataset split")
+
+        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({
+                                                      "labels": ["yes/no", "number", "others", "overall"],
+                                                      "default_order_by": "overall"}))
+
+        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+            dataset_split=self.dataset_split,
+            challenge_phase=self.challenge_phase,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC
+            )
+
+        self.zip_file = open(join(settings.BASE_DIR, 'examples', 'example1', 'test_zip_file.zip'), 'rb')
+
+        self.test_zip_file = SimpleUploadedFile(self.zip_file.name,
+                                                self.zip_file.read(),
+                                                content_type='application/zip')
+
+        self.zip_configuration = ChallengeConfiguration.objects.create(
+            user=self.user,
+            challenge=self.challenge,
+            zip_configuration=SimpleUploadedFile(self.zip_file.name,
+                                                 self.zip_file.read(),
+                                                 content_type='application/zip'),
+            stdout_file=None,
+            stderr_file=None
+            )
+        self.client.force_authenticate(user=self.user)
+
+        self.input_zip_file = SimpleUploadedFile('test_sample.zip',
+                                                 'Dummy File Content',
+                                                 content_type='application/zip')
+
+    def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded(self):
+        self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
+        expected = {
+            'zip_configuration': ['No file was submitted.']
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded_successfully(self):
+        self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
+
+        expected = {
+            'zip_configuration': ['The submitted data was not a file. Check the encoding type on the form.']
+        }
+        response = self.client.post(self.url, {'zip_configuration': self.input_zip_file})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_challenge_using_zip_file_when_server_error_occurs(self):
+        self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
+        expected = {
+            'error': 'A server error occured while processing zip file. Please try uploading it again!'
+            }
+        response = self.client.post(self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(self):
+        self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk+10})
+        expected = {
+            'detail': 'ChallengeHostTeam {} does not exist'.format(self.challenge_host_team.pk+10)
+        }
+        response = self.client.post(self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_challenge_using_zip_file_when_user_is_not_authenticated(self):
+        self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
+        self.client.force_authenticate(user=None)
+
+        expected = {
+            'error': 'Authentication credentials were not provided.'
+        }
+
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class GetAllSubmissionsTest(BaseAPITestClass):
