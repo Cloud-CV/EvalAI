@@ -143,8 +143,12 @@
                     onSuccess: function(response) {
                         if (response.status == 200) {
                             utilities.storeData('userKey', response.data.token);
-                            $state.go($rootScope.previousState);
-                            vm.stopLoader();
+                            if ($rootScope.previousState) {
+                                $state.go($rootScope.previousState);
+                                vm.stopLoader();
+                            }else {
+                                $state.go('web.dashboard');
+                            }
                         } else {
                             alert("Something went wrong");
                         }

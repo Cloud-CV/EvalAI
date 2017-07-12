@@ -66,10 +66,8 @@
                         onError: function(response) {
                             var status = response.status;
                             var error = response.data;
-                            if (status === 400) {
-                                angular.element(".file-path").val(null);
-                                $rootScope.notify("error", error.error);
-                            }
+                            angular.element(".file-path").val(null);
+                            $rootScope.notify("error", error.error);
                             vm.stopLoader();
                         }
                     };
