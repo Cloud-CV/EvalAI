@@ -36,5 +36,5 @@ class ParticipantTeamAdmin(TimeStampedAdmin, ImportExportModelAdmin):
     A class which provides interface to display
     and filter team names.
     """
-    list_display = ('team_name',)
+    list_display = ('team_name', 'get_all_participants_email',)
     list_filter = ('team_name',)
