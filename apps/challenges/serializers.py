@@ -134,7 +134,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ChallengePhaseUiSerializer(serializers.ModelSerializer):
+class ChallengePhaseCreationSerializer(serializers.ModelSerializer):
     """
     Serializer to take challenge phase as list input.
     """
