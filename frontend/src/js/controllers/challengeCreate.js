@@ -64,7 +64,6 @@
                             }
                         },
                         onError: function(response) {
-                            var status = response.status;
                             var error = response.data;
                             angular.element(".file-path").val(null);
                             $rootScope.notify("error", error.error);
