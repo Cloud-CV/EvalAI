@@ -1,9 +1,9 @@
-## How to setup
+# How to setup
+
 EvalAI can run on Linux, Cloud, Windows, and macOS platforms. Use the following list to choose the best installation path for you. The links under *Platform* take you straight to the installation instructions for that platform.
 
-- [Ubuntu](#ubuntu-installation-instructions)
-- [Fedora](#fedora-installation-instructions)
 ## Ubuntu Installation Instructions
+
 ### Step 1: Install prerequisites
 
 * Install git
@@ -52,7 +52,6 @@ git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 ```
 
 Don't forget to replace YOUR_GITHUB_USER_NAME with your git username.
-
 
 ### Step 3: Setup code base
 
@@ -103,7 +102,9 @@ python manage.py runserver --settings=settings.dev
 ```
 gulp dev:runserver
 ```
+
 ## Fedora Installation Instructions
+
 ### Step 1: Install prerequisites
 
 * Install git
@@ -126,13 +127,13 @@ where x.x is your version, such as /usr/pgsql-9.5./bin.
 * Install rabbitmq
 
 ```shell
-#use the below commands to get Erlang on our system:
+# use the below commands to get Erlang on our system:
 wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 sudo rpm -Uvh remi-release-6*.rpm epel-release-6*.rpm
 # Finally, download and install Erlang:
 sudo yum install -y erlang
-#Once we have Erlang, we can continue with installing RabbitMQ:
+# Once we have Erlang, we can continue with installing RabbitMQ:
 wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.2.2/rabbitmq-server-3.2.2-1.noarch.rpm
 rpm --import http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
 sudo yum install rabbitmq-server-3.2.2-1.noarch.rpm
@@ -147,6 +148,7 @@ sudo pip install --upgrade pip
 # upgrade virtualenv
 sudo pip install --upgrade virtualenv
 ```
+
 ### Step 2: Get EvalAI code
 
 If you haven't already created an ssh key and added it to your GitHub account,
@@ -162,7 +164,6 @@ git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 ```
 
 Don't forget to replace YOUR_GITHUB_USER_NAME with your git username.
-
 
 ### Step 3: Setup code base
 
@@ -201,7 +202,7 @@ npm install -g bower
 
 ### Step 4: Start the development environment
 
-* To run backend development server at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+* To run backend development server at [backend]
 
 ```
 # activate virtual environment if not activated
@@ -209,13 +210,14 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at [http://127.0.0.1:8888](http://127.0.0.1:8888)
+* To run frontend development server for at [frontend]
 
 ```
 gulp dev:runserver
 ```
 
 ### Common Errors
+
 #### Error: You need to install postgresql-server-dev-X.Y for building a server-side extension or libpq-dev for building a client-side application.
 
 __Solution__: Install libpq-dev
@@ -225,7 +227,6 @@ sudo apt-get install libpq-dev
 ```
 
 Possible solutions for the same problem can be found at [link]
-
 
 [link]: http://stackoverflow.com/a/28938258/2534102
 [backend]: http://127.0.0.1:8000
