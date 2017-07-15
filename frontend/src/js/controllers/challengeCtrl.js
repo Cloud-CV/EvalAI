@@ -48,6 +48,24 @@
 
         utilities.showLoader();
 
+        vm.onDisableChallengeClick = function(){
+            console.log("Disable button clicked!");
+            var parameters = {};
+            parameters.url = 'challenges/challenge/' + vm.challengeId + '/disable';
+            parameters.method = 'POST';
+            parameters.data = {};
+            parameters.token = userKey;
+
+            parameters.callback = {
+                onSuccess: function(response) {
+                    console.log("Disable success");
+                },
+                onError: function(response) {
+                    console.log("Disable error");
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
         // get details of the particular challenge
         var parameters = {};
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/';
