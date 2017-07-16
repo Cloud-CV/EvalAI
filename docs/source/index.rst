@@ -15,6 +15,7 @@ Contents:
    architecture
    architecture_decisions
    directory_structure
+   challenge_creation
    submission
    migrations
    contribution
