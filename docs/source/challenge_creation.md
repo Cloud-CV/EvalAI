@@ -165,10 +165,10 @@ challenge_phases:
 dataset_splits:
   - id: 1
     name: Name of the dataset split
-    codename: codename of dataset split
+    codename: codename of dataset split 1
   - id: 2
     name: Name of the dataset split
-    codename: codename of dataset split
+    codename: codename of dataset split 2
 
 challenge_phase_splits:
   - challenge_phase_id: 1
