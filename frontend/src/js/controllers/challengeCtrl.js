@@ -800,14 +800,13 @@
             vm.showPagination = false;
 
             var parameters = {};
-            parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submissions/";
+            parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submissions";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-
                     vm.submissionResult = details;
 
                     if (vm.submissionResult.count === 0) {
