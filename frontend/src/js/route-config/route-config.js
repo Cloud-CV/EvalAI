@@ -232,6 +232,14 @@
             authenticate: true
         };
 
+        var my_challenge_all_submission = {
+            name: "web.challenge-main.challenge-page.my-challenge-all-submission",
+            url: "/my-challenge-all-submission",
+            templateUrl: baseUrl + "/web/challenge/my-challenge-all-submission.html",
+            title: 'My Challenge All Submissions',
+            authenticate: true
+        };
+
         var leaderboard = {
             name: "web.challenge-main.challenge-page.leaderboard",
             url: "/leaderboard",
@@ -437,6 +445,7 @@
         $stateProvider.state(participate);
         $stateProvider.state(submission);
         $stateProvider.state(my_submission);
+        $stateProvider.state(my_challenge_all_submission);
         $stateProvider.state(leaderboard);
 
         // featured challenge details
