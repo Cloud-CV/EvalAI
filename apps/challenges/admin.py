@@ -5,6 +5,7 @@ from base.admin import ImportExportTimeStampedAdmin
 from .models import (Challenge,
                      ChallengeConfiguration,
                      ChallengePhase,
+                     ChallengePhaseDescriptionFile,
                      ChallengePhaseSplit,
                      DatasetSplit,
                      Leaderboard,
@@ -57,3 +58,9 @@ class ChallengeConfigurationAdmin(ImportExportTimeStampedAdmin):
     list_display = ('user', 'challenge', 'is_created', 'zip_configuration',)
     list_filter = ('user', 'is_created',)
     search_fields = ('user', 'challenge',)
+
+
+@admin.register(ChallengePhaseDescriptionFile)
+class ChallengePhaseDescriptionFileAdmin(ImportExportTimeStampedAdmin):
+    list_display = ('challenge_phase', 'description_file',)
+    search_fields = ('challenge_phase',)

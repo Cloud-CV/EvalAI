@@ -220,3 +220,16 @@ class ChallengeConfiguration(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_zip_configuration'
+
+
+class ChallengePhaseDescriptionFile(TimeStampedModel):
+    """
+    Model to store file for challenge phase description.
+    """
+    challenge_phase = models.ForeignKey('ChallengePhase')
+    description_file = models.FileField(upload_to='challenge_description_file',
+                                        null=True, blank=True)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'challenge_phase_description_file'
