@@ -31,6 +31,7 @@
         vm.poller = null;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
+        vm.isChallengeHost = true;
 
         // loader for existing teams
         vm.isExistLoader = false;
@@ -81,6 +82,7 @@
                             for (var i in details.challenge_participant_team_list) {
                                 if (details.challenge_participant_team_list[i].challenge !== null && details.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
                                     vm.isParticipated = true;
+                                    vm.isChallengeHost = false;
                                     break;
                                 }
                             }
@@ -777,6 +779,111 @@
 
         };
 
+        vm.getAllSubmissionResults = function(phaseId) {
+
+            vm.stopFetchingSubmissions = function() {
+                $interval.cancel(vm.poller);
+            };
+
+            vm.stopFetchingSubmissions();
+            vm.isResult = true;
+            vm.phaseId = phaseId;
+
+            // loader for loading submissions.
+            vm.startLoader =  loaderService.startLoader;
+            vm.startLoader("Loading Submissions");
+
+            // get submissions of all the challenge phases
+            vm.isNext = '';
+            vm.isPrev = '';
+            vm.currentPage = '';
+            vm.showPagination = false;
+
+            var parameters = {};
+            parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submissions";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    vm.submissionResult = details;
+
+                    if (vm.submissionResult.count === 0) {
+                        vm.showPagination = false;
+                        vm.paginationMsg = "No results found";
+                    } else {
+
+                        vm.showPagination = true;
+                        vm.paginationMsg = "";
+                    }
+
+                    if (vm.submissionResult.next === null) {
+                        vm.isNext = 'disabled';
+                    } else {
+                        vm.isNext = '';
+
+                    }
+                    if (vm.submissionResult.previous === null) {
+                        vm.isPrev = 'disabled';
+                    } else {
+                        vm.isPrev = '';
+                    }
+                    if (vm.submissionResult.next !== null) {
+                        vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
+                    } else {
+                        vm.currentPage = 1;
+                    }
+
+                    vm.load = function(url) {
+                        // loader for loading submissions
+                        vm.startLoader =  loaderService.startLoader;
+                        vm.startLoader("Loading Submissions");
+                        if (url !== null) {
+
+                            //store the header data in a variable
+                            var headers = {
+                                'Authorization': "Token " + userKey
+                            };
+
+                            //Add headers with in your request
+                            $http.get(url, { headers: headers }).then(function(response) {
+                                // reinitialized data
+                                var details = response.data;
+                                vm.submissionResult = details;
+
+                                // condition for pagination
+                                if (vm.submissionResult.next === null) {
+                                    vm.isNext = 'disabled';
+                                    vm.currentPage = vm.submissionResult.count / 10;
+                                } else {
+                                    vm.isNext = '';
+                                    vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
+                                }
+
+                                if (vm.submissionResult.previous === null) {
+                                    vm.isPrev = 'disabled';
+                                } else {
+                                    vm.isPrev = '';
+                                }
+                                vm.stopLoader();
+                            });
+                        } else {
+                            vm.stopLoader();
+                        }
+                    };
+                    vm.stopLoader();
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    utilities.storeData('emailError', error.detail);
+                    $state.go('web.permission-denied');
+                    vm.stopLoader();
+                }
+            };
+
+            utilities.sendRequest(parameters);
+
         vm.changeSubmissionVisibility = function(submission_id) {
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
@@ -804,6 +911,7 @@
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
         });
-    }
+    };
+}
 
 })();
