@@ -29,9 +29,10 @@
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
+        vm.isChallengeHost = false;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
-        vm.isChallengeHost = true;
+
 
         // loader for existing teams
         vm.isExistLoader = false;
@@ -147,6 +148,7 @@
                                                 parameters.callback = {
                                                     onSuccess: function() {
                                                         vm.isParticipated = true;
+                                                        vm.isChallengeHost = false;
                                                         $state.go('web.challenge-main.challenge-page.submission');
                                                         vm.stopLoader();
                                                     },
@@ -156,6 +158,8 @@
                                                         } else if (response.data['error']) {
                                                             error = response.data['error'];
                                                         }
+                                                        vm.isChallengeHost = true;
+                                                        vm.isParticipated = false;
                                                         $rootScope.notify("error", error);
                                                         vm.stopLoader();
                                                     }
@@ -208,6 +212,8 @@
                                         utilities.hideLoader();
                                     },
                                     onError: function(response) {
+                                        vm.isChallengeHost = true;
+                                        vm.isParticipated = false;
                                         var error = response.data;
                                         utilities.storeData('emailError', error.detail);
                                         $state.go('web.permission-denied');
