@@ -134,11 +134,13 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ChallengePhaseCreationSerializer(serializers.ModelSerializer):
+class ChallengePhaseDisplaySerializer(serializers.ModelSerializer):
     """
-    Serializer to take challenge phase as list input.
+    Serializer to display challenge phase.
     """
 
     class Meta:
         model = ChallengePhase
-        fields = '__all__'
+        fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
+                  'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
+                  'is_public', 'codename',)
