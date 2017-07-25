@@ -125,9 +125,10 @@ class TestJobsUrls(BaseAPITestClass):
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk,
                                         'submission_id': self.submission.pk})
-        self.assertEqual(self.url, '/api/jobs/challenge/{}/challenge_phase/{}/submission/{}'.format(self.challenge.pk,
-                                                                                                    self.challenge_phase.pk,
-                                                                                                    self.submission.pk))
+        self.assertEqual(self.url,
+                         '/api/jobs/challenge/{}/challenge_phase/{}/submission/{}'.format(self.challenge.pk,
+                                                                                          self.challenge_phase.pk,
+                                                                                          self.submission.pk))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:change_submission_visibility')
 
@@ -136,8 +137,8 @@ class TestJobsUrls(BaseAPITestClass):
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk})
         self.assertEqual(self.url,
-                        '/api/jobs/challenge/{}/challenge_phase/{}/submission/'.format(self.challenge.pk,
-                                                                                       self.challenge_phase.pk))
+                         '/api/jobs/challenge/{}/challenge_phase/{}/submission/'.format(self.challenge.pk,
+                                                                                        self.challenge_phase.pk))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:challenge_submission')
 
@@ -154,6 +155,6 @@ class TestJobsUrls(BaseAPITestClass):
         self.url = reverse_lazy('jobs:leaderboard',
                                 kwargs={'challenge_phase_split_id': self.challenge_phase_split.pk})
         self.assertEqual(self.url,
-                        '/api/jobs/challenge_phase_split/{}/leaderboard/'.format(self.challenge_phase_split.pk))
+                         '/api/jobs/challenge_phase_split/{}/leaderboard/'.format(self.challenge_phase_split.pk))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:leaderboard')
