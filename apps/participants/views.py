@@ -13,6 +13,7 @@ from rest_framework.throttling import UserRateThrottle
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from challenges.models import Challenge
+from hosts.utils import is_user_a_host_of_challenge
 
 from .models import (Participant, ParticipantTeam)
 from .serializers import (InviteParticipantToTeamSerializer,
@@ -173,7 +174,6 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
             'error': 'Sorry, you do not have permissions to remove this participant'}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-from hosts.utils import is_user_a_host_of_challenge
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
