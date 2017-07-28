@@ -10,7 +10,7 @@ urlpatterns = [
         name='remove_self_from_participant_team'),
     url(r'participant_team/(?P<participant_team_pk>[0-9]+)/participant/(?P<participant_pk>[0-9]+)$',
         views.delete_participant_from_team, name='delete_participant_from_team'),
-    url(r'participant_teams/challenges/user',
+    url(r'participant_teams/challenges/(?P<challenge_pk>[0-9]+)/user$',
         views.get_teams_and_corresponding_challenges_for_a_participant,
         name='get_teams_and_corresponding_challenges_for_a_participant'),
     url(r'participant_team$', views.participant_team_list,

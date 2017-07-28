@@ -503,9 +503,6 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
     def setUp(self):
         super(GetTeamsAndCorrespondingChallengesForAParticipant, self).setUp()
 
-        self.url = reverse_lazy(
-            'participants:get_teams_and_corresponding_challenges_for_a_participant',)
-
         self.user2 = User.objects.create(
             username='user2',
             email='user2@platform.com',
@@ -567,6 +564,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
             )
 
+        self.url = reverse_lazy(
+            'participants:get_teams_and_corresponding_challenges_for_a_participant',
+            kwargs={'challenge_pk': self.challenge1.pk})
+
     def test_get_teams_and_corresponding_challenges_for_a_participant(self):
 
         self.challenge1.participant_teams.add(self.participant_team1)
@@ -603,7 +604,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "created_by": self.participant_team1.created_by.username
                     }
                 }
-            ]
+            ],
+            "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -621,7 +623,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "created_by": self.participant_team1.created_by.username
                     }
                 }
-            ]
+            ],
+            "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -632,7 +635,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.participant_team1.delete()
 
         expected = {
-            "challenge_participant_team_list": []
+            "challenge_participant_team_list": [],
+            "is_challenge_host": False
         }
 
         response = self.client.get(self.url, {})
