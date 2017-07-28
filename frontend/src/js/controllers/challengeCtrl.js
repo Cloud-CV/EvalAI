@@ -29,9 +29,10 @@
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
+        vm.isChallengeHost = false;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
-        vm.isChallengeHost = true;
+
 
         // loader for existing teams
         vm.isExistLoader = false;
@@ -71,20 +72,22 @@
 
                     // get details of challenges corresponding to participant teams of that user
                     var parameters = {};
-                    parameters.url = 'participants/participant_teams/challenges/user';
+                    parameters.url = 'participants/participant_teams/challenges/'+ vm.challengeId + '/user';
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
-
                             for (var i in details.challenge_participant_team_list) {
                                 if (details.challenge_participant_team_list[i].challenge !== null && details.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
                                     vm.isParticipated = true;
-                                    vm.isChallengeHost = false;
                                     break;
                                 }
+                            }
+
+                            if (details.is_challenge_host) {
+                                vm.isChallengeHost = true;
                             }
 
                             if (!vm.isParticipated) {
