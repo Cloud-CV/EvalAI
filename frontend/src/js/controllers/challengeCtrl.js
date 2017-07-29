@@ -956,6 +956,29 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.fileTypes = [{'name': 'csv'}];
+
+        vm.downloadChallengeSubmissions = function() {
+               //store the header data in a variable
+            var headers = {
+                'Authorization': "Token " + userKey
+            };
+
+            var url = "http://127.0.0.1:8000/api/challenges/"+ vm.challengeId + "/download_all_submissions_file/" + vm.fileSelected + "/";
+
+            //Add headers with in your request
+            $http.get(url, { headers: headers }).then(function(response) {
+
+                var details = response.data;
+                var anchor = angular.element('<a/>');
+                anchor.attr({
+                    href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                    target: '_blank',
+                    download: 'all_submissions.csv'
+                })[0].click();
+            });
+        };
+
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
