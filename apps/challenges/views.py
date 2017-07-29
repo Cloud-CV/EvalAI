@@ -736,3 +736,50 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
     else:
         response_data = {'error': 'You are neither host nor participant of the challenge!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+import csv
+from django.http import HttpResponse
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def download_all_submissions_file(request, challenge_pk, file_type):
+
+    # To check for the corresponding challenge from challenge_pk.
+    challenge = get_challenge_model(challenge_pk)
+
+    if file_type == 'csv':
+        if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
+            submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=all_submissions.csv';
+            writer = csv.writer(response)
+            writer.writerow(['id',
+                             'Team Name',
+                             'Challenge Phase',
+                             'Status',
+                             'Created By',
+                             'Execution Time(sec.)',
+                             'Submission Number',
+                             'Submitted At'])
+            for submission in submissions:
+                writer.writerow([submission.id,
+                                 submission.participant_team,
+                                 submission.challenge_phase,
+                                 submission.status,
+                                 submission.created_by,
+                                 submission.execution_time,
+                                 submission.submission_number,
+                                 submission.created_at])
+            return response
+        else:
+            response_data = {'error': 'Only Challenge hosts can download the csv file!'}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    else:
+        response_data = {'error': 'The file type requested is not valid!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
