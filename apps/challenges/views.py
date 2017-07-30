@@ -753,7 +753,7 @@ def download_all_submissions_file(request, challenge_pk, file_type):
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
             response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=all_submissions.csv';
+            response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
             writer = csv.writer(response)
             writer.writerow(['id',
                              'Team Name',
@@ -779,5 +779,3 @@ def download_all_submissions_file(request, challenge_pk, file_type):
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-

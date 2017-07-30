@@ -96,9 +96,9 @@ class TestChallengeUrls(BaseAPITestClass):
         self.assertEqual(url, '/api/challenges/challenge/PAST')
 
         self.url = reverse_lazy('challenges:download_all_submissions_file',
-                           kwargs={'challenge_pk': self.challenge.pk,
-                                   'file_type': self.file_type})
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'file_type': self.file_type})
         self.assertEqual(self.url, '/api/challenges/{}/download_all_submissions_file/{}/'.format(self.challenge.pk,
-                                                                                            self.file_type))
+                                                                                                 self.file_type))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'challenges:download_all_submissions_file')
