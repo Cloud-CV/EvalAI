@@ -884,8 +884,8 @@
                     vm.stopLoader();
                 }
             };
-
             utilities.sendRequest(parameters);
+        };
 
         vm.changeSubmissionVisibility = function(submission_id) {
             var parameters = {};
@@ -990,7 +990,6 @@
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
         });
-    };
-}
+    }
 
 })();
