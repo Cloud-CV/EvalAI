@@ -1,3 +1,4 @@
+import csv
 import logging
 import random
 import requests
@@ -11,6 +12,7 @@ from os.path import basename, isfile, join
 
 from django.core.files.base import ContentFile
 from django.db import transaction
+from django.http import HttpResponse
 from django.utils import timezone
 
 from rest_framework import permissions, status
@@ -738,9 +740,6 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-import csv
-from django.http import HttpResponse
-
 @throttle_classes([UserRateThrottle])
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -777,7 +776,6 @@ def download_all_submissions_file(request, challenge_pk, file_type):
         else:
             response_data = {'error': 'Only Challenge hosts can download the csv file!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
