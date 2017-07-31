@@ -1894,7 +1894,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.client.force_authenticate(user=self.user9)
 
         expected = {
-            'error': 'Only Challenge hosts can download the csv file!'
+            'error': 'Only Challenge Hosts can use the export feature!'
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
