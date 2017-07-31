@@ -774,7 +774,7 @@ def download_all_submissions_file(request, challenge_pk, file_type):
                                  submission.created_at])
             return response
         else:
-            response_data = {'error': 'Only Challenge hosts can download the csv file!'}
+            response_data = {'error': 'Only Challenge Hosts can use the export feature!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
         response_data = {'error': 'The file type requested is not valid!'}
