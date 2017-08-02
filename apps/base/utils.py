@@ -2,7 +2,6 @@ import os
 import uuid
 
 from django.conf import settings
-from django.utils.deconstruct import deconstructible
 
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
@@ -24,20 +23,17 @@ def paginated_queryset(queryset, request, pagination_class=PageNumberPagination(
     return (paginator, result_page)
 
 
-@deconstructible
 class RandomFileName(object):
     def __init__(self, path):
         self.path = path
 
     def __call__(self, instance, filename):
         extension = os.path.splitext(filename)[1]
+        path = self.path
         if 'id' in self.path and instance.pk:
-            self.path = self.path.format(id=instance.pk)
-        elif 'id' not in self.path and instance.pk:
-            path = "submission_files/submission_{id}"
-            self.path = path.format(id=instance.pk)
+            path = self.path.format(id=instance.pk)
         filename = '{}{}'.format(uuid.uuid4(), extension)
-        filename = os.path.join(self.path, filename)
+        filename = os.path.join(path, filename)
         return filename
 
 

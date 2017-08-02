@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('MainCtrl', MainCtrl);
 
-    MainCtrl.$inject = ['utilities', '$rootScope', '$state', '$mdDialog'];
+    MainCtrl.$inject = ['utilities', '$rootScope', '$state'];
 
-    function MainCtrl(utilities, $rootScope, $state, $mdDialog) {
+    function MainCtrl(utilities, $rootScope, $state) {
 
         var vm = this;
 
@@ -17,6 +17,9 @@
         vm.challengeList = {};
         vm.challengeCount = 0;
         vm.isMore = false;
+
+        // store the next redirect value
+        vm.redirectUrl = {};
 
         // get token
         var userKey = utilities.getData('userKey');
@@ -80,13 +83,13 @@
 
         }
         vm.hostChallenge = function() {
-
-            var alert = $mdDialog.alert()
-                .title('Host a challenge')
-                .htmlContent('Please send an email to <a href="mailto:admin@cloudcv.org" class="blue-text">admin@cloudcv.org</a> with the details of the challenge and we will get back soon.')
-                .ok('Close');
-
-            $mdDialog.show(alert);
+            if ($rootScope.isAuth === true)
+            {
+                $state.go('web.challenge-host-teams');
+            } else {
+                $state.go('auth.login');
+                $rootScope.previousState = "web.challenge-host-teams";
+            }
         };
 
         vm.profileDropdown = function() {

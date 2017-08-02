@@ -152,7 +152,7 @@
         var challenge_create = {
             name: "web.challenge-create",
             parent: "web",
-            url: "/challenges/create",
+            url: "/challenge-create",
             templateUrl: baseUrl + "/web/challenge-create.html",
             title: 'Create Challenge',
             controller: 'ChallengeCreateCtrl',
@@ -229,6 +229,14 @@
             url: "/my-submission",
             templateUrl: baseUrl + "/web/challenge/my-submission.html",
             title: 'My Submissions',
+            authenticate: true
+        };
+
+        var my_challenge_all_submission = {
+            name: "web.challenge-main.challenge-page.my-challenge-all-submission",
+            url: "/my-challenge-all-submission",
+            templateUrl: baseUrl + "/web/challenge/my-challenge-all-submission.html",
+            title: 'My Challenge All Submissions',
             authenticate: true
         };
 
@@ -437,6 +445,7 @@
         $stateProvider.state(participate);
         $stateProvider.state(submission);
         $stateProvider.state(my_submission);
+        $stateProvider.state(my_challenge_all_submission);
         $stateProvider.state(leaderboard);
 
         // featured challenge details
