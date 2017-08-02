@@ -1,13 +1,12 @@
 from django.contrib import admin
 
-from base.admin import TimeStampedAdmin
+from base.admin import ImportExportTimeStampedAdmin
 from .models import (
     Participant,
     ParticipantTeam,
 )
 
 from import_export import resources
-from import_export.admin import ImportExportModelAdmin
 
 
 class ParticipantResource(resources.ModelResource):
@@ -19,7 +18,7 @@ class ParticipantResource(resources.ModelResource):
 
 
 @admin.register(Participant)
-class ParticipantAdmin(TimeStampedAdmin, ImportExportModelAdmin):
+class ParticipantAdmin(ImportExportTimeStampedAdmin):
     """
     An abstract base class which provides an
     interface to display user and team status.
@@ -31,7 +30,7 @@ class ParticipantAdmin(TimeStampedAdmin, ImportExportModelAdmin):
 
 
 @admin.register(ParticipantTeam)
-class ParticipantTeamAdmin(TimeStampedAdmin, ImportExportModelAdmin):
+class ParticipantTeamAdmin(ImportExportTimeStampedAdmin):
     """
     A class which provides interface to display
     and filter team names.
