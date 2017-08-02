@@ -762,7 +762,13 @@ def download_all_submissions_file(request, challenge_pk, file_type):
                              'Created By',
                              'Execution Time(sec.)',
                              'Submission Number',
-                             'Submitted At'])
+                             'Submitted File',
+                             'Stdout File',
+                             'Stderr File',
+                             'Submitted At',
+                             'Submission Result File',
+                             'Submission Metadata File',
+                             ])
             for submission in submissions:
                 writer.writerow([submission.id,
                                  submission.participant_team,
@@ -771,7 +777,13 @@ def download_all_submissions_file(request, challenge_pk, file_type):
                                  submission.created_by,
                                  submission.execution_time,
                                  submission.submission_number,
-                                 submission.created_at])
+                                 submission.input_file,
+                                 submission.stdout_file,
+                                 submission.stderr_file,
+                                 submission.created_at,
+                                 submission.submission_result_file,
+                                 submission.submission_metadata_file,
+                                 ])
             return response
         else:
             response_data = {'error': 'Only Challenge Hosts can use the export feature!'}
