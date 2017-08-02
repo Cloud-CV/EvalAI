@@ -12,78 +12,114 @@
                     </div>
                 </div>
                 <div class="ev-md-container ev-panel-title"><strong>Please fill the following fields to submit</strong></div>
-                <div class=" ev-card-body exist-team-card">
-                    <form ng-submit="challenge.makeSubmission()">
-                        <ul>
-                            <b>Select Phase:</b>
-                            <li ng-repeat="item in challenge.phases.results">
-                                <input type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}" value="{{item.id}}" ng-model="challenge.phaseId">
-                                <label for="{{item.id}}"></label>
-                                <div class="show-member-title pointer"><strong class="text-med-black">Phase: </strong>{{item.name}}
-                                    <br>
-                                    <strong class="text-med-black">End Date: </strong>{{item.end_date | date:'medium'}}</div>
-                                <div class="clearfix"></div>
-                            </li>
-
-                            <div class="row">
-                                <div class="file-field input-field col s6">
-                                    <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
-                                        <span>Upload File</span>
-                                        <input type="file" ngf-select ng-model="challenge.input_file" name="challenge.input_file" accept=".json">
-                                    </div>
-                                    <div class="file-path-wrapper">
-                                        <input class="file-path validate" type="text">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="input-field align-left col s6">
-                                    <input type="text" id="methodName" name="methodName" ng-model="challenge.methodName" required>
-                                    <span class="form-icon"><i class="fa fa-text"></i></span>
-                                    <label for="methodName">Method Name *</label>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="input-field align-left col s6">
-                                    <textarea id="methodDesc" class="materialize-textarea" name="methodDesc" ng-model="challenge.methodDesc" required></textarea>
-                                    <span class="form-icon"><i class="fa fa-text"></i></span>
-                                    <label for="methodDesc">Method Description *</label>
-                                </div>                                
-                            </div>
-
-                            <div class="row">
-                                <div class="input-field align-left col s6">
-                                    <input type="text" id="projectUrl" name="projectUrl" ng-model="challenge.projectUrl" required>
-                                    <span class="form-icon"><i class="fa fa-text"></i></span>
-                                    <label for="projectUrl">Project URL (Enter N/A if not applicable)</label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="input-field align-left col s6">
-                                    <input type="text" id="publicationUrl" name="publicationUrl" ng-model="challenge.publicationUrl" required>
-                                    <span class="form-icon"><i class="fa fa-text"></i></span>
-                                    <label for="publicationUrl">Publication URL (Enter N/A if not applicable)</label>
-                                </div>                                
-                            </div>
-
-                            <div class="text-highlight red-text"><strong>
-                                {{challenge.subErrors.msg}}</strong></div>
-                            <section class="pagination">
-                                <div class="row rm-gut">
-                                    <div class="col s12 m12">
-                                        <div class="align-left ">
-                                            <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Submit</button>
+                <div class="row">
+                    <div class="col s12 m7">
+                        <div class="ev-card-body exist-team-card">
+                            <form ng-submit="challenge.makeSubmission()">
+                                <ul>
+                                    <b>Select Phase:</b>
+                                    <li ng-repeat="item in challenge.phases.results">
+                                        <input type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}" value="{{item.id}}" ng-model="challenge.phaseId" ng-click="challenge.showRemainingSubmissions()">
+                                        <label for="{{item.id}}"></label>
+                                        <div class="show-member-title pointer"><strong class="text-med-black">Phase: </strong>{{item.name}}
                                             <br>
-                                            <br>
-                                            <span class="text-dark-black"><strong >{{challenge.submissionError}}</strong></span>
+                                            <strong class="text-med-black">End Date: </strong>{{item.end_date | date:'medium'}}</div>
+                                        <div class="clearfix"></div>
+                                    </li>
+
+                                    <div class="row">
+                                        <div class="file-field input-field col s10">
+                                            <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                                                <span>Upload File</span>
+                                                <input type="file" ngf-select ng-model="challenge.input_file" name="challenge.input_file" accept=".json">
+                                            </div>
+                                            <div class="file-path-wrapper">
+                                                <input class="file-path validate" type="text">
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </section>
-                        </ul>
-                    </form>
+
+                                    <div class="row">
+                                        <div class="input-field align-left col s10">
+                                            <input type="text" id="methodName" name="methodName" ng-model="challenge.methodName" required>
+                                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                                            <label for="methodName">Method Name *</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="input-field align-left col s10">
+                                            <textarea id="methodDesc" class="materialize-textarea" name="methodDesc" ng-model="challenge.methodDesc" required></textarea>
+                                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                                            <label for="methodDesc">Method Description *</label>
+                                        </div>                                
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="input-field align-left col s10">
+                                            <input type="text" id="projectUrl" name="projectUrl" ng-model="challenge.projectUrl" required>
+                                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                                            <label for="projectUrl">Project URL (Enter N/A if not applicable)</label>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="input-field align-left col s10">
+                                            <input type="text" id="publicationUrl" name="publicationUrl" ng-model="challenge.publicationUrl" required>
+                                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                                            <label for="publicationUrl">Publication URL (Enter N/A if not applicable)</label>
+                                        </div>                                
+                                    </div>
+
+                                    <div class="text-highlight red-text"><strong>
+                                        {{challenge.subErrors.msg}}</strong></div>
+                                    <section class="pagination">
+                                        <div class="row rm-gut">
+                                            <div class="col s12 m12">
+                                                <div class="align-left ">
+                                                    <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Submit</button>
+                                                    <br>
+                                                    <br>
+                                                    <span class="text-dark-black"><strong >{{challenge.submissionError}}</strong></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </ul>
+                            </form>
+                        </div>
+                    </div>
+                    <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
+                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                            <div class="row">
+                                <strong class="text-med-black">
+                                    Today's Remaining Submissions:
+                                </strong>
+                                {{challenge.remainingSubmissions.remaining_submissions_today_count}}
+                            </div>
+                            <div class="row">
+                                <strong class="text-med-black">
+                                    Total Remaining Submissions:
+                                </strong>
+                                {{challenge.remainingSubmissions.remaining_submissions}}
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if="challenge.showClock" class="col s12 m5">
+                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                            <div class="row">
+                                <strong class="text-med-black">
+                                    Message:
+                                </strong>
+                                {{challenge.message.message}}
+                            </div>
+                            <div>
+                                Next set of submissions will be available after:
+                            </div>
+                            <div> 
+                            {{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

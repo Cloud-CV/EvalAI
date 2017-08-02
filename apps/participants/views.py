@@ -13,6 +13,7 @@ from rest_framework.throttling import UserRateThrottle
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from challenges.models import Challenge
+from hosts.utils import is_user_a_host_of_challenge
 
 from .models import (Participant, ParticipantTeam)
 from .serializers import (InviteParticipantToTeamSerializer,
@@ -178,12 +179,14 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_teams_and_corresponding_challenges_for_a_participant(request):
+def get_teams_and_corresponding_challenges_for_a_participant(request, challenge_pk):
     """
     Returns list of teams and corresponding challenges for a participant
     """
     # first get list of all the participants and teams related to the user
     participant_objs = Participant.objects.filter(user=request.user).prefetch_related('team')
+
+    is_challenge_host = is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk)
 
     challenge_participated_teams = []
     for participant_obj in participant_objs:
@@ -201,7 +204,9 @@ def get_teams_and_corresponding_challenges_for_a_participant(request):
             challenge_participated_teams.append(ChallengeParticipantTeam(
                 challenge, participant_team))
     serializer = ChallengeParticipantTeamListSerializer(ChallengeParticipantTeamList(challenge_participated_teams))
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    response_data = serializer.data
+    response_data['is_challenge_host'] = is_challenge_host
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @throttle_classes([UserRateThrottle])
