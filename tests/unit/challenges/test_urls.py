@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, resolve
 from django.utils import timezone
 
 from rest_framework.test import APITestCase, APIClient
@@ -55,6 +55,8 @@ class BaseAPITestClass(APITestCase):
             team_name='Participant Team for Challenge',
             created_by=self.user)
 
+        self.file_type = 'csv'
+
         self.client.force_authenticate(user=self.user)
 
 
@@ -92,3 +94,11 @@ class TestChallengeUrls(BaseAPITestClass):
 
         url = reverse_lazy('challenges:get_all_challenges', kwargs={'challenge_time': "PAST"})
         self.assertEqual(url, '/api/challenges/challenge/PAST')
+
+        self.url = reverse_lazy('challenges:download_all_submissions_file',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'file_type': self.file_type})
+        self.assertEqual(self.url, '/api/challenges/{}/download_all_submissions_file/{}/'.format(self.challenge.pk,
+                                                                                                 self.file_type))
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.view_name, 'challenges:download_all_submissions_file')

@@ -884,8 +884,8 @@
                     vm.stopLoader();
                 }
             };
-
             utilities.sendRequest(parameters);
+        };
 
         vm.changeSubmissionVisibility = function(submission_id) {
             var parameters = {};
@@ -956,6 +956,30 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.fileTypes = [{'name': 'csv'}];
+
+        vm.downloadChallengeSubmissions = function() {
+            var parameters = {};
+            parameters.url = "challenges/"+ vm.challengeId + "/download_all_submissions_file/" + vm.fileSelected + "/";
+            parameters.method = "GET";
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    var anchor = angular.element('<a/>');
+                    anchor.attr({
+                    href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                    download: 'all_submissions.csv'
+                    })[0].click();
+                },
+                onError: function(response) {
+                    var details = response.data;
+                    $rootScope.notify('error', details.error);
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
@@ -967,7 +991,6 @@
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
         });
-    };
-}
+    }
 
 })();
