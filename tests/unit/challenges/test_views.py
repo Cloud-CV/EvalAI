@@ -1754,3 +1754,148 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class DownloadAllSubmissionsFileTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(DownloadAllSubmissionsFileTest, self).setUp()
+
+        self.user8 = User.objects.create(
+            username='otheruser8',
+            password='other_secret_password',
+            email='user8@test.com',)
+
+        self.user9 = User.objects.create(
+            username='otheruser9',
+            password='other_secret_password',
+            email='user9@test.com',)
+
+        EmailAddress.objects.create(
+            user=self.user8,
+            email='user8@test.com',
+            primary=True,
+            verified=True)
+
+        EmailAddress.objects.create(
+            user=self.user9,
+            email='user9@test.com',
+            primary=True,
+            verified=True)
+
+        self.challenge_host_team8 = ChallengeHostTeam.objects.create(
+            team_name='Other Test Challenge Host Team',
+            created_by=self.user8
+        )
+
+        # Now allot self.user as also a host of self.challenge_host_team1
+        self.challenge_host8 = ChallengeHost.objects.create(
+            user=self.user8,
+            team_name=self.challenge_host_team8,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN
+        )
+
+        self.participant_team8 = ParticipantTeam.objects.create(
+            team_name='Participant Team for Challenge8',
+            created_by=self.user8)
+
+        self.participant8 = Participant.objects.create(
+            user=self.user8,
+            status=Participant.ACCEPTED,
+            team=self.participant_team)
+
+        self.challenge8 = Challenge.objects.create(
+            title='Other Test Challenge',
+            short_description='Short description for other test challenge',
+            description='Description for other test challenge',
+            terms_and_conditions='Terms and conditions for other test challenge',
+            submission_guidelines='Submission guidelines for other test challenge',
+            creator=self.challenge_host_team8,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        try:
+            os.makedirs('/tmp/evalai')
+        except OSError:
+            pass
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase8 = ChallengePhase.objects.create(
+                name='Challenge Phase',
+                description='Description for Challenge Phase',
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge8,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain')
+            )
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.submission8 = Submission.objects.create(
+                participant_team=self.participant_team8,
+                challenge_phase=self.challenge_phase8,
+                created_by=self.challenge_host_team8.created_by,
+                status='submitted',
+                input_file=SimpleUploadedFile('test_sample_file.txt',
+                                              'Dummy file content', content_type='text/plain'),
+                method_name="Test Method",
+                method_description="Test Description",
+                project_url="http://testserver/",
+                publication_url="http://testserver/",
+                is_public=True,
+            )
+
+        self.file_type_csv = 'csv'
+
+        self.file_type_pdf = 'pdf'
+
+        self.client.force_authenticate(user=self.user8)
+
+    def test_download_all_submissions_file_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('challenges:download_all_submissions_file',
+                                kwargs={'challenge_pk': self.challenge8.pk+10,
+                                        'file_type': self.file_type_csv})
+        expected = {
+            'detail': 'Challenge {} does not exist'.format(self.challenge8.pk+10)
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_download_all_submissions_when_file_type_is_not_csv(self):
+        self.url = reverse_lazy('challenges:download_all_submissions_file',
+                                kwargs={'challenge_pk': self.challenge8.pk,
+                                        'file_type': self.file_type_pdf})
+        expected = {
+            'error': 'The file type requested is not valid!'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_download_all_submissions(self):
+        self.url = reverse_lazy('challenges:download_all_submissions_file',
+                                kwargs={'challenge_pk': self.challenge8.pk,
+                                        'file_type': self.file_type_csv})
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_download_all_submissions_when_user_is_not_a_challenge_host(self):
+        self.url = reverse_lazy('challenges:download_all_submissions_file',
+                                kwargs={'challenge_pk': self.challenge8.pk,
+                                        'file_type': self.file_type_csv})
+
+        self.client.force_authenticate(user=self.user9)
+
+        expected = {
+            'error': 'Only Challenge Hosts can use the export feature!'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

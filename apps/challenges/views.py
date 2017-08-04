@@ -1,3 +1,4 @@
+import csv
 import logging
 import random
 import requests
@@ -11,6 +12,7 @@ from os.path import basename, isfile, join
 
 from django.core.files.base import ContentFile
 from django.db import transaction
+from django.http import HttpResponse
 from django.utils import timezone
 
 from rest_framework import permissions, status
@@ -735,4 +737,57 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
     # when user is neither host not participant of the challenge.
     else:
         response_data = {'error': 'You are neither host nor participant of the challenge!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def download_all_submissions_file(request, challenge_pk, file_type):
+
+    # To check for the corresponding challenge from challenge_pk.
+    challenge = get_challenge_model(challenge_pk)
+
+    if file_type == 'csv':
+        if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
+            submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
+            writer = csv.writer(response)
+            writer.writerow(['id',
+                             'Team Name',
+                             'Challenge Phase',
+                             'Status',
+                             'Created By',
+                             'Execution Time(sec.)',
+                             'Submission Number',
+                             'Submitted File',
+                             'Stdout File',
+                             'Stderr File',
+                             'Submitted At',
+                             'Submission Result File',
+                             'Submission Metadata File',
+                             ])
+            for submission in submissions:
+                writer.writerow([submission.id,
+                                 submission.participant_team,
+                                 submission.challenge_phase,
+                                 submission.status,
+                                 submission.created_by,
+                                 submission.execution_time,
+                                 submission.submission_number,
+                                 submission.input_file,
+                                 submission.stdout_file,
+                                 submission.stderr_file,
+                                 submission.created_at,
+                                 submission.submission_result_file,
+                                 submission.submission_metadata_file,
+                                 ])
+            return response
+        else:
+            response_data = {'error': 'Only Challenge Hosts can use the export feature!'}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
