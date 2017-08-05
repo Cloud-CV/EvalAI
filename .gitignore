@@ -88,3 +88,5 @@ challenge_data/*
 # Media Files
 media/
 
+# .DS_Store for OSX
+*/.DS_Store
