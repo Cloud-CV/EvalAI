@@ -909,7 +909,7 @@
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
-            parameters.url = "jobs/"+ vm.challengeId + "/phases/"+ vm.phaseId + "/remaining_submissions/";
+            parameters.url = "jobs/"+ vm.challengeId + "/phases/"+ vm.phaseId + "/remaining-submissions/";
             parameters.method = 'GET';
             parameters.token = userKey;
             parameters.callback = {
