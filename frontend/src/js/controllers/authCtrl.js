@@ -7,11 +7,13 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
+    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', 'configService'];
 
-    function AuthCtrl(utilities, $state, $rootScope) {
+    function AuthCtrl(utilities, $state, $rootScope,configService) {
+
         var vm = this;
-
+        console.log(configService);
+        var EnvironmentConfig = configService;
         vm.isRem = false;
         vm.isAuth = false;
         vm.isMail = true;
@@ -72,7 +74,7 @@
                 vm.startLoader("Setting up your details!");
                 // call utility service
                 var parameters = {};
-                parameters.url = 'auth/registration/';
+                parameters.url = EnvironmentConfig.AUTH.AUTH_REGISTRATION;
                 parameters.method = 'POST';
                 parameters.data = {
                     "username": vm.regUser.name,
@@ -114,7 +116,7 @@
 
                                 }
 
-                            } catch (error) { 
+                            } catch (error) {
                                 console.log(error);
                             }
                         }
@@ -133,7 +135,7 @@
                 vm.startLoader("Taking you to EvalAI!");
                 // call utility service
                 var parameters = {};
-                parameters.url = 'auth/login/';
+                parameters.url = EnvironmentConfig.AUTH.AUTH_URL_ENDPOINT;
                 parameters.method = 'POST';
                 parameters.data = {
                     "username": vm.getUser.name,
@@ -179,7 +181,7 @@
         vm.verifyEmail = function() {
             vm.startLoader("Verifying Your Email");
             var parameters = {};
-            parameters.url = 'auth/registration/account-confirm-email/' + $state.params.email_conf_key + '/';
+            parameters.url =  EnvironmentConfig.AUTH.EMAIL_VERIFICATION_ENDPOINT  + $state.params.email_conf_key + '/';
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function() {
@@ -200,7 +202,7 @@
             if (resetPassFormValid) {
                 vm.startLoader("Sending Mail");
                 var parameters = {};
-                parameters.url = 'auth/password/reset/';
+                parameters.url = EnvironmentConfig.AUTH.PASSWORD_RESET_ENDPOINT;
                 parameters.method = 'POST';
                 parameters.data = {
                     "email": vm.getUser.email,
@@ -231,7 +233,7 @@
             if (resetconfirmFormValid) {
                 vm.startLoader("Resetting Your Password");
                 var parameters = {};
-                parameters.url = 'auth/password/reset/confirm/';
+                parameters.url = EnvironmentConfig.AUTH.PASSWORD_RESET_CONFIRM_ENDPOINT;
                 parameters.method = 'POST';
                 parameters.data = {
                     "new_password1": vm.getUser.new_password1,

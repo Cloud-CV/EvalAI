@@ -1,7 +1,48 @@
 {
     "local": {
         "EnvironmentConfig": {
-            "API": "http://localhost:8000/api/"
+            "API": "http://localhost:8000/api/",
+            "AUTH": {
+                "AUTH_REGISTRATION": "auth/registration/",
+                "AUTH_URL_ENDPOINT": "auth/login/",
+                "EMAIL_VERIFICATION_ENDPOINT": "auth/registration/account-confirm-email/",
+                "PASSWORD_RESET_ENDPOINT": "auth/password/reset/",
+                "PASSWORD_RESET_CONFIRM_ENDPOINT": "auth/password/reset/confirm/"
+            },
+            "CHALLENGE": {
+                "CREATE_CHALLENGE_ENDPOINT": "challenges/challenge/challenge_host_team/",
+                "CHALLENGE_DETAILS_ENDPOINT": "challenges/challenge/",
+                "PARTICIPANT_CHALLENGES_ENDPOINT": "participants/participant_teams/challenges/",
+                "PARTICIPANT_TEAM_ENDPOINT": "participants/participant_team",
+                "MAKE_SUBMISSION": {
+                    "SUBMISSION_END_POINT": "/submission/",
+                    "JOBS_CHALLENGE_ENDPOINT": "jobs/challenge",
+                    "CHALLENGE_PHASE_ENDPOINT": "/challenge_phase/"
+                },
+                "SEND_REQUEST": {
+                    "CHALLENGES_ENDPOINT": "challenges/",
+                    "CHALLENGE_PHASE_SPLIT_ENDPOINT": "/challenge_phase_split"
+                },
+                "GET_LEADERBOARD": {
+                   "SHOW_LEADERBOARD_ENDPOINT": "jobs/challenge_phase_split/",
+                   "LEADERBOARD_PAGESIZE_ENDPOINT": "/leaderboard/?page_size="
+
+                },
+                "FETCHING_SUBMISSION": {
+                    "SUBMISSION_PAGESIZE_ENDPOINT": "/submission/?page=",
+                    "SUBMISSION_ENDPOINT": "/submissions"
+                },
+                "SHOW_REMAINING_SUBMISSIONS": {
+                    "JOBS_ENDPOINT":"jobs/",
+                    "PHASES_ENDPOINT": "/phases/",
+                    "REMAINING_SUBMISSIONS_ENDPOINT": "/remaining_submissions/"
+                },
+                "DOWNLOAD_CHALLENGE_SUBMISSIONS": {
+                    "DOWNLOAD_ALL_SUBMISSIONS_ENDPOINT": "/download_all_submissions_file/"
+                }
+
+            }
+
         }
     },
     "staging": {
