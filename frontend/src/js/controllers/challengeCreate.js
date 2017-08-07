@@ -7,11 +7,11 @@
         .module('evalai')
         .controller('ChallengeCreateCtrl', ChallengeCreateCtrl);
 
-    ChallengeCreateCtrl.$inject = ['utilities', 'loaderService', '$rootScope', '$state', 'configService'];
+    ChallengeCreateCtrl.$inject = ['utilities', 'configService', 'loaderService', '$rootScope', '$state'];
 
-    function ChallengeCreateCtrl(utilities, loaderService, $rootScope, $state, configService) {
+    function ChallengeCreateCtrl(utilities, configService, loaderService, $rootScope, $state) {
         var vm = this;
-        var EnvironmentConfig = configService;
+        var BackendEndpoints = configService.BackendEndpoints;
         var userKey = utilities.getData('userKey');
         var hostTeamId = utilities.getData('challengeHostTeamId');
         vm.wrnMsg = {};
@@ -37,7 +37,7 @@
                 }
                 if (vm.input_file) {
                     var parameters = {};
-                    parameters.url =  EnvironmentConfig.CHALLENGE.CREATE_CHALLENGE_ENDPOINT + hostTeamId + '/zip_upload/';
+                    parameters.url =  BackendEndpoints.CHALLENGE.CREATE_CHALLENGE_ENDPOINT + hostTeamId + '/zip_upload/';
                     parameters.method = 'POST';
                     var formData = new FormData();
                     formData.append("zip_configuration", vm.input_file);

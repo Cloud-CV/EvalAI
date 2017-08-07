@@ -216,7 +216,7 @@ gulp.task('inject', function() {
 gulp.task('configDev', function() {
     gulp.src('frontend/src/js/config.json', { base: 'frontend/src/js/' })
         .pipe(ngConfig('evalai-config', {
-            environment: 'local'
+            environment: ["env.local", "urls"]
         }))
         .pipe(gulp.dest('frontend/dist/js'))
 });

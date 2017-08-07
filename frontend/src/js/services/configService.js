@@ -5,10 +5,13 @@
         .module('evalai')
         .service('configService', configService);
 
-    configService.$inject = ['EnvironmentConfig'];
+    configService.$inject = ['EnvironmentConfig', 'BackendEndpoints'];
 
-    function configService (EnvironmentConfig) {
-         return EnvironmentConfig;
+    function configService (EnvironmentConfig, BackendEndpoints) {
+         return {
+             "EnvironmentConfig": EnvironmentConfig,
+             "BackendEndpoints": BackendEndpoints
+         };
 
     }
 

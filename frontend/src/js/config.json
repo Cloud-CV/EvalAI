@@ -1,10 +1,26 @@
 {
-    "local": {
-        "EnvironmentConfig": {
-            "API": "http://localhost:8000/api/",
+    "env": {
+        "local": {
+            "EnvironmentConfig": {
+                "API": "http://localhost:8000/api/"
+            }
+        },
+        "staging": {
+            "EnvironmentConfig": {
+                "API": "http://api.evalai.cloudcv.org/api/"
+            }
+        },
+        "production": {
+            "EnvironmentConfig": {
+                "API": "https://evalapi.cloudcv.org/api/"
+            }
+        }
+    },
+    "urls": {
+        "BackendEndpoints": {
             "AUTH": {
-                "AUTH_REGISTRATION": "auth/registration/",
-                "AUTH_URL_ENDPOINT": "auth/login/",
+                "REGISTRATION_ENDPOINT": "auth/registration/",
+                "LOGIN_ENDPOINT": "auth/login/",
                 "EMAIL_VERIFICATION_ENDPOINT": "auth/registration/account-confirm-email/",
                 "PASSWORD_RESET_ENDPOINT": "auth/password/reset/",
                 "PASSWORD_RESET_CONFIRM_ENDPOINT": "auth/password/reset/confirm/"
@@ -24,35 +40,22 @@
                     "CHALLENGE_PHASE_SPLIT_ENDPOINT": "/challenge_phase_split"
                 },
                 "GET_LEADERBOARD": {
-                   "SHOW_LEADERBOARD_ENDPOINT": "jobs/challenge_phase_split/",
-                   "LEADERBOARD_PAGESIZE_ENDPOINT": "/leaderboard/?page_size="
-
+                    "SHOW_LEADERBOARD_ENDPOINT": "jobs/challenge_phase_split/",
+                    "LEADERBOARD_PAGESIZE_ENDPOINT": "/leaderboard/?page_size="
                 },
                 "FETCHING_SUBMISSION": {
                     "SUBMISSION_PAGESIZE_ENDPOINT": "/submission/?page=",
                     "SUBMISSION_ENDPOINT": "/submissions"
                 },
                 "SHOW_REMAINING_SUBMISSIONS": {
-                    "JOBS_ENDPOINT":"jobs/",
+                    "JOBS_ENDPOINT": "jobs/",
                     "PHASES_ENDPOINT": "/phases/",
                     "REMAINING_SUBMISSIONS_ENDPOINT": "/remaining_submissions/"
                 },
                 "DOWNLOAD_CHALLENGE_SUBMISSIONS": {
                     "DOWNLOAD_ALL_SUBMISSIONS_ENDPOINT": "/download_all_submissions_file/"
                 }
-
             }
-
-        }
-    },
-    "staging": {
-        "EnvironmentConfig": {
-            "API": "http://api.evalai.cloudcv.org/api/"
-        }
-    },
-    "production": {
-        "EnvironmentConfig": {
-            "API": "https://evalapi.cloudcv.org/api/"
         }
     }
 }

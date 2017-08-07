@@ -6,11 +6,11 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', 'configService'];
+    ChallengeCtrl.$inject = ['utilities', 'configService', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, configService) {
+    function ChallengeCtrl(utilities, configService, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
         var vm = this;
-        var EnvironmentConfig = configService;
+        var BackendEndpoints = configService.BackendEndpoints;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
         vm.phaseSplitId = null;
@@ -48,7 +48,7 @@
         var userKey = utilities.getData('userKey');
 
         vm.subErrors = {};
-        var challenge = EnvironmentConfig.CHALLENGE;
+        var challenge = BackendEndpoints.CHALLENGE;
         utilities.showLoader();
 
         // get details of the particular challenge
@@ -337,7 +337,7 @@
 
         // get details of the particular challenge phase
         parameters = {};
-        parameters.url = EnvironmentConfig.CHALLENGE.CHALLENGE_DETAILS_ENDPOINT + vm.challengeId + '/challenge_phase';
+        parameters.url = BackendEndpoints.CHALLENGE.CHALLENGE_DETAILS_ENDPOINT + vm.challengeId + '/challenge_phase';
         parameters.method = 'GET';
         parameters.data = {};
         parameters.token = userKey;
