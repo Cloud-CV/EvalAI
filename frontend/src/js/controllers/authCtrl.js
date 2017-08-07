@@ -85,7 +85,7 @@
                         if (response.status == 201) {
                             vm.isFormError = false;
                             // vm.regMsg = "Registered successfully, Login to continue!";
-                            $rootScope.notify("success", "Registered successfully.<br>Please verify your email address!");
+                            $rootScope.notify("success", "Registered successfully.Please verify your email address!");
                             $state.go('auth.login');
                         }
                         vm.stopLoader();
