@@ -225,7 +225,7 @@ gulp.task('configDev', function() {
 gulp.task('configStaging', function() {
     gulp.src('frontend/src/js/config.json')
         .pipe(ngConfig('evalai-config', {
-            environment: 'staging'
+            environment: ["env.local", "urls"]
         }))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
@@ -236,7 +236,7 @@ gulp.task('configStaging', function() {
 gulp.task('configProd', function() {
     gulp.src('frontend/src/js/config.json')
         .pipe(ngConfig('evalai-config', {
-            environment: 'production'
+            environment: ["env.local", "urls"]
         }))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
