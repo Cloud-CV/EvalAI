@@ -100,6 +100,7 @@ gulp.task('css', function() {
         .pipe(prettyError())
         .pipe(autoprefixer('last 2 version'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(flags.production, cssnano()))
         .pipe(gulp.dest('frontend/dist/css'));
 })
 
