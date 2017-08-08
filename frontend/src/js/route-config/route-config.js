@@ -549,7 +549,6 @@
                 type: type,
                 body: message,
                 timeout: timeout,
-                bodyOutputType: 'trustedHtml'
             });
         };
 
