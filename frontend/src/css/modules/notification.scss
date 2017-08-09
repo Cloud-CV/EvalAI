@@ -1,17 +1,52 @@
+// notification override
 #toast-container {
-	top: 20px;
-	right: 0;
-	> div {
-		opacity: 1;
-		-moz-border-radius: 3px 0px 0px 3px;
-		-webkit-border-radius: 3px 0px 0px 3px;
-		border-radius: 3px 0px 0px 3px;
-		box-shadow: 0 0 6px #9d9d9d;
-	}
+    top: 64px;
+    right: 0;
+    box-shadow: none;
+    &>:hover {
+        box-shadow: none;
+    }
 }
 
+.toast-message {
+    font-size: 14px;
+    a {
+        // color: #ffffff;
+        &:hover {
+            // color: #cccccc;
+            text-decoration: none;
+        }
+    }
+    label {
+        // color: #ffffff
+    }
+}
+
+.toast {
+    word-break: initial;
+    &.toast-success {
+        //     background-color: #51a351;
+    }
+    &.toast-error {
+        //     background-color: #bd362f;
+    }
+
+    &.toast-info {
+        //     background-color: #2f96b4;
+    }
+
+    &.toast-wait {
+        //     background-color: #2f96b4;
+    }
+
+    &.toast-warning {
+        //     background-color: #f89406;
+    }
+}
+
+//Hide it on small devices
 @media only screen and (max-width: 992px) {
-  	#toast-container {
-		display: none;
-	}
+    #toast-container {
+        display: none;
+    }
 }
