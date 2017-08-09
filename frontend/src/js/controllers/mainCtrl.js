@@ -49,7 +49,7 @@
 
 
         vm.init = function() {
-            // get if token is available in localstorage
+            // Check if token is available in localstorage
             var userKey = utilities.getData('userKey');
             // check for authenticated user
             if (userKey) {
