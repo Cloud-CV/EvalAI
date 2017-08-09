@@ -749,6 +749,13 @@ def download_all_submissions_file(request, challenge_pk, challenge_phase_pk, fil
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
+    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
+    try:
+        challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk, challenge=challenge)
+    except ChallengePhase.DoesNotExist:
+        response_data = {'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
     if file_type == 'csv':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
@@ -788,14 +795,7 @@ def download_all_submissions_file(request, challenge_pk, challenge_phase_pk, fil
 
         elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
 
-            # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
-            try:
-                challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk, challenge=challenge)
-            except ChallengePhase.DoesNotExist:
-                response_data = {'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
-                return Response(response_data, status=status.HTTP_404_NOT_FOUND)
             # get participant team object for the user for a particular challenge.
-
             participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
                 request.user, challenge_pk)
 
@@ -828,6 +828,9 @@ def download_all_submissions_file(request, challenge_pk, challenge_phase_pk, fil
                                  submission.created_at,
                                  ])
             return response
+        else:
+            response_data = {'error': 'You are neither host nor participant of the challenge!'}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

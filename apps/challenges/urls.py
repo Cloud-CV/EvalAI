@@ -31,7 +31,8 @@ urlpatterns = [
     url(r'(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/submissions$',
         views.get_all_submissions_of_challenge,
         name='get_all_submissions_of_challenge'),
-    url(r'(?P<challenge_pk>[0-9]+)/phase/(?P<challenge_phase_pk>[0-9]+)/download_all_submissions_file/(?P<file_type>[A-Za-z]+)/$',
+    url(r'(?P<challenge_pk>[0-9]+)/phase/(?P<challenge_phase_pk>[0-9]+)'
+        r'/download_all_submissions_file/(?P<file_type>[A-Za-z]+)/$',
         views.download_all_submissions_file,
         name='download_all_submissions_file')
 ]
