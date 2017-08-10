@@ -40,6 +40,7 @@ from .models import Challenge, ChallengePhase, ChallengePhaseSplit, ChallengeCon
 from .permissions import IsChallengeCreator
 from .serializers import (ChallengeConfigSerializer,
                           ChallengePhaseSerializer,
+                          ChallengePhaseCreateSerializer,
                           ChallengePhaseSplitSerializer,
                           ChallengeSerializer,
                           DatasetSplitSerializer,
@@ -611,9 +612,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     with open(test_annotation_file_path, 'rb') as test_annotation_file:
                         challenge_test_annotation_file = ContentFile(test_annotation_file.read(),
                                                                      test_annotation_file_path)
-                serializer = ChallengePhaseSerializer(data=data,
-                                                      context={'challenge': challenge,
-                                                               'test_annotation': challenge_test_annotation_file})
+                serializer = ChallengePhaseCreateSerializer(data=data,
+                                                            context={'challenge': challenge,
+                                                                     'test_annotation': challenge_test_annotation_file})
                 if serializer.is_valid():
                     serializer.save()
                     challenge_phase_ids[str(data['id'])] = serializer.instance.pk
