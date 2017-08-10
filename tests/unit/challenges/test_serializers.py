@@ -1,10 +1,8 @@
 import os
-import unittest
 
 from datetime import timedelta
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -14,7 +12,7 @@ from rest_framework.test import APITestCase, APIClient
 from challenges.models import (Challenge,
                                ChallengePhase)
 from challenges.serializers import ChallengePhaseCreateSerializer
-from participants.models import Participant, ParticipantTeam
+from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 
 
@@ -66,7 +64,7 @@ class BaseTestCase(APITestCase):
 
 
 class ChallengePhaseCreateSerializerTest(BaseTestCase):
-    
+
     def setUp(self):
         super(ChallengePhaseCreateSerializerTest, self).setUp()
 
