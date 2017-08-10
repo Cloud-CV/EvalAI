@@ -1783,7 +1783,6 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             primary=True,
             verified=True)
 
-
         self.participant_team1 = ParticipantTeam.objects.create(
             team_name='Participant Team for Challenge8',
             created_by=self.user1)
