@@ -18,7 +18,7 @@ EvalAI is an open source web application that helps researchers, students and da
 Setting up EvalAI on your local machine is really easy.
 Follow this guide to setup your development machine.
 
-1. Install [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
+1. Install [python]2.x, [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
@@ -52,16 +52,16 @@ Follow this guide to setup your development machine.
     ```
 
 6. Seed the database with some fake data to work with.
-    
+
     ```
     python manage.py seed --settings=settings.dev
     ```
     This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
-    
+
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
     **PARTICIPANT USER-** username: `participant` password: `password`    
-    
+
 7. That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
 
     ```
@@ -77,7 +77,7 @@ Follow this guide to setup your development machine.
     ```
     If you running npm install behind a proxy server, use
     ```
-    npm config set proxy http://proxy:port 
+    npm config set proxy http://proxy:port
     ```
 9. Now to connect to dev server at [http://127.0.0.1:8888] (for serving frontend)
 
@@ -97,6 +97,7 @@ Follow this guide to setup your development machine.
 
 If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
 
+[python]: https://www.python.org/download/releases/2.7/
 [git]: https://git-scm.com/downloads
 [virtualenv]: https://virtualenv.pypa.io/
 [postgresql]: http://www.postgresql.org/download/
