@@ -1761,74 +1761,37 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def setUp(self):
         super(DownloadAllSubmissionsFileTest, self).setUp()
 
-        self.user8 = User.objects.create(
-            username='otheruser8',
+        self.user1 = User.objects.create(
+            username='otheruser1',
             password='other_secret_password',
-            email='user8@test.com',)
+            email='user1@test.com',)
 
-        self.user9 = User.objects.create(
-            username='otheruser9',
+        self.user2 = User.objects.create(
+            username='otheruser2',
             password='other_secret_password',
-            email='user9@test.com',)
-
-        self.user10 = User.objects.create(
-            username='otheruser10',
-            password='other_secret_password',
-            email='user10@test.com',)
+            email='user2@test.com',)
 
         EmailAddress.objects.create(
-            user=self.user8,
-            email='user8@test.com',
+            user=self.user1,
+            email='user1@test.com',
             primary=True,
             verified=True)
 
         EmailAddress.objects.create(
-            user=self.user9,
-            email='user9@test.com',
+            user=self.user2,
+            email='user2@test.com',
             primary=True,
             verified=True)
 
-        EmailAddress.objects.create(
-            user=self.user10,
-            email='user10@test.com',
-            primary=True,
-            verified=True)
 
-        self.challenge_host_team8 = ChallengeHostTeam.objects.create(
-            team_name='Other Test Challenge Host Team',
-            created_by=self.user8
-        )
-
-        # Now allot self.user as also a host of self.challenge_host_team1
-        self.challenge_host8 = ChallengeHost.objects.create(
-            user=self.user8,
-            team_name=self.challenge_host_team8,
-            status=ChallengeHost.ACCEPTED,
-            permissions=ChallengeHost.ADMIN
-        )
-
-        self.participant_team9 = ParticipantTeam.objects.create(
+        self.participant_team1 = ParticipantTeam.objects.create(
             team_name='Participant Team for Challenge8',
-            created_by=self.user9)
+            created_by=self.user1)
 
-        self.participant9 = Participant.objects.create(
-            user=self.user9,
+        self.participant1 = Participant.objects.create(
+            user=self.user1,
             status=Participant.ACCEPTED,
-            team=self.participant_team)
-
-        self.challenge8 = Challenge.objects.create(
-            title='Other Test Challenge',
-            short_description='Short description for other test challenge',
-            description='Description for other test challenge',
-            terms_and_conditions='Terms and conditions for other test challenge',
-            submission_guidelines='Submission guidelines for other test challenge',
-            creator=self.challenge_host_team8,
-            published=False,
-            enable_forum=True,
-            anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
-        )
+            team=self.participant_team1)
 
         try:
             os.makedirs('/tmp/evalai')
@@ -1836,22 +1799,22 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
             pass
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
-            self.challenge_phase8 = ChallengePhase.objects.create(
+            self.challenge_phase = ChallengePhase.objects.create(
                 name='Challenge Phase',
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 is_public=True,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
-                challenge=self.challenge8,
+                challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
                                                    'Dummy file content', content_type='text/plain')
             )
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
-            self.submission8 = Submission.objects.create(
-                participant_team=self.participant_team9,
-                challenge_phase=self.challenge_phase8,
-                created_by=self.participant_team9.created_by,
+            self.submission = Submission.objects.create(
+                participant_team=self.participant_team1,
+                challenge_phase=self.challenge_phase,
+                created_by=self.participant_team1.created_by,
                 status='submitted',
                 input_file=SimpleUploadedFile('test_sample_file.txt',
                                               'Dummy file content', content_type='text/plain'),
@@ -1866,36 +1829,34 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
 
         self.file_type_pdf = 'pdf'
 
-        self.client.force_authenticate(user=self.user8)
-
-    def test_download_all_submissions_file_when_challenge_does_not_exist(self):
-        self.url = reverse_lazy('challenges:download_all_submissions_file',
-                                kwargs={'challenge_pk': self.challenge8.pk+10,
-                                        'challenge_phase_pk': self.challenge_phase8.pk,
+    def test_download_all_submissions_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk+10,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
                                         'file_type': self.file_type_csv})
         expected = {
-            'detail': 'Challenge {} does not exist'.format(self.challenge8.pk+10)
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_download_all_submissions_file_when_challenge_phase_does_not_exist(self):
-        self.url = reverse_lazy('challenges:download_all_submissions_file',
-                                kwargs={'challenge_pk': self.challenge8.pk,
-                                        'challenge_phase_pk': self.challenge_phase8.pk+10,
+    def test_download_all_submissions_when_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk+10,
                                         'file_type': self.file_type_csv})
         expected = {
-            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase8.pk+10)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk+10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_download_all_submissions_when_file_type_is_not_csv(self):
-        self.url = reverse_lazy('challenges:download_all_submissions_file',
-                                kwargs={'challenge_pk': self.challenge8.pk,
-                                        'challenge_phase_pk': self.challenge_phase8.pk,
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
                                         'file_type': self.file_type_pdf})
         expected = {
             'error': 'The file type requested is not valid!'
@@ -1905,31 +1866,31 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_download_all_submissions_when_user_is_challenge_host(self):
-        self.url = reverse_lazy('challenges:download_all_submissions_file',
-                                kwargs={'challenge_pk': self.challenge8.pk,
-                                        'challenge_phase_pk': self.challenge_phase8.pk,
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
                                         'file_type': self.file_type_csv})
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_download_all_submissions_when_user_is_challenge_participant(self):
-        self.url = reverse_lazy('challenges:download_all_submissions_file',
-                                kwargs={'challenge_pk': self.challenge8.pk,
-                                        'challenge_phase_pk': self.challenge_phase8.pk,
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
                                         'file_type': self.file_type_csv})
 
-        self.challenge8.participant_teams.add(self.participant_team9)
-        self.challenge8.save()
+        self.challenge.participant_teams.add(self.participant_team1)
+        self.challenge.save()
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_download_all_submissions_when_user_is_neither_a_challenge_host_nor_a_participant(self):
-        self.url = reverse_lazy('challenges:download_all_submissions_file',
-                                kwargs={'challenge_pk': self.challenge8.pk,
-                                        'challenge_phase_pk': self.challenge_phase8.pk,
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
                                         'file_type': self.file_type_csv})
 
-        self.client.force_authenticate(user=self.user10)
+        self.client.force_authenticate(user=self.user2)
 
         expected = {
             'error': 'You are neither host nor participant of the challenge!'

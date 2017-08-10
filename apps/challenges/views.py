@@ -744,7 +744,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def download_all_submissions_file(request, challenge_pk, challenge_phase_pk, file_type):
+def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_type):
 
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
