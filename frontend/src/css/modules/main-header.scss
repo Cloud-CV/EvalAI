@@ -18,11 +18,6 @@
             color: $med-black;
             font-weight: $rob-reg;
             transition: all 0.2s ease-in-out;
-            img.cloudcv-logo {
-                height: 50px;
-                width: 50px;
-                vertical-align: middle;
-            }
         }
         a.main-header-link:hover {
             color: $link-hover-dark;
