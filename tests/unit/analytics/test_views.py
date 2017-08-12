@@ -71,7 +71,7 @@ class BaseAPITestClass(APITestCase):
 
         self.participant_team = ParticipantTeam.objects.create(
             team_name='Participant Team',
-            created_by=self.user)
+            created_by=self.user2)
 
         self.participant = Participant.objects.create(
             user=self.user2,
@@ -185,7 +185,7 @@ class GetSubmissionCountForChallengeTest(BaseAPITestClass):
             is_public=True,
         )
 
-    def test_get_participant_team_count_when_challenge_doe_not_exist(self):
+    def test_get_participant_team_count_when_challenge_does_not_exist(self):
 
         self.url = reverse_lazy('analytics:get_submission_count',
                                 kwargs={'challenge_pk': self.challenge.pk + 1,
@@ -312,3 +312,76 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class GetLastSubmissionTimeTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetLastSubmissionTimeTest, self).setUp()
+        self.url = reverse_lazy('analytics:get_last_submission_time',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_by': 'challenge'})
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+    def test_get_last_submission_time_when_challenge_does_not_exists(self):
+        self.url = reverse_lazy('analytics:get_last_submission_time',
+                                kwargs={'challenge_pk': self.challenge.pk+10,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_by': 'challenge'})
+        expected = {
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
+            }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_last_submission_time_when_challenge_phase_does_not_exists(self):
+        self.url = reverse_lazy('analytics:get_last_submission_time',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk+10,
+                                        'submission_by': 'challenge'})
+        expected = {
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+10)
+            }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_last_submission_time_when_submission_by_is_user(self):
+        self.url = reverse_lazy('analytics:get_last_submission_time',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_by': 'user'})
+        expected = {
+            'last_submission_time': "{0}{1}".format(self.submission.created_at.isoformat(), 'Z').replace("+00:00", "")
+            }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_last_submission_time_when_url_is_incorrect(self):
+        self.url = reverse_lazy('analytics:get_last_submission_time',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_by': 'other'})
+        expected = {
+            'error': 'Wrong URL Pattern!'
+            }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)

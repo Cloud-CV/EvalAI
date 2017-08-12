@@ -16,10 +16,13 @@ from accounts.permissions import HasVerifiedEmail
 from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
 from jobs.models import Submission
-from jobs.serializers import (SubmissionCount,
+from jobs.serializers import (LastSubmissionTime,
+                              LastSubmissionTimeSerializer,
+                              SubmissionCount,
                               SubmissionCountSerializer,
                               )
 from participants.models import Participant
+from participants.utils import get_participant_teams_for_user
 from participants.serializers import (ParticipantCount,
                                       ParticipantCountSerializer,
                                       ParticipantTeamCount,
@@ -115,3 +118,27 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
         return Response(response_data, status=status.HTTP_200_OK)
     except:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_last_submission_time(request, challenge_pk, challenge_phase_pk, submission_by):
+    challenge = get_challenge_model(challenge_pk)
+
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    # To get the last submission time by a user in a challenge phase.
+    if submission_by == 'user':
+        last_submitted_at = Submission.objects.filter(created_by=request.user.pk,
+                                                      challenge_phase=challenge_phase,
+                                                      challenge_phase__challenge=challenge)
+        last_submitted_at = last_submitted_at.order_by('-submitted_at')[0].created_at
+        last_submitted_at = LastSubmissionTime(last_submitted_at)
+        serializer = LastSubmissionTimeSerializer(last_submitted_at)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    else:
+        response_data = {'error': 'Wrong URL Pattern!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
