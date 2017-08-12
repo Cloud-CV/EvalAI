@@ -18,7 +18,6 @@ from base.models import (TimeStampedModel, )
 from base.utils import RandomFileName
 from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
-from participants.utils import get_participant_teams_for_user
 
 logger = logging.getLogger(__name__)
 

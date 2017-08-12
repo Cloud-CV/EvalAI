@@ -22,7 +22,6 @@ from jobs.serializers import (LastSubmissionTime,
                               SubmissionCountSerializer,
                               )
 from participants.models import Participant
-from participants.utils import get_participant_teams_for_user
 from participants.serializers import (ParticipantCount,
                                       ParticipantCountSerializer,
                                       ParticipantTeamCount,
