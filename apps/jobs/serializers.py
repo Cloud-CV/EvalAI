@@ -32,7 +32,8 @@ class SubmissionSerializer(serializers.ModelSerializer):
         fields = ('id', 'participant_team', 'participant_team_name', 'execution_time', 'challenge_phase',
                   'created_by', 'status', 'input_file', 'stdout_file', 'stderr_file', 'submitted_at',
                   'method_name', 'method_description', 'project_url', 'publication_url', 'is_public',
-                  'submission_result_file',)
+                  'submission_result_file', 'submissions_count_on_a_challenge_phase',
+                  'submitted_teams_count_on_a_challenge_phase',)
 
     def get_participant_team_name(self, obj):
         return obj.participant_team.team_name
@@ -73,7 +74,8 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
         fields = ('id', 'participant_team', 'challenge_phase', 'created_by', 'status', 'is_public',
                   'submission_number', 'submitted_at', 'execution_time', 'input_file', 'stdout_file',
                   'stderr_file', 'submission_result_file', 'submission_metadata_file',
-                  'participant_team_members_email_ids',)
+                  'participant_team_members_email_ids', 'submissions_count_on_a_challenge_phase',
+                  'submitted_teams_count_on_a_challenge_phase',)
 
     def get_participant_team(self, obj):
         return obj.participant_team.team_name

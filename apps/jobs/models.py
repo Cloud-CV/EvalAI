@@ -162,3 +162,16 @@ class Submission(TimeStampedModel):
 
         submission_instance = super(Submission, self).save(*args, **kwargs)
         return submission_instance
+
+    @property
+    def submissions_count_on_a_challenge_phase(self):
+        submission = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                               challenge_phase__challenge=self.challenge_phase.challenge).count()
+        return submission
+
+    @property
+    def submitted_teams_count_on_a_challenge_phase(self):
+        submission = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                               challenge_phase__challenge=self.challenge_phase.challenge)
+        submission = submission.values_list('participant_team', flat=True).distinct().count()
+        return submission
