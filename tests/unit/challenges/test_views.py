@@ -1701,6 +1701,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "participant_team_members_email_ids": ['user6@test.com'],
                 "submissions_count_on_a_challenge_phase": 1,
                 "submitted_teams_count_on_a_challenge_phase": 1,
+                "total_submissions_by_a_participant_team_in_a_challenge_phase": 1,
             }
         ]
         response = self.client.get(self.url, {})
@@ -1733,6 +1734,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
                 "submissions_count_on_a_challenge_phase": 1,
                 "submitted_teams_count_on_a_challenge_phase": 1,
+                "total_submissions_by_a_participant_team_in_a_challenge_phase": 1,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)

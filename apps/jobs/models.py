@@ -177,3 +177,11 @@ class Submission(TimeStampedModel):
                                                challenge_phase__challenge=self.challenge_phase.challenge)
         submission = submission.values_list('participant_team', flat=True).distinct().count()
         return submission
+
+    @property
+    def total_submissions_by_a_participant_team_in_a_challenge_phase(self):
+        # To get total submissions by a participant team in a challenge phase
+        submission = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                               challenge_phase__challenge=self.challenge_phase.challenge,
+                                               participant_team=self.participant_team).count()
+        return submission
