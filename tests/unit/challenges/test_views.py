@@ -1699,9 +1699,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "submission_result_file": None,
                 "submission_metadata_file": None,
                 "participant_team_members_email_ids": ['user6@test.com'],
-                "submissions_count_on_a_challenge_phase": 1,
-                "submitted_teams_count_on_a_challenge_phase": 1,
-                "total_submissions_by_a_participant_team_in_a_challenge_phase": 1,
             }
         ]
         response = self.client.get(self.url, {})
