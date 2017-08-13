@@ -28,15 +28,29 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col s1 align-left">
+                        <div class="col s6 m1 align-left">
                             <span>
                                 <md-select ng-model="challenge.fileSelected" placeholder="File" class="rm-margin">
                                     <md-option ng-repeat="key in challenge.fileTypes" value={{key.name}}>{{key.name}}</md-option>
                                 </md-select>
                             </span>
                         </div>
-                        <div class="align-left">
+                        <div class="col s6 m2">
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
+                        </div>
+                        <div class="col s12 m4" ng-if="challenge.phaseId">
+                                <span >
+                                    <strong class="text-med-black">
+                                    Total Submissions by my team:
+                                    </strong>
+                                </span>
+                                <span ng-if="challenge.submissionResult.results[0].total_submissions_by_a_participant_team_in_a_challenge_phase">
+                                    {{challenge.submissionResult.results[0].total_submissions_by_a_participant_team_in_a_challenge_phase}}
+                                </span>
+                                <span ng-if="!challenge.submissionResult.results[0].total_submissions_by_a_participant_team_in_a_challenge_phase">
+                                0
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
