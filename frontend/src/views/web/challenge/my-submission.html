@@ -39,16 +39,18 @@
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
                         </div>
                         <div class="col s12 m4" ng-if="challenge.phaseId">
-                                <span >
+                            <div>
+                                <span class="padding-10">
                                     <strong class="text-med-black">
-                                    Total Submissions by my team:
+                                    Total Submissions Done:
                                     </strong>
                                 </span>
-                                <span ng-if="challenge.submissionResult.results[0].total_submissions_by_a_participant_team_in_a_challenge_phase">
+                                <span class="show-count text-highlight" ng-if="challenge.submissionResult.results[0].total_submissions_by_a_participant_team_in_a_challenge_phase">
                                     {{challenge.submissionResult.results[0].total_submissions_by_a_participant_team_in_a_challenge_phase}}
                                 </span>
-                                <span ng-if="!challenge.submissionResult.results[0].total_submissions_by_a_participant_team_in_a_challenge_phase">
-                                0
+                                <span class="show-count text-highlight" ng-if="!challenge.submissionResult.results[0].total_submissions_by_a_participant_team_in_a_challenge_phase">
+                                    0
+                            </div>
                                 </span>
                             </div>
                         </div>
