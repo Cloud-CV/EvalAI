@@ -69,10 +69,11 @@ section.bg-section {
     position: absolute;
     bottom: 0px;
     color: $light-gray;
-    width: 50%;
+    width: 75%;
     right: 0;
     height: 50vh;
     overflow: hidden;
+    direction: ltr;
 }
 
 #mobile-demo {
@@ -90,8 +91,8 @@ section.bg-section {
 .ev-details,
 .ev-reverse-details {
     position: relative;
-    box-shadow: 6px 0px 12px #e0e0e0;
-    padding: 0px 0px 40px 0px;
+    box-shadow: 6px -1px 9px $super-light-shadow;
+    padding: 0;
 }
 
 .ev-reverse-details {
@@ -352,6 +353,22 @@ a.view-more {
     }
 }
 
+.org-logo{
+    margin-top:40px;
+    height: 120px;
+    text-align: center;
+
+    img{
+        height: 100%;   
+        transition:all 0.2s ease-in-out;
+    }
+    &:hover{
+        img{
+            -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+            filter: grayscale(100%);
+        }
+    }
+}
 
 /*media queries*/
 
@@ -372,8 +389,22 @@ a.view-more {
     }
     .ev-insight {
         bottom: 0px;
+        width: 100%;
     }
     .sim-header {
         width: 100%;
+    }
+
+    
+}
+
+@media only screen and (max-width: $small-screen) {
+    .org-logo{
+        height: auto;
+        width: 100%;
+        img{
+            width: 100%;
+            height: auto;
+        }
     }
 }

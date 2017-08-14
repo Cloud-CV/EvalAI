@@ -59,7 +59,7 @@
 .grad-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 80px 100px 40px 100px;
+    padding: 60px 100px 40px 100px;
     clear: both;
 }
 
@@ -69,4 +69,20 @@
 
 .grad-span {
     display: inline;
+}
+
+
+/*media queries*/
+
+@media screen and (max-width: $med-screen) {
+    .grad-container {
+        padding:40px;
+    }
+}
+
+
+@media screen and (max-width: $small-screen) {
+    .grad-container {
+       text-align: center;
+    }
 }
