@@ -961,7 +961,7 @@
         vm.downloadChallengeSubmissions = function() {
             if(vm.phaseId) {
                 var parameters = {};
-                parameters.url = "challenges/"+ vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions_file/" + vm.fileSelected + "/";
+                parameters.url = "challenges/"+ vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 parameters.method = "GET";
                 parameters.token = userKey;
                 parameters.callback = {
