@@ -220,3 +220,15 @@ class ChallengeConfiguration(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_zip_configuration'
+
+
+class StarChallenge(TimeStampedModel):
+    """
+    Model to star a challenge
+    """
+    user = models.ForeignKey(User)
+    challenge = models.ForeignKey(Challenge)
+
+    class Meta:
+        app_label = 'challenges'
+        db_table = 'starred_challenge'
