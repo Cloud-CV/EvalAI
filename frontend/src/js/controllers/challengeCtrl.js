@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -982,6 +982,99 @@
         }else {
             $rootScope.notify("error", "Please select a challenge phase!");
         }
+        };
+
+        var template = '<section class="ev-md-container text-center rm-overflow-y">'
+                    +       '<div class="row">'
+                    +           '<div class="col s12 m12">'
+                    +               '<div class="ev-md-container ev-card-body update-profile-card">'
+                    +                  '<form name="updateSubmissionMetaDataForm" ng-submit="challenge.updateSubmissionMetaData(updateSubmissionMetaDataForm.$valid)">'
+                    +                   '<div class="pass-title">Update Submission Details</div>'
+                    +                           '<div class="input-field align-left">'
+                    +                              '<input id="methodName" name="methodName" type="text" class="text-dark-black dark-autofill w-400"'
+                    +                               'ng-model="challenge.method_name" value="{{challenge.method_name}}"'
+                    +                                 'focus-if="challenge.method_name">'
+                    +                                  '<span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>'
+                    +                                   '<label class="active" for="methodName">Method Name</label>'
+                    +                           '</div>'
+                    +                            '<div class="input-field align-left">'
+                    +                               '<textarea id="methodDesc" name="methodDesc" type="text" class="materialize-textarea"'
+                    +                                   'ng-model="challenge.method_description" value="{{challenge.method_description}}" focus-if="challenge.method_description"></textarea>'
+                    +                               '<span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>'
+                    +                               '<label for="methodDesc">Method Description</label>'
+                    +                           '</div>'
+                    +                           '<div class="input-field align-left">'
+                    +                           '<input id="projectUrl" name="projectUrl" type="text" class="text-dark-black dark-autofill w-400"'
+                    +                               'ng-model="challenge.project_url" value="{{challenge.project_url}}" focus-if="challenge.project_url">'
+                    +                           '<span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>'
+                    +                           '<label for="projectUrl">Project Url</label>'
+                    +                           '</div>'
+                    +                           '<div class="input-field align-left">'
+                    +                           '<input id="publicationUrl" name="publicationUrl" type="text" class="text-dark-black dark-autofill w-400"'
+                    +                               'ng-model="challenge.publication_url" value="{{challenge.publication_url}}" focus-if="challenge.publication_url">'
+                    +                           '<span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>'
+                    +                           '<label for="publicationUrl">Publication Url</label>'
+                    +                           '</div>'
+                    +                           '<div class="align-left reg-control">'
+                    +                               '<button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14"'
+                    +                                   'type="submit" value="Submit">Submit</button>'
+                    +                           '</div>'
+                    +                       '</form>'
+                    +                   '</div>'
+                    +               '</div>'
+                    +           '</div>'
+                    +   '</section>';
+
+        vm.showMdDialog = function(ev, submissionId) {
+            for (var i=0;i<vm.submissionResult.count;i++){
+                if (vm.submissionResult.results[i].id === submissionId) {
+                    vm.submissionMetaData = vm.submissionResult.results[i];
+                    break;
+                }
+            }
+            vm.method_name = vm.submissionMetaData.method_name;
+            vm.method_description = vm.submissionMetaData.method_description;
+            vm.project_url = vm.submissionMetaData.project_url;
+            vm.publication_url = vm.submissionMetaData.publication_url;
+            vm.submissionId = submissionId;
+
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                template: template,
+            });
+        };
+
+        vm.updateSubmissionMetaData = function(updateSubmissionMetaDataForm) {
+            if(updateSubmissionMetaDataForm){
+                var parameters = {};
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + vm.submissionId;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "method_name": vm.method_name,
+                    "method_description": vm.method_description,
+                    "project_url": vm.project_url,
+                    "publication_url": vm.publication_url
+                };
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200){
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The data is successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            }
         };
 
         $scope.$on('$destroy', function() {
