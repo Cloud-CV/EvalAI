@@ -760,11 +760,13 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
     if file_type == 'csv':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(submissions, many=True, context={'request': request})
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
             writer = csv.writer(response)
             writer.writerow(['id',
                              'Team Name',
+                             'Team Members',
                              'Challenge Phase',
                              'Status',
                              'Created By',
@@ -777,20 +779,21 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                              'Submission Result File',
                              'Submission Metadata File',
                              ])
-            for submission in submissions:
-                writer.writerow([submission.id,
-                                 submission.participant_team,
-                                 submission.challenge_phase,
-                                 submission.status,
-                                 submission.created_by,
-                                 submission.execution_time,
-                                 submission.submission_number,
-                                 submission.input_file,
-                                 submission.stdout_file,
-                                 submission.stderr_file,
-                                 submission.created_at,
-                                 submission.submission_result_file,
-                                 submission.submission_metadata_file,
+            for submission in submissions.data:
+                writer.writerow([submission['id'],
+                                 submission['participant_team'],
+                                 ",".join(submission['participant_team_members']),
+                                 submission['challenge_phase'],
+                                 submission['status'],
+                                 submission['created_by'],
+                                 submission['execution_time'],
+                                 submission['submission_number'],
+                                 submission['input_file'],
+                                 submission['stdout_file'],
+                                 submission['stderr_file'],
+                                 submission['created_at'],
+                                 submission['submission_result_file'],
+                                 submission['submission_metadata_file'],
                                  ])
             return response
 
@@ -803,7 +806,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             # Filter submissions on the basis of challenge phase for a participant.
             submissions = Submission.objects.filter(participant_team=participant_team_pk,
                                                     challenge_phase=challenge_phase).order_by('-submitted_at')
-
+            submissions = ChallengeSubmissionManagementSerializer(submissions, many=True, context={'request': request})
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
             writer = csv.writer(response)
@@ -817,16 +820,16 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                              'Stderr File',
                              'Submitted At',
                              ])
-            for submission in submissions:
-                writer.writerow([submission.participant_team,
-                                 submission.method_name,
-                                 submission.status,
-                                 submission.execution_time,
-                                 submission.input_file,
-                                 submission.submission_result_file,
-                                 submission.stdout_file,
-                                 submission.stderr_file,
-                                 submission.created_at,
+            for submission in submissions.data:
+                writer.writerow([submission['participant_team'],
+                                 submission['method_name'],
+                                 submission['status'],
+                                 submission['execution_time'],
+                                 submission['input_file'],
+                                 submission['submission_result_file'],
+                                 submission['stdout_file'],
+                                 submission['stderr_file'],
+                                 submission['created_at'],
                                  ])
             return response
         else:
