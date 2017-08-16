@@ -13,6 +13,9 @@ One can create a challenge in EvalAI using following methods:
 
 Creating a challenge on EvalAI is a three step process. You just need to upload the challenge details in a challenge configuration file (**YAML file**) and we will take care of the rest.
 
+The link to repository for an example to create a challenge, using 'zip_file':
+`https://github.com/Cloud-CV/EvalAI-Examples`
+
 The challenge configuration file on EvalAI consists of following fields:
 
 * **title**: Title of the challenge
@@ -25,7 +28,7 @@ The challenge configuration file on EvalAI consists of following fields:
 
 * **terms_and_conditions**: Terms and conditions of the challenge (set relative path of the html file. For eg. `challenge_details/tnc.html`)
 
-* **image**: Logo of the challenge (set relative path of the logo in the zip configuration. For eg. `images/logo/challenge_logo.jpg`).  **Note**:  The image must be in jpg, jpeg or png format. 
+* **image**: Logo of the challenge (set relative path of the logo in the zip configuration. For eg. `images/logo/challenge_logo.jpg`).  **Note**:  The image must be in jpg, jpeg or png format.
 
 * **submission_guidelines**: Submission guidelines of the challenge (set relative path of the html file. For eg. `challenge_details/submission_guidelines.html`)
 
@@ -106,7 +109,7 @@ The challenge configuration file on EvalAI consists of following fields:
 
   * **codename**: Codename of dataset split. Note that the codename of dataset split is used to map the results returned by the evaluation script to a particular dataset split in EvalAI's database. Please make sure that no two dataset splits have the same codename. Again, make sure that the dataset split's codename match with what is there in the evaluation script provided by the challenge host.
 
-  
+
 * **challenge_phase_splits**:
 
   A challenge phase split is a relation between a challenge phase and dataset splits for a challenge (many to many relation). This is used to set the privacy of submissions (public/private) to different dataset splits for different challenge phases.
