@@ -767,6 +767,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             writer.writerow(['id',
                              'Team Name',
                              'Team Members',
+                             'Team Members Email Id',
                              'Challenge Phase',
                              'Status',
                              'Created By',
@@ -782,7 +783,8 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             for submission in submissions.data:
                 writer.writerow([submission['id'],
                                  submission['participant_team'],
-                                 ",".join(submission['participant_team_members']),
+                                 ",".join(username['username'] for username in submission['participant_team_members']),
+                                 ",".join(email['email'] for email in submission['participant_team_members']),
                                  submission['challenge_phase'],
                                  submission['status'],
                                  submission['created_by'],
