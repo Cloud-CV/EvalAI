@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 # OutCome: `input_file` was saved for submission in folder named `submission_None`
 # why is the hack not done for `stdout_file` and `stderr_file`
 # Because they will be saved only after a submission instance is saved(pk will be available)
+
+
 @receiver(pre_save, sender='jobs.Submission')
 def skip_saving_file(sender, instance, **kwargs):
     if not instance.pk and not hasattr(instance, '_input_file'):
