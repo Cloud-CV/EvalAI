@@ -299,7 +299,6 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
     def test_get_challenge_phase_submission_analysis(self):
         self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,

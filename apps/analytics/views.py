@@ -13,10 +13,8 @@ from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 
-from base.utils import paginated_queryset
 from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
-from hosts.utils import is_user_a_host_of_challenge
 from jobs.models import Submission
 from jobs.serializers import (SubmissionCount,
                               SubmissionCountSerializer,
@@ -27,10 +25,7 @@ from participants.serializers import (ParticipantCount,
                                       ParticipantTeamCount,
                                       ParticipantTeamCountSerializer,
                                       )
-from participants.utils import (has_user_participated_in_challenge,
-                                get_participant_team_id_of_user_for_a_challenge)
 from .serializers import ChallengePhaseSubmissionAnalysisSerializer
-
 
 
 @throttle_classes([UserRateThrottle])
