@@ -139,5 +139,5 @@ def get_last_submission_time(request, challenge_pk, challenge_phase_pk, submissi
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     else:
-        response_data = {'error': 'Wrong URL Pattern!'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        response_data = {'error': 'Page not found!'}
+        return Response(response_data, status=status.HTTP_400_NOT_FOUND)
