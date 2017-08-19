@@ -12,7 +12,6 @@
 	background: $dark-gray;
 	text-align: center;
 	color: white;
-	position: absolute;
 	padding: 2px 5px 2px 5px;
 	border-radius: 3px 3px 3px 3px;
 	font-weight: 300;
@@ -21,4 +20,8 @@
 
 .padding-10 {
 	padding: 10px;
+}
+
+.add-line-height {
+	line-height: 36px;
 }
