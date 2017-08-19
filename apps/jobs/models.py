@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
+from cached_property import cached_property
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
@@ -18,7 +20,6 @@ from challenges.models import ChallengePhase
 from participants.models import ParticipantTeam
 
 logger = logging.getLogger(__name__)
-
 
 # submission.pk is not available when saving input_file
 # OutCome: `input_file` was saved for submission in folder named `submission_None`
@@ -163,25 +164,25 @@ class Submission(TimeStampedModel):
         submission_instance = super(Submission, self).save(*args, **kwargs)
         return submission_instance
 
-    @property
-    def submissions_count_on_a_challenge_phase(self):
+    @cached_property
+    def submissions_count_for_a_challenge_phase(self):
         # To get total submissions count on a challenge phase
-        submission = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                               challenge_phase__challenge=self.challenge_phase.challenge).count()
-        return submission
+        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                     challenge_phase__challenge=self.challenge_phase.challenge).count()
+        return submission_count
 
-    @property
-    def submitted_teams_count_on_a_challenge_phase(self):
+    @cached_property
+    def participated_teams_count_for_a_challenge_phase(self):
         # To get total participant teams count on a challenge phase
-        submission = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                               challenge_phase__challenge=self.challenge_phase.challenge)
-        submission = submission.values_list('participant_team', flat=True).distinct().count()
-        return submission
+        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                     challenge_phase__challenge=self.challenge_phase.challenge)
+        submission_count = submission_count.values_list('participant_team', flat=True).distinct().count()
+        return submission_count
 
-    @property
+    @cached_property
     def total_submissions_by_a_participant_team_in_a_challenge_phase(self):
         # To get total submissions by a participant team in a challenge phase
-        submission = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                               challenge_phase__challenge=self.challenge_phase.challenge,
-                                               participant_team=self.participant_team).count()
-        return submission
+        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                     challenge_phase__challenge=self.challenge_phase.challenge,
+                                                     participant_team=self.participant_team).count()
+        return submission_count

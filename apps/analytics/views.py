@@ -13,8 +13,10 @@ from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 
+from base.utils import paginated_queryset
 from challenges.permissions import IsChallengeCreator
-from challenges.utils import get_challenge_model
+from challenges.utils import get_challenge_model, get_challenge_phase_model
+from hosts.utils import is_user_a_host_of_challenge
 from jobs.models import Submission
 from jobs.serializers import (SubmissionCount,
                               SubmissionCountSerializer,
@@ -25,6 +27,10 @@ from participants.serializers import (ParticipantCount,
                                       ParticipantTeamCount,
                                       ParticipantTeamCountSerializer,
                                       )
+from participants.utils import (has_user_participated_in_challenge,
+                                get_participant_team_id_of_user_for_a_challenge)
+from .serializers import ChallengePhaseSubmissionAnalysisSerializer
+
 
 
 @throttle_classes([UserRateThrottle])
@@ -88,3 +94,23 @@ def get_submission_count(request, challenge_pk, duration):
     submission_count = SubmissionCount(submission_count)
     serializer = SubmissionCountSerializer(submission_count)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_pk):
+
+    challenge = get_challenge_model(challenge_pk)
+
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    submissions = Submission.objects.filter(challenge_phase__challenge=challenge,
+                                            challenge_phase=challenge_phase)
+    try:
+        serializer = ChallengePhaseSubmissionAnalysisSerializer(submissions, many=True)
+        response_data = serializer.data[0]
+        return Response(response_data, status=status.HTTP_200_OK)
+    except:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

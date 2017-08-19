@@ -1729,9 +1729,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 'submission_result_file': None,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
                 "is_public": self.submission.is_public,
-                "submissions_count_on_a_challenge_phase": 1,
-                "submitted_teams_count_on_a_challenge_phase": 1,
-                "total_submissions_by_a_participant_team_in_a_challenge_phase": 1,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
