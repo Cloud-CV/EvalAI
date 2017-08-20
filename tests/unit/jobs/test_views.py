@@ -477,3 +477,180 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data['message'], expected['message'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(ChangeSubmissionDataAndVisibilityTest, self).setUp()
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+
+    def test_change_submission_data_and_visibility_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk+10,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+
+        expected = {
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
+        }
+
+        response = self.client.patch(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_change_submission_data_and_visibility_when_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk+10,
+                                        'submission_pk': self.submission.pk})
+
+        expected = {
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+10)
+        }
+
+        response = self.client.patch(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_change_submission_data_and_visibility_when_challenge_is_not_active(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+        self.data = {
+            'method_name': 'Updated Method Name'
+        }
+        self.challenge.end_date = timezone.now() - timedelta(days=1)
+        self.challenge.save()
+
+        expected = {
+            'error': 'Challenge is not active'
+        }
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_change_submission_data_and_visibility_when_challenge_is_not_public(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+
+        self.challenge_phase.is_public = False
+        self.challenge_phase.save()
+        self.data = {
+            'method_name': 'Updated Method Name'
+        }
+
+        expected = {
+            'error': 'Sorry, cannot accept submissions since challenge phase is not public'
+        }
+
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_change_submission_data_and_visibility_when_participant_team_is_none(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+
+        self.participant_team.delete()
+
+        expected = {
+            'error': 'You haven\'t participated in the challenge'
+        }
+        self.data = {
+            'method_name': 'Updated Method Name'
+        }
+
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_change_submission_data_and_visibility_when_participant_team_hasnt_participated_in_challenge(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+
+        # Note that we haven't added the self.participant_team to Challenge
+        expected = {
+            'error': 'You haven\'t participated in the challenge'
+        }
+        self.data = {
+            'method_name': 'Updated Method Name'
+        }
+
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_change_submission_data_and_visibility_when_submission_exist(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+        self.data = {
+            'method_name': 'Updated Method Name'
+        }
+        expected = {
+                'id': self.submission.id,
+                'participant_team': self.submission.participant_team.pk,
+                'participant_team_name': self.submission.participant_team.team_name,
+                'execution_time': self.submission.execution_time,
+                'challenge_phase': self.submission.challenge_phase.pk,
+                'created_by': self.submission.created_by.pk,
+                'status': self.submission.status,
+                'input_file': "http://testserver%s" % (self.submission.input_file.url),
+                'method_name': self.data['method_name'],
+                'method_description': self.submission.method_description,
+                'project_url': self.submission.project_url,
+                'publication_url': self.submission.publication_url,
+                'stdout_file': None,
+                'stderr_file': None,
+                'submission_result_file': None,
+                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+                "is_public": self.submission.is_public,
+            }
+        self.challenge.participant_teams.add(self.participant_team)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_change_submission_data_and_visibility_when_submission_doesnt_exist(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+
+        expected = {
+            'error': 'Submission does not exist'
+        }
+        self.data = {
+            'method_name': 'Updated Method Name'
+        }
+        self.submission.delete()
+        self.challenge.participant_teams.add(self.participant_team)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
