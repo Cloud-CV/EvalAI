@@ -2,6 +2,7 @@ import os
 import uuid
 
 from django.conf import settings
+from django.utils.deconstruct import deconstructible
 
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
@@ -23,6 +24,7 @@ def paginated_queryset(queryset, request, pagination_class=PageNumberPagination(
     return (paginator, result_page)
 
 
+@deconstructible
 class RandomFileName(object):
     def __init__(self, path):
         self.path = path
