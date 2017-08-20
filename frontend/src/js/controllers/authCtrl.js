@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', 'configService', '$state', '$rootScope'];
+    AuthCtrl.$inject = ['utilities', 'configService','$state', '$rootScope', 'stringToTemplate'];
 
-    function AuthCtrl(utilities,  configService, $state, $rootScope) {
+    function AuthCtrl(utilities, configService, $state, $rootScope, stringToTemplate) {
 
         var vm = this;
         var BackendEndpoints = configService.BackendEndpoints;
@@ -181,7 +181,8 @@
         vm.verifyEmail = function() {
             vm.startLoader("Verifying Your Email");
             var parameters = {};
-            parameters.url =  BackendEndpoints.AUTH.EMAIL_VERIFICATION_ENDPOINT  + $state.params.email_conf_key + '/';
+            var key =  $state.params.email_conf_key;
+            parameters.url = stringToTemplate.convert(BackendEndpoints.AUTH.EMAIL_VERIFICATION_ENDPOINT, {key: key});
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function() {

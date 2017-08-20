@@ -21,39 +21,40 @@
             "AUTH": {
                 "REGISTRATION_ENDPOINT": "auth/registration/",
                 "LOGIN_ENDPOINT": "auth/login/",
-                "EMAIL_VERIFICATION_ENDPOINT": "auth/registration/account-confirm-email/",
+                "EMAIL_VERIFICATION_ENDPOINT": "auth/registration/account-confirm-email/${key}/",
                 "PASSWORD_RESET_ENDPOINT": "auth/password/reset/",
                 "PASSWORD_RESET_CONFIRM_ENDPOINT": "auth/password/reset/confirm/"
             },
             "CHALLENGE": {
-                "CREATE_CHALLENGE_ENDPOINT": "challenges/challenge/challenge_host_team/",
-                "CHALLENGE_DETAILS_ENDPOINT": "challenges/challenge/",
-                "PARTICIPANT_CHALLENGES_ENDPOINT": "participants/participant_teams/challenges/",
+                "CHALLENGE_ENDPOINT": "challenges/challenge/${challenge_id}/",
+                "CREATE_CHALLENGE_ENDPOINT": "challenges/challenge/challenge_host_team/${host_team_id}/zip_upload/",
+                "CHALLENGE_DETAILS_ENDPOINT": "challenges/challenge/${challenge_id}/participant_team/${team_id}",
+                "PARTICIPANT_CHALLENGES_ENDPOINT": "participants/participant_teams/challenges/${challenge_id}/user",
                 "PARTICIPANT_TEAM_ENDPOINT": "participants/participant_team",
+                "CHALLENGE_PHASE_DETAILS_ENDPOINT": "challenges/challenge/${challenge_id}/challenge_phase",
                 "MAKE_SUBMISSION": {
-                    "SUBMISSION_END_POINT": "/submission/",
-                    "JOBS_CHALLENGE_ENDPOINT": "jobs/challenge",
-                    "CHALLENGE_PHASE_ENDPOINT": "/challenge_phase/"
+                    "JOBS_CHALLENGE_ENDPOINT": "jobs/challenge/${challenge_id}/challenge_phase/${phase_id}/submission/"
                 },
                 "SEND_REQUEST": {
-                    "CHALLENGES_ENDPOINT": "challenges/",
-                    "CHALLENGE_PHASE_SPLIT_ENDPOINT": "/challenge_phase_split"
+                    "CHALLENGES_ENDPOINT": "challenges/${challenge_id}/challenge_phase_split"
                 },
                 "GET_LEADERBOARD": {
-                    "SHOW_LEADERBOARD_ENDPOINT": "jobs/challenge_phase_split/",
-                    "LEADERBOARD_PAGESIZE_ENDPOINT": "/leaderboard/?page_size="
+                    "SHOW_LEADERBOARD_ENDPOINT": "jobs/challenge_phase_split/${phase_split_id}/leaderboard/?page_size=",
+                    "REFRESH_SUBMISSIONS_DATA": "jobs/challenge/${challenge_id}/challenge_phase/${phase_id}/submission/?page="
                 },
                 "FETCHING_SUBMISSION": {
                     "SUBMISSION_PAGESIZE_ENDPOINT": "/submission/?page=",
-                    "SUBMISSION_ENDPOINT": "/submissions"
+                    "SUBMISSION_ENDPOINT": "/submissions",
+                    "GET_SUBMISSIONS_RESULT": "challenges/${challenge_id}/challenge_phase/{$phase_id}/submissions",
+                    "CHANGE_SUBMISSIONS_VISIBILITY_ENDPOINT": "jobs/challenge/${challenge_id}/challenge_phase/${phase_id}/submission/{submission_id}"
                 },
                 "SHOW_REMAINING_SUBMISSIONS": {
                     "JOBS_ENDPOINT": "jobs/",
                     "PHASES_ENDPOINT": "/phases/",
-                    "REMAINING_SUBMISSIONS_ENDPOINT": "/remaining_submissions/"
+                    "REMAINING_SUBMISSIONS_ENDPOINT": "jobs/${challenge_id}/phases/${phase_id}/remaining_submissions/"
                 },
                 "DOWNLOAD_CHALLENGE_SUBMISSIONS": {
-                    "DOWNLOAD_ALL_SUBMISSIONS_ENDPOINT": "/download_all_submissions_file/"
+                    "DOWNLOAD_ALL_SUBMISSIONS_ENDPOINT": "challenges/${challenge_id}/phase/{phase_id}/download_all_submissions/{file_selected}/"
                 }
             }
         }
