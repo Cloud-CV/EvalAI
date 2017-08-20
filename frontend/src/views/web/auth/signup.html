@@ -30,7 +30,7 @@
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input type="password" id="password" class="dark-autofill" name="password" ng-model="auth.regUser.password" ng-minlength="8" required>
+            <input type="password" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.regUser.password" ng-minlength="8" required>
             <span class="form-icon form-icon-dark"><i class="fa fa-key"></i></span>
             <label for="password">Password (min 8 characters) *</label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.password.$error" ng-if="signupForm.password.$touched || signupForm.$submitted">
@@ -40,7 +40,7 @@
         </div>
         <!-- confirm password -->
         <div class="input-field align-left">
-            <input type="password" id="confirm_password" class="dark-autofill" name="confirm_password" ng-model="auth.regUser.confirm_password" ng-minlength="8" compare-to="auth.regUser.password" required>
+            <input type="password" id="confirm_password" onpaste="return false;" class="dark-autofill" name="confirm_password" ng-model="auth.regUser.confirm_password" ng-minlength="8" compare-to="auth.regUser.password" required>
             <span class="form-icon form-icon-dark"><i class="fa fa-check-circle"></i></span>
             <label for="confirm_password">Confirm Password *</label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.confirm_password.$error" ng-if="signupForm.confirm_password.$touched || signupForm.$submitted">
