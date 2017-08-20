@@ -13,8 +13,6 @@ One can create a challenge in EvalAI using following methods:
 
 Creating a challenge on EvalAI is a three step process. You just need to upload the challenge details in a challenge configuration file (**YAML file**) and we will take care of the rest.
 
-The [link to repository](https://github.com/Cloud-CV/EvalAI-Examples) for an example to create a challenge, using 'zip_file'.
-
 The challenge configuration file on EvalAI consists of following fields:
 
 * **title**: Title of the challenge
@@ -183,6 +181,9 @@ challenge_phase_splits:
     visibility: 3
 
 ```
+### Challenge Creation Examples
+
+Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) to know how to create different types of challenges on EvalAI.
 
 ### Next Steps
 
