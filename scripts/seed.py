@@ -97,6 +97,7 @@ def create_challenge(title, start_date, end_date, host_team):
         submission_guidelines=fake.paragraph(),
         evaluation_details=fake.paragraph(),
         evaluation_script=SimpleUploadedFile(evaluation_script.name, evaluation_script.read()),
+        approved_by_admin=True,
         creator=host_team,
         published=True,
         enable_forum=True,

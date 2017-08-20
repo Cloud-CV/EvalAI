@@ -1044,7 +1044,6 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
-                "test_annotation": self.challenge_phase.test_annotation.url,
             }
         ]
 
@@ -1067,7 +1066,6 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
-                "test_annotation": self.challenge_phase.test_annotation.url,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -1203,7 +1201,6 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
-            "test_annotation": self.challenge_phase.test_annotation.url,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1276,7 +1273,6 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
-            "test_annotation": self.challenge_phase.test_annotation.url,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -1751,6 +1747,149 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         }
         self.challenge5.participant_teams.add(self.participant_team6)
         self.challenge5.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class DownloadAllSubmissionsFileTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(DownloadAllSubmissionsFileTest, self).setUp()
+
+        self.user1 = User.objects.create(
+            username='otheruser1',
+            password='other_secret_password',
+            email='user1@test.com',)
+
+        self.user2 = User.objects.create(
+            username='otheruser2',
+            password='other_secret_password',
+            email='user2@test.com',)
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email='user1@test.com',
+            primary=True,
+            verified=True)
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email='user2@test.com',
+            primary=True,
+            verified=True)
+
+        self.participant_team1 = ParticipantTeam.objects.create(
+            team_name='Participant Team for Challenge8',
+            created_by=self.user1)
+
+        self.participant1 = Participant.objects.create(
+            user=self.user1,
+            status=Participant.ACCEPTED,
+            team=self.participant_team1)
+
+        try:
+            os.makedirs('/tmp/evalai')
+        except OSError:
+            pass
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase = ChallengePhase.objects.create(
+                name='Challenge Phase',
+                description='Description for Challenge Phase',
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain')
+            )
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.submission = Submission.objects.create(
+                participant_team=self.participant_team1,
+                challenge_phase=self.challenge_phase,
+                created_by=self.participant_team1.created_by,
+                status='submitted',
+                input_file=SimpleUploadedFile('test_sample_file.txt',
+                                              'Dummy file content', content_type='text/plain'),
+                method_name="Test Method",
+                method_description="Test Description",
+                project_url="http://testserver/",
+                publication_url="http://testserver/",
+                is_public=True,
+            )
+
+        self.file_type_csv = 'csv'
+
+        self.file_type_pdf = 'pdf'
+
+    def test_download_all_submissions_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk+10,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'file_type': self.file_type_csv})
+        expected = {
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_download_all_submissions_when_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk+10,
+                                        'file_type': self.file_type_csv})
+        expected = {
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk+10)
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_download_all_submissions_when_file_type_is_not_csv(self):
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'file_type': self.file_type_pdf})
+        expected = {
+            'error': 'The file type requested is not valid!'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_download_all_submissions_when_user_is_challenge_host(self):
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'file_type': self.file_type_csv})
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_download_all_submissions_when_user_is_challenge_participant(self):
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'file_type': self.file_type_csv})
+
+        self.challenge.participant_teams.add(self.participant_team1)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_download_all_submissions_when_user_is_neither_a_challenge_host_nor_a_participant(self):
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'file_type': self.file_type_csv})
+
+        self.client.force_authenticate(user=self.user2)
+
+        expected = {
+            'error': 'You are neither host nor participant of the challenge!'
+        }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
