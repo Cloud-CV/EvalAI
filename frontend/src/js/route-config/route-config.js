@@ -548,7 +548,7 @@
             toaster.pop({
                 type: type,
                 body: message,
-                timeout: timeout
+                timeout: timeout,
             });
         };
 
