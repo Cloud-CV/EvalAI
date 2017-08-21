@@ -167,14 +167,14 @@ class Submission(TimeStampedModel):
         return submission_instance
 
     @cached_property
-    def submissions_count_for_a_challenge_phase(self):
+    def submissions_count_for_challenge_phase(self):
         # To get total submissions count on a challenge phase
         submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
                                                      challenge_phase__challenge=self.challenge_phase.challenge).count()
         return submission_count
 
     @cached_property
-    def participated_teams_count_for_a_challenge_phase(self):
+    def participated_teams_count_for_challenge_phase(self):
         # To get total participant teams count on a challenge phase
         submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
                                                      challenge_phase__challenge=self.challenge_phase.challenge)
@@ -182,7 +182,7 @@ class Submission(TimeStampedModel):
         return submission_count
 
     @cached_property
-    def total_submissions_by_a_participant_team_in_a_challenge_phase(self):
+    def total_submissions_by_a_participant_team_in_challenge_phase(self):
         # To get total submissions by a participant team in a challenge phase
         submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
                                                      challenge_phase__challenge=self.challenge_phase.challenge,

@@ -96,6 +96,12 @@ def get_submission_count(request, challenge_pk, duration):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_pk):
+    """
+    API to fetch 
+    1. The submissions count for challenge phase.
+    2. The participated team count for challenge phase.
+    3. The total submissions by a participant team in challenge phase.
+    """
 
     challenge = get_challenge_model(challenge_pk)
 
