@@ -941,7 +941,7 @@
                                     vm.remainingSeconds--;
                                 }
                             };
-                            $interval(function() {
+                            setInterval(function() {
                                 $rootScope.$apply(vm.countDownTimer);
                                 }, 1000);
                                 vm.countDownTimer();
