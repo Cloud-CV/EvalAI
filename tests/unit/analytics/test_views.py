@@ -305,10 +305,10 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-                "submissions_count_for_a_challenge_phase": 1,
-                "participated_teams_count_for_a_challenge_phase": 1,
-                "total_submissions_by_a_participant_team_in_a_challenge_phase": 1
-        }
+                "submissions_count_for_challenge_phase": 1,
+                "participated_teams_count_for_challenge_phase": 1,
+                "total_submissions_by_participant_team_in_challenge_phase": 1
+            }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
