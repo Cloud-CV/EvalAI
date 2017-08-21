@@ -8,6 +8,10 @@
 	position: static;
 }
 
+.rm-overflow-y {
+	overflow-y: hidden;
+}
+
 .show-count {
 	background: $dark-gray;
 	text-align: center;
