@@ -497,8 +497,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if not isfile(test_annotation_file_path):
             response_data = {
                 'error': ('No test annotation file is present in the zip file'
-                          'for challenge phase {} Please try uploading'
-                          'again the zip file after adding test annotation file!'.format(data['name']))
+                          'for challenge phase \'{}\'. Please try uploading '
+                          'again after adding test annotation file!'.format(data['name']))
             }
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
