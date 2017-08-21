@@ -129,3 +129,25 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChallengePhaseSplit
         fields = '__all__'
+
+
+class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
+
+    is_active = serializers.ReadOnlyField()
+
+    def __init__(self, *args, **kwargs):
+        super(ChallengePhaseCreateSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get('context')
+        if context:
+            challenge = context.get('challenge')
+            if challenge:
+                kwargs['data']['challenge'] = challenge.pk
+            test_annotation = context.get('test_annotation')
+            if test_annotation:
+                kwargs['data']['test_annotation'] = test_annotation
+
+    class Meta:
+        model = ChallengePhase
+        fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
+                  'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
+                  'is_public', 'is_active', 'codename', 'test_annotation')
