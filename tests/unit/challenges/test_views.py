@@ -1555,7 +1555,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             email='user5@test.com',)
 
         self.user6 = User.objects.create(
-            username='not a challenge host',
+            username='participant',
             password='secret password',
             email='user6@test.com',)
 
@@ -1681,7 +1681,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                                 kwargs={'challenge_pk': self.challenge5.pk,
                                         'challenge_phase_pk': self.challenge_phase5.pk})
         self.client.force_authenticate(user=self.user5)
-
         expected = [
             {
                 "id": self.submission.id,
@@ -1699,6 +1698,9 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "submission_result_file": None,
                 "submission_metadata_file": None,
                 "participant_team_members_email_ids": ['user6@test.com'],
+                "participant_team_members": [{'username': 'participant', 'email': 'user6@test.com'}],
+                "created_at": self.submission.created_at,
+                "method_name": self.submission.method_name,
             }
         ]
         response = self.client.get(self.url, {})
