@@ -163,7 +163,7 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
 
     try:
         is_public = request.data['is_public']
-        if is_public == 'True':
+        if is_public is True:
             when_made_public = datetime.datetime.now()
             request.data['when_made_public'] = when_made_public
         else:
