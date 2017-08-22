@@ -32,7 +32,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
         fields = ('id', 'participant_team', 'participant_team_name', 'execution_time', 'challenge_phase',
                   'created_by', 'status', 'input_file', 'stdout_file', 'stderr_file', 'submitted_at',
                   'method_name', 'method_description', 'project_url', 'publication_url', 'is_public',
-                  'submission_result_file',)
+                  'submission_result_file', 'when_made_public',)
 
     def get_participant_team_name(self, obj):
         return obj.participant_team.team_name
