@@ -161,6 +161,17 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         response_data = {'error': 'Submission does not exist'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
+    try:
+        is_public = request.data['is_public']
+        if is_public == 'True':
+            when_made_public = datetime.datetime.now()
+            request.data['when_made_public'] = when_made_public
+        else:
+            when_made_public = None
+            request.data['when_made_public'] = when_made_public
+    except KeyError:
+        when_made_public = None
+
     serializer = SubmissionSerializer(submission,
                                       data=request.data,
                                       context={
