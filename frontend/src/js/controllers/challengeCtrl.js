@@ -888,12 +888,25 @@
         };
 
         vm.changeSubmissionVisibility = function(submission_id) {
+            var dateTime = new Date();
+            dateTime = dateTime.toISOString();
+            var splitDateTime = dateTime.split("T");
+            var date = splitDateTime[0];
+            var time = splitDateTime[1].split(".")[0];
+
             var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
             parameters.method = 'PATCH';
-            parameters.data = {
-                "is_public": vm.submissionVisibility[submission_id]
-            };
+            if (vm.submissionVisibility[submission_id]) {
+                parameters.data = {
+                    "is_public": vm.submissionVisibility[submission_id],
+                    "when_made_public": date + " " + time
+                };
+            } else {
+                parameters.data = {
+                    "is_public": vm.submissionVisibility[submission_id],
+                };
+            }
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function() {},
