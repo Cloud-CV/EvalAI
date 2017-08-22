@@ -228,6 +228,7 @@ class StarChallenge(TimeStampedModel):
     """
     user = models.ForeignKey(User)
     challenge = models.ForeignKey(Challenge)
+    is_starred = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'challenges'
