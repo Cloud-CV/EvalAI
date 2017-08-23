@@ -62,5 +62,5 @@ class ChallengeConfigurationAdmin(ImportExportTimeStampedAdmin):
 
 @admin.register(StarChallenge)
 class StarChallengeAdmin(ImportExportTimeStampedAdmin):
-    list_display = ('user', 'challenge',)
+    list_display = ('user', 'challenge', 'is_starred')
     search_fields = ('user', 'challenge',)

@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -941,7 +941,7 @@
                                     vm.remainingSeconds--;
                                 }
                             };
-                            $interval(function() {
+                            setInterval(function() {
                                 $rootScope.$apply(vm.countDownTimer);
                                 }, 1000);
                                 vm.countDownTimer();
@@ -982,6 +982,58 @@
         }else {
             $rootScope.notify("error", "Please select a challenge phase!");
         }
+        };
+
+        vm.showMdDialog = function(ev, submissionId) {
+            for (var i=0;i<vm.submissionResult.count;i++){
+                if (vm.submissionResult.results[i].id === submissionId) {
+                    vm.submissionMetaData = vm.submissionResult.results[i];
+                    break;
+                }
+            }
+            vm.method_name = vm.submissionMetaData.method_name;
+            vm.method_description = vm.submissionMetaData.method_description;
+            vm.project_url = vm.submissionMetaData.project_url;
+            vm.publication_url = vm.submissionMetaData.publication_url;
+            vm.submissionId = submissionId;
+
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/update-submission-metadata.html'
+            });
+        };
+
+        vm.updateSubmissionMetaData = function(updateSubmissionMetaDataForm) {
+            if(updateSubmissionMetaDataForm){
+                var parameters = {};
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + vm.submissionId;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "method_name": vm.method_name,
+                    "method_description": vm.method_description,
+                    "project_url": vm.project_url,
+                    "publication_url": vm.publication_url
+                };
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200){
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The data is successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            }
         };
 
         $scope.$on('$destroy', function() {
