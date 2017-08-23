@@ -282,9 +282,6 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     stderr_file = join(temp_run_dir, stderr_file_name)
 
     stdout = open(stdout_file, 'a+')
-
-    logger.info("STDERROR FILE" + stderr_file)
-
     stderr = open(stderr_file, 'a+')
 
     # call `main` from globals and set `status` to running and hence `started_at`
