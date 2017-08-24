@@ -54,7 +54,7 @@ class DatasetSplitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DatasetSplit
-        fields = '__all__'
+        fields = ('id', 'name', 'codename')
 
 
 class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
@@ -96,7 +96,7 @@ class LeaderboardSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Leaderboard
-        fields = '__all__'
+        fields = ('id', 'schema')
 
 
 class ZipChallengeSerializer(ChallengeSerializer):
@@ -128,7 +128,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = ChallengePhaseSplit
-        fields = '__all__'
+        fields = ('id', 'challenge_phase', 'dataset_split', 'leaderboard', 'visibility')
 
 
 class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
