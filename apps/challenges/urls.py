@@ -34,5 +34,21 @@ urlpatterns = [
     url(r'(?P<challenge_pk>[0-9]+)/phase/(?P<challenge_phase_pk>[0-9]+)'
         r'/download_all_submissions/(?P<file_type>[A-Za-z]+)/$',
         views.download_all_submissions,
-        name='download_all_submissions')
+        name='download_all_submissions'),
+    url(r'challenge/create/challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/step_1/$',
+        views.create_challenge, name='create_challenge'),
+    url(r'challenge/create/leaderboard/step_2/$',
+        views.create_leaderboard, name='create_leaderboard'),
+    url(r'challenge/create/leaderboard/(?P<leaderboard_pk>[0-9]+)/$',
+        views.get_or_update_leaderboard, name='get_or_update_leaderboard'),
+    url(r'challenge/create/challenge_phase/(?P<challenge_pk>[0-9]+)/step_3/$',
+        views.create_challenge_phase, name='create_challenge_phase'),
+    url(r'challenge/create/dataset_split/step_4/$',
+        views.create_dataset_split, name='create_dataset_split'),
+    url(r'challenge/create/dataset_split/(?P<dataset_split_pk>[0-9]+)/$',
+        views.get_or_update_dataset_split, name='get_or_update_dataset_split'),
+    url(r'challenge/create/challenge_phase_split/step_5/$',
+        views.create_challenge_phase_split, name='create_challenge_phase_split'),
+    url(r'challenge/create/challenge_phase_split/(?P<challenge_phase_split_pk>[0-9]+)/$',
+        views.get_or_update_challenge_phase_split, name='get_or_update_challenge_phase_split'),
 ]
