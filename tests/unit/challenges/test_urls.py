@@ -95,10 +95,20 @@ class TestChallengeUrls(BaseAPITestClass):
         url = reverse_lazy('challenges:get_all_challenges', kwargs={'challenge_time': "PAST"})
         self.assertEqual(url, '/api/challenges/challenge/PAST')
 
-        self.url = reverse_lazy('challenges:download_all_submissions_file',
+        self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
                                         'file_type': self.file_type})
-        self.assertEqual(self.url, '/api/challenges/{}/download_all_submissions_file/{}/'.format(self.challenge.pk,
-                                                                                                 self.file_type))
+        self.assertEqual(self.url,
+                         '/api/challenges/{}/phase/{}/download_all_submissions/{}/'
+                         .format(self.challenge.pk, self.challenge_phase.pk, self.file_type))
         resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'challenges:download_all_submissions_file')
+        self.assertEqual(resolver.view_name, 'challenges:download_all_submissions')
+
+        self.url = reverse_lazy('challenges:star_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.assertEqual(self.url,
+                         '/api/challenges/{}/'
+                         .format(self.challenge.pk))
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.view_name, 'challenges:star_challenge')
