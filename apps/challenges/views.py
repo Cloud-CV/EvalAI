@@ -84,8 +84,8 @@ def challenge_list(request, challenge_host_team_pk):
             return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = ZipChallengeSerializer(data=request.data,
-                                         context={'challenge_host_team': challenge_host_team,
-                                                  'request': request})
+                                            context={'challenge_host_team': challenge_host_team,
+                                                     'request': request})
         if serializer.is_valid():
             serializer.save()
             challenge = get_challenge_model(serializer.instance.pk)
@@ -312,7 +312,7 @@ def challenge_phase_list(request, challenge_pk):
 
     elif request.method == 'POST':
         serializer = ChallengePhaseCreateSerializer(data=request.data,
-                                              context={'challenge': challenge})
+                                                    context={'challenge': challenge})
         if serializer.is_valid():
             serializer.save()
             challenge_phase = get_challenge_phase_model(serializer.instance.pk)
