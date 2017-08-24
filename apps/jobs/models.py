@@ -105,7 +105,7 @@ class Submission(TimeStampedModel):
 
         # Only save the completed_at time when the object is created.
         # Dont update the completed_at field at the time of updating submission meta-data or status.
-        if self._state.adding == True:
+        if self._state.adding is True:
             if hasattr(self, 'status'):
                 if self.status == Submission.RUNNING:
                     self.started_at = timezone.now()

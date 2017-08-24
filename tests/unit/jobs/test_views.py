@@ -662,7 +662,6 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.data = {
             'is_public': False
         }
-        self.submission.when_made_public = None
         expected = {
                 'id': self.submission.id,
                 'participant_team': self.submission.participant_team.pk,
@@ -681,7 +680,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 'submission_result_file': None,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
                 "is_public": self.submission.is_public,
-                "when_made_public": self.submission.when_made_public
+                "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(), 'Z')
+                                    .replace("+00:00", ""),
             }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
