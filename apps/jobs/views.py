@@ -166,11 +166,8 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         if is_public is True:
             when_made_public = datetime.datetime.now()
             request.data['when_made_public'] = when_made_public
-        else:
-            when_made_public = None
-            request.data['when_made_public'] = when_made_public
     except KeyError:
-        when_made_public = None
+        pass
 
     serializer = SubmissionSerializer(submission,
                                       data=request.data,
