@@ -367,10 +367,9 @@ def challenge_phase_split_list(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     challenge_phase_split = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
-    paginator, result_page = paginated_queryset(challenge_phase_split, request)
-    serializer = ChallengePhaseSplitSerializer(result_page, many=True)
+    serializer = ChallengePhaseSplitSerializer(challenge_phase_split, many=True)
     response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @throttle_classes([UserRateThrottle])
