@@ -43,10 +43,7 @@ from participants.utils import (get_participant_teams_for_user,
 from .models import (Challenge,
                      ChallengePhase,
                      ChallengePhaseSplit,
-                     ChallengeConfiguration,
-                     ChallengePhaseSplit,
-                     DatasetSplit,
-                     Leaderboard)
+                     ChallengeConfiguration)
 from .permissions import IsChallengeCreator
 from .serializers import (ChallengeConfigSerializer,
                           ChallengePhaseSerializer,
@@ -86,11 +83,13 @@ def challenge_list(request, challenge_host_team_pk):
                 'error': 'Sorry, you do not belong to this Host Team!'}
             return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-        serializer = ChallengeSerializer(data=request.data,
+        serializer = ZipChallengeSerializer(data=request.data,
                                          context={'challenge_host_team': challenge_host_team,
                                                   'request': request})
         if serializer.is_valid():
             serializer.save()
+            challenge = get_challenge_model(serializer.instance.pk)
+            serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -127,9 +126,9 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                                                 partial=True)
         else:
             serializer = ZipChallengeSerializer(challenge,
-                                             data=request.data,
-                                             context={'challenge_host_team': challenge_host_team,
-                                                      'request': request})
+                                                data=request.data,
+                                                context={'challenge_host_team': challenge_host_team,
+                                                         'request': request})
         if serializer.is_valid():
             serializer.save()
             challenge = get_challenge_model(serializer.instance.pk)
@@ -312,10 +311,12 @@ def challenge_phase_list(request, challenge_pk):
         return paginator.get_paginated_response(response_data)
 
     elif request.method == 'POST':
-        serializer = ChallengePhaseSerializer(data=request.data,
+        serializer = ChallengePhaseCreateSerializer(data=request.data,
                                               context={'challenge': challenge})
         if serializer.is_valid():
             serializer.save()
+            challenge_phase = get_challenge_phase_model(serializer.instance.pk)
+            serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -857,27 +858,6 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
 
 
 @throttle_classes([UserRateThrottle])
-@api_view(['POST',])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
-def create_challenge(request, challenge_host_team_pk):
-    """
-    Creates a challenge
-    """
-    challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
-    serializer = ZipChallengeSerializer(data=request.data,
-                                        context={'request': request,
-                                                 'challenge_host_team': challenge_host_team})    
-    if serializer.is_valid():
-        serializer.save()
-        challenge = get_challenge_model(serializer.instance.pk)
-        serializer = ChallengeSerializer(challenge)
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -918,30 +898,6 @@ def get_or_update_leaderboard(request, leaderboard_pk):
         serializer = LeaderboardSerializer(leaderboard)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-
-
-@throttle_classes([UserRateThrottle])
-@api_view(['POST',])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
-def create_challenge_phase(request, challenge_pk):
-    """
-    Creates a challenge phase
-    """
-
-    challenge = get_challenge_model(challenge_pk)
-
-    serializer = ChallengePhaseCreateSerializer(data=request.data,
-                                                context={'request': request,
-                                                         'challenge': challenge})
-    if serializer.is_valid():
-        serializer.save()
-        serializer = ChallengePhaseSerializer(serializer.instance)
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_201_CREATED)
-    else:
-        response_data = serializer.errors
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @throttle_classes([UserRateThrottle])

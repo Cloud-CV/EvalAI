@@ -125,14 +125,6 @@ class TestChallengeUrls(BaseAPITestClass):
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'challenges:download_all_submissions')
 
-        self.url = reverse_lazy('challenges:create_challenge',
-                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
-        self.assertEqual(self.url,
-                         '/api/challenges/challenge/create/challenge_host_team/{}/step_1/'
-                         .format(self.challenge_host_team.pk))
-        resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'challenges:create_challenge')
-
         self.url = reverse_lazy('challenges:create_leaderboard')
         self.assertEqual(self.url,
                          '/api/challenges/challenge/create/leaderboard/step_2/')
@@ -146,14 +138,6 @@ class TestChallengeUrls(BaseAPITestClass):
                          .format(self.leaderboard.pk))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'challenges:get_or_update_leaderboard')
-
-        self.url = reverse_lazy('challenges:create_challenge_phase',
-                                kwargs={'challenge_pk': self.challenge.pk})
-        self.assertEqual(self.url,
-                         '/api/challenges/challenge/create/challenge_phase/{}/step_3/'
-                         .format(self.challenge.pk))
-        resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'challenges:create_challenge_phase')
 
         self.url = reverse_lazy('challenges:create_dataset_split')
         self.assertEqual(self.url,
