@@ -1388,7 +1388,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         ]
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_challenge_phase_split_when_challenge_phase_does_not_exist(self):
