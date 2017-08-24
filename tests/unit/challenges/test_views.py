@@ -250,7 +250,11 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "image": None,
             "start_date": None,
             "end_date": None,
-            "creator": self.challenge.creator.pk,
+            "creator": {
+                'id': self.challenge.creator.pk,
+                'team_name': self.challenge.creator.team_name,
+                'created_by': self.challenge.creator.created_by.username
+            },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
@@ -275,7 +279,11 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "image": None,
             "start_date": None,
             "end_date": None,
-            "creator": self.challenge.creator.pk,
+            "creator": {
+                'id': self.challenge.creator.pk,
+                'team_name': self.challenge.creator.team_name,
+                'created_by': self.challenge.creator.created_by.username
+            },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
@@ -1895,3 +1903,311 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class CreateChallengeTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(CreateChallengeTest, self).setUp()
+        self.url = reverse_lazy('challenges:create_challenge',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
+        self.data = {
+            "title": "New Challenge title",
+            "short_description": "New challenge short description",
+            "description": "New challenge description",
+            "terms_and_conditions": "New challenge terms and conditions",
+            "submission_guidelines": "New challenge submission guidelines",
+            "evaluation_details": "New challenge evaluation details",
+            "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "published": True,
+            "enable_forum": True
+            }
+
+    def test_create_challenge_when_challenge_host_team_does_not_exist(self):
+        self.url = reverse_lazy('challenges:create_challenge',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk+10})
+        expected = {
+            'detail': 'ChallengeHostTeam {} does not exist'.format(self.challenge_host_team.pk+10)
+        }
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_challenge_with_all_data(self):
+        self.url = reverse_lazy('challenges:create_challenge',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
+        self.data['evaluation_script'] = SimpleUploadedFile('test_file.zip',
+                                                            'Dummy file content',
+                                                            content_type='application/zip')
+        response = self.client.post(self.url, self.data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_challenge_with_no_data(self):
+        self.url = reverse_lazy('challenges:create_challenge',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
+
+        del self.data['title']
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class CreateLeaderboardTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(CreateLeaderboardTest, self).setUp()
+        self.url = reverse_lazy('challenges:create_leaderboard')
+        self.data = [
+            {'schema': {'key': 'value'}},
+            {'schema': {'key2': 'value2'}}
+            ]
+
+    def test_create_leaderboard_with_all_data(self):
+        self.url = reverse_lazy('challenges:create_leaderboard')
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_leaderboard_with_no_data(self):
+        self.url = reverse_lazy('challenges:create_leaderboard')
+        self.data = []
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class GetOrUpdateLeaderboardTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetOrUpdateLeaderboardTest, self).setUp()
+        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({
+                                                      "labels": ["yes/no", "number", "others", "overall"],
+                                                      "default_order_by": "overall"}))
+
+        self.url = reverse_lazy('challenges:get_or_update_leaderboard',
+                                kwargs={'leaderboard_pk': self.leaderboard.pk})
+        self.data = {
+            'schema': {'key': 'updated schema'}
+            }
+
+    def test_get_or_update_leaderboard_when_leaderboard_doesnt_exist(self):
+        self.url = reverse_lazy('challenges:get_or_update_leaderboard',
+                                kwargs={'leaderboard_pk': self.leaderboard.pk+10})
+        expected = {
+            'detail': 'Leaderboard {} does not exist'.format(self.leaderboard.pk+10)
+        }
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_leaderboard(self):
+        self.url = reverse_lazy('challenges:get_or_update_leaderboard',
+                                kwargs={'leaderboard_pk': self.leaderboard.pk})
+        expected = {
+            'id': self.leaderboard.pk,
+            'schema': self.leaderboard.schema, 
+        }
+        response = self.client.get(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_leaderboard_with_all_data(self):
+        self.url = reverse_lazy('challenges:get_or_update_leaderboard',
+                                kwargs={'leaderboard_pk': self.leaderboard.pk})
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_leaderboard_with_no_data(self):
+        self.url = reverse_lazy('challenges:get_or_update_leaderboard',
+                                kwargs={'leaderboard_pk': self.leaderboard.pk})
+        del self.data['schema']
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class CreateChallengePhaseTest(BaseChallengePhaseClass, BaseAPITestClass):
+
+    def setUp(self):
+        super(CreateChallengePhaseTest, self).setUp()
+        self.url = reverse_lazy('challenges:create_challenge_phase',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.data = {
+            "name": "Challenge Phase",
+            "description": "Challenge Phase Description",
+            "leaderboard": True,
+            "is_public": True,
+            "is_submission_public": True,
+            "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "max_submissions_per_day": 100,
+            "max_submissions": 1000,
+            "codename": "Challenge Phase code name",
+            "challenge": self.challenge.pk
+            }
+
+    def test_create_challenge_phase_with_all_data(self):
+        self.url = reverse_lazy('challenges:create_challenge_phase',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.data['test_annotation'] = SimpleUploadedFile('test_sample_file.txt',
+                                                          'Dummy file content', content_type='text/plain')
+        response = self.client.post(self.url, self.data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_challenge_phase_with_no_data(self):
+        self.url = reverse_lazy('challenges:create_challenge_phase',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        del self.data["name"]
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class CreateDatasetSplitTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(CreateDatasetSplitTest, self).setUp()
+        self.url = reverse_lazy('challenges:create_dataset_split')
+
+        self.data = [
+            {"name": "Dataset Split1",
+             "codename": "Dataset split codename1"},
+            {"name": "Dataset split2",
+             "codename": "Dataset split codename2"}
+        ]
+
+    def test_create_dataset_split_with_all_data(self):
+        self.url = reverse_lazy('challenges:create_dataset_split')
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_dataset_split_with_no_data(self):
+        self.url = reverse_lazy('challenges:create_dataset_split')
+        self.data = []
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class GetOrUpdateDatasetSplitTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetOrUpdateDatasetSplitTest, self).setUp()
+        self.dataset_split = DatasetSplit.objects.create(name="Name of the dataset split",
+                                                         codename="codename of dataset split")
+
+        self.url = reverse_lazy('challenges:get_or_update_dataset_split',
+                                kwargs={'dataset_split_pk': self.dataset_split.pk})
+        self.data = {
+            'name': 'Updated Name of dataset split',
+            'codename': 'Updated codename of dataset split'
+            }
+
+    def test_get_or_update_dataset_split_when_dataset_split_doesnt_exist(self):
+        self.url = reverse_lazy('challenges:get_or_update_dataset_split',
+                                kwargs={'dataset_split_pk': self.dataset_split.pk+10})
+        expected = {
+            'detail': 'DatasetSplit {} does not exist'.format(self.dataset_split.pk+10)
+        }
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_dataset_split(self):
+        self.url = reverse_lazy('challenges:get_or_update_dataset_split',
+                                kwargs={'dataset_split_pk': self.dataset_split.pk})
+        expected = {
+            'id': self.dataset_split.pk,
+            'name': self.dataset_split.name,
+            'codename': self.dataset_split.codename 
+        }
+        response = self.client.get(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_dataset_split_with_all_data(self):
+        self.url = reverse_lazy('challenges:get_or_update_dataset_split',
+                                kwargs={'dataset_split_pk': self.dataset_split.pk})
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_dataset_split_with_no_data(self):
+        self.url = reverse_lazy('challenges:get_or_update_dataset_split',
+                                kwargs={'dataset_split_pk': self.dataset_split.pk})
+        del self.data['codename']
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class CreateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
+
+    def setUp(self):
+        super(CreateChallengePhaseSplitTest, self).setUp()
+        self.url = reverse_lazy('challenges:create_challenge_phase_split')
+
+        self.data = [
+            {"dataset_split": self.dataset_split.pk,
+             "challenge_phase": self.challenge_phase.pk,
+             "leaderboard": self.leaderboard.pk,
+             "visibility": 1},
+            {"dataset_split": self.dataset_split.pk,
+             "challenge_phase": self.challenge_phase.pk,
+             "leaderboard": self.leaderboard.pk,
+             "visibility": 3}
+            ]
+
+    def test_create_challenge_phase_split_with_all_data(self):
+        self.url = reverse_lazy('challenges:create_challenge_phase_split')
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_dataset_split_with_no_data(self):
+        self.url = reverse_lazy('challenges:create_challenge_phase_split')
+        self.data = []
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
+
+    def setUp(self):
+        super(GetOrUpdateChallengePhaseSplitTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_or_update_dataset_split',
+                                kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk})
+        self.leaderboard1 = Leaderboard.objects.create(schema=json.dumps({
+                                                      "labels": ["yes/no", "number", "others", "overall"],
+                                                      "default_order_by": "overall"}))
+        self.data = {
+            'leaderboard': self.leaderboard1.pk,
+            }
+
+    def test_get_or_update_dataset_split_when_dataset_split_doesnt_exist(self):
+        self.url = reverse_lazy('challenges:get_or_update_challenge_phase_split',
+                                kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk+10})
+        expected = {
+            'detail': 'ChallengePhaseSplit {} does not exist'.format(self.challenge_phase_split.pk+10)
+        }
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_dataset_split(self):
+        self.url = reverse_lazy('challenges:get_or_update_challenge_phase_split',
+                                kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk})
+        expected = {
+            'id': self.challenge_phase_split.pk,
+            'dataset_split': self.dataset_split.pk,
+            'leaderboard': self.leaderboard.pk,
+            'challenge_phase': self.challenge_phase.pk,
+            'visibility': self.challenge_phase_split.visibility
+        }
+        response = self.client.get(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_phase_split_with_all_data(self):
+        self.url = reverse_lazy('challenges:get_or_update_challenge_phase_split',
+                                kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk})
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_dataset_split_with_no_data(self):
+        self.url = reverse_lazy('challenges:get_or_update_challenge_phase_split',
+                                kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk})
+        del self.data['leaderboard']
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

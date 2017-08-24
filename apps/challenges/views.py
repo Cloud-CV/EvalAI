@@ -123,7 +123,7 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
             serializer = ZipChallengeSerializer(challenge,
                                                 data=request.data,
                                                 context={'challenge_host_team': challenge_host_team,
-                                                      'request': request},
+                                                         'request': request},
                                                 partial=True)
         else:
             serializer = ZipChallengeSerializer(challenge,
@@ -356,7 +356,7 @@ def challenge_phase_detail(request, challenge_pk, pk):
         if serializer.is_valid():
             serializer.save()
             challenge_phase = get_challenge_phase_model(serializer.instance.pk)
-            serializer = ChallengePhaseDisplaySerializer(challenge_phase)
+            serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
@@ -874,7 +874,7 @@ def create_challenge(request, challenge_host_team_pk):
         serializer = ChallengeSerializer(challenge)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_201_CREATED)
-    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @throttle_classes([UserRateThrottle])
@@ -885,14 +885,12 @@ def create_leaderboard(request):
     """
     Creates a leaderboard
     """
-    serializer = LeaderboardSerializer(data=request.data)
+    serializer = LeaderboardSerializer(data=request.data, many=True, allow_empty=False)
     if serializer.is_valid():
         serializer.save()
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_201_CREATED)
-    else:
-        response_data = serializer.errors
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @throttle_classes([UserRateThrottle])
@@ -938,7 +936,7 @@ def create_challenge_phase(request, challenge_pk):
                                                          'challenge': challenge})
     if serializer.is_valid():
         serializer.save()
-        serializer = ChallengePhaseDisplaySerializer(serializer.instance)
+        serializer = ChallengePhaseSerializer(serializer.instance)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_201_CREATED)
     else:
