@@ -1044,7 +1044,6 @@
         parameters.callback = {
             onSuccess: function(response) {
                 var details = response.data;
-                console.log(details);
                 vm.count = details['count'] || 0;
                 vm.is_starred = details['is_starred'];
                 if (details['is_starred'] === false){
