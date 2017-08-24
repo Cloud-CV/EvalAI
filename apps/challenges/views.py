@@ -36,7 +36,7 @@ from participants.utils import (get_participant_teams_for_user,
                                 has_user_participated_in_challenge,
                                 get_participant_team_id_of_user_for_a_challenge,)
 
-from .models import Challenge, ChallengePhase, ChallengePhaseSplit, ChallengeConfiguration
+from .models import Challenge, ChallengePhase, ChallengePhaseSplit, ChallengeConfiguration, StarChallenge
 from .permissions import IsChallengeCreator
 from .serializers import (ChallengeConfigSerializer,
                           ChallengePhaseSerializer,
@@ -45,6 +45,7 @@ from .serializers import (ChallengeConfigSerializer,
                           ChallengeSerializer,
                           DatasetSplitSerializer,
                           LeaderboardSerializer,
+                          StarChallengeSerializer,
                           ZipChallengeSerializer,
                           ZipChallengePhaseSplitSerializer,)
 from .utils import get_file_content
@@ -840,3 +841,48 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', 'POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def star_challenge(request, challenge_pk):
+    """
+    API endpoint for starring and unstarring
+    a challenge.
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if request.method == 'POST':
+        try:
+            starred_challenge = StarChallenge.objects.get(user=request.user,
+                                                          challenge=challenge)
+            starred_challenge.is_starred = not starred_challenge.is_starred
+            starred_challenge.save()
+            serializer = StarChallengeSerializer(starred_challenge)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        except:
+            serializer = StarChallengeSerializer(data=request.data, context={'request': request,
+                                                                             'challenge': challenge,
+                                                                             'is_starred': True})
+            if serializer.is_valid():
+                serializer.save()
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'GET':
+        try:
+            starred_challenge = StarChallenge.objects.get(user=request.user,
+                                                          challenge=challenge)
+            serializer = StarChallengeSerializer(starred_challenge)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        except:
+            starred_challenge = StarChallenge.objects.filter(challenge=challenge)
+            serializer = StarChallengeSerializer(starred_challenge, many=True)
+            response_data = {'is_starred': False,
+                             'count': serializer.data[0]['count']}
+            return Response(response_data, status=status.HTTP_200_OK)

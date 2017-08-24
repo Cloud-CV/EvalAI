@@ -104,3 +104,11 @@ class TestChallengeUrls(BaseAPITestClass):
                          .format(self.challenge.pk, self.challenge_phase.pk, self.file_type))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'challenges:download_all_submissions')
+
+        self.url = reverse_lazy('challenges:star_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.assertEqual(self.url,
+                         '/api/challenges/{}/'
+                         .format(self.challenge.pk))
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.view_name, 'challenges:star_challenge')
