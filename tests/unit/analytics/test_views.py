@@ -368,7 +368,8 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
                                         'challenge_phase_pk': self.challenge_phase.pk,
                                         'submission_by': 'user'})
         expected = {
-            'last_submission_datetime': "{0}{1}".format(self.submission.created_at.isoformat(), 'Z').replace("+00:00", "")
+            'last_submission_datetime': "{0}{1}".format(self.submission.created_at.isoformat(), 'Z')
+                                        .replace("+00:00", "")
             }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
