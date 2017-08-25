@@ -16,8 +16,8 @@ from accounts.permissions import HasVerifiedEmail
 from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
 from jobs.models import Submission
-from jobs.serializers import (LastSubmissionTime,
-                              LastSubmissionTimeSerializer,
+from jobs.serializers import (LastSubmissionDateTime,
+                              LastSubmissionDateTimeSerializer,
                               SubmissionCount,
                               SubmissionCountSerializer,
                               )
@@ -27,7 +27,7 @@ from participants.serializers import (ParticipantCount,
                                       ParticipantTeamCount,
                                       ParticipantTeamCountSerializer,
                                       )
-from .serializers import ChallengePhaseSubmissionAnalysisSerializer
+from .serializers import ChallengePhaseSubmissionAnalysisSerializer, LastSubmissionDateTimeAnalysisSerializer
 
 
 @throttle_classes([UserRateThrottle])
@@ -134,10 +134,36 @@ def get_last_submission_time(request, challenge_pk, challenge_phase_pk, submissi
                                                       challenge_phase=challenge_phase,
                                                       challenge_phase__challenge=challenge)
         last_submitted_at = last_submitted_at.order_by('-submitted_at')[0].created_at
-        last_submitted_at = LastSubmissionTime(last_submitted_at)
-        serializer = LastSubmissionTimeSerializer(last_submitted_at)
+        last_submitted_at = LastSubmissionDateTime(last_submitted_at)
+        serializer = LastSubmissionDateTimeSerializer(last_submitted_at)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     else:
         response_data = {'error': 'Page not found!'}
-        return Response(response_data, status=status.HTTP_400_NOT_FOUND)
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase_pk):
+    """
+    API to fetch
+    1. To get the last submission time in a challenge phase.
+    2. To get the last submission time in a challenge.
+    3. To get the last submission time by a participant team in a challenge phase.
+    """
+
+    challenge = get_challenge_model(challenge_pk)
+
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    submissions = Submission.objects.filter(challenge_phase__challenge=challenge,
+                                            challenge_phase=challenge_phase)
+    try:
+        serializer = LastSubmissionDateTimeAnalysisSerializer(submissions, many=True)
+        response_data = serializer.data[0]
+        return Response(response_data, status=status.HTTP_200_OK)
+    except:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
