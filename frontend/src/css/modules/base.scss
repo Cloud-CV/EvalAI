@@ -72,6 +72,23 @@ input.dark-autofill:-webkit-autofill:active {
     -webkit-text-fill-color: #4d4d4d !important;
 }
 
+input[type="radio"].selectTeam + label {
+    font-size: 15px;
+    color: $med-black;
+    vertical-align: middle;
+}
+
+[type="radio"]:checked + label:after,
+[type="radio"].with-gap:checked + label:after {
+    background-color: #252833;
+}
+
+[type="radio"]:checked + label:after,
+[type="radio"].with-gap:checked + label:before,
+[type="radio"].with-gap:checked + label:after {
+    border: 2px solid #252833;
+}
+
 body,
 html {
     font-family: 'mons-reg';
@@ -80,6 +97,11 @@ html {
 a {
     color: $med-gray;
 }
+
+p.no-top-para {
+    margin-top: 2px;
+}
+
 
 /*scrollbar customization*/
 
@@ -112,8 +134,16 @@ a {
     font-size: 14px;
 }
 
+.fs-16 {
+    font-size: 14px;
+}
+
 .fs-18 {
     font-size: 18px;
+}
+
+.fs-20 {
+    font-size: 20px;
 }
 
 .pointer {
@@ -319,7 +349,7 @@ nav {
     height: auto;
     border-radius: 4px;
     overflow: hidden;
-    box-shadow: 0px 0px 12px #d6dbf1;
+    box-shadow: 0px 0px 12px $shadow-black;
 }
 
 .ev-card-content {
@@ -367,7 +397,7 @@ nav {
 }
 
 .ev-card-hover:hover {
-    box-shadow: 0px 0px 4px #d6dbf1;
+    box-shadow: 0px 0px 4px $shadow-black;
     .btn-card-detail {
         background: $highlight;
         color: #fff;
@@ -396,23 +426,23 @@ nav {
 }
 
 .ev-z-depth-5 {
-    box-shadow: 0px 0px 10px #d6dbf1;
+    box-shadow: 0px 0px 10px $shadow-black;
 }
 
 .ev-z-depth-4 {
-    box-shadow: 0px 0px 8px #d6dbf1;
+    box-shadow: 0px 0px 8px $shadow-black;
 }
 
 .ev-z-depth-3 {
-    box-shadow: 0px 0px 6px #d6dbf1;
+    box-shadow: 0px 0px 6px $shadow-black;
 }
 
 .ev-z-depth-2 {
-    box-shadow: 0px 0px 4px #d6dbf1;
+    box-shadow: 0px 0px 4px $shadow-black;
 }
 
 .ev-z-depth-1 {
-    box-shadow: 0px 0px 2px #d6dbf1;
+    box-shadow: 0px 0px 2px $shadow-black;
 }
 
 .ev-view {
@@ -422,6 +452,10 @@ nav {
 
 .btn {
     text-transform: none;
+    font-family: 'mons-lig';
+    i {
+        font-size: 14px;
+    }
 }
 
 .fade {
@@ -769,6 +803,14 @@ input {
     input:checked+.info-text {
         display: block;
     }
+}
+
+.short-hr-line {
+    display: inline-block;
+    width: 100px;
+    height: 1px;
+    background-color: $highlight;
+    margin: 7px 0px;
 }
 
 
