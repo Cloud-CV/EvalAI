@@ -307,7 +307,7 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         expected = {
                 "submissions_count_for_challenge_phase": 1,
                 "participated_teams_count_for_challenge_phase": 1,
-                "total_submissions_by_participant_team_in_challenge_phase": 1
+                "challenge_phase": self.challenge_phase.pk
             }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -442,16 +442,14 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
         expected = {
             'last_submission_timestamp_in_challenge_phase': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),
             'last_submission_timestamp_in_challenge': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),
-            'last_submission_timestamp_by_participant_team_in_challenge_phase': "{0}{1}".format(datetime, 'Z')
-                                                                                .replace("+00:00", ""),
+            'challenge_phase': self.challenge_phase.pk
             }
         response = self.client.get(self.url, {})
         datetime = response.data['last_submission_timestamp_in_challenge_phase'].isoformat()
         response_data = {
             'last_submission_timestamp_in_challenge_phase': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),
             'last_submission_timestamp_in_challenge': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),
-            'last_submission_timestamp_by_participant_team_in_challenge_phase': "{0}{1}".format(datetime, 'Z')
-                                                                                .replace("+00:00", ""),
+            'challenge_phase': self.challenge_phase.pk
         }
         self.assertEqual(response_data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
