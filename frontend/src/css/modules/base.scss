@@ -821,6 +821,9 @@ input {
     margin-top: 12px;
 }
 
+.rm-mt {
+    margin-top: 0px;
+}
 /*flex prop*/
 
 .flex-body {
@@ -852,4 +855,8 @@ input {
     h4{
         font-size:1.8em;
     }
+}
+
+.mb-5 {
+    margin-bottom: 5px;
 }
