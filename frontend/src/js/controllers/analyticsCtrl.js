@@ -5,11 +5,11 @@
 
     angular
         .module('evalai')
-        .controller('AnalyticsCtrl', DashCtrl);
+        .controller('AnalyticsCtrl', AnalyticsCtrl);
 
-    DashCtrl.$inject = ['utilities', '$state', '$rootScope'];
+    AnalyticsCtrl.$inject = ['utilities', '$state', '$rootScope'];
 
-    function DashCtrl(utilities, $state, $rootScope) {
+    function AnalyticsCtrl(utilities, $state, $rootScope) {
         var vm = this;
 
         vm.hostTeam = {};
