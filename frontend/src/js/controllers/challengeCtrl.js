@@ -465,6 +465,23 @@
                 }
             }
 
+            parameters = {};
+            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/"+ vm.phaseId + "/count";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    vm.submissionCount = details.submissions_count_for_challenge_phase;
+                },
+                onError: function(response){
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
+
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
@@ -779,7 +796,6 @@
             };
 
             utilities.sendRequest(parameters);
-
         };
 
         vm.getAllSubmissionResults = function(phaseId) {
