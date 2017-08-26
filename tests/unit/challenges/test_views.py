@@ -60,6 +60,7 @@ class BaseAPITestClass(APITestCase):
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
         )
 
         self.challenge_host = ChallengeHost.objects.create(
@@ -808,6 +809,21 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             status=ChallengeHost.ACCEPTED,
             permissions=ChallengeHost.ADMIN)
 
+        self.challenge = Challenge.objects.create(
+            title='Test Challenge',
+            short_description='Short description for test challenge',
+            description='Description for test challenge',
+            terms_and_conditions='Terms and conditions for test challenge',
+            submission_guidelines='Submission guidelines for test challenge',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=True,
+        )
+
         self.challenge2 = Challenge.objects.create(
             title='Some Test Challenge',
             short_description='Short description for some test challenge',
@@ -815,11 +831,12 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             terms_and_conditions='Terms and conditions for some test challenge',
             submission_guidelines='Submission guidelines for some test challenge',
             creator=self.challenge_host_team2,
-            published=False,
+            published=True,
             enable_forum=True,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=True,
         )
 
         self.participant_team2 = ParticipantTeam.objects.create(
