@@ -35,6 +35,10 @@ a.active-auth {
     margin-top: 5px;
 }
 
+img.auth-logo{
+    width:90px;
+}
+
 .graphic-cont,
 .auth-cont {
     display: inline-block;
@@ -192,5 +196,19 @@ a.active-auth {
         transform: rotate(0deg);
         top: 20%;
         left: 20%;
+    }
+}
+
+/*media queries*/
+
+@media only screen and (max-width: $med-screen) {
+    .graphic-cont{
+        position: absolute;
+        width: 100%;
+        opacity: 0.4;
+    }
+    .auth-cont{
+        width: 100%;
+        background-color: rgba(255,255,255,0.9);
     }
 }
