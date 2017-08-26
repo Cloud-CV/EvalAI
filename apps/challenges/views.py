@@ -248,7 +248,7 @@ def get_challenge_by_pk(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenges_based_on_teams(request):
-    q_params = {}
+    q_params = {'approved_by_admin': True, 'published': True}
     participant_team_id = request.query_params.get('participant_team', None)
     challenge_host_team_id = request.query_params.get('host_team', None)
     mode = request.query_params.get('mode', None)
