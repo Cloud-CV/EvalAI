@@ -7,7 +7,8 @@ from .models import (Challenge,
                      ChallengePhase,
                      ChallengePhaseSplit,
                      DatasetSplit,
-                     Leaderboard,)
+                     Leaderboard,
+                     StarChallenge)
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
@@ -151,3 +152,30 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
                   'is_public', 'is_active', 'codename', 'test_annotation')
+
+
+class StarChallengeSerializer(serializers.ModelSerializer):
+
+    count = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super(StarChallengeSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get('context')
+        if context:
+            challenge = context.get('challenge')
+            if challenge:
+                kwargs['data']['challenge'] = challenge.pk
+            request = context.get('request')
+            if request:
+                kwargs['data']['user'] = request.user.pk
+            starred = context.get('is_starred')
+            if starred:
+                kwargs['data']['is_starred'] = starred
+
+    class Meta:
+        model = StarChallenge
+        fields = ('user', 'challenge', 'count', 'is_starred')
+
+    def get_count(self, obj):
+        count = StarChallenge.objects.filter(challenge=obj.challenge, is_starred=True).count()
+        return count

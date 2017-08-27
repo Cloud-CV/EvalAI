@@ -21,7 +21,8 @@ from challenges.models import (Challenge,
                                ChallengePhase,
                                ChallengePhaseSplit,
                                DatasetSplit,
-                               Leaderboard,)
+                               Leaderboard,
+                               StarChallenge)
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
@@ -59,6 +60,7 @@ class BaseAPITestClass(APITestCase):
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
         )
 
         self.challenge_host = ChallengeHost.objects.create(
@@ -815,6 +817,21 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             status=ChallengeHost.ACCEPTED,
             permissions=ChallengeHost.ADMIN)
 
+        self.challenge = Challenge.objects.create(
+            title='Test Challenge',
+            short_description='Short description for test challenge',
+            description='Description for test challenge',
+            terms_and_conditions='Terms and conditions for test challenge',
+            submission_guidelines='Submission guidelines for test challenge',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=True,
+        )
+
         self.challenge2 = Challenge.objects.create(
             title='Some Test Challenge',
             short_description='Short description for some test challenge',
@@ -822,11 +839,12 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             terms_and_conditions='Terms and conditions for some test challenge',
             submission_guidelines='Submission guidelines for some test challenge',
             creator=self.challenge_host_team2,
-            published=False,
+            published=True,
             enable_forum=True,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=True,
         )
 
         self.participant_team2 = ParticipantTeam.objects.create(
@@ -1395,7 +1413,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         ]
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_challenge_phase_split_when_challenge_phase_does_not_exist(self):
@@ -2129,3 +2147,89 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         del self.data['leaderboard']
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class StarChallengesTest(BaseAPITestClass):
+    def setUp(self):
+        super(StarChallengesTest, self).setUp()
+        self.url = reverse_lazy('challenges:star_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.user2 = User.objects.create(
+            username='someuser2',
+            email="user2@test.com",
+            password='secret_password')
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email='user2@test.com',
+            primary=True,
+            verified=True)
+
+        self.star_challenge = StarChallenge.objects.create(user=self.user,
+                                                           challenge=self.challenge,
+                                                           is_starred=True)
+        self.client.force_authenticate(user=self.user)
+
+    def test_star_challenge_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('challenges:star_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk+10})
+
+        expected = {
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_challenge_when_user_has_starred(self):
+        self.url = reverse_lazy('challenges:star_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        expected = {
+            'user': self.user.pk,
+            'challenge': self.challenge.pk,
+            'count': 1,
+            'is_starred': True,
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_when_user_hasnt_starred(self):
+        self.url = reverse_lazy('challenges:star_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.client.force_authenticate(user=self.user2)
+        expected = {
+            'is_starred': False,
+            'count': 1,
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_unstar_challenge(self):
+        self.url = reverse_lazy('challenges:star_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.star_challenge.is_starred = False
+        expected = {
+            'user': self.user.pk,
+            'challenge': self.challenge.pk,
+            'count': 0,
+            'is_starred': self.star_challenge.is_starred,
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_star_challenge(self):
+        self.url = reverse_lazy('challenges:star_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.star_challenge.delete()
+        expected = {
+            'user': self.user.pk,
+            'challenge': self.challenge.pk,
+            'count': 1,
+            'is_starred': True,
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

@@ -47,4 +47,7 @@ urlpatterns = [
         views.create_challenge_phase_split, name='create_challenge_phase_split'),
     url(r'challenge/create/challenge_phase_split/(?P<challenge_phase_split_pk>[0-9]+)/$',
         views.get_or_update_challenge_phase_split, name='get_or_update_challenge_phase_split'),
+    url(r'(?P<challenge_pk>[0-9]+)/$',
+        views.star_challenge,
+        name='star_challenge'),
 ]
