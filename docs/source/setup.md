@@ -243,8 +243,12 @@ Possible solutions for the same problem can be found at [link]
 * Install rabbitmq from https://www.rabbitmq.com/install-windows.html
 Also install supported version of Erlang for windows given in the above link
 
+* Install python v2.7 from https://www.python.org/downloads/
+
 * Install virtualenv
+
 ```shell
+cd evalai
 pip install virtualenv
 ```
 ### Step 2: Get EvalAI code
