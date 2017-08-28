@@ -263,6 +263,20 @@ instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 ```shell
 git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 ```
+#### For non SSH users
+
+Create a folder where you want to clone the forked repository.
+```
+mkdir DIRECTORY
+cd DIRECTORY
+git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
+git init
+git remote add origin git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git
+```
+You can push the changes to your forked repository by following command which requires your github credentials.
+```
+git push origin master
+```
 
 ### Step 3: Setup code base
 
@@ -305,6 +319,12 @@ python manage.py runserver --settings=settings.dev
 
 ```
 gulp dev:runserver
+```
+
+* If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:
+
+```
+python scripts/workers/submission_worker.py
 ```
 
 ### Common Errors
