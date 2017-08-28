@@ -231,3 +231,82 @@ Possible solutions for the same problem can be found at [link]
 [link]: http://stackoverflow.com/a/28938258/2534102
 [backend]: http://127.0.0.1:8000
 [frontend]: http://127.0.0.1:8888
+
+## Windows Installation Instructions
+
+### Step 1: Install prerequisites
+
+* Install git from https://git-scm.com/downloads
+
+* Install postgres from https://www.postgresql.org/download/windows/
+
+* Install rabbitmq from https://www.rabbitmq.com/install-windows.html
+Also install supported version of Erlang for windows given in the above link
+
+* Install virtualenv
+```shell
+pip install virtualenv
+```
+### Step 2: Get EvalAI code
+
+If you haven't already created an ssh key and added it to your GitHub account,
+you should do that now by following [these
+instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
+
+* In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You will need to be logged in to GitHub to do this.
+
+* Open Terminal and clone your fork by
+
+```shell
+git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
+```
+
+### Step 3: Setup code base
+
+* Create a python virtual environment and install python dependencies.
+```shell
+cd evalai
+virtualenv venv
+venv\Scripts\activate
+pip install -r requirements/dev.txt
+```
+
+* Rename `settings/dev.sample.py` as `dev.py`
+
+* Create an empty postgres database and run database migration.
+```
+createdb evalai
+# run migrations
+python manage.py migrate --settings=settings.dev
+```
+
+* For setting up frontend
+Download and install node(6.9.2) from https://nodejs.org/en/download/releases/
+```shell
+npm install
+npm install -g bower
+npm install -g gulp
+```
+
+### Step 4: Start the development environment
+
+* To run backend development server at [backend]
+
+```
+# activate virtual environment if not activated
+venv\Scripts\activate
+python manage.py runserver --settings=settings.dev
+```
+
+* To run frontend development server for at [frontend]
+
+```
+gulp dev:runserver
+```
+
+### Common Errors
+
+#### Error:createdb is not recognized
+Possible solutions related to postgres can be found [here]
+
+[here]: http://bobbyong.com/blog/installing-postgresql-on-windoes/
