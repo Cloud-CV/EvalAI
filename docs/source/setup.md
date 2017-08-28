@@ -248,7 +248,6 @@ Also install supported version of Erlang for windows given in the above link
 * Install virtualenv
 
 ```shell
-cd evalai
 pip install virtualenv
 ```
 ### Step 2: Get EvalAI code
