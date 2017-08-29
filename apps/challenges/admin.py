@@ -8,7 +8,8 @@ from .models import (Challenge,
                      ChallengePhaseSplit,
                      DatasetSplit,
                      Leaderboard,
-                     LeaderboardData,)
+                     LeaderboardData,
+                     StarChallenge,)
 
 
 @admin.register(Challenge)
@@ -56,4 +57,10 @@ class LeaderboardDataAdmin(ImportExportTimeStampedAdmin):
 class ChallengeConfigurationAdmin(ImportExportTimeStampedAdmin):
     list_display = ('user', 'challenge', 'is_created', 'zip_configuration',)
     list_filter = ('user', 'is_created',)
+    search_fields = ('user', 'challenge',)
+
+
+@admin.register(StarChallenge)
+class StarChallengeAdmin(ImportExportTimeStampedAdmin):
+    list_display = ('user', 'challenge', 'is_starred')
     search_fields = ('user', 'challenge',)

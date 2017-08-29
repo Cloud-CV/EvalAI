@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'configService', 'stringToTemplate', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
+    ChallengeCtrl.$inject = ['utilities', 'configService', 'stringToTemplate', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog'];
 
-    function ChallengeCtrl(utilities, configService, stringToTemplate, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
+    function ChallengeCtrl(utilities, configService, stringToTemplate, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog) {
         var vm = this;
         var BackendEndpoints = configService.BackendEndpoints;
         vm.challengeId = $stateParams.challengeId;
@@ -477,6 +477,23 @@
                 }
             }
 
+            parameters = {};
+            parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/"+ vm.phaseId + "/count";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    vm.submissionCount = details.submissions_count_for_challenge_phase;
+                },
+                onError: function(response){
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
+
             // loader for exisiting teams
             vm.isExistLoader = true;
             vm.loaderTitle = '';
@@ -797,7 +814,6 @@
             };
 
             utilities.sendRequest(parameters);
-
         };
 
         vm.getAllSubmissionResults = function(phaseId) {
@@ -970,7 +986,7 @@
                                     vm.remainingSeconds--;
                                 }
                             };
-                            $interval(function() {
+                            setInterval(function() {
                                 $rootScope.$apply(vm.countDownTimer);
                                 }, 1000);
                                 vm.countDownTimer();
@@ -988,26 +1004,129 @@
         vm.fileTypes = [{'name': 'csv'}];
 
         vm.downloadChallengeSubmissions = function() {
+            if(vm.phaseId) {
+                var parameters = {};
+                var phase_id = vm.phaseId;
+                var fileSelected = vm.fileSelected;
+                var url = stringToTemplate.convert(challenge.CHALLENGE.DOWNLOAD_ALL_SUBMISSIONS_ENDPOINT, {challenge_id: challenge_id});
+                var phaseurl = stringToTemplate.convert(url,{ phase_id: phase_id});
+                parameters.url = stringToTemplate.convert(phaseurl,{fileSelected: fileSelected});
+                parameters.method = "GET";
+                parameters.token = userKey;
+
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        var anchor = angular.element('<a/>');
+                        anchor.attr({
+                        href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                        download: 'all_submissions.csv'
+                        })[0].click();
+                    },
+                    onError: function(response) {
+                        var details = response.data;
+                        $rootScope.notify('error', details.error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+        }else {
+            $rootScope.notify("error", "Please select a challenge phase!");
+        }
+        };
+
+        vm.showMdDialog = function(ev, submissionId) {
+            for (var i=0;i<vm.submissionResult.count;i++){
+                if (vm.submissionResult.results[i].id === submissionId) {
+                    vm.submissionMetaData = vm.submissionResult.results[i];
+                    break;
+                }
+            }
+            vm.method_name = vm.submissionMetaData.method_name;
+            vm.method_description = vm.submissionMetaData.method_description;
+            vm.project_url = vm.submissionMetaData.project_url;
+            vm.publication_url = vm.submissionMetaData.publication_url;
+            vm.submissionId = submissionId;
+
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/update-submission-metadata.html'
+            });
+        };
+
+        vm.updateSubmissionMetaData = function(updateSubmissionMetaDataForm) {
+            if(updateSubmissionMetaDataForm){
+                var parameters = {};
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + vm.submissionId;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "method_name": vm.method_name,
+                    "method_description": vm.method_description,
+                    "project_url": vm.project_url,
+                    "publication_url": vm.publication_url
+                };
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200){
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The data is successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            }
+        };
+
+        // Get the stars count and user specific starred or unstarred
+        parameters = {};
+        parameters.url = "challenges/"+ vm.challengeId + "/";
+        parameters.method = 'GET';
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function(response) {
+                var details = response.data;
+                vm.count = details['count'] || 0;
+                vm.is_starred = details['is_starred'];
+                if (details['is_starred'] === false){
+                    vm.data = 'Star';
+                }
+                else{
+                    vm.data = 'Unstar';
+                }
+            },
+            onError: function() {}
+        };
+        utilities.sendRequest(parameters);
+
+        vm.starChallenge = function() {
             var parameters = {};
-            var phase_id = vm.phaseId;
-            var fileSelected = vm.fileSelected;
-            var url = stringToTemplate.convert(challenge.CHALLENGE.DOWNLOAD_ALL_SUBMISSIONS_ENDPOINT, {challenge_id: challenge_id});
-            var phaseurl = stringToTemplate.convert(url,{ phase_id: phase_id});
-            parameters.url = stringToTemplate.convert(phaseurl,{fileSelected: fileSelected});
-            parameters.method = "GET";
+            parameters.url = "challenges/"+ vm.challengeId + "/";
+            parameters.method = 'POST';
+            parameters.data = {};
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    var anchor = angular.element('<a/>');
-                    anchor.attr({
-                    href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                    download: 'all_submissions.csv'
-                    })[0].click();
+                    vm.count = details['count'];
+                    vm.is_starred = details['is_starred'];
+                    if (details.is_starred === true) {
+                        vm.data = 'Unstar';
+                    } else{
+                        vm.data = 'Star';
+                    }
                 },
                 onError: function(response) {
-                    var details = response.data;
-                    $rootScope.notify('error', details.error);
+                    var error = response.data;
+                    $rootScope.notify("error", error);
                 }
             };
             utilities.sendRequest(parameters);
