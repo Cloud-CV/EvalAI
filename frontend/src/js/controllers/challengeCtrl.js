@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'configService', 'loaderService', 'stringToTemplate', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
+    ChallengeCtrl.$inject = ['utilities', 'configService', 'stringToTemplate', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval'];
 
-    function ChallengeCtrl(utilities, configService, loaderService, stringToTemplate, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
+    function ChallengeCtrl(utilities, configService, stringToTemplate, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval) {
         var vm = this;
         var BackendEndpoints = configService.BackendEndpoints;
         vm.challengeId = $stateParams.challengeId;
@@ -55,7 +55,7 @@
 
         var parameters = {};
         var challenge_id = vm.challengeId;
-        parameters.url = stringToTemplate(challenge.CHALLENGE_ENDPOINT,{challenge_id: challenge_id});
+        parameters.url = stringToTemplate.convert(challenge.CHALLENGE_ENDPOINT,{challenge_id: challenge_id});
         parameters.method = 'GET';
         parameters.data = {};
         parameters.token = userKey;
@@ -275,7 +275,7 @@
                     var parameters = {};
                     var phase_id = vm.phaseId;
                     var challenge_url = stringToTemplate.convert(challenge.CHALLENGE.MAKE_SUBMISSION.JOBS_CHALLENGE_ENDPOINT, {challenge_id: challenge_id});
-                    parameters.url = stringToTemplate(challenge_url, {phase_id: phase_id});
+                    parameters.url = stringToTemplate.convert(challenge_url, {phase_id: phase_id});
 
                     var formData = new FormData();
                     formData.append("status", "submitting");
@@ -489,7 +489,6 @@
             vm.isPrev = '';
             vm.currentPage = '';
             vm.showPagination = false;
-            // jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/
             var parameters = {};
             var challenge_id =  vm.challengeId;
             var phase_id = vm.phaseId;
@@ -824,7 +823,6 @@
             var parameters = {};
             var challenge_id = vm.challengeId;
             var phase_id = vm.phaseId;
-            //  "challenges/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submissions";
             var url = stringToTemplate.convert(challenge.CHALLENGE.FETCHING_SUBMISSION.GET_SUBMISSIONS_RESULT,{challenge_id:challenge_id});
             parameters.url = stringToTemplate.convert(url, {phase_id:phase_id});
             parameters.data = {};

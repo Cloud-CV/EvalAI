@@ -1,7 +1,3 @@
-/**
- * Created by aayusharora on 8/19/17.
- */
-
 
 angular
     .module('evalai')
@@ -20,7 +16,6 @@ function stringToTemplate() {
         let template = this.convertString(endpoint, key);
 
         let url  = template(value);
-        console.log(url);
         return url;
     };
 

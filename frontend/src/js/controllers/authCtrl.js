@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', 'configService','$state', '$rootScope', 'stringToTemplate'];
+    AuthCtrl.$inject = ['utilities', 'configService', 'stringToTemplate', '$state', '$rootScope'];
 
-    function AuthCtrl(utilities, configService, $state, $rootScope, stringToTemplate) {
+    function AuthCtrl(utilities, configService, stringToTemplate, $state, $rootScope) {
 
         var vm = this;
         var BackendEndpoints = configService.BackendEndpoints;

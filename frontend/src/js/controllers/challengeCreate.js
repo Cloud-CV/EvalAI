@@ -14,7 +14,6 @@
         var BackendEndpoints = configService.BackendEndpoints;
         var userKey = utilities.getData('userKey');
         var hostTeamId = utilities.getData('challengeHostTeamId');
-        console.log(hostTeamId);
         vm.wrnMsg = {};
         vm.isValid = {};
         vm.isFormError = false;
