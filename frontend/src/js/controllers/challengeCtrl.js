@@ -31,6 +31,7 @@
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
         vm.isChallengeHost = false;
+        var challenge_id =  vm.challengeId;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
 
