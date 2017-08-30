@@ -54,7 +54,6 @@
         // get details of the particular challenge
 
         var parameters = {};
-        var challenge_id = vm.challengeId;
         parameters.url = stringToTemplate.convert(challenge.CHALLENGE_ENDPOINT,{challenge_id: challenge_id});
         parameters.method = 'GET';
         parameters.data = {};
@@ -367,7 +366,6 @@
 
         // get details of the particular challenge phase split
         parameters = {};
-        var challenge_id =  vm.challengeId;
         parameters.url = stringToTemplate.convert(challenge.SEND_REQUEST.CHALLENGES_ENDPOINT,{challenge_id:challenge_id});
         parameters.method = 'GET';
         parameters.data = {};
@@ -507,7 +505,6 @@
             vm.currentPage = '';
             vm.showPagination = false;
             var parameters = {};
-            var challenge_id =  vm.challengeId;
             var phase_id = vm.phaseId;
             var url = stringToTemplate.convert(challenge.CHALLENGE.MAKE_SUBMISSION.JOBS_CHALLENGE_ENDPOINT, {challenge_id: challenge_id});
             parameters.url = stringToTemplate.convert(url,{phase_id: phase_id});
@@ -837,7 +834,6 @@
             vm.showPagination = false;
 
             var parameters = {};
-            var challenge_id = vm.challengeId;
             var phase_id = vm.phaseId;
             var url = stringToTemplate.convert(challenge.CHALLENGE.FETCHING_SUBMISSION.GET_SUBMISSIONS_RESULT,{challenge_id:challenge_id});
             parameters.url = stringToTemplate.convert(url, {phase_id:phase_id});
@@ -925,7 +921,6 @@
 
         vm.changeSubmissionVisibility = function(submission_id) {
             var parameters = {};
-            var challenge_id = vm.challengeId;
             var phase_id = vm.phaseId;
             // parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
 
