@@ -359,7 +359,8 @@ a.view-more {
     text-align: center;
 
     img{
-        height: 100%;   
+        height: 75%;
+        width: auto;
         transition:all 0.2s ease-in-out;
     }
     &:hover{

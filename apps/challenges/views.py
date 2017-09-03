@@ -36,7 +36,7 @@ from participants.utils import (get_participant_teams_for_user,
                                 has_user_participated_in_challenge,
                                 get_participant_team_id_of_user_for_a_challenge,)
 
-from .models import Challenge, ChallengePhase, ChallengePhaseSplit, ChallengeConfiguration
+from .models import Challenge, ChallengePhase, ChallengePhaseSplit, ChallengeConfiguration, StarChallenge
 from .permissions import IsChallengeCreator
 from .serializers import (ChallengeConfigSerializer,
                           ChallengePhaseSerializer,
@@ -45,6 +45,7 @@ from .serializers import (ChallengeConfigSerializer,
                           ChallengeSerializer,
                           DatasetSplitSerializer,
                           LeaderboardSerializer,
+                          StarChallengeSerializer,
                           ZipChallengeSerializer,
                           ZipChallengePhaseSplitSerializer,)
 from .utils import get_file_content
@@ -247,7 +248,7 @@ def get_challenge_by_pk(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenges_based_on_teams(request):
-    q_params = {}
+    q_params = {'approved_by_admin': True, 'published': True}
     participant_team_id = request.query_params.get('participant_team', None)
     challenge_host_team_id = request.query_params.get('host_team', None)
     mode = request.query_params.get('mode', None)
@@ -366,10 +367,9 @@ def challenge_phase_split_list(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     challenge_phase_split = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
-    paginator, result_page = paginated_queryset(challenge_phase_split, request)
-    serializer = ChallengePhaseSplitSerializer(result_page, many=True)
+    serializer = ChallengePhaseSplitSerializer(challenge_phase_split, many=True)
     response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @throttle_classes([UserRateThrottle])
@@ -497,8 +497,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if not isfile(test_annotation_file_path):
             response_data = {
                 'error': ('No test annotation file is present in the zip file'
-                          'for challenge phase {} Please try uploading'
-                          'again the zip file after adding test annotation file!'.format(data['name']))
+                          'for challenge phase \'{}\'. Please try uploading '
+                          'again after adding test annotation file!'.format(data['name']))
             }
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -760,11 +760,14 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
     if file_type == 'csv':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(submissions, many=True, context={'request': request})
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
             writer = csv.writer(response)
             writer.writerow(['id',
                              'Team Name',
+                             'Team Members',
+                             'Team Members Email Id',
                              'Challenge Phase',
                              'Status',
                              'Created By',
@@ -777,20 +780,22 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                              'Submission Result File',
                              'Submission Metadata File',
                              ])
-            for submission in submissions:
-                writer.writerow([submission.id,
-                                 submission.participant_team,
-                                 submission.challenge_phase,
-                                 submission.status,
-                                 submission.created_by,
-                                 submission.execution_time,
-                                 submission.submission_number,
-                                 submission.input_file,
-                                 submission.stdout_file,
-                                 submission.stderr_file,
-                                 submission.created_at,
-                                 submission.submission_result_file,
-                                 submission.submission_metadata_file,
+            for submission in submissions.data:
+                writer.writerow([submission['id'],
+                                 submission['participant_team'],
+                                 ",".join(username['username'] for username in submission['participant_team_members']),
+                                 ",".join(email['email'] for email in submission['participant_team_members']),
+                                 submission['challenge_phase'],
+                                 submission['status'],
+                                 submission['created_by'],
+                                 submission['execution_time'],
+                                 submission['submission_number'],
+                                 submission['input_file'],
+                                 submission['stdout_file'],
+                                 submission['stderr_file'],
+                                 submission['created_at'],
+                                 submission['submission_result_file'],
+                                 submission['submission_metadata_file'],
                                  ])
             return response
 
@@ -803,7 +808,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             # Filter submissions on the basis of challenge phase for a participant.
             submissions = Submission.objects.filter(participant_team=participant_team_pk,
                                                     challenge_phase=challenge_phase).order_by('-submitted_at')
-
+            submissions = ChallengeSubmissionManagementSerializer(submissions, many=True, context={'request': request})
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
             writer = csv.writer(response)
@@ -817,16 +822,16 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                              'Stderr File',
                              'Submitted At',
                              ])
-            for submission in submissions:
-                writer.writerow([submission.participant_team,
-                                 submission.method_name,
-                                 submission.status,
-                                 submission.execution_time,
-                                 submission.input_file,
-                                 submission.submission_result_file,
-                                 submission.stdout_file,
-                                 submission.stderr_file,
-                                 submission.created_at,
+            for submission in submissions.data:
+                writer.writerow([submission['participant_team'],
+                                 submission['method_name'],
+                                 submission['status'],
+                                 submission['execution_time'],
+                                 submission['input_file'],
+                                 submission['submission_result_file'],
+                                 submission['stdout_file'],
+                                 submission['stderr_file'],
+                                 submission['created_at'],
                                  ])
             return response
         else:
@@ -835,3 +840,48 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', 'POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def star_challenge(request, challenge_pk):
+    """
+    API endpoint for starring and unstarring
+    a challenge.
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if request.method == 'POST':
+        try:
+            starred_challenge = StarChallenge.objects.get(user=request.user,
+                                                          challenge=challenge)
+            starred_challenge.is_starred = not starred_challenge.is_starred
+            starred_challenge.save()
+            serializer = StarChallengeSerializer(starred_challenge)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        except:
+            serializer = StarChallengeSerializer(data=request.data, context={'request': request,
+                                                                             'challenge': challenge,
+                                                                             'is_starred': True})
+            if serializer.is_valid():
+                serializer.save()
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'GET':
+        try:
+            starred_challenge = StarChallenge.objects.get(user=request.user,
+                                                          challenge=challenge)
+            serializer = StarChallengeSerializer(starred_challenge)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        except:
+            starred_challenge = StarChallenge.objects.filter(challenge=challenge)
+            serializer = StarChallengeSerializer(starred_challenge, many=True)
+            response_data = {'is_starred': False,
+                             'count': serializer.data[0]['count']}
+            return Response(response_data, status=status.HTTP_200_OK)

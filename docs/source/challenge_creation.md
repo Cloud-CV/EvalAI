@@ -184,6 +184,9 @@ challenge_phase_splits:
     visibility: 3
 
 ```
+### Challenge Creation Examples
+
+Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) to know how to create different types of challenges on EvalAI.
 
 ### Next Steps
 
