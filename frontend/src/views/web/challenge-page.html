@@ -6,13 +6,16 @@
                     <img src="{{challenge.page.image}}" width="100%">
                 </div>
             </div>
-            <div class="col m9 l10">
+            <div class="col m6 l7">
                 <div class="card-content">
                     <p><span class="fs-18"><strong>{{challenge.page.title}}</strong></span>
                         <br>
                         <span><strong class="text-light-black">Organized by:</strong> {{challenge.page.creator.team_name}} </span>
                     </p>
                 </div>
+            </div>
+            <div class="col m3 l3 align-right">
+                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.starChallenge()"><i class="fa fa-star star"></i> {{challenge.data}}&nbsp;&nbsp;{{challenge.count}}</button>
             </div>
         </div>
         <div class="row rm-row-bot">
