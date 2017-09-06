@@ -707,8 +707,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
-
-        submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
+        submissions = Submission.objects.filter(challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submissions, request)
         try:
             serializer = ChallengeSubmissionManagementSerializer(result_page, many=True, context={'request': request})
