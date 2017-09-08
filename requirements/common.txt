@@ -12,5 +12,8 @@ drfdocs==0.0.11
 psycopg2==2.6.2
 Pillow==3.4.2
 django-cors-headers==1.3.1
+pickleshare==0.7.4
 pika==0.10.0
+proc==0.10.1
 PyYaml==3.12
+rstr==2.2.5
