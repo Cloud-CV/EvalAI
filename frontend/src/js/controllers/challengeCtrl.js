@@ -1065,7 +1065,7 @@
                 if (details['is_starred'] === false){
                     vm.data = 'Star';
                 }
-                else {
+                else{
                     vm.data = 'Unstar';
                 }
             },
