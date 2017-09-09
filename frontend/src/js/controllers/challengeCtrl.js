@@ -1065,11 +1065,14 @@
                 if (details['is_starred'] === false){
                     vm.data = 'Star';
                 }
-                else{
+                else {
                     vm.data = 'Unstar';
                 }
             },
-            onError: function() {}
+            onError: function() {
+                vm.data = 'Star';
+                vm.count = 0;
+            }
         };
         utilities.sendRequest(parameters);
 
