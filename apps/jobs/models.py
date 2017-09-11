@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
+from cached_property import cached_property
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
@@ -19,11 +21,12 @@ from participants.models import ParticipantTeam
 
 logger = logging.getLogger(__name__)
 
-
 # submission.pk is not available when saving input_file
 # OutCome: `input_file` was saved for submission in folder named `submission_None`
 # why is the hack not done for `stdout_file` and `stderr_file`
 # Because they will be saved only after a submission instance is saved(pk will be available)
+
+
 @receiver(pre_save, sender='jobs.Submission')
 def skip_saving_file(sender, instance, **kwargs):
     if not instance.pk and not hasattr(instance, '_input_file'):
@@ -165,3 +168,33 @@ class Submission(TimeStampedModel):
 
         submission_instance = super(Submission, self).save(*args, **kwargs)
         return submission_instance
+
+    @cached_property
+    def submissions_count_for_challenge_phase(self):
+        # To get total submissions count on a challenge phase
+        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                     challenge_phase__challenge=self.challenge_phase.challenge).count()
+        return submission_count
+
+    @cached_property
+    def participated_teams_count_for_challenge_phase(self):
+        # To get total participant teams count on a challenge phase
+        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                     challenge_phase__challenge=self.challenge_phase.challenge)
+        submission_count = submission_count.values_list('participant_team', flat=True).distinct().count()
+        return submission_count
+
+    @cached_property
+    def last_submission_timestamp_in_challenge_phase(self):
+        # To get the last submission time in a challenge phase
+        last_submitted_timestamp = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                             challenge_phase__challenge=self.challenge_phase.challenge)
+        last_submitted_timestamp = last_submitted_timestamp.order_by('-submitted_at')[0].created_at
+        return last_submitted_timestamp
+
+    @cached_property
+    def last_submission_timestamp_in_challenge(self):
+        # To get the last submission time in a challenge
+        last_submitted_timestamp = Submission.objects.filter(challenge_phase__challenge=self.challenge_phase.challenge)
+        last_submitted_timestamp = last_submitted_timestamp.order_by('-submitted_at')[0].created_at
+        return last_submitted_timestamp
