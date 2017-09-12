@@ -1749,6 +1749,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 'submission_result_file': None,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
                 "is_public": self.submission.is_public,
+                "when_made_public": self.submission.when_made_public,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
