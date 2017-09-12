@@ -15,10 +15,6 @@ EvalAI is an open source web application that helps researchers, students and da
 
 In recent years, it has become increasingly difficult to compare an algorithm solving a given task with other existing approaches. These comparisons suffer from minor differences in algorithm implementation, use of non-standard dataset splits and different evaluation metrics. By providing a central leaderboard and submission interface, we make it easier for researchers to reproduce the results mentioned in the paper and perform reliable & accurate quantitative analysis. By providing swift and robust backends based on map-reduce frameworks that speed up evaluation on the fly, EvalAI aims to make it easier for researchers to reproduce results from technical papers and perform reliable and accurate analyses.
 
-## Wait, isn’t this just like Kaggle?
-
-### TL:DR
-
 <p align="center"><img width="65%" src="docs/source/\_static/img/kaggle_comparison.png" /></p>
 
 A question we’re often asked is: Doesn’t Kaggle already do this? The central differences are:
@@ -39,7 +35,7 @@ Our ultimate goal is to build a centralized platform to host, participate and co
 
 ## Performance comparison
 
-Some background: Last year, the (Visual Question Answering Challenge, 2016)[http://www.visualqa.org/vqa_v1_challenge.html] was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's (Visual Question Answering Challenge 2017)[https://evalai.cloudcv.org/featured-challenges/1/overview]. This year, the dataset for the (Visual Question Answering Challenge 2017)[http://www.visualqa.org/challenge.html] is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
+Some background: Last year, the [Visual Question Answering Challenge, 2016](http://www.visualqa.org/vqa_v1_challenge.html) was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's [Visual Question Answering Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview). This year, the dataset for the [Visual Question Answering Challenge 2017](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
 
 ## Installation Instructions
 
@@ -138,7 +134,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
 
 ## The Team
 
-EvalAI is currently maintained by (Deshraj Yadav)[https://deshraj.github.io], Akash Jain, Taranjeet Singh, Shiv Baran Singh and Rishabh Jain. A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
+EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io), Akash Jain, Taranjeet Singh, Shiv Baran Singh and Rishabh Jain. A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
 
 ## Contribution guidelines
 
