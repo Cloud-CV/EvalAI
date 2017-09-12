@@ -9,44 +9,6 @@
     display: none !important;
 }
 
-/*needed fonts*/
-
-@font-face {
-    font-family: "geo";
-    src: url("../fonts/Geometos.ttf");
-}
-
-@font-face {
-    font-family: "mons-lig";
-    src: url("../fonts/Montserrat-Light.ttf");
-}
-
-@font-face {
-    font-family: "mons-med";
-    src: url("../fonts/Montserrat-Medium.ttf");
-}
-
-@font-face {
-    font-family: "mons-reg";
-    src: url("../fonts/Montserrat-Regular.ttf");
-}
-
-.geo-font {
-    font-family: 'geo';
-}
-
-.mons-lig-font {
-    font-family: 'mons-lig';
-}
-
-.mons-med-font {
-    font-family: 'mons-med';
-}
-
-.mons-reg-font {
-    font-family: 'mons-reg';
-}
-
 .display-large {
     display: block;
 }
@@ -91,7 +53,7 @@ input[type="radio"].selectTeam + label {
 
 body,
 html {
-    font-family: 'mons-reg';
+    font-family: 'Roboto';
 }
 
 a {
@@ -452,7 +414,7 @@ nav {
 
 .btn {
     text-transform: none;
-    font-family: 'mons-lig';
+    font-family: 'Roboto';
     i {
         font-size: 14px;
     }

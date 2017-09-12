@@ -674,7 +674,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if zip_config:
             zip_config.challenge = challenge
             zip_config.save()
-            response_data = {'success': 'Challenge {} is successfully created'.format(challenge.pk)}
+            response_data = {'success': 'Challenge {} has been created successfully and'
+                                        ' sent for review to EvalAI Admin.'.format(challenge.title)}
             return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:
@@ -1029,6 +1030,11 @@ def star_challenge(request, challenge_pk):
             return Response(response_data, status=status.HTTP_200_OK)
         except:
             starred_challenge = StarChallenge.objects.filter(challenge=challenge)
+            if not starred_challenge:
+                response_data = {'is_starred': False,
+                                 'count': 0}
+                return Response(response_data, status=status.HTTP_200_OK)
+
             serializer = StarChallengeSerializer(starred_challenge, many=True)
             response_data = {'is_starred': False,
                              'count': serializer.data[0]['count']}
