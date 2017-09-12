@@ -882,6 +882,11 @@ def star_challenge(request, challenge_pk):
             return Response(response_data, status=status.HTTP_200_OK)
         except:
             starred_challenge = StarChallenge.objects.filter(challenge=challenge)
+            if not starred_challenge:
+                response_data = {'is_starred': False,
+                                 'count': 0}
+                return Response(response_data, status=status.HTTP_200_OK)
+
             serializer = StarChallengeSerializer(starred_challenge, many=True)
             response_data = {'is_starred': False,
                              'count': serializer.data[0]['count']}
