@@ -1931,6 +1931,21 @@ class StarChallengesTest(BaseAPITestClass):
             primary=True,
             verified=True)
 
+        self.challenge1 = Challenge.objects.create(
+            title='Test Challenge1',
+            short_description='Short description for test challenge1',
+            description='Description for test challenge1',
+            terms_and_conditions='Terms and conditions for test challenge1',
+            submission_guidelines='Submission guidelines for test challenge1',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+        )
+
         self.star_challenge = StarChallenge.objects.create(user=self.user,
                                                            challenge=self.challenge,
                                                            is_starred=True)
@@ -1967,6 +1982,17 @@ class StarChallengesTest(BaseAPITestClass):
         expected = {
             'is_starred': False,
             'count': 1,
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_when_no_user_has_starred_or_unstarred_it(self):
+        self.url = reverse_lazy('challenges:star_challenge',
+                                kwargs={'challenge_pk': self.challenge1.pk})
+        expected = {
+            'is_starred': False,
+            'count': 0,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
