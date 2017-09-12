@@ -218,7 +218,7 @@ gulp dev:runserver
 
 ### Common Errors
 
-#### Error: You need to install postgresql-server-dev-X.Y for building a server-side extension or libpq-dev for building a client-side application.
+__Error__: *You need to install postgresql-server-dev-X.Y for building a server-side extension or libpq-dev for building a client-side application.*
 
 __Solution__: Install libpq-dev
 
@@ -226,7 +226,23 @@ __Solution__: Install libpq-dev
 sudo apt-get install libpq-dev
 ```
 
-Possible solutions for the same problem can be found at [link]
+Possible solutions for the same problem can be found at [link].
+
+## Installation using Docker
+
+You can also use Docker Compose to run all the components of EvalAI together. The steps are:
+
+1. Get the source code on to your machine via git.
+
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    ```
+
+2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+
+    ```
+    docker-compose -f docker-compose.dev.yml up -d --build
+    ```
 
 [link]: http://stackoverflow.com/a/28938258/2534102
 [backend]: http://127.0.0.1:8000
