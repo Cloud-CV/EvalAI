@@ -238,7 +238,7 @@ Possible solutions for the same problem can be found at [link]
 
 * Install git from https://git-scm.com/downloads
 
-* Install postgres from https://www.postgresql.org/download/windows/
+* Install postgres version>=9.4 from https://www.postgresql.org/download/windows/
 
 * Install rabbitmq from https://www.rabbitmq.com/install-windows.html
 Also install supported version of Erlang for windows given in the above link
