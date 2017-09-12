@@ -658,7 +658,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if zip_config:
             zip_config.challenge = challenge
             zip_config.save()
-            response_data = {'success': 'Challenge {} is successfully created'.format(challenge.pk)}
+            response_data = {'success': 'Challenge {} has been created successfully and'
+                                        ' sent for review to EvalAI Admin.'.format(challenge.title)}
             return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:
