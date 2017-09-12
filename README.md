@@ -1,4 +1,6 @@
-# EvalAI
+<p align="center"><img width="65%" src="docs/source/\_static/img/evalai_logo.png" /></p>
+
+------------------------------------------------------------------------------------------
 
 [![Join the chat at https://gitter.im/Cloud-CV/EvalAI](https://badges.gitter.im/Cloud-CV/EvalAI.svg)](https://gitter.im/Cloud-CV/EvalAI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/Cloud-CV/EvalAI.svg?branch=master)](https://travis-ci.org/Cloud-CV/EvalAI)
@@ -6,6 +8,7 @@
 [![Requirements Status](https://requires.io/github/Cloud-CV/EvalAI/requirements.svg?branch=master)](https://requires.io/github/Cloud-CV/EvalAI/requirements/?branch=master)
 [![Code Health](https://landscape.io/github/Cloud-CV/EvalAI/master/landscape.svg?style=flat)](https://landscape.io/github/Cloud-CV/EvalAI/master)
 [![Code Climate](https://codeclimate.com/github/Cloud-CV/EvalAI/badges/gpa.svg)](https://codeclimate.com/github/Cloud-CV/EvalAI)
+[![Documentation Status](https://readthedocs.org/projects/markdown-guide/badge/?version=latest)](http://evalai.readthedocs.io/en/latest/)
 
 
 EvalAI is an open source web application that helps researchers, students and data-scientists to create, collaborate and participate in various AI challenges organized round the globe.
@@ -15,7 +18,7 @@ EvalAI is an open source web application that helps researchers, students and da
 Setting up EvalAI on your local machine is really easy.
 Follow this guide to setup your development machine.
 
-1. Install [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
+1. Install [python] 2.x, [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
@@ -49,16 +52,16 @@ Follow this guide to setup your development machine.
     ```
 
 6. Seed the database with some fake data to work with.
-    
+
     ```
     python manage.py seed --settings=settings.dev
     ```
     This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
-    
+
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
     **PARTICIPANT USER-** username: `participant` password: `password`    
-    
+
 7. That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
 
     ```
@@ -66,7 +69,7 @@ Follow this guide to setup your development machine.
     ```
 
 
-8. Open a new terminal window with node(6.9.2) and ruby(gem) install on your machine and type
+8. Open a new terminal window with node(6.9.2) and ruby(gem) installed on your machine and type
 
     ```
     npm install
@@ -74,7 +77,7 @@ Follow this guide to setup your development machine.
     ```
     If you running npm install behind a proxy server, use
     ```
-    npm config set proxy http://proxy:port 
+    npm config set proxy http://proxy:port
     ```
 9. Now to connect to dev server at [http://127.0.0.1:8888] (for serving frontend)
 
@@ -109,6 +112,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
 
 If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
 
+[python]: https://www.python.org/download/releases/2.7/
 [git]: https://git-scm.com/downloads
 [virtualenv]: https://virtualenv.pypa.io/
 [postgresql]: http://www.postgresql.org/download/

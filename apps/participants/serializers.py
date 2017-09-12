@@ -102,3 +102,21 @@ class ChallengeParticipantTeamList(object):
 class ChallengeParticipantTeamListSerializer(serializers.Serializer):
     """Serializer to map a challenge's participant team lists."""
     challenge_participant_team_list = ChallengeParticipantTeamSerializer(many=True)
+
+
+class ParticipantTeamCount(object):
+    def __init__(self, participant_team_count):
+        self.participant_team_count = participant_team_count
+
+
+class ParticipantTeamCountSerializer(serializers.Serializer):
+    participant_team_count = serializers.IntegerField()
+
+
+class ParticipantCount(object):
+    def __init__(self, participant_count):
+        self.participant_count = participant_count
+
+
+class ParticipantCountSerializer(serializers.Serializer):
+    participant_count = serializers.IntegerField()

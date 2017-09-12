@@ -14,6 +14,7 @@ $dust-gray: #1a1b1f;
 
 /*black shades*/
 
+$shadow-black: #dedede;
 $light-black: #9d9d9d;
 $med-black: #4d4d4d;
 $dark-black: #4d4d4d;
@@ -49,12 +50,17 @@ $loader-dot-color: #ffaf4b;
 
 $border-color-light: #e3e3e3;
 
-/*Screen Size Variable*/
+/*Screen Size Variables*/
 
 $med-screen: 992px;
+$small-screen: 600px;
 
 /*grad new variables*/
 
 $grad-super-light: #fafafa;
 $grad-light-black: #dcdcdc;
 $grad-sec-gray: #45334e;
+
+/*shadow colors*/
+
+$super-light-shadow: #ececec;

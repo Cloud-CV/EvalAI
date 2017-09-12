@@ -23,7 +23,7 @@
         </div>
     </div>
     <!-- upcoming challenges -->
-    <div class="challenge-page-title"><strong class="text-med-black fs-18">Upcoming Challenge</strong></div>
+    <div class="challenge-page-title"><strong class="text-med-black fs-18">Upcoming Challenges</strong></div>
     <div ng-if="challengeList.noneUpcomingChallenge">No Upcoming Challenges found!</div>
     <div class="row">
         <div class="col s12 m3" ng-repeat="challenge in challengeList.upcomingList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
@@ -46,7 +46,7 @@
         </div>
     </div>
     <!-- past challenges -->
-    <div class="challenge-page-title"><strong class="text-med-black fs-18">Past Challenge</strong></div>
+    <div class="challenge-page-title"><strong class="text-med-black fs-18">Past Challenges</strong></div>
     <div ng-if="challengeList.nonePastChallenge">No Past Challenges found!</div>
     <div class="row">
         <div class="col s12 m3" ng-repeat="challenge in challengeList.pastList">

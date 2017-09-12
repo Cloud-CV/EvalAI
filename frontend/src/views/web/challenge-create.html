@@ -1,72 +1,30 @@
-<section class="ev-sm-container ev-view ">
+<section class="ev-md-container text-center ">
     <div class="row">
-        <div class="col s12 m12 l12">
-            <div class=" ev-card-panel ev-z-depth-5">
-                <div class="ev-md-container ev-panel-title"><strong>Create Challenge</strong></div>
-                <div class="ev-md-container ev-card-body create-challenge-card">
-                    <form ng-submit="challengeCreate.createChallenge()">
-
-                        <div class="input-field align-left">
-                            <input id="title" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.title" focus-if>
-                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                            <label for="title" data-error="wrong" data-success="right">Title*</label>
-                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.title">{{challengeCreate.wrnMsg.title}}</div>
-                        </div>
-
-                        <div class="input-field align-left">
-                            <input id="description" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.description" focus-if>
-                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                            <label for="description" data-error="wrong" data-success="right">Description*</label>
-                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.description">{{challengeCreate.wrnMsg.description}}</div>
-                        </div>
-
-                        <div class="input-field align-left">
-                            <input id="terms_and_conditions" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.terms_and_conditions" focus-if>
-                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                            <label for="terms_and_conditions" data-error="wrong" data-success="right">Privacy Policy*</label>
-                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.terms_and_conditions">{{challengeCreate.wrnMsg.terms_and_conditions}}</div>
-                        </div>
-
-                        <div class="input-field align-left">
-                            <input id="submission_guidelines" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.submission_guidelines" focus-if>
-                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                            <label for="submission_guidelines" data-error="wrong" data-success="right">Submission Guidelines*</label>
-                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.submission_guidelines">{{challengeCreate.wrnMsg.submission_guidelines}}</div>
-                        </div>
-
-                        <div class="input-field align-left">
-                            <input id="start_date" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.start_date" focus-if>
-                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                            <label for="start_date" data-error="wrong" data-success="right">Start Date*</label>
-                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.start_date">{{challengeCreate.wrnMsg.start_date}}</div>
-                        </div>
-
-                        <div class="input-field align-left">
-                            <input id="end_date" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeCreate.end_date" focus-if>
-                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
-                            <label for="end_date" data-error="wrong" data-success="right">End Date*</label>
-                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.end_date">{{challengeCreate.wrnMsg.end_date}}</div>
-                        </div>
-
-                        <div class="col s12 align-left rm-gut">
-                            <input type="checkbox" class="filled-in" ng-model="challengeCreate.published" id="published">
-                            <label for="published">Make Challenge Public</label>
-                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.published">{{challengeCreate.wrnMsg.published}}</div>
-                        </div>
-
-                        <div class="col s12 align-left rm-gut">
-                            <input type="checkbox" class="filled-in" ng-model="challengeCreate.anonymous_leaderboard" id="anonymous_leaderboard">
-                            <label for="anonymous_leaderboard">Anonymous Leaderboard</label>
-                            <div class="wrn-msg text-highlight" ng-show="challengeCreate.isValid.anonymous_leaderboard">{{challengeCreate.wrnMsg.anonymous_leaderboard}}</div>
-                        </div>
-
-                        <div class="align-left reg-control">
-                            <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Proceed</button>
-                        </div>
-
-                    </form>
-                </div>
+        <div class="col s12 m9 offset-m3">
+            <div class="zip-file-title">Please upload zip file to create a challenge !</div>
+                <div class="file-field input-field col s6">
+                <form name="ChallengeCreateForm" ng-submit="challengeCreate.challengeCreate(ChallengeCreateForm.$valid)" novalidate>
+                    <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                        <span>Upload File</span>
+                        <input name="challengeCreate.input_file" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="challengeCreate.input_file">
+                    </div>
+                    <div class="file-path-wrapper">
+                        <input class="file-path validate" type="text">
+                    </div>
+                    <div class="align-left reg-control">
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+                    </div>
+                    <div ng-if="challengeCreate.isFormError" class="wrn-msg text-highlight align-right"> {{challengeCreate.formError}}
+                    </div>
+                </form>
             </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12 m9 offset-m3">
+            <i class="fa fa-info-circle"></i>
+            To know how to create a challenge using zip configuration, please see our documentation
+            <a href="https://evalai.readthedocs.io/en/latest/" class="highlight-link" target="_blank">here.</a>.
         </div>
     </div>
 </section>

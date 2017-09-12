@@ -1,0 +1,31 @@
+/* Styles for Submission page */
+
+.remaining-submission-clock {
+	padding-top: 55px;
+}
+
+.time {
+	position: static;
+}
+
+.rm-overflow-y {
+	overflow-y: hidden;
+}
+
+.show-count {
+	background: $dark-gray;
+	text-align: center;
+	color: white;
+	padding: 2px 5px 2px 5px;
+	border-radius: 3px 3px 3px 3px;
+	font-weight: 300;
+	transition: all 0.2s ease-in-out;	
+}
+
+.padding-10 {
+	padding: 10px;
+}
+
+.add-line-height {
+	line-height: 36px;
+}

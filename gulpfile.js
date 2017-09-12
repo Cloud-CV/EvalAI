@@ -8,7 +8,6 @@ var gulp = require('gulp'),
     sass = require('gulp-ruby-sass'),
     autoprefixer = require('gulp-autoprefixer'),
     cssnano = require('gulp-cssnano'),
-    purifycss = require('gulp-purifycss'),
     eslint = require('gulp-eslint'),
     angularPlugin = require('eslint-plugin-angular'),
     gulp_if = require('gulp-if'),
@@ -28,7 +27,8 @@ var gulp = require('gulp'),
     prettyError = require('gulp-prettyerror'),
     path = require('path'),
     inject = require('gulp-inject'),
-    _ = require('lodash');
+    _ = require('lodash'),
+    Server = require('karma').Server;
 
 
 var scripts = require('./frontend/app.scripts.json');
@@ -95,22 +95,13 @@ gulp.task('vendorcss', function() {
 });
 
 // minify and compress CSS files
-gulp.task('css-build', function() {
+gulp.task('css', function() {
     return sass('frontend/src/css/main.scss', { style: 'expanded' })
         .pipe(prettyError())
         .pipe(autoprefixer('last 2 version'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp.dest('frontend/dist/css'));
-})
-
-gulp.task('css', ['css-build'], function() {
-    return gulp.src('frontend/dist/css/**/*.css')
-        .pipe(purifycss([
-            'frontend/src/js/**/*.js',
-            'frontend/src/views/**/*.html',
-        ]))
         .pipe(gulp_if(flags.production, cssnano()))
-        .pipe(gulp.dest('frontend/dist/css/'));
+        .pipe(gulp.dest('frontend/dist/css'));
 })
 
 // minify angular scripts
@@ -356,6 +347,25 @@ gulp.task('watch', function() {
 
 });
 
+/**
+ * Run test once and exit
+ */
+gulp.task('test', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true
+  }, done).start();
+});
+
+/**
+ * Watch for file changes and re-run tests on each change
+ */
+gulp.task('test:watch', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js'
+  }, done).start();
+});
+
 
 // Start a server for serving frontend
 gulp.task('connect', ['lint'], function() {
@@ -398,5 +408,5 @@ gulp.task('prod', function(callback) {
 
 // Runserver for development
 gulp.task('dev:runserver', function(callback) {
-    runSequence('dev', 'connect', 'watch', callback);
+    runSequence('dev', 'connect', 'watch', 'test:watch', callback);
 });

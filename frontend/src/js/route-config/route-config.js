@@ -7,7 +7,7 @@
         .module('evalai')
         .config(configure);
 
-    var baseUrl = "dist/views/";
+    var baseUrl = "dist/views";
 
     function configure($stateProvider, $urlRouterProvider, $locationProvider, $urlMatcherFactoryProvider) {
 
@@ -127,6 +127,17 @@
             authenticate: true
         };
 
+        var host_analytics = {
+            name: "web.host-analytics",
+            parent: "web",
+            url: "/host-analytics",
+            templateUrl: baseUrl + "/web/analytics/host-analytics.html",
+            controller: 'AnalyticsCtrl',
+            controllerAs: 'analytics',
+            title: 'Host Challenge Analytics',
+            authenticate: true
+        };
+
         var challenge_host_teams = {
             name: "web.challenge-host-teams",
             parent: "web",
@@ -152,7 +163,7 @@
         var challenge_create = {
             name: "web.challenge-create",
             parent: "web",
-            url: "/challenges/create",
+            url: "/challenge-create",
             templateUrl: baseUrl + "/web/challenge-create.html",
             title: 'Create Challenge',
             controller: 'ChallengeCreateCtrl',
@@ -229,6 +240,14 @@
             url: "/my-submission",
             templateUrl: baseUrl + "/web/challenge/my-submission.html",
             title: 'My Submissions',
+            authenticate: true
+        };
+
+        var my_challenge_all_submission = {
+            name: "web.challenge-main.challenge-page.my-challenge-all-submission",
+            url: "/my-challenge-all-submission",
+            templateUrl: baseUrl + "/web/challenge/my-challenge-all-submission.html",
+            title: 'My Challenge All Submissions',
             authenticate: true
         };
 
@@ -341,7 +360,9 @@
             name: "contact-us",
             url: "/contact",
             templateUrl: baseUrl + "/web/contact-us.html",
-            title: "Contact Us"
+            title: "Contact Us",
+            controller: 'contactUsCtrl',
+            controllerAs: 'contactUs'
         };
 
 
@@ -415,6 +436,7 @@
         // web main configs.
         $stateProvider.state(web);
         $stateProvider.state(dashboard);
+        $stateProvider.state(host_analytics);
         $stateProvider.state(teams);
 
         // challenge host teams
@@ -435,6 +457,7 @@
         $stateProvider.state(participate);
         $stateProvider.state(submission);
         $stateProvider.state(my_submission);
+        $stateProvider.state(my_challenge_all_submission);
         $stateProvider.state(leaderboard);
 
         // featured challenge details
@@ -537,7 +560,7 @@
             toaster.pop({
                 type: type,
                 body: message,
-                timeout: timeout
+                timeout: timeout,
             });
         };
 

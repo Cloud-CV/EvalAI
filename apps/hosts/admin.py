@@ -1,20 +1,19 @@
 from django.contrib import admin
 
-from base.admin import TimeStampedAdmin
+from base.admin import ImportExportTimeStampedAdmin
 
 from .models import (ChallengeHost,
                      ChallengeHostTeam)
 
 
 @admin.register(ChallengeHostTeam)
-class ChallengeHostTeamModelAdmin(TimeStampedAdmin):
+class ChallengeHostTeamModelAdmin(ImportExportTimeStampedAdmin):
     list_display = ("team_name", "created_by")
-    list_filter = ("created_by", )
     search_fields = ("team_name", "created_by")
 
 
 @admin.register(ChallengeHost)
-class ChallengeHostAdmin(TimeStampedAdmin):
+class ChallengeHostAdmin(ImportExportTimeStampedAdmin):
     list_display = ("user", "team_name", "status", "permissions")
     list_filter = ("status", "permissions")
     search_fields = ("user", "team_name")

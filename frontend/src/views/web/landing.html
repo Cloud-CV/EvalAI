@@ -11,7 +11,7 @@
                         <div class="landing-buttons">
                             <ul class="inline-list hide-on-med-and-down">
                                 <li>
-                                    <a ng-click="main.hostChallenge($event)" href="javascript:void(0)" class="dark-link"><strong>Host Challenge</strong></a>
+                                    <a ng-click="main.hostChallenge()" href="javascript:void(0)" class="dark-link"><strong>Host Challenge</strong></a>
                                 </li>
                                 <li><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="web.challenge-main">Participate</a></li>
                             </ul>
@@ -23,11 +23,11 @@
                         </div>
                     </div>
                 </div>
-                <div ng-include="'dist/views/web/partials/rocket-container.html'"></div>
+                <div ng-include="'dist/views/web/partials/rocket-container.html'" class="display-large"></div>
             </div>
         </div>
         <!-- Scroll direction -->
-        <section class="ev-container center ev-insight">
+        <section class="ev-container center ev-insight ev-cloud-large">
             <div class="cloud-big cloud-big-1">
                 <img src="dist/images/cloud1.png">
             </div>
@@ -39,35 +39,52 @@
         <section class="ev-container ev-details text-med-black ev-super-light-bg" id="ev-scroll-down">
             <div class="grad-container text-med-black ">
                 <div class="row">
-                    <div class="col s6">
-                        <h4 class="mons-med-font">
-                        <div>Featured Challenge</div>
+                    <div class="col s12 m6">
+                        <h4>
+                        Featured Challenge
                         </h4>
-                        <p>
-                            Explore other past, ongoing and upcoming challenges.
-                        </p>
-                        
-                        <div> <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-light fs-14 mt-12" ui-sref="web.challenge-main">View All</a></div>
-                        <!-- <div class="is-line"></div> -->
-                    </div>
-                    <div class="col s6">
-                        <div class="challenge-logo">
-                            <img ng-src="{{main.challengeList.results[0].image}}"> &nbsp;
-                            <h4 class="grad-span">
-                                <a ui-sref="featured-challenge-page({challengeId:main.challengeList.results[0].id})">{{main.challengeList.results[0].title}}</a>
-                            </h4>
+                        <div class="display-large">
+                            <p>
+                                Explore other past, ongoing and upcoming challenges.
+                            </p>
+                            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-light fs-14 mt-12" ui-sref="web.challenge-main">View All</a>
+                            <!-- <div class="is-line"></div> -->
                         </div>
-                        <p>
-                            <span class="w-500 text-light-black mons-med-font">Organized by: </span> <span class="w-500 mons-med-font">{{main.challengeList.results[0].creator.team_name}}</span></p>
-                        <p><span class="text-dark-black mons-reg-font">{{main.challengeList.results[0].short_description}}<span ng-if="main.isMore">...</span></span>
-                        </p>
-                        <p>
-                            <span class="w-500 text-light-black mons-med-font">Status: </span> <span class="w-500 mons-med-font"> In Progress</span>
-                            <span class="right">
-                                <a ng-show="isAuth" class="view-more mons-reg-font" ui-sref="web.challenge-main.challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a>
-                                <a ng-show="!isAuth" class="view-more mons-reg-font" ui-sref="featured-challenge-page({challengeId:main.challengeList.results[0].id})">view more <i class="fa fa-external-link"></i></a>
-                            </span>
-                        </p>
+                    </div>
+                    <div class="col s12 m6">
+                        <div ng-if=main.isChallenge>
+                            <div class="challenge-logo">
+                                <img ng-src="{{main.featuredChallenge.image}}"> &nbsp;
+                                <h4 class="grad-span">
+                                <a ui-sref="featured-challenge-page({challengeId:main.featuredChallenge.id})">{{main.featuredChallenge.title}}</a>
+                            </h4>
+                            </div>
+                            <p>
+                                <span class="w-500 text-light-black">Organized by: </span> <span class="w-500">{{main.featuredChallenge.creator.team_name}}</span>
+                            </p>
+                            <p>
+                                <span class="text-dark-black">{{main.featuredChallenge.short_description}}<span ng-if="main.isMore">...</span></span>
+                            </p>
+                            <p>
+                                <span class="w-500 text-light-black">Status: </span> <span class="w-500"> In Progress</span>
+                                <span class="right">
+                                    <a ng-show="isAuth" class="view-more" ui-sref="web.challenge-main.challenge-page({challengeId:main.featured-challenge/Challenge.id})">view more <i class="fa fa-external-link"></i></a>
+                                    <a ng-show="!isAuth" class="view-more" ui-sref="featured-challenge-page({challengeId:main.featuredChallenge.id})">view more <i class="fa fa-external-link"></i></a>
+                                </span>
+                            </p>
+                        </div>
+                        <div ng-if="!main.isChallenge">
+                            <p>
+                                <span class="text-dark-black">Sorry! there are no featured challenges. Please check again after a while.</span>
+                            </p>
+                        </div>
+                        <div class="display-small">
+                            <p class="text-light-black">
+                                Explore other past, ongoing and upcoming challenges.
+                            </p>
+                            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-light fs-14 mt-12" ui-sref="web.challenge-main">View All</a>
+                            <!-- <div class="is-line"></div> -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -78,8 +95,8 @@
                 <div class="row">
                     <div class="col s12">
                         <div class="align-center">
-                            <h4 class="mons-med-font"><div>What is EvalAI all about?</h4>
-                            <p><span class="text-dark-black w-500 mons-med-font">EvalAI is an open-source web platform for organizing and participating in competitions to push the state of the art on AI tasks.</span>
+                            <h4><div>What is EvalAI all about?</h4>
+                            <p><span class="text-dark-black w-500">EvalAI is an open-source web platform for organizing and participating in competitions to push the state of the art on AI tasks.</span>
                                 <!-- <ul class="text-med-black">
                                 <li>
                                     EvailAI details one performance on Artificial Intelligence challenges
@@ -99,8 +116,44 @@
                     </div>
                 </div>
             </div>
-            <!-- footer -->
+        </section>
+        <!-- organizatons section -->
+        <section class="ev-container ev-reverse-details text-med-black ev-super-light-bg " id="ev-scroll-down">
+            <div class="grad-container text-med-black ">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="align-center">
+                            <h4><div>Who uses EvalAI?</div></h4>
+                             <p><span class="text-med-black">Several Research Organizations have already started hosting their challenges on EvalAI. Some of them are</span>
+                             </p>
+                           <div class="row">
+                               <div class="col s12 l2">
+                                    <div class="org-logo">
+                                        <a href="https://research.fb.com/category/facebook-ai-research-fair/" target="_blank"><img src="dist/images/fair.png"></a>
+                                    </div>
+                               </div>
+                               <div class="col s12 l3">
+                                    <div class="org-logo">
+                                        <a href="https://www.gatech.edu/" target="_blank"><img src="dist/images/gt.png"></a>
+                                    </div>
+                               </div>
+                               <div class="col s12 l4">
+                                    <div class="org-logo">
+                                        <a href="https://www.mapillary.com/" target="_blank"><img src="dist/images/mapillary.png"></a>
+                                    </div>
+                               </div>
+                               <div class="col s12 l3">
+                                    <div class="org-logo">
+                                        <a href="https://vt.edu/" target="_blank"><img src="dist/images/vt.png"></a>
+                                    </div>
+                               </div>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </div>
+    <!-- footer -->
     <landing-footer></landing-footer>
 </div>
