@@ -92,7 +92,22 @@ Follow this guide to setup your development machine.
     ```
     python scripts/workers/submission_worker.py
     ```
+### Using Docker
 
+You can also use Docker Compose to run all the components of EvalAI together. The steps are:
+
+1. Get the source code on to your machine via git.
+
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai
+    ```
+
+2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+
+    ```
+    docker-compose -f docker-compose.dev.yml up -d --build
+    ```
+    
 ## Contribution guidelines
 
 If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
