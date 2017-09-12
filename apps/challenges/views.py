@@ -4,6 +4,7 @@ import random
 import requests
 import shutil
 import string
+import subprocess
 import tempfile
 import yaml
 import zipfile
@@ -13,6 +14,7 @@ from os.path import basename, isfile, join
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.utils import timezone
 
 from rest_framework import permissions, status
@@ -857,6 +859,15 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+def submission_worker(request, action):
+
+    if action == 'reload' and request.user.is_superuser:
+        subprocess.call("scripts/workers/restart_rabbitmq_worker.sh", shell=True)
+        return render(request, 'challenges/templates/rabbitmq.html', context={'reloaded': 1})
+    else:
+        return render(request, 'challenges/templates/rabbitmq.html', context={'reloaded': 0})
 
 
 @throttle_classes([UserRateThrottle])
