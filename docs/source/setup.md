@@ -259,13 +259,13 @@ pip install virtualenv
 ```shell
 git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 ```
-### For users authenticating with SSH
+#### For users authenticating with SSH
 * Follow the instructions at [these
 instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 
 #### For users authenticating without SSH
 
-Create a folder where you want to clone the forked repository.
+* Create a folder where you want to clone the forked repository.
 ```
 mkdir DIRECTORY
 cd DIRECTORY
