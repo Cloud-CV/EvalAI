@@ -252,10 +252,6 @@ pip install virtualenv
 ```
 ### Step 2: Get EvalAI code
 
-If you haven't already created an ssh key and added it to your GitHub account,
-you should do that now by following [these
-instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
-
 * In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You will need to be logged in to GitHub to do this.
 
 * Open Terminal and clone your fork by
@@ -263,7 +259,11 @@ instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 ```shell
 git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 ```
-#### For non SSH users
+### For users authenticating with SSH
+* Follow the instructions at [these
+instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
+
+#### For users authenticating without SSH
 
 Create a folder where you want to clone the forked repository.
 ```
