@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 
@@ -364,6 +365,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 'submission_result_file': None,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
                 "is_public": self.submission.is_public,
+                "when_made_public": self.submission.when_made_public,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
@@ -495,6 +497,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
+            when_made_public=datetime.datetime.now()
         )
 
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
@@ -631,6 +634,54 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 'submission_result_file': None,
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
                 "is_public": self.submission.is_public,
+                "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
+                                                    'Z').replace("+00:00", ""),
+            }
+        self.challenge.participant_teams.add(self.participant_team)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_change_submission_data_and_visibility_when_is_public_is_true(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+        self.data = {
+            'is_public': True
+        }
+        self.challenge.participant_teams.add(self.participant_team)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_change_submission_data_and_visibility_when_is_public_is_false(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'submission_pk': self.submission.pk})
+        self.data = {
+            'is_public': False
+        }
+        expected = {
+                'id': self.submission.id,
+                'participant_team': self.submission.participant_team.pk,
+                'participant_team_name': self.submission.participant_team.team_name,
+                'execution_time': self.submission.execution_time,
+                'challenge_phase': self.submission.challenge_phase.pk,
+                'created_by': self.submission.created_by.pk,
+                'status': self.submission.status,
+                'input_file': "http://testserver%s" % (self.submission.input_file.url),
+                'method_name': self.submission.method_name,
+                'method_description': self.submission.method_description,
+                'project_url': self.submission.project_url,
+                'publication_url': self.submission.publication_url,
+                'stdout_file': None,
+                'stderr_file': None,
+                'submission_result_file': None,
+                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+                "is_public": self.submission.is_public,
+                "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(), 'Z')
+                                    .replace("+00:00", ""),
             }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
