@@ -35,6 +35,9 @@ from .serializers import ChallengePhaseSubmissionAnalysisSerializer, LastSubmiss
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_participant_team_count(request, challenge_pk):
+    """
+        Returns the number of participant teams in a challenge
+    """
     challenge = get_challenge_model(challenge_pk)
     participant_team_count = challenge.participant_teams.count()
     participant_team_count = ParticipantTeamCount(participant_team_count)
@@ -47,6 +50,9 @@ def get_participant_team_count(request, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_participant_count(request, challenge_pk):
+    """
+        Returns the number of participants in a challenge
+    """
     challenge = get_challenge_model(challenge_pk)
     participant_teams = challenge.participant_teams.all()
     participant_count = Participant.objects.filter(team__in=participant_teams).count()
@@ -60,10 +66,10 @@ def get_participant_count(request, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_submission_count(request, challenge_pk, duration):
-    '''
+    """
         Returns submission count for a challenge according to the duration
         Valid values for duration are all, daily, weekly and monthly.
-    '''
+    """
     # make sure that a valid url is requested.
     if duration.lower() not in ('all', 'daily', 'weekly', 'monthly'):
         response_data = {'error': 'Wrong URL pattern!'}
@@ -125,6 +131,9 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_last_submission_time(request, challenge_pk, challenge_phase_pk, submission_by):
+    """
+        Returns the last submission time for a particular challenge phase
+    """
     challenge = get_challenge_model(challenge_pk)
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
