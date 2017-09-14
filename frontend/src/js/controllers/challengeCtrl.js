@@ -32,6 +32,7 @@
         vm.isChallengeHost = false;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
+        vm.currentDate = new Date().toISOString();
 
 
         // loader for existing teams
