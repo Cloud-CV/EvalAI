@@ -44,6 +44,6 @@ CACHES = {
 
 MEDIA_URL = "/media/"
 
-MIDDLEWARE += [
+MIDDLEWARE += [ # noqa: ignore=F405
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
