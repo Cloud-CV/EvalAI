@@ -27,7 +27,8 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 INSTALLED_APPS += [ # noqa: ignore=F405
     'django_spaghetti',
     'autofixture',
-    'django_extensions'
+    'debug_toolbar',
+    'django_extensions',
 ]
 
 SPAGHETTI_SAUCE = {
