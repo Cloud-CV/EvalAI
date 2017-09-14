@@ -43,3 +43,7 @@ CACHES = {
 }
 
 MEDIA_URL = "/media/"
+
+MIDDLEWARE += [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+]
