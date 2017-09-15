@@ -19,7 +19,7 @@ class Challenge(TimeStampedModel):
         super(Challenge, self).__init__(*args, **kwargs)
         self._original_evaluation_script = self.evaluation_script
 
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, db_index=True)
     short_description = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     terms_and_conditions = models.TextField(null=True, blank=True)
@@ -28,21 +28,21 @@ class Challenge(TimeStampedModel):
     image = models.ImageField(
         upload_to='logos', null=True, blank=True, verbose_name="Logo")
     start_date = models.DateTimeField(
-        null=True, blank=True, verbose_name="Start Date (UTC)")
+        null=True, blank=True, verbose_name="Start Date (UTC)", db_index=True)
     end_date = models.DateTimeField(
-        null=True, blank=True, verbose_name="End Date (UTC)")
+        null=True, blank=True, verbose_name="End Date (UTC)", db_index=True)
     creator = models.ForeignKey(
         'hosts.ChallengeHostTeam', related_name='challenge_creator')
     published = models.BooleanField(
-        default=False, verbose_name="Publicly Available")
+        default=False, verbose_name="Publicly Available", db_index=True)
     enable_forum = models.BooleanField(default=True)
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
-    is_disabled = models.BooleanField(default=False)
+    is_disabled = models.BooleanField(default=False, db_index=True)
     evaluation_script = models.FileField(
         default=False, upload_to=RandomFileName("evaluation_scripts"))  # should be zip format
     approved_by_admin = models.BooleanField(
-        default=False, verbose_name="Approved By Admin")
+        default=False, verbose_name="Approved By Admin", db_index=True)
 
     class Meta:
         app_label = 'challenges'
@@ -103,19 +103,19 @@ class ChallengePhase(TimeStampedModel):
         super(ChallengePhase, self).__init__(*args, **kwargs)
         self._original_test_annotation = self.test_annotation
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
     start_date = models.DateTimeField(
-        null=True, blank=True, verbose_name="Start Date (UTC)")
+        null=True, blank=True, verbose_name="Start Date (UTC)", db_index=True)
     end_date = models.DateTimeField(
-        null=True, blank=True, verbose_name="End Date (UTC)")
+        null=True, blank=True, verbose_name="End Date (UTC)", db_index=True)
     challenge = models.ForeignKey('Challenge')
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
     test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"), default=False)
-    max_submissions_per_day = models.PositiveIntegerField(default=100000)
-    max_submissions = models.PositiveIntegerField(default=100000)
+    max_submissions_per_day = models.PositiveIntegerField(default=100000, db_index=True)
+    max_submissions = models.PositiveIntegerField(default=100000, db_index=True)
     codename = models.CharField(max_length=100, default="Phase Code Name")
     dataset_split = models.ManyToManyField(DatasetSplit, blank=True, through='ChallengePhaseSplit')
 
@@ -211,7 +211,7 @@ class ChallengeConfiguration(TimeStampedModel):
     user = models.ForeignKey(User)
     challenge = models.OneToOneField(Challenge, null=True, blank=True)
     zip_configuration = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'))
-    is_created = models.BooleanField(default=False)
+    is_created = models.BooleanField(default=False, db_index=True)
     stdout_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
                                    null=True, blank=True)
     stderr_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
@@ -228,7 +228,7 @@ class StarChallenge(TimeStampedModel):
     """
     user = models.ForeignKey(User)
     challenge = models.ForeignKey(Challenge)
-    is_starred = models.BooleanField(default=False)
+    is_starred = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         app_label = 'challenges'
