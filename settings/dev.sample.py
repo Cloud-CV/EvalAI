@@ -27,7 +27,9 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 INSTALLED_APPS += [ # noqa: ignore=F405
     'django_spaghetti',
     'autofixture',
-    'django_extensions'
+    'debug_toolbar',
+    'django_extensions',
+    'silk',
 ]
 
 SPAGHETTI_SAUCE = {
@@ -42,3 +44,10 @@ CACHES = {
 }
 
 MEDIA_URL = "/media/"
+
+MIDDLEWARE += [ # noqa: ignore=F405
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'silk.middleware.SilkyMiddleware',
+]
+
+SILKY_PYTHON_PROFILER = True
