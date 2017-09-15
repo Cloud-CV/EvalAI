@@ -82,6 +82,6 @@ if settings.DEBUG:
                     url(r'^api/admin-auth/',
                         include('rest_framework.urls',
                                 namespace='rest_framework')),
-                    url(r'^silk/', 
+                    url(r'^silk/',
                         include('silk.urls', namespace='silk')),
                     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

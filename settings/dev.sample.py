@@ -51,4 +51,3 @@ MIDDLEWARE += [ # noqa: ignore=F405
 ]
 
 SILKY_PYTHON_PROFILER = True
-
