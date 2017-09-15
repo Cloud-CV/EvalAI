@@ -29,6 +29,7 @@ INSTALLED_APPS += [ # noqa: ignore=F405
     'autofixture',
     'debug_toolbar',
     'django_extensions',
+    'silk',
 ]
 
 SPAGHETTI_SAUCE = {
@@ -46,4 +47,8 @@ MEDIA_URL = "/media/"
 
 MIDDLEWARE += [ # noqa: ignore=F405
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'silk.middleware.SilkyMiddleware',
 ]
+
+SILKY_PYTHON_PROFILER = True
+
