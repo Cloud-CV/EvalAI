@@ -1,0 +1,128 @@
+.checkbox-field {
+	padding-bottom: 45px;
+}
+
+.description-circle {
+	padding-top: 100px;
+	margin-right: 3px;
+}
+
+.editor {
+	min-height: 150px;
+	margin-top: 20px;
+
+}
+
+.tooltip {
+	word-wrap: keep-all;
+	max-width: 100px;
+}
+
+.reviewScreen {
+	position: fixed;
+	background-color: white;
+	z-index: 5000;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	overflow-y: scroll;
+}
+
+.md-tooltip {
+	width: auto;
+}
+
+.btn-floating:hover {
+	background-color: #ffaf4b !important;
+}
+
+.btn-floating {
+	background-color: #ffaf4b !important;
+}
+
+.add-margin-bottom {
+	margin-bottom: 40px;
+}
+
+.rm-padding {
+	padding: 0;
+}
+
+.cross {
+	z-index: 6000;
+	height: 40px;
+	width: 40px;
+	position: fixed;
+	right: 10px;
+	margin-top: 7px;
+	cursor: pointer;
+	border: 2px solid $light-black;
+	border-radius: 50%;
+	text-align: center;
+	padding: 6px;
+}
+
+.cross:hover {
+	border: 2px solid #4d4d4d;
+}
+
+.cursor-pointer {
+	cursor: pointer;
+}
+
+.md-button:focus {
+	background-color: white;
+}
+
+.dtp > .dtp-content > .dtp-date-view > header.dtp-header {
+    background: $light-black;
+    color: #fff;
+    text-align: center;
+    padding: 3px;
+}
+
+trix-toolbar .trix-button-row {
+	display: block;
+}
+
+.dtp div.dtp-date, .dtp div.dtp-time {
+	background: $light-black;
+	text-align: center;
+	color: #fff;
+	padding: 10px;
+}
+
+.dtp table.dtp-picker-days tr > td > a.selected.hilite {
+	padding: 6px;
+	font-size: 16px;
+	font-weight: 500;
+	background: $light-black;
+	color: #fff;
+}
+
+.dtp table.dtp-picker-days tr > td > a.selected {
+	background: $light-black;
+	color: #fff;
+}
+
+.dtp table.dtp-picker-days tr > td > a.hilite:not(.selected) {
+	padding: 6px;
+	font-weight: 500;
+	font-size: 16px;
+	color: $light-black;
+}
+
+.dtp .dtp-actual-meridien a.selected {
+	background: $light-black;
+	color: #fff;
+}
+
+.dtp .dtp-picker-time > a.dtp-select-hour.selected{
+	background: $light-black;
+	color: #fff;
+}
+
+.dtp .dtp-hand.on {
+	background: $light-black;
+}
