@@ -150,6 +150,8 @@
                             }else {
                                 $state.go('web.dashboard');
                             }
+                            $state.go($rootScope.previousState);
+                            vm.stopLoader();
                         } else {
                             alert("Something went wrong");
                         }
