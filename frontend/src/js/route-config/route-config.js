@@ -175,7 +175,18 @@
             parent: "web",
             url: "/challenges",
             templateUrl: baseUrl + "/web/challenge-main.html",
-            redirectTo: "web.challenge-main.challenge-list",
+            redirectTo: "web.challenge-main.challenge-list"
+        };
+        var create_challenge_using_ui = {
+            name: "web.create-challenge-using-ui",
+            parent: "web",
+            url: "/create-challenge-using-ui",
+            templateUrl: baseUrl + "/web/create-challenge/create-challenge-using-ui.html",
+            title: 'Create Challenge',
+            controller: 'CreateChallengeUsingUiCtrl',
+            controllerAs: 'createChallengeUsingUi',
+            // redirectTo: "web.challenge-create.challenge-list",
+            authenticate: true
         };
 
         var challenge_list = {
@@ -463,6 +474,7 @@
 
         // challenge create page
         $stateProvider.state(challenge_create);
+        $stateProvider.state(create_challenge_using_ui);
 
         // challenge details
         $stateProvider.state(challenge_page);
