@@ -1,0 +1,62 @@
+<!-- Leaderboard creation form for step 2 -->
+
+<section ng-if="createChallengeUsingUi.step2" class="ev-md-container text-center">
+    <div class="row">
+        <div class="col s12 m6 offset-m3">
+            <div class="ev-md-container ev-card-body">
+                <div class="pass-title">Create Leaderboard</div>
+                    <form name="leaderboardCreateForm" ng-submit="createChallengeUsingUi.leaderboardCreate(leaderboardCreateForm.$valid)" novalidate>
+                    <div ng-repeat="leaderboard in createChallengeUsingUi.leaderboards">
+                    <div class="input-field align-left">
+                         <input id="{{'leaderboardId_'+ $index}}" name="{{'leaderboardId_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="leaderboard.leaderboardId" pattern="[0-9]" required>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                            Unique integer field for each leaderboard entry
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                            <label for="{{'leaderboardId_'+$index}}">Leader Board Id</label>
+                            <div class="wrn-msg text-highlight" ng-messages="leaderboardCreateForm['leaderboardId_'+$index].$error" ng-if="leaderboardCreateForm['leaderboardId_'+$index].$touched || leaderboardCreateForm.$submitted">
+                                <p ng-message="required">Leader board Id is required.</p>
+                            </div>
+                        </div>
+                        <div class="input-field align-left">
+                            <input id="{{'leaderboardSchema_'+$index}}" name="{{'leaderboardSchema_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="leaderboard.schema" required>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                           Schema for the leaderboard
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                            <label for="{{'leaderboardSchema_'+$index}}"> Leader board Schema </label>
+                        </div>
+                        <div class="wrn-msg text-highlight" ng-messages="leaderboardCreateForm['leaderboardSchema_'+$index].$error" ng-if="leaderboardCreateForm['leaderboardSchema_'+$index].$touched || leaderboardCreateForm.$submitted">
+                            <p ng-message="required">Leaderboard Schema is required.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col s12 m2">
+                           <button class="btn-floating btn-pagination waves-effect waves-dark" type="button" ng-click="createChallengeUsingUi.addNewLeaderboard()">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="col s12 m2">
+                            <button ng-if="createChallengeUsingUi.leaderboards.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" type="button" ng-click="createChallengeUsingUi.removeNewLeaderboard($index)">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="align-left reg-control">
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+                    </div>
+                    <div ng-if="createChallengeUsingUi.isFormError" class="wrn-msg text-highlight align-right">
+                    {{createChallengeUsingUi.formError}}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

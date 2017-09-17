@@ -115,5 +115,54 @@
             }
         };
 
+//function to create a LeaderBoard
+        vm.leaderboards = [
+            {
+            "leaderboardId": null,
+            "schema": null
+            }
+        ];
+
+        vm.addNewLeaderboard = function() {
+            vm.leaderboards.push({"leaderboardId": null, "schema": null});
+        };
+
+        vm.removeNewLeaderboard = function(index) {
+            vm.leaderboards.splice(index, 1);
+        };
+
+        vm.leaderboardCreate = function(leaderboardCreateFormValid){
+            if (leaderboardCreateFormValid){
+                var parameters = {};
+                parameters.method = 'POST';
+                parameters.url = 'challenges/challenge/leaderboard/step_2/';
+                parameters.data = vm.leaderboards;
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var data = response.data;
+                        if (status === 201) {
+                            vm.step3 = true;
+                            vm.step2 = false;
+                            vm.step1 = false;
+                            vm.isFormError = false;
+                            $rootScope.notify("success", "Step2 is completed");
+                            utilities.storeData('leaderboard', data);
+                        }
+                    },
+                    onError: function(response) {
+                        var error = response.data;
+                        var status = response.status;
+                        if (status === 400){
+                            vm.isFormError = true;
+                            vm.formError = error;
+                        }
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }
+        };
+
     }
 })();
