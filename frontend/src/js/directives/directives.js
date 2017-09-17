@@ -344,3 +344,41 @@
         }
     }
 })();
+
+//Create Challenge Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createChallenge', createChallenge);
+
+    function createChallenge() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-challenge.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Leaderboard Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createLeaderboard', createLeaderboard);
+
+    function createLeaderboard() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-leaderboard.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();

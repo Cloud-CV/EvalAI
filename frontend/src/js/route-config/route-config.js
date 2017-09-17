@@ -176,7 +176,7 @@
             name: "web.create-challenge-using-ui",
             parent: "web",
             url: "/create-challenge-using-ui",
-            templateUrl: baseUrl + "/web/create-challenge/create-challenge-using-ui.html",
+            templateUrl: baseUrl + "/web/create-challenge-using-ui/create-challenge-using-ui.html",
             title: 'Create Challenge',
             controller: 'CreateChallengeUsingUiCtrl',
             controllerAs: 'createChallengeUsingUi',
