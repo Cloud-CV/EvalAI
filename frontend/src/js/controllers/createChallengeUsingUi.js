@@ -135,7 +135,7 @@
             if (leaderboardCreateFormValid){
                 var parameters = {};
                 parameters.method = 'POST';
-                parameters.url = 'challenges/challenge/leaderboard/step_2/';
+                parameters.url = 'challenges/challenge/create/leaderboard/step_2/';
                 parameters.data = vm.leaderboards;
                 parameters.token = userKey;
                 parameters.callback = {
@@ -161,6 +161,95 @@
                     }
                 };
                 utilities.sendRequest(parameters);
+            }
+        };
+
+// function to create a Challenge Phase
+        vm.challenge_phases = [
+            {
+             "name": null,
+             "description": null,
+             "codename": null,
+             "max_submissions_per_day": null,
+             "max_submissions": null,
+             "start_date": null,
+             "end_date": null,
+             "test_annotation": null,
+             "is_public": null,
+             "leaderboard_public": null
+            }
+        ];
+
+        vm.addNewChallengePhase = function() {
+            vm.challenge_phases.push({
+             "name": null,
+             "description": null,
+             "codename": null,
+             "max_submissions_per_day": 0,
+             "max_submissions": 0,
+             "start_date": null,
+             "end_date": null,
+             "test_annotation": null,
+             "is_public": null,
+             "leaderboard_public": null
+            });
+        };
+
+        vm.removeNewChallengePhase = function(index) {
+            vm.challenge_phases.splice(index, 1);
+        };
+
+        vm.challengePhaseCreate = function(challengePhaseCreateFormValid){
+            if (challengePhaseCreateFormValid) {
+                vm.challengeId = utilities.getData('challenge').id;
+
+                for (var i=0; i<vm.challenge_phases.length; i++) {
+                    var challengePhaseList = [];
+                    var formdata = new FormData();
+                    var parameters = {};
+                    vm.challenge_phases[i].start_date = vm.formatDate(vm.challenge_phases[i].start_date);
+                    vm.challenge_phases[i].end_date = vm.formatDate(vm.challenge_phases[i].end_date);
+                    formdata.append("name", vm.challenge_phases[i].name);
+                    formdata.append("description", vm.challenge_phases[i].description);
+                    formdata.append("codename", vm.challenge_phases[i].codename);
+                    formdata.append("max_submissions_per_day", vm.challenge_phases[i].max_submissions_per_day);
+                    formdata.append("max_submissions", vm.challenge_phases[i].max_submissions);
+                    formdata.append("start_date", vm.challenge_phases[i].start_date);
+                    formdata.append("end_date", vm.challenge_phases[i].end_date);
+                    formdata.append("leaderboard_public", vm.challenge_phases[i].leaderboard_public || false);
+                    formdata.append("is_public", vm.challenge_phases[i].is_public || false);
+                    formdata.append("test_annotation", vm.challenge_phases[i].test_annotation);
+                    formdata.append("challenge", vm.challengeId);
+
+                    // utilities.storeData("test_annotation"+i, vm.challenge_phases[i].test_annotation);
+
+                    parameters.method = 'POST';
+                    parameters.url = 'challenges/challenge/challenge_phase/'+ vm.challengeId +'/step_3/';
+                    parameters.data = formdata;
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            var data = response.data;
+                            challengePhaseList.push(data);
+                            if (status === 201) {
+                                vm.step4 = true;
+                                vm.step2 = false;
+                                vm.step1 = false;
+                                vm.step3 = false;
+                                vm.isFormError = false;
+                                utilities.storeData('challengePhase', challengePhaseList);
+                                $rootScope.notify("success", "Step3 is completed");
+                            }
+                        },
+                        onError: function(response) {
+                            var error = response.data;
+                            vm.isFormError = true;
+                            vm.formError = error;
+                        }
+                    };
+                    utilities.sendRequest(parameters, 'header', 'upload');
+                    }
             }
         };
 
