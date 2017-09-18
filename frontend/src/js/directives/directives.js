@@ -420,3 +420,22 @@
         return directive;
     }
 })();
+
+//Create Challenge Phase Split Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createChallengePhaseSplit', createChallengePhaseSplit);
+
+    function createChallengePhaseSplit() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-challenge-phase-split.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();

@@ -8,7 +8,7 @@
                 <form name="datasetSplitCreateForm" ng-submit="createChallengeUsingUi.datasetSplitCreate(datasetSplitCreateForm.$valid)" novalidate>
                 <div ng-repeat="datasetSplit in createChallengeUsingUi.datasetSplits">
                     <div class="input-field align-left">
-                         <input id="{{'datasetSplitId_'+$index}}" name="{{'datasetSplitId_'+$index}}" type="number" class="text-dark-black dark-autofill w-400" ng-model="datasetSplit.datasetSplitId" pattern="[0-9]" required>
+                         <input id="{{'datasetSplitId_'+$index}}" name="{{'datasetSplitId_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="datasetSplit.datasetSplitId" pattern="[0-9]" required>
                                 <span class="form-icon form-icon-dark">
                                     <i class="fa fa-info-circle cursor-pointer">
                                         <md-tooltip md-direction="right">
@@ -16,7 +16,7 @@
                                         </md-tooltip>
                                     </i>
                                 </span>
-                            <label for="{{'datasetSplitId_'+$index}}">Dataset Split Id</label>
+                            <label for="{{'datasetSplitId_'+$index}}">Dataset split Id</label>
                             <div class="wrn-msg text-highlight" ng-messages="datasetSplitCreateForm['datasetSplitId_'+$index].$error" ng-if="datasetSplitCreateForm['datasetSplitId_'+$index].$touched || datasetSplitCreateForm.$submitted">
                                 <p ng-message="required">Dataset Split Id is required.</p>
                             </div>
