@@ -401,3 +401,22 @@
         return directive;
     }
 })();
+
+//Create Dataset Split Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createDatasetSplit', createDatasetSplit);
+
+    function createDatasetSplit() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-dataset-split.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
