@@ -1,0 +1,75 @@
+<!-- DataSet Split creation form for step 4 -->
+
+<section ng-if="createChallengeUsingUi.step4" class="ev-md-container text-center">
+    <div class="row">
+        <div class="col s12 m6 offset-m3">
+            <div class="ev-md-container ev-card-body">
+                <div class="pass-title">Create Dataset Split</div>
+                <form name="datasetSplitCreateForm" ng-submit="createChallengeUsingUi.datasetSplitCreate(datasetSplitCreateForm.$valid)" novalidate>
+                <div ng-repeat="datasetSplit in createChallengeUsingUi.datasetSplits">
+                    <div class="input-field align-left">
+                         <input id="{{'datasetSplitId_'+$index}}" name="{{'datasetSplitId_'+$index}}" type="number" class="text-dark-black dark-autofill w-400" ng-model="datasetSplit.datasetSplitId" pattern="[0-9]" required>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                            Unique integer field for each dataset split entry.
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                            <label for="{{'datasetSplitId_'+$index}}">Dataset Split Id</label>
+                            <div class="wrn-msg text-highlight" ng-messages="datasetSplitCreateForm['datasetSplitId_'+$index].$error" ng-if="datasetSplitCreateForm['datasetSplitId_'+$index].$touched || datasetSplitCreateForm.$submitted">
+                                <p ng-message="required">Dataset Split Id is required.</p>
+                            </div>
+                        </div>
+                        <div class="input-field align-left">
+                            <input id="{{'datasetSplitName_'+$index}}" name="{{'datasetSplitName_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="datasetSplit.name" required>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                            Name for dataset split
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                            <label for="{{'datasetSplitName_'+$index}}">Dataset Split Name</label>
+                        </div>
+                        <div class="wrn-msg text-highlight" ng-messages="datasetSplitCreateForm['datasetSplitName_'+$index].$error" ng-if="datasetSplitCreateForm['datasetSplitName_'+$index].$touched || datasetSplitCreateForm.$submitted">
+                            <p ng-message="required">Dataset split name is required.</p>
+                        </div>
+                        <div class="input-field align-left">
+                            <input id="{{'datasetSplitCodename_'+$index}}" name="{{'datasetSplitCodename_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="datasetSplit.codename" required>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                          Unique codename for dataset split
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                            <label for="{{'datasetSplitCodename_'+$index}}">Dataset Split Codename</label>
+                        </div>
+                        <div class="wrn-msg text-highlight" ng-messages="datasetSplitCreateForm['datasetSplitCodename_'+$index].$error" ng-if="datasetSplitCreateForm['datasetSplitCodename_'+$index].$touched || datasetSplitCreateForm.$submitted">
+                            <p ng-message="required">Dataset split codename is required.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 m2">
+                           <button type="button" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.addNewDatasetSplit()">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="col s12 m2">
+                            <button type="button" ng-if="createChallengeUsingUi.datasetSplits.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.removeNewDatasetSplit($index)">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="align-left reg-control">
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+                    </div>
+                    <div ng-if="createChallengeUsingUi.isFormError" class="wrn-msg text-highlight align-right">
+                      {{createChallengeUsingUi.formError}}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

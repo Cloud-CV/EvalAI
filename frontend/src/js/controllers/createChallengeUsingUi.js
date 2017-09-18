@@ -19,9 +19,9 @@
         vm.challengeEvalScript = null;
         vm.challengeTitle = null;
         vm.formError = {};
-        vm.step1 = true;
+        vm.step1 = false;
         vm.step2 = false;
-        vm.step3 = false;
+        vm.step3 = true;
         vm.step4 = false;
         vm.step5 = false;
         vm.step6 = false;
@@ -224,7 +224,7 @@
                     // utilities.storeData("test_annotation"+i, vm.challenge_phases[i].test_annotation);
 
                     parameters.method = 'POST';
-                    parameters.url = 'challenges/challenge/challenge_phase/'+ vm.challengeId +'/step_3/';
+                    parameters.url = 'challenges/challenge/'+ vm.challengeId +'/challenge_phase';
                     parameters.data = formdata;
                     parameters.token = userKey;
                     parameters.callback = {
@@ -250,6 +250,62 @@
                     };
                     utilities.sendRequest(parameters, 'header', 'upload');
                     }
+            }
+        };
+
+//function to create Dataset Splits
+        vm.datasetSplits = [
+            {
+            "name": null,
+            "codename": null
+            }
+        ];
+
+        vm.addNewDatasetSplit = function() {
+            vm.datasetSplits.push({"name": null, "codename": null});
+        };
+
+        vm.removeNewDatasetSplit = function(index) {
+            vm.datasetSplits.splice(index, 1);
+        };
+
+        vm. datasetSplitCreate = function(datasetSplitCreateFormValid) {
+            if (datasetSplitCreateFormValid) {
+                var parameters = {};
+                parameters.method = 'POST';
+                parameters.url = 'challenges/challenge/dataset_split/step_4/';
+                parameters.data = vm.datasetSplits;
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var data = response.data;
+                        if (status === 201) {
+                            vm.step5 = true;
+                            vm.step4 = false;
+                            vm.step3 = false;
+                            vm.step2 = false;
+                            vm.step1 = false;
+                            vm.isFormError = false;
+                            $rootScope.notify("success", "Step 4 is completed!");
+                            utilities.storeData('datasetSplit', data);
+                            vm.challengePhase = utilities.getData('challengePhase');
+                            vm.leaderboard = utilities.getData('leaderboard');
+                            vm.datasetSplit = utilities.getData('datasetSplit');
+                        }
+                    },
+                    onError: function(response){
+                        var error = response.data;
+                        var status = response.status;
+                        if (status === 400) {
+                            vm.isFormError = true;
+                            vm.formError = error[0].codename;
+                        }
+                    }
+                };
+                utilities.sendRequest(parameters);
+            } else {
+                console.log("datasetSplit");
             }
         };
 
