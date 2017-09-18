@@ -1,0 +1,164 @@
+<!-- Challenge Phase creation form for step 3 -->
+
+<section ng-if="createChallengeUsingUi.step3" class="ev-md-container text-center">
+    <div class="row">
+        <div class="col s12 m6 offset-m3">
+            <div class="ev-md-container ev-card-body">
+                <div class="pass-title">Create Challenge Phase</div>
+                <form name="challengePhaseCreateForm" ng-submit="createChallengeUsingUi.challengePhaseCreate(challengePhaseCreateForm.$valid)" novalidate>
+                  <div ng-repeat = "challenge_phase in createChallengeUsingUi.challenge_phases">
+                        <div class="input-field align-left">
+                            <input id="{{'challengePhaseName_'+$index}}" name="{{'challengePhaseName_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="challenge_phase.name" required>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                            Name of the Challenge Phase
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                            <label for="{{'challengePhaseName_'+$index}}">Challenge Phase Name</label>
+                            <div class="wrn-msg text-highlight" ng-messages="challengePhaseCreateForm['challengePhaseName_'+$index].$error" ng-if="challengePhaseCreateForm['challengePhaseName_'+$index].$touched || challengePhaseCreateForm.$submitted">
+                                <p ng-message="required">Challenge Phase is required.</p>
+                            </div>
+                        </div>
+
+                    <div class="input-field align-left">
+                        <trix-editor class="editor"
+                                   ng-model-options="{ updateOn: 'blur' }" 
+                                   spellcheck="false" class="trix-content" 
+                                   ng-model="challenge_phase.description"
+                                   angular-trix 
+                                   trix-initialize="trixInitialize(e, editor);" 
+                                   trix-change="trixChange(e, editor);" 
+                                   trix-selection-change="trixSelectionChange(e, editor);" 
+                                   trix-focus="trixFocus(e, editor);" 
+                                   trix-blur="trixBlur(e, editor);" 
+                                   trix-file-accept="trixFileAccept(e, editor);" 
+                                   trix-attachment-add="createChallengeUsingUi.trixAttachmentAdd(e, editor);" 
+                                   trix-attachment-remove="trixAttachmentRemove(e, editor);"
+                                   placeholder="Challenge Phase Description"
+                                   id="{{'challengePhaseDescription_'+$index}}"></trix-editor>
+                        </div>
+                         <div class="input-field align-left">
+                            <input id="{{'challengePhaseCodename_'+$index}}" name="{{'challengePhaseCodename_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="challenge_phase.codename" required>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                            Unique codename for the challenge phase
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                            <label for="{{'challengePhaseCodename_'+$index}}">Challenge Phase Codename</label>
+                        </div>
+                       <div class="input-field align-left">
+                            <input id="{{'challengeMaxSubmissionsPerDay_'+$index}}" name="{{'challengeMaxSubmissionsPerDay_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="challenge_phase.max_submissions_per_day" required>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                            Maximum submissions for a day
+                                        </md-tooltip>
+                                    </i>
+                                </span>                        
+                                <label for="{{'challengeMaxSubmissionsPerDay_'+$index}}">Max submissions per day</label>
+                        </div>
+
+                        <div class="input-field align-left">
+                            <input id="{{'challengeMaxSubmissions_'+$index}}" name="{{'challengeMaxSubmissions_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="challenge_phase.max_submissions" required>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                            Max submissions for a challenge phase
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                                <label for="{{'challengeMaxSubmissions_'+$index}}">Max submissions Total</label>
+                        </div>
+
+                    <div class="input-field align-left">
+                            <input mdc-datetime-picker="" date="true" time="true" type="text" id="{{'challengePhaseStartDate_'+$index}}" show-todays-date="" ng-model="challenge_phase.start_date" class="md-input" readonly="readonly" placeholder="Start Date">
+                            <span class="form-icon form-icon-dark">
+                                <i class="fa fa-info-circle cursor-pointer">
+                                    <md-tooltip md-direction="right">
+                                        Start date for challenge phase
+                                    </md-tooltip>
+                                </i>
+                            </span>
+                    </div>
+
+                    <div class="input-field align-left">
+                            <input mdc-datetime-picker="" date="true" time="true" type="text" id="{{'challengePhaseEndDate_'+$index}}" show-todays-date="" ng-model="challenge_phase.end_date" class="md-input" readonly="readonly" placeholder="End Date">
+                            <span class="form-icon form-icon-dark">
+                                <i class="fa fa-info-circle cursor-pointer">
+                                    <md-tooltip md-direction="right">
+                                        End date for a challenge phase
+                                    </md-tooltip>
+                                </i>
+                            </span>
+                    </div>
+                        <div class="input-field align-left">
+                            <input type="checkbox" id="{{'challengePhaseLeaderboardPublic_'+$index}}" name="{{'challengePhaseLeaderboardPublic_'+$index}}" ng-model="challenge_phase.leaderboard_public">
+                                <label for="{{'challengePhaseLeaderboardPublic_'+$index}}">Leaderboard Public</label>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                            Make Leader Board publically available
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                        </div>
+                        <div class="input-field align-left">
+                            <input type="checkbox" id="{{'challengePhasePublic_'+$index}}" name="{{'challengePhasePublic_'+$index}}" ng-model="challenge_phase.is_public">
+                                <label for="{{'challengePhasePublic_'+$index}}">Publically Available</label>
+                                <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                            Make challenge phase publically available
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                        </div>
+                        <br>
+                        <div class="file-field input-field">
+                            <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                                <span>Test Annotation File</span>
+                                <input id="{{'testAnnotation_'+$index}}"" name="{{'testAnnotation_'+$index}}" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="challenge_phase.test_annotation" required>
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input class="file-path validate" type="text">
+                                 <span class="form-icon form-icon-dark">
+                                    <i class="fa fa-info-circle cursor-pointer">
+                                        <md-tooltip md-direction="right">
+                                          Test Annotation file for challenge phase
+                                        </md-tooltip>
+                                    </i>
+                                </span>
+                            </div>
+                            <div class="wrn-msg text-highlight" ng-messages="challengePhaseCreateForm['testAnnotation_'+$index].$error" ng-if="challengePhaseCreateForm['testAnnotation_'+$index].$touched || challengePhaseCreateForm.$submitted">
+                              <p ng-message="required">Test Annotation File is required.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 m2">
+                           <button type="button" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.addNewChallengePhase()">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="col s12 m2">
+                            <button type="button" ng-if="createChallengeUsingUi.challenge_phases.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.removeNewChallengePhase($index)">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="align-left reg-control">
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+                    </div>
+                    <div ng-if="createChallengeUsingUi.isFormError" class="wrn-msg text-highlight align-right">
+                    {{createChallengeUsingUi.formError}}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

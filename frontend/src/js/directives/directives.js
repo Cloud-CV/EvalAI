@@ -382,3 +382,22 @@
         return directive;
     }
 })();
+
+//Create Challenge Phase Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createChallengePhase', createChallengePhase);
+
+    function createChallengePhase() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-challenge-phase.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
