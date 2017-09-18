@@ -60,6 +60,11 @@ from .utils import get_file_content
 
 logger = logging.getLogger(__name__)
 
+try:
+  xrange          # Python 2
+except NameError:
+  xrange = range  # Python 3
+
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
