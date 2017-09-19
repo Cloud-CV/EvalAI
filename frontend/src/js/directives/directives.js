@@ -458,3 +458,22 @@
         return directive;
     }
 })();
+
+//Create Submission Screen Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('submissionScreen', submissionScreen);
+
+    function submissionScreen() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/submission-screen.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
