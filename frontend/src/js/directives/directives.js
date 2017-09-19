@@ -439,3 +439,22 @@
         return directive;
     }
 })();
+
+//Create Review Screen Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('reviewScreen', reviewScreen);
+
+    function reviewScreen() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/review-screen.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
