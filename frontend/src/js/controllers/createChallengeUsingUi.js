@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('CreateChallengeUsingUiCtrl', CreateChallengeUsingUiCtrl);
 
-    CreateChallengeUsingUiCtrl.$inject = ['utilities', 'loaderService', '$rootScope'];
+    CreateChallengeUsingUiCtrl.$inject = ['utilities', 'loaderService', '$rootScope', '$state'];
 
-    function CreateChallengeUsingUiCtrl(utilities, loaderService, $rootScope) {
+    function CreateChallengeUsingUiCtrl(utilities, loaderService, $rootScope, $state) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.hostTeamId = utilities.getData('challengeHostTeamId');
@@ -19,10 +19,10 @@
         vm.challengeEvalScript = null;
         vm.challengeTitle = null;
         vm.formError = {};
-        vm.step1 = false;
+        vm.step1 = true;
         vm.step2 = false;
         vm.step3 = false;
-        vm.step4 = true;
+        vm.step4 = false;
         vm.step5 = false;
         vm.step6 = false;
         vm.reviewScreen = false;
@@ -457,6 +457,19 @@
         }
     }
 
+    vm.hideReviewScreen = function(){
+        vm.step6=true;
+        vm.reviewScreen = false;
+    };
+
+    vm.showReviewScreen = function() {
+        vm.reviewScreen = true;
+    };
+
+    vm.submitForm = function() {
+        $rootScope.notify('success', 'Challenge has been created successfully!');
+        $state.go('web.dashboard');
+    };
 
     }
 })();

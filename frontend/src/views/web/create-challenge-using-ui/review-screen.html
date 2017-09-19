@@ -1,0 +1,199 @@
+<!-- Review Screen-->
+
+<section ng-if="createChallengeUsingUi.reviewScreen" id="reviewScreen">
+    <div class="row reviewScreen">
+        <div class="col s12 m6 offset-m3">
+            <div class="ev-md-container ev-card-body">
+
+                <div class="pass-title">Review Challenge</div>
+                    <div class="input-field align-left">
+                        <input id="challengeTitle" name="challengeTitle" type="text" class="text-dark-black dark-autofill w-400" ng-model="createChallengeUsingUi.challenge.title" focus-if="createChallengeUsingUi.challenge.title" readonly>
+                        <label for="challengeTitle">Challenge Title</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <textarea id="shortDesc" class="materialize-textarea" name="shortDesc" ng-model="createChallengeUsingUi.challenge.short_description" focus-if="createChallengeUsingUi.challenge.short_description" readonly></textarea>
+                        <label for="shortDesc">Challenge Short Description</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <textarea id="Desc" class="materialize-textarea" name="Desc" ng-model="createChallengeUsingUi.challenge.description" focus-if="createChallengeUsingUi.challenge.description" readonly></textarea>
+                        <label for="shortDesc">Challenge Description</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <textarea id="Desc" class="materialize-textarea" name="Desc" ng-model="createChallengeUsingUi.challenge.evaluation_details" focus-if="createChallengeUsingUi.challenge.evaluation_details" readonly></textarea>
+                        <label for="shortDesc">Evaluation Details</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <textarea id="Desc" class="materialize-textarea" name="Desc" ng-model="createChallengeUsingUi.challenge.terms_and_conditions" focus-if="createChallengeUsingUi.challenge.terms_and_conditions" readonly></textarea>
+                        <label for="shortDesc">Terms And Conditions</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <textarea id="Desc" class="materialize-textarea" name="Desc" ng-model="createChallengeUsingUi.challenge.submission_guidelines" focus-if="createChallengeUsingUi.challenge.submission_guidelines" readonly></textarea>
+                        <label for="shortDesc">Submission Guidelines</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <input type="text" id="challengeStartDate" ng-model="createChallengeUsingUi.challenge.start_date" readonly value="{{createChallengeUsingUi.challenge.start_date}}" focus-if="createChallengeUsingUi.challenge.start_date">
+                        <label for="challengeStartDate">Start Date</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                        <input type="text" id="challengeEndDate" ng-model="createChallengeUsingUi.challenge.end_date" readonly value="{{createChallengeUsingUi.challenge.end_date}}" focus-if="createChallengeUsingUi.challenge.end_date">
+                        <label for="challengeEndDate">End Date</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                        <input type="checkbox" id="challengeEnableForum" name="challengeEnableForum" ng-model="createChallengeUsingUi.challenge.enable_forum" value="createChallengeUsingUi.challenge.enable_forum">
+                        <label for="challengeEnableForum">Enable Forum</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                        <input type="checkbox" id="challengePublicallyAvailable" name="challengePublicallyAvailable" ng-model="createChallengeUsingUi.challenge.published" value="createChallengeUsingUi.challenge.published">
+                        <label for="challengePublicallyAvailable" class="checkbox-field">Publically Available</label>
+                    </div>
+
+                    <div class="file-field input-field">
+                        <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                            <span>Challenge Image</span>
+                            <input name="challengeImageName" type="file" class="text-dark-black dark-autofill w-400" readonly>
+                        </div>
+                        <div class="file-path-wrapper">
+                            <input class="file-path validate" type="text" value="{{createChallengeUsingUi.challengeImageName}}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="file-field input-field add-margin-bottom">
+                        <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                            <span>Evaluation Script</span>
+                            <input name="evalScriptName" type="file" class="text-dark-black dark-autofill w-400" readonly>
+                        </div>
+                        <div class="file-path-wrapper">
+                            <input class="file-path validate eval-script" type="text" value="{{createChallengeUsingUi.evalScriptName}}" readonly>
+                        </div>
+                    </div>
+
+                <div class="pass-title">Review Leaderboard</div>
+                  <div ng-repeat="leader_board in createChallengeUsingUi.leaderboard">
+                  <div class="input-field align-left">
+                       <input id="{{'leaderboardId_'+ $index}}" name="{{'leaderboardId_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" value="{{$index+1}}" focus-if="{{leader_board.id}}" readonly>
+                          <label for="{{'leaderboardId_'+$index}}">Leader Board Id</label>
+                      </div>
+                      <div class="input-field align-left add-margin-bottom">
+                          <input id="{{'leaderboardSchema_'+$index}}" name="{{'leaderboardSchema_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" value="{{leader_board.schema}}" focus-if="{{leader_board.schema}}" readonly>
+                          <label for="{{'leaderboardSchema_'+$index}}"> Leader board Schema </label>
+                      </div>
+                  </div>
+
+                <div class="pass-title">Review Challenge Phase</div>
+                  <div ng-repeat = "challenge_phase in createChallengeUsingUi.challengePhase">
+                    <div class="input-field align-left">
+                        <input id="{{'challengePhaseName_'+$index}}" name="{{'challengePhaseName_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" value="{{challenge_phase.name}}" focus-if="challenge_phase.name" readonly>
+                        <label for="{{'challengePhaseName_'+$index}}">Challenge Phase Name</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <textarea id="{{'challengePhaseDesc_'+$index}}" class="materialize-textarea" name="{{'challengePhaseDesc_'+$index}}" ng-model="challenge_phase.description" focus-if="challenge_phase.description" readonly></textarea>
+                        <label for="shortDesc">Challenge Phase Description</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                        <input id="{{'challengePhaseCodename_'+$index}}" name="{{'challengePhaseCodename_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" value="{{challenge_phase.codename}}" focus-if="challenge_phase.codename" readonly>
+                        <label for="{{'challengePhaseCodename_'+$index}}">Challenge Phase Codename</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <input id="{{'challengeMaxSubmissionsPerDay_'+$index}}" name="{{'challengeMaxSubmissionsPerDay_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" value="{{challenge_phase.max_submissions_per_day}}" focus-if="challenge_phase.max_submissions_per_day" readonly>   
+                          <label for="{{'challengeMaxSubmissionsPerDay_'+$index}}">Max submissions per day</label>
+                        </div>
+
+                    <div class="input-field align-left">
+                        <input id="{{'challengeMaxSubmissions_'+$index}}" name="{{'challengeMaxSubmissions_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" value="{{challenge_phase.max_submissions}}" focus-if="challenge_phase.max_submissions" readonly>
+                        <label for="{{'challengeMaxSubmissions_'+$index}}">Max submissions Total</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <input type="text" id="{{'challengePhaseStartDate_'+$index}}" value="{{challenge_phase.start_date}}" class="md-input" focus-if="challenge_phase.start_date" readonly>
+                      <label for="{{'challengePhaseStartDate_'+$index}}">Start Date</label>
+                    </div>
+
+                    <div class="input-field align-left">
+                      <input type="text" id="{{'challengePhaseEndDate_'+$index}}" ng-model="challenge_phase.end_date" class="md-input" focus-if="challenge_phase.end_date" readonly>
+                      <label for="{{'challengePhaseEndDate_'+$index}}">End Date</label>
+                    </div>
+                        <div class="input-field align-left">
+                          <input type="checkbox" id="{{'challengePhaseLeaderboardPublic_'+$index}}" name="{{'challengePhaseLeaderboardPublic_'+$index}}" ng-model="challenge_phase.leaderboard_public" readonly>
+                          <label for="{{'challengePhaseLeaderboardPublic_'+$index}}">Leaderboard Public</label>
+                        </div>
+                        <div class="input-field align-left">
+                            <input type="checkbox" id="{{'challengePhasePublic_'+$index}}" name="{{'challengePhasePublic_'+$index}}" ng-model="challenge_phase.is_public" readonly>
+                                <label for="{{'challengePhasePublic_'+$index}}">Publically Available</label>
+                        </div>
+                        <br>
+                        <div class="file-field input-field add-margin-bottom">
+                            <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                                <span>Test Annotation File</span>
+                                <input id="{{'testAnnotation_'+$index}}"" name="{{'testAnnotation_'+$index}}" type="file" class="text-dark-black dark-autofill w-400" readonly>
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input class="file-path validate" type="text" value="{{challenge_phase.test_annotation}}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                <div class="pass-title">Review Dataset Split </div>
+                  <div ng-repeat="datasetSplit in createChallengeUsingUi.datasetSplit">
+
+                        <div class="input-field align-left">
+                         <input id="{{'datasetSplitId_'+$index}}" name="{{'datasetSplitId_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" value="{{$index+1}}" focus-if="datasetSplit.id" readonly>
+                          <label for="{{'datasetSplitId_'+$index}}">Dataset Split Id</label>
+                        </div>
+
+                        <div class="input-field align-left">
+                            <input id="{{'datasetSplitName_'+$index}}" name="{{'datasetSplitName_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" value="{{datasetSplit.name}}" focus-if="datasetSplit.name" readonly>
+                            <label for="{{'datasetSplitName_'+$index}}">Dataset Split Name</label>
+                        </div>
+
+                        <div class="input-field align-left add-margin-bottom">
+                            <input id="{{'datasetSplitCodename_'+$index}}" name="{{'datasetSplitCodename_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" value="{{datasetSplit.codename}}" focus-if="datasetSplit.codename" readonly>
+                            <label for="{{'datasetSplitCodename_'+$index}}">Dataset Split Codename</label>
+                        </div>
+                    </div>
+
+                <div class="pass-title">Review Challenge Phase Split </div>
+                  <div ng-repeat="challengePhaseSplit in createChallengeUsingUi.data">
+                  <div class="input-field align-left">
+                      <input name="{{'challengePhase_'+$index}}" id="{{'challengePhase_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" focus-if="challengePhaseSplit.challenge_phase" value="{{challengePhaseSplit.challenge_phase}}" readonly>
+                        <label for="{{'challengePhase_'+$index}}">Challenge Phase
+                        </label>
+                  </div>
+
+                  <div class="input-field align-left">
+                      <input type="text" id="{{'datasetSplit_'+$index}}" name="{{'datasetSplit_'+$index}}" value="{{challengePhaseSplit.dataset_split}}" class="text-dark-black w-400" focus-if="challengePhaseSplit.dataset_split" readonly>
+                        <label for="{{'datasetSplit_'+$index}}"> Dataset Split
+                        </label>
+                  </div>
+
+                  <div class="input-field align-left">
+                      <input type="text" id="{{'leaderboard_'+$index}}" value="{{challengePhaseSplit.leaderboard}}" name="{{'leaderboard_'+$index}}" focus-if="challengePhaseSplit.leaderboard" readonly>
+                        <label value="{{'leaderboard_'+$index}}">Leaderboard
+                        </label>
+                  </div>
+
+                  <div class="input-field align-left  add-margin-bottom">
+                      <input id="{{'visibility_'+$index}}" type="text" name="{{'visibility_'+$index}}" value="{{challengePhaseSplit.visibility}}" class="rm-margin" focus-if="challengePhaseSplit.visibility" readonly>
+                        <label id="{{'visibility_'+$index}}"> Visibility
+                        </label>
+                  </div>
+              </div>
+
+        </div>
+        </div>
+        <div class="cross" ng-click="createChallengeUsingUi.hideReviewScreen()">
+          <i class="fa fa-times"></i>
+        </div>
+    </div>
+</section>
