@@ -6,8 +6,8 @@
             <div class="ev-md-container ev-card-body">
                 <div class="pass-title">Create Challenge Phase</div>
                 <form name="challengePhaseCreateForm" ng-submit="createChallengeUsingUi.challengePhaseCreate(challengePhaseCreateForm.$valid)" novalidate>
-                  <div ng-repeat = "challenge_phase in createChallengeUsingUi.challenge_phases">
-                        <div class="input-field align-left">
+                  <div ng-repeat = "challenge_phase in createChallengeUsingUi.challengePhases">
+                        <div class="input-field align-left" ng-init="createChallengeUsingUi.getChallengePhaseIndex($index)">
                             <input id="{{'challengePhaseName_'+$index}}" name="{{'challengePhaseName_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="challenge_phase.name" required>
                                 <span class="form-icon form-icon-dark">
                                     <i class="fa fa-info-circle cursor-pointer">
@@ -145,7 +145,7 @@
                             </button>
                         </div>
                         <div class="col s12 m2">
-                            <button type="button" ng-if="createChallengeUsingUi.challenge_phases.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.removeNewChallengePhase($index)">
+                            <button type="button" ng-if="createChallengeUsingUi.challengePhases.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.removeChallengePhase($index)">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </div>

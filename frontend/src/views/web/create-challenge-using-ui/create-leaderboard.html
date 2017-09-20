@@ -7,7 +7,7 @@
                 <div class="pass-title">Create Leaderboard</div>
                     <form name="leaderboardCreateForm" ng-submit="createChallengeUsingUi.leaderboardCreate(leaderboardCreateForm.$valid)" novalidate>
                     <div ng-repeat="leaderboard in createChallengeUsingUi.leaderboards">
-                    <div class="input-field align-left">
+                    <div class="input-field align-left" ng-init="createChallengeUsingUi.getLeaderboardIndex($index)">
                          <input id="{{'leaderboardId_'+ $index}}" name="{{'leaderboardId_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="leaderboard.leaderboardId" pattern="[0-9]" required>
                                 <span class="form-icon form-icon-dark">
                                     <i class="fa fa-info-circle cursor-pointer">
@@ -55,8 +55,8 @@
                     <div ng-if="createChallengeUsingUi.isFormError" class="wrn-msg text-highlight align-right">
                     {{createChallengeUsingUi.formError}}
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </section>
