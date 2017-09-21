@@ -40,7 +40,7 @@
             <div class="grad-container text-med-black ">
                 <div class="row">
                     <div class="col s12 m6">
-                        <h4 class="mons-med-font">
+                        <h4>
                         Featured Challenge
                         </h4>
                         <div class="display-large">
@@ -60,22 +60,22 @@
                             </h4>
                             </div>
                             <p>
-                                <span class="w-500 text-light-black mons-med-font">Organized by: </span> <span class="w-500 mons-med-font">{{main.featuredChallenge.creator.team_name}}</span>
+                                <span class="w-500 text-light-black">Organized by: </span> <span class="w-500">{{main.featuredChallenge.creator.team_name}}</span>
                             </p>
                             <p>
-                                <span class="text-dark-black mons-reg-font">{{main.featuredChallenge.short_description}}<span ng-if="main.isMore">...</span></span>
+                                <span class="text-dark-black">{{main.featuredChallenge.short_description}}<span ng-if="main.isMore">...</span></span>
                             </p>
                             <p>
-                                <span class="w-500 text-light-black mons-med-font">Status: </span> <span class="w-500 mons-med-font"> In Progress</span>
+                                <span class="w-500 text-light-black">Status: </span> <span class="w-500"> In Progress</span>
                                 <span class="right">
-                                    <a ng-show="isAuth" class="view-more mons-reg-font" ui-sref="web.challenge-main.challenge-page({challengeId:main.featured-challenge/Challenge.id})">view more <i class="fa fa-external-link"></i></a>
-                                    <a ng-show="!isAuth" class="view-more mons-reg-font" ui-sref="featured-challenge-page({challengeId:main.featuredChallenge.id})">view more <i class="fa fa-external-link"></i></a>
+                                    <a ng-show="isAuth" class="view-more" ui-sref="web.challenge-main.challenge-page({challengeId:main.featured-challenge/Challenge.id})">view more <i class="fa fa-external-link"></i></a>
+                                    <a ng-show="!isAuth" class="view-more" ui-sref="featured-challenge-page({challengeId:main.featuredChallenge.id})">view more <i class="fa fa-external-link"></i></a>
                                 </span>
                             </p>
                         </div>
                         <div ng-if="!main.isChallenge">
                             <p>
-                                <span class="text-dark-black mons-reg-font">Sorry! there are no featured challenges. Please check again after a while.</span>
+                                <span class="text-dark-black">Sorry! there are no featured challenges. Please check again after a while.</span>
                             </p>
                         </div>
                         <div class="display-small">
@@ -95,8 +95,8 @@
                 <div class="row">
                     <div class="col s12">
                         <div class="align-center">
-                            <h4 class="mons-med-font"><div>What is EvalAI all about?</h4>
-                            <p><span class="text-dark-black w-500 mons-light-font">EvalAI is an open-source web platform for organizing and participating in competitions to push the state of the art on AI tasks.</span>
+                            <h4><div>What is EvalAI all about?</h4>
+                            <p><span class="text-dark-black w-500">EvalAI is an open-source web platform for organizing and participating in competitions to push the state of the art on AI tasks.</span>
                                 <!-- <ul class="text-med-black">
                                 <li>
                                     EvailAI details one performance on Artificial Intelligence challenges
@@ -123,13 +123,13 @@
                 <div class="row">
                     <div class="col s12">
                         <div class="align-center">
-                            <h4 class="mons-med-font"><div>Who uses EvalAI?</div></h4>
-                             <p><span class="text-med-black mons-reg-font">Several Research Organizations have already started hosting their challenges on EvalAI. Some of them are</span>
+                            <h4><div>Who uses EvalAI?</div></h4>
+                             <p><span class="text-med-black">Several Research Organizations have already started hosting their challenges on EvalAI. Some of them are</span>
                              </p>
                            <div class="row">
                                <div class="col s12 l2">
                                     <div class="org-logo">
-                                        <a href="https://research.fb.com/category/facebook-ai-research-fair/" target="_blank"><img src="dist/images/fair.png"></a>
+                                        <a href="https://research.fb.com/category/facebook-ai-research-fair/" target="_blank"><img src="dist/images/fb.png"></a>
                                     </div>
                                </div>
                                <div class="col s12 l3">

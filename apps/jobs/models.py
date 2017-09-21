@@ -64,14 +64,15 @@ class Submission(TimeStampedModel):
     challenge_phase = models.ForeignKey(
         ChallengePhase, related_name='submissions')
     created_by = models.ForeignKey(User)
-    status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
+    status = models.CharField(max_length=30, choices=STATUS_OPTIONS, db_index=True)
     is_public = models.BooleanField(default=False)
+    is_flagged = models.BooleanField(default=False)
     submission_number = models.PositiveIntegerField(default=0)
     download_count = models.IntegerField(default=0)
     output = models.TextField(blank=True, null=True)
-    submitted_at = models.DateTimeField(auto_now_add=True)
-    started_at = models.DateTimeField(null=True, blank=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    started_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
     input_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"))
     stdout_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
@@ -80,11 +81,11 @@ class Submission(TimeStampedModel):
         upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     submission_metadata_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
-    execution_time_limit = models.PositiveIntegerField(default=300)
-    method_name = models.CharField(max_length=1000, null=True)
-    method_description = models.TextField(blank=True, null=True)
-    publication_url = models.CharField(max_length=1000, null=True)
-    project_url = models.CharField(max_length=1000, null=True)
+    execution_time_limit = models.PositiveIntegerField(default=300, db_index=True)
+    method_name = models.CharField(max_length=1000, null=True, db_index=True)
+    method_description = models.TextField(blank=True, null=True, db_index=True)
+    publication_url = models.CharField(max_length=1000, null=True, db_index=True)
+    project_url = models.CharField(max_length=1000, null=True, db_index=True)
 
     def __unicode__(self):
         return '{}'.format(self.id)
@@ -106,11 +107,14 @@ class Submission(TimeStampedModel):
 
     def save(self, *args, **kwargs):
 
-        if hasattr(self, 'status'):
-            if self.status == Submission.RUNNING:
-                self.started_at = timezone.now()
-            if self.status == Submission.FINISHED:
-                self.completed_at = timezone.now()
+        # Only save the completed_at time when the object is created.
+        # Dont update the completed_at field at the time of updating submission meta-data or status.
+        if self._state.adding is True:
+            if hasattr(self, 'status'):
+                if self.status == Submission.RUNNING:
+                    self.started_at = timezone.now()
+                if self.status == Submission.FINISHED:
+                    self.completed_at = timezone.now()
 
         if not self.pk:
             sub_num = Submission.objects.filter(
