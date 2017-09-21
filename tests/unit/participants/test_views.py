@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
@@ -567,8 +567,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.url = reverse_lazy(
             'participants:get_teams_and_corresponding_challenges_for_a_participant',
             kwargs={'challenge_pk': self.challenge1.pk})
-        
-        self.time = datetime.now()
+
+        self.time = timezone.now()
 
     def test_get_teams_and_corresponding_challenges_for_a_participant(self):
 
@@ -608,7 +608,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 }
             ],
             "is_challenge_host": False,
-            "time": self.time
+            "time": "{0}{1}".format(self.time.isoformat(), 'Z').replace("+00:00", "")
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -628,7 +628,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 }
             ],
             "is_challenge_host": False,
-            "time": self.time
+            "time": "{0}{1}".format(self.time.isoformat(), 'Z').replace("+00:00", "")
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -641,7 +641,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         expected = {
             "challenge_participant_team_list": [],
             "is_challenge_host": False,
-            "time": self.time
+            "time": "{0}{1}".format(self.time.isoformat(), 'Z').replace("+00:00", "")
         }
 
         response = self.client.get(self.url, {})
