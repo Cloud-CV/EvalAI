@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+import datetime
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -206,6 +207,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(request, challenge_
     serializer = ChallengeParticipantTeamListSerializer(ChallengeParticipantTeamList(challenge_participated_teams))
     response_data = serializer.data
     response_data['is_challenge_host'] = is_challenge_host
+    response_data['time'] = datetime.datetime.now()
     return Response(response_data, status=status.HTTP_200_OK)
 
 
