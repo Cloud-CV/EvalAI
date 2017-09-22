@@ -608,7 +608,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 }
             ],
             "is_challenge_host": False,
-            "time": self.time
+            "time": "{0}{1}".format(self.time.isoformat(), 'Z').replace("+00:00", "")
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -628,7 +628,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 }
             ],
             "is_challenge_host": False,
-            "time": self.time
+            "time": "{0}{1}".format(self.time.isoformat(), 'Z').replace("+00:00", "")
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -641,7 +641,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         expected = {
             "challenge_participant_team_list": [],
             "is_challenge_host": False,
-            "time": self.time
+            "time": "{0}{1}".format(self.time.isoformat(), 'Z').replace("+00:00", "")
         }
 
         response = self.client.get(self.url, {})
