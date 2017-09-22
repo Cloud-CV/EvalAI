@@ -115,7 +115,7 @@
                                 }
 
                             } catch (error) {
-                                $rootScope.notify("error","Your data is invalid.");
+                                $rootScope.notify("error","Some error occurred. Please try again later.");
                             }
                         }
 
@@ -164,7 +164,7 @@
                                     vm.FormError = response.data.non_field_errors[0];
                                 }
                             } catch (error) {
-                                $rootScope.notify("error","Your data is invalid.");
+                                $rootScope.notify("error","Some error occurred. Please try again later.");
                             }
                         }
                         vm.stopLoader();
