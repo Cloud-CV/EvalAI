@@ -216,7 +216,9 @@ def leaderboard(request, challenge_phase_split_id):
 
     # Get all the successful submissions related to the challenge phase split
     leaderboard_data = LeaderboardData.objects.filter(
-        challenge_phase_split=challenge_phase_split, submission__is_public=True).order_by('created_at')
+        challenge_phase_split=challenge_phase_split,
+        submission__is_public=True,
+        submission__is_flagged=False).order_by('created_at')
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',
