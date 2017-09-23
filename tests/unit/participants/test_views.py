@@ -567,6 +567,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.url = reverse_lazy(
             'participants:get_teams_and_corresponding_challenges_for_a_participant',
             kwargs={'challenge_pk': self.challenge1.pk})
+            
+        self.time = timezone.now().replace(microsecond=0)
 
     def test_get_teams_and_corresponding_challenges_for_a_participant(self):
 
@@ -605,7 +607,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     }
                 }
             ],
-            "is_challenge_host": False
+            "is_challenge_host": False,
+            "time": "{0}{1}".format(self.time.isoformat(), 'Z').replace("+00:00", "")
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -624,7 +627,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     }
                 }
             ],
-            "is_challenge_host": False
+            "is_challenge_host": False,
+            "time": "{0}{1}".format(self.time.isoformat(), 'Z').replace("+00:00", "")
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -636,7 +640,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
         expected = {
             "challenge_participant_team_list": [],
-            "is_challenge_host": False
+            "is_challenge_host": False,
+            "time": "{0}{1}".format(self.time.isoformat(), 'Z').replace("+00:00", "")
         }
 
         response = self.client.get(self.url, {})
