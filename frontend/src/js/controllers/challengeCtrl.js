@@ -32,6 +32,7 @@
         vm.isChallengeHost = false;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
+        vm.currentDate = null;
 
 
         // loader for existing teams
@@ -79,6 +80,7 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
+                            vm.currentDate = details.time;
                             for (var i in details.challenge_participant_team_list) {
                                 if (details.challenge_participant_team_list[i].challenge !== null && details.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
                                     vm.isParticipated = true;
