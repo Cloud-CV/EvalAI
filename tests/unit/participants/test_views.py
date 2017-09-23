@@ -567,7 +567,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.url = reverse_lazy(
             'participants:get_teams_and_corresponding_challenges_for_a_participant',
             kwargs={'challenge_pk': self.challenge1.pk})
- 
+
         self.time = timezone.now().replace(microsecond=0)
 
     def test_get_teams_and_corresponding_challenges_for_a_participant(self):
