@@ -9,7 +9,7 @@
 
                 <div ng-repeat="challengePhaseSplit in createChallengeUsingUi.challengePhaseSplits">
 
-                  <div class="row">
+                  <div class="row" ng-init="createChallengeUsingUi.getChallengePhaseSplitsIndex($index)">
                     <div class="rm-padding">
                       <md-select name="{{'challengePhase_'+$index}}" ng-model="challengePhaseSplit.challenge_phase" placeholder="Challenge Phase" class="rm-margin" required>
                         <md-option value="{{key.id}}" ng-repeat="key in createChallengeUsingUi.challengePhase">{{key.name}}
@@ -63,8 +63,8 @@
                     <div ng-if="createChallengeUsingUi.isFormError" class="wrn-msg text-highlight align-right">
                       {{createChallengeUsingUi.formError}}
                     </div>
-                </div>
-            </form>
+                </form>
+              </div>
         </div>
     </div>
 </section>
