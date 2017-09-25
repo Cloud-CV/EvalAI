@@ -21,8 +21,8 @@
         vm.formError = {};
         vm.step1 = false;
         vm.step2 = false;
-        vm.step3 = true;
-        vm.step4 = false;
+        vm.step3 = false;
+        vm.step4 = true;
         vm.step5 = false;
         vm.step6 = false;
         vm.reviewScreen = false;
@@ -277,12 +277,20 @@
             }
         ];
 
+        vm.datasetSplitIndexArray = [];
+
+        vm.getdatasetSplitIndex = function(index) {
+            vm.datasetSplitIndexArray.push(index);
+        };
+
         vm.addNewDatasetSplit = function() {
             vm.datasetSplits.push({"name": null, "codename": null});
         };
 
-        vm.removeNewDatasetSplit = function(index) {
-            vm.datasetSplits.splice(index, 1);
+        vm.removeNewDatasetSplit = function() {
+            var arrLen = vm.datasetSplitIndexArray.length;
+            vm.datasetSplits.splice(vm.datasetSplitIndexArray[arrLen-1], 1);
+            vm.datasetSplitIndexArray.pop();
         };
 
         vm. datasetSplitCreate = function(datasetSplitCreateFormValid) {
@@ -334,6 +342,12 @@
              "visibility": null}
         ];
 
+        vm.challengePhaseSplitsIndexArray = [];
+
+        vm.getChallengePhaseSplitsIndex = function(index){
+            vm.challengePhaseSplitsIndexArray.push(index);
+        };
+
         vm.addNewChallengePhaseSplit = function() {
             vm.challengePhaseSplits.push(
             {"challenge_phase": null,
@@ -342,8 +356,10 @@
              "visibility": null});
             };
 
-        vm.removeNewChallengePhaseSplit = function(index) {
-            vm.challengePhaseSplits.splice(index, 1);
+        vm.removeNewChallengePhaseSplit = function() {
+            var arrLen = vm.challengePhaseSplitsIndexArray.length;
+            vm.challengePhaseSplits.splice(vm.challengePhaseSplitsIndexArray[arrLen-1], 1);
+            vm.challengePhaseSplitsIndexArray.pop();
         };
 
         vm.visibility = [
@@ -358,7 +374,6 @@
 
         vm. challengePhaseSplitCreate = function(challengePhaseSplitCreateFormValid) {
             if (challengePhaseSplitCreateFormValid) {
-                console.log("1");
                 var parameters = {};
                 parameters.method = 'POST';
                 parameters.url = 'challenges/challenge/create/challenge_phase_split/step_5/';

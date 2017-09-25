@@ -7,7 +7,7 @@
                 <div class="pass-title">Create Dataset Split</div>
                 <form name="datasetSplitCreateForm" ng-submit="createChallengeUsingUi.datasetSplitCreate(datasetSplitCreateForm.$valid)" novalidate>
                 <div ng-repeat="datasetSplit in createChallengeUsingUi.datasetSplits">
-                    <div class="input-field align-left">
+                    <div class="input-field align-left" ng-init="createChallengeUsingUi.getdatasetSplitIndex($index)">
                          <input id="{{'datasetSplitId_'+$index}}" name="{{'datasetSplitId_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="datasetSplit.datasetSplitId" pattern="[0-9]" required>
                                 <span class="form-icon form-icon-dark">
                                     <i class="fa fa-info-circle cursor-pointer">
