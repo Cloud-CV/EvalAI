@@ -26,7 +26,11 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
-from challenges.utils import get_challenge_model
+from challenges.utils import (get_challenge_model,
+                              get_challenge_phase_model,
+                              get_challenge_phase_split_model,
+                              get_dataset_split_model,
+                              get_leaderboard_model)
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import get_challenge_host_teams_for_user, is_user_a_host_of_challenge, get_challenge_host_team_model
 from jobs.models import Submission
@@ -36,14 +40,20 @@ from participants.utils import (get_participant_teams_for_user,
                                 has_user_participated_in_challenge,
                                 get_participant_team_id_of_user_for_a_challenge,)
 
-from .models import Challenge, ChallengePhase, ChallengePhaseSplit, ChallengeConfiguration
+from .models import (Challenge,
+                     ChallengePhase,
+                     ChallengePhaseSplit,
+                     ChallengeConfiguration,
+                     StarChallenge)
 from .permissions import IsChallengeCreator
 from .serializers import (ChallengeConfigSerializer,
                           ChallengePhaseSerializer,
+                          ChallengePhaseCreateSerializer,
                           ChallengePhaseSplitSerializer,
                           ChallengeSerializer,
                           DatasetSplitSerializer,
                           LeaderboardSerializer,
+                          StarChallengeSerializer,
                           ZipChallengeSerializer,
                           ZipChallengePhaseSplitSerializer,)
 from .utils import get_file_content
@@ -75,11 +85,13 @@ def challenge_list(request, challenge_host_team_pk):
                 'error': 'Sorry, you do not belong to this Host Team!'}
             return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-        serializer = ChallengeSerializer(data=request.data,
-                                         context={'challenge_host_team': challenge_host_team,
-                                                  'request': request})
+        serializer = ZipChallengeSerializer(data=request.data,
+                                            context={'challenge_host_team': challenge_host_team,
+                                                     'request': request})
         if serializer.is_valid():
             serializer.save()
+            challenge = get_challenge_model(serializer.instance.pk)
+            serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -109,18 +121,20 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
 
     elif request.method in ['PUT', 'PATCH']:
         if request.method == 'PATCH':
-            serializer = ChallengeSerializer(challenge,
-                                             data=request.data,
-                                             context={'challenge_host_team': challenge_host_team,
-                                                      'request': request},
-                                             partial=True)
+            serializer = ZipChallengeSerializer(challenge,
+                                                data=request.data,
+                                                context={'challenge_host_team': challenge_host_team,
+                                                         'request': request},
+                                                partial=True)
         else:
-            serializer = ChallengeSerializer(challenge,
-                                             data=request.data,
-                                             context={'challenge_host_team': challenge_host_team,
-                                                      'request': request})
+            serializer = ZipChallengeSerializer(challenge,
+                                                data=request.data,
+                                                context={'challenge_host_team': challenge_host_team,
+                                                         'request': request})
         if serializer.is_valid():
             serializer.save()
+            challenge = get_challenge_model(serializer.instance.pk)
+            serializer = ChallengeSerializer(challenge)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
@@ -246,7 +260,7 @@ def get_challenge_by_pk(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenges_based_on_teams(request):
-    q_params = {}
+    q_params = {'approved_by_admin': True, 'published': True}
     participant_team_id = request.query_params.get('participant_team', None)
     challenge_host_team_id = request.query_params.get('host_team', None)
     mode = request.query_params.get('mode', None)
@@ -299,10 +313,12 @@ def challenge_phase_list(request, challenge_pk):
         return paginator.get_paginated_response(response_data)
 
     elif request.method == 'POST':
-        serializer = ChallengePhaseSerializer(data=request.data,
-                                              context={'challenge': challenge})
+        serializer = ChallengePhaseCreateSerializer(data=request.data,
+                                                    context={'challenge': challenge})
         if serializer.is_valid():
             serializer.save()
+            challenge_phase = get_challenge_phase_model(serializer.instance.pk)
+            serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -332,16 +348,18 @@ def challenge_phase_detail(request, challenge_pk, pk):
 
     elif request.method in ['PUT', 'PATCH']:
         if request.method == 'PATCH':
-            serializer = ChallengePhaseSerializer(challenge_phase,
-                                                  data=request.data,
-                                                  context={'challenge': challenge},
-                                                  partial=True)
+            serializer = ChallengePhaseCreateSerializer(challenge_phase,
+                                                        data=request.data,
+                                                        context={'challenge': challenge},
+                                                        partial=True)
         else:
-            serializer = ChallengePhaseSerializer(challenge_phase,
-                                                  data=request.data,
-                                                  context={'challenge': challenge})
+            serializer = ChallengePhaseCreateSerializer(challenge_phase,
+                                                        data=request.data,
+                                                        context={'challenge': challenge})
         if serializer.is_valid():
             serializer.save()
+            challenge_phase = get_challenge_phase_model(serializer.instance.pk)
+            serializer = ChallengePhaseSerializer(challenge_phase)
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
@@ -365,10 +383,9 @@ def challenge_phase_split_list(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     challenge_phase_split = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
-    paginator, result_page = paginated_queryset(challenge_phase_split, request)
-    serializer = ChallengePhaseSplitSerializer(result_page, many=True)
+    serializer = ChallengePhaseSplitSerializer(challenge_phase_split, many=True)
     response_data = serializer.data
-    return paginator.get_paginated_response(response_data)
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @throttle_classes([UserRateThrottle])
@@ -496,8 +513,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if not isfile(test_annotation_file_path):
             response_data = {
                 'error': ('No test annotation file is present in the zip file'
-                          'for challenge phase {} Please try uploading'
-                          'again the zip file after adding test annotation file!'.format(data['name']))
+                          'for challenge phase \'{}\'. Please try uploading '
+                          'again after adding test annotation file!'.format(data['name']))
             }
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -611,9 +628,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     with open(test_annotation_file_path, 'rb') as test_annotation_file:
                         challenge_test_annotation_file = ContentFile(test_annotation_file.read(),
                                                                      test_annotation_file_path)
-                serializer = ChallengePhaseSerializer(data=data,
-                                                      context={'challenge': challenge,
-                                                               'test_annotation': challenge_test_annotation_file})
+                serializer = ChallengePhaseCreateSerializer(data=data,
+                                                            context={'challenge': challenge,
+                                                                     'test_annotation': challenge_test_annotation_file})
                 if serializer.is_valid():
                     serializer.save()
                     challenge_phase_ids[str(data['id'])] = serializer.instance.pk
@@ -657,7 +674,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if zip_config:
             zip_config.challenge = challenge
             zip_config.save()
-            response_data = {'success': 'Challenge {} is successfully created'.format(challenge.pk)}
+            response_data = {'success': 'Challenge {} has been created successfully and'
+                                        ' sent for review to EvalAI Admin.'.format(challenge.title)}
             return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:
@@ -706,8 +724,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
-
-        submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
+        submissions = Submission.objects.filter(challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submissions, request)
         try:
             serializer = ChallengeSubmissionManagementSerializer(result_page, many=True, context={'request': request})
@@ -744,19 +761,29 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def download_all_submissions_file(request, challenge_pk, file_type):
+def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_type):
 
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
+    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
+    try:
+        challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk, challenge=challenge)
+    except ChallengePhase.DoesNotExist:
+        response_data = {'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
     if file_type == 'csv':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(submissions, many=True, context={'request': request})
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
             writer = csv.writer(response)
             writer.writerow(['id',
                              'Team Name',
+                             'Team Members',
+                             'Team Members Email Id',
                              'Challenge Phase',
                              'Status',
                              'Created By',
@@ -769,25 +796,245 @@ def download_all_submissions_file(request, challenge_pk, file_type):
                              'Submission Result File',
                              'Submission Metadata File',
                              ])
-            for submission in submissions:
-                writer.writerow([submission.id,
-                                 submission.participant_team,
-                                 submission.challenge_phase,
-                                 submission.status,
-                                 submission.created_by,
-                                 submission.execution_time,
-                                 submission.submission_number,
-                                 submission.input_file,
-                                 submission.stdout_file,
-                                 submission.stderr_file,
-                                 submission.created_at,
-                                 submission.submission_result_file,
-                                 submission.submission_metadata_file,
+            for submission in submissions.data:
+                writer.writerow([submission['id'],
+                                 submission['participant_team'],
+                                 ",".join(username['username'] for username in submission['participant_team_members']),
+                                 ",".join(email['email'] for email in submission['participant_team_members']),
+                                 submission['challenge_phase'],
+                                 submission['status'],
+                                 submission['created_by'],
+                                 submission['execution_time'],
+                                 submission['submission_number'],
+                                 submission['input_file'],
+                                 submission['stdout_file'],
+                                 submission['stderr_file'],
+                                 submission['created_at'],
+                                 submission['submission_result_file'],
+                                 submission['submission_metadata_file'],
+                                 ])
+            return response
+
+        elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
+
+            # get participant team object for the user for a particular challenge.
+            participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+                request.user, challenge_pk)
+
+            # Filter submissions on the basis of challenge phase for a participant.
+            submissions = Submission.objects.filter(participant_team=participant_team_pk,
+                                                    challenge_phase=challenge_phase).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(submissions, many=True, context={'request': request})
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
+            writer = csv.writer(response)
+            writer.writerow(['Team Name',
+                             'Method Name',
+                             'Status',
+                             'Execution Time(sec.)',
+                             'Submitted File',
+                             'Result File',
+                             'Stdout File',
+                             'Stderr File',
+                             'Submitted At',
+                             ])
+            for submission in submissions.data:
+                writer.writerow([submission['participant_team'],
+                                 submission['method_name'],
+                                 submission['status'],
+                                 submission['execution_time'],
+                                 submission['input_file'],
+                                 submission['submission_result_file'],
+                                 submission['stdout_file'],
+                                 submission['stderr_file'],
+                                 submission['created_at'],
                                  ])
             return response
         else:
-            response_data = {'error': 'Only Challenge Hosts can use the export feature!'}
+            response_data = {'error': 'You are neither host nor participant of the challenge!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def create_leaderboard(request):
+    """
+    Creates a leaderboard
+    """
+    serializer = LeaderboardSerializer(data=request.data, many=True, allow_empty=False)
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', 'PATCH'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_or_update_leaderboard(request, leaderboard_pk):
+    """
+    Returns or Updates a leaderboard
+    """
+    leaderboard = get_leaderboard_model(leaderboard_pk)
+
+    if request.method == 'PATCH':
+        serializer = LeaderboardSerializer(leaderboard,
+                                           data=request.data,
+                                           partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'GET':
+        serializer = LeaderboardSerializer(leaderboard)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def create_dataset_split(request):
+    """
+    Creates a dataset split
+    """
+    serializer = DatasetSplitSerializer(data=request.data, many=True, allow_empty=False)
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    else:
+        response_data = serializer.errors
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', 'PATCH'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_or_update_dataset_split(request, dataset_split_pk):
+    """
+    Returns or Updates a dataset split
+    """
+    dataset_split = get_dataset_split_model(dataset_split_pk)
+    if request.method == 'PATCH':
+        serializer = DatasetSplitSerializer(dataset_split,
+                                            data=request.data,
+                                            partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            response_data = serializer.errors
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'GET':
+        serializer = DatasetSplitSerializer(dataset_split)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def create_challenge_phase_split(request):
+    """
+    Create Challenge Phase Split
+    """
+    serializer = ZipChallengePhaseSplitSerializer(data=request.data, many=True, allow_empty=False)
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    else:
+        response_data = serializer.errors
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', 'PATCH'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
+    """
+    Returns or Updates challenge phase split
+    """
+    challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+
+    if request.method == 'PATCH':
+        serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split,
+                                                      data=request.data,
+                                                      partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'GET':
+        serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', 'POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def star_challenge(request, challenge_pk):
+    """
+    API endpoint for starring and unstarring
+    a challenge.
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if request.method == 'POST':
+        try:
+            starred_challenge = StarChallenge.objects.get(user=request.user,
+                                                          challenge=challenge)
+            starred_challenge.is_starred = not starred_challenge.is_starred
+            starred_challenge.save()
+            serializer = StarChallengeSerializer(starred_challenge)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        except:
+            serializer = StarChallengeSerializer(data=request.data, context={'request': request,
+                                                                             'challenge': challenge,
+                                                                             'is_starred': True})
+            if serializer.is_valid():
+                serializer.save()
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'GET':
+        try:
+            starred_challenge = StarChallenge.objects.get(user=request.user,
+                                                          challenge=challenge)
+            serializer = StarChallengeSerializer(starred_challenge)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        except:
+            starred_challenge = StarChallenge.objects.filter(challenge=challenge)
+            if not starred_challenge:
+                response_data = {'is_starred': False,
+                                 'count': 0}
+                return Response(response_data, status=status.HTTP_200_OK)
+
+            serializer = StarChallengeSerializer(starred_challenge, many=True)
+            response_data = {'is_starred': False,
+                             'count': serializer.data[0]['count']}
+            return Response(response_data, status=status.HTTP_200_OK)

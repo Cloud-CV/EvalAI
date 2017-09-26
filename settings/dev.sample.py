@@ -8,11 +8,11 @@ DEBUG = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'evalai',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': 5432,
+        'NAME': os.environ.get("POSTGRES_NAME", 'evalai'),  # noqa: ignore=F405
+        'USER': os.environ.get("POSTGRES_USER", 'postgres'),  # noqa: ignore=F405
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD", 'postgres'),  # noqa: ignore=F405
+        'HOST': os.environ.get("POSTGRES_HOST", 'localhost'),  # noqa: ignore=F405
+        'PORT': os.environ.get("POSTGRES_PORT", 5432),  # noqa: ignore=F405
     }
 }
 
@@ -27,7 +27,9 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 INSTALLED_APPS += [ # noqa: ignore=F405
     'django_spaghetti',
     'autofixture',
-    'django_extensions'
+    'debug_toolbar',
+    'django_extensions',
+    'silk',
 ]
 
 SPAGHETTI_SAUCE = {
@@ -42,3 +44,10 @@ CACHES = {
 }
 
 MEDIA_URL = "/media/"
+
+MIDDLEWARE += [ # noqa: ignore=F405
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'silk.middleware.SilkyMiddleware',
+]
+
+SILKY_PYTHON_PROFILER = True

@@ -266,7 +266,7 @@ CACHES = {
 }
 
 RABBITMQ_PARAMETERS = {
-    'HOST': 'localhost',
+    'HOST': os.environ.get("RABBITMQ_HOST", 'localhost'),
     'EVALAI_EXCHANGE': {
         'NAME': 'evalai_submissions',
         'TYPE': 'topic',

@@ -7,7 +7,8 @@ from .models import (Challenge,
                      ChallengePhase,
                      ChallengePhaseSplit,
                      DatasetSplit,
-                     Leaderboard,)
+                     Leaderboard,
+                     StarChallenge)
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
@@ -42,22 +43,19 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             challenge = context.get('challenge')
             if challenge:
                 kwargs['data']['challenge'] = challenge.pk
-            test_annotation = context.get('test_annotation')
-            if test_annotation:
-                kwargs['data']['test_annotation'] = test_annotation
 
     class Meta:
         model = ChallengePhase
         fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
-                  'is_public', 'is_active', 'codename', 'test_annotation',)
+                  'is_public', 'is_active', 'codename',)
 
 
 class DatasetSplitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DatasetSplit
-        fields = '__all__'
+        fields = ('id', 'name', 'codename')
 
 
 class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
@@ -99,7 +97,7 @@ class LeaderboardSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Leaderboard
-        fields = '__all__'
+        fields = ('id', 'schema')
 
 
 class ZipChallengeSerializer(ChallengeSerializer):
@@ -131,4 +129,53 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = ChallengePhaseSplit
-        fields = '__all__'
+        fields = ('id', 'challenge_phase', 'dataset_split', 'leaderboard', 'visibility')
+
+
+class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
+
+    is_active = serializers.ReadOnlyField()
+
+    def __init__(self, *args, **kwargs):
+        super(ChallengePhaseCreateSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get('context')
+        if context:
+            challenge = context.get('challenge')
+            if challenge:
+                kwargs['data']['challenge'] = challenge.pk
+            test_annotation = context.get('test_annotation')
+            if test_annotation:
+                kwargs['data']['test_annotation'] = test_annotation
+
+    class Meta:
+        model = ChallengePhase
+        fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
+                  'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
+                  'is_public', 'is_active', 'codename', 'test_annotation')
+
+
+class StarChallengeSerializer(serializers.ModelSerializer):
+
+    count = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super(StarChallengeSerializer, self).__init__(*args, **kwargs)
+        context = kwargs.get('context')
+        if context:
+            challenge = context.get('challenge')
+            if challenge:
+                kwargs['data']['challenge'] = challenge.pk
+            request = context.get('request')
+            if request:
+                kwargs['data']['user'] = request.user.pk
+            starred = context.get('is_starred')
+            if starred:
+                kwargs['data']['is_starred'] = starred
+
+    class Meta:
+        model = StarChallenge
+        fields = ('user', 'challenge', 'count', 'is_starred')
+
+    def get_count(self, obj):
+        count = StarChallenge.objects.filter(challenge=obj.challenge, is_starred=True).count()
+        return count

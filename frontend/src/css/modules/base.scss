@@ -9,45 +9,12 @@
     display: none !important;
 }
 
-
-/*needed fonts*/
-
-@font-face {
-    font-family: "geo";
-    src: url("../fonts/Geometos.ttf");
+.display-large {
+    display: block;
 }
-
-@font-face {
-    font-family: "mons-lig";
-    src: url("../fonts/Montserrat-Light.ttf");
+.display-small {
+    display: none;
 }
-
-@font-face {
-    font-family: "mons-med";
-    src: url("../fonts/Montserrat-Medium.ttf");
-}
-
-@font-face {
-    font-family: "mons-reg";
-    src: url("../fonts/Montserrat-Regular.ttf");
-}
-
-.geo-font {
-    font-family: 'geo';
-}
-
-.mons-lig-font {
-    font-family: 'mons-lig';
-}
-
-.mons-med-font {
-    font-family: 'mons-med';
-}
-
-.mons-reg-font {
-    font-family: 'mons-reg';
-}
-
 
 /* autofill transparent */
 
@@ -67,13 +34,34 @@ input.dark-autofill:-webkit-autofill:active {
     -webkit-text-fill-color: #4d4d4d !important;
 }
 
+input[type="radio"].selectTeam + label {
+    font-size: 15px;
+    color: $med-black;
+    vertical-align: middle;
+}
+
+[type="radio"]:checked + label:after,
+[type="radio"].with-gap:checked + label:after {
+    background-color: #252833;
+}
+
+[type="radio"]:checked + label:after,
+[type="radio"].with-gap:checked + label:before,
+[type="radio"].with-gap:checked + label:after {
+    border: 2px solid #252833;
+}
+
 body,
 html {
-    font-family: 'mons-reg';
+    font-family: 'Roboto';
 }
 
 a {
     color: $med-gray;
+}
+
+p.no-top-para {
+    margin-top: 2px;
 }
 
 
@@ -108,8 +96,16 @@ a {
     font-size: 14px;
 }
 
+.fs-16 {
+    font-size: 14px;
+}
+
 .fs-18 {
     font-size: 18px;
+}
+
+.fs-20 {
+    font-size: 20px;
 }
 
 .pointer {
@@ -119,7 +115,6 @@ a {
 .rm-row-bot {
     margin-bottom: 0px;
 }
-
 
 /*inline list*/
 
@@ -136,14 +131,12 @@ span.inline {
     }
 }
 
-
 /*clearfix*/
 
 .clearfix {
     clear: both;
     content: '';
 }
-
 
 /*position default*/
 
@@ -156,12 +149,12 @@ span.inline {
 }
 
 
+
 /*margin for column*/
 
 .ev-mt-50 {
     margin-top: 50px;
 }
-
 
 /*bg color*/
 
@@ -184,7 +177,6 @@ span.inline {
 .ev-super-light-bg {
     background-color: $grad-super-light;
 }
-
 
 /*main intro page*/
 
@@ -309,7 +301,6 @@ nav {
     background: $light-gray;
 }
 
-
 /*card styles*/
 
 .ev-card-panel {
@@ -320,7 +311,7 @@ nav {
     height: auto;
     border-radius: 4px;
     overflow: hidden;
-    box-shadow: 0px 0px 12px #d6dbf1;
+    box-shadow: 0px 0px 12px $shadow-black;
 }
 
 .ev-card-content {
@@ -368,7 +359,7 @@ nav {
 }
 
 .ev-card-hover:hover {
-    box-shadow: 0px 0px 4px #d6dbf1;
+    box-shadow: 0px 0px 4px $shadow-black;
     .btn-card-detail {
         background: $highlight;
         color: #fff;
@@ -397,23 +388,23 @@ nav {
 }
 
 .ev-z-depth-5 {
-    box-shadow: 0px 0px 10px #d6dbf1;
+    box-shadow: 0px 0px 10px $shadow-black;
 }
 
 .ev-z-depth-4 {
-    box-shadow: 0px 0px 8px #d6dbf1;
+    box-shadow: 0px 0px 8px $shadow-black;
 }
 
 .ev-z-depth-3 {
-    box-shadow: 0px 0px 6px #d6dbf1;
+    box-shadow: 0px 0px 6px $shadow-black;
 }
 
 .ev-z-depth-2 {
-    box-shadow: 0px 0px 4px #d6dbf1;
+    box-shadow: 0px 0px 4px $shadow-black;
 }
 
 .ev-z-depth-1 {
-    box-shadow: 0px 0px 2px #d6dbf1;
+    box-shadow: 0px 0px 2px $shadow-black;
 }
 
 .ev-view {
@@ -423,6 +414,10 @@ nav {
 
 .btn {
     text-transform: none;
+    font-family: 'Roboto';
+    i {
+        font-size: 14px;
+    }
 }
 
 .fade {
@@ -442,7 +437,7 @@ i.icon {
     font-size: 15px;
 }
 
-.side-nav li > a > i {
+.side-nav li>a>i {
     margin: 0px;
 }
 
@@ -509,7 +504,6 @@ a.text-light-black:hover {
     text-align: center;
 }
 
-
 /*to remove gutter from col*/
 
 .rm-gut {
@@ -527,7 +521,6 @@ a.text-light-black:hover {
         transition: all 0.2s ease-in-out;
     }
 }
-
 
 /*pagination*/
 
@@ -558,51 +551,48 @@ a.text-light-black:hover {
     }
 }
 
-
 /* label color */
 
 .input-field label,
-input[type=checkbox] + label {
+input[type=checkbox]+label {
     color: $light-gray;
     font-size: 0.8em;
     font-weight: 400;
 }
 
-input[type="checkbox"].filled-in:checked + label:after {
+input[type="checkbox"].filled-in:checked+label:after {
     width: 17px;
     height: 17px;
     border: 1px solid $link-hover-dark;
     background-color: $link-hover-dark;
 }
 
-input[type="checkbox"] + label {
+input[type="checkbox"]+label {
     padding-left: 24px;
     line-height: 20px;
 }
 
-input[type="checkbox"].filled-in:checked + label:before {
+input[type="checkbox"].filled-in:checked+label:before {
     top: 0;
     left: 2px;
     width: 5px;
     height: 11px;
 }
 
-input[type="checkbox"].filled-in:not(:checked) + label:after {
+input[type="checkbox"].filled-in:not(:checked)+label:after {
     width: 17px;
     height: 17px;
     border: 1px solid $light-gray;
     background-color: transparent;
 }
 
-
 /* label focus color */
 
-.input-field input[type=email]:focus + label,
-.input-field input[type=password]:focus + label,
-.input-field input[type=text]:focus + label {
+.input-field input[type=email]:focus+label,
+.input-field input[type=password]:focus+label,
+.input-field input[type=text]:focus+label {
     color: $light-gray;
 }
-
 
 /* label underline focus color */
 
@@ -613,7 +603,6 @@ input[type="checkbox"].filled-in:not(:checked) + label:after {
     box-shadow: 0 0px 0 0 $link-hover-dark;
 }
 
-
 /* valid color */
 
 .input-field input[type=email].valid,
@@ -623,7 +612,6 @@ input[type="checkbox"].filled-in:not(:checked) + label:after {
     box-shadow: 0 0px 0 0 #000;
 }
 
-
 /* invalid color */
 
 .input-field input[type=email].invalid,
@@ -632,7 +620,6 @@ input[type="checkbox"].filled-in:not(:checked) + label:after {
     border-bottom: 1px solid $link-hover-dark;
     box-shadow: 0 0px 0 0 #000;
 }
-
 
 /* icon prefix focus color */
 
@@ -645,17 +632,17 @@ input {
     border-bottom: 1px solid $light-gray;
 }
 
-.input-field input[type=email]:focus + .form-icon,
-.input-field input[type=password]:focus + .form-icon,
-.input-field input[type=text]:focus + .form-icon {
+.input-field input[type=email]:focus+.form-icon,
+.input-field input[type=password]:focus+.form-icon,
+.input-field input[type=text]:focus+.form-icon {
     i {
         color: $light-link;
     }
 }
 
-.input-field input[type=email]:focus + .form-icon-dark,
-.input-field input[type=password]:focus + .form-icon-dark,
-.input-field input[type=text]:focus + .form-icon-dark {
+.input-field input[type=email]:focus+.form-icon-dark,
+.input-field input[type=password]:focus+.form-icon-dark,
+.input-field input[type=text]:focus+.form-icon-dark {
     i {
         color: $dark-link;
     }
@@ -668,6 +655,7 @@ input {
 .ev-spinner-light {
     border-color: $highlight;
 }
+
 
 
 /*loader*/
@@ -723,7 +711,7 @@ input {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    > div {
+    >div {
         content: " ";
         width: $loader-dot-size;
         height: $loader-dot-size;
@@ -774,10 +762,19 @@ input {
     .info-text {
         display: none;
     }
-    input:checked + .info-text {
+    input:checked+.info-text {
         display: block;
     }
 }
+
+.short-hr-line {
+    display: inline-block;
+    width: 100px;
+    height: 1px;
+    background-color: $highlight;
+    margin: 7px 0px;
+}
+
 
 
 /*default margins*/
@@ -786,7 +783,9 @@ input {
     margin-top: 12px;
 }
 
-
+.rm-mt {
+    margin-top: 0px;
+}
 /*flex prop*/
 
 .flex-body {
@@ -802,54 +801,24 @@ input {
 
 /*media queries*/
 
-@media only screen and (max-width: 992px) {
+@media only screen and (max-width: $med-screen) {
+    .display-large {
+        display: none;
+    }
+    .display-small {
+        display: block;
+    }
     .padding-lr-header {
         padding: 0px 20px;
     }
     .ev-container {
         padding: 20px;
     }
+    h4{
+        font-size:1.8em;
+    }
 }
 
-// notification override
-.toast-message {
-    -ms-word-wrap: initial;
-    word-wrap: initial;
-    // text-align: center;
-    // font-size: 14px;
-}
-
-.toast-message a,
-.toast-message label {
-    color: #ffffff;
-}
-
-.toast-message a:hover {
-    color: #cccccc;
-    text-decoration: none;
-}
-
-.toast {
-    background-color: #030303;
-    word-break: initial;
-}
-
-.toast-success {
-    background-color: #51a351;
-}
-
-.toast-error {
-    background-color: #bd362f;
-}
-
-.toast-info {
-    background-color: #2f96b4;
-}
-
-.toast-wait {
-    background-color: #2f96b4;
-}
-
-.toast-warning {
-    background-color: #f89406;
+.mb-5 {
+    margin-bottom: 5px;
 }
