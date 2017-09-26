@@ -3,12 +3,11 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
-from cached_property import cached_property
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
 from django.utils import timezone
+from django.utils.functional import cached_property
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
