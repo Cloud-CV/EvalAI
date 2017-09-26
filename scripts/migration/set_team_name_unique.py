@@ -38,4 +38,5 @@ def make_team_name_unique():
     except Exception, e:
         print str(e)
 
+
 make_team_name_unique()

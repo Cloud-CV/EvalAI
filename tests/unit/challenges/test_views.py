@@ -250,8 +250,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.challenge.submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": None,
-            "end_date": None,
             "creator": {
                 'id': self.challenge.creator.pk,
                 'team_name': self.challenge.creator.team_name,
@@ -279,8 +277,6 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "submission_guidelines": self.update_submission_guidelines,
             "evaluation_details": self.challenge.evaluation_details,
             "image": None,
-            "start_date": None,
-            "end_date": None,
             "creator": {
                 'id': self.challenge.creator.pk,
                 'team_name': self.challenge.creator.team_name,
