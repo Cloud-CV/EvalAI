@@ -1,0 +1,88 @@
+/*grad button style*/
+
+.grad-btn {
+    border-radius: 20px;
+}
+
+.grad-btn-dark {
+    background: $med-gray;
+    font-weight: $rob-reg;
+    color: #fff;
+    box-shadow: 0px 4px 8px #9d9d9d;
+    &:hover {
+        box-shadow: 0px 0px 8px #9d9d9d;
+    }
+}
+
+.grad-btn-light {
+    background: $highlight;
+    font-weight: $rob-reg;
+    color: #fff;
+    box-shadow: 0px 4px 8px #9d9d9d;
+    &:hover {
+        box-shadow: 0px 0px 8px #9d9d9d;
+        background: $highlight;
+    }
+}
+
+.grad-btn-transparent {
+    background-color: rgba(0,0,0,0);
+    font-weight: $rob-reg;
+    color: $med-gray;
+    border: 1px solid $med-gray;
+    box-shadow: 0px 4px 8px transparent;
+    &:hover {
+        box-shadow: 0px 0px 8px #9d9d9d;
+        background: $med-gray;
+        color: #fff;
+    }
+}
+
+
+/*font styles*/
+
+.fs-14 {
+    font-size: 14px;
+}
+
+
+/*bg color*/
+
+.white-bg {
+    background-color: #fff;
+}
+
+.view-container {
+    min-height: 100vh;
+}
+
+.grad-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 100px 40px 100px;
+    clear: both;
+}
+
+.rm-grad-pad {
+    padding: 30px 100px 30px 100px;
+}
+
+.grad-span {
+    display: inline;
+}
+
+
+/*media queries*/
+
+@media screen and (max-width: $med-screen) {
+    .grad-container {
+        padding:40px;
+    }
+}
+
+
+@media screen and (max-width: $small-screen) {
+    .grad-container {
+       text-align: center;
+    }
+}

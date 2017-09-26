@@ -1,0 +1,38 @@
+{
+  "chunks": {
+    "vendor": [
+      "jquery",
+      "angular",
+      "angular-animate",
+      "angular-ui-router",
+      "angular-aria",
+      "angular-message",
+      "angular-material",
+      "materialize",
+      "lodash",
+      "ngSmoothScroll",
+      "ng-focus-if",
+      "ng-sanitize",
+      "ng-file-upload",
+      "AngularJS-Toaster"
+
+    ]
+  },
+  "paths": {
+       "jquery": "bower_components/jquery/dist/jquery.min.js",
+       "angular" : "bower_components/angular/angular.min.js",
+       "angular-animate" : "bower_components/angular-animate/angular-animate.min.js",
+       "angular-ui-router" : "bower_components/angular-ui-router/release/angular-ui-router.min.js",
+       "angular-aria" : "bower_components/angular-aria/angular-aria.min.js",
+       "angular-message": "bower_components/angular-messages/angular-messages.min.js",
+       "angular-material" : "bower_components/angular-material/angular-material.min.js",
+       "materialize": "bower_components/materialize/dist/js/materialize.min.js",
+       "lodash": "bower_components/lodash/dist/lodash.min.js",
+       "ngSmoothScroll": "bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js",
+       "ng-focus-if": "bower_components/ng-focus-if/focusIf.min.js",
+       "ng-sanitize": "bower_components/angular-sanitize/angular-sanitize.min.js",
+       "ng-file-upload": "bower_components/ng-file-upload/ng-file-upload.min.js",
+       "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.js"
+
+     }
+}

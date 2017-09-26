@@ -1,0 +1,201 @@
+from __future__ import unicode_literals
+
+import datetime
+import logging
+
+from cached_property import cached_property
+
+from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import Max
+from django.utils import timezone
+from rest_framework.exceptions import PermissionDenied
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+
+
+from base.models import (TimeStampedModel, )
+from base.utils import RandomFileName
+from challenges.models import ChallengePhase
+from participants.models import ParticipantTeam
+
+logger = logging.getLogger(__name__)
+
+# submission.pk is not available when saving input_file
+# OutCome: `input_file` was saved for submission in folder named `submission_None`
+# why is the hack not done for `stdout_file` and `stderr_file`
+# Because they will be saved only after a submission instance is saved(pk will be available)
+
+
+@receiver(pre_save, sender='jobs.Submission')
+def skip_saving_file(sender, instance, **kwargs):
+    if not instance.pk and not hasattr(instance, '_input_file'):
+        setattr(instance, '_input_file', instance.input_file)
+        instance.input_file = None
+
+
+@receiver(post_save, sender='jobs.Submission')
+def save_file(sender, instance, created, **kwargs):
+    if created and hasattr(instance, '_input_file'):
+        instance.input_file = getattr(instance, '_input_file')
+        instance.save()
+
+
+class Submission(TimeStampedModel):
+
+    SUBMITTED = "submitted"
+    RUNNING = "running"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    FINISHED = "finished"
+    SUBMITTING = "submitting"
+
+    STATUS_OPTIONS = (
+        (SUBMITTED, SUBMITTED),
+        (RUNNING, RUNNING),
+        (FAILED, FAILED),
+        (CANCELLED, CANCELLED),
+        (FINISHED, FINISHED),
+        (SUBMITTING, SUBMITTING),
+    )
+
+    participant_team = models.ForeignKey(
+        ParticipantTeam, related_name='submissions')
+    challenge_phase = models.ForeignKey(
+        ChallengePhase, related_name='submissions')
+    created_by = models.ForeignKey(User)
+    status = models.CharField(max_length=30, choices=STATUS_OPTIONS, db_index=True)
+    is_public = models.BooleanField(default=False)
+    is_flagged = models.BooleanField(default=False)
+    submission_number = models.PositiveIntegerField(default=0)
+    download_count = models.IntegerField(default=0)
+    output = models.TextField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    started_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    when_made_public = models.DateTimeField(null=True, blank=True)
+    input_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"))
+    stdout_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    stderr_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    submission_result_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    submission_metadata_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    execution_time_limit = models.PositiveIntegerField(default=300, db_index=True)
+    method_name = models.CharField(max_length=1000, null=True, db_index=True)
+    method_description = models.TextField(blank=True, null=True, db_index=True)
+    publication_url = models.CharField(max_length=1000, null=True, db_index=True)
+    project_url = models.CharField(max_length=1000, null=True, db_index=True)
+
+    def __unicode__(self):
+        return '{}'.format(self.id)
+
+    class Meta:
+        app_label = 'jobs'
+        db_table = 'submission'
+
+    @property
+    def execution_time(self):
+        """Returns the execution time of a submission"""
+        # if self.self.completed_at and self.started_at:
+        try:
+            return (self.completed_at - self.started_at).total_seconds()
+        except:
+            return "None"
+        # else:
+        #     return None
+
+    def save(self, *args, **kwargs):
+
+        # Only save the completed_at time when the object is created.
+        # Dont update the completed_at field at the time of updating submission meta-data or status.
+        if self._state.adding is True:
+            if hasattr(self, 'status'):
+                if self.status == Submission.RUNNING:
+                    self.started_at = timezone.now()
+                if self.status == Submission.FINISHED:
+                    self.completed_at = timezone.now()
+
+        if not self.pk:
+            sub_num = Submission.objects.filter(
+                challenge_phase=self.challenge_phase,
+                participant_team=self.participant_team).aggregate(
+                Max('submission_number'))['submission_number__max']
+            if sub_num:
+                self.submission_number = sub_num + 1
+            else:
+                self.submission_number = 1
+
+            failed_count = Submission.objects.filter(
+                challenge_phase=self.challenge_phase,
+                participant_team=self.participant_team,
+                status=Submission.FAILED).count()
+
+            successful_count = self.submission_number - failed_count
+
+            if successful_count > self.challenge_phase.max_submissions:
+                logger.info("Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
+                        successful_count, self.challenge_phase.max_submissions))
+
+                logger.info("The submission request is submitted by user {0} from participant_team {1} ".format(
+                        self.created_by.pk, self.participant_team.pk))
+
+                raise PermissionDenied({'error': 'The maximum number of submissions has been reached'})
+            else:
+                logger.info("Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
+                    self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk))
+
+            if hasattr(self.challenge_phase, 'max_submissions_per_day'):
+                submissions_done_today_count = Submission.objects.filter(
+                    challenge_phase__challenge=self.challenge_phase.challenge,
+                    participant_team=self.participant_team,
+                    challenge_phase=self.challenge_phase,
+                    submitted_at__gte=datetime.date.today()).count()
+
+                failed_count = Submission.objects.filter(
+                    challenge_phase=self.challenge_phase,
+                    participant_team=self.participant_team,
+                    status=Submission.FAILED,
+                    submitted_at__gte=datetime.date.today()).count()
+
+                if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
+                        (self.challenge_phase.max_submissions_per_day == 0)):
+                    logger.info("Permission Denied: The maximum number of submission for today has been reached")
+                    raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
+
+            self.is_public = (True if self.challenge_phase.is_submission_public else False)
+
+            self.status = Submission.SUBMITTED
+
+        submission_instance = super(Submission, self).save(*args, **kwargs)
+        return submission_instance
+
+    @cached_property
+    def submissions_count_for_challenge_phase(self):
+        # To get total submissions count on a challenge phase
+        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                     challenge_phase__challenge=self.challenge_phase.challenge).count()
+        return submission_count
+
+    @cached_property
+    def participated_teams_count_for_challenge_phase(self):
+        # To get total participant teams count on a challenge phase
+        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                     challenge_phase__challenge=self.challenge_phase.challenge)
+        submission_count = submission_count.values_list('participant_team', flat=True).distinct().count()
+        return submission_count
+
+    @cached_property
+    def last_submission_timestamp_in_challenge_phase(self):
+        # To get the last submission time in a challenge phase
+        last_submitted_timestamp = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                             challenge_phase__challenge=self.challenge_phase.challenge)
+        last_submitted_timestamp = last_submitted_timestamp.order_by('-submitted_at')[0].created_at
+        return last_submitted_timestamp
+
+    @cached_property
+    def last_submission_timestamp_in_challenge(self):
+        # To get the last submission time in a challenge
+        last_submitted_timestamp = Submission.objects.filter(challenge_phase__challenge=self.challenge_phase.challenge)
+        last_submitted_timestamp = last_submitted_timestamp.order_by('-submitted_at')[0].created_at
+        return last_submitted_timestamp

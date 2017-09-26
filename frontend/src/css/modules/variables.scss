@@ -1,0 +1,66 @@
+/*font variable*/
+
+$rob-light: 200;
+$rob-med: 300;
+$rob-reg: 400;
+$rob-bold: 600;
+
+/*blue shades*/
+
+$light-gray: #adb4d0;
+$med-gray: #3c3e49;
+$dark-gray: #252833;
+$dust-gray: #1a1b1f;
+
+/*black shades*/
+
+$shadow-black: #dedede;
+$light-black: #9d9d9d;
+$med-black: #4d4d4d;
+$dark-black: #4d4d4d;
+
+/*orange shades*/
+
+$highlight: #ffaf4b;
+$highlight-dark: #ff7b2e;
+
+/*transparent*/
+
+$transparent: rgba(0, 0, 0, 0);
+
+/*link colors*/
+
+$light-link: #fff;
+$med-link: #9ca3be;
+$dark-link: #252833;
+
+/*link hover colors*/
+
+$link-hover-dark: #ffaf4b;
+$link-hover-light: #fff;
+
+/*loader variable*/
+
+$loader-size: 70px;
+$loader-dot-size: ($loader-size / 5);
+$loader-height: $loader-dot-size;
+$loader-dot-color: #ffaf4b;
+
+/*border color*/
+
+$border-color-light: #e3e3e3;
+
+/*Screen Size Variables*/
+
+$med-screen: 992px;
+$small-screen: 600px;
+
+/*grad new variables*/
+
+$grad-super-light: #fafafa;
+$grad-light-black: #dcdcdc;
+$grad-sec-gray: #45334e;
+
+/*shadow colors*/
+
+$super-light-shadow: #ececec;

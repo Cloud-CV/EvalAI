@@ -1,0 +1,40 @@
+{% load static %}
+
+<head>
+  <link type="text/css" rel="stylesheet" href="{% static 'accounts/css/main.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/css/materialize.min.css">
+</head>
+
+<div class="dyn-header padding-lr-header">
+  <nav>
+    <div class="nav-wrapper">
+
+    <ul class="left">
+      <li><a href="https://evalai.cloudcv.org/" class="waves-effect waves-dark">Home</a></li>
+    </ul>
+      <ul class="right">
+        <li><a href="https://evalai.cloudcv.org/auth/signup" class="waves-effect waves-dark">Sign Up</a></li>
+        <li><a href="https://evalai.cloudcv.org/auth/login" class="waves-effect waves-dark">Log In</a></li>
+      </ul>
+
+    </div>
+  </nav>
+</div>
+<section class="bg-section">
+    <div class="bg-image"></div>
+</section>
+<section class="ev-container auth-container center">
+  <div class="ev-head-small">
+    <div class="row">
+      <div class="col s12 m4 offset-m4 text-highlight white-text center w-300">
+        Your email has been verified successfully.
+      </div>
+    </div>
+    <div class="row">
+      <div class="col s12 m4 offset-m4 text-highlight center w-300">
+        <a href="https://evalai.cloudcv.org/auth/login" class="waves-effect waves-dark btn ev-btn-dark blue-grey darken-4">Log In</a>
+      </div>
+    </div>
+  </div>
+</section>

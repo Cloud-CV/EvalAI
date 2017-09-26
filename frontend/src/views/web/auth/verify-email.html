@@ -1,0 +1,10 @@
+<div ng-init="auth.verifyEmail()">
+    <div class="col s12 m6 offset-m3 left">
+        <ul class="center">
+            <li class="ev-horiz-list">{{auth.email_verify_msg}}.</li>
+        </ul>
+        <a ui-sref="auth.login">
+            <button class="waves-effect waves-dark btn ev-btn-dark w-300 grad-btn grad-btn-dark" type="submit" value="Submit">Log In</button>
+        </a>
+    </div>
+</div>

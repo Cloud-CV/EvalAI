@@ -1,0 +1,25 @@
+[run]
+omit =
+    */python?.?/*
+    */migrations/*
+source = evalai/
+
+[report]
+exclude_lines =
+    import
+    @api_view
+    @authentication_classes
+    @permission_classes
+    @csrf_exempt
+
+omit =
+    */templates/*
+    */static/*
+    */python?.?/*
+    */migrations/*
+    */tests/*
+    */middleware/*
+    frontend/
+    settings/prod.py
+    settings/staging.py
+    scripts/seed.py

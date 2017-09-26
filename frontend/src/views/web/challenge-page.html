@@ -1,0 +1,37 @@
+<section class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 challenge-title-container ">
+        <div class="row">
+            <div class="col s12 m3 l2">
+                <div class="image-container">
+                    <img src="{{challenge.page.image}}" width="100%">
+                </div>
+            </div>
+            <div class="col m6 l7">
+                <div class="card-content">
+                    <p><span class="fs-18"><strong>{{challenge.page.title}}</strong></span>
+                        <br>
+                        <span><strong class="text-light-black">Organized by:</strong> {{challenge.page.creator.team_name}} </span>
+                    </p>
+                </div>
+            </div>
+            <div class="col m3 l3 align-right">
+                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.starChallenge()"><i class="fa fa-star star"></i> {{challenge.data}}&nbsp;&nbsp;{{challenge.count}}</button>
+            </div>
+        </div>
+        <div class="row rm-row-bot">
+            <div class="col s12">
+                <ul class="inline-list rm-gut">
+                    <li><a ui-sref=".overview" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-info"></i> Overview</a></li>
+                    <li><a ui-sref=".evaluation" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-bar-chart-o"></i> Evaluation</a></li>
+                    <li><a ui-sref=".phases" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-level-up"></i> Phases</a></li>
+                    <li ng-if="!challenge.isChallengeHost && !challenge.isParticipated"><a ui-sref=".participate" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-free-code-camp"></i> Participate</a></li>
+                    <li ng-if="challenge.isParticipated"><a ui-sref=".submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-upload"></i> Submit</a></li>
+                    <li ng-if="challenge.isParticipated"><a ui-sref=".my-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i> My Submissions</a></li>
+                    <li ng-if="challenge.isChallengeHost"><a ui-sref=".my-challenge-all-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i>View All Submissions</a></li>
+                    <li><a ui-sref=".leaderboard" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-th-list"></i> Leaderboard</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<ui-view></ui-view>

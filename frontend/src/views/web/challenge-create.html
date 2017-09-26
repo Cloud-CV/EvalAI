@@ -1,0 +1,30 @@
+<section class="ev-md-container text-center ">
+    <div class="row">
+        <div class="col s12 m9 offset-m3">
+            <div class="zip-file-title">Please upload zip file to create a challenge !</div>
+                <div class="file-field input-field col s6">
+                <form name="ChallengeCreateForm" ng-submit="challengeCreate.challengeCreate(ChallengeCreateForm.$valid)" novalidate>
+                    <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                        <span>Upload File</span>
+                        <input name="challengeCreate.input_file" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="challengeCreate.input_file">
+                    </div>
+                    <div class="file-path-wrapper">
+                        <input class="file-path validate" type="text">
+                    </div>
+                    <div class="align-left reg-control">
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
+                    </div>
+                    <div ng-if="challengeCreate.isFormError" class="wrn-msg text-highlight align-right"> {{challengeCreate.formError}}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12 m9 offset-m3">
+            <i class="fa fa-info-circle"></i>
+            To know how to create a challenge using zip configuration, please see our documentation
+            <a href="https://evalai.readthedocs.io/en/latest/" class="highlight-link" target="_blank">here.</a>.
+        </div>
+    </div>
+</section>

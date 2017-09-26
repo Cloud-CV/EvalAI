@@ -1,0 +1,74 @@
+<div class="white-bg view-container flex-body">
+    <main-header></main-header>
+    <div class="content">
+        <div class="grad-container grad-vh">
+            <h4 class="team-heading center-align">{{ourTeam.coreTeamType}}</h4>
+            <div class="row">
+                <h5 ng-if="ourTeam.noTeamDisplay" class="team-heading">{{ourTeam.noTeamDisplay}}</h5>
+                <!-- This card is for Core Team -->
+                <div class="col s12 l3" ng-repeat="data in ourTeam.coreTeamDetails">
+                    <div class="team-card">
+                        <div class="team-link-head">
+                            <span>
+                    <a ng-if="data.linkedin_url !== 'null'" href="{{data.linkedin_url}}"><i class="fa fa-linkedin"></i></a>
+                </span>
+                            <span>
+                    <a ng-if="data.github_url !== 'null'" href="{{data.github_url}}"><i class="fa fa-github"></i></a>
+                </span>
+                            <span class="right link-team-user">
+                    <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}">Personal Website</a>
+                </span>
+                        </div>
+                        <div class="team-bg">
+                            <img src="{{data.background_image || '#'}}">
+                        </div>
+                        <div class="team-bg-over">
+                            <img src="dist/images/team-over.png">
+                        </div>
+                        <div class="team-profile">
+                            <img src="{{data.headshot || 'dist/images/logo.png'}}">
+                        </div>
+                        <div class="team-player">
+                            <div><strong class="text-dark-black">{{data.name}}</strong></div>
+                            <div class="text-med-black">{{data.description}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- This card is for Contributing Team -->
+            <h4 class="team-heading center-align">{{ourTeam.contributingTeamType}}</h4>
+            <div class="row">
+                <div class="col s12 l3" ng-repeat="data in ourTeam.contributingTeamDetails">
+                    <div class="team-card">
+                        <div class="team-link-head">
+                            <span>
+                    <a ng-if="data.linkedin_url !== 'null'" href="{{data.linkedin_url}}"><i class="fa fa-linkedin"></i></a>
+                </span>
+                            <span>
+                    <a ng-if="data.github_url !== 'null'" href="{{data.github_url}}"><i class="fa fa-github"></i></a>
+                </span>
+                            <span class="right link-team-user">
+                    <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}">Personal Website</a>
+                </span>
+                        </div>
+                        <div class="team-bg">
+                            <img src="{{data.background_image || '#'}}">
+                        </div>
+                        <div class="team-bg-over">
+                            <img src="dist/images/team-over.png">
+                        </div>
+                        <div class="team-profile">
+                            <img src="{{data.headshot || 'dist/images/logo.png'}}">
+                        </div>
+                        <div class="team-player">
+                            <div><strong class="text-dark-black">{{data.name}}</strong></div>
+                            <div class="text-med-black">{{data.description}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- footer -->
+    <landing-footer></landing-footer>
+</div>

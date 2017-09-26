@@ -1,0 +1,137 @@
+.challenge-title-container {
+    padding-bottom: 0px;
+    ul.inline-list {
+        margin: 0px;
+        li {
+            margin-right: 40px;
+            min-height: 40px;
+        }
+    }
+}
+
+a.active-challenge {
+    color: $dark-black;
+    display: block;
+    height: 40px;
+    box-sizing: border-box;
+    border-bottom: 2px solid $highlight;
+}
+
+.ev-challenge-view {
+    margin-top: 0px;
+    padding-top: 30px;
+    margin-bottom: 20px;
+}
+
+.challenge-container {
+    margin: 0px 10px -30px 10px;
+}
+
+.eval-card {
+    min-height: 160px;
+}
+
+.phase-card {
+    padding-bottom: 1px;
+}
+
+.ev-dark-card {
+    background-color: $light-gray;
+}
+
+.challenge-page-title {
+    padding-bottom: 10px;
+}
+
+.ev-challenge-card {
+    min-height: 415px;
+}
+
+.ev-dashboard-card {
+    min-height: 190px;
+}
+
+.bg-img {
+    /* height: 120%; */
+    width: 100%;
+    margin: auto;
+    /* width: 109%; */
+    margin-top: -5%;
+}
+
+.blue-bg {
+    background: $med-gray;
+    padding: 10px 20px !important;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.phases-cont {
+    padding: 10px 0px;
+}
+
+.rm-margin {
+    margin: 0px;
+}
+
+.result-tag {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.result-val {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e3e3e3;
+}
+
+.val-style {
+    margin-bottom: 10px;
+}
+
+.submitted,
+.finished {
+    color: green;
+}
+
+.running,
+.submitting {
+    color: orange;
+}
+
+.failed,
+.cancelled {
+    color: red;
+}
+
+.result-wrn {
+    margin-top: 15px;
+}
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+.update-page {
+    display: block;
+    background: $dark-gray;
+    width: 100%;
+    overflow: auto;
+    padding: 10px;
+    text-align: center;
+    color: #fff;
+    position: absolute;
+    width: auto;
+    right: 0;
+    padding: 10px 30px;
+    box-shadow: 2px 2px 9px #6d6d6d;
+    border-radius: 3px 0px 0px 3px;
+    font-weight: 300;
+    transition: all 0.2s ease-in-out;
+    &:hover {
+        box-shadow: -1px 0px 9px #bbbbbb;
+    }
+}
+
+i.star {
+    font-size: 1rem;
+}
