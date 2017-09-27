@@ -19,10 +19,10 @@
         vm.challengeEvalScript = null;
         vm.challengeTitle = null;
         vm.formError = {};
-        vm.step1 = false;
+        vm.step1 = true;
         vm.step2 = false;
         vm.step3 = false;
-        vm.step4 = true;
+        vm.step4 = false;
         vm.step5 = false;
         vm.step6 = false;
         vm.reviewScreen = false;
@@ -368,10 +368,6 @@
             {'id': 3, 'name' : 'Public'}
         ];
 
-        vm.challenge = utilities.getData('challenge');
-        vm.challengeImageName = utilities.getData('challengeImage');
-        vm.evalScriptName = utilities.getData('evalScript');
-
         vm. challengePhaseSplitCreate = function(challengePhaseSplitCreateFormValid) {
             if (challengePhaseSplitCreateFormValid) {
                 var parameters = {};
@@ -394,6 +390,10 @@
                             vm.isFormError = false;
                             $rootScope.notify("success", "Step 5 is completed!");
                             if (vm.reviewScreen == true){
+                                        vm.challenge = utilities.getData('challenge');
+                                        vm.challengeImageName = utilities.getData('challengeImage');
+                                        vm.evalScriptName = utilities.getData('evalScript');
+
                                         vm.challengePhaseSplitsData = utilities.getData('challengePhaseSplits');
                                         vm.challengePhase = utilities.getData('challengePhase');
                                         vm.leaderboard = utilities.getData('leaderboard');
@@ -451,6 +451,10 @@
                 console.log("ChallengePhaseSplit");
             }
         };
+
+        vm.challenge = utilities.getData('challenge');
+        vm.challengeImageName = utilities.getData('challengeImage');
+        vm.evalScriptName = utilities.getData('evalScript');
 
         vm.challengePhaseSplitsData = utilities.getData('challengePhaseSplits');
         vm.challengePhase = utilities.getData('challengePhase');
