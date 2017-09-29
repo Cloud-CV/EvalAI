@@ -43,6 +43,8 @@ class Challenge(TimeStampedModel):
         default=False, upload_to=RandomFileName("evaluation_scripts"))  # should be zip format
     approved_by_admin = models.BooleanField(
         default=False, verbose_name="Approved By Admin", db_index=True)
+    featured = models.BooleanField(
+        default=False, verbose_name="Featured", db_index=True)
 
     class Meta:
         app_label = 'challenges'
