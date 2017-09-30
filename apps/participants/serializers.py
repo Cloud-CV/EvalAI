@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from rest_framework import serializers
 
@@ -102,6 +103,10 @@ class ChallengeParticipantTeamList(object):
 class ChallengeParticipantTeamListSerializer(serializers.Serializer):
     """Serializer to map a challenge's participant team lists."""
     challenge_participant_team_list = ChallengeParticipantTeamSerializer(many=True)
+    time = serializers.SerializerMethodField()
+
+    def get_time(self, obj):
+    	return timezone.now().replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class ParticipantTeamCount(object):
