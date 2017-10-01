@@ -6,7 +6,6 @@ import logging
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
-from django.utils import timezone
 from django.utils.functional import cached_property
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
@@ -105,15 +104,6 @@ class Submission(TimeStampedModel):
         #     return None
 
     def save(self, *args, **kwargs):
-
-        # Only save the completed_at time when the object is created.
-        # Dont update the completed_at field at the time of updating submission meta-data or status.
-        if self._state.adding is True:
-            if hasattr(self, 'status'):
-                if self.status == Submission.RUNNING:
-                    self.started_at = timezone.now()
-                if self.status == Submission.FINISHED:
-                    self.completed_at = timezone.now()
 
         if not self.pk:
             sub_num = Submission.objects.filter(
