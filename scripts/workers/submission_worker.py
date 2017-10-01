@@ -290,7 +290,6 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     # call `main` from globals and set `status` to running and hence `started_at`
     submission.status = Submission.RUNNING
     submission.started_at = timezone.now()
-
     submission.save()
     try:
         successful_submission_flag = True
