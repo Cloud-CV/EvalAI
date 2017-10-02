@@ -24,12 +24,10 @@
                         <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
                         <label for="publicationUrl">Publication Url</label>
                     </div>
-                    <span class="align-left reg-control">
-                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit </button>
-                    </span>
-                    <span class="align-right reg-control">
-                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="button" ng-click="challenge.updateSubmissionMetaData(false)">Cancel</button>
-                    </span>
+                    <ul class="inline-list">
+                        <li><a class="dark-link" type="button" ng-click="challenge.updateSubmissionMetaData(false)"><strong>Cancel </strong></a></li>
+                        <li><button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit </button></li>
+                    </ul>
                 </form>
             </div>
         </div>
