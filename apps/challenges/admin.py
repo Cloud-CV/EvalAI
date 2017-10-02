@@ -14,7 +14,8 @@ from .models import (Challenge,
 
 @admin.register(Challenge)
 class ChallengeAdmin(ImportExportTimeStampedAdmin):
-    list_display = ("title", "start_date", "end_date", "creator", "published", "enable_forum", "anonymous_leaderboard", "featured")
+    list_display = ("title", "start_date", "end_date", "creator", "published", "enable_forum", "anonymous_leaderboard",
+                    "featured")
     list_filter = ("creator", "published", "enable_forum", "anonymous_leaderboard", "featured")
     search_fields = ("title", "creator")
 
