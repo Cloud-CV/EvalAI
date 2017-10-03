@@ -106,7 +106,7 @@ class ChallengeParticipantTeamListSerializer(serializers.Serializer):
     time = serializers.SerializerMethodField()
 
     def get_time(self, obj):
-        return timezone.now().replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return timezone.now().replace(microsecond=0)
 
 
 class ParticipantTeamCount(object):
