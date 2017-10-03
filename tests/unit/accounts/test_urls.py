@@ -30,3 +30,14 @@ class TestStringMethods(BaseAPITestClass):
     def test_disable_user(self):
         url = reverse_lazy('accounts:disable_user')
         self.assertEqual(unicode(url), '/api/accounts/user/disable')
+
+
+class TestUpdateUser(BaseAPITestClass):
+
+    def test_cannot_update_username(self):
+        response = self.client.put(
+            '/api/auth/user/',
+            {'username': 'anotheruser'},
+            format='json')
+        self.assertNotContains(response, 'anotheruser')
+        self.assertContains(response, 'someuser')
