@@ -1,4 +1,3 @@
-import datetime
 import os
 import shutil
 
@@ -497,7 +496,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
-            when_made_public=datetime.datetime.now()
+            when_made_public=timezone.now()
         )
 
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
