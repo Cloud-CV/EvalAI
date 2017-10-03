@@ -273,3 +273,8 @@ RABBITMQ_PARAMETERS = {
     },
     'SUBMISSION_QUEUE': 'submission_task_queue',
 }
+
+# The maximum size in bytes for request body
+# https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
