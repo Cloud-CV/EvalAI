@@ -477,3 +477,22 @@
         return directive;
     }
 })();
+
+//Create Edit Challenge Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('editChallenge', editChallenge);
+
+    function editChallenge() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/edit-create-challenge-using-ui/edit-create-challenge.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
