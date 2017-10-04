@@ -19,11 +19,16 @@
         vm.challengeEvalScript = null;
         vm.challengeTitle = null;
         vm.formError = {};
-        vm.step1 = true;
+        vm.step1 = true; // varibale to create form
+        vm.step1e = false; // variable to store edit form
         vm.step2 = false;
+        vm.step2e = false;
         vm.step3 = false;
+        vm.step3e = false;
         vm.step4 = false;
+        vm.step4e = false;
         vm.step5 = false;
+        vm.step5e = false;
         vm.step6 = false;
         vm.reviewScreen = false;
         vm.challengeEnableForum = false;
@@ -35,12 +40,14 @@
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
 
-        vm.formatDate = function(dateTimeObject) {          
-            var dateTime = dateTimeObject.toISOString();
-            var splitDateTime = dateTime.split("T");
-            var date = splitDateTime[0];
-            var time = splitDateTime[1].split(".")[0];
-            return date + " " + time;
+        vm.formatDate = function(dateTimeObject) {
+            if (dateTimeObject.toISOString()) {          
+                var dateTime = dateTimeObject.toISOString();
+                var splitDateTime = dateTime.split("T");
+                var date = splitDateTime[0];
+                var time = splitDateTime[1].split(".")[0];
+                return date + " " + time;
+            }
         };
 
 // function to create a Challenge.
@@ -66,6 +73,7 @@
                         formdata.append("end_date", vm.challengeEndDate);
                         formdata.append("image", vm.challengeImage);
                         formdata.append("evaluation_script", vm.challengeEvalScript);
+                        formdata.append("featured", false);
 
                         utilities.storeData('challengeImage', vm.challengeImage.name);
                         utilities.storeData('evalScript', vm.challengeEvalScript.name);
@@ -83,6 +91,8 @@
                                     vm.isFormError = false;
                                     $rootScope.notify("success", "step1 is completed");
                                     utilities.storeData('challenge', data);
+                                    vm.challengeId = data.id;
+                                    console.log(vm.challengeId);
                                 }
                             },
                             onError: function(response) {
@@ -430,10 +440,6 @@
                                         }
                                     }
                             }
-                            // utilities.deleteData('challenge');
-                            // utilities.deleteData('challengePhase');
-                            // utilities.deleteData('leaderboard');
-                            // utilities.deleteData('datasetSplit');
                         }
                     },
                     onError: function(response){
@@ -453,8 +459,8 @@
         };
 
         vm.challenge = utilities.getData('challenge');
-        vm.challengeImageName = utilities.getData('challengeImage');
-        vm.evalScriptName = utilities.getData('evalScript');
+        // vm.challengeImageName = utilities.getData('challengeImage');
+        // vm.evalScriptName = utilities.getData('evalScript');
 
         vm.challengePhaseSplitsData = utilities.getData('challengePhaseSplits');
         vm.challengePhase = utilities.getData('challengePhase');
@@ -501,9 +507,106 @@
         vm.reviewScreen = true;
     };
 
+    vm.showEditChallenge = function(parameter) {
+        if (parameter) {
+            vm.step6 = true;
+            vm.step1e = false;
+        } else {
+            vm.step1e = true;
+            vm.step6 = false;
+        }
+    };
+
+    vm.showEditLeaderboard = function(parameter) {
+        if (parameter) {
+            vm.step6 = true;
+            vm.step2e = false;
+        } else {
+            vm.step2e = true;
+            vm.step6 = false;
+        }
+    };
+
+    vm.showEditChallengePhase = function(parameter) {
+        if (parameter) {
+            vm.step6 = true;
+            vm.step3e = false;
+        } else {
+            vm.step3e = true;
+            vm.step6 = false;
+        }    
+    };
+
+    vm.showEditDatasetSplit = function(parameter) {
+        if (parameter) {
+            vm.step6 = true;
+            vm.step4e = false;
+        } else {
+            vm.step4e = true;
+            vm.step6 = false;
+        }
+    };
+
+    vm.showEditChallengePhaseSplit = function(parameter) {
+        if (parameter) {
+            vm.step6 = true;
+            vm.step5e = false;
+        } else {
+            vm.step5e = true;
+            vm.step6 = false;
+        }
+    };
+
+    vm.editChallenge = function() {
+            var parameters = {};
+            parameters.method = 'PATCH';
+            parameters.url = 'challenges/challenge_host_team/'+ vm.hostTeamId + '/challenge/'+ '252';
+            vm.challengeStartDate = vm.formatDate(vm.challenge.start_date);
+            vm.challengeEndDate = vm.formatDate(vm.challenge.end_date);
+            parameters.data = {
+                "title": vm.challenge.title,
+                "short_description": vm.challenge.short_description,
+                "description": vm.challenge.description,
+                "terms_and_conditions": vm.challenge.terms_and_conditions,
+                "submission_guidelines": vm.challenge.submission_guidelines,
+                "evaluation_details": vm.challenge.evaluation_details,
+                "published": vm.challenge.published,
+                "enable_forum": vm.challenge.enable_forum,
+                "start_date": vm.challenge.start_date,
+                "end_date": vm.challenge.end_date
+            };
+
+            // utilities.storeData('challengeImage', vm.challengeImage);
+            // utilities.storeData('evalScript', vm.evalScript);
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var data = response.data;
+                    if (status === 200)
+                    {   
+                        vm.step6 = true;
+                        vm.step1e = false;
+                        vm.isFormError = false;
+                        $rootScope.notify("success", "Changes successfully saved");
+                        utilities.storeData('challenge', data);
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters, 'header', 'upload');
+    };
+
     vm.submitForm = function() {
         $rootScope.notify('success', 'Challenge has been created successfully!');
         $state.go('web.dashboard');
+        // utilities.deleteData('challenge');
+        // utilities.deleteData('challengePhase');
+        // utilities.deleteData('leaderboard');
+        // utilities.deleteData('datasetSplit');
     };
 
     }
