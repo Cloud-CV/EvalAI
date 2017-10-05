@@ -22,7 +22,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('modified_at', models.DateTimeField(auto_now=True)),
                 ('contact_number', models.CharField(max_length=10, null=True)),
-                ('affiliation', models.CharField(max_length=512)),
                 ('receive_participated_challenge_updates', models.BooleanField(default=False)),
                 ('recieve_newsletter', models.BooleanField(default=False)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
