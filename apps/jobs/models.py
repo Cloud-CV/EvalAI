@@ -6,7 +6,6 @@ import logging
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
-from django.utils import timezone
 from django.utils.functional import cached_property
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
@@ -80,11 +79,11 @@ class Submission(TimeStampedModel):
         upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     submission_metadata_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
-    execution_time_limit = models.PositiveIntegerField(default=300, db_index=True)
+    execution_time_limit = models.PositiveIntegerField(default=300)
     method_name = models.CharField(max_length=1000, null=True, db_index=True)
-    method_description = models.TextField(blank=True, null=True, db_index=True)
-    publication_url = models.CharField(max_length=1000, null=True, db_index=True)
-    project_url = models.CharField(max_length=1000, null=True, db_index=True)
+    method_description = models.TextField(blank=True, null=True)
+    publication_url = models.CharField(max_length=1000, null=True)
+    project_url = models.CharField(max_length=1000, null=True)
 
     def __unicode__(self):
         return '{}'.format(self.id)
@@ -105,15 +104,6 @@ class Submission(TimeStampedModel):
         #     return None
 
     def save(self, *args, **kwargs):
-
-        # Only save the completed_at time when the object is created.
-        # Dont update the completed_at field at the time of updating submission meta-data or status.
-        if self._state.adding is True:
-            if hasattr(self, 'status'):
-                if self.status == Submission.RUNNING:
-                    self.started_at = timezone.now()
-                if self.status == Submission.FINISHED:
-                    self.completed_at = timezone.now()
 
         if not self.pk:
             sub_num = Submission.objects.filter(
