@@ -80,7 +80,7 @@
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
-                            vm.currentDate = details.time;
+                            vm.currentDate = details.datetime_now;
                             for (var i in details.challenge_participant_team_list) {
                                 if (details.challenge_participant_team_list[i].challenge !== null && details.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
                                     vm.isParticipated = true;
