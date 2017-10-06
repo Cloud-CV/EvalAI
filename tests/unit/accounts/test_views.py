@@ -38,8 +38,8 @@ class TestUpdateUser(BaseAPITestClass):
 
     def test_cannot_update_username(self):
         self.data = {
-        'username' : 'anotheruser',
-        'affiliation': 'some_affiliation'
+            'username': 'anotheruser',
+            'affiliation': 'some_affiliation',
         }
         response = self.client.put(
             '/api/auth/user/',
