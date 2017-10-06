@@ -607,11 +607,11 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     }
                 }
             ],
-            "is_challenge_host": False,
-            "time": self.time
+            "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
         self.assertTrue(abs(response.data['time'] - self.time) < timedelta(seconds=1))
+        del response.data['time']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -628,11 +628,11 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     }
                 }
             ],
-            "is_challenge_host": False,
-            "time": self.time
+            "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
         self.assertTrue(abs(response.data['time'] - self.time) < timedelta(seconds=1))
+        del response.data['time']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -642,12 +642,12 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
         expected = {
             "challenge_participant_team_list": [],
-            "is_challenge_host": False,
-            "time": self.time
+            "is_challenge_host": False
         }
 
         response = self.client.get(self.url, {})
         self.assertTrue(abs(response.data['time'] - self.time) < timedelta(seconds=1))
+        del response.data['time']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
