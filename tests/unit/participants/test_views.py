@@ -610,8 +610,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
-        self.assertTrue(abs(response.data['time'] - self.time) < timedelta(seconds=1))
-        del response.data['time']
+        self.assertTrue(abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
+        del response.data['datetime_now']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -631,8 +631,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
-        self.assertTrue(abs(response.data['time'] - self.time) < timedelta(seconds=1))
-        del response.data['time']
+        self.assertTrue(abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
+        del response.data['datetime_now']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -646,8 +646,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         }
 
         response = self.client.get(self.url, {})
-        self.assertTrue(abs(response.data['time'] - self.time) < timedelta(seconds=1))
-        del response.data['time']
+        self.assertTrue(abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
+        del response.data['datetime_now']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

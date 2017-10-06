@@ -103,7 +103,7 @@ class ChallengeParticipantTeamList(object):
 class ChallengeParticipantTeamListSerializer(serializers.Serializer):
     """Serializer to map a challenge's participant team lists."""
     challenge_participant_team_list = ChallengeParticipantTeamSerializer(many=True)
-    time = serializers.SerializerMethodField()
+    datetime_now = serializers.SerializerMethodField()
 
     def get_time(self, obj):
         return timezone.now()
