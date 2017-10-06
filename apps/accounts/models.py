@@ -39,6 +39,7 @@ class Profile(TimeStampedModel):
     """
     user = models.OneToOneField(User)
     contact_number = models.CharField(max_length=10, blank=False, null=True)
+    affiliation = models.CharField(max_length=512)
     receive_participated_challenge_updates = models.BooleanField(default=False)
     recieve_newsletter = models.BooleanField(default=False)
 
