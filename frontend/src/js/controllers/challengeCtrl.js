@@ -1098,6 +1098,103 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.overviewDialog = function(ev) {
+            vm.tempDesc = vm.page.description;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-overview.html',
+            });
+        };
+
+        vm.editChallengeOverview = function(editChallengeOverviewForm) {
+            if(editChallengeOverviewForm){
+                var parameters = {};
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge==vm.challengeId) {
+                            vm.challengeHostId = challengeHostList[challenge];
+                            break;
+                        }
+                    }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "description": vm.page.description
+
+                };
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200){
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The description is successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            } else {
+                vm.page.description = vm.tempDesc;
+                $mdDialog.hide();
+            }
+        };
+
+        vm.submissionGuidelinesDialog = function(ev) {
+            vm.tempSubmissionGuidelines = vm.page.submission_guidelines;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-submission-guidelines.html',
+            });
+        };
+
+        vm.editSubmissionGuideline = function(editSubmissionGuidelinesForm) {
+            if(editSubmissionGuidelinesForm){
+                var parameters = {};
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge==vm.challengeId) {
+                            vm.challengeHostId = challengeHostList[challenge];
+                            break;
+                        }
+                    }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "submission_guidelines": vm.page.submission_guidelines
+
+                };
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200){
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The submission guidelines is successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            } else {
+                vm.page.submission_guidelines = vm.tempSubmissionGuidelines;
+                $mdDialog.hide();
+            }
+        };
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
