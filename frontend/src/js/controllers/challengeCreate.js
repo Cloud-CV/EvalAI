@@ -40,12 +40,12 @@
                     parameters.method = 'POST';
                     var formData = new FormData();
                     formData.append("zip_configuration", vm.input_file);
-
                     parameters.data = formData;
 
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
+                            $('#loader').addClass("hide-loader");
                             var status = response.status;
                             var details =  response.data;
                             if (status === 201) {
@@ -64,6 +64,7 @@
                             }
                         },
                         onError: function(response) {
+                            $('#loader').addClass("hide-loader");
                             var error = response.data;
                             angular.element(".file-path").val(null);
                             $rootScope.notify("error", error.error);
@@ -71,6 +72,7 @@
                         }
                     };
                 }
+                $('#loader').removeClass("hide-loader");
                 utilities.sendRequest(parameters, 'header', 'upload');
             }
             else {
@@ -81,7 +83,7 @@
     }
 })();
 
-/* This code can be used for creating challenge using UI feature.     
+/* This code can be used for creating challenge using UI feature.
                 parameters.data = {
                 "title": vm.title,
                 "description": vm.description,
