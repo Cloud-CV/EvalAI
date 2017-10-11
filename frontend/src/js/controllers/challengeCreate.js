@@ -18,12 +18,28 @@
         vm.isFormError = false;
         vm.input_file = null;
         vm.formError = {};
+        vm.uploadContainer = angular.element('.loader-container');
+
 
         // start loader
-        vm.startLoader = loaderService.startLoader;
+        // vm.startLoader = loaderService.startLoader;
 
         // stop loader
-        vm.stopLoader = loaderService.stopLoader;
+        // vm.stopLoader = loaderService.stopLoader;
+
+        // show loader
+        vm.startLoader = function(msg) {
+          $rootScope.isLoader = true;
+          $rootScope.loaderTitle = msg;
+          vm.uploadContainer.addClass('low-screen');
+        };
+
+        // stop loader
+        vm.stopLoader = function() {
+          $rootScope.isLoader = false;
+          $rootScope.loaderTitle = '';
+          vm.uploadContainer.addClass('low-screen');
+        };
 
         // function to create a challenge using zip file.
     vm.challengeCreate = function() {
@@ -45,7 +61,7 @@
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
-                            $('#loader').addClass("hide-loader");
+                            vm.stopLoader();
                             var status = response.status;
                             var details =  response.data;
                             if (status === 201) {
@@ -64,7 +80,6 @@
                             }
                         },
                         onError: function(response) {
-                            $('#loader').addClass("hide-loader");
                             var error = response.data;
                             angular.element(".file-path").val(null);
                             $rootScope.notify("error", error.error);
@@ -72,7 +87,7 @@
                         }
                     };
                 }
-                $('#loader').removeClass("hide-loader");
+                vm.startLoader("File upload in progress.");
                 utilities.sendRequest(parameters, 'header', 'upload');
             }
             else {

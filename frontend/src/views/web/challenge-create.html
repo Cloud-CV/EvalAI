@@ -1,3 +1,16 @@
+<div ui-view="" class="ng-scope" style="">
+  <div class="light-dark-container ng-hide ng-scope" ng-show="isLoader" sim-loader="">
+  <div class="loader-container" id="loader" style="low-screen display: none;">
+      <div class="text-white center w-300 loader-title"></div>
+      <div class="loader">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+      </div>
+  </div>
+</div>
 <section class="ev-md-container text-center ">
     <div class="row">
         <div class="col s12 m9 offset-m3">
@@ -14,7 +27,6 @@
                     <div class="align-left reg-control">
                         <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
                     </div>
-                    <div class="loader hide-loader" id="loader" onclick="show"></div>
                     <div ng-if="challengeCreate.isFormError" class="wrn-msg text-highlight align-right"> {{challengeCreate.formError}}
                     </div>
                 </form>
@@ -29,3 +41,4 @@
         </div>
     </div>
 </section>
+</div>
