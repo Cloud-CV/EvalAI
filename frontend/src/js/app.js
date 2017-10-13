@@ -10,7 +10,6 @@ angular
 		'focus-if',
 		'ngSanitize',
 		'ngFileUpload',
-		'toaster',
-		'angularTrix',
-		'ngMaterialDatePicker',
+		'toaster'
+
 	]);
