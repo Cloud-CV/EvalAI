@@ -1098,6 +1098,7 @@
             utilities.sendRequest(parameters);
         };
 
+// Edit challenge overview by challenge host
         vm.overviewDialog = function(ev) {
             vm.tempDesc = vm.page.description;
             $mdDialog.show({
@@ -1105,6 +1106,7 @@
                 preserveScope: true,
                 targetEvent: ev,
                 templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-overview.html',
+                escapeToClose: false
             });
         };
 
@@ -1135,6 +1137,7 @@
                     },
                     onError: function(response) {
                         $mdDialog.hide();
+                        vm.page.description = vm.tempDesc;
                         var error = response.data;
                         $rootScope.notify("error", error);
                     }
@@ -1147,6 +1150,7 @@
             }
         };
 
+// Edit submission guidelines by challenge host
         vm.submissionGuidelinesDialog = function(ev) {
             vm.tempSubmissionGuidelines = vm.page.submission_guidelines;
             $mdDialog.show({
@@ -1154,6 +1158,7 @@
                 preserveScope: true,
                 targetEvent: ev,
                 templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-submission-guidelines.html',
+                escapeToClose: false
             });
         };
 
@@ -1184,6 +1189,7 @@
                     },
                     onError: function(response) {
                         $mdDialog.hide();
+                        vm.page.submission_guidelines = vm.tempSubmissionGuidelines;
                         var error = response.data;
                         $rootScope.notify("error", error);
                     }
@@ -1195,6 +1201,160 @@
                 $mdDialog.hide();
             }
         };
+
+        vm.evaluationCriteriaDialog = function(ev) {
+            vm.tempEvaluationCriteria = vm.page.evaluation_details;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-evaluation-criteria.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editEvaluationCriteria = function(editEvaluationCriteriaForm) {
+            if(editEvaluationCriteriaForm){
+                var formData = new FormData();
+                var parameters = {};
+                if (vm.editEvaluationScript) {
+                    formData.append("evaluation_script", vm.editEvaluationScript);
+                }
+                formData.append("evaluation_details", vm.page.evaluation_details);
+
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge==vm.challengeId) {
+                            vm.challengeHostId = challengeHostList[challenge];
+                            break;
+                        }
+                    }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                parameters.data = formData;
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200){
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The evaluation details is successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        vm.page.evaluation_details = vm.tempEvaluationCriteria;
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters, 'header', 'upload');
+
+            } else {
+                vm.page.evaluation_details = vm.tempEvaluationCriteria;
+                $mdDialog.hide();
+            }
+        };
+
+        vm.termsAndConditionsDialog = function(ev) {
+            vm.tempTermsAndConditions = vm.page.terms_and_conditions;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-terms-and-conditions.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editTermsAndConditions = function(editTermsAndConditionsForm) {
+            if(editTermsAndConditionsForm){
+                var parameters = {};
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge==vm.challengeId) {
+                            vm.challengeHostId = challengeHostList[challenge];
+                            break;
+                        }
+                    }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "terms_and_conditions": vm.page.terms_and_conditions
+                };
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200) {
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The terms and conditions are successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        vm.page.terms_and_conditions = vm.tempTermsAndConditions;
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+            } else {
+                vm.page.terms_and_conditions = vm.tempTermsAndConditions;
+                $mdDialog.hide();
+            }
+        };
+
+        vm.challengeTitleDialog = function(ev) {
+            vm.tempChallengeTitle = vm.page.title;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-title.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editChallengeTitle = function(editChallengeTitleForm) {
+            if(editChallengeTitleForm){
+                var parameters = {};
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge==vm.challengeId) {
+                            vm.challengeHostId = challengeHostList[challenge];
+                            break;
+                        }
+                    }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "title": vm.page.title
+                };
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200) {
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The challenge title is  successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        vm.page.title = vm.tempChallengeTitle;
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+            } else {
+                vm.page.title = vm.tempChallengeTitle;
+                $mdDialog.hide();
+            }
+        };
+
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();

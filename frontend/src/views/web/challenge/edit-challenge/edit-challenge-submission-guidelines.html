@@ -1,12 +1,26 @@
-<section class="text-center pd-20 wt-500">
+<section class="text-center pd-20 width-500">
     <div class="row">
         <div class="col s12 m12">
             <div class="ev-card-body pd-20">
-                <form name="editSubmissionGuidelinesForm" ng-submit="challenge.editSubmissionGuideline(editSubmissionGuidelinesForm.$valid)">
+                <form name="editSubmissionGuidelinesForm" ng-submit="challenge.editTermsAndConditions(editSubmissionGuidelinesForm.$valid)">
                     <div class="pass-title">Edit Submission Guidelines</div>
                     <div class="input-field align-left">
-                        <textarea id="submissionGuidelines" name="submissionGuidelines" type="text" class="materialize-textarea" ng-model="challenge.page.submission_guidelines" value="{{challenge.page.submission_guidelines}}" focus-if="challenge.page.submission_guidelines"></textarea>
-                        <label for="methodDesc"> Submission Guidelines</label>
+                        <trix-editor class="editor"
+                                   ng-model-options="{ updateOn: 'blur' }" 
+                                   spellcheck="false" class="trix-content" 
+                                   ng-model="challenge.page.submission_guidelines"
+                                   angular-trix 
+                                   trix-initialize="trixInitialize(e, editor);" 
+                                   trix-change="trixChange(e, editor);" 
+                                   trix-selection-change="trixSelectionChange(e, editor);" 
+                                   trix-focus="trixFocus(e, editor);" 
+                                   trix-blur="trixBlur(e, editor);" 
+                                   trix-file-accept="trixFileAccept(e, editor);" 
+                                   trix-attachment-add="trixAttachmentAdd(e, editor);" 
+                                   trix-attachment-remove="trixAttachmentRemove(e, editor);"
+                                   prevent-trix-file-accept = "true"
+                                   placeholder="Submission Guidelines">
+                        </trix-editor>
                     </div>
                     <ul class="inline-list hide-on-med-and-down">
                         <li>
