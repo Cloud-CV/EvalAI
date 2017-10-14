@@ -1098,7 +1098,7 @@
             utilities.sendRequest(parameters);
         };
 
-// Edit challenge overview by challenge host
+// Edit challenge overview
         vm.overviewDialog = function(ev) {
             vm.tempDesc = vm.page.description;
             $mdDialog.show({
@@ -1150,7 +1150,7 @@
             }
         };
 
-// Edit submission guidelines by challenge host
+// Edit submission guidelines
         vm.submissionGuidelinesDialog = function(ev) {
             vm.tempSubmissionGuidelines = vm.page.submission_guidelines;
             $mdDialog.show({
@@ -1202,6 +1202,7 @@
             }
         };
 
+// Edit Evaluation Criteria
         vm.evaluationCriteriaDialog = function(ev) {
             vm.tempEvaluationCriteria = vm.page.evaluation_details;
             $mdDialog.show({
@@ -1257,6 +1258,7 @@
             }
         };
 
+// Edit Terms and Conditions
         vm.termsAndConditionsDialog = function(ev) {
             vm.tempTermsAndConditions = vm.page.terms_and_conditions;
             $mdDialog.show({
@@ -1306,6 +1308,7 @@
             }
         };
 
+// Edit Challenge Title
         vm.challengeTitleDialog = function(ev) {
             vm.tempChallengeTitle = vm.page.title;
             $mdDialog.show({
