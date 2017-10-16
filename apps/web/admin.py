@@ -6,8 +6,8 @@ from .models import Contact, Team
 
 
 @admin.register(Contact)
-class ContactAdmin(ImportExportTimeStampedAdmin):
-    list_display = ("name", "email", "message",)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "message", "created_at", "modified_at",)
     search_fields = ("email",)
 
 
