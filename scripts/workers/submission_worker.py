@@ -398,9 +398,10 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     with open(stdout_file, 'r') as stdout:
         stdout_content = stdout.read()
         submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
-    with open(stderr_file, 'r') as stderr:
-        stderr_content = stderr.read()
-        submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
+    if (submission_status is not Submission.FINISHED):
+        with open(stderr_file, 'r') as stderr:
+            stderr_content = stderr.read()
+            submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
