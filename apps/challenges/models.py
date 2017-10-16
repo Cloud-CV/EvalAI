@@ -88,7 +88,7 @@ signals.post_save.connect(model_field_name(field_name='evaluation_script')(creat
 
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
-    codename = models.CharField(max_length=100, unique=True)
+    codename = models.CharField(max_length=100)
 
     def __unicode__(self):
         return self.name
@@ -124,7 +124,7 @@ class ChallengePhase(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_phase'
-        unique_together = (('codename', 'challenge'),)
+        unique_together = (('codename', 'challenge'), ('id', 'dataset_split'),)
 
     def __unicode__(self):
         """Returns the name of Phase"""
