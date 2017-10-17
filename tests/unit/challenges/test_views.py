@@ -1034,7 +1034,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 name='Challenge Phase',
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
-                is_public=False,
+                is_public=True,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
@@ -1108,6 +1108,17 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_get_challenge_phase_when_a_phase_is_not_public(self):
+        self.challenge_phase.is_public = False
+        self.challenge_phase.save()
+
+        expected = []
+
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class CreateChallengePhaseTest(BaseChallengePhaseClass):
