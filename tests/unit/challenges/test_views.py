@@ -1120,6 +1120,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+
 class CreateChallengePhaseTest(BaseChallengePhaseClass):
 
     def setUp(self):
