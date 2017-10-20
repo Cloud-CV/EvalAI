@@ -14,8 +14,9 @@
       "ng-focus-if",
       "ng-sanitize",
       "ng-file-upload",
-      "AngularJS-Toaster"
-
+      "AngularJS-Toaster",
+      "angular-trix",
+      "trix"
     ]
   },
   "paths": {
@@ -32,7 +33,9 @@
        "ng-focus-if": "bower_components/ng-focus-if/focusIf.min.js",
        "ng-sanitize": "bower_components/angular-sanitize/angular-sanitize.min.js",
        "ng-file-upload": "bower_components/ng-file-upload/ng-file-upload.min.js",
-       "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.js"
+       "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.js",
+       "angular-trix": "bower_components/angular-trix/dist/angular-trix.min.js",
+       "trix": "bower_components/trix/dist/trix.js"
 
      }
 }
