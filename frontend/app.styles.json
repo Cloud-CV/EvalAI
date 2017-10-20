@@ -4,13 +4,15 @@
       "animate",
       "angular-material",
       "materialize",
-      "AngularJS-Toaster"
+      "AngularJS-Toaster",
+      "trix"
     ]
   },
   "paths": {
        "animate": "bower_components/animate.css/animate.css",
        "angular-material": "bower_components/angular-material/angular-material.css",
        "materialize": "bower_components/materialize/dist/css/materialize.css",
-       "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.css"
+       "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.css",
+       "trix": "bower_components/trix/dist/trix.css"
       }
 }
