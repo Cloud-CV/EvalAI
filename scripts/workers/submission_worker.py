@@ -289,6 +289,7 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
 
     # call `main` from globals and set `status` to running and hence `started_at`
     submission.status = Submission.RUNNING
+    submission.started_at = timezone.now()
     submission.save()
     try:
         successful_submission_flag = True
@@ -371,6 +372,7 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
 
     submission_status = Submission.FINISHED if successful_submission_flag else Submission.FAILED
     submission.status = submission_status
+    submission.completed_at = timezone.now()
     submission.save()
 
     # after the execution is finished, set `status` to finished and hence `completed_at`
@@ -398,9 +400,10 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     with open(stdout_file, 'r') as stdout:
         stdout_content = stdout.read()
         submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
-    with open(stderr_file, 'r') as stderr:
-        stderr_content = stderr.read()
-        submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
+    if (submission_status is Submission.FAILED):
+        with open(stderr_file, 'r') as stderr:
+            stderr_content = stderr.read()
+            submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)

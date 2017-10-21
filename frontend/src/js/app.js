@@ -10,6 +10,6 @@ angular
 		'focus-if',
 		'ngSanitize',
 		'ngFileUpload',
-		'toaster'
-
+		'toaster',
+		'angularTrix'
 	]);
