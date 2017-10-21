@@ -568,6 +568,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             'participants:get_teams_and_corresponding_challenges_for_a_participant',
             kwargs={'challenge_pk': self.challenge1.pk})
 
+        self.time = timezone.now()
+
     def test_get_teams_and_corresponding_challenges_for_a_participant(self):
 
         self.challenge1.participant_teams.add(self.participant_team1)
@@ -608,6 +610,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
+        # checking 'datetime_now' separately because of time difference in microseconds
+        self.assertTrue(abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
+        # deleting field 'datetime_now' from response to check with expected response without time field
+        del response.data['datetime_now']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -627,6 +633,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
+        # checking 'datetime_now' separately because of time difference in microseconds
+        self.assertTrue(abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
+        # deleting field 'datetime_now' from response to check with expected response without time field
+        del response.data['datetime_now']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -640,6 +650,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         }
 
         response = self.client.get(self.url, {})
+        # checking 'datetime_now' separately because of time difference in microseconds
+        self.assertTrue(abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
+        # deleting field 'datetime_now' from response to check with expected response without time field
+        del response.data['datetime_now']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
