@@ -273,3 +273,8 @@ RABBITMQ_PARAMETERS = {
     },
     'SUBMISSION_QUEUE': 'submission_task_queue',
 }
+
+# To make usermame field read-only, customized serializer is defined.
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'accounts.serializers.UserDetailsSerializer',
+}
