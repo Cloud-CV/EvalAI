@@ -3,10 +3,11 @@
         <div class="col s12 m12">
             <div class="ev-card-body pd-20">
                 <form name="editChallengeTitleForm" ng-submit="challenge.editChallengeTitle(editChallengeTitleForm.$valid)">
-                    <div class="pass-title">Edit Terms And Conditions</div>
+                    <div class="pass-title">Edit Challenge Title</div>
                       <div class="input-field align-left">
-                        <textarea id="title" name="title" type="text" class="materialize-textarea" ng-model="challenge.page.title" value="{{challenge.page.title}}" focus-if="challenge.page.title">
-                        </textarea>
+                        <input type="text" id="title" name="title" ng-model="challenge.page.title" value="{{challenge.page.title}}" focus-if="challenge.page.title" required>
+                        <span class="form-icon"><i class="fa fa-text"></i></span>
+                        <label for="title">Challenge Title</label>
                       </div>
                       <ul class="inline-list hide-on-med-and-down">
                         <li>
