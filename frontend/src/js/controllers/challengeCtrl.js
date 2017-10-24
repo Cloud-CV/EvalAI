@@ -1219,13 +1219,7 @@
 
         vm.editEvaluationCriteria = function(editEvaluationCriteriaForm) {
             if(editEvaluationCriteriaForm){
-                var formData = new FormData();
                 var parameters = {};
-                if (vm.editEvaluationScript) {
-                    formData.append("evaluation_script", vm.editEvaluationScript);
-                }
-                formData.append("evaluation_details", vm.page.evaluation_details);
-
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
                     if (challenge==vm.challengeId) {
@@ -1235,7 +1229,9 @@
                     }
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.method = 'PATCH';
-                parameters.data = formData;
+                parameters.data = {
+                    "evaluation_details": vm.page.evaluation_details
+                };
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -1253,6 +1249,58 @@
                     }
                 };
 
+                utilities.sendRequest(parameters);
+
+            } else {
+                vm.page.evaluation_details = vm.tempEvaluationCriteria;
+                $mdDialog.hide();
+            }
+        };
+
+
+// Edit Evaluation Script
+        vm.evaluationScriptDialog = function(ev) {
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-evaluation-script.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editEvalScript = function(editEvaluationCriteriaForm) {
+            if(editEvaluationCriteriaForm){
+                var parameters = {};
+                var formData = new FormData();
+                formData.append("evaluation_script", vm.editEvaluationScript);
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge==vm.challengeId) {
+                            vm.challengeHostId = challengeHostList[challenge];
+                            break;
+                        }
+                    }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                parameters.data = formData;
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200){
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The evaluation script is successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        vm.page.evaluation_details = vm.tempEvaluationCriteria;
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
                 utilities.sendRequest(parameters, 'header', 'upload');
 
             } else {
@@ -1260,6 +1308,7 @@
                 $mdDialog.hide();
             }
         };
+
 
 // Edit Terms and Conditions
         vm.termsAndConditionsDialog = function(ev) {
