@@ -43,6 +43,8 @@ sys.path.insert(0, DJANGO_PROJECT_PATH)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
+DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
+
 from challenges.models import (Challenge,
                                ChallengePhase,
                                ChallengePhaseSplit,
@@ -162,7 +164,8 @@ def create_dir_as_python_package(directory):
 def return_file_url_per_environment(url):
 
     if DJANGO_SETTINGS_MODULE == "settings.dev":
-        url = "{0}{1}".format("http://localhost:8000", url)
+        base_url = "http://{0}:8000".format(DJANGO_SERVER)
+        url = "{0}{1}".format(base_url, url)
 
     elif DJANGO_SETTINGS_MODULE == "settings.test":
         url = "{0}{1}".format("http://testserver", url)
@@ -286,6 +289,7 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
 
     # call `main` from globals and set `status` to running and hence `started_at`
     submission.status = Submission.RUNNING
+    submission.started_at = timezone.now()
     submission.save()
     try:
         successful_submission_flag = True
@@ -368,6 +372,7 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
 
     submission_status = Submission.FINISHED if successful_submission_flag else Submission.FAILED
     submission.status = submission_status
+    submission.completed_at = timezone.now()
     submission.save()
 
     # after the execution is finished, set `status` to finished and hence `completed_at`
@@ -395,9 +400,10 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     with open(stdout_file, 'r') as stdout:
         stdout_content = stdout.read()
         submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
-    with open(stderr_file, 'r') as stderr:
-        stderr_content = stderr.read()
-        submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
+    if (submission_status is Submission.FAILED):
+        with open(stderr_file, 'r') as stderr:
+            stderr_content = stderr.read()
+            submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)

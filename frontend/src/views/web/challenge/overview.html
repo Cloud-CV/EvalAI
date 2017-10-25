@@ -1,8 +1,18 @@
 <section class="ev-sm-container ev-view challenge-container ">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row">
-            <div class="col s12">
-                <span class="fs-18"><a href="http://visualqa.org/" class="med-black-link"><strong>{{challenge.page.title}}</strong></a></span>
+            <div class="col s11 m11">
+                <span class="fs-18">
+                    <a href="http://visualqa.org/" class="med-black-link">
+                        <strong>{{challenge.page.title}}</strong>
+                    </a>
+                </span>
+            </div>
+            <div ng-if="challenge.isChallengeHost" class="col s1">
+                <a class="pointer" ng-click="challenge.overviewDialog($event)">
+                    <i class="fa fa-pencil" aria-hidden="true">
+                    </i>
+                </a>
             </div>
         </div>
         <!-- <div class="row">
@@ -12,7 +22,7 @@
         </div> -->
         <div class="row">
             <div class="col s12">
-                <div  ng-bind-html="challenge.page.description"></div>
+                <div ng-bind-html="challenge.page.description"></div>
             </div>
         </div>
     </div>

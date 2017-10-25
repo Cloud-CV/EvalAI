@@ -266,10 +266,15 @@ CACHES = {
 }
 
 RABBITMQ_PARAMETERS = {
-    'HOST': 'localhost',
+    'HOST': os.environ.get("RABBITMQ_HOST", 'localhost'),
     'EVALAI_EXCHANGE': {
         'NAME': 'evalai_submissions',
         'TYPE': 'topic',
     },
     'SUBMISSION_QUEUE': 'submission_task_queue',
+}
+
+# To make usermame field read-only, customized serializer is defined.
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAILS_SERIALIZER': 'accounts.serializers.UserDetailsSerializer',
 }

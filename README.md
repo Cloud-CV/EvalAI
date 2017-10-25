@@ -13,12 +13,36 @@
 
 EvalAI is an open source web application that helps researchers, students and data-scientists to create, collaborate and participate in various AI challenges organized round the globe.
 
-## How to setup
+In recent years, it has become increasingly difficult to compare an algorithm solving a given task with other existing approaches. These comparisons suffer from minor differences in algorithm implementation, use of non-standard dataset splits and different evaluation metrics. By providing a central leaderboard and submission interface, we make it easier for researchers to reproduce the results mentioned in the paper and perform reliable & accurate quantitative analysis. By providing swift and robust backends based on map-reduce frameworks that speed up evaluation on the fly, EvalAI aims to make it easier for researchers to reproduce results from technical papers and perform reliable and accurate analyses.
+
+<p align="center"><img width="65%" src="docs/source/\_static/img/kaggle_comparison.png" /></p>
+
+A question we’re often asked is: Doesn’t Kaggle already do this? The central differences are:
+
+- **Custom Evaluation Protocols and Phases**: We have designed versatile backend framework that can support user-defined evaluation metrics, various evaluation phases, private and public leaderboard.
+
+- **Faster Evaluation**: The backend evaluation pipeline is engineered so that submissions can be evaluated parallelly using multiple cores on multiple machines via mapreduce frameworks offering a significant performance boost over similar web AI-challenge platforms.
+
+- **Portability**: Since the platform is open-source, users have the freedom to host challenges on their own private servers rather than having to explicitly depend on Cloud Services such as AWS, Azure, etc.
+
+- **Easy Hosting**: Hosting a challenge is streamlined. One can create the challenge on EvalAI using the intuitive UI (work-in-progress) or using zip configuration file.
+
+- **Centralized Leaderboard**: Challenge Organizers whether host their challenge on EvalAI or forked version of EvalAI, they can send the results to main EvalAI server. This helps to build a centralized platform to keep track of different challenges. 
+
+## Goal
+
+Our ultimate goal is to build a centralized platform to host, participate and collaborate in AI challenges organized around the globe and we hope to help in benchmarking progress in AI.
+
+## Performance comparison
+
+Some background: Last year, the [Visual Question Answering Challenge (VQA, 2016](http://www.visualqa.org/vqa_v1_challenge.html) was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview). This year, the dataset for the [VQA Challenge 2017](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
+
+## Installation Instructions
 
 Setting up EvalAI on your local machine is really easy.
 Follow this guide to setup your development machine.
 
-1. Install [python] 2.x, [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
+1. Install [python] 2.x (EvalAI only supports python2.x for now.), [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
@@ -69,7 +93,7 @@ Follow this guide to setup your development machine.
     ```
 
 
-8. Open a new terminal window with node(6.9.2) and ruby(gem) install on your machine and type
+8. Open a new terminal window with node(6.9.2) and ruby(gem) installed on your machine and type
 
     ```
     npm install
@@ -92,6 +116,32 @@ Follow this guide to setup your development machine.
     ```
     python scripts/workers/submission_worker.py
     ```
+### Using Docker
+
+You can also use Docker Compose to run all the components of EvalAI together. The steps are:
+
+1. Get the source code on to your machine via git.
+
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    ```
+
+2. Rename `settings/dev.sample.py` as `dev.py` and change credential in `settings/dev.py`
+
+    ```
+    cp settings/dev.sample.py settings/dev.py
+    ```
+    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
+
+3. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+
+    ```
+    docker-compose -f docker-compose.dev.yml up -d --build
+    ```
+
+## The Team
+
+EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io), Akash Jain, Taranjeet Singh, Shiv Baran Singh and Rishabh Jain. A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
 
 ## Contribution guidelines
 

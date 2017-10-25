@@ -117,9 +117,10 @@
                                 }
 
                             } catch (error) {
-                                console.log(error);
+                                $rootScope.notify("error", error);
                             }
                         }
+
                         vm.stopLoader();
                     }
                 };
@@ -165,7 +166,7 @@
                                     vm.FormError = response.data.non_field_errors[0];
                                 }
                             } catch (error) {
-                                console.log(error);
+                                $rootScope.notify("error", error);
                             }
                         }
                         vm.stopLoader();
