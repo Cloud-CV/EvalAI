@@ -47,17 +47,19 @@
             }
 
             // for file upload
-            if (method == "POST" && type == "upload") {
-                // alert("")
-                headers = {
-                    'Content-Type': undefined,
-                    'Authorization': "Token " + token
-                };
-                req.transformRequest = function(data) {
-                    return data;
-                };
+            if (method == "POST" || method == "PATCH" || method == "PUT") {
+                if (type == "upload") {
+                    // alert("")
+                    headers = {
+                        'Content-Type': undefined,
+                        'Authorization': "Token " + token
+                    };
+                    req.transformRequest = function(data) {
+                        return data;
+                    };
 
-                req.headers = headers;
+                    req.headers = headers;
+                }
             }
 
             $http(req)

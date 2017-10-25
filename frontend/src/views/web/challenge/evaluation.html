@@ -1,24 +1,63 @@
 <section class="ev-sm-container ev-view">
     <div class="row">
-        <div class="col m12">
+        <div class="col s12 m12">
             <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card">
-              <span class="fs-18"><strong>Submission Guidelines
-</strong></span>
-                <div ng-bind-html="challenge.page.submission_guidelines"></div>
+                <div class="col s11 m11">
+                    <span class="fs-18">
+                        <strong>Submission Guidelines</strong>
+                    </span>
+                    <div ng-bind-html="challenge.page.submission_guidelines"></div>
+                </div>
+                <div ng-if="challenge.isChallengeHost" class="col s1 m1">
+                    <a class="pointer" ng-click="challenge.submissionGuidelinesDialog($event)">
+                        <i class="fa fa-pencil" aria-hidden="true">
+                        </i>
+                    </a>
+                </div>
             </div>
         </div>
+    </div>
+    <div class="row">
         <div class="col s12 m6">
             <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card">
-                <span class="fs-18"><strong>Evaluation Criteria
-</strong></span>
-                <div ng-bind-html="challenge.page.evaluation_details"></div>
+                <div class="col s11 m10">
+                    <span class="fs-18">
+                        <strong>
+                        Evaluation Criteria
+                        </strong>
+                    </span>
+                    <div ng-bind-html="challenge.page.evaluation_details"></div>
+                </div>
+                <div ng-if="challenge.isChallengeHost" class="col s1 m1">
+                    <a class="pointer" ng-click="challenge.evaluationCriteriaDialog($event)">
+                        <i class="fa fa-pencil" aria-hidden="true">
+                        </i>
+                    </a>
+                </div>
+                <div ng-if="challenge.isChallengeHost" class="col s1 m1">
+                    <a class="pointer" ng-click="challenge.evaluationScriptDialog($event)">
+                        <i class="fa fa-file" aria-hidden="true">
+                        </i>
+                    </a>
+                </div>
             </div>
         </div>
         <div class="col s12 m6">
             <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view  eval-card">
-                <span class="fs-18"><strong>Terms And Conditions
-</strong></span>
-                <div ng-bind-html="challenge.page.terms_and_conditions"></div>
+                <div class="col s11 m11">
+                    <span class="fs-18">
+                        <strong>
+                            Terms And Conditions
+                        </strong>
+                    </span>
+                    <div ng-bind-html="challenge.page.terms_and_conditions"></div>
+                </div>
+                <div ng-if="challenge.isChallengeHost" class="col s1 m1">
+                    <a class="pointer" ng-click="challenge.termsAndConditionsDialog($event)">
+                        <i class="fa fa-pencil" aria-hidden="true">
+                        </i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
