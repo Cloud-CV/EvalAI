@@ -4,9 +4,9 @@ This is a collection of records for architecturally significant decisions.
 
 ### URL Patterns
 
-We follow a very basic yet strong convention for URL so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CURD** actions.
+We follow a very basic yet strong convention for URL so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
 
-For example, to perform **CURD** operation on _Challenge Host Model_, following will be the URL patterns.
+For example, to perform **CRUD** operation on _Challenge Host Model_, following will be the URL patterns.
 
 * `GET /hosts/challenge_host_team` - Retrieves a list of challenge host teams
 
