@@ -33,29 +33,6 @@ class UserStatus(TimeStampedModel):
         app_label = 'accounts'
 
 
-class Affiliation(TimeStampedModel):
-    """
-    Model to store the Affiliations
-    """
-    name = models.TextField()
-
-    class Meta:
-        app_label = 'accounts'
-        db_table = 'affliation'
-
-
-class UserAffliation(TimeStampedModel):
-    """
-    Model to relate the affiliations to a particular user
-    """
-    affiliation = models.ForeignKey(Affiliation)
-    user = models.ForeignKey(User)
-
-    class Meta:
-        app_label = 'accounts'
-        db_table = 'user_affiliation'
-
-
 class Profile(TimeStampedModel):
     """
     Model to store profile of a user
