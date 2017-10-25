@@ -1050,6 +1050,9 @@
 
                 utilities.sendRequest(parameters);
             }
+            else{
+              $mdDialog.hide();
+            }
         };
 
         // Get the stars count and user specific starred or unstarred

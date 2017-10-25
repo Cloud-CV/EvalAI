@@ -27,7 +27,8 @@
     "ng-focus-if": "master",
     "angular-sanitize": "^1.6.1",
     "ng-file-upload": "^12.2.13",
-    "AngularJS-Toaster": "angularjs-toaster#^2.1.0"
+    "AngularJS-Toaster": "angularjs-toaster#^2.1.0",
+    "angular-trix": "^1.0.2"
   },
   "resolutions": {
     "angular": "^1.6.1"
