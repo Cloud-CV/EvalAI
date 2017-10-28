@@ -6,8 +6,11 @@ from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
-                                       permission_classes,)
+                                       permission_classes,
+                                       throttle_classes,)
 from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+
+from .throttles import ResendEmailThrottle
 
 
 @api_view(['POST'])
@@ -21,6 +24,7 @@ def disable_user(request):
     return Response(status=status.HTTP_200_OK)
 
 
+@throttle_classes([ResendEmailThrottle])
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((ExpiringTokenAuthentication,))
