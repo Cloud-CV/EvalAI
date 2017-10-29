@@ -18,28 +18,13 @@
         vm.isFormError = false;
         vm.input_file = null;
         vm.formError = {};
-        vm.uploadContainer = angular.element('.loader-container');
-
+        vm.loaderContainer = angular.element('.low-screen');
 
         // start loader
-        // vm.startLoader = loaderService.startLoader;
+        vm.startLoader = loaderService.startLoader;
 
         // stop loader
-        // vm.stopLoader = loaderService.stopLoader;
-
-        // show loader
-        vm.startLoader = function(msg) {
-          $rootScope.isLoader = true;
-          $rootScope.loaderTitle = msg;
-          vm.uploadContainer.addClass('low-screen');
-        };
-
-        // stop loader
-        vm.stopLoader = function() {
-          $rootScope.isLoader = false;
-          $rootScope.loaderTitle = '';
-          vm.uploadContainer.addClass('low-screen');
-        };
+        vm.stopLoader = loaderService.stopLoader;
 
         // function to create a challenge using zip file.
     vm.challengeCreate = function() {
@@ -87,6 +72,9 @@
                         }
                     };
                 }
+                vm.isExistLoader = true;
+                vm.loaderTitle = '';
+                vm.loaderContainer = angular.element('.low-screen');
                 vm.startLoader("File upload in progress.");
                 utilities.sendRequest(parameters, 'header', 'upload');
             }

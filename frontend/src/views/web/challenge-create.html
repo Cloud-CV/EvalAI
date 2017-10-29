@@ -1,17 +1,22 @@
-<div ui-view="" class="ng-scope" style="">
-  <div class="light-dark-container ng-hide ng-scope" ng-show="isLoader" sim-loader="">
-  <div class="loader-container" id="loader" style="low-screen display: none;">
-      <div class="text-white center w-300 loader-title"></div>
-      <div class="loader">
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-      </div>
-  </div>
-</div>
 <section class="ev-md-container text-center ">
+  <div class="row">
+      <div class="col s12 m12">
+        <div class="loader-container card-loader-container" id="loader" ng-show="challengeCreate.isExistLoader" class="fade">
+            <div class="loader">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12 m12">
+          <div class="show-loader">
+          </div>
+        </div>
+      </div>
     <div class="row">
         <div class="col s12 m9 offset-m3">
             <div class="zip-file-title">Please upload zip file to create a challenge !</div>
@@ -40,5 +45,5 @@
             <a href="https://evalai.readthedocs.io/en/latest/" class="highlight-link" target="_blank">here.</a>.
         </div>
     </div>
+  </div>
 </section>
-</div>
