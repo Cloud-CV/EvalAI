@@ -35,7 +35,7 @@ def make_team_name_unique():
                 host_team_iter = host_team_iter + 1
             else:
                 host_team_list.append(host_team.team_name)
-    except Exception, e:
+    except Exception as e:
         print str(e)
 
 make_team_name_unique()
