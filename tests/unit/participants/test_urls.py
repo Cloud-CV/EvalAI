@@ -11,6 +11,11 @@ from challenges.models import Challenge
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import ParticipantTeam
 
+try:
+    unicode        # Python 2
+except NameError:
+    unicode = str  # Python 3
+
 
 class BaseAPITestClass(APITestCase):
 
