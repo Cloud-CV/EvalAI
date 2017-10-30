@@ -13,6 +13,11 @@ from django.test import TestCase
 from web.views import page_not_found, internal_server_error
 from evalai.urls import handler404, handler500
 
+try:
+    unicode        # Python 2
+except NameError:
+    unicode = str  # Python 3
+
 
 class BaseAPITestCase(APITestCase):
 
