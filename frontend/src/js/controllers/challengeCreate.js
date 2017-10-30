@@ -18,7 +18,8 @@
         vm.isFormError = false;
         vm.input_file = null;
         vm.formError = {};
-        vm.loaderContainer = angular.element('.low-screen');
+        vm.isExistLoader = false;
+        vm.loaderContainer = angular.element('.challenge-loader');
 
         // start loader
         vm.startLoader = loaderService.startLoader;
@@ -72,9 +73,6 @@
                         }
                     };
                 }
-                vm.isExistLoader = true;
-                vm.loaderTitle = '';
-                vm.loaderContainer = angular.element('.low-screen');
                 vm.startLoader("File upload in progress.");
                 utilities.sendRequest(parameters, 'header', 'upload');
             }
@@ -86,7 +84,7 @@
     }
 })();
 
-/* This code can be used for creating challenge using UI feature.
+/* This code can be used for creating challenge using UI feature.    
                 parameters.data = {
                 "title": vm.title,
                 "description": vm.description,
