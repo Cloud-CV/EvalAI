@@ -15,7 +15,7 @@ def set_phase_code_name_unique():
             challenge_phase.code_name = new_phase_code_name
             challenge_phase.save()
             print ("Successfully modified Challenge Phase Code Name")
-    except Exception, e:
+    except Exception as e:
         print str(e)
 
 set_phase_code_name_unique()
