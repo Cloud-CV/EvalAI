@@ -5,6 +5,11 @@ from django.contrib.auth.models import User
 
 from rest_framework.test import APITestCase, APIClient
 
+try:
+    unicode        # Python 2
+except NameError:
+    unicode = str  # Python 3
+
 
 class BaseAPITestClass(APITestCase):
 
