@@ -1391,10 +1391,19 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
 
         self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
 
+        self.dataset_split1 = DatasetSplit.objects.create(name="Test Dataset Split 1", codename="test-split1")
+
         self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
 
         self.challenge_phase_split = ChallengePhaseSplit.objects.create(
             dataset_split=self.dataset_split,
+            challenge_phase=self.challenge_phase,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC
+            )
+
+        self.challenge_phase_split1 = ChallengePhaseSplit.objects.create(
+            dataset_split=self.dataset_split1,
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC
@@ -1420,6 +1429,14 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
+            },
+            {
+                "id": self.challenge_phase_split1.id,
+                "challenge_phase": self.challenge_phase.id,
+                "challenge_phase_name": self.challenge_phase.name,
+                "dataset_split": self.dataset_split1.id,
+                "dataset_split_name": self.dataset_split1.name,
+                "visibility": self.challenge_phase_split1.visibility,
             }
         ]
 
@@ -2165,13 +2182,17 @@ class CreateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
              "challenge_phase": self.challenge_phase.pk,
              "leaderboard": self.leaderboard.pk,
              "visibility": 1},
-            {"dataset_split": self.dataset_split.pk,
+            {"dataset_split": self.dataset_split1.pk,
              "challenge_phase": self.challenge_phase.pk,
              "leaderboard": self.leaderboard.pk,
              "visibility": 3}
             ]
 
     def test_create_challenge_phase_split_with_all_data(self):
+        # Delete the existing chalenge phase splits so that creation of 
+        # new challenge_phase_split can be tested
+        self.challenge_phase_split.delete()
+        self.challenge_phase_split1.delete()
         self.url = reverse_lazy('challenges:create_challenge_phase_split')
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

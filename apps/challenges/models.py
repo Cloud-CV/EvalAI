@@ -189,6 +189,8 @@ class ChallengePhaseSplit(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_phase_split'
+        # Add unique together since a challenge_phase cannot have two challenge_phase_splits
+        # with same challenge_phase and dataset_splot
         unique_together = ('challenge_phase', 'dataset_split')
 
 
