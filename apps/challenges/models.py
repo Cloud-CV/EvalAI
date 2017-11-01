@@ -189,6 +189,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge_phase_split'
+        unique_together = ('challenge_phase', 'dataset_split')
 
 
 class LeaderboardData(TimeStampedModel):
