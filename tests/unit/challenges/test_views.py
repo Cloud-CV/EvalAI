@@ -2189,7 +2189,7 @@ class CreateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             ]
 
     def test_create_challenge_phase_split_with_all_data(self):
-        # Delete the existing chalenge phase splits so that creation of 
+        # Delete the existing chalenge phase splits so that creation of
         # new challenge_phase_split can be tested
         self.challenge_phase_split.delete()
         self.challenge_phase_split1.delete()
