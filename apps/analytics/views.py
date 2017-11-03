@@ -29,7 +29,8 @@ from participants.serializers import (ParticipantCount,
                                       )
 from .serializers import (ChallengePhaseSubmissionCount,
                           ChallengePhaseSubmissionCountSerializer,
-                          LastSubmissionDateTimeAnalysisSerializer,
+                          LastSubmissionTimestamp,
+                          LastSubmissionTimestampSerializer,
                           )
 
 
@@ -175,13 +176,23 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
-    submissions = Submission.objects.filter(challenge_phase__challenge=challenge,
-                                            challenge_phase=challenge_phase)
+    submissions = Submission.objects.filter(
+        challenge_phase__challenge=challenge)
+
+    last_submission_timestamp_in_challenge = submissions.order_by(
+        '-submitted_at')[0].created_at
+
+    last_submission_timestamp_in_challenge_phase = submissions.filter(
+        challenge_phase=challenge_phase).order_by('-submitted_at')[0].created_at
+
+    last_submission_timestamp = LastSubmissionTimestamp(
+        last_submission_timestamp_in_challenge, last_submission_timestamp_in_challenge_phase, challenge_phase.pk)
+
     try:
-        serializer = LastSubmissionDateTimeAnalysisSerializer(submissions, many=True)
-        if serializer.data:
-            response_data = serializer.data[0]
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    except:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = LastSubmissionTimestampSerializer(last_submission_timestamp)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print e
+        response_data = {'error': 'Bad request. Please try again later!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
