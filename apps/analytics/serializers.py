@@ -17,9 +17,15 @@ class ChallengePhaseSubmissionCountSerializer(serializers.Serializer):
     challenge_phase = serializers.IntegerField()
 
 
-class LastSubmissionDateTimeAnalysisSerializer(serializers.ModelSerializer):
+class LastSubmissionTimestamp(object):
 
-    class Meta:
-        model = Submission
-        fields = ('last_submission_timestamp_in_challenge_phase', 'last_submission_timestamp_in_challenge',
-                  'challenge_phase',)
+    def __init__(self, last_submission_timestamp_in_challenge, last_submission_timestamp_in_challenge_phase, challenge_phase_pk):
+        self.last_submission_timestamp_in_challenge = last_submission_timestamp_in_challenge
+        self.last_submission_timestamp_in_challenge_phase = last_submission_timestamp_in_challenge_phase
+        self.challenge_phase = challenge_phase_pk
+
+
+class LastSubmissionTimestampSerializer(serializers.Serializer):
+    last_submission_timestamp_in_challenge = serializers.DateTimeField()
+    last_submission_timestamp_in_challenge_phase = serializers.DateTimeField()
+    challenge_phase = serializers.IntegerField()
