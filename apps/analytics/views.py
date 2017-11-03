@@ -27,7 +27,10 @@ from participants.serializers import (ParticipantCount,
                                       ParticipantTeamCount,
                                       ParticipantTeamCountSerializer,
                                       )
-from .serializers import ChallengePhaseSubmissionAnalysisSerializer, LastSubmissionDateTimeAnalysisSerializer
+from .serializers import (ChallengePhaseSubmissionCount,
+                          ChallengePhaseSubmissionCountSerializer,
+                          LastSubmissionDateTimeAnalysisSerializer,
+                          )
 
 
 @throttle_classes([UserRateThrottle])
@@ -109,21 +112,25 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     1. The submissions count for challenge phase.
     2. The participated team count for challenge phase.
     """
-
     challenge = get_challenge_model(challenge_pk)
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
-    submissions = Submission.objects.filter(challenge_phase__challenge=challenge,
-                                            challenge_phase=challenge_phase)
+    submissions = Submission.objects.filter(
+        challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
+    submission_count = submissions.count()
+    participant_team_count = submissions.values_list(
+        'participant_team', flat=True).distinct().count()
+
+    challenge_phase_submission_count = ChallengePhaseSubmissionCount(
+        submission_count, participant_team_count, challenge_phase.pk)
     try:
-        serializer = ChallengePhaseSubmissionAnalysisSerializer(submissions, many=True)
-        if serializer.data:
-            response_data = serializer.data[0]
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    except:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ChallengePhaseSubmissionCountSerializer(challenge_phase_submission_count)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        response_data = {'error': "Bad request. Please try again later!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @throttle_classes([UserRateThrottle])

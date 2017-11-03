@@ -160,21 +160,6 @@ class Submission(TimeStampedModel):
         return submission_instance
 
     @cached_property
-    def submissions_count_for_challenge_phase(self):
-        # To get total submissions count on a challenge phase
-        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                                     challenge_phase__challenge=self.challenge_phase.challenge).count()
-        return submission_count
-
-    @cached_property
-    def participated_teams_count_for_challenge_phase(self):
-        # To get total participant teams count on a challenge phase
-        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                                     challenge_phase__challenge=self.challenge_phase.challenge)
-        submission_count = submission_count.values_list('participant_team', flat=True).distinct().count()
-        return submission_count
-
-    @cached_property
     def last_submission_timestamp_in_challenge_phase(self):
         # To get the last submission time in a challenge phase
         last_submitted_timestamp = Submission.objects.filter(challenge_phase=self.challenge_phase,
@@ -188,3 +173,4 @@ class Submission(TimeStampedModel):
         last_submitted_timestamp = Submission.objects.filter(challenge_phase__challenge=self.challenge_phase.challenge)
         last_submitted_timestamp = last_submitted_timestamp.order_by('-submitted_at')[0].created_at
         return last_submitted_timestamp
+
