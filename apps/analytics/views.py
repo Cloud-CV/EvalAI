@@ -129,7 +129,7 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
         serializer = ChallengePhaseSubmissionCountSerializer(challenge_phase_submission_count)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    except Exception as e:
+    except:
         response_data = {'error': "Bad request. Please try again later!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -192,7 +192,6 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
         serializer = LastSubmissionTimestampSerializer(last_submission_timestamp)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    except Exception as e:
-        print e
+    except:
         response_data = {'error': 'Bad request. Please try again later!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

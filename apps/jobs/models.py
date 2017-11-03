@@ -6,7 +6,6 @@ import logging
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
-from django.utils.functional import cached_property
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -158,4 +157,3 @@ class Submission(TimeStampedModel):
 
         submission_instance = super(Submission, self).save(*args, **kwargs)
         return submission_instance
-
