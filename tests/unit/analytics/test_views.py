@@ -305,8 +305,8 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-                "submissions_count_for_challenge_phase": 1,
-                "participated_teams_count_for_challenge_phase": 1,
+                "submission_count": 1,
+                "participant_team_count": 1,
                 "challenge_phase": self.challenge_phase.pk
             }
         response = self.client.get(self.url, {})
