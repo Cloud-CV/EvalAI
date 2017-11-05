@@ -20,13 +20,11 @@
         vm.formError = {};
         vm.isExistLoader = false;
         vm.loaderContainer = angular.element('.challenge-loader');
-
         // start loader
         vm.startLoader = loaderService.startLoader;
 
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
-
         // function to create a challenge using zip file.
     vm.challengeCreate = function() {
             if (hostTeamId) {
@@ -66,15 +64,15 @@
                             }
                         },
                         onError: function(response) {
+                            vm.stopLoader();
                             var error = response.data;
                             angular.element(".file-path").val(null);
                             $rootScope.notify("error", error.error);
-                            vm.stopLoader();
                         }
                     };
                 }
-                vm.startLoader("File upload in progress.");
                 utilities.sendRequest(parameters, 'header', 'upload');
+                vm.startLoader("File upload in progress.");
             }
             else {
                 angular.element(".file-path").val(null);
