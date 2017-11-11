@@ -4,10 +4,6 @@ python:
   - "2.7"
   - "3.6"
 
-matrix:
-    allow_failures:
-        - python: "3.6"
-
 addons:
   postgresql: "9.4"
 
@@ -29,7 +25,7 @@ services:
   - rabbitmq
 
 script:
-  - flake8 ./
+  - flake8 ./ --show-source
   - py.test --cov . --cov-config .coveragerc
 
 after_success:
