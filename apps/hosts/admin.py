@@ -16,4 +16,4 @@ class ChallengeHostTeamModelAdmin(ImportExportTimeStampedAdmin):
 class ChallengeHostAdmin(ImportExportTimeStampedAdmin):
     list_display = ("user", "team_name", "status", "permissions")
     list_filter = ("status", "permissions")
-    search_fields = ("team_name", "created_by__username")
+    search_fields = ("user__username", "team_name__team_name")
