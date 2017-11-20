@@ -14,14 +14,6 @@
 
         utilities.showLoader();
 
-        vm.imgUrlObj = {
-            ironman: "dist/images/ironman.png",
-            hulk: "dist/images/hulk.png",
-            women: "dist/images/women.png",
-            bird: "dist/images/bird.png",
-            captain: "dist/images/captain.png"
-        };
-
         vm.currentList = {};
         vm.upcomingList = {};
         vm.pastList = {};
