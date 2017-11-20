@@ -150,14 +150,12 @@ span.link-team-user {
 }
 
 .team-heading {
-    margin-top: -5px;
     margin-bottom: 30px;
     color: #9d9d9d;
 }
 
-/*@media only screen and (max-width: 992px) {
-    .grad-container {
-        padding: 10px 36px;
+@media only screen and (max-width: 992px) and (min-width: 601px) {
+    .team-heading {
+        margin-top: 30px;
     }
 }
-*/
