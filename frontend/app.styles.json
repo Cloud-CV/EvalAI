@@ -5,8 +5,7 @@
       "angular-material",
       "materialize",
       "AngularJS-Toaster",
-      "trix",
-      "angular-material-datetimepicker"
+      "trix"
     ]
   },
   "paths": {
@@ -14,7 +13,6 @@
        "angular-material": "bower_components/angular-material/angular-material.css",
        "materialize": "bower_components/materialize/dist/css/materialize.css",
        "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.css",
-       "trix": "bower_components/trix/dist/trix.css",
-       "angular-material-datetimepicker": "bower_components/angular-material-datetimepicker/css/material-datetimepicker.css"
+       "trix": "bower_components/trix/dist/trix.css"
       }
 }

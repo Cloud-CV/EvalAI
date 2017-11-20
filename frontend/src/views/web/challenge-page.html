@@ -8,7 +8,18 @@
             </div>
             <div class="col m6 l7">
                 <div class="card-content">
-                    <p><span class="fs-18"><strong>{{challenge.page.title}}</strong></span>
+                    <p>
+                        <span class="fs-18">
+                            <strong>
+                                {{challenge.page.title}}
+                            </strong>
+                        </span>
+                        &nbsp;
+                        <span ng-if="challenge.isChallengeHost">
+                            <a class="pointer" ng-click="challenge.challengeTitleDialog($event)">
+                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                            </a>
+                        </span>
                         <br>
                         <span><strong class="text-light-black">Organized by:</strong> {{challenge.page.creator.team_name}} </span>
                     </p>

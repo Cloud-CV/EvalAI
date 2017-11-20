@@ -42,7 +42,7 @@ Some background: Last year, the [Visual Question Answering Challenge (VQA, 2016]
 Setting up EvalAI on your local machine is really easy.
 Follow this guide to setup your development machine.
 
-1. Install [python] 2.x, [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
+1. Install [python] 2.x (EvalAI only supports python2.x for now.), [git], [postgresql] version >= 9.4, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.

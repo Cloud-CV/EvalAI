@@ -11,6 +11,5 @@ angular
 		'ngSanitize',
 		'ngFileUpload',
 		'toaster',
-		'angularTrix',
-		'ngMaterialDatePicker',
+		'angularTrix'
 	]);
