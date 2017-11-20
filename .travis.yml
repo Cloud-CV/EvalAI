@@ -1,7 +1,12 @@
 language: python
 sudo: false
 python:
-  - '2.7'
+  - "2.7"
+  - "3.6"
+
+matrix:
+    allow_failures:
+        - python: "3.6"
 
 addons:
   postgresql: "9.4"

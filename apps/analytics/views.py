@@ -27,7 +27,11 @@ from participants.serializers import (ParticipantCount,
                                       ParticipantTeamCount,
                                       ParticipantTeamCountSerializer,
                                       )
-from .serializers import ChallengePhaseSubmissionAnalysisSerializer, LastSubmissionDateTimeAnalysisSerializer
+from .serializers import (ChallengePhaseSubmissionCount,
+                          ChallengePhaseSubmissionCountSerializer,
+                          LastSubmissionTimestamp,
+                          LastSubmissionTimestampSerializer,
+                          )
 
 
 @throttle_classes([UserRateThrottle])
@@ -109,21 +113,25 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     1. The submissions count for challenge phase.
     2. The participated team count for challenge phase.
     """
-
     challenge = get_challenge_model(challenge_pk)
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
-    submissions = Submission.objects.filter(challenge_phase__challenge=challenge,
-                                            challenge_phase=challenge_phase)
+    submissions = Submission.objects.filter(
+        challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
+    submission_count = submissions.count()
+    participant_team_count = submissions.values_list(
+        'participant_team', flat=True).distinct().count()
+
+    challenge_phase_submission_count = ChallengePhaseSubmissionCount(
+        submission_count, participant_team_count, challenge_phase.pk)
     try:
-        serializer = ChallengePhaseSubmissionAnalysisSerializer(submissions, many=True)
-        if serializer.data:
-            response_data = serializer.data[0]
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = ChallengePhaseSubmissionCountSerializer(challenge_phase_submission_count)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
     except:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {'error': "Bad request. Please try again later!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @throttle_classes([UserRateThrottle])
@@ -168,13 +176,22 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
-    submissions = Submission.objects.filter(challenge_phase__challenge=challenge,
-                                            challenge_phase=challenge_phase)
+    submissions = Submission.objects.filter(
+        challenge_phase__challenge=challenge)
+
+    last_submission_timestamp_in_challenge = submissions.order_by(
+        '-submitted_at')[0].created_at
+
+    last_submission_timestamp_in_challenge_phase = submissions.filter(
+        challenge_phase=challenge_phase).order_by('-submitted_at')[0].created_at
+
+    last_submission_timestamp = LastSubmissionTimestamp(
+        last_submission_timestamp_in_challenge, last_submission_timestamp_in_challenge_phase, challenge_phase.pk)
+
     try:
-        serializer = LastSubmissionDateTimeAnalysisSerializer(submissions, many=True)
-        if serializer.data:
-            response_data = serializer.data[0]
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = LastSubmissionTimestampSerializer(last_submission_timestamp)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
     except:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {'error': 'Bad request. Please try again later!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
