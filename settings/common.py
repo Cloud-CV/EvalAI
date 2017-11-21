@@ -276,5 +276,5 @@ RABBITMQ_PARAMETERS = {
 
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
-    'USER_DETAILS_SERIALIZER': 'accounts.serializers.UserDetailsSerializer',
+    'USER_DETAILS_SERIALIZER': 'accounts.serializers.ProfileSerializer',
 }
