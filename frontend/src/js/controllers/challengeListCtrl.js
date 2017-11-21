@@ -49,9 +49,6 @@
                         vm.currentList[i].isLarge = "";
                     }
 
-                    if (vm.currentList[i].background_image === undefined || vm.currentList[i].background_image === null) {
-                        vm.currentList[i].background_image = vm.imgUrlObj.hulk;
-                    }
                     var id = vm.currentList[i].id;              
                     vm.challengeCreator[id]= vm.currentList[i].creator.id;
                     utilities.storeData("challengeCreator", vm.challengeCreator);
