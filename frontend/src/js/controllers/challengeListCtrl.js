@@ -82,9 +82,6 @@
                                 vm.upcomingList[i].isLarge = "";
                             }
 
-                            if (vm.upcomingList[i].background_image === undefined || vm.upcomingList[i].background_image === null) {
-                                vm.upcomingList[i].background_image = vm.imgUrlObj.captain;
-                            }
                             var id = vm.upcomingList[i].id;              
                             vm.challengeCreator[id] = vm.upcomingList[i].creator.id;
                             utilities.storeData("challengeCreator", vm.challengeCreator);
@@ -117,10 +114,6 @@
                                         vm.pastList[i].isLarge = "...";
                                     } else {
                                         vm.pastList[i].isLarge = "";
-                                    }
-                                    if (vm.pastList[i].background_image === undefined || vm.pastList[i].background_image === null) {
-
-                                        vm.pastList[i].background_image = vm.imgUrlObj.bird;
                                     }
                                     var id = vm.pastList[i].id;              
                                     vm.challengeCreator[id]= vm.pastList[i].creator.id;
