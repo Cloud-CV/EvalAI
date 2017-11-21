@@ -50,7 +50,13 @@
                     }
 
                     if (vm.currentList[i].background_image === undefined || vm.currentList[i].background_image === null) {
-                        vm.currentList[i].background_image = vm.imgUrlObj.hulk;
+						if(typeof vm.imgUrlObj !== 'undefined' && typeof vm.imgUrlObj.hulk !== 'undefined') {
+							vm.currentList[i].background_image = vm.imgUrlObj.hulk;
+						} else {
+							// assigning a image to the hulk property, which you guys can change later
+							vm.imgUrlObj.hulk = 'https://nerdist.com/wp-content/uploads/2016/12/the-incredible-hulk-marvel-studios.jpg'; 
+							vm.currentList[i].background_image = vm.imgUrlObj.hulk;
+						}
                     }
                     var id = vm.currentList[i].id;              
                     vm.challengeCreator[id]= vm.currentList[i].creator.id;
