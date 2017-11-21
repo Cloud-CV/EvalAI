@@ -51,7 +51,8 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
 class LeaderboardDataAdmin(ImportExportTimeStampedAdmin):
     list_display = ("challenge_phase_split", "submission", "leaderboard", "result")
     list_filter = ("challenge_phase_split", "leaderboard",)
-    search_fields = ("challenge_phase_split__challenge_phase__name", "submission__participant_team__team_name", "leaderboard__schema", "result")
+    search_fields = ("challenge_phase_split__challenge_phase__name",
+                     "submission__participant_team__team_name", "leaderboard__schema", "result")
 
 
 @admin.register(ChallengeConfiguration)
