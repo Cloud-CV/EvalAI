@@ -8,6 +8,6 @@ elif [ $# -eq 0 ]; then
 else
     set -e -x
     remote=${2:-origin}
-    git fetch $remote pull/$1/head:review-$1
+    git branch -D review-$1 || git fetch $remote pull/$1/head:review-$1
     git checkout review-$1
 fi
