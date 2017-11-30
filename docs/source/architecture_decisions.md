@@ -4,23 +4,23 @@ This is a collection of records for architecturally significant decisions.
 
 ### URL Patterns
 
-We follow a very basic ,yet strong convention for URL so that our rest API's are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
+We follow a very basic, yet strong convention for URL so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
 
 For example, to perform **CRUD** operation on _Challenge Host Model_, following will be the URL patterns.
 
-* `GET /hosts/challenge_host_team` - Retrieves a list of challenge host teams,
+* `GET /hosts/challenge_host_team` - Retrieves a list of challenge host teams
 
-* `POST /hosts/challenge_host_team` - Creates a new challenge host team,
+* `POST /hosts/challenge_host_team` - Creates a new challenge host team
 
-* `GET /hosts/challenge_host_team/<challenge_host_team_id>` - Retrieves a specific challenge host team,
+* `GET /hosts/challenge_host_team/<challenge_host_team_id>` - Retrieves a specific challenge host team
 
-* `PUT /hosts/challenge_host_team/<challenge_host_team_id>` - Updates a specific challenge host team,
+* `PUT /hosts/challenge_host_team/<challenge_host_team_id>` - Updates a specific challenge host team
 
-* `PATCH /hosts/challenge_host_team/<challenge_host_team_id>` - Partially updates a specific challenge host team,
+* `PATCH /hosts/challenge_host_team/<challenge_host_team_id>` - Partially updates a specific challenge host team
 
-* `DELETE /hosts/challenge_host_team/<challenge_host_team_id>` - Deletes a specific challenge host team.
+* `DELETE /hosts/challenge_host_team/<challenge_host_team_id>` - Deletes a specific challenge host team
 
-Also, we have namespaced the URL patterns on an appropriate basis, so URLs for _Challenge Host Model_ which is in _hosts_ app will be
+Also, we have namespaced the URL patterns on an app basis, so URLs for _Challenge Host Model_ which is in _hosts_ app will be
 
 ```
 /hosts/challenge_host_team
