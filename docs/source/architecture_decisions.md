@@ -4,7 +4,7 @@ This is a collection of records for architecturally significant decisions.
 
 ### URL Patterns
 
-We follow a very basic yet strong convention for URL so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
+We follow a very basic, yet strong convention for URL so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
 
 For example, to perform **CRUD** operation on _Challenge Host Model_, following will be the URL patterns.
 
@@ -32,13 +32,13 @@ We use underscore **_** in URL patterns.
 
 ### Processing submission messages asynchronously
 
-When a submission message is made, a REST API is called which saves the data related to submission in the database. A submission involves the processing and evaluation of `input_file`. This file is used to evaluate the submission and the decide the status of the submission whether it is _FINISHED_ or _FAILED_.
+When a submission message is made, a REST API is called which saves the data related to submission in the database. A submission involves the processing and evaluation of `input_file`. This file is used to evaluate the submission and then decides the status of the submission whether it is _FINISHED_ or _FAILED_.
 
-One way to process the submission was to evaluate it as soon as it is made and hence blocking the request of the participant. Blocking the request here means to send the response to the participant only when the submission has been and its output is known. This would have worked fine if the number of the submission made is very low, but this is not the case.
+One way to process the submission was to evaluate it as soon as it was made and hence blocking the request of the participant. Blocking the request here means to send the response to the participant only when the submission has been submitted and its output is known. This would have worked fine if the number of the submissions made is very low, but this is not the case.
 
 Hence we decided to process and evaluate submission message in an asynchronous manner. To process the message in this way, we need to change our architecture a bit and add a Message Framework, along with a worker so that it can process the message.
 
-Out of all the awesome messaging framework available, we chose RabbitMQ, because of its transactional nature and reliability. Also, RabbitMQ is easily horizontally scalable, which means we can easily handle the heavy load by simply adding more nodes to the cluster.
+Out of all the awesome messaging framework available, we have chosen RabbitMQ, because of its transactional nature and reliability. Also, RabbitMQ is easily horizontally scalable, which means we can easily handle the heavy load by simply adding more nodes to the cluster.
 
 For the worker, we went ahead with a normal python worker, which simply runs a process and loads all the required data in its memory. As soon as the worker starts, it listens on a RabbitMQ queue named `submission_task_queue` for new submission messages.
 
