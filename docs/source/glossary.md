@@ -2,11 +2,11 @@
 
 ### Challenge
 
-A challenge, run by an institute or organization, wherein a number of researchers, students, and data scientists participate and compete with each other over a period of time. Each challenge has a start time and generally an end time too.
+An event, run by an institute or organization, wherein a number of researchers, students, and data scientists participate and compete with each other over a period of time. Each challenge has a start time and generally an end time too.
 
 ### Challenge Host
 
-A member of the host team who organizes a challenge. In our system, it is a form of representing a user. A user can be in the organizing team of many challenges and hence for each challenge, its challenge host will be different.
+A member of the host team who organizes a challenge. In our system, it is a form of representing a user. This user can be in the organizing team of many challenges, and hence for each challenge, its challenge host will be different.
 
 ### Challenge Host Team
 
@@ -14,7 +14,7 @@ A group of challenge hosts who organizes a challenge. They are identified by a u
 
 ### Challenge Phase Split
 
-A challenge phase split is the relation between a challenge phase and dataset splits for a challenge (many to many relation). This is used to set the privacy of submissions (public/private) to different dataset splits for different challenge phases.
+A challenge phase split is the relation between a challenge phase and dataset splits for a challenge with a many-to-many relation. This is used to set the privacy of submissions (public/private) to different dataset splits for different challenge phases.
 
 ### Dataset
 
@@ -24,9 +24,9 @@ A dataset in EvalAI is the main entity in which an AI challenge is based on. Par
 
 A dataset is generally divided into different parts called dataset split. Generally, a dataset has three different splits:
 
-1. Training set
-2. Validation set
-3. Test set
+* Training set
+* Validation set
+* Test set
 
 ### EvalAI
 

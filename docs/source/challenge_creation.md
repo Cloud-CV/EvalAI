@@ -3,9 +3,7 @@
 One can create a challenge in EvalAI using either:
 
 1. zip configuration
-
 2. web interface
-
 
 ## Challenge creation using zip configuration
 
