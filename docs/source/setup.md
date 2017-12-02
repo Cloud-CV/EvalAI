@@ -202,7 +202,7 @@ npm install -g bower
 
 ### Step 4: Start the development environment
 
-* To run backend development server at [backend]:
+* To run backend development server at [127.0.0.1:8000]:
 
 ```
 # activate virtual environment if not activated
