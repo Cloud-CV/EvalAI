@@ -97,6 +97,13 @@ Follow this guide to setup your development machine.
 
     ```
     npm install
+    ``` 
+    If you don't have bower installed global, run the following:
+    ```
+    npm install -g bower
+    ```
+    Finally, to install browser dependencies, run:
+    ```
     bower install
     ```
     If you running npm install behind a proxy server, use
