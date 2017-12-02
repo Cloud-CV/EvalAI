@@ -94,7 +94,9 @@ section.bg-section {
     box-shadow: 6px -1px 9px $super-light-shadow;
     padding: 0;
 }
-
+.ev-challenge-status {
+    height: 15px;
+}
 .ev-reverse-details {
     box-shadow: none;
 }
@@ -408,9 +410,8 @@ a.view-more {
             width: 100%;
             height: auto;
         }
+      .ev-footer {
+          text-align: center;
+        }
     }
-}
-
-#fb-logo{
-    height: 100px;
 }
