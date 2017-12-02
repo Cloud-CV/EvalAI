@@ -44,7 +44,8 @@ class LeaderboardAdmin(ImportExportTimeStampedAdmin):
 class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
     list_display = ("id", "challenge_phase", "dataset_split", "leaderboard", "visibility")
     list_filter = ("challenge_phase", "dataset_split", "leaderboard", "visibility")
-    search_fields = ("challenge_phase__name", "dataset_split__name", "leaderboard__schema")
+    search_fields = ("challenge_phase__name", "dataset_split__name", "leaderboard__id",
+                     "dataset_split__codename")
 
 
 @admin.register(LeaderboardData)
