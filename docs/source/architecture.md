@@ -10,7 +10,7 @@ Django is the heart of the application, which powers our backend. We use Django 
 
 #### Django Rest Framework
 
-We use Django Rest Framework for writing and providing REST APIs. Its permission and serializers have helped write a maintainable codebase.
+We use Django Rest Framework for writing and providing REST APIs. It's permission and serializers have helped write a maintainable codebase.
 
 #### RabbitMQ
 
