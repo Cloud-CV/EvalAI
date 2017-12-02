@@ -6,19 +6,19 @@ EvalAI can run on Linux, Cloud, Windows, and macOS platforms. Use the following 
 
 ### Step 1: Install prerequisites
 
-* Install git.
+* Install git
 
 ```shell
 sudo apt-get install git
 ```
 
-* Install postgres.
+* Install postgres
 
 ```shell
 sudo apt-get install postgresql libpq-dev
 ```
 
-* Install rabbitmq.
+* Install rabbitmq
 
 ```shell
 echo 'deb http://www.rabbitmq.com/debian/ stable main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
@@ -26,7 +26,7 @@ sudo apt-get update
 sudo apt-get install rabbitmq-server
 ```
 
-* Install virtualenv.
+* Install virtualenv
 
 ```shell
 # only if pip is not installed
@@ -64,13 +64,13 @@ source venv/bin/activate
 pip install -r requirements/dev.txt
 ```
 
-* Rename `settings/dev.sample.py` as `dev.py`.
+* Rename `settings/dev.sample.py` as `dev.py`
 
 ```
 cp settings/dev.sample.py settings/dev.py
 ```
 
-* Create an empty postgres database and run database migration.
+* Create an empty postgres database and run database migration
 
 ```
 createdb evalai -U postgres
@@ -97,7 +97,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run front-end development server for at [http://127.0.0.1:8888](http://127.0.0.1:8888).
+* To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888).
 
 ```
 gulp dev:runserver
@@ -107,13 +107,13 @@ gulp dev:runserver
 
 ### Step 1: Install prerequisites
 
-* Install git.
+* Install git
 
 ```shell
 sudo yum install git-all
 ```
 
-* Install postgres.
+* Install postgres
 
 ```shell
 sudo yum install postgresql postgresql-devel
@@ -124,7 +124,7 @@ export PATH=$PATH:/usr/pgsql-x.x/bin
 ```
 where x.x is your version, such as /usr/pgsql-9.5./bin.
 
-* Install rabbitmq.
+* Install rabbitmq
 
 ```shell
 # use the below commands to get Erlang on our system:
@@ -139,7 +139,7 @@ rpm --import http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
 sudo yum install rabbitmq-server-3.2.2-1.noarch.rpm
 ```
 
-* Install virtualenv.
+* Install virtualenv
 
 ```shell
 sudo yum -y install python-pip python-devel groupinstall 'Development Tools'
@@ -167,7 +167,7 @@ Don't forget to replace YOUR_GITHUB_USER_NAME with your git username.
 
 ### Step 3: Setup code base
 
-* Create a python virtual environment and install python dependencies.
+* Create a python virtual environment and install python dependencies
 
 ```shell
 cd evalai
@@ -176,13 +176,13 @@ source venv/bin/activate
 pip install -r requirements/dev.txt
 ```
 
-* Rename `settings/dev.sample.py` as `dev.py`.
+* Rename `settings/dev.sample.py` as `dev.py`
 
 ```
 cp settings/dev.sample.py settings/dev.py
 ```
 
-* Create an empty postgres database and run database migration.
+* Create an empty postgres database and run database migration
 
 ```
 createdb evalai -U postgres
@@ -210,7 +210,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at [frontend]:
+* To run frontend development server at [frontend]:
 
 ```
 gulp dev:runserver
@@ -220,7 +220,7 @@ gulp dev:runserver
 
 __Error__: *You need to install postgresql-server-dev-X.Y for building a server-side extension or libpq-dev for building a client-side application.*
 
-__Solution__: Install libpq-dev.
+__Solution__: Install libpq-dev
 
 ```shell
 sudo apt-get install libpq-dev
@@ -232,7 +232,7 @@ Possible solutions for the same problem can be found at [link].
 
 You can also use Docker Compose to run all the components of EvalAI together. The steps are:
 
-1. Get the source code on to your machine via git.
+1. Get the source code on to your machine via git
 
     ```shell
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
