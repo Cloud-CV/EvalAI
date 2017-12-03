@@ -98,11 +98,11 @@ Follow this guide to setup your development machine.
     ```
     npm install
     ``` 
-    If you don't have bower installed global, run the following:
+    Install bower(1.8.0) globally by running:
     ```
     npm install -g bower
     ```
-    Finally, to install browser dependencies, run:
+    Now install the bower dependencies, run:
     ```
     bower install
     ```
