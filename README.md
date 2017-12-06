@@ -102,7 +102,7 @@ Follow this guide to setup your development machine.
     ```
     npm install -g bower
     ```
-    Now install the bower dependencies, run:
+    Now install the bower dependencies by running:
     ```
     bower install
     ```
