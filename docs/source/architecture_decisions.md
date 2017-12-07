@@ -38,7 +38,7 @@ One way to process the submission was to evaluate it as soon as it was made and 
 
 Hence we decided to process and evaluate submission message in an asynchronous manner. To process the message in this way, we need to change our architecture a bit and add a Message Framework, along with a worker so that it can process the message.
 
-Out of all the awesome messaging framework available, we have chosen RabbitMQ, because of its transactional nature and reliability. Also, RabbitMQ is easily horizontally scalable, which means we can easily handle the heavy load by simply adding more nodes to the cluster.
+Out of all the awesome messaging frameworks available, we have chosen RabbitMQ because of its transactional nature and reliability. Also, RabbitMQ is easily horizontally scalable, which means we can easily handle the heavy load by simply adding more nodes to the cluster.
 
 For the worker, we went ahead with a normal python worker, which simply runs a process and loads all the required data in its memory. As soon as the worker starts, it listens on a RabbitMQ queue named `submission_task_queue` for new submission messages.
 
@@ -54,4 +54,4 @@ Another major design that we incorporated here was dynamically importing the cha
 EVALUATION_SCRIPTS[challenge_id].evaluate(*params)
 ```
 
-This was again a major performance improvement, wherein we saved us from the task of invoking and managing Python processes to evaluate submission messages. Also invoking a new python process every time for a new submission would have been really slow.
+This was again a major performance improvement, which saved us from the task of invoking and managing Python processes to evaluate submission messages. Also, invoking a new python process every time for a new submission would have been really slow.
