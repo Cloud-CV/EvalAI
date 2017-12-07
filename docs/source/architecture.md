@@ -1,6 +1,6 @@
 ## Architecture
 
-EvalAI helps researchers, students, and data-scientists to create, collaborate and participate in various AI challenges organized around the globe. To achieve this we leverage some of the best open source tools and technologies.
+EvalAI helps researchers, students, and data scientists to create, collaborate and participate in various AI challenges organized around the globe. To achieve this, we leverage some of the best open source tools and technologies.
 
 ### Technologies that the project uses:
 
