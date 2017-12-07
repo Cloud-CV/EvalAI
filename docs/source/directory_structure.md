@@ -79,7 +79,7 @@ A folder for storing helper scripts like script to fetch pull request
 
 * **workers**
 
-One of the main directory, which contains the code for submission worker. Submission worker is a normal python worker which is responsible for processing and evaluating submission of a user. The command to start a worker is:
+One of the main directories, which contains the code for submission worker. Submission worker is a normal python worker which is responsible for processing and evaluating submission of a user. The command to start a worker is:
 
 ```
 python scripts/workers/submission_worker.py
