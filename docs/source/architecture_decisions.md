@@ -48,7 +48,7 @@ Submission worker is responsible for processing submission messages. It listens 
 
 One of the major design changes that we decided to implement in the submission worker was to load all the data related to challenge in the memory of the worker, instead of fetching it every time whenever a submission message is there for any challenge. So the worker, when starting, fetches the list of active challenges from the database and then loads it into memory by maintaining a map `EVALUATION_SCRIPTS` on challenge id. This was actually a major performance improvement.
 
-Another major design that we incorporated here was dynamically importing the challenge module and loading it in the map instead of invoking a new Python process every time a submission message arrives. So now, whenever a new message for a submission is received, we already have its corresponding challenge module being loaded in a map `EVALUATION_SCRIPTS`, and we just need to call
+Another major design change that we incorporated here was dynamically importing the challenge module and loading it in the map instead of invoking a new Python process every time a submission message arrives. So now, whenever a new message for a submission is received, we already have its corresponding challenge module being loaded in a map `EVALUATION_SCRIPTS`, and we just need to call
 
 ```
 EVALUATION_SCRIPTS[challenge_id].evaluate(*params)
