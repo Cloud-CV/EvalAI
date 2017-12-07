@@ -4,7 +4,7 @@ This is a collection of records for architecturally significant decisions.
 
 ### URL Patterns
 
-We follow a very basic yet strong convention for URLs, so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
+We follow a very basic, yet strong convention for URLs, so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
 
 For example, to perform **CRUD** operation on _Challenge Host Model_, the following URL patterns will be used.
 
@@ -32,10 +32,9 @@ We use underscore **_** in URL patterns.
 
 ### Processing submission messages asynchronously
 
-When a submission message is made, a REST API is called which saves the data related to the submission in the database. A submission involves the processing and evaluation of `input_file`. This file is used to evaluate the submission and the decide the status of the submission, whether it is _FINISHED_ or _FAILED_.
+When a submission message is made, a REST API is called which saves the data related to the submission in the database. A submission involves the processing and evaluation of `input_file`. This file is used to evaluate the submission and then decide the status of the submission, whether it is _FINISHED_ or _FAILED_.
 
 One way to process the submission is to evaluate it as soon as it is made, hence blocking the participant's request. Blocking the request here means to send the response to the participant only when the submission has been made and its output is known. This would work fine if the number of the submissions made is very low, but this is not the case.
-
 
 Hence we decided to process and evaluate submission message in an asynchronous manner. To process the messages this way, we need to change our architecture a bit and add a Message Framework, along with a worker so that it can process the message.
 
