@@ -2,7 +2,7 @@
 
 ### How a submission is processed ?
 
-We are using REST API's along with Queue based architecture to process submissions. When a participant makes a submission for a challenge, a rest api with url pattern `jobs:challenge_submission` is called. This api does the task of creating a new entry for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
+We are using REST API's along with Queue based architecture to process submissions. When a participant makes a submission for a challenge, a REST API with url pattern `jobs:challenge_submission` is called. This API does the task of creating a new entry for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
 
      User makes   --> API  --> Publish  --> RabbitMQ  --> Queue  --> Submission
     a submission               message      Exchange                  worker(s)
@@ -80,15 +80,15 @@ After the challenges are successfully loaded, it creates a connection with Rabbi
 
 When the user makes submission on the frontend, following actions happen sequentially
 
-* As soon as the user submits a submission, a REST api with url pattern `jobs:challenge_submission` is called.
+* As soon as the user submits a submission, a REST API with url pattern `jobs:challenge_submission` is called.
 
-* This api fetches the challenge and its corresponding challenge phase.
+* This API fetches the challenge and its corresponding challenge phase.
 
-* This api then checks if the challenge is active and challenge phase is public
+* This API then checks if the challenge is active and challenge phase is public
 
 * It fetches id of participant team and its corresponding object.
 
-* After all these checks are complete, finally a submission object is saved. The saved submission object includes __participant team id__ and __challenge phase id__ and __username__ of the participant creating it.
+* After all these checks are complete, a submission object is saved. The saved submission object includes __participant team id__ and __challenge phase id__ and __username__ of the participant creating it.
 
 * At the end, a submission message is published to exchange `evalai_submissions` with a routing key of `submission.*.*`.
 
@@ -128,5 +128,9 @@ On receiving a message from queue `submission_task_queue` with a binding key of 
 
 ### Notes
 
-* Rest api with url pattern `jobs:challenge_submission`. Here _jobs_ is application namespace and _challenge_submission_ is instance namespace. You can read more about [url namespace](https://docs.djangoproject.com/en/1.10/topics/http/urls/#url-namespaces)
+* 
+
+
+
+api with url pattern `jobs:challenge_submission`. Here _jobs_ is application namespace and _challenge_submission_ is instance namespace. You can read more about [url namespace](https://docs.djangoproject.com/en/1.10/topics/http/urls/#url-namespaces)
 
