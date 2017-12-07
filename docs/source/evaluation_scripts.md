@@ -16,7 +16,7 @@ def evaluate(test_annotation_file, user_annotation_file, phase_codename):
 
 ```
 
-It receives three arguments namely
+It receives three arguments, namely:
 
 * test_annotation_file
 
