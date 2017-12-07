@@ -13,7 +13,7 @@ README.
 Finding something to work on
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The issue tracker of EvalAI a good place to start. If you find something
+The issue tracker of EvalAI is a good place to start. If you find something
 that interests you, comment on the thread and we’ll help get you
 started.
 
