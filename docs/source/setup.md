@@ -45,7 +45,7 @@ instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 
 * In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You will need to be logged in to GitHub to do this.
 
-* Open Terminal and clone your fork by
+* Open Terminal and clone your fork by typing
 
 ```shell
 git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
@@ -97,7 +97,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at [http://127.0.0.1:8888](http://127.0.0.1:8888)
+* To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888)
 
 ```
 gulp dev:runserver
@@ -157,7 +157,7 @@ instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 
 * In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You will need to be logged in to GitHub to do this.
 
-* Open Terminal and clone your fork by
+* Open Terminal and clone your fork by typing
 
 ```shell
 git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
@@ -167,7 +167,7 @@ Don't forget to replace YOUR_GITHUB_USER_NAME with your git username.
 
 ### Step 3: Setup code base
 
-* Create a python virtual environment and install python dependencies.
+* Create a Python virtual environment and install Python dependencies.
 
 ```shell
 cd evalai
@@ -176,7 +176,7 @@ source venv/bin/activate
 pip install -r requirements/dev.txt
 ```
 
-* Rename `settings/dev.sample.py` as `dev.py`
+* Rename `settings/dev.sample.py` to `dev.py`
 
 ```
 cp settings/dev.sample.py settings/dev.py
@@ -210,7 +210,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at [frontend]
+* To run frontend development server at [frontend]
 
 ```
 gulp dev:runserver
