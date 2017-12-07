@@ -128,9 +128,5 @@ On receiving a message from queue `submission_task_queue` with a binding key of 
 
 ### Notes
 
-* 
-
-
-
-api with url pattern `jobs:challenge_submission`. Here _jobs_ is application namespace and _challenge_submission_ is instance namespace. You can read more about [url namespace](https://docs.djangoproject.com/en/1.10/topics/http/urls/#url-namespaces)
+* REST API with url pattern `jobs:challenge_submission`. Here _jobs_ is application namespace and _challenge_submission_ is instance namespace. You can read more about [url namespace](https://docs.djangoproject.com/en/1.10/topics/http/urls/#url-namespaces)
 
