@@ -6,7 +6,7 @@
 
 ### Creating a migration
 
-* We prefer that you create migrations per app and the change should be concerned with a single issue or feature.
+* We prefer that you create migrations for a single app and the change should be concerned with a single issue or feature.
 
 ```
 # migration only for jobs app
@@ -33,6 +33,6 @@ So a complete named migration for jobs app where in a execution time limit field
 python manage.py makemigrations jobs --name=execution_time_limit --settings=settings.dev
 ```
 
-* Files create after running `makemigrations` should be committed along with other files
+* Files created after running `makemigrations` should be committed along with other files
 
-* While creating a migration for your concerned change it may happen that some other changes are also there in the migration file. Like adding a `execution_time_limit` field on `Submission` model also brings in the change for `when_made_public` being added. In that case, open an [new issue](https://github.com/Cloud-CV/EvalAI/issues/new) and clearly mention the issue over there. If possible fix the issue yourself, by opening a new branch and creating migrations only for the concerned part. Idea here is that a commit should only include its concerned migration changes and nothing else.
+* While creating a migration for your concerned change, it may happen that some other changes are also there in the migration file. For example, adding a `execution_time_limit` field on `Submission` model also brings in the change for `when_made_public` being added. In that case, open an [new issue](https://github.com/Cloud-CV/EvalAI/issues/new) and clearly mention the issue over there. If possible, fix the issue yourself, by opening a new branch and creating migrations only for the concerned part. The idea here is that a commit should only include its concerned migration changes and nothing else.
