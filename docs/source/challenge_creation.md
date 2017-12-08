@@ -2,9 +2,9 @@
 
 One can create a challenge in EvalAI using following methods:
 
-* Using zip configuration
+* Challenge creation using zip file configuration
 
-* Using web interface
+* Challenge creation using a web interface
 
 ## Challenge creation using zip configuration
 
