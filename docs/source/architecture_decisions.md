@@ -6,7 +6,7 @@ This is a collection of records for architecturally significant decisions.
 
 We follow a very basic, yet strong convention for URL so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
 
-For example, to perform **CRUD** operation on _Challenge Host Model_, following will be the URL patterns.
+For example, to perform a **CRUD** operation on _Challenge Host Model_, the following will be the URL patterns.
 
 * `GET /hosts/challenge_host_team` - Retrieves a list of challenge host teams
 
@@ -28,11 +28,11 @@ Also, we have namespaced the URL patterns on an app basis, so URLs for _Challeng
 
 This way one can easily identify where a particular API is located.
 
-We use underscore **_** in URL patterns.
+We use underscores **_** in URL patterns.
 
 ### Processing submission messages asynchronously
 
-When a submission message is made, a REST API is called which saves the data related to submission in the database. A submission involves the processing and evaluation of `input_file`. This file is used to evaluate the submission and then decides the status of the submission whether it is _FINISHED_ or _FAILED_.
+When a submission message is made, a REST API is called, which saves the data related to submission in the database. A submission involves the processing and evaluation of `input_file`. This file is used to evaluate the submission and then decides the status of the submission, either _FINISHED_ or _FAILED_.
 
 One way to process the submission was to evaluate it as soon as it was made and hence blocking the request of the participant. Blocking the request here means to send the response to the participant only when the submission has been submitted and its output is known. This would have worked fine if the number of the submissions made is very low, but this is not the case.
 
@@ -46,7 +46,7 @@ For the worker, we went ahead with a normal python worker, which simply runs a p
 
 Submission worker is responsible for processing submission messages. It listens on a queue named `submission_task_queue` and on receiving a message for a submission it processes and evaluates the submission.
 
-One of the major design changes that we decided to implement in submission worker was to load all the data related to challenge in the memory of the worker instead of fetching it every time whenever a submission message is there for any challenge. So the worker, when starting, fetches the list of active challenges from the database and then loads it into memory by maintaining a map `EVALUATION_SCRIPTS` on challenge id. This was actually a major performance improvement.
+One of the major design changes that we decided to implement in submission worker was to load all the data related to challenge in the memory of the worker instead of fetching it whenever a submission message is there for any challenge. So the worker, when starting, fetches the list of active challenges from the database and then loads it into memory by maintaining a map `EVALUATION_SCRIPTS` on challenge id. This was actually a major performance improvement.
 
 Another major design that we incorporated here was dynamically importing the challenge module and loading it in the map instead of invoking a new python process every time a submission message arrives. So now whenever a new message for a submission is received, we already have its corresponding challenge module being loaded in a map `EVALUATION_SCRIPTS`, and we just need to call
 
@@ -54,4 +54,4 @@ Another major design that we incorporated here was dynamically importing the cha
 EVALUATION_SCRIPTS[challenge_id].evaluate(*params)
 ```
 
-This was again a major performance improvement, wherein we saved us from the task of invoking and managing Python processes to evaluate submission messages. Also invoking a new python process every time for a new submission would have been really slow.
+This was again a major performance improvement, whereby we saved ourselves from the task of invoking and managing Python processes to evaluate submission messages. Also invoking a new python process every time for a new submission would have been really slow.
