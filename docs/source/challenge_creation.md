@@ -182,16 +182,16 @@ challenge_phase_splits:
 ```
 ### Challenge Creation Examples
 
-Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) to know how to create different types of challenges on EvalAI.
+Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) to find out how to create different types of challenges on EvalAI.
 
 ### Next Steps
 
 The next step is to create a zip file that contains YAML config file, all the HTML templates for challenge description, challenge phase description, evaluation criteria, submission guidelines, evaluation script, test annotation file(s) and challenge logo(optional).
 
-The final step is to create a challenge host team for the challenge on EvalAI and then after selecting that team just upload the zip folder created in the above step and the challenge will be created.
+The final step is to create a challenge host team for the challenge on EvalAI and then, after selecting that team, to upload the zip folder created in the above step and the challenge will be created.
 
 If you have issues in creating a challenge on EvalAI, please feel free to create an issue on our Github Issues Page.
 
 ## Create challenge using web interface
 
-Todo: We are working on this feature and will keep you updated about the same.
+Todo: We are working on this feature and will keep you updated about it.
