@@ -2,7 +2,7 @@
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which populates its leaderboard.
 
-The logic for evaluating and judging a submission is custom and varies from challenge to challeng, but the overall structure of evaluation script is fixed due to architectural reasons.
+The logic for evaluating and judging a submission is custom and varies from challenge to challenge, but the overall structure of evaluation script is fixed due to architectural reasons.
 
 It is mandatory for the evaluation script to write a `evaluate` function. This is kind of a main function, which is used by worker to evaluate any submission message.
 
