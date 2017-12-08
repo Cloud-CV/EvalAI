@@ -2,9 +2,9 @@
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which populates its leaderboard.
 
-The logic for evaluating and judging a submission is custom and varies from challenge to challenge. But the overall structure of evaluation script is fixed due to architectural reasons.
+The logic for evaluating and judging a submission is custom and varies from challenge to challenge, but the overall structure of evaluation script is fixed due to architectural reasons.
 
-It is mandatory for evaluation script to write a `evaluate` function. This is kind of a main function, which is used by worker to evaluate any submission message.
+It is mandatory for the evaluation script to write a `evaluate` function. This is kind of a main function, which is used by worker to evaluate any submission message.
 
 The syntax of evaluate function is
 
@@ -20,7 +20,7 @@ It receives three arguments namely
 
 * test_annotation_file
 
-It is the path of the annotation file for a challenge. This is the file uploaded by Challenge Host while creating a Challenge.
+It is the path of the annotation file for a challenge. This is the file uploaded by the Challenge Host while creating a Challenge.
 
 * user_annotation_file
 

@@ -8,7 +8,7 @@ Some important apps along with their main use are:
 
 * **Challenges**
 
-This app handles all the workflow related to a challenge like creating, modifying and deleting a challenge etc.
+This app handles all the workflow related to a challenge like creating, modifying, and deleting a challenge.
 
 * **Hosts**
 
@@ -20,7 +20,7 @@ This app serves users who want to take part in any challenge. It contains code f
 
 * **Jobs**
 
-One of the most important apps, it is responsible for processing and evaluating the submission made by a participant. It contains code for creating a submission, changing the visibility of the submission and populating the leaderboard for any challenge.
+This is one of the most important apps as it is responsible for processing and evaluating the submission made by a participant. It contains code for creating a submission, changing the visibility of the submission, and populating the leaderboard for any challenge.
 
 * **Web**
 

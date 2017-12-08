@@ -2,7 +2,7 @@
 
 ### Challenge
 
-An event, run by some institute or organization, wherein a number of researchers, students and data scientists participate and compete with each other over a period of time. Each challenge has a start time and generally an end time.
+An event run by some institute or organization, where a number of researchers, students and data scientists participate and compete with each other over a period of time. Each challenge has a start time and generally an end time.
 
 ### Challenge Host
 
@@ -54,7 +54,7 @@ A way of submitting your results to the platform, so that it can be evaluated an
 
 ### Submission Worker
 
-A python script which processes messages of submission received from a queue. It does the heavy lifting task of receiving a submission, performing mandatory checks and then evaluating the submission and updating its status in the database.
+A Python script which processes messages of submission received from a queue. It does the heavy lifting task of receiving a submission, performing mandatory checks, and then evaluating the submission and updating its status in the database.
 
 ### Team
 
