@@ -7,8 +7,7 @@ pointers about how you can help.
 Setting things up
 ~~~~~~~~~~~~~~~~~
 
-To set up the development environment, follow the instructions in
-README.
+To set up the development environment, follow the instructions in the README.
 
 Finding something to work on
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
