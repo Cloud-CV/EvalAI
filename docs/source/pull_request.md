@@ -8,8 +8,7 @@ Contributing to EvalAI is a facile task. Please follow these steps in order to g
 
 **Step 2 : Picking up a issue**
 
-1. Pick up a suitable issue that you find will be easy for you to fix. Moreover, you can also 
-take the issues based on their labels. All the issues are marked with a label according to its difficulty.
+1. Pick up a suitable issue that you find will be easy for you to fix. Moreover, you can also pick the issues based on their labels. All issues are marked with a label according to its difficulty.
 
 2. After selecting any issue, ask the maintainers of the project to assign it to you and they will assign it based on its availability.
 
@@ -50,6 +49,6 @@ for example,
 **Note:** 
 
 - If you find that there is some relevant content to be mentioned or any doubts to be asked, then also mention these things in the comment.
-- After the reviews from the maintainer, fix the changes as suggested & push the code on the same branch after adding & committing.
+- After the reviews from the maintainer, fix the changes as suggested and push the code on the same branch after committing.
 
 Once you complete the above steps, you have successfully created a Pull Request to EvalAI.
