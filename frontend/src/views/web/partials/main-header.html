@@ -32,6 +32,7 @@
                 <!-- show after authenticate user -->
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.profile" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{header.user.name}}!</a></li>
+                <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ng-click="logout()"><i class="fa fa-sign-out"></i>Logout</a></li>
             </ul>
         </div>
     </nav>
