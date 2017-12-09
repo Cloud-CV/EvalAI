@@ -4,9 +4,10 @@ This is a collection of records for architecturally significant decisions.
 
 ### URL Patterns
 
-We follow a very basic, yet strong convention for URL so that our REST APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
+We follow a very basic, yet strong convention for URLs, so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
 
-For example, to perform **CRUD** operation on _Challenge Host Model_, the following are the URL patterns.
+For example, to perform **CRUD** operation on _Challenge Host Model_, the following URL patterns will be used.
+
 
 * `GET /hosts/challenge_host_team` - Retrieves a list of challenge host teams
 
@@ -20,17 +21,18 @@ For example, to perform **CRUD** operation on _Challenge Host Model_, the follow
 
 * `DELETE /hosts/challenge_host_team/<challenge_host_team_id>` - Deletes a specific challenge host team
 
-Also, we have namespaced the URL patterns on an app basis, so URLs for _Challenge Host Model_ which is in _hosts_ app will be
+Also, we have namespaced the URL patterns on a per-app basis, so URLs for _Challenge Host Model_, which is in the _hosts_ app, will be
 
 ```
 /hosts/challenge_host_team
 ```
 
-This way one can easily identify where a particular API is located.
+This way, one can easily identify where a particular API is located.
 
 We use underscore **_** in URL patterns.
 
 ### Processing submission messages asynchronously
+
 
 When a submission message is made, a REST API is called, which saves the data related to submission in the database. A submission involves the processing and evaluation of `input_file`. This file is used to evaluate the submission and then decides if the status of the submission is _FINISHED_ or _FAILED_.
 
@@ -40,11 +42,12 @@ Hence we decided to process and evaluate submission message in an asynchronous m
 
 Out of all the awesome messaging frameworks available, we have chosen RabbitMQ, because of its transactional nature and reliability. Also, RabbitMQ is easily horizontally scalable, which means we can easily handle the heavy load by simply adding more nodes to the cluster.
 
+
 For the worker, we went ahead with a normal python worker, which simply runs a process and loads all the required data in its memory. As soon as the worker starts, it listens on a RabbitMQ queue named `submission_task_queue` for new submission messages.
 
 ### Submission Worker
 
-Submission worker is responsible for processing submission messages. It listens on a queue named `submission_task_queue` and on receiving a message for a submission it processes and evaluates the submission.
+The submission worker are responsible for processing submission messages. It listens on a queue named `submission_task_queue`, and on receiving a message for a submission, it processes and evaluates the submission.
 
 One of the major design changes that we decided to implement in the submission worker was to load all the data related to challenge in the memory of the worker, instead of fetching it every time whenever a submission message is there for any challenge. So the worker, when starting, fetches the list of active challenges from the database and then loads it into memory by maintaining a map `EVALUATION_SCRIPTS` on challenge id. This was actually a major performance improvement.
 
@@ -54,4 +57,5 @@ Another major design change that we incorporated here was dynamically importing 
 EVALUATION_SCRIPTS[challenge_id].evaluate(*params)
 ```
 
-This was again a major performance improvement, wherein we saved us from the task of invoking and managing Python processes to evaluate submission messages. Also, invoking a new python process every time for a new submission would have been really slow.
+This was again a major performance improvement, which saved us from the task of invoking and managing Python processes to evaluate submission messages. Also, invoking a new python process every time for a new submission would have been really slow.
+
