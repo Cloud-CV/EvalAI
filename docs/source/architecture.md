@@ -6,7 +6,7 @@ EvalAI helps researchers, students, and data scientists to create, collaborate a
 
 #### Django
 
-Django is the heart of the application. It powers our complete backend. We use Django version 1.10.
+Django is the heart of the application, which powers our backend. We use Django version 1.10.
 
 #### Django Rest Framework
 
@@ -18,7 +18,7 @@ We currently use RabbitMQ for queueing submission messages which are then later 
 
 #### PostgreSQL
 
-PostgreSQL is used as our primary datastore. All our tables currently reside in a single database named as `evalai`.
+PostgresSQL is used as our primary datastore. All our tables currently reside in a single database named `evalai`
 
 #### Angular JS
 

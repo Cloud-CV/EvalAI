@@ -6,7 +6,7 @@
 
 ### Creating a migration
 
-* We prefer that you create migrations per app and the change should be concerned with a single issue or feature.
+* We recommend you to create migrations per app, where the changes are only about a single issue or feature.
 
 ```
 # migration only for jobs app
@@ -27,7 +27,7 @@ python manage.py makemigrations jobs --name=execution_time_limit
 python manage.py makemigrations --settings=settings.dev
 ```
 
-So a complete named migration for jobs app where in an execution time limit field is added to `Submission` model, will look like
+The following is an example of a complete named migration for the `jobs` app, wherein a execution time limit field is added to the `Submission` model:
 
 ```
 python manage.py makemigrations jobs --name=execution_time_limit --settings=settings.dev
