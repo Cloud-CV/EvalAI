@@ -2,13 +2,13 @@
 
 ### Django Apps
 
-EvalAI is a Django-based application, hence it leverages the concepts of Django apps to properly namespace the functionalities. One can find all the apps in the `apps` directory situated in the root folder.
+EvalAI is a Django-based application, hence it leverages the concepts of Django apps to properly namespace the functionalities. One can find all the apps in the `apps` directory, situated in the root folder.
 
-Some important apps along with their main use are:
+Some important apps along with their main uses are:
 
 * **Challenges**
 
-This app handles all the workflow related to a challenge like creating, modifying and deleting a challenge etc.
+This app handles all the workflow related to creating, modifying, and deleting challenges.
 
 * **Hosts**
 
@@ -37,7 +37,7 @@ A placeholder app which contains the code that is used across various other apps
 
 ### Settings
 
-Settings are used across the backend codebase by Django to provide config values on an environment basis. Presently following setting are present
+Settings are used across the backend codebase by Django to provide config values on a per-environment basis. Currently, the following settings are available:
 
 * **dev**
 
@@ -57,17 +57,17 @@ Used on production server
 
 ### URLs
 
-The base URLs for the project are present in `evalai/urls.py`. This URL includes URLs of various application also which are namespaced by app name. So URLs for `challenges` app will have its app namespace in the URL as `challenges`. This actually helps us in separating our API on the basis of apps.
+The base URLs for the project are present in `evalai/urls.py`. This file includes URLs of various applications, which are also namespaced by the app name. So URLs for the `challenges` app will have its app namespace in the URL as `challenges`. This actually helps us separate our API based on the app.
 
 
 ### Frontend
 
-The whole code base for the frontend resides in a folder named `frontend` in the root directory
+The whole codebase for the frontend resides in a folder named `frontend` in the root directory
 
 
 ### Scripts
 
-Scripts contain various helper scripts and utilities along with python workers. It contains the following folders:
+Scripts contain various helper scripts, utilities and python workers. It contains the following folders:
 
 * **migration**
 
@@ -75,7 +75,7 @@ Contains some of the scripts which are used for one-time migration or formatting
 
 * **tools**
 
-A folder for storing helper scripts like a script to fetch pull requests.
+A folder for storing helper scripts, e.g. a script to fetch pull request
 
 * **workers**
 
