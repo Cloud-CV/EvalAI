@@ -346,6 +346,10 @@ section.bg-section {
     }
 }
 
+p.challenge-status {
+    overflow: hidden;
+}
+
 a.view-more {
     color: $highlight;
     &:hover {
