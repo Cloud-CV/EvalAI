@@ -97,6 +97,13 @@ Follow this guide to setup your development machine.
 
     ```
     npm install
+    ``` 
+    Install bower(1.8.0) globally by running:
+    ```
+    npm install -g bower
+    ```
+    Now install the bower dependencies by running:
+    ```
     bower install
     ```
     If you running npm install behind a proxy server, use
