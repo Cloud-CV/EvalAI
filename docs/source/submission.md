@@ -2,7 +2,7 @@
 
 ### How are submissions processed?
 
-We use REST APIs along with Queue-based architecture to process submissions. When a participant makes a submission for a challenge, a REST API with the URL pattern `jobs:challenge_submission` is called. This API creates new entries for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
+We are using REST API's along with Queue based architecture to process submissions. When a participant makes a submission for a challenge, a REST API with url pattern `jobs:challenge_submission` is called. This API does the task of creating a new entry for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
 
      User makes   --> API  --> Publish  --> RabbitMQ  --> Queue  --> Submission
     a submission               message      Exchange                  worker(s)
@@ -88,7 +88,7 @@ When the user makes submission on the frontend, the following actions happen seq
 
 * It fetches the participant team's ID and its corresponding object.
 
-* After all of these checks are complete, a submission object is saved. The saved submission object includes the __participant team id__, __challenge phase id__ and __username__ of the participant creating it.
+* After all these checks are complete, a submission object is saved. The saved submission object includes __participant team id__ and __challenge phase id__ and __username__ of the participant creating it.
 
 * At the end, a submission message is published to exchange `evalai_submissions` with a routing key of `submission.*.*`.
 
@@ -128,5 +128,4 @@ Upon receiving a message from `submission_task_queue` with a binding key of `sub
 
 ### Notes
 
-* The REST API with URL pattern `jobs:challenge_submission`. Here _jobs_ is application namespace and _challenge_submission_ is instance namespace. You can read more about [URL namespaces](https://docs.djangoproject.com/en/1.10/topics/http/URLs/#URL-namespaces)
-
+* REST API with url pattern `jobs:challenge_submission`. Here _jobs_ is application namespace and _challenge_submission_ is instance namespace. You can read more about [url namespace](https://docs.djangoproject.com/en/1.10/topics/http/urls/#url-namespaces)
