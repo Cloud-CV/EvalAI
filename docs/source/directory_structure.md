@@ -87,7 +87,7 @@ python scripts/workers/submission_worker.py
 
 ### Test Suite
 
-All of the code base related to testing resides in the `tests` folder present in the root directory. In this directory, tests are namespaced according to the name of the app like tests for `challenges` app lives in a folder named `challenges`.
+All of the codebase related to testing resides in the `tests` folder present in the root directory. In this directory, tests are namespaced according to the name of the app like tests for `challenges` app lives in a folder named `challenges`.
 
 ### Management Commands
 
