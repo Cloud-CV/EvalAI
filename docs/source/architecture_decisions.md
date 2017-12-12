@@ -28,7 +28,7 @@ Also, we have namespaced the URL patterns on a per-app basis, so URLs for _Chall
 
 This way, one can easily identify where a particular API is located.
 
-We use underscores **_** in URL patterns.
+We use underscore **_** in URL patterns.
 
 ### Processing submission messages asynchronously
 
