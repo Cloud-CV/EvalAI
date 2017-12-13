@@ -281,5 +281,5 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
 
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
-    'USER_DETAILS_SERIALIZER': 'accounts.serializers.UserDetailsSerializer',
+    'USER_DETAILS_SERIALIZER': 'accounts.serializers.ProfileSerializer',
 }

@@ -6,7 +6,6 @@ import logging
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
-from django.utils.functional import cached_property
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -158,33 +157,3 @@ class Submission(TimeStampedModel):
 
         submission_instance = super(Submission, self).save(*args, **kwargs)
         return submission_instance
-
-    @cached_property
-    def submissions_count_for_challenge_phase(self):
-        # To get total submissions count on a challenge phase
-        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                                     challenge_phase__challenge=self.challenge_phase.challenge).count()
-        return submission_count
-
-    @cached_property
-    def participated_teams_count_for_challenge_phase(self):
-        # To get total participant teams count on a challenge phase
-        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                                     challenge_phase__challenge=self.challenge_phase.challenge)
-        submission_count = submission_count.values_list('participant_team', flat=True).distinct().count()
-        return submission_count
-
-    @cached_property
-    def last_submission_timestamp_in_challenge_phase(self):
-        # To get the last submission time in a challenge phase
-        last_submitted_timestamp = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                                             challenge_phase__challenge=self.challenge_phase.challenge)
-        last_submitted_timestamp = last_submitted_timestamp.order_by('-submitted_at')[0].created_at
-        return last_submitted_timestamp
-
-    @cached_property
-    def last_submission_timestamp_in_challenge(self):
-        # To get the last submission time in a challenge
-        last_submitted_timestamp = Submission.objects.filter(challenge_phase__challenge=self.challenge_phase.challenge)
-        last_submitted_timestamp = last_submitted_timestamp.order_by('-submitted_at')[0].created_at
-        return last_submitted_timestamp

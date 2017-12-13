@@ -2,39 +2,39 @@
 
 ### Challenge
 
-A challenge, run by some institute or organization, wherein a number of researchers, students and data scientists participate and compete with each other over a period of time. Each challenge has a start time and generally an end time also.
+An event, run by an institute or organization, wherein a number of researchers, students, and data scientists participate and compete with each other over a period of time. Each challenge has a start time and generally an end time too.
 
 ### Challenge Host
 
-A member of the host team which is organizing a challenge. In our system, it is a form of representing a user. A user can be in the organizing team of many challenges and hence for each challenge, its challenge host will be different.
+A member of the host team who organizes a challenge. In our system, it is a form of representing a user. This user can be in the organizing team of many challenges, and hence for each challenge, its challenge host will be different.
 
 ### Challenge Host Team
 
-A group of challenge hosts who are organizing a challenge. They are identified by a unique team name.
+A group of challenge hosts who organizes a challenge. They are identified by a unique team name.
 
 ### Challenge Phase Split
 
-A challenge phase split is a relation between a challenge phase and dataset splits for a challenge (many to many relation). This is used to set the privacy of submissions (public/private) to different dataset splits for different challenge phases.
+A challenge phase split is the relation between a challenge phase and dataset splits for a challenge with a many-to-many relation. This is used to set the privacy of submissions (public/private) to different dataset splits for different challenge phases.
 
 ### Dataset
 
-A dataset in EvalAI is the main entity on which an AI challenge is based on. Participants are expected to make submissions corresponding to different splits of the corresponding dataset.
+A dataset in EvalAI is the main entity in which an AI challenge is based on. Participants are expected to make submissions corresponding to different splits of the corresponding dataset.
 
 ### Dataset Split
 
-A dataset is generally divided into different parts and each part is called dataset split. Generally, a  dataset has three different splits:
+A dataset is generally divided into different parts called dataset split. Generally, a dataset has three different splits:
 
-1. Training set
-2. Validation set
-3. Test set
+* Training set
+* Validation set
+* Test set
 
 ### EvalAI
 
-EvalAI is an open-source web platform that aims to evaluate the state of the art in AI. Its goal is to help AI researchers, practitioners, and students to host, collaborate, and participate in AI challenges organized around the globe.
+EvalAI is an open-source web platform that aims to be the state of the art in AI. Its goal is to help AI researchers, practitioners, and students to host, collaborate, and participate in AI challenges organized around the globe.
 
 ### Leaderboard
 
-The leaderboard can be defined as a scoreboard listing the name of the teams along with their current scores. Presently each challenge has its own leaderboard.
+The leaderboard can be defined as a scoreboard listing the names of the teams along with their current scores. Currently, each challenge has its own leaderboard.
 
 ### Phase
 
@@ -42,7 +42,7 @@ A challenge can be divided into many phases (or challenge phases). A challenge p
 
 ### Participant
 
-A member of the team who is competing against other teams for any particular challenge. It is a form of representing a user. A user can participate in many challenges, hence for each challenge, its participant entry will be different.
+A member of the team competing against other teams for any particular challenge. It is a form of representing a user. A user can participate in many challenges, hence for each challenge, its participant entry will be different.
 
 ### Participant Team
 
@@ -50,15 +50,15 @@ A group of one or more participants who are taking part in a challenge. They are
 
 ### Submission
 
-A way of submitting your results to the platform, so that it can be evaluated and ranked amongst others. A submission can be public or private, depending upon how the challenge is.
+A way of submitting your results to the platform, so that it can be evaluated and ranked amongst others. A submission can be public or private, depending on the challenge.
 
 ### Submission Worker
 
-A python script which processes messages of submission received from a queue. It does the heavy lifting task of receiving a submission, performing mandatory checks and then evaluating the submission and updating its status in the database.
+A python script which processes submission messages received from a queue. It does the heavy lifting task of receiving a submission, performing mandatory checks, and then evaluating the submission and updating its status in the database.
 
 ### Team
 
-A model, present in `web` app which helps CloudCV in registering any new contributor as a core team member or simply an open source contributor.
+A model, present in `web` app, which helps CloudCV register new contributors as a core team member or simply an open source contributor.
 
 ### Test Annotation File
 

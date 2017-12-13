@@ -14,14 +14,6 @@
 
         utilities.showLoader();
 
-        vm.imgUrlObj = {
-            ironman: "dist/images/ironman.png",
-            hulk: "dist/images/hulk.png",
-            women: "dist/images/women.png",
-            bird: "dist/images/bird.png",
-            captain: "dist/images/captain.png"
-        };
-
         vm.currentList = {};
         vm.upcomingList = {};
         vm.pastList = {};
@@ -31,6 +23,7 @@
         vm.nonePastChallenge = false;
 
         // calls for ongoing challneges
+        vm.challengeCreator = {};
         var parameters = {};
         parameters.url = 'challenges/challenge/present';
         parameters.method = 'GET';
@@ -56,11 +49,9 @@
                         vm.currentList[i].isLarge = "";
                     }
 
-                    if (vm.currentList[i].background_image === undefined || vm.currentList[i].background_image === null) {
-                        vm.currentList[i].background_image = vm.imgUrlObj.hulk;
-                    }
-
-
+                    var id = vm.currentList[i].id;              
+                    vm.challengeCreator[id]= vm.currentList[i].creator.id;
+                    utilities.storeData("challengeCreator", vm.challengeCreator);
                 }
 
                 // dependent api
@@ -91,9 +82,9 @@
                                 vm.upcomingList[i].isLarge = "";
                             }
 
-                            if (vm.upcomingList[i].background_image === undefined || vm.upcomingList[i].background_image === null) {
-                                vm.upcomingList[i].background_image = vm.imgUrlObj.captain;
-                            }
+                            var id = vm.upcomingList[i].id;              
+                            vm.challengeCreator[id] = vm.upcomingList[i].creator.id;
+                            utilities.storeData("challengeCreator", vm.challengeCreator);
                         }
 
                         // dependent api
@@ -124,10 +115,9 @@
                                     } else {
                                         vm.pastList[i].isLarge = "";
                                     }
-                                    if (vm.pastList[i].background_image === undefined || vm.pastList[i].background_image === null) {
-
-                                        vm.pastList[i].background_image = vm.imgUrlObj.bird;
-                                    }
+                                    var id = vm.pastList[i].id;              
+                                    vm.challengeCreator[id]= vm.pastList[i].creator.id;
+                                    utilities.storeData("challengeCreator", vm.challengeCreator);
                                 }
 
                                 utilities.hideLoader();

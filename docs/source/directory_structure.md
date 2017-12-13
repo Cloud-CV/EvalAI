@@ -2,13 +2,13 @@
 
 ### Django Apps
 
-EvalAI is a Django based application, hence it leverages the concept of Django apps to properly namespace the functionalities. One can find all the apps in the `apps` directory situated in the root folder.
+EvalAI is a Django-based application, hence it leverages the concept of Django apps to properly namespace the functionalities. All the apps can be found in the `apps` directory situated in the root folder.
 
-Some important apps along with their main use are:
+Some important apps along with their main uses are:
 
 * **Challenges**
 
-This app handles all the workflow related to a challenge like creating, modifying and deleting a challenge etc.
+This app handles all the workflow related to creating, modifying, and deleting challenges.
 
 * **Hosts**
 
@@ -20,11 +20,11 @@ This app serves users who want to take part in any challenge. It contains code f
 
 * **Jobs**
 
-One of the most important apps, it is responsible for processing and evaluating the submission made by a participant. It contains code for creating a submission, changing the visibility of the submission and populating the leaderboard for any challenge.
+One of the most important apps, responsible for processing and evaluating submissions made by participants. It contains code for creating a submission, changing the visibility of the submission and populating the leaderboard for any challenge.
 
 * **Web**
 
-This app serves some basic functionalities like providing support for contact us or adding a new contributor to the team etc.
+This app serves some basic functionalities like providing support for contact us or adding a new contributor to the team, etc.
 
 * **Accounts**
 
@@ -37,7 +37,7 @@ A placeholder app which contains the code that is used across various other apps
 
 ### Settings
 
-Settings are used across the backend codebase by Django to provide config values on an environment basis. Presently following setting a re present
+Settings are used across the backend codebase by Django to provide config values on a per-environment basis. Currently, the following settings are available:
 
 * **dev**
 
@@ -57,17 +57,17 @@ Used on production server
 
 ### URLs
 
-The base URLs for the project are present in `evalai/urls.py`. This URL includes URLs of various application also which are namespaced by app name. So URLs for `challenges` app will have its app namespace in the URL as `challenges`. This actually helps us in separating our API on the basis of apps.
+The base URLs for the project are present in `evalai/urls.py`. This file includes URLs of various applications, which are also namespaced by the app name. So URLs for the `challenges` app will have its app namespace in the URL as `challenges`. This actually helps us separate our API based on the app.
 
 
 ### Frontend
 
-The whole code base for the frontend resides in a folder named `frontend` in the root directory
+The whole codebase for the frontend resides in a folder named `frontend` in the root directory
 
 
 ### Scripts
 
-Scripts contain various helper scripts and utilities along with python workers. It contains the following folders
+Scripts contain various helper scripts, utilities, python workers. It contains the following folders:
 
 * **migration**
 
@@ -75,11 +75,11 @@ Contains some of the scripts which are used for one-time migration or formatting
 
 * **tools**
 
-A folder for storing helper scripts like script to fetch pull request
+A folder for storing helper scripts, e.g. a script to fetch pull request
 
 * **workers**
 
-One of the main directory, which contains the code for submission worker. Submission worker is a normal python worker which is responsible for processing and evaluating submission of a user. The command to start a worker is:
+One of the main directories, which contains the code for submission worker. Submission worker is a normal python worker which is responsible for processing and evaluating submission of a user. The command to start a worker is:
 
 ```
 python scripts/workers/submission_worker.py
@@ -87,11 +87,11 @@ python scripts/workers/submission_worker.py
 
 ### Test Suite
 
-All of the code base related to testing resides in `tests` folder present in the root directory. In this directory, tests are namespace according to the name of the app like tests for `challenges` app lives in a folder named `challenges`.
+All of the codebase related to testing resides in `tests` folder in the root directory. In this directory, tests are namespaced according to the app, e.g. tests for `challenges` app lives in a folder named `challenges`.
 
 ### Management Commands
 
-To perform certain actions like seeding the database, we use Django management commands. Since the management commands are common throughout the project, hence they are present in `base` application directory. At the moment, only one management command `seed` is present, which is used to populate the database with some random values. The command can be invoked by calling
+To perform certain actions like seeding the database, we use Django management commands. Since the management commands are common throughout the project, they are present in `base` application directory. At the moment, the only management command is `seed`, which is used to populate the database with some random values. The command can be invoked by calling
 
 ```
 python manage.py seed --settings=settings.dev
