@@ -211,7 +211,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server at [frontend]:
+* To run frontend development server at [127.0.0.1:8888]:
 
 ```
 gulp dev:runserver
