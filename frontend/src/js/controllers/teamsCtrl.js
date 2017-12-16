@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('TeamsCtrl', TeamsCtrl);
 
-    TeamsCtrl.$inject = ['utilities','loaderService', '$scope', '$state', '$http', '$rootScope', '$mdDialog'];
+    TeamsCtrl.$inject = ['utilities','loaderService', '$scope', '$stateParams', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function TeamsCtrl(utilities,loaderService, $scope, $state, $http, $rootScope, $mdDialog) {
+    function TeamsCtrl(utilities,loaderService, $scope, $stateParams, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -341,7 +341,8 @@
                 parameters.url = 'participants/participant_team/' + participantTeamId + '/invite';
                 parameters.method = 'POST';
                 parameters.data = {
-                    "email": result
+                    "email": result,
+                    "url": $state.href('web.teams', {}, {absolute: true})
                 };
                 parameters.token = userKey;
                 parameters.callback = {
@@ -359,6 +360,28 @@
             }, function() {
             });
         };
-    }
 
+        vm.acceptInvite = function(){
+            vm.team_hash = $stateParams.team_hash;
+            vm.email_hash = $stateParams.email_hash;
+            parameters = {};
+            parameters.url = 'participants/invitation/' + vm.team_hash + '/' + vm.email_hash;
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    $state.go("web.dashboard");
+                    $rootScope.notify("success", response.data["message"]);
+                },
+                onError: function(response) {
+                    $state.go("web.dashboard");
+                    var error = response.data['error'];
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
+
+        };
+    }
 })();
