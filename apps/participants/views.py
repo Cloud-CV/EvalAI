@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.mail import send_mail, BadHeaderError
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -11,13 +13,12 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import paginated_queryset, encode_data, decode_data
 from challenges.models import Challenge
 from hosts.utils import is_user_a_host_of_challenge
 
 from .models import (Participant, ParticipantTeam)
-from .serializers import (InviteParticipantToTeamSerializer,
-                          ParticipantTeamSerializer,
+from .serializers import (ParticipantTeamSerializer,
                           ChallengeParticipantTeam,
                           ChallengeParticipantTeamList,
                           ChallengeParticipantTeamListSerializer,
@@ -99,8 +100,12 @@ def participant_team_detail(request, pk):
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def invite_participant_to_team(request, pk):
-
+def email_invite_participant_to_team(request, pk):
+    """
+    Users can be invited to join the Participant team by sending a
+    unique E-mail to the user being invited to. The E-mail of the user and the
+    challenge host id is encoded and made into a url.
+    """
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
     except ParticipantTeam.DoesNotExist:
@@ -128,16 +133,54 @@ def invite_participant_to_team(request, pk):
         """
         response_data = {'error': 'Sorry, cannot invite user to the team!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    serializer = InviteParticipantToTeamSerializer(data=request.data,
-                                                   context={'participant_team': participant_team,
-                                                            'request': request})
-    if serializer.is_valid():
-        serializer.save()
-        response_data = {
-            'message': 'User has been successfully added to the team!'}
+    if request.user.email == email:
+        response_data = {'error': 'A participant cannot invite himself'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    team_hash, email_hash = encode_data([str(pk), email])
+    unique_hash = "{}/{}".format(team_hash, email_hash)
+    url = request.data['url'].split("team")[0]
+    full_url = "{}invitation/{}".format(url, unique_hash)
+    team_name = participant_team.team_name
+    body = "You've been invited to join team {}. " \
+           "Click the bottom link to accept the " \
+           "invitation and to participate in challenges. \n{}"
+    message = body.format(team_name, full_url)
+    subject = "You have been invited to join {} team at CloudCV!".format(team_name)
+    try:
+        send_mail(subject,
+                  message,
+                  settings.ADMIN_EMAIL,
+                  [email],
+                  fail_silently=False,)
+        response_message = "{} has been invited to join team {}".format(email, team_name)
+        response_data = {'message': response_message}
         return Response(response_data, status=status.HTTP_202_ACCEPTED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except BadHeaderError:
+        response_data = {'error': 'There was some error while sending the invite.'}
+        return Response(response_data, status=status.HTTP_417_EXPECTATION_FAILED)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def invitation_accepted(request, team_hash, email_hash):
+    """
+    Decodes the data from the URL when the invited participant clicks on the URL
+    given in the invite E-mail and adds the user to the corresponding participant
+    team
+    """
+    pk, accepted_user_email = decode_data([team_hash, email_hash])
+    current_user_email = request.user.email
+    participant_team = ParticipantTeam.objects.get(pk=int(pk))
+    if current_user_email == accepted_user_email:
+        Participant.objects.get_or_create(user=User.objects.get(email=accepted_user_email),
+                                          status=Participant.ACCEPTED,
+                                          team=participant_team)
+        response_data = {'message': 'You have been successfully added to the team!'}
+        return Response(response_data, status=status.HTTP_202_ACCEPTED)
+    response_data = {'error': 'You aren\'t authorized!'}
+    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @throttle_classes([UserRateThrottle])

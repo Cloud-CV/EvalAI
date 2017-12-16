@@ -1,3 +1,4 @@
+import base64
 from datetime import timedelta
 
 from django.core.urlresolvers import reverse_lazy
@@ -254,18 +255,44 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
     def setUp(self):
         super(InviteParticipantToTeamTest, self).setUp()
         self.data = {
-            'email': self.invite_user.email
+            'email': self.invite_user.email,
+            'url': 'http://localhost:8888/web/teams'
+
         }
         self.url = reverse_lazy('participants:invite_participant_to_team',
                                 kwargs={'pk': self.participant_team.pk})
 
     def test_invite_participant_to_team_with_all_data(self):
+        expected_message = "{} has been invited to join team {}".format(
+            self.invite_user.email, self.participant_team.team_name)
         expected = {
-            'message': 'User has been successfully added to the team!'
+            'message': expected_message,
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+    def test_invitation_accepted_by_invited_user(self):
+        team_hash = base64.encodestring(str(self.participant_team.pk)).split("=")[0]
+        email_hash = base64.encodestring(self.user.email).split("=")[0]
+        url = reverse_lazy('participants:invitation_accepted',
+                           kwargs={'team_hash': team_hash.strip("\n"),
+                                   'email_hash': email_hash.strip("\n")})
+        response = self.client.post(url)
+        expected = {'message': 'You have been successfully added to the team!'}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+    def test_invitation_accepted_by_different_user(self):
+        team_hash = base64.encodestring(str(self.participant_team.pk)).split("=")[0]
+        email_hash = base64.encodestring(self.invite_user.email).split("=")[0]
+        url = reverse_lazy('participants:invitation_accepted',
+                           kwargs={'team_hash': team_hash.strip("\n"),
+                                   'email_hash': email_hash.strip("\n")})
+        response = self.client.post(url)
+        expected = {'error': 'You aren\'t authorized!'}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_invite_participant_to_team_with_no_data(self):
         del self.data['email']
@@ -274,12 +301,12 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
 
     def test_invite_self_to_team(self):
         self.data = {
-            'email': self.user.email
+            'email': self.user.email,
+            'url': 'localhost:8000/teams'
         }
         expected = {
-            'email': [
+            'error':
                 'A participant cannot invite himself'
-            ]
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
