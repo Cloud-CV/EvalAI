@@ -92,7 +92,7 @@ The challenge configuration file on EvalAI consists of following fields:
 
 * **dataset_splits**:
 
-  A dataset in EvalAI is the main entity on which an AI challenge is based on. Participants are expected to make submissions corresponding to different splits of the corresponding dataset. A dataset is generally divided into different parts and each part is called dataset split. Generally, a dataset has three different splits:
+  A dataset in EvalAI is the main entity on which an AI challenge is based. Participants are expected to make submissions corresponding to different splits of the corresponding dataset. A dataset is generally divided into different parts and each part is called dataset split. Generally, a dataset has three different splits:
 
   1. Training set
   2. Validation set
