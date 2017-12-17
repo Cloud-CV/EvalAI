@@ -356,7 +356,7 @@ a.view-more {
 .org-logo{
     img{
         height: auto;
-        width: 100%;
+        width: 75%;
         transition:all 0.2s ease-in-out;
     }
     &:hover{
@@ -398,7 +398,7 @@ a.view-more {
 @media only screen and (max-width: $small-screen) {
     .org-logo{
         img{
-            width: 100%;
+            width: 75%;
             height: auto;
         }
     }
