@@ -3,12 +3,9 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
-from cached_property import cached_property
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Max
-from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -81,11 +78,11 @@ class Submission(TimeStampedModel):
         upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     submission_metadata_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
-    execution_time_limit = models.PositiveIntegerField(default=300, db_index=True)
+    execution_time_limit = models.PositiveIntegerField(default=300)
     method_name = models.CharField(max_length=1000, null=True, db_index=True)
-    method_description = models.TextField(blank=True, null=True, db_index=True)
-    publication_url = models.CharField(max_length=1000, null=True, db_index=True)
-    project_url = models.CharField(max_length=1000, null=True, db_index=True)
+    method_description = models.TextField(blank=True, null=True)
+    publication_url = models.CharField(max_length=1000, null=True)
+    project_url = models.CharField(max_length=1000, null=True)
 
     def __unicode__(self):
         return '{}'.format(self.id)
@@ -106,15 +103,6 @@ class Submission(TimeStampedModel):
         #     return None
 
     def save(self, *args, **kwargs):
-
-        # Only save the completed_at time when the object is created.
-        # Dont update the completed_at field at the time of updating submission meta-data or status.
-        if self._state.adding is True:
-            if hasattr(self, 'status'):
-                if self.status == Submission.RUNNING:
-                    self.started_at = timezone.now()
-                if self.status == Submission.FINISHED:
-                    self.completed_at = timezone.now()
 
         if not self.pk:
             sub_num = Submission.objects.filter(
@@ -169,33 +157,3 @@ class Submission(TimeStampedModel):
 
         submission_instance = super(Submission, self).save(*args, **kwargs)
         return submission_instance
-
-    @cached_property
-    def submissions_count_for_challenge_phase(self):
-        # To get total submissions count on a challenge phase
-        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                                     challenge_phase__challenge=self.challenge_phase.challenge).count()
-        return submission_count
-
-    @cached_property
-    def participated_teams_count_for_challenge_phase(self):
-        # To get total participant teams count on a challenge phase
-        submission_count = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                                     challenge_phase__challenge=self.challenge_phase.challenge)
-        submission_count = submission_count.values_list('participant_team', flat=True).distinct().count()
-        return submission_count
-
-    @cached_property
-    def last_submission_timestamp_in_challenge_phase(self):
-        # To get the last submission time in a challenge phase
-        last_submitted_timestamp = Submission.objects.filter(challenge_phase=self.challenge_phase,
-                                                             challenge_phase__challenge=self.challenge_phase.challenge)
-        last_submitted_timestamp = last_submitted_timestamp.order_by('-submitted_at')[0].created_at
-        return last_submitted_timestamp
-
-    @cached_property
-    def last_submission_timestamp_in_challenge(self):
-        # To get the last submission time in a challenge
-        last_submitted_timestamp = Submission.objects.filter(challenge_phase__challenge=self.challenge_phase.challenge)
-        last_submitted_timestamp = last_submitted_timestamp.order_by('-submitted_at')[0].created_at
-        return last_submitted_timestamp

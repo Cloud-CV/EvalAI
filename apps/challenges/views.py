@@ -60,6 +60,11 @@ from .utils import get_file_content
 
 logger = logging.getLogger(__name__)
 
+try:
+    xrange          # Python 2
+except NameError:
+    xrange = range  # Python 3
+
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
@@ -306,7 +311,7 @@ def challenge_phase_list(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge_phase = ChallengePhase.objects.filter(challenge=challenge)
+        challenge_phase = ChallengePhase.objects.filter(challenge=challenge, is_public=True)
         paginator, result_page = paginated_queryset(challenge_phase, request)
         serializer = ChallengePhaseSerializer(result_page, many=True)
         response_data = serializer.data

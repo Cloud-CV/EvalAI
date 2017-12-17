@@ -22,6 +22,11 @@ NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
 DATASET_SPLIT_ITERATOR = 0
 
+try:
+    xrange          # Python 2
+except NameError:
+    xrange = range  # Python 3
+
 
 def create_user(is_admin, username=""):
     """
@@ -40,7 +45,7 @@ def create_user(is_admin, username=""):
         is_superuser=is_admin,
     )
     EmailAddress.objects.create(user=user, email=email, verified=True, primary=True)
-    print "{} was created with username: {} password: password".format("Super user" if is_admin else "User", username)
+    print("{} was created with username: {} password: password".format("Super user" if is_admin else "User", username))
     return user
 
 
@@ -53,9 +58,9 @@ def create_challenge_host_team(user):
         team_name=team_name,
         created_by=user,
     )
-    print "Challenge Host Team created with team_name: {} created_by: {}".format(team_name, user.username)
+    print("Challenge Host Team created with team_name: {} created_by: {}".format(team_name, user.username))
     ChallengeHost.objects.create(user=user, team_name=team, status=ChallengeHost.SELF, permissions=ChallengeHost.ADMIN)
-    print "Challenge Host created with user: {} team_name: {}".format(user.username, team_name)
+    print("Challenge Host created with user: {} team_name: {}".format(user.username, team_name))
     return team
 
 
@@ -105,9 +110,9 @@ def create_challenge(title, start_date, end_date, host_team):
         start_date=start_date,
         end_date=end_date,
     )
-    print "Challenge created with title: {} creator: {} start_date: {} end_date: {}".format(title,
+    print("Challenge created with title: {} creator: {} start_date: {} end_date: {}".format(title,
                                                                                             host_team.team_name,
-                                                                                            start_date, end_date)
+                                                                                            start_date, end_date))
 
 
 def create_challenge_phases(challenge, number_of_phases=1):
@@ -129,10 +134,10 @@ def create_challenge_phases(challenge, number_of_phases=1):
             end_date=challenge.end_date,
             challenge=challenge,
             test_annotation=SimpleUploadedFile(fake.file_name(extension="txt"), data, content_type="text/plain"),
-            codename="{}{}".format("phase", i+1),
+            codename="{}{}".format("phase", i + 1),
         )
         challenge_phases.append(challenge_phase)
-        print "Challenge Phase created with name: {} challenge: {}".format(name, challenge.title)
+        print("Challenge Phase created with name: {} challenge: {}".format(name, challenge.title))
     return challenge_phases
 
 
@@ -147,7 +152,7 @@ def create_leaderboard():
     leaderboard = Leaderboard.objects.create(
         schema=schema
     )
-    print "Leaderboard created"
+    print("Leaderboard created")
     return leaderboard
 
 
@@ -166,7 +171,7 @@ def create_dataset_splits(number_of_splits):
         )
         dataset_splits.append(dataset_split)
         DATASET_SPLIT_ITERATOR += 1
-        print "Dataset Split created with name: {} codename: {}".format(name, codename)
+        print("Dataset Split created with name: {} codename: {}".format(name, codename))
     return dataset_splits
 
 
@@ -180,8 +185,8 @@ def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
         dataset_split=dataset_split,
         visibility=ChallengePhaseSplit.PUBLIC
     )
-    print "Challenge Phase Split created with challenge_phase: {} dataset_split: {}".format(challenge_phase.name,
-                                                                                            dataset_split.name)
+    print("Challenge Phase Split created with challenge_phase: {} dataset_split: {}".format(challenge_phase.name,
+                                                                                            dataset_split.name))
 
 
 def create_participant_team(user):
@@ -193,9 +198,9 @@ def create_participant_team(user):
         team_name=team_name,
         created_by=user,
     )
-    print "Participant Team created with team_name: {} created_by: {}".format(team_name, user.username)
+    print("Participant Team created with team_name: {} created_by: {}".format(team_name, user.username))
     Participant.objects.create(user=user, team=team, status="Self")
-    print "Participant created with user: {} team_name: {}".format(user.username, team_name)
+    print("Participant created with user: {} team_name: {}".format(user.username, team_name))
     return team
 
 

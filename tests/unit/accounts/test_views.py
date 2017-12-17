@@ -1,3 +1,5 @@
+import os
+
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
 
@@ -31,4 +33,18 @@ class DisableUserTest(BaseAPITestClass):
 
     def test_disable_user(self):
         response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TestUpdateUser(BaseAPITestClass):
+
+    def test_cannot_update_username(self):
+        self.url = reverse_lazy('rest_user_details')
+        self.data = {
+            'username': 'anotheruser',
+            'affiliation': 'some_affiliation',
+        }
+        response = self.client.put(os.path.join('api', 'auth', self.url), self.data)
+        self.assertNotContains(response, 'anotheruser')
+        self.assertContains(response, 'someuser')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
