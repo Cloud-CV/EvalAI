@@ -2,25 +2,25 @@ Contributing guidelines
 -----------------------
 
 Thank you for your interest in contributing to EvalAI! Here are a few
-pointers about how you can help.
+pointers on how you can help.
 
 Setting things up
 ~~~~~~~~~~~~~~~~~
 
 To set up the development environment, follow the instructions in
-README.
+our README.
 
 Finding something to work on
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The issue tracker of EvalAI a good place to start. If you find something
+EvalAI's issue tracker is good place to start. If you find something
 that interests you, comment on the thread and we’ll help get you
 started.
 
 Alternatively, if you come across a new bug on the site, please file a
-new issue and comment if you would like to be assigned. The existing
+new issue and comment if you would like to be assigned. Existing
 issues are tagged with one or more labels, based on the part of the
-website it touches, its importance etc., that can help you in selecting
+website it touches, its importance etc., which can help you select
 one.
 
 If neither of these seem appealing, please post on our channel and we
@@ -32,12 +32,12 @@ Instructions to submit code
 Before you submit code, please talk to us via the issue tracker so we
 know you are working on it.
 
-Our central development branch is development. Coding is done on feature
+Our central development branch is `development`. Coding is done on feature
 branches based off of development and merged into it once stable and
 reviewed. To submit code, follow these steps:
 
 1. Create a new branch off of development. Select a descriptive branch
-   name. We highly encourage to use `autopep8` to follow the PEP8 styling. Run the following command before creating the pull request:
+   name. We highly encourage you to use `autopep8` to follow the PEP8 styling. Run the following command before creating the pull request:
 
    ::
 
