@@ -354,14 +354,9 @@ a.view-more {
 }
 
 .org-logo{
-    max-width: 100%;
-    height: 120px;
-    text-align: center;
-
     img{
-        height: 75%;
-        max-width: 100%;
-        width: auto;
+        height: auto;
+        width: 75%;
         transition:all 0.2s ease-in-out;
     }
     &:hover{
@@ -397,20 +392,14 @@ a.view-more {
         width: 100%;
     }
 
-    
+
 }
 
 @media only screen and (max-width: $small-screen) {
     .org-logo{
-        height: auto;
-        width: 100%;
         img{
-            width: 100%;
+            width: 75%;
             height: auto;
         }
     }
-}
-
-#fb-logo{
-    height: 100px;
 }
