@@ -3,15 +3,26 @@
         <div class="col s12 m6 offset-m3">
             <div class="card horizontal ev-md-container ev-card-panel ev-z-depth-5 ">
                 <div class="card-image">
-                    <img src="dist/images/email.png" height="100">
+                    <img src="dist/images/email.png" height="125">
                 </div>
                 <div class="card-stacked">
                     <div class="card-content">
-                        <p><strong>Unable to create or select a team.</strong>
-                            <br> {{perm.emailError}}</p>
+                        <p><strong>Unable to create or select a team.</strong><br>
+                        Hi {{perm.user.username}}!
+                        <br> A <strong>verification</strong> link has been sent to {{perm.user.email}}.
+                        <br><strong>Note:</strong> In order to proceed ahead, verify your account by clicking on the link in the email.
+                        <strong><br> We are always there to help you !</p></strong>
+                        <p><button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit"                               ui-sref="contact-us"ng-click="contact-us.contactUs">Contact</button></p>
+
                     </div>
                 </div>
+
+
+
             </div>
         </div>
     </div>
 </section>
+~
+~                                                                                                                                                                        
+~               
