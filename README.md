@@ -1,4 +1,5 @@
 <p align="center"><img width="65%" src="docs/source/\_static/img/evalai_logo.png" /></p>
+
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Cloud-CV/EvalAI.git)
 ------------------------------------------------------------------------------------------
 
