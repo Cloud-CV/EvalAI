@@ -1,5 +1,6 @@
 <p align="center"><img width="65%" src="docs/source/\_static/img/evalai_logo.png" /></p>
 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Cloud-CV/EvalAI.git)
 ------------------------------------------------------------------------------------------
 
 [![Join the chat at https://gitter.im/Cloud-CV/EvalAI](https://badges.gitter.im/Cloud-CV/EvalAI.svg)](https://gitter.im/Cloud-CV/EvalAI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
