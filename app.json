@@ -1,0 +1,6 @@
+{
+"name": "EvalAI",
+"description": "An open-source web platform for organizing and participating in AI challenges",
+"repository": "https://github.com/Cloud-CV/EvalAI.git",
+"logo": "/frontend/src/images/evalai-logo-single.png", 
+}
