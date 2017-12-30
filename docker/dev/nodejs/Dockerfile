@@ -5,6 +5,7 @@ RUN apt-get update -qq && apt-get install -y build-essential git curl
 RUN apt-get install nodejs-legacy -y
 RUN apt-get install npm -y
 RUN apt-get install -y ruby
+RUN apt-get install -y ruby-dev
 RUN gem install sass
 
 RUN mkdir /code
