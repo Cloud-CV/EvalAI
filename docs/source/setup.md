@@ -251,7 +251,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
     ```
 
-2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI from `localhost:8888`.
 
     ```
     docker-compose -f docker-compose.dev.yml up -d --build
