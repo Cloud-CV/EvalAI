@@ -6,7 +6,7 @@
 
 ### Creating a migration
 
-* We prefer that you create migrations per app and the change should be concerned with a single issue or feature.
+* We recommend you to create migrations per app, where the changes are only about a single issue or feature.
 
 ```
 # migration only for jobs app
@@ -21,13 +21,13 @@ python manage.py makemigrations jobs -n=execution_time_limit
 python manage.py makemigrations jobs --name=execution_time_limit
 ```
 
-* While creating migrations on local environment don't forget to add development settings.
+* While creating migrations on local environment, don't forget to add development settings.
 
 ```
 python manage.py makemigrations --settings=settings.dev
 ```
 
-So a complete named migration for jobs app where in a execution time limit field is added to `Submission` model, will look like
+The following is an example of a complete named migration for the `jobs` app, wherein a execution time limit field is added to the `Submission` model:
 
 ```
 python manage.py makemigrations jobs --name=execution_time_limit --settings=settings.dev
@@ -35,4 +35,4 @@ python manage.py makemigrations jobs --name=execution_time_limit --settings=sett
 
 * Files create after running `makemigrations` should be committed along with other files
 
-* While creating a migration for your concerned change it may happen that some other changes are also there in the migration file. Like adding a `execution_time_limit` field on `Submission` model also brings in the change for `when_made_public` being added. In that case, open an [new issue](https://github.com/Cloud-CV/EvalAI/issues/new) and clearly mention the issue over there. If possible fix the issue yourself, by opening a new branch and creating migrations only for the concerned part. Idea here is that a commit should only include its concerned migration changes and nothing else.
+* While creating a migration for your concerned change, it may happen that some other changes are also there in the migration file. Like adding a `execution_time_limit` field on `Submission` model also brings in the change for `when_made_public` being added. In that case, open an [new issue](https://github.com/Cloud-CV/EvalAI/issues/new) and clearly mention the issue over there. If possible fix the issue yourself, by opening a new branch and creating migrations only for the concerned part. The idea here is that a commit should only include its concerned migration changes and nothing else.

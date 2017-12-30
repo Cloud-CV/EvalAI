@@ -1,17 +1,15 @@
-# Create Challenge
+# Creating a Challenge
 
-One can create a challenge in EvalAI using following methods:
+One can create a challenge in EvalAI using either:
 
-1. Challenge creation using zip configuration
-
-2. Challenge creation using web interface
-
+1. zip configuration
+2. web interface
 
 ## Challenge creation using zip configuration
 
 ### Getting Started
 
-Creating a challenge on EvalAI is a three step process. You just need to upload the challenge details in a challenge configuration file (**YAML file**) and we will take care of the rest.
+Creating a challenge on EvalAI is a three-step process. You just need to upload the challenge details in a challenge configuration file (**YAML file**) and we will take care of the rest.
 
 The challenge configuration file on EvalAI consists of following fields:
 
@@ -19,21 +17,21 @@ The challenge configuration file on EvalAI consists of following fields:
 
 * **short_description**: Short description of the challenge (preferably 140 characters max)
 
-* **description**: Long description of the challenge (set relative path of the html file. For eg. `challenge_details/description.html`)
+* **description**: Long description of the challenge (use a relative path for the html file, e.g. `challenge_details/description.html`)
 
-* **evaluation_criteria**: Evaluation criteria and details of the challenge (set relative path of the html file. For eg. `challenge_details/evaluation.html`)
+* **evaluation_criteria**: Evaluation criteria and details of the challenge (use a relative path for the html file, e.g. `challenge_details/evaluation.html`)
 
-* **terms_and_conditions**: Terms and conditions of the challenge (set relative path of the html file. For eg. `challenge_details/tnc.html`)
+* **terms_and_conditions**: Terms and conditions of the challenge (use a relative path for the html file, e.g. `challenge_details/tnc.html`)
 
-* **image**: Logo of the challenge (set relative path of the logo in the zip configuration. For eg. `images/logo/challenge_logo.jpg`).  **Note**:  The image must be in jpg, jpeg or png format.
+* **image**: Logo of the challenge (use a relative path for the logo in the zip configuration, e.g. `images/logo/challenge_logo.jpg`). **Note**: The image must be in jpg, jpeg or png format.
 
-* **submission_guidelines**: Submission guidelines of the challenge (set relative path of the html file. For eg. `challenge_details/submission_guidelines.html`)
+* **submission_guidelines**: Submission guidelines of the challenge (use a relative path for the html file, e.g. `challenge_details/submission_guidelines.html`)
 
-* **evaluation_script**: The evaluation script using which the submissions will be evaluated (relative path of the evaluation script file or folder from this YAML file.)
+* **evaluation_script**: The evaluation script using which the submissions will be evaluated (path of the evaluation script file or folder relative to this YAML file.)
 
-* **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS. For eg. 2017-07-07 10:10:10)
+* **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10)
 
-* **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS. For eg. 2017-07-07 10:10:10)
+* **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10)
 
 * **published**: True/False (Boolean field that gives the flexibility to publish the challenge once approved by EvalAI Admin. Default is `False`)
 
@@ -73,23 +71,23 @@ The challenge configuration file on EvalAI consists of following fields:
 
     * **name**: Name of the challenge phase
 
-    * **description**: Long description of the challenge phase (set relative path of the html file. For eg. `challenge_details/phase1_description.html`)
+    * **description**: Long description of the challenge phase (set relative path of the html file, e.g. `challenge_details/phase1_description.html`)
 
     * **leaderboard_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to make their leaderboard public or private. Default is `False`)
 
     * **is_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either hide or show the challenge phase to participants. Default is `False`)
 
-    * **start_date**: Start DateTime of the challenge phase (Format: YYYY-MM-DD HH:MM:SS. For eg. 2017-07-07 10:10:10)
+    * **start_date**: Start DateTime of the challenge phase (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10)
 
-    * **end_date**: End DateTime of the challenge phase (Format: YYYY-MM-DD HH:MM:SS. For eg. 2017-07-07 10:10:10)
+    * **end_date**: End DateTime of the challenge phase (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10)
 
-    * **test_annotation_file**: This file is used for ranking the submission made by a participant. An annotation file can be shared by more than one challenge phase. (Relative path of the test annotation file from this yaml file. Eg: `challenge_details/test_annotation.txt`)
+    * **test_annotation_file**: This file is used for ranking the submission made by a participant. An annotation file can be shared by more than one challenge phase. (Path of the test annotation file relative to this YAML file, e.g. `challenge_details/test_annotation.txt`)
 
-    * **codename**: Challenge phase codename. Note that the codename of a challenge phase is used to map the results returned by the evaluation script to a particular challenge phase and the codename specified here should match with the codename specified in the evaluation script to make sure that the mapping is perfect.
+    * **codename**: Challenge phase codename. Note that the codename of a challenge phase is used to map the results returned by the evaluation script to a particular challenge phase. The codename specified here should match with the codename specified in the evaluation script to perfect mapping.
 
-    * **max_submissions_per_day**: Positive integer number which tells the maximum number of submissions per day to a challenge phase
+    * **max_submissions_per_day**: Positive integer which tells the maximum number of submissions per day to a challenge phase.
 
-    * **max_submissions**: Positive integer number that decides the overall maximum number of submissions that can be done to a challenge phase.
+    * **max_submissions**: Positive integer that decides the overall maximum number of submissions that can be done to a challenge phase.
 
 
 * **dataset_splits**:
@@ -104,7 +102,7 @@ The challenge configuration file on EvalAI consists of following fields:
 
   * **name**: Name of the dataset split (it must be unique for every dataset split)
 
-  * **codename**: Codename of dataset split. Note that the codename of dataset split is used to map the results returned by the evaluation script to a particular dataset split in EvalAI's database. Please make sure that no two dataset splits have the same codename. Again, make sure that the dataset split's codename match with what is there in the evaluation script provided by the challenge host.
+  * **codename**: Codename of dataset split. Note that the codename of a dataset split is used to map the results returned by the evaluation script to a particular dataset split in EvalAI's database. Please make sure that no two dataset splits have the same codename. Again, make sure that the dataset split's codename match with what is in the evaluation script provided by the challenge host.
 
 
 * **challenge_phase_splits**:
@@ -127,7 +125,7 @@ The challenge configuration file on EvalAI consists of following fields:
 
 ### Sample zip configuration file
 
-Here is the sample configuration file for a challenge with 1 phase and 2 dataset split:
+Here is a sample configuration file for a challenge with 1 phase and 2 dataset split:
 
 ```yaml
 
@@ -151,7 +149,7 @@ leaderboard:
 
 challenge_phases:
   - id: 1
-    name: Challenge Name of the challenge phase
+    name: Challenge name of the challenge phase
     description: challenge_phase_description.html
     leaderboard_public: True
     is_public: True
@@ -183,16 +181,16 @@ challenge_phase_splits:
 ```
 ### Challenge Creation Examples
 
-Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) to know how to create different types of challenges on EvalAI.
+Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) for examples on the different types of challenges on EvalAI.
 
 ### Next Steps
 
-The next step is to create a zip file that contains YAML config file, all the HTML templates for challenge description, challenge phase description, evaluation criteria, submission guidelines, evaluation script, test annotation file(s) and challenge logo(optional).
+The next step is to create a zip file that contains the YAML config file, all the HTML templates for the challenge description, challenge phase description, evaluation criteria, submission guidelines, evaluation script, test annotation file(s) and challenge logo (optional).
 
-The final step is to create a challenge host team for the challenge on EvalAI and then after selecting that team just upload the zip folder created in the above step and the challenge will be created.
+The final step is to create a challenge host team for the challenge on EvalAI. After that, just upload the zip folder created in the above steps and the challenge will be created.
 
 If you have issues in creating a challenge on EvalAI, please feel free to create an issue on our Github Issues Page.
 
 ## Create challenge using web interface
 
-Todo: We are working on this feature and will keep you updated about the same.
+Todo: We are working on this feature and will keep you updated.
