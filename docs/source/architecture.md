@@ -1,6 +1,6 @@
 ## Architecture
 
-EvalAI helps researchers, students, and data scientists to create, collaborate and participate in various AI challenges organized around the globe. To achieve this, we leverage some of the best open source tools and technologies.
+EvalAI helps researchers, students, and data scientists to create, collaborate and participate in various AI challenges organized around the globe. To achieve this, we leverage some of the best open source tools and technologies available.
 
 ### Technologies that the project uses:
 
@@ -8,9 +8,10 @@ EvalAI helps researchers, students, and data scientists to create, collaborate a
 
 Django is the heart of the application, which powers our backend. We use Django version 1.10.
 
+
 #### Django Rest Framework
 
-We use Django Rest Framework for writing and providing REST APIs. It's permission and serializers have helped write a maintainable codebase.
+We use Django Rest Framework for writing and providing REST APIs. Its permission and serializers have helped write a maintainable codebase.
 
 #### RabbitMQ
 

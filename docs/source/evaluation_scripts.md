@@ -6,6 +6,7 @@ The logic for evaluating and judging a submission is customizable and varies fro
 
 Evaluation scripts are required to have an `evaluate` function. This is the main function, which is used by workers to evaluate the submission messages.
 
+
 The syntax of evaluate function is
 
 ```
