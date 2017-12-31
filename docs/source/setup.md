@@ -51,7 +51,7 @@ instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 ```
 
-Don't forget to replace YOUR_GITHUB_USER_NAME with your git username.
+Don't forget to replace `YOUR_GITHUB_USER_NAME` with your git username.
 
 ### Step 3: Setup code base
 
@@ -89,7 +89,7 @@ bower install
 
 ### Step 4: Start the development environment
 
-* To run backend development server at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+* To run backend development server at [http://127.0.0.1:8000](http://127.0.0.1:8000), simply do:
 
 ```
 # activate virtual environment if not activated
@@ -97,7 +97,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at [http://127.0.0.1:8888](http://127.0.0.1:8888)
+* To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888), simply do:
 
 ```
 gulp dev:runserver
@@ -118,11 +118,11 @@ sudo yum install git-all
 ```shell
 sudo yum install postgresql postgresql-devel
 ```
-If you still encounter issues with pg_config, you may need to add it to your PATH, e.g.:
+If you still encounter issues with pg_config, you may need to add it to your PATH, i.e.
 ```shell
 export PATH=$PATH:/usr/pgsql-x.x/bin
 ```
-where x.x is your version, such as /usr/pgsql-9.5./bin.
+where `x.x` is your version, such as /usr/pgsql-9.5./bin.
 
 * Install rabbitmq
 
@@ -163,7 +163,7 @@ instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 ```
 
-Don't forget to replace YOUR_GITHUB_USER_NAME with your git username.
+Don't forget to replace `YOUR_GITHUB_USER_NAME` with your git username.
 
 ### Step 3: Setup code base
 
@@ -211,6 +211,19 @@ python manage.py runserver --settings=settings.dev
 ```
 
 * To run frontend development server for at [frontend]
+
+```
+gulp dev:runserver
+```
+* To run backend development server at [http://127.0.0.1:8000](http://127.0.0.1:8000), simply do:
+
+```
+# activate virtual environment if not activated
+source venv/bin/activate
+python manage.py runserver --settings=settings.dev
+```
+
+* To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888), simply do:
 
 ```
 gulp dev:runserver
