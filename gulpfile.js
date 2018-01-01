@@ -4,6 +4,7 @@
 var gulp = require('gulp'),
     runSequence = require('run-sequence'),
     debug = require('gulp-debug'),
+    sass = require('gulp-ruby-sass'),
     merge = require('merge-stream'),
     sass = require('gulp-ruby-sass'),
     autoprefixer = require('gulp-autoprefixer'),
@@ -410,3 +411,33 @@ gulp.task('prod', function(callback) {
 gulp.task('dev:runserver', function(callback) {
     runSequence('dev', 'connect', 'watch', 'test:watch', callback);
 });
+
+//Image Optimization
+var imagemin = require('gulp-imagemin');
+var cache = require('gulp-cache');
+ gulp.task('images', function() {
+  return gulp.src('frontend/src/images/**/*')
+    .pipe(cache(imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
+    .pipe(gulp.dest('frontend/src/images'));
+});
+
+//Image Optimization of Organization Folder
+var imagemin = require('gulp-imagemin');
+var cache = require('gulp-cache');
+ gulp.task('imagesorgan', function() {
+  return gulp.src('frontend/src/images/organizations/**/*')
+    .pipe(cache(imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
+    .pipe(gulp.dest('frontend/src/images/organizations'));
+});
+
+ // Concatenate & Minify JS
+gulp.task('scripts', function() {
+    return gulp.src('frontend/src/js/controllers/*.js')
+      .pipe(concat('controllers.js'))
+        .pipe(rename({suffix: '.min'}))
+        .pipe(uglify())
+        .pipe(gulp.dest('frontend/src/js/controllers'));
+});
+// Default Task
+gulp.task('default', ['scripts', 'images', 'imagesorgan']);
+
