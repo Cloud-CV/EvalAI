@@ -444,6 +444,27 @@ def process_add_challenge_message(message):
     extract_challenge_data(challenge, phases)
 
 
+def process_edit_challenge_message(message):
+    challenge_id = message.get('challenge_id')
+    """
+    Checking if the challenge exists.
+    """
+    try:
+        challenge = Challenge.objects.get(id=challenge_id)
+    except Challenge.DoesNotExist:
+        logger.critical('Challenge {} does not exist'.format(challenge_id))
+        traceback.print_exc()
+
+    """
+    Get the phases of the updated challenge and call extract_challenge_data,
+    which reloads all the test_annotation and evaluation_scripts into the
+    worker again, updating the file changes in the model within the worker.
+    """
+    phases = challenge.challengephase_set.all()
+    extract_challenge_data(challenge, phases)
+    logger.info('[x] Test Annotation and Evaluation Script for {} has been reloaded.'.format(challenge.title))
+
+
 def process_submission_callback(ch, method, properties, body):
     try:
         logger.info("[x] Received submission message %s" % body)
@@ -464,6 +485,17 @@ def add_challenge_callback(ch, method, properties, body):
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
         logger.error('Error in receiving message from add challenge queue with error {}'.format(e))
+        traceback.print_exc()
+
+
+def edit_challenge_callback(ch, method, properties, body):
+    try:
+        logger.info("[x] Received edit challenge message %s" % body)
+        body = yaml.safe_load(body)
+        process_edit_challenge_message(body)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+    except Exception as e:
+        logger.error('Error in receiving message from edit challenge queue with error {}'.format(e))
         traceback.print_exc()
 
 
@@ -488,6 +520,8 @@ def main():
     # process id : to add uniqueness in case more than one worker is running on the same instance
     add_challenge_queue_name = '{hostname}_{process_id}'.format(hostname=socket.gethostname(),
                                                                 process_id=str(os.getpid()))
+    edit_challenge_queue_name = '{hostname}_{process_id}'.format(hostname=socket.gethostname(),
+                                                                 process_id=str(os.getpid()))
 
     channel.queue_declare(
         queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
@@ -509,11 +543,23 @@ def main():
     channel.basic_consume(
         process_submission_callback,
         queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'])
-
+    """
+    Whenever any new challenge is added, challenge.add.*
+    key will be used.
+    """
     channel.queue_bind(
         exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=add_challenge_queue_name, routing_key='challenge.*.*')
+        queue=add_challenge_queue_name, routing_key='challenge.add.*')
     channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
+
+    """
+    Whenever any challenge is updated, challenge.edit.*
+    key will be used.
+    """
+    channel.queue_bind(
+        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+        queue=edit_challenge_queue_name, routing_key='challenge.edit.*')
+    channel.basic_consume(edit_challenge_callback, queue=edit_challenge_queue_name)
 
     channel.start_consuming()
 

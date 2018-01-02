@@ -4,6 +4,9 @@ import logging
 
 from django.db import models
 
+from challenges.sender import publish_challenge_edit_message
+
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -40,3 +43,14 @@ def create_post_model_field(sender, instance, field_name, **kwargs):
         logger.info('{} for {} is added first time !'.format(field_name, instance.pk))
     else:
         logger.info('{} for {} changed !'.format(field_name, instance.pk))
+    """
+    Whenever evaluation_script or test_annotation file is changed we send the pk of the edited Challenge
+    model to sender.py in challenges so it can publishes a challenge edit message to reload the changed
+    files.
+    """
+    if field_name == "evaluation_script":
+        challenge_pk = instance.pk
+        publish_challenge_edit_message(challenge_pk)
+    elif field_name == "test_annotation":
+        challenge_pk = instance.challenge.pk
+        publish_challenge_edit_message(challenge_pk)
