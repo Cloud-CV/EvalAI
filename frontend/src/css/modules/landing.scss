@@ -346,6 +346,10 @@ section.bg-section {
     }
 }
 
+p.challenge-status {
+    overflow: hidden;
+}
+
 a.view-more {
     color: $highlight;
     &:hover {
@@ -359,10 +363,13 @@ a.view-more {
     text-align: center;
 
     img{
-        height: 75%;
+        height: 90px;
         max-width: 100%;
         width: auto;
         transition:all 0.2s ease-in-out;
+        object-fit: contain;
+        object-position: center;
+        margin: 15px auto;
     }
     &:hover{
         img{
@@ -404,8 +411,9 @@ a.view-more {
     .org-logo{
         height: auto;
         width: 100%;
-        img{
+        img, img#fb-logo{
             width: 100%;
+            margin: 15px auto;
             height: auto;
         }
     }
@@ -413,4 +421,5 @@ a.view-more {
 
 #fb-logo{
     height: 100px;
+    margin: 10px auto;
 }
