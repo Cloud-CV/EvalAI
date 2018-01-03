@@ -73,8 +73,8 @@
                         }
                     };
                 }
-                utilities.sendRequest(parameters, 'header', 'upload');
                 utilities.showLoader();
+                utilities.sendRequest(parameters, 'header', 'upload');
             }
             else {
                 angular.element(".file-path").val(null);
