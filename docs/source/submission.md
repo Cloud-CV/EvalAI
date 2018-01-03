@@ -1,6 +1,6 @@
 ## Submission
 
-### How are submissions processed?
+### How is a submission processed?
 
 We are using REST API's along with Queue based architecture to process submissions. When a participant makes a submission for a challenge, a REST API with url pattern `jobs:challenge_submission` is called. This API does the task of creating a new entry for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
 
@@ -17,9 +17,9 @@ The worker can be run with
 python scripts/workers/submission_worker.py
 ```
 
-### How does the submission worker work?
+### How does submission worker function?
 
-The submission worker is a python script which is mostly run as a daemon on a production server and simply as a python process in a development environment. To run a submission worker in a development environment,
+Submission worker is a python script which mostly runs as a daemon on a production server and simply acts as a python process in a development environment. To run submission worker in a development environment:
 
 ```
 python scripts/workers/submission_worker.py
@@ -76,7 +76,7 @@ EVALUATION_SCRIPTS = {
 After the challenges are successfully loaded, it creates a connection with the RabbitMQ Exchange `evalai_submissions` and then listens on the queue `submission_task_queue` with a binding key of `submission.*.*`.
 
 
-### How are submissions made?
+### How is submission made?
 
 When the user makes submission on the frontend, the following actions happen sequentially
 
