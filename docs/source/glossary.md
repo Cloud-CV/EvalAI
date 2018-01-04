@@ -2,7 +2,7 @@
 
 ### Challenge
 
-An event, run by an institute or organization, wherein a number of researchers, students, and data scientists participate and compete with each other over a period of time. Each challenge has a start time and generally an end time too.
+An event, run by an institute or organization, wherein a number of researchers, students, and data scientists participate and compete with each other over a period of time. Each challenge has a start time and generally has an end time as well.
 
 ### Challenge Host
 
