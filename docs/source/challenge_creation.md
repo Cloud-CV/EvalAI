@@ -27,7 +27,7 @@ The challenge configuration file on EvalAI consists of following fields:
 
 * **submission_guidelines**: Submission guidelines of the challenge (use a relative path for the html file, e.g. `challenge_details/submission_guidelines.html`)
 
-* **evaluation_script**: The evaluation script using which the submissions will be evaluated (path of the evaluation script file or folder relative to this YAML file.)
+* **evaluation_script**: The evaluation script through which the submissions will be evaluated (path of the evaluation script file or folder relative to this YAML file.)
 
 * **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10)
 
@@ -125,7 +125,7 @@ The challenge configuration file on EvalAI consists of following fields:
 
 ### Sample zip configuration file
 
-Here is a sample configuration file for a challenge with 1 phase and 2 dataset split:
+Here is a sample configuration file for a challenge with 1 phase and 2 dataset splits:
 
 ```yaml
 
@@ -189,7 +189,7 @@ The next step is to create a zip file that contains the YAML config file, all th
 
 The final step is to create a challenge host team for the challenge on EvalAI. After that, just upload the zip folder created in the above steps and the challenge will be created.
 
-If you have issues in creating a challenge on EvalAI, please feel free to create an issue on our Github Issues Page.
+If you have issues in creating a challenge on EvalAI please feel free to create an issue on our Github Issues Page.
 
 ## Create challenge using web interface
 
