@@ -9,7 +9,7 @@ Contributing to EvalAI is really easy. Just follow these steps to get started.
 **Step 2: Selecting an issue**
 
 1. Select a suitable issue that will be easy for you to fix. Moreover, you can also 
-take the issues based on their labels. All the issues are labelled according to its difficulty.
+take the issues based on their labels. All the issues are labelled according to their difficulty.
 
 2. After selecting an issue, ask the maintainers of the project to assign it to you and they will assign it based on its availability.
 
@@ -52,4 +52,4 @@ For example,
 - If you have any doubts, don't hestitate to ask in the comments. You may also add in any relevant content.
 - After the maintainers review your changes, fix the code as suggested. Don't forget to add, commit, and push your code to the same branch.
 
-Once you have completed the above steps, you have successfully created a Pull Request to EvalAI.
+Once you have completed the steps above, you have successfully created a Pull Request to EvalAI.
