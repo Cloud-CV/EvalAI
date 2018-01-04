@@ -8,7 +8,7 @@ We are using REST API's along with Queue based architecture to process submissio
     a submission               message      Exchange                  worker(s)
 
 
-Exchange receives the message and then routes it to the queue `submission_task_queue`. At the end of `submission_task_queue` are workers (scripts/workers/submission_worker.py) which processes the submission message.
+Exchange receives the message and then routes it to the queue `submission_task_queue`. At the end of `submission_task_queue` are workers (scripts/workers/submission_worker.py) who process the submission message.
 
 The worker can be run with
 
@@ -50,7 +50,7 @@ Whenever a queue is bound to a exchange with any key, it will route the message 
 
 e.g. `submission_task_queue` is using `process_submission_callback` as a function, which means that when a message is received in the queue, `process_submission_callback` will be called with the message passed as an argument.
 
-Expressing it informally it will be something like
+Expressing it informally will be something like
 
 > _Queue_: Hey _Exchange_, I am `submission_task_queue`. I will be listening to messages from you on binding key of `submission.*.*`
 
@@ -58,7 +58,7 @@ Expressing it informally it will be something like
 
 > _Queue_: Thanks a lot.
 
-> _Queue_: Hey _Worker_, Just for the record, when I receive a new message for submission, I want `process_submission_callback` to be called. Can you please make a note of it?
+> _Queue_: Hey _Worker_, Just for the record, when I receive a new message for submission I want `process_submission_callback` to be called. Can you please make a note of it?
 
 > _Worker_: Sure _Queue_, I will invoke `process_submission_callback` whenever you receive a new message.
 
@@ -119,8 +119,8 @@ Upon receiving a message from `submission_task_queue` with a binding key of `sub
 
 * The output from the `evaluate` function is stored in a variable called `submission_output`. Currently, the only way to check for the occurrence of an error is to check if the key `result` exists in `submission_output`.
 
-    * If the key does not exist, then the submission is marked as __FAILED__.
-    * If the key exists, then the variable `submission_output` is parsed and `DataSetSplit` objects are created. LeaderBoardData objects are also created (in bulk) with the required parameters. Finally, the submission is marked as __FINISHED__.
+    * If the key does not exist then the submission is marked as __FAILED__.
+    * If the key exists then the variable `submission_output` is parsed and `DataSetSplit` objects are created. LeaderBoardData objects are also created (in bulk) with the required parameters. Finally, the submission is marked as __FINISHED__.
 
 * The value in the temporarily updated `stderr` and `stdout` are stored in files named `stderr.txt` and `stdout.txt` which are then stored in the submission instance.
 
