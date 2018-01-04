@@ -202,7 +202,7 @@ npm install -g bower
 
 ### Step 4: Start the development environment
 
-* To run backend development server at [backend]
+* To run backend development server at [backend], simply do:
 
 ```
 # activate virtual environment if not activated
@@ -210,7 +210,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at [frontend]
+* To run frontend development server for at [frontend], simply do:
 
 ```
 gulp dev:runserver
