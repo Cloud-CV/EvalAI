@@ -27,12 +27,12 @@ python manage.py makemigrations jobs --name=execution_time_limit
 python manage.py makemigrations --settings=settings.dev
 ```
 
-The following is an example of a complete named migration for the `jobs` app, wherein a execution time limit field is added to the `Submission` model:
+The following is an example of a complete named migration for the `jobs` app, wherein an execution time limit field is added to the `Submission` model:
 
 ```
 python manage.py makemigrations jobs --name=execution_time_limit --settings=settings.dev
 ```
 
-* Files create after running `makemigrations` should be committed along with other files
+* Files created after running `makemigrations` should be committed along with other files
 
 * While creating a migration for your concerned change, it may happen that some other changes are also there in the migration file. Like adding a `execution_time_limit` field on `Submission` model also brings in the change for `when_made_public` being added. In that case, open an [new issue](https://github.com/Cloud-CV/EvalAI/issues/new) and clearly mention the issue over there. If possible fix the issue yourself, by opening a new branch and creating migrations only for the concerned part. The idea here is that a commit should only include its concerned migration changes and nothing else.
