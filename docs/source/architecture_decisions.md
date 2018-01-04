@@ -6,7 +6,7 @@ This is a collection of records for architecturally significant decisions.
 
 We follow a very basic, yet strong convention for URLs, so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
 
-For example, to perform **CRUD** operation on _Challenge Host Model_, the following URL patterns will be used.
+For example, to perform a **CRUD** operation on _Challenge Host Model_, the following URL patterns will be used.
 
 * `GET /hosts/challenge_host_team` - Retrieves a list of challenge host teams
 
@@ -36,7 +36,7 @@ When a submission message is made, a REST API is called which saves the data rel
 
 One way to process the submission is to evaluate it as soon as it is made, hence blocking the participant's request. Blocking the request here means to send the response to the participant only when the submission has been made and its output is known. This would work fine if the number of the submissions made is very low, but this is not the case.
 
-Hence we decided to process and evaluate submission message in an asynchronous manner. To process the messages this way, we need to change our architecture a bit and add a Message Framework, along with a worker so that it can process the message.
+Hence we decided to process and evaluate submission messages in an asynchronous manner. To process the messages this way, we need to change our architecture a bit and add a Message Framework, along with a worker so that it can process the message.
 
 Out of all the awesome messaging frameworks available, we have chosen RabbitMQ because of its transactional nature and reliability. Also, RabbitMQ is easily horizontally scalable, which means we can easily handle the heavy load by simply adding more nodes to the cluster.
 
@@ -54,4 +54,4 @@ Another major design change that we incorporated here was to dynamically import 
 EVALUATION_SCRIPTS[challenge_id].evaluate(*params)
 ```
 
-This was again a major performance improvement, which saved us from the task of invoking and managing Python processes to evaluate submission messages. Also, invoking a new python process every time for a new submission would have been really slow.
+This was also a major performance improvement, which saved us from the task of invoking and managing Python processes to evaluate submission messages. Also, invoking a new python process every time for a new submission would have been extremely slow.
