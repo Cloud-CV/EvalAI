@@ -33,8 +33,8 @@
             <input type="password" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.regUser.password" ng-minlength="8" ng-change= "auth.checkStrength(password)" required>
             <span class="form-icon form-icon-dark"><i class="fa fa-key"></i></span>
             <label for="password">
-                <strong>Password(minlength:8,required:*[a-z],*[A-Z],*[0-9],*[!@#\$%\^&\*])</strong>
-                <span id ="pswdStrength"></span>
+                <strong>Password-minlength:8 required</strong>
+                <span id ="pswd-strength-message"></span>
             </label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.password.$error" ng-if="signupForm.password.$touched || signupForm.$submitted">
                 <p ng-message="minlength">Password is less than 8 characters.</p>

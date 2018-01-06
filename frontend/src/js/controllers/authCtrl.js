@@ -179,9 +179,9 @@
         vm.checkStrength = function(password){
             //TextBox left blank. 
             var password_strength = utilities.check(password) ;
-            var pswdStrength = document.getElementById("pswdStrength");
-            pswdStrength.innerHTML = password_strength[0];
-            pswdStrength.style.color = password_strength[1];
+            var pswd-strength-message = document.getElementById("pswd-strength-message");
+            pswd-strength-message.innerHTML = password_strength[0];
+            pswd-strength-message.style.color = password_strength[1];
         };
 
         // function to Verify Email
