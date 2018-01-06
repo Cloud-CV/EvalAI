@@ -46,6 +46,7 @@
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
+                            utilities.hideLoader();
                             var status = response.status;
                             var details =  response.data;
                             if (status === 201) {
@@ -64,6 +65,7 @@
                             }
                         },
                         onError: function(response) {
+                            utilities.hideLoader();
                             var error = response.data;
                             angular.element(".file-path").val(null);
                             $rootScope.notify("error", error.error);
@@ -71,6 +73,7 @@
                         }
                     };
                 }
+                utilities.showLoader();
                 utilities.sendRequest(parameters, 'header', 'upload');
             }
             else {
