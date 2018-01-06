@@ -176,6 +176,14 @@
             }
         };
 
+        vm.checkStrength = function(password){
+            //TextBox left blank. 
+            var password_strength = utilities.check(password) ;
+            var pswdStrength = document.getElementById("pswdStrength");
+            pswdStrength.innerHTML = password_strength[0];
+            pswdStrength.style.color = password_strength[1];
+        };
+
         // function to Verify Email
         vm.verifyEmail = function() {
             vm.startLoader("Verifying Your Email");

@@ -104,6 +104,53 @@
             angular.element("#sim-loader").fadeOut();
             angular.element(".web-container").removeClass('low-screen');
         };
+
+        this.check = function(password){
+
+           //Regular Expressions.  
+            var regex = new Array();
+            regex.push("[A-Z]"); //Uppercase Alphabet.  
+            regex.push("[a-z]"); //Lowercase Alphabet.  
+            regex.push("[0-9]"); //Digit.  
+            regex.push("[$$!%*#?&]"); //Special Character.  
+            var passed = 0;
+            //Validate for each Regular Expression.  
+            for (var i = 0; i < regex.length; i++) {
+                if (new RegExp(regex[i]).test(password)) {
+                    passed++;
+                }
+            }
+            //Validate for length of Password.  
+            if (passed > 2 && password.length > 5) {
+                passed++;
+            }
+            //Display status.  
+            var color = "";
+            var strength = "";
+            var status = false;
+            if (passed == 1) {
+                strength = "Weak";
+                color = "red";
+                var status = false; 
+            } else if (passed == 2) {
+                strength = "Average";
+                color = "darkorange";
+                var status = false;
+            } else if (passed == 3) {
+                strength = "Good";
+                color = "green";
+                var status = true;
+            } else if (passed == 4) {
+                strength = "Strong";
+                color = "darkgreen";
+                var status = true;
+            } else if (passed == 5) {
+                strength = "Very Strong";
+                color = "darkgreen";
+                var status = true;
+            }
+            return [strength,color,status]
+       };
     }
 
 })();
