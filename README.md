@@ -148,7 +148,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
 
 ## The Team
 
-EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io), Akash Jain, Taranjeet Singh, Shiv Baran Singh and Rishabh Jain. A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
+EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io), [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](http://taranjeet.github.io/), [Shiv Baran Singh](http://www.shivbaran.in/) and [Rishabh Jain](https://rishabhjain2018.github.io/). A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
 
 ## Contribution guidelines
 
