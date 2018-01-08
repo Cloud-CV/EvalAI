@@ -52,11 +52,11 @@ gulp.task('vendorjs', function() {
         gulp.src(paths)
             .pipe(concat(chunkName + '.js'))
             //.on('error', swallowError)
-            .pipe(gulp.dest("frontend/dist/vendors"))
+            .pipe(gulp.dest("dist/vendors"))
             .pipe(gulp.watch(paths).on('change', function(event) {
                 if (event.type == 'deleted') {
                     var filePathFromSrc = path.relative(path.resolve(paths), event.path);
-                    var destFilePath = path.resolve('frontend/dist/vendors', filePathFromSrc);
+                    var destFilePath = path.resolve('dist/vendors', filePathFromSrc);
                     del.sync(destFilePath);
                 }
             }))
@@ -82,11 +82,11 @@ gulp.task('vendorcss', function() {
         gulp.src(paths)
             .pipe(concat(chunkName + '.css'))
             //.on('error', swallowError)
-            .pipe(gulp.dest("frontend/dist/vendors"))
+            .pipe(gulp.dest("dist/vendors"))
             .pipe(gulp.watch(paths).on('change', function(event) {
                 if (event.type == 'deleted') {
                     var filePathFromSrc = path.relative(path.resolve(paths), event.path);
-                    var destFilePath = path.resolve('frontend/dist/vendors', filePathFromSrc);
+                    var destFilePath = path.resolve('dist/vendors', filePathFromSrc);
                     del.sync(destFilePath);
                 }
             }))
@@ -101,7 +101,7 @@ gulp.task('css', function() {
         .pipe(autoprefixer('last 2 version'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, cssnano()))
-        .pipe(gulp.dest('frontend/dist/css'));
+        .pipe(gulp.dest('dist/css'));
 })
 
 // minify angular scripts
@@ -112,42 +112,42 @@ gulp.task('js', function() {
         .pipe(concat('app.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'));
+        .pipe(gulp.dest('dist/js'));
 
     var configs = gulp.src('frontend/src/js/route-config/*.js')
         .pipe(prettyError())
         .pipe(concat('route-config.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'));
+        .pipe(gulp.dest('dist/js'));
 
     var controllers = gulp.src('frontend/src/js/controllers/*.js')
         .pipe(prettyError())
         .pipe(concat('controllers.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'));
+        .pipe(gulp.dest('dist/js'));
 
     var directives = gulp.src('frontend/src/js/directives/*.js')
         .pipe(prettyError())
         .pipe(concat('directives.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'));
+        .pipe(gulp.dest('dist/js'));
 
     var filters = gulp.src('frontend/src/js/filters/*.js')
         .pipe(prettyError())
         .pipe(concat('filters.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'));
+        .pipe(gulp.dest('dist/js'));
 
     var services = gulp.src('frontend/src/js/services/*.js')
         .pipe(prettyError())
         .pipe(concat('services.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'));
+        .pipe(gulp.dest('dist/js'));
 
     // return merge(app, configs, controllers, directives, filters, services)
 });
@@ -157,7 +157,7 @@ gulp.task('html', function() {
 
     var webViews = gulp.src('frontend/src/views/web/**/*.html')
         .pipe(gulp_if(flags.production, htmlmin({ collapseWhitespace: true })))
-        .pipe(gulp.dest('frontend/dist/views/web'));
+        .pipe(gulp.dest('dist/views/web'));
     // return merge(webViews, webPartials, challengePartials, webErrors);
 });
 
@@ -166,7 +166,7 @@ gulp.task('html', function() {
 gulp.task('images', function() {
     return gulp.src('frontend/src/images/**/*')
         .pipe(gulp_if(flags.production, imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
-        .pipe(gulp.dest('frontend/dist/images'));
+        .pipe(gulp.dest('dist/images'));
 });
 
 
@@ -175,12 +175,12 @@ gulp.task('fonts', function() {
     var font = gulp.src([
             'bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*', 'frontend/src/fonts/*'
         ])
-        .pipe(gulp.dest('frontend/dist/fonts/'));
+        .pipe(gulp.dest('dist/fonts/'));
 
     var fontCss = gulp.src([
             'bower_components/font-awesome/css/font-awesome.css'
         ])
-        .pipe(gulp.dest('frontend/dist/css/'));
+        .pipe(gulp.dest('dist/css/'));
 
     return merge(font, fontCss);
 });
@@ -188,10 +188,10 @@ gulp.task('fonts', function() {
 // Inject path of css and js files in index.html 
 gulp.task('inject', function() {
     var sources = gulp.src([
-        './frontend/dist/vendors/*.js',
-        './frontend/dist/js/*.js',
-        './frontend/dist/vendors/*.css',
-        './frontend/dist/css/*.css',
+        './dist/vendors/*.js',
+        './dist/js/*.js',
+        './dist/vendors/*.css',
+        './dist/css/*.css',
     ], { read: false });
 
     gulp.src('./frontend/base.html')
@@ -208,7 +208,7 @@ gulp.task('configDev', function() {
         .pipe(ngConfig('evalai-config', {
             environment: 'local'
         }))
-        .pipe(gulp.dest('frontend/dist/js'))
+        .pipe(gulp.dest('dist/js'))
 });
 
 // config for staging server
@@ -219,7 +219,7 @@ gulp.task('configStaging', function() {
         }))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'))
+        .pipe(gulp.dest('dist/js'))
 });
 
 // config for prod server
@@ -230,7 +230,7 @@ gulp.task('configProd', function() {
         }))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'))
+        .pipe(gulp.dest('dist/js'))
 });
 
 // js linting
@@ -262,7 +262,7 @@ gulp.task('lint', [], function() {
 
 // cleaning build process- run clean before deploy and rebuild files again
 gulp.task('clean', function() {
-    return del(['frontend/dist/'], { force: true });
+    return del(['dist/'], { force: true });
 });
 
 
@@ -273,7 +273,7 @@ gulp.task('watch', function() {
     gulp.watch('frontend/src/css/**/*.scss', ['css']).on('change', function(event) {
         if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('frontend/src/css/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/css', filePathFromSrc);
+            var destFilePath = path.resolve('dist/css', filePathFromSrc);
             del.sync(destFilePath);
         }
     });
@@ -282,7 +282,7 @@ gulp.task('watch', function() {
     gulp.watch('frontend/src/js/**/*.js', ['js']).on('change', function(event) {
         if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
+            var destFilePath = path.resolve('dist/js', filePathFromSrc);
             del.sync(destFilePath);
         }
     });
@@ -291,7 +291,7 @@ gulp.task('watch', function() {
     gulp.watch('frontend/src/views/**/*.html', ['html']).on('change', function(event) {
         if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('frontend/src/views/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/views/web', filePathFromSrc);
+            var destFilePath = path.resolve('dist/views/web', filePathFromSrc);
             del.sync(destFilePath);
         }
     });
@@ -300,7 +300,7 @@ gulp.task('watch', function() {
     gulp.watch('frontend/src/images/**/*', ['images']).on('change', function(event) {
         if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('frontend/src/images/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/images', filePathFromSrc);
+            var destFilePath = path.resolve('dist/images', filePathFromSrc);
             del.sync(destFilePath);
         }
     });
@@ -309,7 +309,7 @@ gulp.task('watch', function() {
     gulp.watch('frontend/src/js/config.json', ['configDev']).on('change', function(event) {
         if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
+            var destFilePath = path.resolve('dist/js', filePathFromSrc);
             del.sync(destFilePath);
         }
     });
@@ -317,7 +317,7 @@ gulp.task('watch', function() {
     gulp.watch('bower_components/font-awesome/fonts/fontawesome-webfont.*', ['fonts']).on('change', function(event) {
         if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('bower_components/font-awesome/fonts/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
+            var destFilePath = path.resolve('dist/fonts/', filePathFromSrc);
             del.sync(destFilePath);
         }
     });
@@ -325,7 +325,7 @@ gulp.task('watch', function() {
     gulp.watch('bower_components/materialize/fonts/**/*', ['fonts']).on('change', function(event) {
         if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('bower_components/materialize/fonts/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
+            var destFilePath = path.resolve('dist/fonts/', filePathFromSrc);
             del.sync(destFilePath);
         }
     });
@@ -334,16 +334,15 @@ gulp.task('watch', function() {
     gulp.watch('bower_components/font-awesome/css/font-awesome.css', ['fonts']).on('change', function(event) {
         if (event.type == 'deleted') {
             var filePathFromSrc = path.relative(path.resolve('bower_components/font-awesome/css/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/css/', filePathFromSrc);
+            var destFilePath = path.resolve('dist/css/', filePathFromSrc);
             del.sync(destFilePath);
         }
     });
 
     // Create LiveReload server
-    livereload.listen();
-
+    //livereload.listen();
     // Watch any files in dist/, reload on change
-    gulp.watch(['frontend/dist/**'], ['lint']).on('change', livereload.changed);
+    //gulp.watch(['dist/**'], ['lint']).on('change', livereload.changed);
 
 });
 
@@ -386,7 +385,7 @@ gulp.task('connect', ['lint'], function() {
 
 // development task
 var flags = {
-    production: false
+    production: false,
 };
 
 gulp.task('dev', function(callback) {
@@ -410,3 +409,8 @@ gulp.task('prod', function(callback) {
 gulp.task('dev:runserver', function(callback) {
     runSequence('dev', 'connect', 'watch', 'test:watch', callback);
 });
+// Syncserver for development in backend
+gulp.task('dev:syncserver', function(callback) {
+    runSequence('dev', 'watch', callback);
+});
+
