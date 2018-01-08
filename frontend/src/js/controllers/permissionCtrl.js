@@ -16,7 +16,7 @@
         vm.emailError = utilities.getData('emailError');
 
         vm.name = utilities.getData('name');
-        vm. email = utilities.getData('email');
+        vm.email = utilities.getData('email');
     }
 
 })();
