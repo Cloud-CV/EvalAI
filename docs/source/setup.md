@@ -43,7 +43,7 @@ If you haven't already created an ssh key and added it to your GitHub account,
 you should do that now by following [these
 instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 
-* In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You will need to be logged in to GitHub to do this.
+* In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You need to be logged in to GitHub to do this.
 
 * Open Terminal and clone your fork by
 
@@ -155,7 +155,7 @@ If you haven't already created an ssh key and added it to your GitHub account,
 you should do that now by following [these
 instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 
-* In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You will need to be logged in to GitHub to do this.
+* In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You need to be logged in to GitHub to do this.
 
 * Open Terminal and clone your fork by
 
