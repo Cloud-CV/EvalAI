@@ -135,4 +135,19 @@
   <url>
     <loc>https://evalai.cloudcv.org/featured-challenge/challenge-page.html</loc>
   </url>
+  <url>
+    <loc>https://evalai.cloudcv.org/featured-challenge/evaluation.html</loc>
+  </url>
+  <url>
+    <loc>https://evalai.cloudcv.org/featured-challenge/leaderboard.html</loc>
+  </url>
+  <url>
+    <loc>https://evalai.cloudcv.org/featured-challenge/overview.html</loc>
+  </url>
+  <url>
+    <loc>https://evalai.cloudcv.org/featured-challenge/participate.html</loc>
+  </url>
+  <url>
+    <loc>https://evalai.cloudcv.org/featured-challenge/phases.html</loc>
+  </url>
 </urlset>
