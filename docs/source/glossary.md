@@ -34,7 +34,7 @@ EvalAI is an open-source web platform that aims to be the state of the art in AI
 
 ### Leaderboard
 
-The leaderboard can be defined as a scoreboard listing the names of the teams along with their current scores. Currently, each challenge has its own leaderboard.
+The leaderboard is a scoreboard listing the name of the teams along with their current scores. Currently, each challenge has its own leaderboard.
 
 ### Phase
 
@@ -50,11 +50,11 @@ A group of one or more participants who are taking part in a challenge. They are
 
 ### Submission
 
-A way of submitting your results to the platform, so that it can be evaluated and ranked amongst others. A submission can be public or private, depending on the challenge.
+A way of submitting your results to the platform, so that it can be evaluated and ranked against others' scores. A submission can be public or private, depending on the challenge.
 
 ### Submission Worker
 
-A python script which processes submission messages received from a queue. It does the heavy lifting task of receiving a submission, performing mandatory checks, and then evaluating the submission and updating its status in the database.
+A python script which processes submission messages received from a queue. It does the heavy lifting task of receiving a submission, performing mandatory checks, then evaluating the submission and updating its status in the database.
 
 ### Team
 

@@ -6,7 +6,7 @@ This is a collection of records for architecturally significant decisions.
 
 We follow a very basic, yet strong convention for URLs, so that our rest APIs are properly namespaced. First of all, we rely heavily on HTTP verbs to perform **CRUD** actions.
 
-For example, to perform **CRUD** operation on _Challenge Host Model_, the following URL patterns will be used.
+For example, to perform a **CRUD** operation on _Challenge Host Model_, the following URL patterns will be used.
 
 * `GET /hosts/challenge_host_team` - Retrieves a list of challenge host teams
 
@@ -32,7 +32,7 @@ We use underscore **_** in URL patterns.
 
 ### Processing submission messages asynchronously
 
-When a submission message is made, a REST API is called which saves the data related to the submission in the database. A submission involves the processing and evaluation of `input_file`. This file is used to evaluate the submission and then decide the status of the submission, whether it is _FINISHED_ or _FAILED_.
+When a submission message is made, a REST API is called, which saves the data related to submission in the database. A submission involves the processing and evaluation of `input_file`. This file is used to evaluate the submission and then decide the status of the submission, either _FINISHED_ or _FAILED_.
 
 One way to process the submission is to evaluate it as soon as it is made, hence blocking the participant's request. Blocking the request here means to send the response to the participant only when the submission has been made and its output is known. This would work fine if the number of the submissions made is very low, but this is not the case.
 
@@ -44,9 +44,9 @@ For the worker, we went ahead with a normal python worker, which simply runs a p
 
 ### Submission Worker
 
-The submission worker are responsible for processing submission messages. It listens on a queue named `submission_task_queue`, and on receiving a message for a submission, it processes and evaluates the submission.
+The submission worker is responsible for processing submission messages. It listens on a queue named `submission_task_queue`, and on receiving a message for a submission, it processes and evaluates the submission.
 
-One of the major design changes that we decided to implement in the submission worker was to load all the data related to the challenge in the worker's memory, instead of fetching it every time a new submission message arrives. So the worker, when starting, fetches the list of active challenges from the database and then loads it into memory by maintaining the map `EVALUATION_SCRIPTS` on challenge id. This was actually a major performance improvement.
+One of the major design changes that we decided to implement in the submission worker was to load all the data related to challenge in the memory of the worker instead of fetching it whenever a submission message for a challenge arrives. So the worker, when starting, fetches the list of active challenges from the database and then loads it into memory by maintaining a map `EVALUATION_SCRIPTS` on challenge id. This was actually a major performance improvement.
 
 Another major design change that we incorporated here was to dynamically import the challenge module and to load it in the map instead of invoking a new python process every time a submission message arrives. So now whenever a new message for a submission is received, we already have its corresponding challenge module being loaded in a map called `EVALUATION_SCRIPTS`, and we just need to call
 

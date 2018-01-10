@@ -20,15 +20,15 @@ It receives three arguments, namely:
 
 * test_annotation_file
 
-This is the path to the annotation file for the challenge. This is the file uploaded by the Challenge Host while creating a Challenge.
+The path of the annotation file for a challenge. This is the file uploaded by Challenge Host while creating a Challenge.
 
 * user_annotation_file
 
-This is the path of the file submitted by the user for a particular phase.
+The path of the file submitted by the user for a particular phase.
 
 * phase_codename
 
-This is the `ChallengePhase` model codename. This is passed as an argument, so that the script can take actions according to the phase.
+The code name of the `ChallengePhase` model. This is passed as an argument, so that the script can take actions according to the phase.
 
 After reading the files, some custom actions can be performed. This varies per challenge.
 
