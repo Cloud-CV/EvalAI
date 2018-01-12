@@ -64,7 +64,7 @@ Expressing it informally it will be something like
 
 
 
-When a worker starts, it fetches active challenges from the database and then loads all the challence evaluation scripts in a variable called `EVALUATION_SCRIPTS`, with challenge id as its key. The map would look like
+When a worker starts, it fetches active challenges from the database and then loads all the challenge evaluation scripts in a variable called `EVALUATION_SCRIPTS`, with challenge id as its key. The map would look like
 
 ```
 EVALUATION_SCRIPTS = {
