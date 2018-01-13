@@ -61,23 +61,20 @@ Coverage decreases when the existing test cases don't test the new code you wrot
  ----------------------------------------
  Command "python setup.py egg_info" failed with error code 1 in /tmp/pip-build-qIjU8G/psycopg2/
 ```
-Use these following commands, this will solve the error:
+Use the following commands in order to solve the error:
 
 1. sudo apt-get install postgresql
-
 2. then fire:
 sudo apt-get install python-psycopg2
-
 3. and last:
 sudo apt-get install libpq-dev
 
 ### While using pip install -r dev/requirement.txt:-
-```
-Command “python setup.py egg_info” failed with error code 1 in /private/var/folders/c7/b45s17816zn_b1dh3g7yzxrm0000gn/T/pip-build- GM2AG/psycopg2/
-```
 
-First check have u installed all the mentioned dependencies.
-Then, Upgrade the version of postgresql to 10.1..Solved!!
+Command “python setup.py egg_info” failed with error code 1 in /private/var/folders/c7/b45s17816zn_b1dh3g7yzxrm0000gn/T/pip-build- GM2AG/psycopg2/
+
+Firstly check that you have installed all the mentioned dependencies.
+Then, Upgrade the version of postgresql to 10.1 in order to solve it.
 
 ### Getting an import error 
 
@@ -85,10 +82,15 @@ Then, Upgrade the version of postgresql to 10.1..Solved!!
 Couldn't import Django,"when using command python manage.py migrate --settings=settings.dev.
 ```
 
-First see have you activated virtualvenv.
-Then run pip install django==1.11.8
+Firstly, check that you have activated the virtualenv.
+Install python dependencies using the following commands on the command line
 
-### Following error :-
+```
+cd evalai
+pip install -r requirements/dev.txt
+```
+
+### Getting Mocha Error :-
 
 ```
 Can not load reporter “mocha”,it is not registered
