@@ -5,7 +5,7 @@ Here are NINE (IX) easy steps to participate in a challenge in AVALAI.
 
 The steps are as follow:-
 
-1.	Open the site www.evalai.cloudcv.org.
+1.	Open the [EvalAI site](https://evalai.cloudcv.org/).
 
 2.	Sign Up and fill in your credentials. Or Login if you have already registered.
 
