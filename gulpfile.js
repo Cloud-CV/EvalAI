@@ -4,8 +4,8 @@
 var gulp = require('gulp'),
     runSequence = require('run-sequence'),
     debug = require('gulp-debug'),
-    sass = require('gulp-ruby-sass'),
     merge = require('merge-stream'),
+    sass = require('gulp-ruby-sass'),
     autoprefixer = require('gulp-autoprefixer'),
     cssnano = require('gulp-cssnano'),
     eslint = require('gulp-eslint'),
@@ -168,6 +168,7 @@ gulp.task('images', function() {
         .pipe(gulp_if(flags.production, imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
         .pipe(gulp.dest('frontend/dist/images'));
 });
+
 
 // Fonts
 gulp.task('fonts', function() {
