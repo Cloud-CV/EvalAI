@@ -22,8 +22,10 @@ We currently use RabbitMQ for queueing submission messages which are then later 
 ### PostgreSQL
 PostgresSQL is used as our primary datastore. All our tables currently reside in a single database named evalai.
 
-### Angular JS
+### Angular JS - ^1.6.1
 Angular JS is a well-known framework that powers our frontend.
+
+### Task Runner used by us - Gulp
 
 ### Q4) How to participate in a challenge?
 1. Open the site www.evalai.cloudcv.org.
