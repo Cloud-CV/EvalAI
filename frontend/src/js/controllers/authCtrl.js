@@ -268,6 +268,7 @@
                     "new_password2": vm.getUser.new_password2,
                     "uid": $state.params.user_id,
                     "token": $state.params.reset_token,
+                    "host": window.location.hostname,
                 };
 
                 parameters.callback = {
