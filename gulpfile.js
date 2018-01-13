@@ -6,7 +6,6 @@ var gulp = require('gulp'),
     debug = require('gulp-debug'),
     sass = require('gulp-ruby-sass'),
     merge = require('merge-stream'),
-    sass = require('gulp-ruby-sass'),
     autoprefixer = require('gulp-autoprefixer'),
     cssnano = require('gulp-cssnano'),
     eslint = require('gulp-eslint'),
@@ -166,17 +165,9 @@ gulp.task('html', function() {
 // for image compression
 gulp.task('images', function() {
     return gulp.src('frontend/src/images/**/*')
-        .pipe(gulp_if(flags.production, imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
+        .pipe(gulp_if(flags.production, imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
         .pipe(gulp.dest('frontend/dist/images'));
 });
-
-// for image of organization folder
-gulp.task('imagesorgan', function() {
-    return gulp.src('frontend/src/images/organizations/**/*')
-        .pipe(gulp_if(flags.production, imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
-        .pipe(gulp.dest('frontend/dist/images/organizations'));
-});
-
 
 // Fonts
 gulp.task('fonts', function() {
@@ -313,15 +304,6 @@ gulp.task('watch', function() {
         }
     });
 
-    // Watch image files of organization folder 
-    gulp.watch('frontend/src/images/organizations/**/*', ['imagesorgan']).on('change', function(event) {
-        if (event.type == 'deleted') {
-            var filePathFromSrc = path.relative(path.resolve('frontend/src/images/organizations/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/images/organizations/', filePathFromSrc);
-            del.sync(destFilePath);
-        }
-    });
-
     // Watch config dev
     gulp.watch('frontend/src/js/config.json', ['configDev']).on('change', function(event) {
         if (event.type == 'deleted') {
@@ -407,20 +389,20 @@ var flags = {
 };
 
 gulp.task('dev', function(callback) {
-    runSequence('clean', ['css', 'js', 'html', 'images', 'imagesorgan', 'vendorjs', 'vendorcss', 'fonts', 'configDev'], 'inject', callback);
+    runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configDev'], 'inject', callback);
 
 });
 
 // staging task
 gulp.task('staging', function(callback) {
     flags.production = false; //Making this 'true' enables file compression. This will be done after js test integration
-    runSequence('clean', ['css', 'js', 'html', 'images', 'imagesorgan', 'vendorjs', 'vendorcss', 'fonts', 'configStaging'], 'inject', callback);
+    runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configStaging'], 'inject', callback);
 });
 
 // production task
 gulp.task('prod', function(callback) {
     flags.production = false; //Making this 'true' enables file compression. This will be done after js test integration
-    runSequence('clean', ['css', 'js', 'html', 'images', 'imagesorgan', 'vendorjs', 'vendorcss', 'fonts', 'configProd'], 'inject', callback);
+    runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configProd'], 'inject', callback);
 });
 
 // Runserver for development
