@@ -168,7 +168,7 @@ Don't forget to replace `YOUR_GITHUB_USER_NAME` with your git username.
 
 ### Step 3: Setup code base
 
-* Create a python virtual environment and install python dependencies
+* Create a python virtual environment and install python dependencies.
 
 ```shell
 cd evalai
