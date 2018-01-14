@@ -4,4 +4,4 @@ IMPORTANT NOTES (please read, then delete):
 
 * Please make sure to mention "#bugnum" somewhere in the description of the PR. This enables Github to link the PR to the corresponding bug.
 
-Please also make sure to follow the [style rules](https://github.com/Cloud-CV/EvalAI/blob/master/CONTRIBUTING.md#style-rules).
+Please also make sure to follow the [style rules](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md#style-rules).
