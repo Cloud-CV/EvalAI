@@ -30,7 +30,7 @@
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input type="password" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.regUser.password" ng-minlength="8" ng-change= "auth.checkStrength(password)" required>
+            <input type="password" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.regUser.password" ng-change= "auth.checkStrength(auth.regUser.password)" required>
             <span class="form-icon form-icon-dark"><i class="fa fa-key"></i></span>
             <label for="password">
                 <strong>Password-minlength:8 required</strong>

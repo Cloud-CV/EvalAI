@@ -106,11 +106,13 @@
         };
 
         this.check = function(password){
-
+           console.log(password);
            //Regular Expressions.  
             var regex = new Array();
-            regex.push("[A-Z]","[a-z]","[0-9]","[$$!%*#?&]");
-
+            regex.push("[A-Z]"); //Uppercase Alphabet.  
+            regex.push("[a-z]"); //Lowercase Alphabet.  
+            regex.push("[0-9]"); //Digit.  
+            regex.push("[$$!%*#?&]"); //Special Character.  
             var passed = 0;
             //Validate for each Regular Expression.  
             for (var i = 0; i < regex.length; i++) {
@@ -122,7 +124,6 @@
             if (passed > 2 && password.length > 5) {
                 passed++;
             }
-           
             //Display status.  
             var color = "";
             var strength = "";

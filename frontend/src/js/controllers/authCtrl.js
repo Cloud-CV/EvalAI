@@ -7,7 +7,7 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
+    AuthCtrl.$inject = ['utilities', '$state','$scope', '$rootScope', '$timeout'];
 
     function AuthCtrl(utilities, $state, $rootScope) {
         var vm = this;
@@ -179,9 +179,9 @@
         vm.checkStrength = function(password){
             //TextBox left blank. 
             var password_strength = utilities.check(password) ;
-            var pswd-strength-message = document.getElementById("pswd-strength-message");
-            pswd-strength-message.innerHTML = password_strength[0];
-            pswd-strength-message.style.color = password_strength[1];
+            var pswdStrength = document.getElementById("pswd-strength-message");
+            pswdStrength.innerHTML = password_strength[0];
+            pswdStrength.style.color = password_strength[1];
         };
 
         // function to Verify Email
