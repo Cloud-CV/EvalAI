@@ -134,13 +134,13 @@ Follow this guide to setup your development machine.
 
 2. Get the source code on your machine via git.
 
-    ```shell
+    ```
     git clone https://github.com/Cloud-CV/EvalAI.git evalai
     ```
 
 3. Create a python virtual environment and install python dependencies.
 
-    ```shell
+    ```
     cd evalai
     virtualenv venv
     cd venv/Scripts
