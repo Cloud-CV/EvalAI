@@ -13,7 +13,8 @@ Alternatively, if you come across a new bug on the site, please file a new issue
 
 ### Django
 Django is the heart of the application, which powers our backend. We use Django version 1.10.
-Django Rest Framework
+
+### Django Rest Framework
 We use Django Rest Framework for writing and providing REST APIs. It's permission and serializers have helped write a maintainable codebase.
 
 ### RabbitMQ
@@ -30,23 +31,21 @@ Angular JS is a well-known framework that powers our frontend.
 ### Q4) How to participate in a challenge?
 1. Open the site www.evalai.cloudcv.org.
 
-2. Sign Up and fill in your credentials. Or Login if you have already registered.
+2. Sign Up and fill in your credentials or login if you have already registered.
 
-3. After Signing Up you would be on the Dashboard page.
+3. After signing Up you would be on the dashboard page.
 
-4. Then, go to challenges section and choose any challenge which is available.
+4. Then, go to challenges section and choose an active challenge.
 
-5. After, you have entered onto the contest page you can go to the Participate tab.
+5. After reading the challenge instructions you can participate in the challenge.
 
-6. Then, you have to create a team of yours and add a team name.
+6. Create a team participant if there isn't any or you can select from the existing ones.
 
-7. After you have added your team, you will see an option in the left section called “My Existing Teams”. Select the team you have registered and click on the participate button.
-
-8. Then you can continue filling your credentials in the contest.
+7. Click Participate tab after selecting a team.
 
 ### Q5) “I don’t know Github commands, so what should I do??”
 
-Refer to <li>https://help.github.com/articles/adding-an-existing-project-to-github-using-the-command-line/</li>
+Refer to <li>https://help.github.com/articles/git-and-github-learning-resources/</li>
 
 ### Q6) What to do when coverage decreases in your pull request?
 
@@ -64,10 +63,8 @@ Coverage decreases when the existing test cases don't test the new code you wrot
 Use the following commands in order to solve the error:
 
 1. sudo apt-get install postgresql
-2. then fire:
-sudo apt-get install python-psycopg2
-3. and last:
-sudo apt-get install libpq-dev
+2. sudo apt-get install python-psycopg2
+3. sudo apt-get install libpq-dev
 
 ### While using pip install -r dev/requirement.txt:-
 
@@ -118,7 +115,7 @@ npm install -g bower
 ```
 gulp: command not found
 ```
-Execute the following command first :- 
+Execute the following command first 
 ```
 npm install -g gulp-cli
 
