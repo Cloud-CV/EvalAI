@@ -28,26 +28,11 @@ Angular JS is a well-known framework that powers our frontend.
 
 ### Task Runner used by us - Gulp
 
-### Q4) How to participate in a challenge?
-1. Open the site www.evalai.cloudcv.org.
-
-2. Sign Up and fill in your credentials or login if you have already registered.
-
-3. After signing Up you would be on the dashboard page.
-
-4. Then, go to challenges section and choose an active challenge.
-
-5. After reading the challenge instructions you can participate in the challenge.
-
-6. Create a team participant if there isn't any or you can select from the existing ones.
-
-7. Click Participate tab after selecting a team.
-
-### Q5) “I don’t know Github commands, so what should I do??”
+### Q4) “I don’t know Github commands, so what should I do??”
 
 Refer to <li>https://help.github.com/articles/git-and-github-learning-resources/</li>
 
-### Q6) What to do when coverage decreases in your pull request?
+### Q5) What to do when coverage decreases in your pull request?
 
 Coverage decreases when the existing test cases don't test the new code you wrote. If you click coverage, you can see exactly which all parts aren't covered and you can write new tests to test the parts. 
 
