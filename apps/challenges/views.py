@@ -238,7 +238,7 @@ def get_all_challenges(request, challenge_time):
     # for `all` we dont need any condition in `q_params`
 
     # don't return disabled challenges
-    q_params['is_disabled'] = False 
+    q_params['is_disabled'] = False
 
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
