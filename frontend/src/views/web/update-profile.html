@@ -32,6 +32,15 @@
                             <p ng-message="maxlength"> Last Name is too long. </p>
                         </div>
                     </div>
+                    <div class="input-field align-left"> 
+                        <input id="affiliation" name="affiliation" type="text" class="text-dark-black dark-autofill w-400" ng-model="updateProfile.user.affiliation" ng-maxlength="30" required focus-if="updateProfile.user.affiliation">
+                        <span class="form-icon form-icon-dark"><i class="fa fa-pencil"></i></span>
+                        <label for="affiliation">Affiliation</label>
+                        <div class="wrn-msg text-highlight" ng-messages="updateProfileForm.affiliation.$error" ng-if="updateProfileForm.affiliation.$touched || updateProfileForm.$submitted">
+                            <p ng-message="required">Affiliation is required</p>
+                            <p ng-message="maxlength"> Affiliation is too long</p>
+                        </div>
+                    </div>
                     <div class="align-left reg-control">
                         <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
                     </div>
