@@ -101,3 +101,39 @@ Uninstall karma and then install
 ```
 npm uninstall -g generator-karma” && “npm install -g generator-angular.
 ```
+
+### While trying to execute "bower install" 
+
+```
+bower: command not found
+```
+
+Execute the following command first :- 
+```
+npm install -g bower 
+```
+
+### While trying to execute "gulp dev:runserver" 
+
+```
+gulp: command not found
+```
+Execute the following command first :- 
+```
+npm install -g gulp-cli
+
+```
+
+### While executing "gulp dev:runserver"
+
+```
+events.js:160
+throw er; // Unhandled 'error' event
+^
+Error: Gem sass is not installed.
+```
+Execute the following command first :- 
+```
+gem install sass
+
+```
