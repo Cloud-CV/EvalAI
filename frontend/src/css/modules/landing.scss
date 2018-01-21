@@ -133,9 +133,9 @@ section.bg-section {
       a.light-link {
 	  color: #9ca3be;
 	  transition: all 0.2s ease-in-out;
-      }
-      a.light-link:hover {
+          &:hover {
 	  color: #fff;
+          }
       }
       a.active {
 	  color: #ffaf4b;
