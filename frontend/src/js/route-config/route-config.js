@@ -127,6 +127,17 @@
             authenticate: true
         };
 
+        var host_invitation = {
+            name: "web.host-invitation",
+            parent: "web",
+            url: "/challenge-host-invitation/:team_hash/:email_hash",
+            controller: 'ChallengeHostTeamsCtrl',
+            controllerAs: 'challengeHostTeams',
+            template: '<span ng-init="challengeHostTeams.acceptInvite()"><span>',
+            title: 'Host Invitation',
+            authenticate: true
+        };
+
         var host_analytics = {
             name: "web.host-analytics",
             parent: "web",
@@ -501,6 +512,7 @@
         $stateProvider.state(dashboard);
         $stateProvider.state(host_analytics);
         $stateProvider.state(teams);
+        $stateProvider.state(host_invitation);
 
         // challenge host teams
         $stateProvider.state(challenge_host_teams);
