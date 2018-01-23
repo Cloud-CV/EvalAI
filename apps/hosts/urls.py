@@ -14,6 +14,8 @@ urlpatterns = [
         views.challenge_host_detail, name='get_challenge_host_details'),
     url(r'^remove_self_from_challenge_host/(?P<challenge_host_team_pk>[0-9]+)$',
         views.remove_self_from_challenge_host_team, name='remove_self_from_challenge_host_team'),
-    url(r'^challenge_host_teams/(?P<pk>[0-9]+)/invite$', views.invite_host_to_team,
-        name='invite_host_to_team'),
+    url(r'^challenge_host_teams/(?P<pk>[0-9]+)/invite$', views.email_invite_host_to_team,
+        name='email_invite_host_to_team'),
+    url(r'^invitation_host_team/(?P<team_hash>\w+)/(?P<email_hash>\w+)$', views.invitation_accepted,
+        name="host_invitation_accepted"),
 ]

@@ -1,3 +1,5 @@
+import base64
+
 from django.urls import reverse_lazy
 from rest_framework.test import APITestCase, APIClient
 from hosts.models import ChallengeHost, ChallengeHostTeam
@@ -26,6 +28,9 @@ class BaseAPITestClass(APITestCase):
 
         self.client.force_authenticate(user=self.user)
 
+        self.team_hash = base64.encodestring(str(self.challenge_host_team.pk)).split("=")[0]
+        self.email_hash = base64.encodestring(self.user.email).split("=")[0]
+
 
 class TestStringMethods(BaseAPITestClass):
     def test_host_urls(self):
@@ -51,6 +56,13 @@ class TestStringMethods(BaseAPITestClass):
                            kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
         self.assertEqual(url, '/api/hosts/remove_self_from_challenge_host/' + str(self.challenge_host_team.pk))
 
-        url = reverse_lazy('hosts:invite_host_to_team',
+        url = reverse_lazy('hosts:email_invite_host_to_team',
                            kwargs={'pk': self.challenge_host_team.pk})
         self.assertEqual(url, '/api/hosts/challenge_host_teams/' + str(self.challenge_host_team.pk) + '/invite')
+
+        url = reverse_lazy('hosts:host_invitation_accepted',
+                           kwargs={'team_hash': self.team_hash.strip("\n"),
+                                   'email_hash': self.email_hash.strip("\n")})
+        expected_url = '/api/hosts/invitation_host_team/{}/{}'.format(self.team_hash.strip("\n"),
+                                                                      self.email_hash.strip("\n"))
+        self.assertEqual(url, expected_url)
