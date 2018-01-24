@@ -257,7 +257,7 @@ def get_challenge_by_pk(request, pk):
         challenge = Challenge.objects.get(pk=pk)
 
         if (challenge.is_disabled):
-            response_data = {'error': 'The challenge was removed!'}
+            response_data = {'error': 'Sorry, the challenge was removed!'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         serializer = ChallengeSerializer(challenge, context={'request': request})

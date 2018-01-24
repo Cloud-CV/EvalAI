@@ -1184,7 +1184,6 @@
                     onError: function(response) {
                         $mdDialog.hide();
                         var error = response.data;
-                        console.log(error);
                         $rootScope.notify("error", error);
                     }
                 };
