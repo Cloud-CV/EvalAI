@@ -256,7 +256,6 @@
             url: "/leaderboard",
             templateUrl: baseUrl + "/web/challenge/leaderboard.html",
             title: 'Leaderboard',
-            authenticate: true
         };
 
         var profile = {
@@ -368,7 +367,7 @@
 
         var all_challenges = {
             name: 'all-challenges',
-            url: "/challenges/list",
+            url: "/challenges/",
             templateUrl: baseUrl + "/web/challenge/list_all_challenges.html",
             controller: 'ChallengeListAllCtrl',
             controllerAs: 'challengeListAll',
@@ -377,7 +376,7 @@
 
         var all_challenges_page = {
             name: 'all-challenges-page',
-            url: "/challenges/list/:challengeId",
+            url: "/challenges/:challengeId",
             templateUrl: baseUrl + "/web/featured-challenge/challenge-page.html",
             controller: 'FeaturedChallengeCtrl',
             controllerAs: 'featured_challenge',
@@ -591,20 +590,32 @@
         $rootScope.isAuth = false;
         // check for valid user
         $rootScope.$on('$stateChangeStart', function(event, toState) {
-            if (toState.authenticate && !utilities.isAuthenticated()) {
-                $rootScope.isAuth = false;
-                // User isn’t authenticated
-                $state.transitionTo("auth.login");
-                event.preventDefault();
-            }
-            // restrict authorized user too access login/signup page
-            else if (toState.authenticate === false && utilities.isAuthenticated()) {
+            var path = $location.path(); // get the current path
+            var pathArray = path.split('/'); // split it to make a array
+            var challengeId = pathArray[pathArray.length-2]; // get the challenge id
+
+            if (toState.url === '/leaderboard' || toState.url === '/overview'
+                || toState.url === '/evaluation' || toState.url === '/phases'
+                || toState.url === '/participate')
+                if (!utilities.isAuthenticated()){
+                var newPath = '/featured-challenges/'+ challengeId + toState.url; // create a new path
+                $location.path(newPath); // redirect to that path
+            } else {
+                if (toState.authenticate && !utilities.isAuthenticated()) {
+                    $rootScope.isAuth = false;
+                    // User isn’t authenticated
+                    $state.transitionTo("auth.login");
+                    event.preventDefault();
+                }
+                // restrict authorized user too access login/signup page
+                else if (toState.authenticate === false && utilities.isAuthenticated()) {
+                    $rootScope.isAuth = true;
+                    $state.transitionTo("home");
+                    event.preventDefault();
+                    return false;
+                } else if (utilities.isAuthenticated()) {
                 $rootScope.isAuth = true;
-                $state.transitionTo("home");
-                event.preventDefault();
-                return false;
-            } else if (utilities.isAuthenticated()) {
-                $rootScope.isAuth = true;
+                }
             }
         });
 
