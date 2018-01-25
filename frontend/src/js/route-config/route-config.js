@@ -256,6 +256,7 @@
             url: "/leaderboard",
             templateUrl: baseUrl + "/web/challenge/leaderboard.html",
             title: 'Leaderboard',
+            authenticate: true
         };
 
         var profile = {
@@ -368,7 +369,7 @@
         var all_challenges = {
             name: 'all-challenges',
             url: "/challenges/",
-            templateUrl: baseUrl + "/web/challenge/list_all_challenges.html",
+            templateUrl: baseUrl + "/web/challenge/list-all-challenges.html",
             controller: 'ChallengeListAllCtrl',
             controllerAs: 'challengeListAll',
             title: "Challenges"
