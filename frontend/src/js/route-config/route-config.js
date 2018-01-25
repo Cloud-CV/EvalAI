@@ -183,6 +183,15 @@
             authenticate: true
         };
 
+        var all_challenges = {
+            name: 'all-challenges',
+            url: "/challenges/list",
+            templateUrl: baseUrl + "/web/challenge/list_all_challenges.html",
+            controller: 'ChallengeListAllCtrl',
+            controllerAs: 'challengeListAll',
+            title: "Challenges"
+        };
+
         var challenge_page = {
             name: "web.challenge-main.challenge-page",
             parent: "web.challenge-main",
@@ -445,6 +454,7 @@
         // challenges list page
         $stateProvider.state(challenge_main);
         $stateProvider.state(challenge_list);
+        $stateProvider.state(all_challenges);
 
         // challenge create page
         $stateProvider.state(challenge_create);
