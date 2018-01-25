@@ -10,6 +10,7 @@
 
     function ChallengeListAllCtrl(utilities) {
         var vm = this;
+        // vm.challengeId = $stateParams.challengeId;
 
         vm.currentList = {};
         vm.upcomingList = {};
@@ -43,12 +44,6 @@
                     } else {
                         vm.currentList[i].isLarge = "";
                     }
-
-                    if (vm.currentList[i].background_image === undefined || vm.currentList[i].background_image === null) {
-                        vm.currentList[i].background_image = vm.imgUrlObj.hulk;
-                    }
-
-
                 }
 
                 // dependent api
@@ -76,10 +71,6 @@
                                 vm.upcomingList[i].isLarge = "...";
                             } else {
                                 vm.upcomingList[i].isLarge = "";
-                            }
-
-                            if (vm.upcomingList[i].background_image === undefined || vm.upcomingList[i].background_image === null) {
-                                vm.upcomingList[i].background_image = vm.imgUrlObj.captain;
                             }
                         }
 
@@ -110,10 +101,6 @@
                                     } else {
                                         vm.pastList[i].isLarge = "";
                                     }
-                                    if (vm.pastList[i].background_image === undefined || vm.pastList[i].background_image === null) {
-
-                                        vm.pastList[i].background_image = vm.imgUrlObj.bird;
-                                    }
                                 }
 
                                 utilities.hideLoader();
@@ -142,6 +129,25 @@
         };
 
         utilities.sendRequest(parameters);
+
+    vm.getDetails = function(challengeId) {
+
+        // get details of the particular challenge
+        var parameters = {};
+        parameters.url = 'challenges/challenge/' + challengeId + '/';
+        parameters.method = 'GET';
+        parameters.data = {};
+        parameters.callback = {
+            onSuccess: function(response) {
+                var details = response.data;
+                console.log("abcccc");
+                console.log(details);
+            },
+            onError: function(){
+                console.log('Error');
+            }
+        };
+    };
 
     }
 

@@ -183,15 +183,6 @@
             authenticate: true
         };
 
-        var all_challenges = {
-            name: 'all-challenges',
-            url: "/challenges/list",
-            templateUrl: baseUrl + "/web/challenge/list_all_challenges.html",
-            controller: 'ChallengeListAllCtrl',
-            controllerAs: 'challengeListAll',
-            title: "Challenges"
-        };
-
         var challenge_page = {
             name: "web.challenge-main.challenge-page",
             parent: "web.challenge-main",
@@ -375,6 +366,69 @@
         };
 
 
+        var all_challenges = {
+            name: 'all-challenges',
+            url: "/challenges/list",
+            templateUrl: baseUrl + "/web/challenge/list_all_challenges.html",
+            controller: 'ChallengeListAllCtrl',
+            controllerAs: 'challengeListAll',
+            title: "Challenges"
+        };
+
+        var all_challenges_page = {
+            name: 'all-challenges-page',
+            url: "/challenges/list/:challengeId",
+            templateUrl: baseUrl + "/web/featured-challenge/challenge-page.html",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            redirectTo: "all-challenges-page.overview"
+        };
+
+        var all_challenges_overview = {
+            name: "all-challenges-page.overview",
+            parent: "all-challenges-page",
+            url: "/overview",
+            templateUrl: baseUrl + "/web/featured-challenge/overview.html",
+            title: 'Overview'
+        };
+
+        var all_challenges_evaluation = {
+            name: "all-challenges-page.evaluation",
+            url: "/evaluation",
+            templateUrl: baseUrl + "/web/featured-challenge/evaluation.html",
+            title: 'Evaluation'
+        };
+
+        var all_challenges_phases = {
+            name: "all-challenges-page.phases",
+            url: "/phases",
+            templateUrl: baseUrl + "/web/featured-challenge/phases.html",
+            title: 'Phases'
+        };
+
+        var all_challenges_participate = {
+            name: "all-challenges-page.participate",
+            url: "/participate",
+            templateUrl: baseUrl + "/web/featured-challenge/participate.html",
+            title: 'Participate'
+        };
+
+        var all_challenges_leaderboard = {
+            name: "all-challenges-page.leaderboard",
+            url: "/leaderboard",
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard'
+        };
+
+        var all_challenge_phase_leaderboard = {
+            name: "all-challenges-page.phase-leaderboard",
+            url: "/leaderboard/:phaseSplitId",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard'
+        };
+
         var featured_challenge_page = {
             name: "featured-challenge-page",
             url: "/featured-challenges/:challengeId",
@@ -491,6 +545,15 @@
         $stateProvider.state(get_involved);
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
+
+        // Show the challenge without login
+        $stateProvider.state(all_challenges_page);
+        $stateProvider.state(all_challenges_overview);
+        $stateProvider.state(all_challenges_evaluation);
+        $stateProvider.state(all_challenges_phases);
+        $stateProvider.state(all_challenges_participate);
+        $stateProvider.state(all_challenges_leaderboard);
+        $stateProvider.state(all_challenge_phase_leaderboard);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
