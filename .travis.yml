@@ -22,6 +22,7 @@ before_script:
   - psql -c "CREATE DATABASE evalai" -U postgres
 
 install:
+  - pip install -U pip
   - pip install -r requirements/dev.txt
   - pip install coveralls
 
