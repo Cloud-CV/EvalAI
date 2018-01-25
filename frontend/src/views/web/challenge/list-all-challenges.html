@@ -22,7 +22,9 @@
                     </strong>
             </div>
         </div>
-        <div ng-if="challengeListAll.noneCurrentChallenge">No Ongoing Challenges found!</div>
+        <div ng-if="challengeListAll.noneCurrentChallenge" class="align-center">
+                <p><strong>There are no challenges found!</strong></p>
+        </div>
         <div class="row">
             <div class="margin-8">
             <div class="col s12 m3" ng-repeat="challenge in challengeListAll.currentList">
@@ -88,7 +90,9 @@
                     </strong>
             </div>
         </div>
-        <div ng-if="challengeListAll.nonePastChallenge">No Past Challenges found!</div>
+        <div ng-if="challengeListAll.nonePastChallenge" class="align-center">
+                <p><strong>There are no challenges found!</strong></p>
+        </div>
         <div class="row">
         <div class="margin-8">
             <div class="col s12 m3" ng-repeat="challenge in challengeListAll.pastList">
