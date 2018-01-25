@@ -10,7 +10,6 @@
 
     function ChallengeListAllCtrl(utilities) {
         var vm = this;
-        // vm.challengeId = $stateParams.challengeId;
 
         vm.currentList = {};
         vm.upcomingList = {};
@@ -129,25 +128,6 @@
         };
 
         utilities.sendRequest(parameters);
-
-    vm.getDetails = function(challengeId) {
-
-        // get details of the particular challenge
-        var parameters = {};
-        parameters.url = 'challenges/challenge/' + challengeId + '/';
-        parameters.method = 'GET';
-        parameters.data = {};
-        parameters.callback = {
-            onSuccess: function(response) {
-                var details = response.data;
-                console.log("abcccc");
-                console.log(details);
-            },
-            onError: function(){
-                console.log('Error');
-            }
-        };
-    };
 
     }
 
