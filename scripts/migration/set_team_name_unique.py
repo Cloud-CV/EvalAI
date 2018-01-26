@@ -20,8 +20,8 @@ def make_team_name_unique():
                 participant_team_iter = participant_team_iter + 1
             else:
                 participant_team_list.append(participant_team.team_name)
-    except Exception, e:
-        print str(e)
+    except Exception as e:
+        print(e)
 
     host_team_iter = 1
     host_teams = ChallengeHostTeam.objects.all()
@@ -35,7 +35,8 @@ def make_team_name_unique():
                 host_team_iter = host_team_iter + 1
             else:
                 host_team_list.append(host_team.team_name)
-    except Exception, e:
-        print str(e)
+    except Exception as e:
+        print(e)
+
 
 make_team_name_unique()

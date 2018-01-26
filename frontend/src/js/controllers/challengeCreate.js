@@ -33,6 +33,8 @@
                 if (fileVal === null || fileVal === "") {
                     vm.isFormError = true;
                     vm.formError = "Please upload file!";
+                    vm.stopLoader();
+                    
                 }
                 if (vm.input_file) {
                     var parameters = {};
@@ -46,6 +48,7 @@
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
+                            utilities.hideLoader();
                             var status = response.status;
                             var details =  response.data;
                             if (status === 201) {
@@ -64,6 +67,7 @@
                             }
                         },
                         onError: function(response) {
+                            utilities.hideLoader();
                             var error = response.data;
                             angular.element(".file-path").val(null);
                             $rootScope.notify("error", error.error);
@@ -71,6 +75,7 @@
                         }
                     };
                 }
+                utilities.showLoader();
                 utilities.sendRequest(parameters, 'header', 'upload');
             }
             else {
@@ -81,58 +86,3 @@
     }
 })();
 
-/* This code can be used for creating challenge using UI feature.     
-                parameters.data = {
-                "title": vm.title,
-                "description": vm.description,
-                "terms_and_conditions": vm.terms_and_conditions,
-                "submission_guidelines": vm.submission_guidelines,
-                "published": vm.published,
-                "anonymous_leaderboard": vm.anonymous_leaderboard,
-                "start_date": vm.start_date,
-                "end_date": vm.end_date
-            };
-
-            parameters.callback = {
-                onSuccess: function() {
-                    // navigate to Challenge List Page
-                    $state.go('web.challenge-main.challenge-list');
-                },
-                onError: function(response) {
-                    var error = response.data;
-                    angular.forEach(error, function(value, key) {
-                        if (key == 'title') {
-                            vm.isValid.title = true;
-                            vm.wrnMsg.title = value[0];
-                        }
-                        if (key == 'description') {
-                            vm.isValid.description = true;
-                            vm.wrnMsg.description = value[0];
-                        }
-                        if (key == 'terms_and_conditions') {
-                            vm.isValid.terms_and_conditions = true;
-                            vm.wrnMsg.terms_and_conditions = value[0];
-                        }
-                        if (key == 'submission_guidelines') {
-                            vm.isValid.submission_guidelines = true;
-                            vm.wrnMsg.submission_guidelines = value[0];
-                        }
-                        if (key == 'published') {
-                            vm.isValid.published = true;
-                            vm.wrnMsg.published = value[0];
-                        }
-                        if (key == 'anonymous_leaderboard') {
-                            vm.isValid.anonymous_leaderboard = true;
-                            vm.wrnMsg.anonymous_leaderboard = value[0];
-                        }
-                        if (key == 'start_date') {
-                            vm.isValid.start_date = true;
-                            vm.wrnMsg.start_date = value[0];
-                        }
-                        if (key == 'end_date') {
-                            vm.isValid.end_date = true;
-                            vm.wrnMsg.end_date = value[0];
-                        }
-                    });
-                }
-            };*/

@@ -274,7 +274,12 @@ RABBITMQ_PARAMETERS = {
     'SUBMISSION_QUEUE': 'submission_task_queue',
 }
 
+# The maximum size in bytes for request body
+# https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
+FILE_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
+
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
-    'USER_DETAILS_SERIALIZER': 'accounts.serializers.UserDetailsSerializer',
+    'USER_DETAILS_SERIALIZER': 'accounts.serializers.ProfileSerializer',
 }
