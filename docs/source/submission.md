@@ -2,7 +2,7 @@
 
 ### How is a submission processed?
 
-We are using REST API's along with Queue based architecture to process submissions. When a participant makes a submission for a challenge, a REST API with url pattern `jobs:challenge_submission` is called. This API does the task of creating a new entry for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
+We are using REST APIs along with Queue based architecture to process submissions. When a participant makes a submission for a challenge, a REST API with url pattern `jobs:challenge_submission` is called. This API does the task of creating a new entry for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
 
      User makes   --> API  --> Publish  --> RabbitMQ  --> Queue  --> Submission
     a submission               message      Exchange                  worker(s)
@@ -78,7 +78,7 @@ After the challenges are successfully loaded, it creates a connection with the R
 
 ### How is submission made?
 
-When the user makes submission on the frontend, the following actions happen sequentially
+When the user makes a submission on the frontend, the following actions happen sequentially
 
 * As soon as the user submits a submission, a REST API with the URL pattern `jobs:challenge_submission` is called.
 
