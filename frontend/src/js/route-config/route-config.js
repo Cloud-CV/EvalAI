@@ -597,10 +597,11 @@
 
             if (toState.url === '/leaderboard' || toState.url === '/overview'
                 || toState.url === '/evaluation' || toState.url === '/phases'
-                || toState.url === '/participate')
+                || toState.url === '/participate'){
                 if (!utilities.isAuthenticated()){
-                var newPath = '/featured-challenges/'+ challengeId + toState.url; // create a new path
-                $location.path(newPath); // redirect to that path
+                    var newPath = '/featured-challenges/'+ challengeId + toState.url; // create a new path
+                    $location.path(newPath); // redirect to that path
+                }                
             } else {
                 if (toState.authenticate && !utilities.isAuthenticated()) {
                     $rootScope.isAuth = false;

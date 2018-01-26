@@ -1,13 +1,11 @@
 <div class="white-bg view-container flex-body">
     <main-header></main-header>
     <section class="ev-container ev-reverse-details text-med-black " id="ev-scroll-down">
-        <div class="grad-container text-med-black pd-btm-0">
+        <div class="grad-container text-med-black">
             <div class="row">
                 <div class="col s12">
                     <div class="align-center">
-                        <h4><div>Challenges</h4>
-                        <p><span class="text-dark-black w-500">Following is a list of ongoing, upcoming and past challenges.</span>
-                        </p>
+                        <h4><div class="w-300">All Challenges</h4>
                     </div>
                 </div>
             </div>
@@ -17,13 +15,13 @@
         <!-- ongoing challenges -->
         <div class="challenge-page-title">
             <div class="align-center">
-                <strong class="text-med-black fs-18">
+                <strong class="text-med-black fs-20 w-400">
                         Ongoing Challenges
                     </strong>
             </div>
         </div>
         <div ng-if="challengeListAll.noneCurrentChallenge" class="align-center">
-                <p><strong>There are no challenges found!</strong></p>
+                <p><strong>No ongoing challenges found!</strong></p>
         </div>
         <div class="row">
             <div class="margin-8">
@@ -51,13 +49,13 @@
         <!-- upcoming challenges -->
         <div class="challenge-page-title">
             <div class="align-center">
-                <strong class="text-med-black fs-18">
+                <strong class="text-med-black fs-20 w-400">
                         Upcoming Challenges
                     </strong>
             </div>
         </div>
         <div ng-if="challengeListAll.noneUpcomingChallenge" class="align-center">
-        <p><strong>There are no challenges found!</strong></p>
+        <p><strong>No upcoming challenges found!</strong></p>
         </div>
         <div class="row">
         <div class="margin-8">
@@ -85,13 +83,13 @@
         <!-- past challenges -->
         <div class="challenge-page-title">
             <div class="align-center">
-                <strong class="text-med-black fs-18">
+                <strong class="text-med-black fs-20 w-400">
                         Past Challenges
                     </strong>
             </div>
         </div>
         <div ng-if="challengeListAll.nonePastChallenge" class="align-center">
-                <p><strong>There are no challenges found!</strong></p>
+                <p><strong>No past challenges found!</strong></p>
         </div>
         <div class="row">
         <div class="margin-8">
