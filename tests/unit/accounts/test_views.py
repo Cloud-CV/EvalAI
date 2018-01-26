@@ -53,7 +53,7 @@ class TestUpdateUser(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class TestPassReset(BaseAPITestClass):
+class TestPasswordReset(BaseAPITestClass):
 
     def _generate_uid_and_token(self, user):
         result = {}
@@ -73,9 +73,9 @@ class TestPassReset(BaseAPITestClass):
             password='secret_password')
         url_kwargs = self._generate_uid_and_token(self.user)
         self.url = reverse_lazy('accounts:token_verify')
-        response = self.client.post(self.url, {'uid': url_kwargs['uid'], 'token': url_kwargs['token']})
+        response = self.client.post(self.url, {'user_id': url_kwargs['uid'], 'token': url_kwargs['token']})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response = self.client.post(self.url, {'uid': url_kwargs['uid'], 'token': 'abcd'})
+        response = self.client.post(self.url, {'user_id': url_kwargs['uid'], 'token': 'abcd'})
         self.assertNotEqual(response.status_code, status.HTTP_200_OK)
 
     def test_check_pass(self):

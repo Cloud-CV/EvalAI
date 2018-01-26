@@ -24,20 +24,20 @@
         // form error
         vm.isFormError = false;
         vm.FormError = {};
-        vm.tokencheck = false;
+        vm.tokenCheck = false;
         // to store the next redirect route
         vm.redirectUrl = {};
-        vm.checktoken = function() {
+        vm.checkToken = function() {
             var parameters = {};
             parameters.url = 'accounts/tokenverify/';
             parameters.method = 'POST';
             parameters.data = {
-                "uid": $state.params.user_id,
+                "user_id": $state.params.user_id,
                 "token": $state.params.reset_token,
                 };
             parameters.callback = {
-                    onSuccess: function(response) {
-                        vm.tokencheck=true;
+                    onSuccess: function() {
+                        vm.tokenCheck=true;
                     },
                     onError: function(response) {
                         var token_valid;

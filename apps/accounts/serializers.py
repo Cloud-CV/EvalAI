@@ -46,12 +46,12 @@ class PasswordResetTokenSerializer(serializers.Serializer):
     Serializer for requesting a password reset e-mail.
     """
 
-    uid = serializers.CharField()
+    user_id = serializers.CharField()
     token = serializers.CharField()
 
     def validate(self, attrs):
 
-        uid = force_text(uid_decoder(attrs['uid']))
+        uid = force_text(uid_decoder(attrs['user_id']))
 
         if not default_token_generator.check_token(User.objects.get(pk=uid), attrs['token']):
             raise ValidationError({'token': ['Token Expired or invalid']})

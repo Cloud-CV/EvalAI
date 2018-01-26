@@ -16,6 +16,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_auth.serializers import PasswordResetConfirmSerializer
+from .constants import mail_body, mail_subject
 from .serializers import PasswordResetTokenSerializer
 
 sensitive_post_parameters_m = method_decorator(
@@ -78,9 +79,8 @@ class PasswordResetConfirmView(GenericAPIView):
         if serializer.is_valid():
             uid = force_text(uid_decoder(request.data['uid']))
             host = request.data['host']
-            send_mail('Password reset on '+host,
-                      "You're receiving this mail because your password has been reset at "+host
-                      + "\nThanks for using our site!\n The " + host + " team",
+            send_mail(mail_subject(host)["passreset"],
+                      mail_body(host)["passreset"],
                       settings.DEFAULT_FROM_EMAIL,
                       [User.objects.get(pk=uid).email],
                       fail_silently=False,
