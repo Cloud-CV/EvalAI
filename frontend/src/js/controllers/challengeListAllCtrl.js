@@ -36,7 +36,6 @@
                 }
 
                 for (var i in vm.currentList) {
-
                     var descLength = vm.currentList[i].description.length;
                     if (descLength >= 50) {
                         vm.currentList[i].isLarge = "...";
@@ -45,8 +44,7 @@
                     }
                 }
 
-                // dependent api
-                // calls for upcoming challneges
+                // API call to fetch future challenges
                 var parameters = {};
                 parameters.url = 'challenges/challenge/future';
                 parameters.method = 'GET';
@@ -63,9 +61,7 @@
                         }
 
                         for (var i in vm.upcomingList) {
-
                             var descLength = vm.upcomingList[i].description.length;
-
                             if (descLength >= 50) {
                                 vm.upcomingList[i].isLarge = "...";
                             } else {
@@ -73,12 +69,10 @@
                             }
                         }
 
-                        // dependent api
-                        // calls for upcoming challneges
+                        // API call to fetch past challenges
                         var parameters = {};
                         parameters.url = 'challenges/challenge/past';
                         parameters.method = 'GET';
-
                         parameters.callback = {
                             onSuccess: function(response) {
                                 var data = response.data;
@@ -90,10 +84,7 @@
                                     vm.nonePastChallenge = false;
                                 }
 
-
                                 for (var i in vm.pastList) {
-
-
                                     var descLength = vm.pastList[i].description.length;
                                     if (descLength >= 50) {
                                         vm.pastList[i].isLarge = "...";
@@ -103,32 +94,24 @@
                                 }
 
                                 utilities.hideLoader();
-
                             },
                             onError: function() {
                                 utilities.hideLoader();
                             }
                         };
-
                         utilities.sendRequest(parameters);
-
                     },
                     onError: function() {
                         utilities.hideLoader();
                     }
                 };
-
                 utilities.sendRequest(parameters);
-
             },
             onError: function() {
 
                 utilities.hideLoader();
             }
         };
-
         utilities.sendRequest(parameters);
-
     }
-
 })();
