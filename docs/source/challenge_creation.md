@@ -87,7 +87,7 @@ The challenge configuration file on EvalAI consists of following fields:
 
     * **max_submissions_per_day**: Positive integer which tells the maximum number of submissions per day to a challenge phase.
 
-    * **max_submissions**: Positive integer that decides the overall maximum number of submissions that can be done to a challenge phase.
+    * **max_submissions**: Positive integer which decides the overall maximum number of submissions that can be done to a challenge phase.
 
 
 * **dataset_splits**:
