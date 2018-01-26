@@ -366,6 +366,69 @@
         };
 
 
+        var all_challenges = {
+            name: 'all-challenges',
+            url: "/challenges/",
+            templateUrl: baseUrl + "/web/challenge/list-all-challenges.html",
+            controller: 'ChallengeListAllCtrl',
+            controllerAs: 'challengeListAll',
+            title: "Challenges"
+        };
+
+        var all_challenges_page = {
+            name: 'all-challenges-page',
+            url: "/challenges/:challengeId",
+            templateUrl: baseUrl + "/web/featured-challenge/challenge-page.html",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            redirectTo: "all-challenges-page.overview"
+        };
+
+        var all_challenges_overview = {
+            name: "all-challenges-page.overview",
+            parent: "all-challenges-page",
+            url: "/overview",
+            templateUrl: baseUrl + "/web/featured-challenge/overview.html",
+            title: 'Overview'
+        };
+
+        var all_challenges_evaluation = {
+            name: "all-challenges-page.evaluation",
+            url: "/evaluation",
+            templateUrl: baseUrl + "/web/featured-challenge/evaluation.html",
+            title: 'Evaluation'
+        };
+
+        var all_challenges_phases = {
+            name: "all-challenges-page.phases",
+            url: "/phases",
+            templateUrl: baseUrl + "/web/featured-challenge/phases.html",
+            title: 'Phases'
+        };
+
+        var all_challenges_participate = {
+            name: "all-challenges-page.participate",
+            url: "/participate",
+            templateUrl: baseUrl + "/web/featured-challenge/participate.html",
+            title: 'Participate'
+        };
+
+        var all_challenges_leaderboard = {
+            name: "all-challenges-page.leaderboard",
+            url: "/leaderboard",
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard'
+        };
+
+        var all_challenge_phase_leaderboard = {
+            name: "all-challenges-page.phase-leaderboard",
+            url: "/leaderboard/:phaseSplitId",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard'
+        };
+
         var featured_challenge_page = {
             name: "featured-challenge-page",
             url: "/featured-challenges/:challengeId",
@@ -445,6 +508,7 @@
         // challenges list page
         $stateProvider.state(challenge_main);
         $stateProvider.state(challenge_list);
+        $stateProvider.state(all_challenges);
 
         // challenge create page
         $stateProvider.state(challenge_create);
@@ -482,6 +546,15 @@
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
 
+        // Show the challenge without login
+        $stateProvider.state(all_challenges_page);
+        $stateProvider.state(all_challenges_overview);
+        $stateProvider.state(all_challenges_evaluation);
+        $stateProvider.state(all_challenges_phases);
+        $stateProvider.state(all_challenges_participate);
+        $stateProvider.state(all_challenges_leaderboard);
+        $stateProvider.state(all_challenge_phase_leaderboard);
+
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
             state.go('error-404');
@@ -518,20 +591,33 @@
         $rootScope.isAuth = false;
         // check for valid user
         $rootScope.$on('$stateChangeStart', function(event, toState) {
-            if (toState.authenticate && !utilities.isAuthenticated()) {
-                $rootScope.isAuth = false;
-                // User isn’t authenticated
-                $state.transitionTo("auth.login");
-                event.preventDefault();
-            }
-            // restrict authorized user too access login/signup page
-            else if (toState.authenticate === false && utilities.isAuthenticated()) {
+            var path = $location.path(); // get the current path
+            var pathArray = path.split('/'); // split it to make a array
+            var challengeId = pathArray[pathArray.length-2]; // get the challenge id
+
+            if (toState.url === '/leaderboard' || toState.url === '/overview'
+                || toState.url === '/evaluation' || toState.url === '/phases'
+                || toState.url === '/participate'){
+                if (!utilities.isAuthenticated()){
+                    var newPath = '/featured-challenges/'+ challengeId + toState.url; // create a new path
+                    $location.path(newPath); // redirect to that path
+                }                
+            } else {
+                if (toState.authenticate && !utilities.isAuthenticated()) {
+                    $rootScope.isAuth = false;
+                    // User isn’t authenticated
+                    $state.transitionTo("auth.login");
+                    event.preventDefault();
+                }
+                // restrict authorized user too access login/signup page
+                else if (toState.authenticate === false && utilities.isAuthenticated()) {
+                    $rootScope.isAuth = true;
+                    $state.transitionTo("home");
+                    event.preventDefault();
+                    return false;
+                } else if (utilities.isAuthenticated()) {
                 $rootScope.isAuth = true;
-                $state.transitionTo("home");
-                event.preventDefault();
-                return false;
-            } else if (utilities.isAuthenticated()) {
-                $rootScope.isAuth = true;
+                }
             }
         });
 
@@ -573,6 +659,7 @@
             parameters.callback = {
                 onSuccess: function() {
                     utilities.resetStorage();
+                    $rootScope.isLoader = false;
                     $state.go("auth.login");
                     $rootScope.isAuth = false;
                     $rootScope.notify("info", "Successfully logged out!");

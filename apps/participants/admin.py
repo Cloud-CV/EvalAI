@@ -24,7 +24,7 @@ class ParticipantAdmin(ImportExportTimeStampedAdmin):
     interface to display user and team status.
     """
     list_display = ('user', 'status', 'team')
-    search_fields = ('user', 'status', 'team')
+    search_fields = ('user__username', 'status', 'team__team_name')
     list_filter = ('status', 'team')
     resource_class = ParticipantResource
 
