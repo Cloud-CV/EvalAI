@@ -33,6 +33,8 @@
                 if (fileVal === null || fileVal === "") {
                     vm.isFormError = true;
                     vm.formError = "Please upload file!";
+                    vm.stopLoader();
+                    
                 }
                 if (vm.input_file) {
                     var parameters = {};
