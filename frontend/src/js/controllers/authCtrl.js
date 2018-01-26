@@ -7,10 +7,12 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
+    AuthCtrl.$inject = ['utilities', 'configService', 'stringToTemplate', '$state', '$rootScope'];
 
-    function AuthCtrl(utilities, $state, $rootScope) {
+    function AuthCtrl(utilities, configService, stringToTemplate, $state, $rootScope) {
+
         var vm = this;
+        var BackendEndpoints = configService.BackendEndpoints;
 
         vm.isRem = false;
         vm.isAuth = false;
@@ -72,7 +74,7 @@
                 vm.startLoader("Setting up your details!");
                 // call utility service
                 var parameters = {};
-                parameters.url = 'auth/registration/';
+                parameters.url = BackendEndpoints.AUTH.REGISTRATION_ENDPOINT;
                 parameters.method = 'POST';
                 parameters.data = {
                     "username": vm.regUser.name,
@@ -134,7 +136,7 @@
                 vm.startLoader("Taking you to EvalAI!");
                 // call utility service
                 var parameters = {};
-                parameters.url = 'auth/login/';
+                parameters.url = BackendEndpoints.AUTH.LOGIN_ENDPOINT;
                 parameters.method = 'POST';
                 parameters.data = {
                     "username": vm.getUser.name,
@@ -180,7 +182,8 @@
         vm.verifyEmail = function() {
             vm.startLoader("Verifying Your Email");
             var parameters = {};
-            parameters.url = 'auth/registration/account-confirm-email/' + $state.params.email_conf_key + '/';
+            var key =  $state.params.email_conf_key;
+            parameters.url = stringToTemplate.convert(BackendEndpoints.AUTH.EMAIL_VERIFICATION_ENDPOINT, {key: key});
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function() {
@@ -201,7 +204,7 @@
             if (resetPassFormValid) {
                 vm.startLoader("Sending Mail");
                 var parameters = {};
-                parameters.url = 'auth/password/reset/';
+                parameters.url = BackendEndpoints.AUTH.PASSWORD_RESET_ENDPOINT;
                 parameters.method = 'POST';
                 parameters.data = {
                     "email": vm.getUser.email,
@@ -232,7 +235,7 @@
             if (resetconfirmFormValid) {
                 vm.startLoader("Resetting Your Password");
                 var parameters = {};
-                parameters.url = 'auth/password/reset/confirm/';
+                parameters.url = BackendEndpoints.AUTH.PASSWORD_RESET_CONFIRM_ENDPOINT;
                 parameters.method = 'POST';
                 parameters.data = {
                     "new_password1": vm.getUser.new_password1,

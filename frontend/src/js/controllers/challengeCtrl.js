@@ -6,10 +6,11 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog'];
+    ChallengeCtrl.$inject = ['utilities', 'configService', 'stringToTemplate', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog) {
+    function ChallengeCtrl(utilities, configService, stringToTemplate, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog) {
         var vm = this;
+        var BackendEndpoints = configService.BackendEndpoints;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
         vm.phaseSplitId = null;
@@ -30,6 +31,7 @@
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
         vm.isChallengeHost = false;
+        var challenge_id =  vm.challengeId;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
@@ -48,15 +50,17 @@
         var userKey = utilities.getData('userKey');
 
         vm.subErrors = {};
-
+        var challenge = BackendEndpoints.CHALLENGE;
         utilities.showLoader();
 
         // get details of the particular challenge
+
         var parameters = {};
-        parameters.url = 'challenges/challenge/' + vm.challengeId + '/';
+        parameters.url = stringToTemplate.convert(challenge.CHALLENGE_ENDPOINT,{challenge_id: challenge_id});
         parameters.method = 'GET';
         parameters.data = {};
         parameters.token = userKey;
+
         parameters.callback = {
             onSuccess: function(response) {
                 var details = response.data;
@@ -73,7 +77,7 @@
 
                     // get details of challenges corresponding to participant teams of that user
                     var parameters = {};
-                    parameters.url = 'participants/participant_teams/challenges/'+ vm.challengeId + '/user';
+                    parameters.url = stringToTemplate.convert(challenge.PARTICIPANT_CHALLENGES_ENDPOINT, {challenge_id: challenge_id});
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.token = userKey;
@@ -103,7 +107,7 @@
                                 vm.team.error = false;
 
                                 var parameters = {};
-                                parameters.url = 'participants/participant_team';
+                                parameters.url = challenge.PARTICIPANT_TEAM_ENDPOINT;
                                 parameters.method = 'GET';
                                 parameters.token = userKey;
                                 parameters.callback = {
@@ -146,7 +150,9 @@
                                                 // loader end
 
                                                 var parameters = {};
-                                                parameters.url = 'challenges/challenge/' + vm.challengeId + '/participant_team/' + vm.teamId;
+                                                var team_id = vm.teamId;
+                                                var url =  stringToTemplate.convert(challenge.CHALLENGE_DETAILS_ENDPOINT, {challenge_id:challenge_id});
+                                                parameters.url = stringToTemplate.convert(url, {team_id:team_id});
                                                 parameters.method = 'POST';
                                                 parameters.token = userKey;
                                                 parameters.callback = {
@@ -269,8 +275,10 @@
                         // vm.upload(vm.input_file);
                     }
                     var parameters = {};
-                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
-                    parameters.method = 'POST';
+                    var phase_id = vm.phaseId;
+                    var challenge_url = stringToTemplate.convert(challenge.CHALLENGE.MAKE_SUBMISSION.JOBS_CHALLENGE_ENDPOINT, {challenge_id: challenge_id});
+                    parameters.url = stringToTemplate.convert(challenge_url, {phase_id: phase_id});
+
                     var formData = new FormData();
                     formData.append("status", "submitting");
                     formData.append("input_file", vm.input_file);
@@ -335,8 +343,9 @@
 
 
         // get details of the particular challenge phase
+        //challenges/' + vm.challengeId + '/challenge_phase_split
         parameters = {};
-        parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
+        parameters.url = stringToTemplate.convert(BackendEndpoints.CHALLENGE.CHALLENGE_PHASE_DETAILS_ENDPOINT, {challenge_id: challenge_id});
         parameters.method = 'GET';
         parameters.data = {};
         parameters.token = userKey;
@@ -360,7 +369,7 @@
 
         // get details of the particular challenge phase split
         parameters = {};
-        parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
+        parameters.url = stringToTemplate.convert(challenge.SEND_REQUEST.CHALLENGES_ENDPOINT,{challenge_id:challenge_id});
         parameters.method = 'GET';
         parameters.data = {};
         parameters.token = userKey;
@@ -402,7 +411,8 @@
             // Show leaderboard
             vm.leaderboard = {};
             var parameters = {};
-            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
+            var phase_split_id = vm.phaseSplitId;
+            parameters.url = stringToTemplate.convert(challenge.CHALLENGE.GET_LEADERBOARD.SHOW_LEADERBOARD_ENDPOINT, {phase_split_id:phase_split_id}) + 1000;
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
@@ -426,7 +436,8 @@
                 vm.stopLeaderboard();
                 vm.poller = $interval(function() {
                     var parameters = {};
-                    parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
+                    var phase_split_id = vm.phaseSplitId;
+                    parameters.url = stringToTemplate.convert(challenge.CHALLENGE.GET_LEADERBOARD.SHOW_LEADERBOARD_ENDPOINT, {phase_split_id:phase_split_id}) + 1000;
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.token = userKey;
@@ -496,9 +507,10 @@
             vm.isPrev = '';
             vm.currentPage = '';
             vm.showPagination = false;
-
             var parameters = {};
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
+            var phase_id = vm.phaseId;
+            var url = stringToTemplate.convert(challenge.CHALLENGE.MAKE_SUBMISSION.JOBS_CHALLENGE_ENDPOINT, {challenge_id: challenge_id});
+            parameters.url = stringToTemplate.convert(url,{phase_id: phase_id});
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
@@ -597,7 +609,9 @@
                 vm.stopFetchingSubmissions();
                 vm.poller = $interval(function() {
                     var parameters = {};
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
+                    var phase_split_id = vm.phaseId;
+                    var url = stringToTemplate.convert(challenge.CHALLENGE.GET_LEADERBOARD.REFRESH_SUBMISSIONS_DATA, {challenge_id:challenge_id});
+                    parameters.url = stringToTemplate.convert(url, {phase_split_id: phase_split_id}) + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.token = userKey;
@@ -649,8 +663,9 @@
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
             var parameters = {};
-
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
+            var phase_split_id = vm.phaseId;
+            var url = stringToTemplate.convert(challenge.CHALLENGE.GET_LEADERBOARD.REFRESH_SUBMISSIONS_DATA, {challenge_id: challenge_id});
+            parameters.url = stringToTemplate.convert(url, {phase_split_id: phase_split_id}) + Math.ceil(vm.currentPage);
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
@@ -706,7 +721,8 @@
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             var parameters = {};
-            parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
+            var phase_split_id  = vm.phaseSplitId;
+            parameters.url =  stringToTemplate.convert(challenge.CHALLENGE.GET_LEADERBOARD.SHOW_LEADERBOARD_ENDPOINT,{phase_split_id :phase_split_id}) + 1000;
             parameters.method = 'GET';
             parameters.data = {};
             parameters.token = userKey;
@@ -736,7 +752,7 @@
             vm.startLoader("Loading Teams");
 
             var parameters = {};
-            parameters.url = 'participants/participant_team';
+            parameters.url = challenge.CHALLENGE.PARTICIPANT_TEAM_ENDPOINT;
             parameters.method = 'POST';
             parameters.data = {
                 "team_name": vm.team.name
@@ -751,7 +767,7 @@
 
                     vm.startLoader("Loading Teams");
                     var parameters = {};
-                    parameters.url = 'participants/participant_team';
+                    parameters.url = challenge.CHALLENGE.PARTICIPANT_TEAM_ENDPOINT;
                     parameters.method = 'GET';
                     parameters.token = userKey;
                     parameters.callback = {
@@ -821,8 +837,9 @@
             vm.showPagination = false;
 
             var parameters = {};
-            parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submissions";
-            parameters.method = 'GET';
+            var phase_id = vm.phaseId;
+            var url = stringToTemplate.convert(challenge.CHALLENGE.FETCHING_SUBMISSION.GET_SUBMISSIONS_RESULT,{challenge_id:challenge_id});
+            parameters.url = stringToTemplate.convert(url, {phase_id:phase_id});
             parameters.data = {};
             parameters.token = userKey;
             parameters.callback = {
@@ -907,7 +924,13 @@
 
         vm.changeSubmissionVisibility = function(submission_id) {
             var parameters = {};
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
+            var phase_id = vm.phaseId;
+            // parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
+
+            var url = stringToTemplate.convert(challenge.CHALLENGE.CHANGE_SUBMISSIONS_VISIBILITY_ENDPOINT, {challenge_id: challenge_id});
+            var phaseUrl = stringToTemplate.convert(url, {phase_id: phase_id});
+            parameters.url = stringToTemplate.convert(phaseUrl, {submission_id: submission_id});
+
             parameters.method = 'PATCH';
             parameters.data = {
                 "is_public": vm.submissionVisibility[submission_id]
@@ -926,8 +949,10 @@
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
             vm.showClock = false;
+            var phase_id = vm.phaseId;
             vm.showSubmissionNumbers = false;
-            parameters.url = "jobs/"+ vm.challengeId + "/phases/"+ vm.phaseId + "/remaining_submissions";
+            var url = stringToTemplate.convert(challenge.CHALLENGE.SHOW_REMAINING_SUBMISSIONS.REMAINING_SUBMISSIONS_ENDPOINT,{ challenge_id: challenge_id});
+            parameters.url = stringToTemplate.convert(url,{phase_id: phase_id});
             parameters.method = 'GET';
             parameters.token = userKey;
             parameters.callback = {
@@ -979,9 +1004,14 @@
         vm.downloadChallengeSubmissions = function() {
             if(vm.phaseId) {
                 var parameters = {};
-                parameters.url = "challenges/"+ vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
+                var phase_id = vm.phaseId;
+                var fileSelected = vm.fileSelected;
+                var url = stringToTemplate.convert(challenge.CHALLENGE.DOWNLOAD_ALL_SUBMISSIONS_ENDPOINT, {challenge_id: challenge_id});
+                var phaseurl = stringToTemplate.convert(url,{ phase_id: phase_id});
+                parameters.url = stringToTemplate.convert(phaseurl,{fileSelected: fileSelected});
                 parameters.method = "GET";
                 parameters.token = userKey;
+
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
