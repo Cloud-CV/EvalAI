@@ -11,36 +11,52 @@
 .toast-message {
     font-size: 14px;
     a {
-        // color: #ffffff;
+        color: #ffffff;
         &:hover {
             // color: #cccccc;
             text-decoration: none;
         }
     }
     label {
-        // color: #ffffff
+       // color: #ffffff;
     }
 }
 
 .toast {
     word-break: initial;
     &.toast-success {
-        //     background-color: #51a351;
+        background-color: #74DB70;
+            &:hover {
+                background-color: #74DB70;
+            }
     }
+
     &.toast-error {
-        //     background-color: #bd362f;
+        background-color: #E43F3F;
+            &:hover {
+                background-color: #E43F3F;
+            }
     }
 
     &.toast-info {
-        //     background-color: #2f96b4;
+        background-color: #3B9EB9;
+            &:hover {
+                background-color: #3B9EB9;
+            }
     }
 
     &.toast-wait {
-        //     background-color: #2f96b4;
+        background-color: #5843A3;
+            &:hover {
+                background-color: #5843A3;
+            }
     }
 
     &.toast-warning {
-        //     background-color: #f89406;
+        background-color: #DF9C3E;
+            &:hover {
+                background-color: #DA8F27;
+            }
     }
 }
 
