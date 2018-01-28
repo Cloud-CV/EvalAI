@@ -333,6 +333,7 @@
                 .placeholder('email')
                 .ariaLabel('')
                 .targetEvent(ev)
+                .required(true)
                 .ok('Send Invite')
                 .cancel('Cancel');
 
