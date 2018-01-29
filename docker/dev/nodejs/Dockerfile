@@ -1,11 +1,11 @@
 FROM ubuntu:14.04
 MAINTAINER CloudCV
 
-RUN apt-get update -qq && apt-get install -y build-essential git curl
+RUN apt-get update -qq && apt-get install -y build-essential git curl libfontconfig
 RUN apt-get install nodejs-legacy -y
 RUN apt-get install npm -y
-RUN apt-get install -y ruby
-RUN gem install sass
+RUN apt-get install -y ruby-dev
+RUN gem install sass -v 3.2.19
 
 RUN mkdir /code
 
@@ -15,6 +15,7 @@ ADD ./package.json /code
 ADD ./bower.json /code
 ADD ./gulpfile.js /code
 ADD ./.eslintrc /code
+ADD ./karma.conf.js /code
 
 WORKDIR /code
 
@@ -32,6 +33,6 @@ RUN npm install
 RUN bower install --allow-root
 
 # Set the command to run on startup
-CMD ["gulp", "dev:runserver"]
+CMD ["gulp", "connect"]
 
 EXPOSE 8888

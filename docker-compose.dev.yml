@@ -43,8 +43,6 @@ services:
     build:
       context: ./
       dockerfile: docker/dev/nodejs/Dockerfile
-    volumes:
-      - .:/code
     environment:
       NODE_ENV: development
     ports:
