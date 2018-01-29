@@ -156,10 +156,10 @@
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
-                                                        if (response.data['detail']) {
+                                                        if (response.status == 404) {
                                                             var error = "Please select a team first!";
-                                                        } else if (response.data['error']) {
-                                                            error = response.data['error'];
+                                                        } else {
+                                                            error = "Server error";
                                                         }
                                                         $rootScope.notify("error", error);
                                                         vm.stopLoader();
