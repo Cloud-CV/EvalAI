@@ -285,6 +285,20 @@ nav {
     color: $highlight;
 }
 
+.ev-btn-scroll {
+ background: #252833;
+ border-radius: 50%;
+ position: fixed;
+ font-size: 16px;
+ color: white;
+ height: 50px;
+ width: 50px;
+ text-align: center;
+ padding: 10px;
+ z-index: 20;
+ left: 90%;
+}
+
 .ev-btn-dark {
     background: $dark-gray;
 }
