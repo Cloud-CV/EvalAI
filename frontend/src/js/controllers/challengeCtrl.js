@@ -156,7 +156,7 @@
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
-                                                        if (response.status == '404') {
+                                                        if (response.status == 404) {
                                                             var error = "Please select a team first!";
                                                         } else {
                                                             error = "Server error";
