@@ -1,0 +1,120 @@
+<div class="white-bg view-container flex-body">
+    <main-header></main-header>
+    <section class="ev-container ev-reverse-details text-med-black " id="ev-scroll-down">
+        <div class="grad-container text-med-black">
+            <div class="row">
+                <div class="col s12">
+                    <div class="align-center">
+                        <h4><div class="w-300">All Challenges</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="ev-sm-container ev-view challenge-container">
+        <!-- ongoing challenges -->
+        <div class="challenge-page-title">
+            <div class="align-center">
+                <strong class="text-med-black fs-20 w-400">
+                        Ongoing Challenges
+                    </strong>
+            </div>
+        </div>
+        <div ng-if="challengeListAll.noneCurrentChallenge" class="align-center">
+                <p><strong>No ongoing challenges found!</strong></p>
+        </div>
+        <div class="row">
+            <div class="margin-8">
+            <div class="col s12 m3" ng-repeat="challenge in challengeListAll.currentList">
+                <a class="ev-card-hover" ui-sref="featured-challenge-page({challengeId:challenge.id})">
+                    <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                        <div class="card-image ev-card-image">
+                            <img class="bg-img" ng-src="{{challenge.image}}">
+                            <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
+                        </div>
+                        <div class="card-content">
+                            <p><strong class="text-light-black fs-12">Organized by</strong>
+                                <br> <strong>{{challenge.creator.team_name}}</strong></p>
+                            <p><strong class="text-light-black fs-12">Starts on</strong>
+                                <br> <strong>{{challenge.start_date | date:'medium'}}</strong></p>
+                            <p><strong class="text-light-black fs-12">Ends on</strong>
+                                <br> <strong>{{challenge.end_date | date:'medium'}}</strong></p>
+                        </div>
+                        <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        </div>
+        <!-- upcoming challenges -->
+        <div class="challenge-page-title">
+            <div class="align-center">
+                <strong class="text-med-black fs-20 w-400">
+                        Upcoming Challenges
+                    </strong>
+            </div>
+        </div>
+        <div ng-if="challengeListAll.noneUpcomingChallenge" class="align-center">
+        <p><strong>No upcoming challenges found!</strong></p>
+        </div>
+        <div class="row">
+        <div class="margin-8">
+            <div class="col s12 m3" ng-repeat="challenge in challengeListAll.upcomingList">
+                <a class="ev-card-hover" ui-sref="all-challenges-page({challengeId:challenge.id})">
+                    <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                        <div class="card-image ev-card-image">
+                            <img class="bg-img" ng-src="{{challenge.image}}">
+                            <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
+                        </div>
+                        <div class="card-content">
+                            <p><strong class="text-light-black fs-12">Organized by</strong>
+                                <br> <strong>{{challenge.creator.team_name}}</strong></p>
+                            <p><strong class="text-light-black fs-12">Starts on</strong>
+                                <br> <strong>{{challenge.start_date | date:'medium'}}</strong></p>
+                            <p><strong class="text-light-black fs-12">Ends on</strong>
+                                <br> <strong>{{challenge.end_date | date:'medium'}}</strong></p>
+                        </div>
+                        <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        </div>
+        <!-- past challenges -->
+        <div class="challenge-page-title">
+            <div class="align-center">
+                <strong class="text-med-black fs-20 w-400">
+                        Past Challenges
+                    </strong>
+            </div>
+        </div>
+        <div ng-if="challengeListAll.nonePastChallenge" class="align-center">
+                <p><strong>No past challenges found!</strong></p>
+        </div>
+        <div class="row">
+        <div class="margin-8">
+            <div class="col s12 m3" ng-repeat="challenge in challengeListAll.pastList">
+                <a class="ev-card-hover" ui-sref="all-challenges-page({challengeId:challenge.id})">
+                    <div class="card ev-card-panel ev-challenge-card ev-card-hover">
+                        <div class="card-image ev-card-image">
+                            <img class="bg-img" ng-src="{{challenge.image}}">
+                            <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
+                        </div>
+                        <div class="card-content">
+                            <p><strong class="text-light-black fs-12">Organized by</strong>
+                                <br> <strong>{{challenge.creator.team_name}}</strong></p>
+                            <p><strong class="text-light-black fs-12">Starts on</strong>
+                                <br> <strong>{{challenge.start_date | date:'medium'}}</strong></p>
+                            <p><strong class="text-light-black fs-12">Ends on</strong>
+                                <br> <strong>{{challenge.end_date | date:'medium'}}</strong></p>
+                        </div>
+                        <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        </div>
+        <br>
+    </section>
+    <landing-footer></landing-footer>
+</div>
