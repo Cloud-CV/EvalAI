@@ -317,6 +317,7 @@
                 .ariaLabel('')
                 .targetEvent(ev)
                 .ok('Send Invite')
+                .required(true)
                 .cancel('Cancel');
 
             $mdDialog.show(confirm).then(function(result) {
