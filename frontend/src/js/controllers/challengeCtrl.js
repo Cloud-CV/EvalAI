@@ -156,10 +156,10 @@
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
-                                                        if (response.data['detail']) {
+                                                        if (response.status == '404') {
                                                             var error = "Please select a team first!";
-                                                        } else if (response.data['error']) {
-                                                            error = response.data['error'];
+                                                        } else {
+                                                            error = "Server error";
                                                         }
                                                         $rootScope.notify("error", error);
                                                         vm.stopLoader();
@@ -1151,6 +1151,46 @@
                 utilities.sendRequest(parameters);
             } else {
                 vm.page.description = vm.tempDesc;
+                $mdDialog.hide();
+            }
+        };
+
+// Delete challenge
+        vm.deleteChallengeDialog = function(ev) {
+            vm.titleInput = "";
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/delete-challenge/delete-challenge.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.deleteChallenge = function(deleteChallengeForm) {
+            if(deleteChallengeForm){
+                var parameters = {};
+                parameters.url = "challenges/challenge/" + vm.challengeId + "/disable";
+                parameters.method = 'POST';
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 204){
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The Challenge was successfully removed");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        var error = response.data;
+                        console.log(error);
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            } else {
                 $mdDialog.hide();
             }
         };
