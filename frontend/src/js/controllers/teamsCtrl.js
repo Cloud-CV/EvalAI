@@ -326,18 +326,25 @@
 
         vm.inviteOthers = function(ev, participantTeamId) {
             ev.stopPropagation();
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.prompt()
-                .title('Invite others to this team')
-                .textContent('Enter the email address of the person')
-                .placeholder('email')
-                .ariaLabel('')
-                .targetEvent(ev)
-                .required(true)
-                .ok('Send Invite')
-                .cancel('Cancel');
 
-            $mdDialog.show(confirm).then(function(result) {
+            $mdDialog.show({
+                 clickOutsideToClose: true,
+                  scope: $scope,
+                  preserveScope: true,
+                  template: '<md-content><form name=inputForm><md-input-container><label>Email</label><input type=email name=email ng-required=true ng-model=model.value /><div ng-messages=inputForm.email.$error><p ng-message=required>E-mail is required</p><p ng-message= email>Please enter a valid email</p></div></md-input-container><div><md-button ng-click="closeDialog()">Close</md-button><md-button type= submit ng-disabled=inputForm.$invalid ng-click="result()" >Send Invite</md-button></div></form></md-content>',
+                  controller: function ($scope, $mdDialog) {
+                     $scope.closeDialog = function() {
+                        $mdDialog.hide();
+                     }
+
+                    $scope.result = function() {
+                        $mdDialog.hide(this);
+                    }
+                  }
+            })
+
+
+            .then(function(result) {
                 var parameters = {};
                 parameters.url = 'participants/participant_team/' + participantTeamId + '/invite';
                 parameters.method = 'POST';
