@@ -1,0 +1,51 @@
+version: "2"
+services:
+
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+
+  rabbitmq:
+    image: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"  # here, we can access rabbitmq management plugin
+
+  django:
+    container_name: django
+    hostname: django
+    env_file:
+      - docker/dev.env
+    build:
+      context: ./
+      dockerfile: docker/dev/django/Dockerfile
+    ports:
+      - "8000:8000"
+    command: ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]
+    depends_on:
+      - "db"
+
+  submission-worker:
+    env_file:
+      - docker/dev.env
+    build:
+      context: ./
+      dockerfile: docker/dev/rabbitmq/Dockerfile
+    command: ["./docker/wait-for-it.sh", "django:8000", "--", "python", "scripts/workers/submission_worker.py"]
+    depends_on:
+      - "django"
+
+  angularjs:
+    container_name: angularjs
+    hostname: angularjs
+    build:
+      context: ./
+      dockerfile: docker/dev/angularjs/Dockerfile
+    environment:
+      ANGULAR_ENV: development
+    ports:
+      - "4200:4200"
+    volumes:
+     - .:/code
