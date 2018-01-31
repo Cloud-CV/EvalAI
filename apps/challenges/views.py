@@ -1,7 +1,6 @@
 import csv
 import logging
 import random
-import requests
 import shutil
 import string
 import tempfile
@@ -404,34 +403,25 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
     serializer = ChallengeConfigSerializer(data=request.data, context={'request': request})
-    if serializer.is_valid():
-        uploaded_zip_file = serializer.save()
-        uploaded_zip_file_path = serializer.data['zip_configuration']
-    else:
+
+    if serializer.is_valid() is False:
         response_data = serializer.errors
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # All files download and extract location.
     BASE_LOCATION = tempfile.mkdtemp()
+    unique_folder_name = ''.join([random.choice(string.ascii_letters + string.digits) for i in xrange(10)])
+    CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(BASE_LOCATION, '{}.zip'.format(unique_folder_name))
     try:
-        response = requests.get(uploaded_zip_file_path, stream=True)
-        unique_folder_name = ''.join([random.choice(string.ascii_letters + string.digits) for i in xrange(10)])
-        CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(BASE_LOCATION, '{}.zip'.format(unique_folder_name))
-        try:
-            if response and response.status_code == 200:
-                with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, 'w') as zip_file:
-                    zip_file.write(response.content)
-        except IOError:
-            response_data = {
-                'error': 'Unable to process the uploaded zip file. Please upload it again!'
-                }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    except requests.exceptions.RequestException:
+        with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, 'w') as zip_file:
+            if request.FILES.get('zip_configuration', False):
+                for chunk in request.FILES.get('zip_configuration', False).chunks():
+                    zip_file.write(chunk)
+    except IOError:
         response_data = {
-            'error': 'A server error occured while processing zip file. Please try uploading it again!'
+            'error': 'Unable to process the uploaded zip file. Please upload it again!'
             }
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Extract zip file
     try:
@@ -582,6 +572,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                                                    'rb').decode('utf-8')
     else:
         yaml_file_data['submission_guidelines'] = None
+
+    # Save Zip Configuration
+    if serializer.is_valid():
+        uploaded_zip_file = serializer.save()
+    else:
+        response_data = serializer.errors
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         with transaction.atomic():

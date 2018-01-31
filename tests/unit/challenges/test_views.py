@@ -1547,16 +1547,6 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_challenge_using_zip_file_when_server_error_occurs(self):
-        self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
-                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
-        expected = {
-            'error': 'A server error occured while processing zip file. Please try uploading it again!'
-            }
-        response = self.client.post(self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-
     def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(self):
         self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk+10})
