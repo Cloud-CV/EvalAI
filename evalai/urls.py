@@ -28,8 +28,7 @@ from web import views
 handler404 = 'web.views.page_not_found'
 handler500 = 'web.views.internal_server_error'
 
-urlpatterns = [url(r'^$', views.home, name='home'),
-               url(r'^accounts/',
+urlpatterns = [url(r'^accounts/',
                    include('allauth.urls')),
                url(r'^admin/',
                    admin.site.urls),
@@ -71,7 +70,8 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                url(r'^api/web/',
                    include('web.urls',
                            namespace='web')),
-               ]
+               url(r'^$', views.home, name='home'),
+               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
 if settings.DEBUG:

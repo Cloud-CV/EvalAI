@@ -118,7 +118,19 @@ Follow this guide to setup your development machine.
 
 10. That's it, Open web browser and hit the url [http://127.0.0.1:8888].
 
-11. (Optional) If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:
+11. (Optional) To serve the frontend files on the backend server
+    Transfer all frontend files to backend dist directory
+
+    ```
+    gulp dev:syncserver
+    ```
+    Run frontend as well as backend on the backend server
+
+    ```
+    python manage.py runserver --settings=settings.dev
+    ```
+
+12. (Optional) If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:
 
     ```
     python scripts/workers/submission_worker.py
