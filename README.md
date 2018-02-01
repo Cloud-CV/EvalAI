@@ -147,72 +147,71 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```
 
 ## The Team
-
-## Maintainers
 <table>
 <tr>
 <td>
-     <img src="https://avatars3.githubusercontent.com/u/2945708?s=400&v=4" />
-     
+     <img src="https://avatars3.githubusercontent.com/u/2945708?s=400&v=4" width="150" height = "150" />
+      
      Deshraj Yadav
-
+        
 <p align="center">
-<a href = "https://github.com/deshraj"><img src = "http://www.iconninja.com/files/241/825/211/round-collaboration-social-github-code-circle-network-icon.svg" width="36" height = "36"/></a>
-<a href = "https://twitter.com/deshrajdry"><img src = "https://www.shareicon.net/download/2016/07/06/107115_media.svg" width="36" height="36"/></a>
-<a href = "https://deshraj.github.io/"><img src = "http://www.iconninja.com/files/134/910/544/network-website-web-internet-icon.svg" width="36" height="36"/></a>
+<a href = "https://github.com/deshraj"><img src = "http://www.iconninja.com/files/781/322/424/github-icon.svg" width="36" height = "36"/></a>
+<a href = "https://twitter.com/deshrajdry"><img src = "http://www.iconninja.com/files/403/264/1003/twitter-bird-icon.svg" width="36" height="36"/></a>
+<a href = "https://deshraj.github.io/"><img src = "http://www.iconninja.com/files/567/226/557/globe-icon.svg" width="36" height="36"/></a>
 </p>
 </td>
 
 <td>
-     <img src="https://avatars0.githubusercontent.com/u/11537940?s=400&v=4"/>
+     <img src="https://avatars0.githubusercontent.com/u/11537940?s=400&v=4" width="150" height = "150" />
      
      Akash Jain
 
 <p align="center">
-<a href = "https://github.com/aka-jain"><img src = "http://www.iconninja.com/files/241/825/211/round-collaboration-social-github-code-circle-network-icon.svg" width="36" height = "36"/></a>
-<a href = "https://twitter.com/akashjain993"><img src = "https://www.shareicon.net/download/2016/07/06/107115_media.svg" width="36" height="36"/></a>
-<a href = "http://www.jainakash.in/"><img src = "http://www.iconninja.com/files/134/910/544/network-website-web-internet-icon.svg" width="36" height="36"/></a>
+<a href = "https://github.com/aka-jain"><img src = "http://www.iconninja.com/files/781/322/424/github-icon.svg" width="36" height = "36"/></a>
+<a href = "https://twitter.com/akashjain993"><img src = "http://www.iconninja.com/files/403/264/1003/twitter-bird-icon.svg" width="36" height="36"/></a>
+<a href = "http://www.jainakash.in/"><img src = "http://www.iconninja.com/files/567/226/557/globe-icon.svg" width="36" height="36"/></a>
 </p>
 </td>
 
 <td>
-     <img src="https://avatars3.githubusercontent.com/u/4302268?s=400&v=4" />
+     <img src="https://avatars3.githubusercontent.com/u/4302268?s=400&v=4" width="150" height = "150" />
      
      Taranjeet Singh
 
 <p align="center">
-<a href = "https://github.com/taranjeet"><img src = "http://www.iconninja.com/files/241/825/211/round-collaboration-social-github-code-circle-network-icon.svg" width="36" height = "36"/></a>
-<a href = "https://twitter.com/taranjeet7114"><img src = "https://www.shareicon.net/download/2016/07/06/107115_media.svg" width="36" height="36"/></a>
-<a href = "https://www.linkedin.com/in/taranjeet7114/"><img src = "http://www.iconninja.com/files/863/607/751/network-linkedin-social-connection-circular-circle-media-icon.svg" width="36" height="36"/></a>
+<a href = "https://github.com/taranjeet"><img src = "http://www.iconninja.com/files/781/322/424/github-icon.svg" width="36" height = "36"/></a>
+<a href = "https://twitter.com/taranjeet7114"><img src = "http://www.iconninja.com/files/403/264/1003/twitter-bird-icon.svg" width="36" height="36"/></a>
+<a href = "https://www.linkedin.com/in/taranjeet7114/"><img src = "http://www.iconninja.com/files/531/597/203/linkedin-icon.svg" width="36" height="36"/></a>
 </p>
 </td>
 
 <td>
-     <img src="https://avatars3.githubusercontent.com/u/7015220?s=400&v=4"/>
+     <img src="https://avatars3.githubusercontent.com/u/7015220?s=400&v=4" width="150" height = "150" />
      
      Shiv Baran Singh
 
 <p align="center">
-<a href = "https://github.com/spyshiv"><img src = "http://www.iconninja.com/files/241/825/211/round-collaboration-social-github-code-circle-network-icon.svg" width="36" height = "36"/></a>
-<a href = "https://twitter.com/ShivBaranSingh1"><img src = "https://www.shareicon.net/download/2016/07/06/107115_media.svg" width="36" height="36"/></a>
-<a href = "http://shivbaran.in/"><img src = "http://www.iconninja.com/files/134/910/544/network-website-web-internet-icon.svg" width="36" height="36"/></a>
+<a href = "https://github.com/spyshiv"><img src = "http://www.iconninja.com/files/781/322/424/github-icon.svg" width="36" height = "36"/></a>
+<a href = "https://twitter.com/ShivBaranSingh1"><img src = "http://www.iconninja.com/files/403/264/1003/twitter-bird-icon.svg" width="36" height="36"/></a>
+<a href = "http://shivbaran.in/"><img src = "http://www.iconninja.com/files/567/226/557/globe-icon.svg" width="36" height="36"/></a>
 </p>
 </td>
 
 <td>
-     <img src="https://avatars1.githubusercontent.com/u/12206047?s=400&v=4"/>
+     <img src="https://avatars1.githubusercontent.com/u/12206047?s=400&v=4" width="150" height = "150" />
      
      Rishabh Jain
 <p align="center">
-<a href = "https://github.com/rishabhjain2018"><img src = "http://www.iconninja.com/files/241/825/211/round-collaboration-social-github-code-circle-network-icon.svg" width="36" height = "36"/></a>
-<a href = "https://twitter.com/rishabhjain2018"><img src = "https://www.shareicon.net/download/2016/07/06/107115_media.svg" width="36" height="36"/></a>
-<a href = "https://rishabhjain2018.github.io/"><img src = "http://www.iconninja.com/files/134/910/544/network-website-web-internet-icon.svg" width="36" height="36"/></a>
+<a href = "https://github.com/rishabhjain2018"><img src = "http://www.iconninja.com/files/781/322/424/github-icon.svg" width="36" height = "36"/></a>
+<a href = "https://twitter.com/rishabhjain2018"><img src = "http://www.iconninja.com/files/403/264/1003/twitter-bird-icon.svg" width="36" height="36"/></a>
+<a href = "https://rishabhjain2018.github.io/"><img src = "http://www.iconninja.com/files/567/226/557/globe-icon.svg" width="36" height="36"/></a>
 </p>
 </td>
 </tr> 
   </table>
 
-A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
+A non-exhaustive list of other major contributors includes: 
+Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
 
 ## Contribution guidelines
 
