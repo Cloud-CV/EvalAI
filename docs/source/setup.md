@@ -45,7 +45,7 @@ instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 
 * In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You will need to be logged in to GitHub to do this.
 
-* Open Terminal and clone your fork by
+* Open Terminal and clone your fork by using the command:
 
 ```shell
 git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
@@ -70,7 +70,7 @@ pip install -r requirements/dev.txt
 cp settings/dev.sample.py settings/dev.py
 ```
 
-* Create an empty postgres database and run database migration.
+* Create an empty postgres database and run database migration
 
 ```
 createdb evalai -U postgres
@@ -80,7 +80,7 @@ psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 python manage.py migrate --settings=settings.dev
 ```
 
-* For setting up frontend, run
+* For setting up front-end, run:
 
 ```shell
 npm install
@@ -97,7 +97,8 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888), simply do:
+
+* To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888).
 
 ```
 gulp dev:runserver
@@ -157,7 +158,7 @@ instructions](https://help.github.com/articles/connecting-to-github-with-ssh/).
 
 * In your browser, visit [https://github.com/Cloud-CV/EvalAI](https://github.com/Cloud-CV/EvalAI) and click the `fork` button. You will need to be logged in to GitHub to do this.
 
-* Open Terminal and clone your fork by
+* Open Terminal and clone your fork by using the command:
 
 ```shell
 git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
@@ -182,7 +183,7 @@ pip install -r requirements/dev.txt
 cp settings/dev.sample.py settings/dev.py
 ```
 
-* Create an empty postgres database and run database migration.
+* Create an empty postgres database and run database migration
 
 ```
 createdb evalai -U postgres
@@ -192,7 +193,7 @@ psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 python manage.py migrate --settings=settings.dev
 ```
 
-* For setting up frontend, run
+* For setting up frontend, run:
 
 ```shell
 curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
@@ -202,7 +203,7 @@ npm install -g bower
 
 ### Step 4: Start the development environment
 
-* To run backend development server at [backend]
+* To run backend development server at [127.0.0.1:8000]:
 
 ```
 # activate virtual environment if not activated
@@ -210,7 +211,7 @@ source venv/bin/activate
 python manage.py runserver --settings=settings.dev
 ```
 
-* To run frontend development server for at [frontend]
+* To run frontend development server at [127.0.0.1:8888]:
 
 ```
 gulp dev:runserver
@@ -245,7 +246,7 @@ Possible solutions for the same problem can be found at [link].
 
 You can also use Docker Compose to run all the components of EvalAI together. The steps are:
 
-1. Get the source code on to your machine via git.
+1. Get the source code on to your machine via git
 
     ```shell
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
