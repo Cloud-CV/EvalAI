@@ -34,7 +34,7 @@
             <span class="form-icon form-icon-dark"><i class="fa fa-key"></i></span>
             <label for="password">
                 <strong>Password-minlength:8 required</strong>
-                <span id ="pswd-strength-message" ng-style="{color: auth.color}"></span>
+                <span id ="pswd-strength-message" ng-style="{color: auth.color}">{{auth.message}}</span>
             </label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.password.$error" ng-if="signupForm.password.$touched || signupForm.$submitted">
                 <p ng-message="minlength">Password is less than 8 characters.</p>

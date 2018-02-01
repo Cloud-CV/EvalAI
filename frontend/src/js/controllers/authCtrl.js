@@ -182,10 +182,11 @@
         // function to check password strength
         vm.checkStrength = function(password){
             //TextBox left blank. 
-            var password_strength = utilities.check(password) ;
-            var pswdStrength =angular.element(document.querySelector('#pswd-strength-message'));
-            pswdStrength.text = password_strength[0];
-            vm.color = password_strength[1];
+            var passwordStrength = utilities.check(password) ;
+            var strengthMessage =angular.element(document.querySelector('#pswd-strength-message'));
+            strengthMessage.text = passwordStrength[0];
+            vm.message= strengthMessage.text;
+            vm.color = passwordStrength[1];
         };
 
         // function to Verify Email
