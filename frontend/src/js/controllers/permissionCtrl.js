@@ -14,6 +14,10 @@
 
         // message for not verified users
         vm.emailError = utilities.getData('emailError');
+
+        vm.name = utilities.getData('name');
+        vm.email = utilities.getData('email');
     }
 
 })();
+
