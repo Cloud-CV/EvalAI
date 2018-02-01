@@ -396,13 +396,13 @@ gulp.task('dev', function(callback) {
 
 // staging task
 gulp.task('staging', function(callback) {
-    flags.production = false; //Making this 'true' enables file compression. This will be done after js test integration
+    flags.production = true; //Making this 'true' enables file compression. This will be done after js test integration
     runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configStaging'], 'inject', callback);
 });
 
 // production task
 gulp.task('prod', function(callback) {
-    flags.production = false; //Making this 'true' enables file compression. This will be done after js test integration
+    flags.production = true; //Making this 'true' enables file compression. This will be done after js test integration
     runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configProd'], 'inject', callback);
 });
 
