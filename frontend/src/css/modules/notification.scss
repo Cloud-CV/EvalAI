@@ -11,36 +11,51 @@
 .toast-message {
     font-size: 14px;
     a {
-        // color: #ffffff;
+        color: $light-link;
         &:hover {
             // color: #cccccc;
             text-decoration: none;
         }
     }
     label {
-        // color: #ffffff
+        // color: #ffffff;
     }
 }
 
 .toast {
     word-break: initial;
     &.toast-success {
-        //     background-color: #51a351;
+             background-color: $med-green;
+             &:hover {
+                         background-color: $med-green;
+                     }
     }
     &.toast-error {
-        //     background-color: #bd362f;
+            background-color: $med-red;
+             &:hover {
+                         background-color: $med-red;
+                     }
     }
 
     &.toast-info {
-        //     background-color: #2f96b4;
+             background-color: $blue;
+              &:hover {
+                         background-color: $blue;
+                     }
     }
 
     &.toast-wait {
-        //     background-color: #2f96b4;
+            background-color: $wait-blue;
+             &:hover {
+                         background-color: $wait-blue;
+                     }
     }
 
     &.toast-warning {
-        //     background-color: #f89406;
+             background-color: $med-orange;
+              &:hover {
+                         background-color: $hover-orange;
+                     }
     }
 }
 
