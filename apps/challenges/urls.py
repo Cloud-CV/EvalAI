@@ -19,6 +19,8 @@ urlpatterns = [
     # `A-Za-z` because it accepts either of `all, future, past or present` in either case
     url(r'^challenge/(?P<challenge_time>[A-Za-z]+)$', views.get_all_challenges,
         name='get_all_challenges'),
+    url(r'^challenge/featured/$', views.get_featured_challenges,
+        name='get_featured_challenges'),
     url(r'^challenge/(?P<pk>[0-9]+)/$',
         views.get_challenge_by_pk, name='get_challenge_by_pk'),
     url(r'^challenge$', views.get_challenges_based_on_teams,
