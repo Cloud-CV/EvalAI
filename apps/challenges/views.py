@@ -243,6 +243,7 @@ def get_all_challenges(request, challenge_time):
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
+
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
 def get_featured_challenges(request):
@@ -254,6 +255,7 @@ def get_featured_challenges(request):
     serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
+
 
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
