@@ -1178,7 +1178,7 @@
                         var status = response.status;
                         if (status === 204){
                             $mdDialog.hide();
-                            $rootScope.notify("success", "The Challenge was successfully removed");
+                            $rootScope.notify("success", "The Challenge is successfully deleted!");
                         }
                     },
                     onError: function(response) {
