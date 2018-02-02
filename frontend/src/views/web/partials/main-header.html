@@ -31,6 +31,9 @@
                 <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
                 <!-- show after authenticate user -->
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
+                <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.challenge-main" ui-sref-active="active"><i class="fa fa-fire"></i>All Challenges</a></li>
+                <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.teams" ui-sref-active="active"><i class="fa fa-users"></i>Participant Teams</a></li>
+                <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.challenge-host-teams" ui-sref-active="active"><i class="fa fa-paper-plane"></i>Create Challenge</a></li>
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.profile" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{header.user.name}}!</a></li>
             </ul>
         </div>
