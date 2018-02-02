@@ -374,6 +374,7 @@ gulp.task('connect', ['lint'], function() {
     connect.server({
         root: 'frontend/',
         port: 8888,
+        host: '0.0.0.0',
         middleware: function(connect) {
             return [
                 connectModRewrite([
