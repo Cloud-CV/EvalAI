@@ -180,8 +180,14 @@ span.inline {
 
 /*main intro page*/
 
-.ev-md-container {
-    padding: 40px;
+.ev-md-dialog-content {
+  padding: 20px 40px 10px 25px;
+}
+
+.ev-md-dialog-actions {
+  padding: 0px 45px 20px 0px;
+  text-align:center;
+  margin-right: auto; margin-left: auto;
 }
 
 .ev-md-input-container {

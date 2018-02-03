@@ -331,8 +331,28 @@
                  clickOutsideToClose: true,
                   scope: $scope,
                   preserveScope: true,
-                  template: '<md-content><form name=inputForm><md-input-container class=ev-md-input-container><label><i class="fa fa-envelope"></i> Email</label><input type=email name=email ng-required=true ng-model=model.value /><div ng-messages=inputForm.email.$error><p ng-message=required>E-mail is required</p><p ng-message= email>Please enter a valid email</p></div></md-input-container><div><md-button ng-click="closeDialog()">Close</md-button><md-button type= submit ng-disabled=inputForm.$invalid ng-click="result()" >Send Invite</md-button></div></form></md-content>',
-                  controller: function ($scope, $mdDialog) {
+                  template: 
+                          '<md-dialog>'+
+                          '<md-dialog-content class=ev-md-dialog-content>'+
+                          '<strong>Invite Others to this team</strong>'+
+                          '<form name=inputForm>'+
+                          '<md-input-container class=ev-md-input-container>'+
+                          '<label>Email</label>'+
+                           '<input class=dark-autofill type=email name=email ng-required=true ng-model=model.value />'+
+                          '<span class="form-icon form-icon-dark"><i class="fa fa-envelope"></i></span>'+
+                          '<div class=wrn-msg text-highlight ng-messages=inputForm.email.$error>'+
+                          '<p ng-message=required>E-mail is required</p>'+
+                          '<p ng-message= email>Please enter a valid email</p>'+
+                          '</div>'+
+                          '</md-input-container>'+
+                          '</form>'+
+                          '</md-dialog-content>'+
+                          '<md-dialog-actions class=ev-md-dialog-actions>'+
+                          '<md-button ng-click="closeDialog()">Close</md-button>'+
+                          '<md-button type= submit ng-disabled=inputForm.$invalid ng-click="result()" >Send Invite</md-button>'+
+                          '</md-dialog-actions>'+
+                          '</md-dialog>',
+                 controller: function ($scope, $mdDialog) {
                      $scope.closeDialog = function() {
                         $mdDialog.hide();
                      };
