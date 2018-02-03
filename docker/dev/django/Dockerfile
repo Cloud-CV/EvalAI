@@ -15,11 +15,15 @@ RUN useradd evalai -G webapps
 RUN mkdir -p /var/log/evalai/ && chown -R evalai /var/log/evalai/ && chmod -R u+rX /var/log/evalai/
 RUN mkdir -p /var/run/evalai/ && chown -R evalai /var/run/evalai/ && chmod -R u+rX /var/run/evalai/
 
-RUN git clone https://github.com/Cloud-CV/EvalAI.git /code
+RUN mkdir /code
+
+RUN git clone https://github.com/Cloud-CV/EvalAI.git /code/
 
 WORKDIR /code
 
-COPY /code/settings/dev.sample.py /code/settings/dev.py
+RUN ls /code/settings
+
+RUN cp /code/settings/dev.sample.py /code/settings/dev.py
 
 RUN pip install -r requirements/dev.txt
 
