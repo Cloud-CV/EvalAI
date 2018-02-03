@@ -26,7 +26,7 @@
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
-                var status = response.status;
+//                var status = response.status;
                 var result = response.data;
                 vm.user = result;
             },
@@ -34,9 +34,6 @@
 
         utilities.sendRequest(parameters);
 
-
-
-
-    }
+   }
 
 })();
