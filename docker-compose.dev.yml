@@ -14,7 +14,7 @@ services:
       - "15672:15672"  # here, we can access rabbitmq management plugin
 
   django:
-    container_name: django
+    container_name: ngx_django
     hostname: django
     env_file:
       - docker/dev.env
@@ -38,7 +38,7 @@ services:
       - "django"
 
   angularjs:
-    container_name: angularjs
+    container_name: ngx_angularjs
     hostname: angularjs
     build:
       context: ./
@@ -46,6 +46,7 @@ services:
     environment:
       ANGULAR_ENV: development
     ports:
+      - "8888:4200"
       - "4200:4200"
     volumes:
      - .:/code

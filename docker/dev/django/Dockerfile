@@ -21,8 +21,6 @@ RUN git clone https://github.com/Cloud-CV/EvalAI.git /code/
 
 WORKDIR /code
 
-RUN ls /code/settings
-
 RUN cp /code/settings/dev.sample.py /code/settings/dev.py
 
 RUN pip install -r requirements/dev.txt

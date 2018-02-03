@@ -5,10 +5,12 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && apt-get install -y python python-pip python-dev libpq-dev libjpeg-dev libyaml-dev libffi-dev
 
 RUN mkdir /code
-ADD ./ /code/
+
+RUN git clone https://github.com/Cloud-CV/EvalAI.git /code/
+
 WORKDIR /code
 
-RUN ls
+RUN cp settings/dev.sample.py settings/dev.py
 
 RUN pip install -U cffi service_identity
 
