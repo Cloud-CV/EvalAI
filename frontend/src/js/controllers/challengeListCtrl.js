@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities'];
+    ChallengeListCtrl.$inject = ['utilities', '$window'];
 
-    function ChallengeListCtrl(utilities) {
+    function ChallengeListCtrl(utilities, $window) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -147,7 +147,16 @@
 
         utilities.sendRequest(parameters);
 
-
+        vm.scrollUp = function() { 
+            utilities.hideButton();
+            angular.element($window).bind('scroll', function(){
+                if(this.pageYoffset >= 100 ){
+                     utilities.showButton();
+                }else{
+                     utilities.hideButton();
+                }
+            });
+        };
 
         // utilities.showLoader();
     }

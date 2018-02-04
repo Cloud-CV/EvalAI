@@ -1,6 +1,6 @@
 <section class="ev-sm-container ev-view challenge-container">
     <!-- ongoing challenges -->
-    <div class="challenge-page-title"><strong class="text-med-black fs-18">Ongoing Challenges</strong></div>
+    <div class="challenge-page-title" id = "ongoing-challenges"><strong class="text-med-black fs-18">Ongoing Challenges</strong></div>
     <div ng-if="challengeList.noneCurrentChallenge">No Ongoing Challenges found!</div>
     <div class="row">
         <div class="col s12 m3" ng-repeat="challenge in challengeList.currentList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
@@ -22,6 +22,12 @@
             </a>
         </div>
     </div>
+
+    <!-- scroll up button -->
+    <div id = "scroll-up" ng-class="challengeList.scrollUp()" >
+    <a class="ev-btn-scroll" scroll-to= "ongoing-challenges" offset= "800"><strong><i class="align-right fa fa-chevron-up"></i></strong></a>
+    </div>
+
     <!-- upcoming challenges -->
     <div class="challenge-page-title"><strong class="text-med-black fs-18">Upcoming Challenges</strong></div>
     <div ng-if="challengeList.noneUpcomingChallenge">No Upcoming Challenges found!</div>
@@ -69,5 +75,6 @@
             </a>
         </div>
     </div>
+</div>
 </section>
 <!-- <ui-view></ui-view> -->
