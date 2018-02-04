@@ -28,7 +28,8 @@
         </div>
         <div class="col s12 m7">
             <h4 class="fs-18">Challenge Analysis</h4>
-            <div class="main-title analytics-challenge-title" ng-if="!analytics.isTeamSelected">Please select challenge for analysis.</div>
+            <div class="main-title analytics-challenge-title" ng-if="!analytics.isTeamSelected && analytics.challengeListCount > 0">Please select challenge for analysis.</div>
+            <div class="main-title analytics-challenge-title" ng-if="analytics.challengeListCount === 0 && analytics.challengeList.length === 0">There are no challenges to analyze. Click <a ui-sref="web.challenge-host-teams">here</a> to create a new challenge.</div>
             <div class="analytics-details" ng-if="analytics.isTeamSelected">
                 <div class="row">
                     <div class="col s12 m4 l2">
