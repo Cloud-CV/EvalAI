@@ -150,7 +150,7 @@
         vm.scrollUp = function() { 
             utilities.hideButton();
             angular.element($window).bind('scroll', function(){
-                if(this.pageYOffset >= 100 ){
+                if(this.pageYoffset >= 100 ){
                      utilities.showButton();
                 }else{
                      utilities.hideButton();
