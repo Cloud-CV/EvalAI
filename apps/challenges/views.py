@@ -331,7 +331,7 @@ def challenge_phase_list(request, challenge_pk):
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_detail(request, challenge_pk, pk):
     try:
