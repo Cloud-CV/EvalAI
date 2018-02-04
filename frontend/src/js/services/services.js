@@ -104,6 +104,14 @@
             angular.element("#sim-loader").fadeOut();
             angular.element(".web-container").removeClass('low-screen');
         };
+        this.showButton = function() {
+            angular.element("#scroll-up").show();
+        };
+
+        this.hideButton = function() {
+            angular.element("#scroll-up").fadeOut();
+        };
+
     }
 
 })();
