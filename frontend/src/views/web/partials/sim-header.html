@@ -1,7 +1,7 @@
-<div class="sim-header ev-fixed white ">
-    <nav class="transparent ev-z-depth-5">
-        <div class="nav-wrapper padding-sm-lr-header">
-            <a href="#" data-activates="sidebarToggle" class="button-collapse text-med-gray hide-on-med-and-down"><i class="fa fa-bars"></i></a>
+<div class="sim-header padding-lr-header">
+    <nav>
+        <div class="nav-wrapper">
+            <a href="javascript:void(0)" data-activates="mobile-demo" class="button-collapse sim-header-link"><i class="fa fa-bars"></i></a>
             <ul class="left ">
              <li class="text-med-gray"><a class="waves-effect waves-dark dark-link ev-header-overflow dashboard-evailai-logo" ui-sref="home"> <span class="hide-on-small-only"><img src="dist/images/evalai-logo.png"></span></a></li>
                 <!-- <li class="text-med-gray">{{pageTitle}}</li> -->
@@ -14,6 +14,24 @@
                      <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="logout()">Logout</div>
                 </li>
             </ul>
+      <ul class="side-nav" id="mobile-demo">
+        <li>
+          <div class="userView">
+            <div class="background"></div>
+            <a><span class="white-text name">EvalAI</span></a>
+          </div>
+        </li>
+        <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active"><i class="fa fa-home"></i>Home</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark sim-header-link" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>Sign Up</a></li>
+        <li ng-hide="isAuth"><a class="waves-effect waves-dark sim-header-link" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
+        <!-- show after authenticate user -->
+        <li ng-show="isAuth"><a class="waves-effect waves-dark sim-header-link" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
+        <li ng-show="isAuth"><a class="waves-effect waves-dark sim-header-link" ui-sref="web.challenge-main" ui-sref-active="active"><i class="fa fa-fire"></i>All Challenges</a></li>
+        <li ng-show="isAuth"><a class="waves-effect waves-dark sim-header-link" ui-sref="web.teams" ui-sref-active="active"><i class="fa fa-users"></i>Participant Teams</a></li>
+        <li ng-show="isAuth"><a class="waves-effect waves-dark sim-header-link" ui-sref="web.challenge-host-teams" ui-sref-active="active"><i class="fa fa-paper-plane"></i>Create Challenge</a></li>
+        <li ng-show="isAuth"><a class="waves-effect waves-dark sim-header-link" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{web.name}}!</a></li>
+      </ul>
+
         </div>
     </nav>
 </div>
