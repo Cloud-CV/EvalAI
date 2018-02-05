@@ -20,6 +20,8 @@
         vm.regUser = {};
         // useDetails for login
         vm.getUser = {};
+        // color to show password strength
+        vm.color = {};
         vm.isResetPassword = false;
         // form error
         vm.isFormError = false;
@@ -147,7 +149,7 @@
                             if ($rootScope.previousState) {
                                 $state.go($rootScope.previousState);
                                 vm.stopLoader();
-                            }else {
+                            } else {
                                 $state.go('web.dashboard');
                             }
                         } else {
@@ -176,16 +178,11 @@
             }
         };
 
-        // variable required for checkStrength
-        vm.color={};
 
         // function to check password strength
-        vm.checkStrength = function(password){
-            //TextBox left blank. 
-            var passwordStrength = utilities.check(password) ;
-            var strengthMessage =angular.element(document.querySelector('#pswd-strength-message'));
-            strengthMessage.text = passwordStrength[0];
-            vm.message= strengthMessage.text;
+        vm.checkStrength = function(password) {
+            var passwordStrength = utilities.passwordStrength(password);
+            vm.message = passwordStrength[0];
             vm.color = passwordStrength[1];
         };
 
