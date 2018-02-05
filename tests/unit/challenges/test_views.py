@@ -648,6 +648,23 @@ class GetAllChallengesTest(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
         )
 
+        # Featured challenge
+        self.challenge5 = Challenge.objects.create(
+            title='Test Challenge 5',
+            short_description='Short description for test challenge 5',
+            description='Description for test challenge 5',
+            terms_and_conditions='Terms and conditions for test challenge 5',
+            submission_guidelines='Submission guidelines for test challenge 5',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            featured=True,
+        )
+
     def test_get_past_challenges(self):
         expected = [
             {
@@ -701,6 +718,27 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge2.enable_forum,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "is_active": True,
+            },
+            {
+                "id": self.challenge5.pk,
+                "title": self.challenge5.title,
+                "short_description": self.challenge5.short_description,
+                "description": self.challenge5.description,
+                "terms_and_conditions": self.challenge5.terms_and_conditions,
+                "submission_guidelines": self.challenge5.submission_guidelines,
+                "evaluation_details": self.challenge5.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge5.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge5.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge5.creator.pk,
+                    "team_name": self.challenge5.creator.team_name,
+                    "created_by": self.challenge5.creator.created_by.username,
+                },
+                "published": self.challenge5.published,
+                "enable_forum": self.challenge5.enable_forum,
+                "anonymous_leaderboard": self.challenge5.anonymous_leaderboard,
+                "is_active": True,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -732,6 +770,37 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge4.enable_forum,
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "is_active": False,
+            }
+        ]
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'], expected)
+
+    def test_get_featured_challenges(self):
+        self.url = reverse_lazy('challenges:get_all_challenges',
+                                kwargs={'challenge_time': "FEATURED"})
+
+        expected = [
+            {
+                "id": self.challenge5.pk,
+                "title": self.challenge5.title,
+                "short_description": self.challenge5.short_description,
+                "description": self.challenge5.description,
+                "terms_and_conditions": self.challenge5.terms_and_conditions,
+                "submission_guidelines": self.challenge5.submission_guidelines,
+                "evaluation_details": self.challenge5.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge5.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge5.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge5.creator.pk,
+                    "team_name": self.challenge5.creator.team_name,
+                    "created_by": self.challenge5.creator.created_by.username,
+                },
+                "published": self.challenge5.published,
+                "enable_forum": self.challenge5.enable_forum,
+                "anonymous_leaderboard": self.challenge5.anonymous_leaderboard,
+                "is_active": True,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -805,6 +874,27 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge4.enable_forum,
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "is_active": False,
+            },
+            {
+                "id": self.challenge5.pk,
+                "title": self.challenge5.title,
+                "short_description": self.challenge5.short_description,
+                "description": self.challenge5.description,
+                "terms_and_conditions": self.challenge5.terms_and_conditions,
+                "submission_guidelines": self.challenge5.submission_guidelines,
+                "evaluation_details": self.challenge5.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge5.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge5.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge5.creator.pk,
+                    "team_name": self.challenge5.creator.team_name,
+                    "created_by": self.challenge5.creator.created_by.username,
+                },
+                "published": self.challenge5.published,
+                "enable_forum": self.challenge5.enable_forum,
+                "anonymous_leaderboard": self.challenge5.anonymous_leaderboard,
+                "is_active": True,
             }
         ]
         response = self.client.get(self.url, {}, format='json')

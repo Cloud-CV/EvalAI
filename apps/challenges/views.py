@@ -221,7 +221,7 @@ def get_all_challenges(request, challenge_time):
     Returns the list of all challenges
     """
     # make sure that a valid url is requested.
-    if challenge_time.lower() not in ("all", "future", "past", "present"):
+    if challenge_time.lower() not in ("all", "future", "past", "present", "featured"):
         response_data = {'error': 'Wrong url pattern!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -235,6 +235,11 @@ def get_all_challenges(request, challenge_time):
 
     elif challenge_time.lower() == "future":
         q_params['start_date__gt'] = timezone.now()
+
+    elif challenge_time.lower() == "featured":
+        q_params['start_date__lt'] = timezone.now()
+        q_params['end_date__gt'] = timezone.now()
+        q_params['featured'] = True
     # for `all` we dont need any condition in `q_params`
 
     challenge = Challenge.objects.filter(**q_params)
