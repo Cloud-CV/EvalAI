@@ -105,7 +105,15 @@
             angular.element(".web-container").removeClass('low-screen');
         };
 
-        this.check = function(password){
+        this.showButton = function() {
+            angular.element("#scroll-up").show();
+        };
+
+        this.hideButton = function() {
+            angular.element("#scroll-up").fadeOut();
+        };
+
+        this.passwordStrength = function(password){
 
            //Regular Expressions.  
             var regex = new Array();
@@ -119,36 +127,29 @@
                 }
             }
             //Validate for length of Password.  
-            if (passed > 2 && password.length > 5) {
+            if (passed > 2 && password.length > 8) {
                 passed++;
             }
-           
-            //Display status.  
+ 
             var color = "";
             var strength = "";
-            var status = false;
             if (passed == 1) {
                 strength = "Weak";
                 color = "red";
-                status = false; 
             } else if (passed == 2) {
                 strength = "Average";
                 color = "darkorange";
-                status = false;
             } else if (passed == 3) {
                 strength = "Good";
                 color = "green";
-                status = true;
             } else if (passed == 4) {
                 strength = "Strong";
                 color = "darkgreen";
-                status = true;
             } else if (passed == 5) {
                 strength = "Very Strong";
                 color = "darkgreen";
-                status = true;
             }
-            return [strength,color,status];
+            return [strength, color];
        };
     }
 
