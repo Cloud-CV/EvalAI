@@ -111,42 +111,42 @@ gulp.task('js', function() {
         .pipe(prettyError())
         .pipe(concat('app.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify()))
+        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     var configs = gulp.src('frontend/src/js/route-config/*.js')
         .pipe(prettyError())
         .pipe(concat('route-config.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify()))
+        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     var controllers = gulp.src('frontend/src/js/controllers/*.js')
         .pipe(prettyError())
         .pipe(concat('controllers.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify()))
+        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     var directives = gulp.src('frontend/src/js/directives/*.js')
         .pipe(prettyError())
         .pipe(concat('directives.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify()))
+        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     var filters = gulp.src('frontend/src/js/filters/*.js')
         .pipe(prettyError())
         .pipe(concat('filters.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify()))
+        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     var services = gulp.src('frontend/src/js/services/*.js')
         .pipe(prettyError())
         .pipe(concat('services.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify()))
+        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     // return merge(app, configs, controllers, directives, filters, services)
@@ -397,13 +397,13 @@ gulp.task('dev', function(callback) {
 
 // staging task
 gulp.task('staging', function(callback) {
-    flags.production = false; //Making this 'true' enables file compression. This will be done after js test integration
+    flags.production = true; //Making this 'true' enables file compression. This will be done after js test integration
     runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configStaging'], 'inject', callback);
 });
 
 // production task
 gulp.task('prod', function(callback) {
-    flags.production = false; //Making this 'true' enables file compression. This will be done after js test integration
+    flags.production = true; //Making this 'true' enables file compression. This will be done after js test integration
     runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configProd'], 'inject', callback);
 });
 
