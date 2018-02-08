@@ -28,9 +28,18 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 ## Running end-to-end tests
 
 Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+### Using Docker
 
-## Docker Setup
+You can also use Docker Compose to run all the components of EvalAI-ngx together. The steps are:
 
-git clone https://github.com/Cloud-CV/EvalAI-ngx.git && cd EvalAI-ngx
+1. Get the source code on to your machine via git.
 
-docker-compose -f docker-compose.dev.yml up -d --build
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI-ngx.git && cd EvalAI-ngx
+    ```
+
+2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+
+    ```
+    docker-compose -f docker-compose.dev.yml up -d --build
+    ```
