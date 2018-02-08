@@ -136,7 +136,7 @@
         };
         return directive;
 
-        function controller($scope, $element, $attrs, $http) {
+        function controller() {
            var js = document.createElement("script");
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
             document.getElementsByTagName("head")[0].appendChild(js);
@@ -158,7 +158,7 @@
         };
         return directive;
 
-        function controller($scope, $element, $attrs, $http) {
+        function controller() {
            var js = document.createElement("script");
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
             document.getElementsByTagName("head")[0].appendChild(js);
