@@ -283,3 +283,5 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
 REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'accounts.serializers.ProfileSerializer',
 }
+
+TESTING = 'test' in sys.argv
