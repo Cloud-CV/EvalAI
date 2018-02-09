@@ -324,14 +324,7 @@
         };
 
 
-        vm.inviteOthers = function(ev, participantTeamId) {
-            ev.stopPropagation();
-
-            $mdDialog.show({
-                 clickOutsideToClose: true,
-                  scope: $scope,
-                  preserveScope: true,
-                  template: 
+        var inviteTemplate = 
                           '<md-dialog>'+
                           '<md-dialog-content class=ev-md-dialog-content>'+
                           '<h5><strong>Invite Others to this team</strong></h5>'+
@@ -351,8 +344,17 @@
                           '<md-button ng-click="closeDialog()">Cancel</md-button>'+
                           '<md-button type= submit ng-disabled=inputForm.$invalid ng-click="result()" >Send Invite</md-button>'+
                           '</md-dialog-actions>'+
-                          '</md-dialog>',
-                 controller: function ($scope, $mdDialog) {
+                          '</md-dialog>';
+
+        vm.inviteOthers = function(ev, participantTeamId) {
+            ev.stopPropagation();
+
+            $mdDialog.show({
+                 clickOutsideToClose: true,
+                  scope: $scope,
+                  preserveScope: true,
+                  template: inviteTemplate,
+                  controller: function ($scope, $mdDialog) {
                      $scope.closeDialog = function() {
                         $mdDialog.hide();
                      };
