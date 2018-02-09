@@ -34,5 +34,9 @@
         utilities.sendRequest(parameters);
 
    }
+        vm.name = utilities.getData('name');
+        vm.email = utilities.getData('email');
+    }
 
 })();
+
