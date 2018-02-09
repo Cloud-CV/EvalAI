@@ -350,7 +350,7 @@
             ev.stopPropagation();
 
             $mdDialog.show({
-                 clickOutsideToClose: true,
+                  clickOutsideToClose: true,
                   scope: $scope,
                   preserveScope: true,
                   template: inviteTemplate,
@@ -358,10 +358,9 @@
                      $scope.closeDialog = function() {
                         $mdDialog.hide();
                      };
-
-                    $scope.result = function() {
+                     $scope.result = function() {
                         $mdDialog.hide(this);
-                    };
+                     };
                   }
             })
 

@@ -331,19 +331,18 @@
                           '</md-dialog-actions>'+
                           '</md-dialog>';
 
-             $mdDialog.show({
+            $mdDialog.show({
                  clickOutsideToClose: true,
                   scope: $scope,
                   preserveScope: true,
-                  template:inviteTemplate,
+                  template: inviteTemplate,
                   controller: function ($scope, $mdDialog) {
                      $scope.closeDialog = function() {
                         $mdDialog.hide();
                      };
-
-                    $scope.result = function() {
+                     $scope.result = function() {
                         $mdDialog.hide(this);
-                    };
+                     };
                   }
             })
       
