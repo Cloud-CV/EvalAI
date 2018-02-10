@@ -574,10 +574,13 @@
     function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
 
         // Google Analytics Scripts
-        $window.ga('create', 'UA-45466017-2', 'auto');
-        $rootScope.$on('$stateChangeSuccess', function() {
-            $window.ga('send', 'pageview', $location.path());
-        });
+        // Analytics are not needed in testing 
+        if($window.ga) {
+            $window.ga('create', 'UA-45466017-2', 'auto');
+            $rootScope.$on('$stateChangeSuccess', function() {
+                $window.ga('send', 'pageview', $location.path());
+            });
+        }
 
         // setting timout for token (7days)
         // var getTokenTime = utilities.getData('tokenTime');
