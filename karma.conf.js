@@ -18,7 +18,6 @@ module.exports = function(config) {
             'frontend/dist/js/config.js',
             'node_modules/angular-mocks/angular-mocks.js',
             'frontend/src/js/app.js',
-            'frontend/src/js/route-config/*.js',
             'frontend/src/**/*.js',
             'frontend/tests/**/*.test.js'
         ],
