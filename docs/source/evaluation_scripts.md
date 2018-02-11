@@ -1,4 +1,4 @@
-## Evaluation Script
+## Writing Evaluation Script
 
 Each challenge has an evaluation script, which evaluates the submission of participants and returns the scores which will populate the leaderboard.
 
@@ -6,7 +6,7 @@ The logic for evaluating and judging a submission is customizable and varies fro
 
 Evaluation scripts are required to have an `evaluate` function. This is the main function, which is used by workers to evaluate the submission messages.
 
-The syntax of evaluate function is
+The syntax of evaluate function is:
 
 ```
 
@@ -53,3 +53,5 @@ output['result'] = [
 ```
 
 `output` should contain a key named `result`, which is a list containing entries per challenge phase split. Each challenge phase split object contains various keys, which are then displayed as columns in leaderboard.
+
+**Note**: If your evaluation script uses some precompiled libraries (<a href="https://github.com/pdollar/coco/">MSCOCO</a> for example), then make sure that the library is compiled against a Linux Distro (Ubuntu 14.04 recommended). Libraries compiled against OSx or Windows might or might not work properly.

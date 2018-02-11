@@ -1,4 +1,4 @@
-## Architecture Decisions
+## Architectural Decisions
 
 This is a collection of records for architecturally significant decisions.
 
