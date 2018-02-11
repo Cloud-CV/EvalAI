@@ -1,19 +1,31 @@
 <section ng-repeat="item in challenge.phases.results" class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view phase-card">
         <div class="row">
-            <div class="col s12">
-                <span class="fs-18 text-med-black"><strong>{{item.name}}</strong></span>
+            <div class="col s11 m11">
+                <div class="row">
+                    <div class="col s12">
+                        <span class="fs-18 text-med-black"><strong>{{item.name}}</strong></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12">
+                        <p><strong class="text-light-black fs-12">Starts on</strong>
+                            <br> <strong>{{item.start_date | date:'medium'}}</strong></p>
+                        <p><strong class="text-light-black fs-12">Ends on</strong>
+                            <br> <strong>{{item.end_date | date:'medium'}}</strong></p>
+                        <div ng-bind-html="item.description"></div>
+                        <p><strong class="text-light-black fs-12">Max number of submissions/day</strong>
+                            <br> <strong>{{item.max_submissions_per_day}}</strong></p>
+                        <p><strong class="text-light-black fs-12">Max total submissions</strong>
+                            <br> <strong>{{item.max_submissions}}</strong></p>
+                    </div>
+                </div>
             </div>
-            <div class="col s12">
-                <p><strong class="text-light-black fs-12">Starts on</strong>
-                    <br> <strong>{{item.start_date | date:'medium'}}</strong></p>
-                <p><strong class="text-light-black fs-12">Ends on</strong>
-                    <br> <strong>{{item.end_date | date:'medium'}}</strong></p>
-                <div ng-bind-html="item.description"></div>
-                <p><strong class="text-light-black fs-12">Max number of submissions/day</strong>
-                    <br> <strong>{{item.max_submissions_per_day}}</strong></p>
-                <p><strong class="text-light-black fs-12">Max total submissions</strong>
-                    <br> <strong>{{item.max_submissions}}</strong></p>
+            <div ng-if="challenge.isChallengeHost" class="col s1">
+                <a class="pointer" ng-click="challenge.challengePhaseDialog($event, item)">
+                    <i class="fa fa-pencil" aria-hidden="true">
+                    </i>
+                </a>
             </div>
         </div>
     </div>

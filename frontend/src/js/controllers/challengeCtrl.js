@@ -156,10 +156,10 @@
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
-                                                        if (response.data['detail']) {
+                                                        if (response.status == 404) {
                                                             var error = "Please select a team first!";
-                                                        } else if (response.data['error']) {
-                                                            error = response.data['error'];
+                                                        } else {
+                                                            error = "Server error";
                                                         }
                                                         $rootScope.notify("error", error);
                                                         vm.stopLoader();
@@ -1158,8 +1158,6 @@
 // Edit submission guidelines
         vm.submissionGuidelinesDialog = function(ev) {
             vm.tempSubmissionGuidelines = vm.page.submission_guidelines;
-            console.log("ABCCCCCCCCCCCC");
-            console.log(vm.tempTermsAndConditions);
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
@@ -1179,7 +1177,6 @@
                             break;
                         }
                     }
-                console.log("BLANK"+vm.page.submission_guidelines);
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.method = 'PATCH';
                 parameters.data = {
@@ -1411,6 +1408,82 @@
                 utilities.sendRequest(parameters);
             } else {
                 vm.page.title = vm.tempChallengeTitle;
+                $mdDialog.hide();
+            }
+        };
+
+        vm.challengePhaseDialog = function(ev, phase) {
+            vm.page.challenge_phase = phase;
+            vm.phaseStartDate = new Date(phase.start_date);
+            vm.phaseEndDate = new Date(phase.end_date);
+            vm.testAnnotationFile = null;
+            vm.sanityCheckPass = true;
+            vm.sanityCheck = "";
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-phase.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editChallengePhase = function(editChallengePhaseForm) {
+            if(editChallengePhaseForm){
+                vm.challengePhaseId = vm.page.challenge_phase.id;
+                var parameters = {};
+                parameters.url = "challenges/challenge/" + vm.challengeId + "/challenge_phase/" + vm.challengePhaseId;
+                parameters.method = 'PATCH';
+                var formData = new FormData();
+                formData.append("name", vm.page.challenge_phase.name);
+                formData.append("description", vm.page.challenge_phase.description);
+                formData.append("start_date", vm.phaseStartDate.toISOString());
+                formData.append("end_date", vm.phaseEndDate.toISOString());
+                formData.append("max_submissions_per_day", vm.page.challenge_phase.max_submissions_per_day);
+                formData.append("max_submissions", vm.page.challenge_phase.max_submissions);
+                if (vm.testAnnotationFile){
+                    formData.append("test_annotation", vm.testAnnotationFile);
+                }
+                parameters.data = formData;
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        utilities.hideLoader();
+                        if (status === 200) {
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The challenge phase details are successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        utilities.hideLoader();
+                        $mdDialog.hide();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+                utilities.showLoader();
+                utilities.sendRequest(parameters, 'header', 'upload');
+            } else {
+                parameters = {};
+                parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        vm.phases = details;
+                        utilities.hideLoader();
+                    },
+                    onError: function(response) {
+                        var error = response.data;
+                        utilities.storeData('emailError', error.detail);
+                        $state.go('web.permission-denied');
+                        utilities.hideLoader();
+                    }
+                };
+                utilities.sendRequest(parameters);
                 $mdDialog.hide();
             }
         };
