@@ -28,7 +28,7 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 ## Running end-to-end tests
 
 Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-### Using Docker
+### Setup using Docker
 
 You can also use Docker Compose to run all the components of EvalAI-ngx together. The steps are:
 
