@@ -32,10 +32,6 @@
                 var result = response.data;
                 if (status == 200) {
                     vm.name = result.username;
-                    vm.email = result.email;
-                    utilities.storeData('name', vm.name);
-                    utilities.storeData('email',vm.email);
-
                 }
             },
             onError: function() {
