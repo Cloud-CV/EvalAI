@@ -12,5 +12,5 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
                     'submission_result_file', 'submission_metadata_file', )
     list_filter = ('participant_team', 'challenge_phase',
                    'status', 'is_public')
-    search_fields = ('participant_team', 'challenge_phase',
-                     'created_by', 'status')
+    search_fields = ('participant_team__team_name', 'challenge_phase__name',
+                     'created_by__username', 'status')

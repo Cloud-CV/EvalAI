@@ -19,7 +19,6 @@
       "trix",
       "angular-material-datetimepicker",
       "moment"
-
     ]
   },
   "paths": {
