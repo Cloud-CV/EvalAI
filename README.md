@@ -1,7 +1,7 @@
 # EvalAI-ngx
 Revamped codebase of EvalAI Frontend
 
-<p align="center"><img width="65%" src="src/assets/imgages/evalai_logo.png" /></p>
+<p align="center"><img width="65%" src="src/assets/images/evalai_logo.png" /></p>
 
 ------------------------------------------------------------------------------------------
 
@@ -12,7 +12,7 @@ EvalAI is an open source web application that helps researchers, students and da
 
 In recent years, it has become increasingly difficult to compare an algorithm solving a given task with other existing approaches. These comparisons suffer from minor differences in algorithm implementation, use of non-standard dataset splits and different evaluation metrics. By providing a central leaderboard and submission interface, we make it easier for researchers to reproduce the results mentioned in the paper and perform reliable & accurate quantitative analysis. By providing swift and robust backends based on map-reduce frameworks that speed up evaluation on the fly, EvalAI aims to make it easier for researchers to reproduce results from technical papers and perform reliable and accurate analyses.
 
-<p align="center"><img width="65%" src="src/assets/imgages/kaggle_comparison.png" /></p>
+<p align="center"><img width="65%" src="src/assets/images/kaggle_comparison.png" /></p>
 
 A question we’re often asked is: Doesn’t Kaggle already do this? The central differences are:
 
