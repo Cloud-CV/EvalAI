@@ -1,3 +1,4 @@
+import base64
 import os
 import uuid
 
@@ -48,3 +49,23 @@ def get_model_object(model_name):
             raise NotFound('{} {} does not exist'.format(model_name.__name__, pk))
     get_model_by_pk.__name__ = 'get_{}_object'.format(model_name.__name__.lower())
     return get_model_by_pk
+
+
+def encode_data(data):
+    """
+    Turn `data` into a hash and an encoded string, suitable for use with `decode_data`.
+    """
+    encoded = []
+    for i in data:
+        encoded.append(base64.encodestring(i).split("=")[0])
+    return encoded
+
+
+def decode_data(data):
+    """
+    The inverse of `encode_data`.
+    """
+    decoded = []
+    for i in data:
+        decoded.append(base64.decodestring(i+"=="))
+    return decoded
