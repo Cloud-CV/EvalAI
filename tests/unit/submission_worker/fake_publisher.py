@@ -1,7 +1,10 @@
-from scripts.workers.submission_worker import (test_add_challenge_callback, test_process_submission_callback)
+from scripts.workers.submission_worker import (
+                            test_add_challenge_callback,
+                            test_process_submission_callback
+                            )
+
 
 class FakePublisher(object):
-    
     consumer_endpoints = {
                             "submission.*.*": test_process_submission_callback,
                             "challenge.*.*": test_add_challenge_callback,
