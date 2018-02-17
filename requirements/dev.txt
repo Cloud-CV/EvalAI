@@ -11,6 +11,7 @@ django-spaghetti-and-meatballs==0.2.2
 flake8==3.0.4
 pytest-cov==2.4.0
 pytest==3.0.3
+recommonmark==0.4.0
 sphinx==1.4.8
 sphinx-autobuild==0.6.0
 sphinx-rtd-theme==0.1.9
