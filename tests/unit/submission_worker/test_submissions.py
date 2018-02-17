@@ -14,6 +14,7 @@ from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
+from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
 
 
@@ -63,9 +64,10 @@ class BaseAPITestClass(APITestCase):
             terms_and_conditions='Terms and conditions for test challenge',
             submission_guidelines='Submission guidelines for test challenge',
             creator=self.challenge_host_team,
-            start_date=timezone.now() - timedelta(days=2),
+            start_date=timezone.now(),
             end_date=timezone.now() + timedelta(days=1),
-            published=False,
+            published=True,
+            approved_by_admin=True,
             enable_forum=True,
             anonymous_leaderboard=False)
 
@@ -80,7 +82,7 @@ class BaseAPITestClass(APITestCase):
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
+                start_date=timezone.now(),
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',

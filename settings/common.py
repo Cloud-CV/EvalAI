@@ -284,4 +284,7 @@ REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'accounts.serializers.ProfileSerializer',
 }
 
+# For inviting users to participant and host teams.
+ADMIN_EMAIL = "admin@cloudcv.org"
+
 TESTING = 'test' in sys.argv
