@@ -1,39 +1,45 @@
-## Tutorial to participate in a challenge in EVALAI
+## Tutorial to participate in a challenge in EvalAI
 
-EvalAI is an open-source web platform for organizing and participating in AI challenges. EvalAI = evaluating the state of the art in AI.
-Here are NINE (IX) easy steps to participate in a challenge in AVALAI. 
+Participating in EvalAI is really easy. One just needs to create an account and a participant team in order to participate in a challenge.
 
-The steps are as follow:-
+If you are already familiar with the flow of EvalAI, you may want to skip this section else please follow the following steps to participate in a challenge (VQA Challenge 2017 in this example):
 
-### 1.	Open the [EvalAI site](https://evalai.cloudcv.org/).
+### 1. Visit evalai.cloudcv.org
 
-<img src="https://github.com/gautamjajoo/EvalAI/blob/Tutorial/docs/source/_static/img/1.png" />
+Open [EvalAI website](https://evalai.cloudcv.org/).
 
-### 2.	Sign Up and fill in your credentials or login if you have already registered.
+<img src="_static/img/1.png"/>
 
-<img src="https://github.com/gautamjajoo/EvalAI/blob/Tutorial/docs/source/_static/img/2.png" />
+### 2. Sign up or Log in
 
-<img src="https://github.com/gautamjajoo/EvalAI/blob/Tutorial/docs/source/_static/img/3.png" />
+Sign Up and fill in your credentials or log in if you have already registered.
 
-### 3.	After signing up you would be on the dashboard page.
+<img src="_static/img/3.png" />
 
-<img src="https://github.com/gautamjajoo/EvalAI/blob/Tutorial/docs/source/_static/img/4.png" />
+After signing up you would be on the dashboard page.
 
-### 4.	Then, go to challenges section and choose an active challenge.
+<img src="_static/img/4.png" />
 
-<img src="https://github.com/gautamjajoo/EvalAI/blob/Tutorial/docs/source/_static/img/5.png" />
+### 4. Choose challenge
 
-### 5.	After reading the challenge instructions you can participate in the challenge.
+Then, go to challenges section and choose an active challenge.
 
-<img src="https://github.com/gautamjajoo/EvalAI/blob/Tutorial/docs/source/_static/img/6.png" />
+<img src="_static/img/5.png" />
 
-### 6.	Create a team participant if there isn't any or you can select from the existing ones.
+### 5. Challenge Page
 
-<img src="https://github.com/gautamjajoo/EvalAI/blob/Tutorial/docs/source/_static/img/7.png" />
+After reading the challenge instructions on the challenge page, you can participate in the challenge.
 
-### 7.	Click Participate tab after selecting a team.
+<img src="_static/img/6.png" />
 
-<img src="https://github.com/gautamjajoo/EvalAI/blob/Tutorial/docs/source/_static/img/9.png" />
+### 6. Create Participant Team
 
-### 8.	Enjoy and Start your Hack!
+Create a participant team if there isn't any or you can select from the existing ones.
 
+<img src="_static/img/7.png" />
+
+Click on 'Participate' tab after selecting a team.
+
+<img src="_static/img/9.png" />
+
+**Tada!** you have successfully participated in a challenge.
