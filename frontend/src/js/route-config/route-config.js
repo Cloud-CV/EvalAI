@@ -515,27 +515,33 @@
 
         $rootScope.isAuth = false;
         // check for valid user
-        $rootScope.$on('$stateChangeStart', function(event, toState) {
-            if (toState.authenticate && !utilities.isAuthenticated()) {
-                $rootScope.isAuth = false;
-                // User isn’t authenticated
-                $state.transitionTo("auth.login");
-                event.preventDefault();
-            }
-            // restrict authorized user too access login/signup page
-            else if (toState.authenticate === false && utilities.isAuthenticated()) {
+        $rootScope.$on("$stateChangeStart", function(event, toState) {
+            if (utilities.isAuthenticated()) {
                 $rootScope.isAuth = true;
-                $state.transitionTo("home");
-                event.preventDefault();
-                return false;
-            } else if (utilities.isAuthenticated()) {
-                $rootScope.isAuth = true;
+                if (toState.authpage) {
+                    event.preventDefault();
+                    $state.go("home");
+                }
+            } else {
+                if (toState.authenticate) {
+                    if (toState.url === '/leaderboard' || toState.url === '/overview' ||
+                        toState.url === '/evaluation' || toState.url === '/phases' ||
+                        toState.url === '/participate') {
+                        var path = $location.path(); // get the current path
+                        var pathArray = path.split('/'); // split it to make a array
+                        var challengeId = pathArray[pathArray.length - 2]; // get the challenge id
+                        var newPath = '/featured-challenges/' + challengeId + toState.url; // create a new path
+                        $location.path(newPath); // redirect to that path
+                    } else {
+                        event.preventDefault();
+                        $state.go("auth.login");
+
+                    }
+                }
             }
         });
 
         $rootScope.$on('$stateChangeStart', function(event, to, params) {
-            console.log("lol");
-            console.log(to.redirectTo);
             if (to.redirectTo) {
                 event.preventDefault();
                 $state.go(to.redirectTo, params, { location: 'replace' });
