@@ -38,6 +38,7 @@
                                         <td data-field="rank">Rank</td>
                                         <td data-field="team">Participant Team</td>
                                         <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
+                                        <td data-field="submission_time">submission time</td>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -45,6 +46,7 @@
                                         <td>{{$index+1}}</td>
                                         <td>{{key.submission__participant_team__team_name}}</td>
                                         <td ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
+                                        <td>{{ key.submission__submitted_at | date:'medium'}}</td>
                                     </tr>
                                 </tbody>
                             </table>
