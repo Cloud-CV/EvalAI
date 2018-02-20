@@ -47,7 +47,8 @@
             url: "/login",
             templateUrl: baseUrl + "/web/auth/login.html",
             authenticate: false,
-            title: 'Login'
+            title: 'Login',
+            authpage: true
         };
 
         var signup = {
@@ -56,7 +57,8 @@
             url: "/signup",
             templateUrl: baseUrl + "/web/auth/signup.html",
             authenticate: false,
-            title: 'SignUp'
+            title: 'SignUp',
+            authpage: true
         };
 
         var verify_email = {
@@ -65,7 +67,8 @@
             url: "/api/auth/registration/account-confirm-email/:email_conf_key",
             templateUrl: baseUrl + "/web/auth/verify-email.html",
             title: "Email Verify",
-            authenticate: false
+            authenticate: false,
+            authpage: true
         };
 
         var reset_password = {
@@ -74,7 +77,8 @@
             url: "/reset-password",
             templateUrl: baseUrl + "/web/auth/reset-password.html",
             title: "Reset Password",
-            authenticate: false
+            authenticate: false,
+            authpage: true
         };
 
         var reset_password_confirm = {
@@ -83,7 +87,8 @@
             url: "/api/password/reset/confirm/:user_id/:reset_token",
             templateUrl: baseUrl + "/web/auth/reset-password-confirm.html",
             title: "Reset Password Confirm",
-            authenticate: false
+            authenticate: false,
+            authpage: true
         };
 
         var logout = {
@@ -499,16 +504,6 @@
         .run(runFunc);
 
     function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
-
-        // Google Analytics Scripts
-        // Analytics are not needed in testing 
-        if($window.ga) {
-            $window.ga('create', 'UA-45466017-2', 'auto');
-            $rootScope.$on('$stateChangeSuccess', function() {
-                $window.ga('send', 'pageview', $location.path());
-            });
-        }
-
         // setting timout for token (7days)
         // var getTokenTime = utilities.getData('tokenTime');
         // var timeNow = (new Date()).getTime();
@@ -539,6 +534,8 @@
         });
 
         $rootScope.$on('$stateChangeStart', function(event, to, params) {
+            console.log("lol");
+            console.log(to.redirectTo);
             if (to.redirectTo) {
                 event.preventDefault();
                 $state.go(to.redirectTo, params, { location: 'replace' });
@@ -550,7 +547,11 @@
             $rootScope.pageTitle = $state.current.title;
             // Scroll to top
             $window.scrollTo(0, 0);
-
+            // Google Analytics Scripts
+            if ($window.ga) {
+                $window.ga('create', 'UA-45466017-2', 'auto');
+                $window.ga('send', 'pageview', $location.path());
+            }
         });
 
         $rootScope.notify = function(type, message, timeout) {
