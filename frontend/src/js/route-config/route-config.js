@@ -47,7 +47,8 @@
             url: "/login",
             templateUrl: baseUrl + "/web/auth/login.html",
             authenticate: false,
-            title: 'Login'
+            title: 'Login',
+            authpage: true
         };
 
         var signup = {
@@ -56,7 +57,8 @@
             url: "/signup",
             templateUrl: baseUrl + "/web/auth/signup.html",
             authenticate: false,
-            title: 'SignUp'
+            title: 'SignUp',
+            authpage: true
         };
 
         var verify_email = {
@@ -65,7 +67,8 @@
             url: "/api/auth/registration/account-confirm-email/:email_conf_key",
             templateUrl: baseUrl + "/web/auth/verify-email.html",
             title: "Email Verify",
-            authenticate: false
+            authenticate: false,
+            authpage: true
         };
 
         var reset_password = {
@@ -74,7 +77,8 @@
             url: "/reset-password",
             templateUrl: baseUrl + "/web/auth/reset-password.html",
             title: "Reset Password",
-            authenticate: false
+            authenticate: false,
+            authpage: true
         };
 
         var reset_password_confirm = {
@@ -83,7 +87,8 @@
             url: "/api/password/reset/confirm/:user_id/:reset_token",
             templateUrl: baseUrl + "/web/auth/reset-password-confirm.html",
             title: "Reset Password Confirm",
-            authenticate: false
+            authenticate: false,
+            authpage: true
         };
 
         var logout = {
@@ -365,6 +370,68 @@
             controllerAs: 'contactUs'
         };
 
+        var all_challenges = {
+            name: 'all-challenges',
+            url: "/challenges/",
+            templateUrl: baseUrl + "/web/challenge/list-all-challenges.html",
+            controller: 'ChallengeListAllCtrl',
+            controllerAs: 'challengeListAll',
+            title: "Challenges"
+        };
+
+        var all_challenges_page = {
+            name: 'all-challenges-page',
+            url: "/challenges/:challengeId",
+            templateUrl: baseUrl + "/web/featured-challenge/challenge-page.html",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            redirectTo: "all-challenges-page.overview"
+        };
+
+        var all_challenges_overview = {
+            name: "all-challenges-page.overview",
+            parent: "all-challenges-page",
+            url: "/overview",
+            templateUrl: baseUrl + "/web/featured-challenge/overview.html",
+            title: 'Overview'
+        };
+
+        var all_challenges_evaluation = {
+            name: "all-challenges-page.evaluation",
+            url: "/evaluation",
+            templateUrl: baseUrl + "/web/featured-challenge/evaluation.html",
+            title: 'Evaluation'
+        };
+
+        var all_challenges_phases = {
+            name: "all-challenges-page.phases",
+            url: "/phases",
+            templateUrl: baseUrl + "/web/featured-challenge/phases.html",
+            title: 'Phases'
+        };
+
+        var all_challenges_participate = {
+            name: "all-challenges-page.participate",
+            url: "/participate",
+            templateUrl: baseUrl + "/web/featured-challenge/participate.html",
+            title: 'Participate'
+        };
+
+        var all_challenges_leaderboard = {
+            name: "all-challenges-page.leaderboard",
+            url: "/leaderboard",
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard'
+        };
+
+        var all_challenge_phase_leaderboard = {
+            name: "all-challenges-page.phase-leaderboard",
+            url: "/leaderboard/:phaseSplitId",
+            controller: 'FeaturedChallengeCtrl',
+            controllerAs: 'featured_challenge',
+            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            title: 'Leaderboard'
+        };
 
         var featured_challenge_page = {
             name: "featured-challenge-page",
@@ -445,6 +512,7 @@
         // challenges list page
         $stateProvider.state(challenge_main);
         $stateProvider.state(challenge_list);
+        $stateProvider.state(all_challenges);
 
         // challenge create page
         $stateProvider.state(challenge_create);
@@ -482,6 +550,15 @@
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
 
+        // Show the challenge without login
+        $stateProvider.state(all_challenges_page);
+        $stateProvider.state(all_challenges_overview);
+        $stateProvider.state(all_challenges_evaluation);
+        $stateProvider.state(all_challenges_phases);
+        $stateProvider.state(all_challenges_participate);
+        $stateProvider.state(all_challenges_leaderboard);
+        $stateProvider.state(all_challenge_phase_leaderboard);
+
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
             state.go('error-404');
@@ -499,16 +576,6 @@
         .run(runFunc);
 
     function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
-
-        // Google Analytics Scripts
-        // Analytics are not needed in testing 
-        if($window.ga) {
-            $window.ga('create', 'UA-45466017-2', 'auto');
-            $rootScope.$on('$stateChangeSuccess', function() {
-                $window.ga('send', 'pageview', $location.path());
-            });
-        }
-
         // setting timout for token (7days)
         // var getTokenTime = utilities.getData('tokenTime');
         // var timeNow = (new Date()).getTime();
@@ -520,21 +587,29 @@
 
         $rootScope.isAuth = false;
         // check for valid user
-        $rootScope.$on('$stateChangeStart', function(event, toState) {
-            if (toState.authenticate && !utilities.isAuthenticated()) {
-                $rootScope.isAuth = false;
-                // User isn’t authenticated
-                $state.transitionTo("auth.login");
-                event.preventDefault();
-            }
-            // restrict authorized user too access login/signup page
-            else if (toState.authenticate === false && utilities.isAuthenticated()) {
+        $rootScope.$on("$stateChangeStart", function(event, toState) {
+            if (utilities.isAuthenticated()) {
                 $rootScope.isAuth = true;
-                $state.transitionTo("home");
-                event.preventDefault();
-                return false;
-            } else if (utilities.isAuthenticated()) {
-                $rootScope.isAuth = true;
+                if (toState.authpage) {
+                    event.preventDefault();
+                    $state.go("home");
+                }
+            } else {
+                if (toState.authenticate) {
+                    if (toState.url === '/leaderboard' || toState.url === '/overview' ||
+                        toState.url === '/evaluation' || toState.url === '/phases' ||
+                        toState.url === '/participate') {
+                        var path = $location.path(); // get the current path
+                        var pathArray = path.split('/'); // split it to make a array
+                        var challengeId = pathArray[pathArray.length - 2]; // get the challenge id
+                        var newPath = '/featured-challenges/' + challengeId + toState.url; // create a new path
+                        $location.path(newPath); // redirect to that path
+                    } else {
+                        event.preventDefault();
+                        $state.go("auth.login");
+
+                    }
+                }
             }
         });
 
@@ -550,7 +625,11 @@
             $rootScope.pageTitle = $state.current.title;
             // Scroll to top
             $window.scrollTo(0, 0);
-
+            // Google Analytics Scripts
+            if ($window.ga) {
+                $window.ga('create', 'UA-45466017-2', 'auto');
+                $window.ga('send', 'pageview', $location.path());
+            }
         });
 
         $rootScope.notify = function(type, message, timeout) {
