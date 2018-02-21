@@ -2,6 +2,7 @@
 import os
 
 from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -203,7 +204,7 @@ def create_participant_team(user):
     return team
 
 
-def run(*args):
+def run():
    # Create superuser
     create_user(is_admin=True)
     # Create host user
