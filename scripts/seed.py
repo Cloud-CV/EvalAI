@@ -205,7 +205,7 @@ def create_participant_team(user):
 
 
 def run():
-   # Create superuser
+    # Create superuser
     create_user(is_admin=True)
     # Create host user
     host_user = create_user(is_admin=False, username="host")
