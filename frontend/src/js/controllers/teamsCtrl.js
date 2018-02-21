@@ -327,12 +327,12 @@
         var inviteTemplate = 
                           '<md-dialog>'+
                           '<md-dialog-content class=ev-md-dialog-content>'+
-                          '<h5><strong>Invite Others to this team</strong></h5>'+
+                          '<p class=ev-invite><strong>Invite Others to this team</strong></p>'+
                           '<p>Enter the email address of the person</p>'+
                           '<form name=inputForm>'+
                           '<md-input-container class=ev-md-input-container>'+
-                          '<input class=dark-autofill placeholder=email type=email size=25 name=email ng-required=true ng-model=model.value />'+
-                          '<span class="form-icon form-icon-dark"><i class="fa fa-envelope"></i></span>'+
+                          '<input class=dark-autofill placeholder=email type=email ng-required=true size=25 name=email ng-model=model.value />'+
+                          '<span class="form-icon form-icon-dark"></span>'+
                           '<div class=wrn-msg text-highlight ng-messages=inputForm.email.$error>'+
                           '<p ng-message=required>E-mail is required</p>'+
                           '<p ng-message= email>Please enter a valid email</p>'+
@@ -341,8 +341,8 @@
                           '</form>'+
                           '</md-dialog-content>'+
                           '<md-dialog-actions class=ev-md-dialog-actions>'+
-                          '<md-button ng-click="closeDialog()">Cancel</md-button>'+
-                          '<md-button type= submit ng-disabled=inputForm.$invalid ng-click="result()" >Send Invite</md-button>'+
+                          '<md-button class=ev-md-button ng-click="closeDialog()">Cancel</md-button>'+
+                          '<md-button class=ev-md-button type= submit ng-disabled=inputForm.$invalid ng-click="result()" >Send Invite</md-button>'+
                           '</md-dialog-actions>'+
                           '</md-dialog>';
 
