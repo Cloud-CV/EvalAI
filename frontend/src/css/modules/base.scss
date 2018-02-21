@@ -185,15 +185,23 @@ span.inline {
 }
 
 .ev-md-dialog-content {
-    padding: 20px 40px 10px 25px;
+    padding: 20px 20px;
+    margin: 0px;
 }
 
 .ev-md-dialog-actions {
-    padding: 10px 55px 20px 0px;
+    padding: 0px 10px;
 }
 
+.ev-invite{
+    font-size: 20px;
+}
 .ev-md-input-container {
-    padding: 10px 20px;
+    padding: 0px;
+}
+
+.ev-md-container label {
+  font-size: 200px;
 }
 
 .ev-sm-container {
