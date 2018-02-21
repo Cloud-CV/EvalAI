@@ -327,7 +327,7 @@
         var inviteTemplate = 
                           '<md-dialog>'+
                           '<md-dialog-content class=ev-md-dialog-content>'+
-                          '<p class=ev-invite><strong>Invite Others to this team</strong></p>'+
+                          '<p class=ev-invite><strong>Invite others to this team</strong></p>'+
                           '<p>Enter the email address of the person</p>'+
                           '<form name=inputForm>'+
                           '<md-input-container class=ev-md-input-container>'+
