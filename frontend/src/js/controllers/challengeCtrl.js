@@ -1021,52 +1021,46 @@
 
         vm.isStarred = function() {
             // Get the stars count and user specific starred or unstarred
-            if (userKey) {
-                parameters.url = "challenges/" + vm.challengeId + "/";
-                parameters.method = 'GET';
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
-                        vm.count = details['count'] || 0;
-                        vm.is_starred = details['is_starred'];
-                        if (details['is_starred'] === false) {
-                            vm.data = 'Star';
-                        } else {
-                            vm.data = 'Unstar';
-                        }
-                    },
-                    onError: function() {}
-                };
-                utilities.sendRequest(parameters);
-            }
+            parameters.url = "challenges/" + vm.challengeId + "/";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    vm.count = details['count'] || 0;
+                    vm.is_starred = details['is_starred'];
+                    if (details['is_starred'] === false) {
+                        vm.data = 'Star';
+                    } else {
+                        vm.data = 'Unstar';
+                    }
+                },
+                onError: function() {}
+            };
+            utilities.sendRequest(parameters);
         };
 
         vm.starChallenge = function() {
-            if (userKey) {
-                parameters.url = "challenges/" + vm.challengeId + "/";
-                parameters.method = 'POST';
-                parameters.data = {};
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
-                        vm.count = details['count'];
-                        vm.is_starred = details['is_starred'];
-                        if (details.is_starred === true) {
-                            vm.data = 'Unstar';
-                        } else {
-                            vm.data = 'Star';
-                        }
-                    },
-                    onError: function(response) {
-                        var error = response.data;
-                        $rootScope.notify("error", error);
+            parameters.url = "challenges/" + vm.challengeId + "/";
+            parameters.method = 'POST';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    vm.count = details['count'];
+                    vm.is_starred = details['is_starred'];
+                    if (details.is_starred === true) {
+                        vm.data = 'Unstar';
+                    } else {
+                        vm.data = 'Star';
                     }
-                };
-                utilities.sendRequest(parameters);
-            } else {
-                $state.go("auth.login");
-            }
-
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
         };
 
         // Edit challenge overview
