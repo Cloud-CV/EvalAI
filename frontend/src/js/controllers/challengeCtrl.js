@@ -72,7 +72,7 @@
 
                 }
 
-                if (vm.isActive && userKey) {
+                if (userKey) {
 
                     // get details of challenges corresponding to participant teams of that user
                     parameters.url = 'participants/participant_teams/challenges/' + vm.challengeId + '/user';
