@@ -105,7 +105,6 @@
 
                                 parameters.url = 'participants/participant_team';
                                 parameters.method = 'GET';
-                                // parameters.token = userKey;
                                 parameters.callback = {
                                     onSuccess: function(response) {
                                         var status = response.status;
@@ -266,7 +265,6 @@
                     if (vm.input_file) {
                         // vm.upload(vm.input_file);
                     }
-                    var parameters = {};
                     parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
                     var formData = new FormData();
@@ -336,7 +334,6 @@
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
         parameters.method = 'GET';
         parameters.data = {};
-        // parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
                 var details = response.data;
@@ -359,7 +356,6 @@
         parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
         parameters.method = 'GET';
         parameters.data = {};
-        // parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
                 var details = response.data;
@@ -397,11 +393,9 @@
 
             // Show leaderboard
             vm.leaderboard = {};
-            var parameters = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
             parameters.method = 'GET';
             parameters.data = {};
-            // parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -421,11 +415,9 @@
             vm.startLeaderboard = function() {
                 vm.stopLeaderboard();
                 vm.poller = $interval(function() {
-                    var parameters = {};
                     parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
                     parameters.method = 'GET';
                     parameters.data = {};
-                    // parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
@@ -463,11 +455,9 @@
                 }
             }
 
-            parameters = {};
             parameters.url = "analytics/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/count";
             parameters.method = 'GET';
             parameters.data = {};
-            parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -493,11 +483,9 @@
             vm.currentPage = '';
             vm.showPagination = false;
 
-            var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
             parameters.method = 'GET';
             parameters.data = {};
-            parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -592,11 +580,9 @@
             vm.start = function() {
                 vm.stopFetchingSubmissions();
                 vm.poller = $interval(function() {
-                    var parameters = {};
                     parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
-                    parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
@@ -644,12 +630,10 @@
 
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
-            var parameters = {};
 
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
             parameters.method = 'GET';
             parameters.data = {};
-            parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -701,11 +685,9 @@
         vm.refreshLeaderboard = function() {
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
-            var parameters = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
             parameters.method = 'GET';
             parameters.data = {};
-            parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -731,13 +713,11 @@
 
             vm.startLoader("Loading Teams");
 
-            var parameters = {};
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
             parameters.data = {
                 "team_name": vm.team.name
             };
-            parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function() {
                     $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
@@ -746,10 +726,8 @@
                     vm.team.name = '';
 
                     vm.startLoader("Loading Teams");
-                    var parameters = {};
                     parameters.url = 'participants/participant_team';
                     parameters.method = 'GET';
-                    parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
                             var status = response.status;
@@ -816,11 +794,9 @@
             vm.currentPage = '';
             vm.showPagination = false;
 
-            var parameters = {};
             parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submissions";
             parameters.method = 'GET';
             parameters.data = {};
-            parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
@@ -902,13 +878,11 @@
         };
 
         vm.changeSubmissionVisibility = function(submission_id) {
-            var parameters = {};
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
             parameters.method = 'PATCH';
             parameters.data = {
                 "is_public": vm.submissionVisibility[submission_id]
             };
-            parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function() {},
                 onError: function() {}
@@ -918,14 +892,12 @@
         };
 
         vm.showRemainingSubmissions = function() {
-            var parameters = {};
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
             parameters.url = "jobs/" + vm.challengeId + "/phases/" + vm.phaseId + "/remaining_submissions";
             parameters.method = 'GET';
-            parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
@@ -973,10 +945,8 @@
 
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
-                var parameters = {};
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 parameters.method = "GET";
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
@@ -1020,7 +990,6 @@
 
         vm.updateSubmissionMetaData = function(updateSubmissionMetaDataForm) {
             if (updateSubmissionMetaDataForm) {
-                var parameters = {};
                 parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + vm.submissionId;
                 parameters.method = 'PATCH';
                 parameters.data = {
@@ -1029,7 +998,6 @@
                     "project_url": vm.project_url,
                     "publication_url": vm.publication_url
                 };
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -1054,10 +1022,8 @@
         vm.isStarred = function() {
             // Get the stars count and user specific starred or unstarred
             if (userKey) {
-                parameters = {};
                 parameters.url = "challenges/" + vm.challengeId + "/";
                 parameters.method = 'GET';
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
@@ -1077,11 +1043,9 @@
 
         vm.starChallenge = function() {
             if (userKey) {
-                var parameters = {};
                 parameters.url = "challenges/" + vm.challengeId + "/";
                 parameters.method = 'POST';
                 parameters.data = {};
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;
@@ -1119,7 +1083,6 @@
 
         vm.editChallengeOverview = function(editChallengeOverviewForm) {
             if (editChallengeOverviewForm) {
-                var parameters = {};
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
                     if (challenge == vm.challengeId) {
@@ -1133,7 +1096,6 @@
                     "description": vm.page.description
 
                 };
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -1171,7 +1133,6 @@
 
         vm.editSubmissionGuideline = function(editSubmissionGuidelinesForm) {
             if (editSubmissionGuidelinesForm) {
-                var parameters = {};
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
                     if (challenge == vm.challengeId) {
@@ -1185,7 +1146,6 @@
                     "submission_guidelines": vm.page.submission_guidelines
 
                 };
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -1223,7 +1183,6 @@
 
         vm.editEvaluationCriteria = function(editEvaluationCriteriaForm) {
             if (editEvaluationCriteriaForm) {
-                var parameters = {};
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
                     if (challenge == vm.challengeId) {
@@ -1236,7 +1195,6 @@
                 parameters.data = {
                     "evaluation_details": vm.page.evaluation_details
                 };
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -1275,7 +1233,6 @@
 
         vm.editEvalScript = function(editEvaluationCriteriaForm) {
             if (editEvaluationCriteriaForm) {
-                var parameters = {};
                 var formData = new FormData();
                 formData.append("evaluation_script", vm.editEvaluationScript);
                 var challengeHostList = utilities.getData("challengeCreator");
@@ -1288,7 +1245,6 @@
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.method = 'PATCH';
                 parameters.data = formData;
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -1328,7 +1284,6 @@
 
         vm.editTermsAndConditions = function(editTermsAndConditionsForm) {
             if (editTermsAndConditionsForm) {
-                var parameters = {};
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
                     if (challenge == vm.challengeId) {
@@ -1341,7 +1296,6 @@
                 parameters.data = {
                     "terms_and_conditions": vm.page.terms_and_conditions
                 };
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -1378,7 +1332,6 @@
 
         vm.editChallengeTitle = function(editChallengeTitleForm) {
             if (editChallengeTitleForm) {
-                var parameters = {};
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
                     if (challenge == vm.challengeId) {
@@ -1391,7 +1344,6 @@
                 parameters.data = {
                     "title": vm.page.title
                 };
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -1433,7 +1385,6 @@
         vm.editChallengePhase = function(editChallengePhaseForm) {
             if (editChallengePhaseForm) {
                 vm.challengePhaseId = vm.page.challenge_phase.id;
-                var parameters = {};
                 parameters.url = "challenges/challenge/" + vm.challengeId + "/challenge_phase/" + vm.challengePhaseId;
                 parameters.method = 'PATCH';
                 var formData = new FormData();
@@ -1447,7 +1398,6 @@
                     formData.append("test_annotation", vm.testAnnotationFile);
                 }
                 parameters.data = formData;
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
@@ -1467,11 +1417,9 @@
                 utilities.showLoader();
                 utilities.sendRequest(parameters, 'header', 'upload');
             } else {
-                parameters = {};
                 parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
                 parameters.method = 'GET';
                 parameters.data = {};
-                parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var details = response.data;

@@ -60,10 +60,8 @@
 
                 // dependent api
                 // calls for upcoming challneges
-                // var parameters = {};
                 parameters.url = 'challenges/challenge/future';
-                // parameters.method = 'GET';
-                // parameters.token = userKey;
+                parameters.method = 'GET';
 
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -93,10 +91,8 @@
 
                         // dependent api
                         // calls for upcoming challneges
-                        // var parameters = {};
                         parameters.url = 'challenges/challenge/past';
-                        // parameters.method = 'GET';
-                        // parameters.token = userKey;
+                        parameters.method = 'GET';
 
                         parameters.callback = {
                             onSuccess: function(response) {
@@ -161,8 +157,6 @@
                 }
             });
         };
-
-        // utilities.showLoader();
     }
 
 })();
