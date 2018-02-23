@@ -53,6 +53,19 @@
                     vm.challengeCreator[id]= vm.currentList[i].creator.id;
                     utilities.storeData("challengeCreator", vm.challengeCreator);
                 }
+                if(vm.currentList.length !=0){
+                     vm.presentLoadIndex=3;
+                     vm.showMore = function() {
+                        if (vm.presentLoadIndex < vm.currentList.length){
+                           vm.presentLoadIndex = vm.presentLoadIndex+1;
+                        }
+                     };
+                     vm.showLess = function() {
+                        if (vm.presentLoadIndex > 3){
+                           vm.presentLoadIndex = vm.presentLoadIndex-1;
+                        }
+                     };
+                }
 
                 // dependent api
                 // calls for upcoming challneges
@@ -87,6 +100,20 @@
                             utilities.storeData("challengeCreator", vm.challengeCreator);
                         }
 
+                        if(vm.upcomingList.length !=0){
+                             vm.futureLoadIndex=3;
+                             vm.showMore = function() {
+                                if (vm.futureLoadIndex < vm.upcomingList.length){
+                                   vm.futureLoadIndex = vm.futureLoadIndex+1;
+                                }
+                             };
+                             vm.showLess = function() {
+                                if (vm.futureLoadIndex > 3){
+                                   vm.futureLoadIndex = vm.futureLoadIndex-1;
+                                }
+                             };
+                        }
+
                         // dependent api
                         // calls for upcoming challneges
                         var parameters = {};
@@ -118,6 +145,20 @@
                                     var id = vm.pastList[i].id;              
                                     vm.challengeCreator[id]= vm.pastList[i].creator.id;
                                     utilities.storeData("challengeCreator", vm.challengeCreator);
+                                }
+
+                                if(vm.pastList.length !=0){
+                                    vm.pastLoadIndex=3;
+                                      vm.showMore = function() {
+                                        if (vm.pastLoadIndex < vm.pastList.length){
+                                           vm.pastLoadIndex = vm.pastLoadIndex+1;
+                                        }
+                                     };
+                                     vm.showLess = function() {
+                                        if (vm.pastLoadIndex > 3){
+                                           vm.pastLoadIndex = vm.pastLoadIndex-1;
+                                        }
+                                     };
                                 }
 
                                 utilities.hideLoader();
