@@ -16,6 +16,11 @@
     float: right;
     padding-top: 70px;
     overflow-x: hidden;
+    &.center {
+        float: none;
+        margin: 0 auto;
+        text-align: left;
+    }
 }
 
 #sidenav-overlay {
