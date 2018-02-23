@@ -14,12 +14,12 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 before_script:
-  - npm install -g @angular/cli
+  - npm install -g --silent @angular/cli
 
 script: 
   - ng test --watch=false
   - ng e2e
-  - ng build
+  - ng build --prod
 
 notifications:
   email:
