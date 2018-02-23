@@ -9,6 +9,6 @@ describe('evalai App', () => {
 
   it('should display welcome message', () => {
     page.navigateTo();
-    expect(page.getParagraphText()).toEqual('Welcome to EvalAI!');
+    expect(page.getHeadingH1Text()).toEqual('Welcome to EvalAI|Home');
   });
 });
