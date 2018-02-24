@@ -72,7 +72,6 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                    include('web.urls',
                            namespace='web')),
                ]
-urlpatterns += [url(r'^silk/', include('silk.urls', namespace='silk'))]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
 if settings.DEBUG:

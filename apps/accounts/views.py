@@ -28,7 +28,10 @@ def disable_user(request):
 @api_view(['POST'])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((ExpiringTokenAuthentication,))
-def resend_email(request):
+def resend_email_confirmation(request):
+    """
+    Resends the confirmation Email by the users request.
+    """
     user = request.user
     send_email_confirmation(request._request, user)
     return Response(status=status.HTTP_200_OK)

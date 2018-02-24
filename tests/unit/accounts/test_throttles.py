@@ -33,6 +33,3 @@ class ResendEmailThrottleTest(BaseAPITestClass):
         for _ in range(3):
             response = self.client.post(self.url, {})
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        response = self.client.post(self.url, {})
-        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
