@@ -15,7 +15,7 @@
         utilities.showLoader();
 
         // default variables/objects
-        vm.existTeam = {};
+        vm.existList = {};
         vm.currentPage = '';
         vm.isNext = '';
         vm.isPrev = '';
@@ -30,11 +30,8 @@
 
         parameters.callback = {
             onSuccess: function(response) {
-                var status= response.status;
                 var data = response.data;
-                vm.currentList = data.results;
 
-                if(status=200){
                   vm.existList=data;
                   if (vm.existList.count === 0) {
                         vm.showPagination = false;
@@ -56,7 +53,7 @@
                         vm.isPrev = '';
                     }
                     if (vm.existList.next !== null) {
-                        vm.currentPage = vm.existList.next.split('page=')[1] - 1;
+                        vm.currentPage = vm.currentList.next.split('page=')[1] - 1;
                     } else {
                         vm.currentPage = 1;
                     }
@@ -74,17 +71,17 @@
                             $http.get(url, { headers: headers }).then(function(response) {
                                 // reinitialized data
                                 var details = response.data;
-                                vm.existList = details;
+                                vm.currentList = details;
 
                                 // condition for pagination
-                                if (vm.existList.next === null) {
+                                if (vm.currentList.next === null) {
                                     vm.isNext = 'disabled';
                                     vm.currentPage = vm.existList.count / 10;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.existList.next.split('page=')[1] - 1);
                                 }
-                                if (vm.existList.previous === null) {
+                                if (vm.currentList.previous === null) {
                                     vm.isPrev = 'disabled';
                                 } else {
                                     vm.isPrev = '';
@@ -93,7 +90,12 @@
                        }
                      };
 
-                }
+        // default variables/objects
+        vm.upcomingList = {};
+        vm.currentPageFuture = '';
+        vm.isNextFuture = '';
+        vm.isPrevFuture = '';
+        vm.showPaginationFuture = false;
 
                 // dependent api
                 // calls for upcoming challneges
@@ -105,42 +107,63 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         var data = response.data;
-                        vm.upcomingList = data.results;
+                        vm.upcomingList= data;
+                        console.log('aoo');
+                        console.log(vm.upcomingList);                        
 
-                        if (vm.upcomingList.length === 0) {
-                            vm.noneUpcomingChallenge = true;
-                        } else {
-                            vm.noneUpcomingChallenge = false;
+                        if(vm.upcomingList.count===0){
+                          vm.showPaginationFuture=false;
+                          vm.paginationMsg = "No team exists for now, start by creating a new team!";
+                        }else{
+                           vm.showPaginationFuture = true;
+                           vm.paginationMsg = "";
                         }
+                    if (vm.upcomingList.previous === null) {
+                        vm.isPrevFuture = 'disabled';
+                    } else {
+                        vm.isPrevFuture = '';
+                    }
+                    if (vm.upcomingList.next !== null) {
+                        vm.currentPageFuture = vm.upcomingList.next.split('page=')[1] - 1;
+                    } else {
+                        vm.currentPageFuture = 1;
+                    }
+                    // to load data with pagination
+                    vm.load = function(url) {
+                        vm.isExistLoader = true;
+                        vm.loaderTitle = '';
+                        vm.loaderContainer = angular.element('.exist-team-card');
 
-                        for (var i in vm.upcomingList) {
+                        if (url !== null) {
 
-                            var descLength = vm.upcomingList[i].description.length;
+                            console.log(url);
+                            //store the header data in a variable
+                            var headers = {
+                                'Authorization': "Token " + userKey
+                            };
 
-                            if (descLength >= 50) {
-                                vm.upcomingList[i].isLarge = "...";
-                            } else {
-                                vm.upcomingList[i].isLarge = "";
-                            }
+                            //Add headers with in your request
+                            $http.get(url, { headers: headers }).then(function(response) {
+                                // reinitialized data
+                                var details = response.data;
+                                vm.upcomingList = details;
 
-                            var id = vm.upcomingList[i].id;              
-                            vm.challengeCreator[id] = vm.upcomingList[i].creator.id;
-                            utilities.storeData("challengeCreator", vm.challengeCreator);
-                        }
-
-                        if(vm.upcomingList.length !=0){
-                             vm.futureLoadIndex=3;
-                             vm.showMore = function() {
-                                if (vm.futureLoadIndex < vm.upcomingList.length){
-                                   vm.futureLoadIndex = vm.futureLoadIndex+1;
+                                // condition for pagination
+                                if (vm.upcomingList.next === null) {
+                                    vm.isNextFuture = 'disabled';
+                                    vm.currentPageFuture = vm.upcomingList.count / 10;
+                                } else {
+                                    vm.isNextFuture = '';
+                                    vm.currentPageFuture = parseInt(vm.upcomingList.next.split('page=')[1] - 1);
                                 }
-                             };
-                             vm.showLess = function() {
-                                if (vm.futureLoadIndex > 3){
-                                   vm.futureLoadIndex = vm.futureLoadIndex-1;
+                         if (vm.existList.previous === null) {
+                                    vm.isPrev = 'disabled';
+                                } else {
+                                   vm.isPrev = '';
                                 }
-                             };
-                        }
+                            });
+                       }
+                     };
 
                         // dependent api
                         // calls for upcoming challneges
