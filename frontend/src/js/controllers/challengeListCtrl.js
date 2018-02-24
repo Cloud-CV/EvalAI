@@ -165,6 +165,15 @@
                        }
                      };
 
+
+        // default variables/objects
+        vm.pastList = {};
+        vm.currentPagePast = '';
+        vm.isNextPast = '';
+        vm.isPrevPast = '';
+        vm.showPaginationPast = false;
+
+
                         // dependent api
                         // calls for upcoming challneges
                         var parameters = {};
@@ -175,44 +184,74 @@
                         parameters.callback = {
                             onSuccess: function(response) {
                                 var data = response.data;
-                                vm.pastList = data.results;
+                                vm.pastList = data;
 
-                                if (vm.pastList.length === 0) {
-                                    vm.nonePastChallenge = true;
+                                console.log(vm.pastList);
+                  if (vm.pastList.count === 0) {
+                        vm.showPaginationPast = false;
+                        vm.paginationMsg = "No team exists for now, start by creating a new team!";
+                    } else {
+                        vm.showPaginationPast = true;
+                       vm.paginationMsg = "";
+                    }
+                    // condition for pagination
+                    if (vm.pastList.next === null) {
+                        vm.isNextPast = 'disabled';
+                    } else {
+                        vm.isNextPast = '';
+                    }
+
+                    if (vm.pastList.previous === null) {
+                        vm.isPrevPast = 'disabled';
+                    } else {
+                        vm.isPrevPast = '';
+                    }
+                    if (vm.pastList.next !== null) {
+                        vm.currentPagePast = vm.pastList.next.split('page=')[1] - 1;
+                    } else {
+                        vm.currentPagePast = 1;
+                    }
+
+                // to load data with pagination
+                    vm.load = function(url) {
+                        vm.isExistLoader = true;
+                        vm.loaderTitle = '';
+                        vm.loaderContainer = angular.element('.exist-team-card');
+
+
+                        if (url !== null) {
+
+                            console.log(url);
+                            //store the header data in a variable
+                            var headers = {
+                                'Authorization': "Token " + userKey
+                            };
+
+                            //Add headers with in your request
+                            $http.get(url, { headers: headers }).then(function(response) {
+                                // reinitialized data
+                                var details = response.data;
+                                vm.pastList = details;
+
+                                // condition for pagination
+                                if (vm.pastList.next === null) {
+                                    vm.isNextPast = 'disabled';
+                                    vm.currentPagePast = vm.pastList.count / 10;
                                 } else {
-                                    vm.nonePastChallenge = false;
+                                    vm.isNextPast = '';
+                                    vm.currentPagePast = parseInt(vm.pastList.next.split('page=')[1] - 1);
                                 }
 
-
-                                for (var i in vm.pastList) {
-
-
-                                    var descLength = vm.pastList[i].description.length;
-                                    if (descLength >= 50) {
-                                        vm.pastList[i].isLarge = "...";
-                                    } else {
-                                        vm.pastList[i].isLarge = "";
-                                    }
-                                    var id = vm.pastList[i].id;              
-                                    vm.challengeCreator[id]= vm.pastList[i].creator.id;
-                                    utilities.storeData("challengeCreator", vm.challengeCreator);
+                                if (vm.pastList.previous === null) {
+                                    vm.isPrevPast = 'disabled';
+                                } else {
+                                    vm.isPrevPast = '';
                                 }
+                            });
+                       }
+                     };
 
-                                if(vm.pastList.length !=0){
-                                    vm.pastLoadIndex=3;
-                                      vm.showMore = function() {
-                                        if (vm.pastLoadIndex < vm.pastList.length){
-                                           vm.pastLoadIndex = vm.pastLoadIndex+1;
-                                        }
-                                     };
-                                     vm.showLess = function() {
-                                        if (vm.pastLoadIndex > 3){
-                                           vm.pastLoadIndex = vm.pastLoadIndex-1;
-                                        }
-                                     };
-                                }
-
-                                utilities.hideLoader();
+                               utilities.hideLoader();
 
                             },
                             onError: function() {
