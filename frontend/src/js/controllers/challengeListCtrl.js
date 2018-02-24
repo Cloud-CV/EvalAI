@@ -20,6 +20,16 @@
         vm.isNext = '';
         vm.isPrev = '';
         vm.showPagination = false;
+        vm.upcomingList = {};
+        vm.currentPageFuture = '';
+        vm.isNextFuture = '';
+        vm.isPrevFuture = '';
+        vm.showPaginationFuture = false;
+        vm.pastList = {};
+        vm.currentPagePast = '';
+        vm.isNextPast = '';
+        vm.isPrevPast = '';
+        vm.showPaginationPast = false;
 
         // calls for ongoing challneges
         vm.challengeCreator = {};
@@ -33,14 +43,10 @@
                 var data = response.data;
 
                   vm.existList=data;
-                  if (vm.existList.count === 0) {
-                        vm.noneExistChallenge = true;
+                    if (vm.existList.count === 0) {
                         vm.showPagination = false;
-                        vm.paginationMsg = "No team exists for now, start by creating a new team!";
                     } else {
-                        vm.noneExistChallenge = false;
                         vm.showPagination = true;
-                        vm.paginationMsg = "";
                     }
                     // condition for pagination
                     if (vm.existList.next === null) {
@@ -92,86 +98,66 @@
                        }
                      };
 
-        // default variables/objects
-        vm.upcomingList = {};
-        vm.currentPageFuture = '';
-        vm.isNextFuture = '';
-        vm.isPrevFuture = '';
-        vm.showPaginationFuture = false;
+                    // dependent api
+                    // calls for upcoming challneges
+                    var parameters = {};
+                    parameters.url = 'challenges/challenge/future';
+                    parameters.method = 'GET';
+                    parameters.token = userKey;
 
-                // dependent api
-                // calls for upcoming challneges
-                var parameters = {};
-                parameters.url = 'challenges/challenge/future';
-                parameters.method = 'GET';
-                parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var data = response.data;
+                            vm.upcomingList= data;
+                            console.log('aoo');
+                            console.log(vm.upcomingList);                        
 
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var data = response.data;
-                        vm.upcomingList= data;
-                        console.log('aoo');
-                        console.log(vm.upcomingList);                        
-
-                        if(vm.upcomingList.count===0){
-                          vm.showPaginationFuture=false;
-                        }else{
-                           vm.showPaginationFuture = true;
-                        }
-                    if (vm.upcomingList.previous === null) {
-                        vm.isPrevFuture = 'disabled';
-                    } else {
-                        vm.isPrevFuture = '';
-                    }
-                    if (vm.upcomingList.next !== null) {
-                        vm.currentPageFuture = vm.upcomingList.next.split('page=')[1] - 1;
-                    } else {
-                        vm.currentPageFuture = 1;
-                    }
-                    // to load data with pagination
-                    vm.load = function(url) {
-                        vm.isExistLoader = true;
-                        vm.loaderTitle = '';
-                        vm.loaderContainer = angular.element('.exist-team-card');
-
-                        if (url !== null) {
-
-                            console.log(url);
-                            //store the header data in a variable
-                            var headers = {
-                                'Authorization': "Token " + userKey
+                            if(vm.upcomingList.count===0){
+                               vm.showPaginationFuture=false;
+                            }else{
+                               vm.showPaginationFuture = true;
+                            }
+                            if (vm.upcomingList.previous === null) {
+                               vm.isPrevFuture = 'disabled';
+                            } else {
+                               vm.isPrevFuture = '';
+                            }
+                            if (vm.upcomingList.next !== null) {
+                               vm.currentPageFuture = vm.upcomingList.next.split('page=')[1] - 1;
+                            } else {
+                               vm.currentPageFuture = 1;
+                            }
+                            // to load data with pagination
+                            vm.load = function(url){
+                               vm.isExistLoader = true;
+                               vm.loaderTitle = '';
+                               vm.loaderContainer = angular.element('.exist-team-card');
+                               if (url !== null) {
+                                   //store the header data in a variable
+                                   var headers = {
+                                     'Authorization': "Token " + userKey
+                                   };
+                                   //Add headers with in your request
+                                     $http.get(url, { headers: headers }).then(function(response){
+                                     // reinitialized data
+                                     var details = response.data;
+                                     vm.upcomingList = details;
+                                     // condition for pagination
+                                     if (vm.upcomingList.next === null) {
+                                         vm.isNextFuture = 'disabled';
+                                         vm.currentPageFuture = vm.upcomingList.count / 10;
+                                     } else {
+                                         vm.isNextFuture = '';
+                                         vm.currentPageFuture = parseInt(vm.upcomingList.next.split('page=')[1] - 1);
+                                     }
+                                     if (vm.upcomingList.previous === null) {
+                                          vm.isPrevFuture = 'disabled';
+                                     } else {
+                                          vm.isPrevFuture = '';
+                                     }
+                                   });
+                               }
                             };
-
-                            //Add headers with in your request
-                            $http.get(url, { headers: headers }).then(function(response) {
-                                // reinitialized data
-                                var details = response.data;
-                                vm.upcomingList = details;
-
-                                // condition for pagination
-                                if (vm.upcomingList.next === null) {
-                                    vm.isNextFuture = 'disabled';
-                                    vm.currentPageFuture = vm.upcomingList.count / 10;
-                                } else {
-                                    vm.isNextFuture = '';
-                                    vm.currentPageFuture = parseInt(vm.upcomingList.next.split('page=')[1] - 1);
-                                }
-                         if (vm.existList.previous === null) {
-                                    vm.isPrev = 'disabled';
-                                } else {
-                                   vm.isPrev = '';
-                                }
-                            });
-                       }
-                     };
-
-
-        // default variables/objects
-        vm.pastList = {};
-        vm.currentPagePast = '';
-        vm.isNextPast = '';
-        vm.isPrevPast = '';
-        vm.showPaginationPast = false;
 
 
                         // dependent api
@@ -187,71 +173,65 @@
                                 vm.pastList = data;
 
                                 console.log(vm.pastList);
-                  if (vm.pastList.count === 0) {
-                        vm.nonePastChallenge = true;
-                        vm.showPaginationPast = false;
-                        vm.paginationMsg = "No team exists for now, start by creating a new team!";
-                    } else {
-                        vm.nonePastChallenge=false;
-                        vm.showPaginationPast = true;
-                        vm.paginationMsg = "";
-                    }
-                    // condition for pagination
-                    if (vm.pastList.next === null) {
-                        vm.isNextPast = 'disabled';
-                    } else {
-                        vm.isNextPast = '';
-                    }
 
-                    if (vm.pastList.previous === null) {
-                        vm.isPrevPast = 'disabled';
-                    } else {
-                        vm.isPrevPast = '';
-                    }
-                    if (vm.pastList.next !== null) {
-                        vm.currentPagePast = vm.pastList.next.split('page=')[1] - 1;
-                    } else {
-                        vm.currentPagePast = 1;
-                    }
-
-                // to load data with pagination
-                    vm.load = function(url) {
-                        vm.isExistLoader = true;
-                        vm.loaderTitle = '';
-                        vm.loaderContainer = angular.element('.exist-team-card');
-
-
-                        if (url !== null) {
-
-                            console.log(url);
-                            //store the header data in a variable
-                            var headers = {
-                                'Authorization': "Token " + userKey
-                            };
-
-                            //Add headers with in your request
-                            $http.get(url, { headers: headers }).then(function(response) {
-                                // reinitialized data
-                                var details = response.data;
-                                vm.pastList = details;
-
+                                if (vm.pastList.count === 0) {
+                                    vm.showPaginationPast = false;
+                                } else {
+                                    vm.showPaginationPast = true;
+                                }
                                 // condition for pagination
                                 if (vm.pastList.next === null) {
                                     vm.isNextPast = 'disabled';
-                                    vm.currentPagePast = vm.pastList.count / 10;
                                 } else {
                                     vm.isNextPast = '';
-                                    vm.currentPagePast = parseInt(vm.pastList.next.split('page=')[1] - 1);
                                 }
-
                                 if (vm.pastList.previous === null) {
                                     vm.isPrevPast = 'disabled';
                                 } else {
                                     vm.isPrevPast = '';
                                 }
-                            });
-                       }
-                     };
+                                if (vm.pastList.next !== null) {
+                                    vm.currentPagePast = vm.pastList.next.split('page=')[1] - 1;
+                                } else {
+                                    vm.currentPagePast = 1;
+                                }
+
+                                // to load data with pagination
+                                vm.load = function(url) {
+                                   vm.isExistLoader = true;
+                                   vm.loaderTitle = '';
+                                   vm.loaderContainer = angular.element('.exist-team-card');
+
+
+                                if (url !== null) {
+
+                                    //store the header data in a variable
+                                    var headers = {
+                                        'Authorization': "Token " + userKey
+                                    };
+
+                                    //Add headers with in your request
+                                    $http.get(url, { headers: headers }).then(function(response) {
+                                      // reinitialized data
+                                      var details = response.data;
+                                      vm.pastList = details;
+
+                                      // condition for pagination
+                                      if (vm.pastList.next === null) {
+                                         vm.isNextPast = 'disabled';
+                                         vm.currentPagePast = vm.pastList.count / 10;
+                                      } else {
+                                         vm.isNextPast = '';
+                                         vm.currentPagePast = parseInt(vm.pastList.next.split('page=')[1] - 1);
+                                      }
+                                      if (vm.pastList.previous === null) {
+                                          vm.isPrevPast = 'disabled';
+                                      } else {
+                                          vm.isPrevPast = '';
+                                      }
+                                    });
+                                }		    
+                              };
 
                                utilities.hideLoader();
 
