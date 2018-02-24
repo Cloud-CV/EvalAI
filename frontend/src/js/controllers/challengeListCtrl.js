@@ -34,9 +34,11 @@
 
                   vm.existList=data;
                   if (vm.existList.count === 0) {
+                        vm.noneExistChallenge = true;
                         vm.showPagination = false;
                         vm.paginationMsg = "No team exists for now, start by creating a new team!";
                     } else {
+                        vm.noneExistChallenge = false;
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
@@ -113,10 +115,8 @@
 
                         if(vm.upcomingList.count===0){
                           vm.showPaginationFuture=false;
-                          vm.paginationMsg = "No team exists for now, start by creating a new team!";
                         }else{
                            vm.showPaginationFuture = true;
-                           vm.paginationMsg = "";
                         }
                     if (vm.upcomingList.previous === null) {
                         vm.isPrevFuture = 'disabled';
@@ -188,11 +188,13 @@
 
                                 console.log(vm.pastList);
                   if (vm.pastList.count === 0) {
+                        vm.nonePastChallenge = true;
                         vm.showPaginationPast = false;
                         vm.paginationMsg = "No team exists for now, start by creating a new team!";
                     } else {
+                        vm.nonePastChallenge=false;
                         vm.showPaginationPast = true;
-                       vm.paginationMsg = "";
+                        vm.paginationMsg = "";
                     }
                     // condition for pagination
                     if (vm.pastList.next === null) {
