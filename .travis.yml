@@ -16,7 +16,8 @@ before_install:
 before_script:
   - npm install -g --silent @angular/cli
 
-script: 
+script:
+  - ng lint
   - ng test --watch=false
   - ng e2e
   - ng build --prod
