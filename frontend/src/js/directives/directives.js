@@ -136,11 +136,16 @@
         };
         return directive;
 
-        function controller() {
-           var js = document.createElement("script");
-            js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
-            document.getElementsByTagName("head")[0].appendChild(js);
-       }
+        function controller($scope, $element, $attrs, $http) {
+            var githubRepoUrl = "https://api.github.com/repos/Cloud-CV/EvalAI";
+            $http.get(githubRepoUrl).then(function(res) {
+                $scope.githubStats = {
+                    forksCount: res.data.forks_count,
+                    starsCount: res.data.stargazers_count,
+                    htmlUrl: res.data.html_url
+                };
+            });
+        }
     }
 })();
 //Dashboard Footer directive
@@ -158,11 +163,16 @@
         };
         return directive;
 
-        function controller() {
-           var js = document.createElement("script");
-            js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
-            document.getElementsByTagName("head")[0].appendChild(js);
-       }
+        function controller($scope, $element, $attrs, $http) {
+            var githubRepoUrl = "https://api.github.com/repos/Cloud-CV/EvalAI";
+            $http.get(githubRepoUrl).then(function(res) {
+                $scope.githubStats = {
+                    forksCount: res.data.forks_count,
+                    starsCount: res.data.stargazers_count,
+                    htmlUrl: res.data.html_url
+                };
+            });
+        }
     }
 })();
 // loader directive
