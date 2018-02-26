@@ -1158,6 +1158,8 @@
 // Edit submission guidelines
         vm.submissionGuidelinesDialog = function(ev) {
             vm.tempSubmissionGuidelines = vm.page.submission_guidelines;
+            console.log("ABCCCCCCCCCCCC");
+            console.log(vm.tempTermsAndConditions);
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
@@ -1177,6 +1179,7 @@
                             break;
                         }
                     }
+                console.log("BLANK"+vm.page.submission_guidelines);
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.method = 'PATCH';
                 parameters.data = {
