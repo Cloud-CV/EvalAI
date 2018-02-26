@@ -20,8 +20,6 @@
         vm.regUser = {};
         // useDetails for login
         vm.getUser = {};
-        // color to show password strength
-        vm.color = {};
         vm.isResetPassword = false;
         // form error
         vm.isFormError = false;
@@ -149,7 +147,7 @@
                             if ($rootScope.previousState) {
                                 $state.go($rootScope.previousState);
                                 vm.stopLoader();
-                            } else {
+                            }else {
                                 $state.go('web.dashboard');
                             }
                         } else {
@@ -176,14 +174,6 @@
             } else {
                 vm.stopLoader();
             }
-        };
-
-
-        // function to check password strength
-        vm.checkStrength = function(password) {
-            var passwordStrength = utilities.passwordStrength(password);
-            vm.message = passwordStrength[0];
-            vm.color = passwordStrength[1];
         };
 
         // function to Verify Email
