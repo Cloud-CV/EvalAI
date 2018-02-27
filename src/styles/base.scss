@@ -1,3 +1,39 @@
 /*Add global styles here*/
 
+@import './variables.scss';
+@import './mixins.scss';
 @import './grid.scss';
+
+/*Font sizes*/
+
+.fs-12 {
+  font-size: $fs-12;
+}
+
+.fs-14 {
+  font-size: $fs-14;
+}
+
+.fs-16 {
+  font-size: $fs-16;
+}
+
+.fs-18 {
+  font-size: $fs-18;
+}
+
+.fs-20 {
+  font-size: $fs-20;
+}
+
+.fs-22 {
+  font-size: $fs-22;
+}
+
+.fs-24 {
+  font-size: $fs-24;
+}
+
+.fs-36 {
+  font-size: $fs-36;
+}
