@@ -1,7 +1,8 @@
 /*Mixins for global styles*/
+@import './variables.scss';
 
 /*Box Shadow-------*/
-@mixin box-shadow($x: 0px, $y:0px, $blur:4px, $rad:0px, $color:$shadow-lightest-gray) {
+@mixin box-shadow($x: 0px, $y:0px, $blur:4px, $rad:0px, $color:$gray-medium) {
   box-shadow: $x $y $blur $rad $color;
 }
 
