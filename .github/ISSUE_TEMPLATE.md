@@ -1,14 +1,23 @@
-_Thanks for taking the time to report a bug in the EvalAI project, or propose a new feature! Before creating a new issue, please do a quick search to check that it hasn't already been filed on the [issue tracker](https://github.com/Cloud-CV/EvalAI-ngx/issues)._
+## I'm submitting a
 
-If you'd like to report a bug, please include the following information:
-- the expected behaviour
-- the observed behaviour
-- steps to reproduce the problem
-- which operating system and/or browser you're using, if relevant
-- (if possible) copies of the console/server logs
+(Check one with "x" from given options)
+- [ ] Bug report
+- [ ] Feature request
 
-On the other hand, if you'd like to propose a new feature:
-- please describe, as clearly as possible, what you'd like to see
-- (if possible) include mockups/screenshots, if these would help convey the meaning better
+## Current behavior
+<!-- Describe how the bug manifests. -->
 
-Thanks!
+## Expected behavior
+<!-- Describe what the behavior would be without the bug. -->
+
+## Steps to reproduce
+<!-- If you are able to illustrate the bug or feature request with an example, please provide steps to reproduce -->
+
+## Related screenshots
+<!-- Attach a screenshot of the issue here. -->
+
+## Other information
+<!-- List any other information that is relevant to your issue.-->
+
+## System information
+<!-- Add information about the system your facing this bug on. If you think this is irrelevant or a feature request, please remove this section -->
