@@ -420,7 +420,7 @@
         var all_challenges_leaderboard = {
             name: "all-challenges-page.leaderboard",
             url: "/leaderboard",
-            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            templateUrl: baseUrl + "/web/unauth-challenge/leaderboard.html",
             title: 'Leaderboard'
         };
 
@@ -429,7 +429,7 @@
             url: "/leaderboard/:phaseSplitId",
             controller: 'FeaturedChallengeCtrl',
             controllerAs: 'featured_challenge',
-            templateUrl: baseUrl + "/web/featured-challenge/leaderboard.html",
+            templateUrl: baseUrl + "/web/unauth-challenge/leaderboard.html",
             title: 'Leaderboard'
         };
 
