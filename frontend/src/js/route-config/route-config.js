@@ -47,7 +47,8 @@
             url: "/login",
             templateUrl: baseUrl + "/web/auth/login.html",
             authenticate: false,
-            title: 'Login'
+            title: 'Login',
+            authpage: true
         };
 
         var signup = {
@@ -56,7 +57,8 @@
             url: "/signup",
             templateUrl: baseUrl + "/web/auth/signup.html",
             authenticate: false,
-            title: 'SignUp'
+            title: 'SignUp',
+            authpage: true
         };
 
         var verify_email = {
@@ -65,7 +67,8 @@
             url: "/api/auth/registration/account-confirm-email/:email_conf_key",
             templateUrl: baseUrl + "/web/auth/verify-email.html",
             title: "Email Verify",
-            authenticate: false
+            authenticate: false,
+            authpage: true
         };
 
         var reset_password = {
@@ -74,7 +77,8 @@
             url: "/reset-password",
             templateUrl: baseUrl + "/web/auth/reset-password.html",
             title: "Reset Password",
-            authenticate: false
+            authenticate: false,
+            authpage: true
         };
 
         var reset_password_confirm = {
@@ -83,7 +87,8 @@
             url: "/api/password/reset/confirm/:user_id/:reset_token",
             templateUrl: baseUrl + "/web/auth/reset-password-confirm.html",
             title: "Reset Password Confirm",
-            authenticate: false
+            authenticate: false,
+            authpage: true
         };
 
         var logout = {
@@ -365,7 +370,6 @@
             controllerAs: 'contactUs'
         };
 
-
         var all_challenges = {
             name: 'all-challenges',
             url: "/challenges/",
@@ -572,13 +576,6 @@
         .run(runFunc);
 
     function runFunc($rootScope, $state, utilities, $window, $location, toaster) {
-
-        // Google Analytics Scripts
-        $window.ga('create', 'UA-45466017-2', 'auto');
-        $rootScope.$on('$stateChangeSuccess', function() {
-            $window.ga('send', 'pageview', $location.path());
-        });
-
         // setting timout for token (7days)
         // var getTokenTime = utilities.getData('tokenTime');
         // var timeNow = (new Date()).getTime();
@@ -590,33 +587,28 @@
 
         $rootScope.isAuth = false;
         // check for valid user
-        $rootScope.$on('$stateChangeStart', function(event, toState) {
-            var path = $location.path(); // get the current path
-            var pathArray = path.split('/'); // split it to make a array
-            var challengeId = pathArray[pathArray.length-2]; // get the challenge id
-
-            if (toState.url === '/leaderboard' || toState.url === '/overview'
-                || toState.url === '/evaluation' || toState.url === '/phases'
-                || toState.url === '/participate'){
-                if (!utilities.isAuthenticated()){
-                    var newPath = '/featured-challenges/'+ challengeId + toState.url; // create a new path
-                    $location.path(newPath); // redirect to that path
-                }                
-            } else {
-                if (toState.authenticate && !utilities.isAuthenticated()) {
-                    $rootScope.isAuth = false;
-                    // User isn’t authenticated
-                    $state.transitionTo("auth.login");
-                    event.preventDefault();
-                }
-                // restrict authorized user too access login/signup page
-                else if (toState.authenticate === false && utilities.isAuthenticated()) {
-                    $rootScope.isAuth = true;
-                    $state.transitionTo("home");
-                    event.preventDefault();
-                    return false;
-                } else if (utilities.isAuthenticated()) {
+        $rootScope.$on("$stateChangeStart", function(event, toState) {
+            if (utilities.isAuthenticated()) {
                 $rootScope.isAuth = true;
+                if (toState.authpage) {
+                    event.preventDefault();
+                    $state.go("home");
+                }
+            } else {
+                if (toState.authenticate) {
+                    if (toState.url === '/leaderboard' || toState.url === '/overview' ||
+                        toState.url === '/evaluation' || toState.url === '/phases' ||
+                        toState.url === '/participate') {
+                        var path = $location.path(); // get the current path
+                        var pathArray = path.split('/'); // split it to make a array
+                        var challengeId = pathArray[pathArray.length - 2]; // get the challenge id
+                        var newPath = '/featured-challenges/' + challengeId + toState.url; // create a new path
+                        $location.path(newPath); // redirect to that path
+                    } else {
+                        event.preventDefault();
+                        $state.go("auth.login");
+
+                    }
                 }
             }
         });
@@ -633,7 +625,11 @@
             $rootScope.pageTitle = $state.current.title;
             // Scroll to top
             $window.scrollTo(0, 0);
-
+            // Google Analytics Scripts
+            if ($window.ga) {
+                $window.ga('create', 'UA-45466017-2', 'auto');
+                $window.ga('send', 'pageview', $location.path());
+            }
         });
 
         $rootScope.notify = function(type, message, timeout) {
