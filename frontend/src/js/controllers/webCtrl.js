@@ -10,7 +10,7 @@
 
     WebCtrl.$inject = ['utilities', '$state', '$stateParams', '$rootScope'];
 
-    function WebCtrl(utilities, $state, $stateParams, $rootScope) {
+    function WebCtrl(utilities, $rootScope) {
         var vm = this;
 
         vm.user = {};
@@ -21,25 +21,26 @@
 
         // get token
         var userKey = utilities.getData('userKey');
-
-        var parameters = {};
-        parameters.url = 'auth/user/';
-        parameters.method = 'GET';
-        parameters.token = userKey;
-        parameters.callback = {
-            onSuccess: function(response) {
-                var status = response.status;
-                var result = response.data;
-                if (status == 200) {
-                    vm.name = result.username;
+        if (userKey) {
+            var parameters = {};
+            parameters.url = 'auth/user/';
+            parameters.method = 'GET';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var result = response.data;
+                    if (status == 200) {
+                        vm.name = result.username;
+                    }
+                },
+                onError: function() {
+                    $rootScope.notify("error", "Some error occurred. Please try again later!");
                 }
-            },
-            onError: function() {
-                $rootScope.notify("error", "Some error have occured , please try again !");
-            }
-        };
+            };
 
-        utilities.sendRequest(parameters);
+            utilities.sendRequest(parameters);
+        }
     }
 
 })();

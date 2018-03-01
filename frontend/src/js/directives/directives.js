@@ -52,7 +52,7 @@
         };
         return directive;
 
-        function controller($scope, $element, $attrs, $http, utilities, $state, $rootScope) {
+        function controller($scope, $element, $attrs, $http, utilities) {
             var vm = this;
 
             vm.user = {};
@@ -78,8 +78,6 @@
                         var status = response.status;
                         if (status == 401) {
                             utilities.resetStorage();
-                            $state.go("auth.login");
-                            $rootScope.isAuth = false;
                         }
                     }
                 };

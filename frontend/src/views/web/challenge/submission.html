@@ -1,4 +1,4 @@
-<section ng-if="challenge.isParticipated" class="ev-sm-container ev-view ">
+<section ng-if="challenge.isActive" class="ev-sm-container ev-view ">
     <div class="row">
         <div class="col s12 m12">
             <div class=" ev-card-panel ev-z-depth-5 ">
@@ -27,7 +27,6 @@
                                             <strong class="text-med-black">End Date: </strong>{{item.end_date | date:'medium'}}</div>
                                         <div class="clearfix"></div>
                                     </li>
-
                                     <div class="row">
                                         <div class="file-field input-field col s10">
                                             <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
@@ -39,7 +38,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                     <div class="row">
                                         <div class="input-field align-left col s10">
                                             <input type="text" id="methodName" name="methodName" ng-model="challenge.methodName" required>
@@ -47,15 +45,13 @@
                                             <label for="methodName">Method Name *</label>
                                         </div>
                                     </div>
-
                                     <div class="row">
                                         <div class="input-field align-left col s10">
                                             <textarea id="methodDesc" class="materialize-textarea" name="methodDesc" ng-model="challenge.methodDesc" required></textarea>
                                             <span class="form-icon"><i class="fa fa-text"></i></span>
                                             <label for="methodDesc">Method Description *</label>
-                                        </div>                                
+                                        </div>
                                     </div>
-
                                     <div class="row">
                                         <div class="input-field align-left col s10">
                                             <input type="text" id="projectUrl" name="projectUrl" ng-model="challenge.projectUrl" required>
@@ -68,9 +64,8 @@
                                             <input type="text" id="publicationUrl" name="publicationUrl" ng-model="challenge.publicationUrl" required>
                                             <span class="form-icon"><i class="fa fa-text"></i></span>
                                             <label for="publicationUrl">Publication URL (Enter N/A if not applicable)</label>
-                                        </div>                                
+                                        </div>
                                     </div>
-
                                     <div class="text-highlight red-text"><strong>
                                         {{challenge.subErrors.msg}}</strong></div>
                                     <section class="pagination">
@@ -94,14 +89,12 @@
                             <div class="row">
                                 <strong class="text-med-black">
                                     Today's Remaining Submissions:
-                                </strong>
-                                {{challenge.remainingSubmissions.remaining_submissions_today_count}}
+                                </strong> {{challenge.remainingSubmissions.remaining_submissions_today_count}}
                             </div>
                             <div class="row">
                                 <strong class="text-med-black">
                                     Total Remaining Submissions:
-                                </strong>
-                                {{challenge.remainingSubmissions.remaining_submissions}}
+                                </strong> {{challenge.remainingSubmissions.remaining_submissions}}
                             </div>
                         </div>
                     </div>
@@ -110,19 +103,23 @@
                             <div class="row">
                                 <strong class="text-med-black">
                                     Message:
-                                </strong>
-                                {{challenge.message.message}}
+                                </strong> {{challenge.message.message}}
                             </div>
                             <div>
                                 Next set of submissions will be available after:
                             </div>
-                            <div> 
-                            {{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
+                            <div>
+                                {{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</section>
+<section ng-if="!challenge.isActive" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <p><strong>Sorry, The Challenge is not active!</strong></p>
     </div>
 </section>
