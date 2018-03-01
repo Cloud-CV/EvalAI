@@ -1431,8 +1431,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
                                                    'Dummy file content', content_type='text/plain')
             )
 
-        self.dataset_split = DatasetSplit.objects.create(
-            name="Test Dataset Split", codename="test-split")
+        self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
 
         self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
 
@@ -1504,13 +1503,12 @@ class CreateChallengeUsingZipFile(APITestCase):
             team_name='Test Challenge Host Team',
             created_by=self.user)
 
-        self.path = join(settings.BASE_DIR, 'examples','example1', 'test_zip_file')
+        self.path = join(settings.BASE_DIR, 'examples', 'example1', 'test_zip_file')
 
         self.challenge = Challenge.objects.create(
             title='Challenge Title',
             short_description='Short description of the challenge (preferably 140 characters)',
-            description=open(join(self.path, 'description.html'),
-                             'rb').read().decode('utf-8'),
+            description=open(join(self.path, 'description.html'), 'rb').read().decode('utf-8'),
             terms_and_conditions=open(join(self.path, 'terms_and_conditions.html'), 'rb').read().decode('utf-8'),
             submission_guidelines=open(join(self.path, 'submission_guidelines.html'), 'rb').read().decode('utf-8'),
             evaluation_details=open(join(self.path, 'evaluation_details.html'), 'rb').read().decode('utf-8'),
@@ -1525,8 +1523,7 @@ class CreateChallengeUsingZipFile(APITestCase):
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge_phase = ChallengePhase.objects.create(
                 name='Challenge Phase',
-                description=open(join(
-                    self.path, 'challenge_phase_description.html'), 'rb').read().decode('utf-8'),
+                description=open(join(self.path, 'challenge_phase_description.html'), 'rb').read().decode('utf-8'),
                 leaderboard_public=False,
                 is_public=False,
                 start_date=timezone.now() - timedelta(days=2),
@@ -1597,7 +1594,7 @@ class CreateChallengeUsingZipFile(APITestCase):
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
         expected = {
             'error': 'A server error occured while processing zip file. Please try uploading it again!'
-        }
+            }
         response = self.client.post(self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
