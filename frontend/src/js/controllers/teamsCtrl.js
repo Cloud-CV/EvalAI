@@ -328,43 +328,45 @@
 
             $mdDialog.show({
                   clickOutsideToClose: true,
-                  scope: $scope,
+                  scope: $scope, 
                   preserveScope: true,
                   templateUrl: 'dist/views/web/invite-template.html',
                   controller: function ($scope, $mdDialog) {
                      $scope.closeDialog = function() {
                         $mdDialog.hide();
                      };
-                     $scope.result = function() {
-                        $mdDialog.hide(this);
+                     $scope.result = function(result) {
+                        var parameters = {};
+                        parameters.url = 'participants/participant_team/' + participantTeamId + '/invite';
+                        parameters.method = 'POST';
+                        parameters.data = {
+                        "email": result
+                        };
+                        parameters.token = userKey;
+                        parameters.callback = {
+                          onSuccess: function(response) {
+                             var status = response.status;
+                             if (status === 200){
+                                 $mdDialog.hide();
+                                 $rootScope.notify("success", parameters.data.email + " has been invited successfully");
+                             }
+                          },
+                          onError: function(response) {
+                             $mdDialog.hide();
+                             var error = response.data
+                             $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.",error);
+                          }
+                        };
+
+                        utilities.sendRequest(parameters);
+
                      };
                   }
-            })
-
-
-            .then(function(result) {
-                var parameters = {};
-                parameters.url = 'participants/participant_team/' + participantTeamId + '/invite';
-                parameters.method = 'POST';
-                parameters.data = {
-                    "email": result
-                };
-                parameters.token = userKey;
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var message = response.data['message'];
-                        $rootScope.notify("success", message);
-                    },
-                    onError: function(response) {
-                        var error = response.data['error'];
-                        $rootScope.notify("error", error);
-                    }
-                };
-
-                utilities.sendRequest(parameters);
-            }, function() {
             });
+
+
         };
+               
     }
 
 })();

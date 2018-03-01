@@ -319,39 +319,43 @@
                      $scope.closeDialog = function() {
                         $mdDialog.hide();
                      };
-                     $scope.result = function() {
-                        $mdDialog.hide(this);
+                     $scope.result = function(result) {
+                        var parameters = {};
+                        parameters.url = 'hosts/challenge_host_teams/' + hostTeamId + '/invite';
+                        parameters.method = 'POST';
+                        parameters.data = {
+                        "email": result
+                        };
+                        parameters.token = userKey;
+                        parameters.callback = {
+                          onSuccess: function(response) {
+                             var status = response.status;
+                             if(status==200){
+                               $mdDialog.hide();
+                               $rootScope.notify("success", parameters.data.email + " has been invited successfully");
+                             }
+                          },
+                          onError: function(response) {
+                             $mdDialog.hide();
+                             var error = response.data;
+                             $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.", error);
+                          }
+                        };
+
+                        utilities.sendRequest(parameters);
+
                      };
-                  }
-            })
-      
-            .then(function(result) {
-
-                var parameters = {};
-                parameters.url = 'hosts/challenge_host_teams/' + hostTeamId + '/invite';
-                parameters.method = 'POST';
-                parameters.data = {
-                    "email": result
-                };
-                parameters.token = userKey;
-                parameters.callback = {
-                    onSuccess: function() {
-                        $rootScope.notify("success", parameters.data.email + " has been invited successfully");
-                    },
-                    onError: function() {
-                        $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.");
-                    }
-                };
-
-                utilities.sendRequest(parameters);
+                 }
             });
         };
 
-    vm.storeChallengeHostTeamId = function() {
 
-        utilities.storeData('challengeHostTeamId', vm.challengeHostTeamId);
-        $state.go('web.challenge-create');
-    };
+
+        vm.storeChallengeHostTeamId = function() {
+
+           utilities.storeData('challengeHostTeamId', vm.challengeHostTeamId);
+           $state.go('web.challenge-create');
+       };
 
     }
 
