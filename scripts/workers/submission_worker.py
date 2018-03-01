@@ -161,6 +161,18 @@ def create_dir_as_python_package(directory):
         pass
 
 
+def get_active_challenges():
+    q_params = {'published': True, 'approved_by_admin': True}
+    q_params['start_date__lt'] = timezone.now()
+    q_params['end_date__gt'] = timezone.now()
+
+    # make sure that the challenge base directory exists
+    create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
+
+    active_challenges = Challenge.objects.filter(**q_params)
+    return active_challenges
+
+
 def return_file_url_per_environment(url):
 
     if DJANGO_SETTINGS_MODULE == "settings.dev":
@@ -179,7 +191,7 @@ def extract_challenge_data(challenge, phases):
         * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
 
     '''
-
+    print challenge
     challenge_data_directory = CHALLENGE_DATA_DIR.format(challenge_id=challenge.id)
     evaluation_script_url = challenge.evaluation_script.url
     evaluation_script_url = return_file_url_per_environment(evaluation_script_url)
@@ -215,16 +227,7 @@ def load_active_challenges():
     '''
          * Fetches active challenges and corresponding active phases for it.
     '''
-    q_params = {'published': True, 'approved_by_admin': True}
-    q_params['start_date__lt'] = timezone.now()
-    q_params['end_date__gt'] = timezone.now()
-
-    # make sure that the challenge base directory exists
-    create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
-
-    active_challenges = Challenge.objects.filter(**q_params)
-
-    for challenge in active_challenges:
+    for challenge in get_active_challenges():
         phases = challenge.challengephase_set.all()
         extract_challenge_data(challenge, phases)
 
@@ -444,6 +447,15 @@ def process_add_challenge_message(message):
     extract_challenge_data(challenge, phases)
 
 
+def test_process_submission_callback(body):
+    if len(get_active_challenges()) > 0:
+        load_active_challenges()
+        logger.info("[x] Received submission message %s" % body)
+        body = yaml.safe_load(body)
+        body = dict((k, int(v)) for k, v in body.iteritems())
+        process_submission_message(body)
+
+
 def process_submission_callback(ch, method, properties, body):
     try:
         logger.info("[x] Received submission message %s" % body)
@@ -454,6 +466,14 @@ def process_submission_callback(ch, method, properties, body):
     except Exception as e:
         logger.error('Error in receiving message from submission queue with error {}'.format(e))
         traceback.print_exc()
+
+
+def test_add_challenge_callback(body):
+    if len(count_active_challenges()) > 0:
+        load_active_challenges()
+        logger.info("[x] Received add challenge message %s" % body)
+        body = yaml.safe_load(body)
+        process_add_challenge_message(body)
 
 
 def add_challenge_callback(ch, method, properties, body):
