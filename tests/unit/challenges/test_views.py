@@ -925,8 +925,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "is_active": True
         }]
 
-        response = self.client.get(
-            self.url, {'host_team': self.challenge_host_team2.pk})
+        response = self.client.get(self.url, {'host_team': self.challenge_host_team2.pk})
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -955,8 +954,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "is_active": True
         }]
 
-        response = self.client.get(
-            self.url, {'participant_team': self.participant_team2.pk})
+        response = self.client.get(self.url, {'participant_team': self.participant_team2.pk})
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -1047,8 +1045,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
         expected = {
             'error': 'Invalid url pattern!'
         }
-        response = self.client.get(
-            self.url, {'invalid_q_param': 'invalidvalue'})
+        response = self.client.get(self.url, {'invalid_q_param': 'invalidvalue'})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -1437,15 +1434,14 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
         self.dataset_split = DatasetSplit.objects.create(
             name="Test Dataset Split", codename="test-split")
 
-        self.leaderboard = Leaderboard.objects.create(
-            schema=json.dumps({'hello': 'world'}))
+        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
 
         self.challenge_phase_split = ChallengePhaseSplit.objects.create(
             dataset_split=self.dataset_split,
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC
-        )
+            )
 
     def tearDown(self):
         shutil.rmtree('/tmp/evalai')
@@ -1508,20 +1504,16 @@ class CreateChallengeUsingZipFile(APITestCase):
             team_name='Test Challenge Host Team',
             created_by=self.user)
 
-        self.path = join(settings.BASE_DIR, 'examples',
-                         'example1', 'test_zip_file')
+        self.path = join(settings.BASE_DIR, 'examples','example1', 'test_zip_file')
 
         self.challenge = Challenge.objects.create(
             title='Challenge Title',
             short_description='Short description of the challenge (preferably 140 characters)',
             description=open(join(self.path, 'description.html'),
                              'rb').read().decode('utf-8'),
-            terms_and_conditions=open(
-                join(self.path, 'terms_and_conditions.html'), 'rb').read().decode('utf-8'),
-            submission_guidelines=open(
-                join(self.path, 'submission_guidelines.html'), 'rb').read().decode('utf-8'),
-            evaluation_details=open(
-                join(self.path, 'evaluation_details.html'), 'rb').read().decode('utf-8'),
+            terms_and_conditions=open(join(self.path, 'terms_and_conditions.html'), 'rb').read().decode('utf-8'),
+            submission_guidelines=open(join(self.path, 'submission_guidelines.html'), 'rb').read().decode('utf-8'),
+            evaluation_details=open(join(self.path, 'evaluation_details.html'), 'rb').read().decode('utf-8'),
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
@@ -1541,8 +1533,7 @@ class CreateChallengeUsingZipFile(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(open(join(self.path, 'test_annotation.txt'), 'rb').name,
-                                                   open(
-                                                       join(self.path, 'test_annotation.txt'), 'rb').read(),
+                                                   open(join(self.path, 'test_annotation.txt'), 'rb').read(),
                                                    content_type='text/plain')
             )
         self.dataset_split = DatasetSplit.objects.create(name="Name of the dataset split",
@@ -1557,10 +1548,9 @@ class CreateChallengeUsingZipFile(APITestCase):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC
-        )
+            )
 
-        self.zip_file = open(
-            join(settings.BASE_DIR, 'examples', 'example1', 'test_zip_file.zip'), 'rb')
+        self.zip_file = open(join(settings.BASE_DIR, 'examples', 'example1', 'test_zip_file.zip'), 'rb')
 
         self.test_zip_file = SimpleUploadedFile(self.zip_file.name,
                                                 self.zip_file.read(),
@@ -1574,7 +1564,7 @@ class CreateChallengeUsingZipFile(APITestCase):
                                                  content_type='application/zip'),
             stdout_file=None,
             stderr_file=None
-        )
+            )
         self.client.force_authenticate(user=self.user)
 
         self.input_zip_file = SimpleUploadedFile('test_sample.zip',
@@ -1598,8 +1588,7 @@ class CreateChallengeUsingZipFile(APITestCase):
         expected = {
             'zip_configuration': ['The submitted data was not a file. Check the encoding type on the form.']
         }
-        response = self.client.post(
-            self.url, {'zip_configuration': self.input_zip_file})
+        response = self.client.post(self.url, {'zip_configuration': self.input_zip_file})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -1609,19 +1598,17 @@ class CreateChallengeUsingZipFile(APITestCase):
         expected = {
             'error': 'A server error occured while processing zip file. Please try uploading it again!'
         }
-        response = self.client.post(
-            self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
+        response = self.client.post(self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(self):
         self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
-                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk + 10})
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk+10})
         expected = {
-            'detail': 'ChallengeHostTeam {} does not exist'.format(self.challenge_host_team.pk + 10)
+            'detail': 'ChallengeHostTeam {} does not exist'.format(self.challenge_host_team.pk+10)
         }
-        response = self.client.post(
-            self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
+        response = self.client.post(self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -1815,10 +1802,10 @@ class GetAllSubmissionsTest(BaseAPITestClass):
 
     def test_get_all_submissions_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
-                                kwargs={'challenge_pk': self.challenge5.pk + 10,
+                                kwargs={'challenge_pk': self.challenge5.pk+10,
                                         'challenge_phase_pk': self.challenge5_phase3.pk})
         expected = {
-            'detail': 'Challenge {} does not exist'.format(self.challenge5.pk + 10)
+            'detail': 'Challenge {} does not exist'.format(self.challenge5.pk+10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1827,9 +1814,9 @@ class GetAllSubmissionsTest(BaseAPITestClass):
     def test_get_all_submissions_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk,
-                                        'challenge_phase_pk': self.challenge5_phase3.pk + 10})
+                                        'challenge_phase_pk': self.challenge5_phase3.pk+10})
         expected = {
-            'error': 'Challenge Phase {} does not exist'.format(self.challenge5_phase3.pk + 10)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge5_phase3.pk+10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1997,11 +1984,11 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
 
     def test_download_all_submissions_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:download_all_submissions',
-                                kwargs={'challenge_pk': self.challenge.pk + 10,
+                                kwargs={'challenge_pk': self.challenge.pk+10,
                                         'challenge_phase_pk': self.challenge_phase.pk,
                                         'file_type': self.file_type_csv})
         expected = {
-            'detail': 'Challenge {} does not exist'.format(self.challenge.pk + 10)
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -2010,10 +1997,10 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def test_download_all_submissions_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk + 10,
+                                        'challenge_phase_pk': self.challenge_phase.pk+10,
                                         'file_type': self.file_type_csv})
         expected = {
-            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk + 10)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk+10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -2074,7 +2061,7 @@ class CreateLeaderboardTest(BaseAPITestClass):
         self.data = [
             {'schema': {'key': 'value'}},
             {'schema': {'key2': 'value2'}}
-        ]
+            ]
 
     def test_create_leaderboard_with_all_data(self):
         self.url = reverse_lazy('challenges:create_leaderboard')
@@ -2100,13 +2087,13 @@ class GetOrUpdateLeaderboardTest(BaseAPITestClass):
                                 kwargs={'leaderboard_pk': self.leaderboard.pk})
         self.data = {
             'schema': {'key': 'updated schema'}
-        }
+            }
 
     def test_get_or_update_leaderboard_when_leaderboard_doesnt_exist(self):
         self.url = reverse_lazy('challenges:get_or_update_leaderboard',
-                                kwargs={'leaderboard_pk': self.leaderboard.pk + 10})
+                                kwargs={'leaderboard_pk': self.leaderboard.pk+10})
         expected = {
-            'detail': 'Leaderboard {} does not exist'.format(self.leaderboard.pk + 10)
+            'detail': 'Leaderboard {} does not exist'.format(self.leaderboard.pk+10)
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -2174,13 +2161,13 @@ class GetOrUpdateDatasetSplitTest(BaseAPITestClass):
         self.data = {
             'name': 'Updated Name of dataset split',
             'codename': 'Updated codename of dataset split'
-        }
+            }
 
     def test_get_or_update_dataset_split_when_dataset_split_doesnt_exist(self):
         self.url = reverse_lazy('challenges:get_or_update_dataset_split',
-                                kwargs={'dataset_split_pk': self.dataset_split.pk + 10})
+                                kwargs={'dataset_split_pk': self.dataset_split.pk+10})
         expected = {
-            'detail': 'DatasetSplit {} does not exist'.format(self.dataset_split.pk + 10)
+            'detail': 'DatasetSplit {} does not exist'.format(self.dataset_split.pk+10)
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -2227,7 +2214,7 @@ class CreateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
              "challenge_phase": self.challenge_phase.pk,
              "leaderboard": self.leaderboard.pk,
              "visibility": 3}
-        ]
+            ]
 
     def test_create_challenge_phase_split_with_all_data(self):
         self.url = reverse_lazy('challenges:create_challenge_phase_split')
@@ -2248,17 +2235,17 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         self.url = reverse_lazy('challenges:get_or_update_dataset_split',
                                 kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk})
         self.leaderboard1 = Leaderboard.objects.create(schema=json.dumps({
-            "labels": ["yes/no", "number", "others", "overall"],
-            "default_order_by": "overall"}))
+                                                      "labels": ["yes/no", "number", "others", "overall"],
+                                                      "default_order_by": "overall"}))
         self.data = {
             'leaderboard': self.leaderboard1.pk,
-        }
+            }
 
     def test_get_or_update_dataset_split_when_dataset_split_doesnt_exist(self):
         self.url = reverse_lazy('challenges:get_or_update_challenge_phase_split',
-                                kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk + 10})
+                                kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk+10})
         expected = {
-            'detail': 'ChallengePhaseSplit {} does not exist'.format(self.challenge_phase_split.pk + 10)
+            'detail': 'ChallengePhaseSplit {} does not exist'.format(self.challenge_phase_split.pk+10)
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -2331,10 +2318,10 @@ class StarChallengesTest(BaseAPITestClass):
 
     def test_star_challenge_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:star_challenge',
-                                kwargs={'challenge_pk': self.challenge.pk + 10})
+                                kwargs={'challenge_pk': self.challenge.pk+10})
 
         expected = {
-            'detail': 'Challenge {} does not exist'.format(self.challenge.pk + 10)
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
         }
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
