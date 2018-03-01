@@ -35,7 +35,7 @@
                     }
                 },
                 onError: function() {
-                    $rootScope.notify("error", "Some error have occured , please try again !");
+                    $rootScope.notify("error", "Some error occurred. Please try again later!");
                 }
             };
 
