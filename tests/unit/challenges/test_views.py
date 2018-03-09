@@ -776,7 +776,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
     url = reverse_lazy('challenges:get_featured_challenges')
 
     def setUp(self):
-        super(GetAllChallengesTest, self).setUp()
+        super(GetFeaturedChallengesTest, self).setUp()
         self.url = reverse_lazy('challenges:get_featured_challenges')
 
         # Not a featured challenge
