@@ -771,6 +771,7 @@ class GetAllChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(response.data, expected)
 
+
 class GetFeaturedChallengesTest(BaseAPITestClass):
     url = reverse_lazy('challenges:get_featured_challenges')
 
