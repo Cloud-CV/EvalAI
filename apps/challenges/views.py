@@ -239,7 +239,6 @@ def get_all_challenges(request, challenge_time):
 
     # don't return disabled challenges
     q_params['is_disabled'] = False
-
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
