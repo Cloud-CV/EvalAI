@@ -20,9 +20,12 @@ before_script:
 
 script:
   - ng lint
-  - ng test --watch=false
+  - ng test --watch=false --code-coverage
   - ng e2e
   - ng build --prod
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 notifications:
   email:
