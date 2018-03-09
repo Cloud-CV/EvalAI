@@ -1,6 +1,8 @@
-sudo: false
+sudo: required
 dist: trusty
 language: node_js
+addons:
+  chrome: stable
 
 node_js:
   - "9.5"
