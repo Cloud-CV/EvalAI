@@ -237,7 +237,6 @@ def get_all_challenges(request, challenge_time):
         q_params['start_date__gt'] = timezone.now()
     # for `all` we dont need any condition in `q_params`
 
-
     # don't return disabled challenges
     q_params['is_disabled'] = False
     
