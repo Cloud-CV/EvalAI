@@ -1,7 +1,14 @@
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import render
+from django.template.loader import get_template
+from django.template import Context
+
+from email.MIMEImage import MIMEImage
 
 from .models import Team
+from .serializers import ContactSerializer, TeamSerializer
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -9,8 +16,6 @@ from rest_framework.decorators import (api_view,
                                        throttle_classes,)
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
-
-from .serializers import ContactSerializer, TeamSerializer
 
 
 def home(request, template_name="index.html"):
@@ -32,6 +37,57 @@ def internal_server_error(request):
                       )
     response.status_code = 500
     return response
+
+
+def notify_users_about_challenge(request):
+    """
+    Email New Challenge Details to EvalAI Users
+    """
+    if request.user.is_authenticated() and request.user.is_superuser:
+        if request.method == 'GET':
+            template_name = 'notification_email_data.html'
+            return render(request, template_name)
+
+        elif request.method == 'POST':
+            template_name = 'notification_email.html'
+            emails = User.objects.all().exclude(email__isnull=True, email__exact='').values_list('email', flat=True)
+            htmly = get_template('notification_email.html')
+
+            subject = request.POST.get('subject')
+            body = request.POST.get('body')
+
+            try:
+                challenge_image = request.FILES['challenge_image']
+            except:
+                challenge_image = None
+
+            if challenge_image:
+                image = MIMEImage(challenge_image.read())
+                image.add_header('Content-ID', '<{}>'.format(challenge_image))
+
+            context = Context({'body': body,
+                               'image': challenge_image})
+
+            for email in emails:
+                from_email = settings.EMAIL_HOST_USER
+                to = [email]
+                html_content = htmly.render(context)
+
+                msg = EmailMultiAlternatives(subject, html_content, from_email, to)
+                msg.attach_alternative(html_content, "text/html")
+                msg.mixed_subtype = 'related'
+
+                if challenge_image:
+                    msg.attach(image)
+
+                msg.send()
+            return render(request, 'notification_email_conformation.html',
+                         {'message': 'All the emails are sent successfully!'}
+                         )
+        else:
+            return render(request, 'error404.html')
+    else:
+        return render(request, 'error404.html')
 
 
 @throttle_classes([AnonRateThrottle, ])

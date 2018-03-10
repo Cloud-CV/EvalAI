@@ -403,6 +403,7 @@ nav ul li a:hover {
 .btn {
   text-transform: none;
   font-family: 'Roboto';
+  background-color: #3c3e49;
 }
 .btn i {
   font-size: 14px;
