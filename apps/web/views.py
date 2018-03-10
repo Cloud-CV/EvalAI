@@ -81,9 +81,9 @@ def notify_users_about_challenge(request):
                     msg.attach(image)
 
                 msg.send()
-            return render(request, 'notification_email_conformation.html',
-                         {'message': 'All the emails are sent successfully!'}
-                         )
+            return render(request,
+                          'notification_email_conformation.html',
+                          {'message': 'All the emails are sent successfully!'})
         else:
             return render(request, 'error404.html')
     else:
