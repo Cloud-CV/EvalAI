@@ -220,7 +220,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(html.startswith(''))
         self.assertTrue(html.endswith(''))
         self.assertEqual(request.status_code, 200)
-        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response)
 
     def test_notification_email_without_challenge_image(self):
         request = self.client.get('/admin/', follow=True)
@@ -230,7 +230,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(html.startswith(''))
         self.assertTrue(html.endswith(''))
         self.assertEqual(request.status_code, 200)
-        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response)
 
     def test_notification_email_with_challenge_image(self):
         request = self.client.get('/admin/', follow=True)
@@ -244,7 +244,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         html = request.content.decode('utf8')
         self.assertTrue(html.startswith(''))
         self.assertTrue(html.endswith(''))
-        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response)
         self.assertEqual(request.status_code, 200)
 
     def test_notification_with_put_request(self):
@@ -254,5 +254,5 @@ class TestNotifyUsersAboutChallenge(TestCase):
         html = request.content.decode('utf8')
         self.assertTrue(html.startswith('<!DOCTYPE html>'))
         self.assertTrue(html.endswith(''))
-        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response)
         self.assertEqual(request.status_code, 200)
