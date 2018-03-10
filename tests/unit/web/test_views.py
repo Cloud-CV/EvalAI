@@ -199,9 +199,8 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_if_user_is_authenticated_but_not_superuser(self):
-        response = self.client.post(self.url,
-                                   {'username': self.user.username,
-                                    'password': self.user.password})
+        self.data = {'username': self.user.username, 'password': self.user.password}
+        response = self.client.post(self.url, self.data)
         html = response.content.decode('utf8')
         self.assertTrue(html.startswith('<!DOCTYPE html>'))
         self.assertTrue(html.endswith(''))
@@ -210,6 +209,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
     def test_if_user_is_authenticated_and_superuser(self):
         request = self.client.get('/admin/', follow=True)
         response = self.client.login(username='superuser', password='secret_password')
+        self.assertEqual(request.status_code, 200)
         self.assertTrue(response)
 
     def test_notification_email_data_page(self):
@@ -220,6 +220,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(html.startswith(''))
         self.assertTrue(html.endswith(''))
         self.assertEqual(request.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_notification_email_without_challenge_image(self):
         request = self.client.get('/admin/', follow=True)
@@ -229,6 +230,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         self.assertTrue(html.startswith(''))
         self.assertTrue(html.endswith(''))
         self.assertEqual(request.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_notification_email_with_challenge_image(self):
         request = self.client.get('/admin/', follow=True)
@@ -242,6 +244,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         html = request.content.decode('utf8')
         self.assertTrue(html.startswith(''))
         self.assertTrue(html.endswith(''))
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(request.status_code, 200)
 
     def test_notification_with_put_request(self):
@@ -249,7 +252,7 @@ class TestNotifyUsersAboutChallenge(TestCase):
         response = self.client.login(username='superuser', password='secret_password', follow=True)
         request = self.client.put(self.url, self.email_data)
         html = request.content.decode('utf8')
-        print request.content
         self.assertTrue(html.startswith('<!DOCTYPE html>'))
         self.assertTrue(html.endswith(''))
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(request.status_code, 200)
