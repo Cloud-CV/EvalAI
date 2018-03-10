@@ -169,3 +169,87 @@ class TestErrorPages(TestCase):
         response = internal_server_error(request)
         self.assertEqual(response.status_code, 500)
         self.assertIn('Error 500', unicode(response))
+
+
+class TestNotifyUsersAboutChallenge(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.superuser = User.objects.create_superuser(
+            'superuser',
+            "superuser@test.com",
+            'secret_password')
+
+        self.user = User.objects.create(
+            username='someuser',
+            email="user@test.com",
+            password='secret_password')
+
+        self.url = reverse_lazy('web:notify_users_about_challenge')
+
+        self.email_data = {'subject': 'Subject of the Email',
+                           'body': 'Body of the Email'}
+
+    def test_if_user_isnt_authenticated(self):
+        response = self.client.get(self.url)
+        html = response.content.decode('utf8')
+        self.assertTrue(html.startswith('<!DOCTYPE html>'))
+        self.assertTrue(html.endswith(''))
+        self.assertEqual(response.status_code, 200)
+
+    def test_if_user_is_authenticated_but_not_superuser(self):
+        response = self.client.post(self.url,
+                                   {'username': self.user.username,
+                                    'password': self.user.password})
+        html = response.content.decode('utf8')
+        self.assertTrue(html.startswith('<!DOCTYPE html>'))
+        self.assertTrue(html.endswith(''))
+        self.assertEqual(response.status_code, 200)
+
+    def test_if_user_is_authenticated_and_superuser(self):
+        request = self.client.get('/admin/', follow=True)
+        response = self.client.login(username='superuser', password='secret_password')
+        self.assertTrue(response)
+
+    def test_notification_email_data_page(self):
+        request = self.client.get('/admin/', follow=True)
+        response = self.client.login(username='superuser', password='secret_password', follow=True)
+        request = self.client.get(self.url)
+        html = request.content.decode('utf8')
+        self.assertTrue(html.startswith(''))
+        self.assertTrue(html.endswith(''))
+        self.assertEqual(request.status_code, 200)
+
+    def test_notification_email_without_challenge_image(self):
+        request = self.client.get('/admin/', follow=True)
+        response = self.client.login(username='superuser', password='secret_password', follow=True)
+        request = self.client.post(self.url, self.email_data)
+        html = request.content.decode('utf8')
+        self.assertTrue(html.startswith(''))
+        self.assertTrue(html.endswith(''))
+        self.assertEqual(request.status_code, 200)
+
+    def test_notification_email_with_challenge_image(self):
+        request = self.client.get('/admin/', follow=True)
+        response = self.client.login(username='superuser', password='secret_password', follow=True)
+        self.email_data['challenge_image'] = SimpleUploadedFile(
+                                                name='test_background_image.jpg',
+                                                content=open('frontend/src/images/rocket.png', 'rb').read(),
+                                                content_type='image/jpg'
+            )
+        request = self.client.post(self.url, self.email_data)
+        html = request.content.decode('utf8')
+        self.assertTrue(html.startswith(''))
+        self.assertTrue(html.endswith(''))
+        self.assertEqual(request.status_code, 200)
+
+    def test_notification_with_put_request(self):
+        request = self.client.get('/admin/', follow=True)
+        response = self.client.login(username='superuser', password='secret_password', follow=True)
+        request = self.client.put(self.url, self.email_data)
+        html = request.content.decode('utf8')
+        print request.content
+        self.assertTrue(html.startswith('<!DOCTYPE html>'))
+        self.assertTrue(html.endswith(''))
+        self.assertEqual(request.status_code, 200)
