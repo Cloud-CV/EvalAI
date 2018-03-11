@@ -19,6 +19,7 @@ class ParticipantResource(resources.ModelResource):
 
 @admin.register(Participant)
 class ParticipantAdmin(ImportExportTimeStampedAdmin):
+
     """
     An abstract base class which provides an
     interface to display user and team status.
@@ -31,6 +32,7 @@ class ParticipantAdmin(ImportExportTimeStampedAdmin):
 
 @admin.register(ParticipantTeam)
 class ParticipantTeamAdmin(ImportExportTimeStampedAdmin):
+
     """
     A class which provides interface to display
     and filter team names.

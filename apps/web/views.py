@@ -54,7 +54,8 @@ def contact_us(request):
         serializer = ContactSerializer(data=request_data)
         if serializer.is_valid():
             serializer.save()
-            response_data = {'message': 'We have received your request and will contact you shortly.'}
+            response_data = {
+                'message': 'We have received your request and will contact you shortly.'}
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -69,12 +70,15 @@ def contact_us(request):
 def our_team(request):
     if request.method == 'GET':
         teams = Team.objects.all()
-        serializer = TeamSerializer(teams, many=True, context={'request': request})
+        serializer = TeamSerializer(
+            teams, many=True, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        # team_type is set to Team.CONTRIBUTOR by default and can be overridden by the requester
-        request.data['team_type'] = request.data.get('team_type', Team.CONTRIBUTOR)
+        # team_type is set to Team.CONTRIBUTOR by default and can be overridden
+        # by the requester
+        request.data['team_type'] = request.data.get(
+            'team_type', Team.CONTRIBUTOR)
         serializer = TeamSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

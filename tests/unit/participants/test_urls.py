@@ -98,7 +98,8 @@ class TestStringMethods(BaseAPITestClass):
 
     def test_delete_participant_from_team_url(self):
         self.url = reverse_lazy('participants:delete_participant_from_team',
-                                kwargs={'participant_team_pk': self.participant_team.pk,
+                                kwargs={
+                                    'participant_team_pk': self.participant_team.pk,
                                         'participant_pk': self.invite_user.pk})
         self.assertEqual(unicode(self.url), '/api/participants/participant_team/%s/participant/%s' %
                          (self.participant_team.pk, self.invite_user.pk))
@@ -117,7 +118,8 @@ class TestStringMethods(BaseAPITestClass):
             resolver.view_name, 'participants:get_teams_and_corresponding_challenges_for_a_participant')
 
     def test_remove_self_from_participant_team_url(self):
-        self.url = reverse_lazy('participants:remove_self_from_participant_team',
+        self.url = reverse_lazy(
+            'participants:remove_self_from_participant_team',
                                 kwargs={'participant_team_pk': self.participant_team.pk})
         self.assertEqual(unicode(
             self.url), '/api/participants/remove_self_from_participant_team/%s' % (self.participant_team.pk))

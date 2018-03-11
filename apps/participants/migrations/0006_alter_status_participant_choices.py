@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='participant',
             name='status',
-            field=models.CharField(choices=[('Accepted', 'Accepted'), ('Denied', 'Denied'), ('Pending', 'Pending'), ('Self', 'Self'), ('Unknown', 'Unknown')], max_length=30),
+            field=models.CharField(choices=[('Accepted', 'Accepted'), ('Denied', 'Denied'), (
+                'Pending', 'Pending'), ('Self', 'Self'), ('Unknown', 'Unknown')], max_length=30),
         ),
         migrations.DeleteModel(
             name='ParticipantStatus',

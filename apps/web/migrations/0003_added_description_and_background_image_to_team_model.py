@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='team',
             name='background_image',
-            field=models.ImageField(blank=True, null=True, upload_to='bg-images'),
+            field=models.ImageField(
+                blank=True, null=True, upload_to='bg-images'),
         ),
         migrations.AddField(
             model_name='team',

@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
+
     """
     Make username as a read_only field.
     """
@@ -14,6 +15,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(UserDetailsSerializer):
+
     """
     Serializer to update the user profile.
     """
@@ -27,7 +29,8 @@ class ProfileSerializer(UserDetailsSerializer):
         profile_data = validated_data.pop('profile', {})
         affiliation = profile_data.get('affiliation')
 
-        instance = super(ProfileSerializer, self).update(instance, validated_data)
+        instance = super(ProfileSerializer, self).update(
+            instance, validated_data)
 
         profile = instance.profile
         if profile_data and affiliation:

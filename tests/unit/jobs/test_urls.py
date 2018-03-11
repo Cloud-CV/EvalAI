@@ -88,16 +88,18 @@ class BaseAPITestClass(APITestCase):
                                                    'Dummy file content', content_type='text/plain')
             )
 
-        self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Test Dataset Split", codename="test-split")
 
-        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
+        self.leaderboard = Leaderboard.objects.create(
+            schema=json.dumps({'hello': 'world'}))
 
         self.challenge_phase_split = ChallengePhaseSplit.objects.create(
             dataset_split=self.dataset_split,
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC
-            )
+        )
 
         self.submission = Submission.objects.create(
             participant_team=self.participant_team,
@@ -130,7 +132,8 @@ class TestJobsUrls(BaseAPITestClass):
                                                                                           self.challenge_phase.pk,
                                                                                           self.submission.pk))
         resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'jobs:change_submission_data_and_visibility')
+        self.assertEqual(
+            resolver.view_name, 'jobs:change_submission_data_and_visibility')
 
     def test_challenge_submisson_url(self):
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -146,8 +149,9 @@ class TestJobsUrls(BaseAPITestClass):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
-        self.assertEqual(self.url, '/api/jobs/{}/phases/{}/remaining_submissions'.format(self.challenge.pk,
-                                                                                         self.challenge_phase.pk))
+        self.assertEqual(
+            self.url, '/api/jobs/{}/phases/{}/remaining_submissions'.format(self.challenge.pk,
+                                                                            self.challenge_phase.pk))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:get_remaining_submissions')
 

@@ -26,6 +26,8 @@ class LastSubmissionTimestamp(object):
 
 
 class LastSubmissionTimestampSerializer(serializers.Serializer):
-    last_submission_timestamp_in_challenge = serializers.DateTimeField(format=None)
-    last_submission_timestamp_in_challenge_phase = serializers.DateTimeField(format=None)
+    last_submission_timestamp_in_challenge = serializers.DateTimeField(
+        format=None)
+    last_submission_timestamp_in_challenge_phase = serializers.DateTimeField(
+        format=None)
     challenge_phase = serializers.IntegerField()

@@ -20,7 +20,7 @@ class UserStatusTestCase(BaseTestCase):
         self.user_status = UserStatus.objects.create(
             name='user',
             status=UserStatus.UNKNOWN,
-            )
+        )
 
     def test__str__(self):
         self.assertEqual(self.user_status.name, self.user_status.__str__())
@@ -33,4 +33,5 @@ class ProfileTestCase(BaseTestCase):
         self.profile = Profile.objects.get(user=self.user)
 
     def test__str__(self):
-        self.assertEqual('{}'.format(self.profile.user), self.profile.__str__())
+        self.assertEqual(
+            '{}'.format(self.profile.user), self.profile.__str__())

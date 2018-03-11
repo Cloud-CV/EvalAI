@@ -411,15 +411,17 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             team=self.participant_team)
 
         self.url = reverse_lazy('participants:delete_participant_from_team',
-                                kwargs={'participant_team_pk': self.participant_team.pk,
+                                kwargs={
+                                    'participant_team_pk': self.participant_team.pk,
                                         'participant_pk': self.invite_user.pk
-                                        })
+                                })
 
     def test_participant_does_not_exist_in_team(self):
         self.url = reverse_lazy('participants:delete_participant_from_team',
-                                kwargs={'participant_team_pk': self.participant_team.pk,
+                                kwargs={
+                                    'participant_team_pk': self.participant_team.pk,
                                         'participant_pk': self.participant2.pk + 1
-                                        })
+                                })
 
         expected = {
             'error': 'Participant does not exist'
@@ -431,9 +433,10 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
 
     def test_when_participant_team_does_not_exist(self):
         self.url = reverse_lazy('participants:delete_participant_from_team',
-                                kwargs={'participant_team_pk': self.participant_team.pk + 1,
+                                kwargs={
+                                    'participant_team_pk': self.participant_team.pk + 1,
                                         'participant_pk': self.participant2.pk
-                                        })
+                                })
 
         expected = {
             'error': 'ParticipantTeam does not exist'
@@ -445,9 +448,10 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
 
     def test_when_participant_is_admin_and_wants_to_delete_himself(self):
         self.url = reverse_lazy('participants:delete_participant_from_team',
-                                kwargs={'participant_team_pk': self.participant_team.pk,
+                                kwargs={
+                                    'participant_team_pk': self.participant_team.pk,
                                         'participant_pk': self.participant1.pk
-                                        })
+                                })
 
         expected = {
             'error': 'You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!'  # noqa: ignore=E501
@@ -459,9 +463,10 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
 
     def test_when_participant_does_not_have_permissions_to_remove_another_participant(self):
         self.url = reverse_lazy('participants:delete_participant_from_team',
-                                kwargs={'participant_team_pk': self.participant_team.pk,
+                                kwargs={
+                                    'participant_team_pk': self.participant_team.pk,
                                         'participant_pk': self.participant2.pk
-                                        })
+                                })
 
         self.user3 = User.objects.create(
             username='user3',
@@ -491,9 +496,10 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
 
     def test_when_a_participant_is_successfully_removed_from_team(self):
         self.url = reverse_lazy('participants:delete_participant_from_team',
-                                kwargs={'participant_team_pk': self.participant_team.pk,
+                                kwargs={
+                                    'participant_team_pk': self.participant_team.pk,
                                         'participant_pk': self.participant2.pk
-                                        })
+                                })
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -562,7 +568,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
-            )
+        )
 
         self.url = reverse_lazy(
             'participants:get_teams_and_corresponding_challenges_for_a_participant',
@@ -588,13 +594,15 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "evaluation_details": self.challenge1.evaluation_details,
                         "image": self.challenge1.image,
                         "start_date":
-                            "{0}{1}".format(self.challenge1.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                            "{0}{1}".format(
+                                self.challenge1.start_date.isoformat(
+                                ), 'Z').replace("+00:00", ""),
                         "end_date": "{0}{1}".format(self.challenge1.end_date.isoformat(), 'Z').replace("+00:00", ""),
                         "creator": {
                             "id": self.challenge_host_team.id,
                             "team_name": self.challenge_host_team.team_name,
                             "created_by": self.challenge_host_team.created_by.username
-                            },
+                        },
                         "published": self.challenge1.published,
                         "enable_forum": self.challenge1.enable_forum,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
@@ -610,9 +618,12 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
-        # checking 'datetime_now' separately because of time difference in microseconds
-        self.assertTrue(abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
-        # deleting field 'datetime_now' from response to check with expected response without time field
+        # checking 'datetime_now' separately because of time difference in
+        # microseconds
+        self.assertTrue(
+            abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
+        # deleting field 'datetime_now' from response to check with expected
+        # response without time field
         del response.data['datetime_now']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -633,9 +644,12 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             "is_challenge_host": False
         }
         response = self.client.get(self.url, {})
-        # checking 'datetime_now' separately because of time difference in microseconds
-        self.assertTrue(abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
-        # deleting field 'datetime_now' from response to check with expected response without time field
+        # checking 'datetime_now' separately because of time difference in
+        # microseconds
+        self.assertTrue(
+            abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
+        # deleting field 'datetime_now' from response to check with expected
+        # response without time field
         del response.data['datetime_now']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -650,9 +664,12 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         }
 
         response = self.client.get(self.url, {})
-        # checking 'datetime_now' separately because of time difference in microseconds
-        self.assertTrue(abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
-        # deleting field 'datetime_now' from response to check with expected response without time field
+        # checking 'datetime_now' separately because of time difference in
+        # microseconds
+        self.assertTrue(
+            abs(response.data['datetime_now'] - self.time) < timedelta(seconds=1))
+        # deleting field 'datetime_now' from response to check with expected
+        # response without time field
         del response.data['datetime_now']
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -697,12 +714,14 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
         )
 
-        self.url = reverse_lazy('participants:remove_self_from_participant_team',
+        self.url = reverse_lazy(
+            'participants:remove_self_from_participant_team',
                                 kwargs={'participant_team_pk': self.participant_team.pk
                                         })
 
     def test_when_participant_team_does_not_exist(self):
-        self.url = reverse_lazy('participants:remove_self_from_participant_team',
+        self.url = reverse_lazy(
+            'participants:remove_self_from_participant_team',
                                 kwargs={'participant_team_pk': self.participant_team.pk + 1
                                         })
 
@@ -715,9 +734,11 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_when_a_participant_is_successfully_removed_from_team(self):
-        self.url = reverse_lazy('participants:remove_self_from_participant_team',
-                                kwargs={'participant_team_pk': self.participant_team.pk,
-                                        })
+        self.url = reverse_lazy(
+            'participants:remove_self_from_participant_team',
+                                kwargs={
+                                    'participant_team_pk': self.participant_team.pk,
+                                })
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 

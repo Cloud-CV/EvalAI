@@ -55,7 +55,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'GET':
-        # getting participant team object for the user for a particular challenge.
+        # getting participant team object for the user for a particular
+        # challenge.
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id)
 
@@ -63,14 +64,17 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         try:
             ParticipantTeam.objects.get(pk=participant_team_id)
         except ParticipantTeam.DoesNotExist:
-            response_data = {'error': 'You haven\'t participated in the challenge'}
+            response_data = {
+                'error': 'You haven\'t participated in the challenge'}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-        submission = Submission.objects.filter(participant_team=participant_team_id,
+        submission = Submission.objects.filter(
+            participant_team=participant_team_id,
                                                challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submission, request)
         try:
-            serializer = SubmissionSerializer(result_page, many=True, context={'request': request})
+            serializer = SubmissionSerializer(
+                result_page, many=True, context={'request': request})
             response_data = serializer.data
             return paginator.get_paginated_response(response_data)
         except:
@@ -98,22 +102,26 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id)
         try:
-            participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+            participant_team = ParticipantTeam.objects.get(
+                pk=participant_team_id)
         except ParticipantTeam.DoesNotExist:
-            response_data = {'error': 'You haven\'t participated in the challenge'}
+            response_data = {
+                'error': 'You haven\'t participated in the challenge'}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         serializer = SubmissionSerializer(data=request.data,
-                                          context={'participant_team': participant_team,
+                                          context={
+                                              'participant_team': participant_team,
                                                    'challenge_phase': challenge_phase,
                                                    'request': request
-                                                   })
+                                          })
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
             submission = serializer.instance
             # publish message in the queue
-            publish_submission_message(challenge_id, challenge_phase_id, submission.id)
+            publish_submission_message(
+                challenge_id, challenge_phase_id, submission.id)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -172,9 +180,9 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
     serializer = SubmissionSerializer(submission,
                                       data=request.data,
                                       context={
-                                               'participant_team': participant_team,
-                                               'challenge_phase': challenge_phase,
-                                               'request': request
+                                      'participant_team': participant_team,
+                                      'challenge_phase': challenge_phase,
+                                      'request': request
                                       },
                                       partial=True)
 
@@ -201,7 +209,8 @@ def leaderboard(request, challenge_phase_split_id):
 
     # Check if the Challenge Phase Split is publicly visible or not
     if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC:
-        response_data = {'error': 'Sorry, leaderboard is not public yet for this Challenge Phase Split!'}
+        response_data = {
+            'error': 'Sorry, leaderboard is not public yet for this Challenge Phase Split!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Get the leaderboard associated with the Challenge Phase Split
@@ -211,7 +220,8 @@ def leaderboard(request, challenge_phase_split_id):
     try:
         default_order_by = leaderboard.schema['default_order_by']
     except:
-        response_data = {'error': 'Sorry, Default filtering key not found in leaderboard schema!'}
+        response_data = {
+            'error': 'Sorry, Default filtering key not found in leaderboard schema!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Get all the successful submissions related to the challenge phase split
@@ -224,7 +234,8 @@ def leaderboard(request, challenge_phase_split_id):
             'id', 'submission__participant_team__team_name',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
 
-    sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
+    sorted_leaderboard_data = sorted(
+        leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
 
     distinct_sorted_leaderboard_data = []
     team_list = []
@@ -238,10 +249,11 @@ def leaderboard(request, challenge_phase_split_id):
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
     for item in distinct_sorted_leaderboard_data:
-        item['result'] = [item['result'][index.lower()] for index in leaderboard_labels]
+        item['result'] = [item['result'][index.lower()]
+                          for index in leaderboard_labels]
 
     paginator, result_page = paginated_queryset(
-                                                distinct_sorted_leaderboard_data,
+        distinct_sorted_leaderboard_data,
                                                 request,
                                                 pagination_class=StandardResultSetPagination())
     response_data = result_page
@@ -283,7 +295,8 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         status=Submission.FAILED,
         submitted_at__gte=timezone.now().date()).count()
 
-    # Checks if today's successfull submission is greater than or equal to max submission per day.
+    # Checks if today's successfull submission is greater than or equal to max
+    # submission per day.
     if ((submissions_done_today_count - failed_submissions_count) >= max_submission_per_day
             or (max_submission_per_day == 0)):
         # Get the UTC time of the instant when the above condition is true.
@@ -294,12 +307,14 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         # Get the midnight time of the day i.e. 12:00 AM of next day.
         midnight = utc.localize(datetime.datetime.combine(
             date_time_tomorrow, datetime.time()))
-        # Subtract the current time from the midnight time to get the remaining time for the next day's submissions.
+        # Subtract the current time from the midnight time to get the remaining
+        # time for the next day's submissions.
         remaining_time = midnight - date_time_now
         # Return the remaining time with a message.
-        response_data = {'message': 'You have exhausted today\'s submission limit',
+        response_data = {
+            'message': 'You have exhausted today\'s submission limit',
                          'remaining_time': remaining_time
-                         }
+        }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         # Calculate the remaining submissions for today.
@@ -311,7 +326,8 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         remaining_submission_count = max_submission - \
             (submissions_done_today_count - failed_submissions_count)
         # Return the above calculated data.
-        response_data = {'remaining_submissions_today_count': remaining_submissions_today_count,
+        response_data = {
+            'remaining_submissions_today_count': remaining_submissions_today_count,
                          'remaining_submissions': remaining_submission_count
-                         }
+        }
         return Response(response_data, status=status.HTTP_200_OK)

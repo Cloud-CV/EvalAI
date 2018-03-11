@@ -16,13 +16,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ChallengePhaseSplit',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('modified_at', models.DateTimeField(auto_now=True)),
-                ('visibility', models.CharField(choices=[('1', 'host'), ('2', 'owner and host'), ('3', 'public')], default='3', max_length=1)),
-                ('challenge_phase', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='challenges.ChallengePhase')),
-                ('dataset_split', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='challenges.DatasetSplit')),
-                ('leaderboard', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='challenges.Leaderboard')),
+                ('visibility', models.CharField(
+                    choices=[(
+                        '1', 'host'), ('2', 'owner and host'), ('3', 'public')], default='3', max_length=1)),
+                ('challenge_phase', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='challenges.ChallengePhase')),
+                ('dataset_split', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='challenges.DatasetSplit')),
+                ('leaderboard', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='challenges.Leaderboard')),
             ],
             options={
                 'db_table': 'challenge_phase_split',

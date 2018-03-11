@@ -258,7 +258,8 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
 
     def setUp(self):
         super(ChallengePhaseSubmissionAnalysisTest, self).setUp()
-        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+        self.url = reverse_lazy(
+            'analytics:get_challenge_phase_submission_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
@@ -276,39 +277,42 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         )
 
     def test_get_challenge_phase_submission_analysis_when_challenge_does_not_exist(self):
-        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
-                                kwargs={'challenge_pk': self.challenge.pk+10,
+        self.url = reverse_lazy(
+            'analytics:get_challenge_phase_submission_analysis',
+                                kwargs={'challenge_pk': self.challenge.pk + 10,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-            "detail": "Challenge {} does not exist".format(self.challenge.pk+10)
+            "detail": "Challenge {} does not exist".format(self.challenge.pk + 10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_challenge_phase_submission_analysis_when_challenge_phase_does_not_exist(self):
-        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+        self.url = reverse_lazy(
+            'analytics:get_challenge_phase_submission_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk+10})
+                                        'challenge_phase_pk': self.challenge_phase.pk + 10})
 
         expected = {
-            "detail": "ChallengePhase {} does not exist".format(self.challenge_phase.pk+10)
+            "detail": "ChallengePhase {} does not exist".format(self.challenge_phase.pk + 10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_challenge_phase_submission_analysis(self):
-        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+        self.url = reverse_lazy(
+            'analytics:get_challenge_phase_submission_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-                "submission_count": 1,
+            "submission_count": 1,
                 "participant_team_count": 1,
                 "challenge_phase": self.challenge_phase.pk
-            }
+        }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -338,12 +342,12 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
 
     def test_get_last_submission_time_when_challenge_does_not_exists(self):
         self.url = reverse_lazy('analytics:get_last_submission_time',
-                                kwargs={'challenge_pk': self.challenge.pk+10,
+                                kwargs={'challenge_pk': self.challenge.pk + 10,
                                         'challenge_phase_pk': self.challenge_phase.pk,
                                         'submission_by': 'challenge'})
         expected = {
-            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
-            }
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk + 10)
+        }
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -352,11 +356,11 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
     def test_get_last_submission_time_when_challenge_phase_does_not_exists(self):
         self.url = reverse_lazy('analytics:get_last_submission_time',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk+10,
+                                        'challenge_phase_pk': self.challenge_phase.pk + 10,
                                         'submission_by': 'challenge'})
         expected = {
-            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+10)
-            }
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk + 10)
+        }
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -370,7 +374,7 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
         expected = {
             'last_submission_datetime': "{0}{1}".format(self.submission.created_at.isoformat(), 'Z')
                                         .replace("+00:00", "")
-            }
+        }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -382,7 +386,7 @@ class GetLastSubmissionTimeTest(BaseAPITestClass):
                                         'submission_by': 'other'})
         expected = {
             'error': 'Page not found!'
-            }
+        }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -392,7 +396,8 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
 
     def setUp(self):
         super(GetLastSubmissionDateTimeAnalysisTest, self).setUp()
-        self.url = reverse_lazy('analytics:get_last_submission_datetime_analysis',
+        self.url = reverse_lazy(
+            'analytics:get_last_submission_datetime_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
@@ -410,31 +415,34 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
         )
 
     def test_get_last_submission_datetime_when_challenge_does_not_exists(self):
-        self.url = reverse_lazy('analytics:get_last_submission_datetime_analysis',
-                                kwargs={'challenge_pk': self.challenge.pk+10,
+        self.url = reverse_lazy(
+            'analytics:get_last_submission_datetime_analysis',
+                                kwargs={'challenge_pk': self.challenge.pk + 10,
                                         'challenge_phase_pk': self.challenge_phase.pk})
         expected = {
-            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
-            }
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk + 10)
+        }
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_last_submission_datetime_when_challenge_phase_does_not_exists(self):
-        self.url = reverse_lazy('analytics:get_last_submission_datetime_analysis',
+        self.url = reverse_lazy(
+            'analytics:get_last_submission_datetime_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk+10})
+                                        'challenge_phase_pk': self.challenge_phase.pk + 10})
         expected = {
-            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+10)
-            }
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk + 10)
+        }
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_last_submission_datetime_analysis(self):
-        self.url = reverse_lazy('analytics:get_last_submission_datetime_analysis',
+        self.url = reverse_lazy(
+            'analytics:get_last_submission_datetime_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
@@ -443,9 +451,10 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
             'last_submission_timestamp_in_challenge_phase': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),
             'last_submission_timestamp_in_challenge': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),
             'challenge_phase': self.challenge_phase.pk
-            }
+        }
         response = self.client.get(self.url, {})
-        datetime = response.data['last_submission_timestamp_in_challenge_phase'].isoformat()
+        datetime = response.data[
+            'last_submission_timestamp_in_challenge_phase'].isoformat()
         response_data = {
             'last_submission_timestamp_in_challenge_phase': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),
             'last_submission_timestamp_in_challenge': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),

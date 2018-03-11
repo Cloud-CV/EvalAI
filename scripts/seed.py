@@ -1,4 +1,5 @@
-# Command to run : python manage.py shell --settings=settings.dev  < scripts/seed.py
+# Command to run : python manage.py shell --settings=settings.dev  <
+# scripts/seed.py
 import os
 
 from datetime import timedelta
@@ -44,8 +45,10 @@ def create_user(is_admin, username=""):
         is_staff=is_admin,
         is_superuser=is_admin,
     )
-    EmailAddress.objects.create(user=user, email=email, verified=True, primary=True)
-    print("{} was created with username: {} password: password".format("Super user" if is_admin else "User", username))
+    EmailAddress.objects.create(
+        user=user, email=email, verified=True, primary=True)
+    print("{} was created with username: {} password: password".format(
+        "Super user" if is_admin else "User", username))
     return user
 
 
@@ -58,9 +61,12 @@ def create_challenge_host_team(user):
         team_name=team_name,
         created_by=user,
     )
-    print("Challenge Host Team created with team_name: {} created_by: {}".format(team_name, user.username))
-    ChallengeHost.objects.create(user=user, team_name=team, status=ChallengeHost.SELF, permissions=ChallengeHost.ADMIN)
-    print("Challenge Host created with user: {} team_name: {}".format(user.username, team_name))
+    print(
+        "Challenge Host Team created with team_name: {} created_by: {}".format(team_name, user.username))
+    ChallengeHost.objects.create(
+        user=user, team_name=team, status=ChallengeHost.SELF, permissions=ChallengeHost.ADMIN)
+    print(
+        "Challenge Host created with user: {} team_name: {}".format(user.username, team_name))
     return team
 
 
@@ -93,7 +99,8 @@ def create_challenge(title, start_date, end_date, host_team):
     """
     Creates a challenge.
     """
-    evaluation_script = open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'string_matching.zip'), 'rb')
+    evaluation_script = open(
+        os.path.join(settings.BASE_DIR, 'examples', 'example1', 'string_matching.zip'), 'rb')
     Challenge.objects.create(
         title=title,
         short_description=fake.paragraph(),
@@ -101,7 +108,8 @@ def create_challenge(title, start_date, end_date, host_team):
         terms_and_conditions=fake.paragraph(),
         submission_guidelines=fake.paragraph(),
         evaluation_details=fake.paragraph(),
-        evaluation_script=SimpleUploadedFile(evaluation_script.name, evaluation_script.read()),
+        evaluation_script=SimpleUploadedFile(
+            evaluation_script.name, evaluation_script.read()),
         approved_by_admin=True,
         creator=host_team,
         published=True,
@@ -110,9 +118,10 @@ def create_challenge(title, start_date, end_date, host_team):
         start_date=start_date,
         end_date=end_date,
     )
-    print("Challenge created with title: {} creator: {} start_date: {} end_date: {}".format(title,
-                                                                                            host_team.team_name,
-                                                                                            start_date, end_date))
+    print(
+        "Challenge created with title: {} creator: {} start_date: {} end_date: {}".format(title,
+                                                                                          host_team.team_name,
+                                                                                          start_date, end_date))
 
 
 def create_challenge_phases(challenge, number_of_phases=1):
@@ -133,11 +142,14 @@ def create_challenge_phases(challenge, number_of_phases=1):
             start_date=challenge.start_date,
             end_date=challenge.end_date,
             challenge=challenge,
-            test_annotation=SimpleUploadedFile(fake.file_name(extension="txt"), data, content_type="text/plain"),
+            test_annotation=SimpleUploadedFile(
+                fake.file_name(
+                    extension="txt"), data, content_type="text/plain"),
             codename="{}{}".format("phase", i + 1),
         )
         challenge_phases.append(challenge_phase)
-        print("Challenge Phase created with name: {} challenge: {}".format(name, challenge.title))
+        print(
+            "Challenge Phase created with name: {} challenge: {}".format(name, challenge.title))
     return challenge_phases
 
 
@@ -171,7 +183,8 @@ def create_dataset_splits(number_of_splits):
         )
         dataset_splits.append(dataset_split)
         DATASET_SPLIT_ITERATOR += 1
-        print("Dataset Split created with name: {} codename: {}".format(name, codename))
+        print(
+            "Dataset Split created with name: {} codename: {}".format(name, codename))
     return dataset_splits
 
 
@@ -185,8 +198,9 @@ def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
         dataset_split=dataset_split,
         visibility=ChallengePhaseSplit.PUBLIC
     )
-    print("Challenge Phase Split created with challenge_phase: {} dataset_split: {}".format(challenge_phase.name,
-                                                                                            dataset_split.name))
+    print(
+        "Challenge Phase Split created with challenge_phase: {} dataset_split: {}".format(challenge_phase.name,
+                                                                                          dataset_split.name))
 
 
 def create_participant_team(user):
@@ -198,9 +212,11 @@ def create_participant_team(user):
         team_name=team_name,
         created_by=user,
     )
-    print("Participant Team created with team_name: {} created_by: {}".format(team_name, user.username))
+    print("Participant Team created with team_name: {} created_by: {}".format(
+        team_name, user.username))
     Participant.objects.create(user=user, team=team, status="Self")
-    print("Participant created with user: {} team_name: {}".format(user.username, team_name))
+    print(
+        "Participant created with user: {} team_name: {}".format(user.username, team_name))
     return team
 
 
@@ -212,7 +228,8 @@ def run():
     # Create challenge host team with challenge host
     challenge_host_team = create_challenge_host_team(user=host_user)
     # Create challenge
-    create_challenges(number_of_challenges=NUMBER_OF_CHALLENGES, host_team=challenge_host_team)
+    create_challenges(
+        number_of_challenges=NUMBER_OF_CHALLENGES, host_team=challenge_host_team)
 
     # Fetch all the created challenges
     challenges = Challenge.objects.all()
@@ -220,12 +237,15 @@ def run():
         # Create a leaderboard object for each challenge
         leaderboard = create_leaderboard()
         # Create Phases for a challenge
-        challenge_phases = create_challenge_phases(challenge, number_of_phases=NUMBER_OF_PHASES)
+        challenge_phases = create_challenge_phases(
+            challenge, number_of_phases=NUMBER_OF_PHASES)
         # Create Dataset Split for each Challenge
-        dataset_splits = create_dataset_splits(number_of_splits=NUMBER_OF_DATASET_SPLITS)
+        dataset_splits = create_dataset_splits(
+            number_of_splits=NUMBER_OF_DATASET_SPLITS)
         # Create Challenge Phase Split for each Phase and Dataset Split
         for challenge_phase in challenge_phases:
             for dataset_split in dataset_splits:
-                create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split)
+                create_challenge_phase_splits(
+                    challenge_phase, leaderboard, dataset_split)
     participant_user = create_user(is_admin=False, username="participant")
     create_participant_team(user=participant_user)

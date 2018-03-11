@@ -22,7 +22,8 @@ from django.conf import settings
 # need to add django project path in sys path
 # root directory : where manage.py lives
 # worker is present in root-directory/scripts/workers
-# but make sure that this worker is run like `python scripts/workers/submission_worker.py`
+# but make sure that this worker is run like `python
+# scripts/workers/submission_worker.py`
 DJANGO_PROJECT_PATH = dirname(dirname(dirname(os.path.abspath(__file__))))
 
 # all challenge and submission will be stored in temp directory
@@ -49,7 +50,7 @@ from challenges.models import (Challenge,
                                ChallengePhase,
                                ChallengePhaseSplit,
                                DatasetSplit,
-                               LeaderboardData) # noqa
+                               LeaderboardData)  # noqa
 
 from jobs.models import Submission          # noqa
 
@@ -59,7 +60,8 @@ CHALLENGE_DATA_DIR = join(CHALLENGE_DATA_BASE_DIR, 'challenge_{challenge_id}')
 PHASE_DATA_BASE_DIR = join(CHALLENGE_DATA_DIR, 'phase_data')
 PHASE_DATA_DIR = join(PHASE_DATA_BASE_DIR, 'phase_{phase_id}')
 PHASE_ANNOTATION_FILE_PATH = join(PHASE_DATA_DIR, '{annotation_file}')
-SUBMISSION_DATA_DIR = join(SUBMISSION_DATA_BASE_DIR, 'submission_{submission_id}')
+SUBMISSION_DATA_DIR = join(
+    SUBMISSION_DATA_BASE_DIR, 'submission_{submission_id}')
 SUBMISSION_INPUT_FILE_PATH = join(SUBMISSION_DATA_DIR, '{input_file}')
 CHALLENGE_IMPORT_STRING = 'challenge_data.challenge_{challenge_id}'
 EVALUATION_SCRIPTS = {}
@@ -137,7 +139,8 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         try:
             os.remove(download_location)
         except Exception as e:
-            logger.error('Failed to remove zip file {}, error {}'.format(download_location, e))
+            logger.error(
+                'Failed to remove zip file {}, error {}'.format(download_location, e))
             traceback.print_exc()
 
 
@@ -180,34 +183,44 @@ def extract_challenge_data(challenge, phases):
 
     '''
 
-    challenge_data_directory = CHALLENGE_DATA_DIR.format(challenge_id=challenge.id)
+    challenge_data_directory = CHALLENGE_DATA_DIR.format(
+        challenge_id=challenge.id)
     evaluation_script_url = challenge.evaluation_script.url
-    evaluation_script_url = return_file_url_per_environment(evaluation_script_url)
+    evaluation_script_url = return_file_url_per_environment(
+        evaluation_script_url)
     # create challenge directory as package
     create_dir_as_python_package(challenge_data_directory)
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id] = {}
 
-    challenge_zip_file = join(challenge_data_directory, 'challenge_{}.zip'.format(challenge.id))
-    download_and_extract_zip_file(evaluation_script_url, challenge_zip_file, challenge_data_directory)
+    challenge_zip_file = join(
+        challenge_data_directory, 'challenge_{}.zip'.format(challenge.id))
+    download_and_extract_zip_file(
+        evaluation_script_url, challenge_zip_file, challenge_data_directory)
 
-    phase_data_base_directory = PHASE_DATA_BASE_DIR.format(challenge_id=challenge.id)
+    phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
+        challenge_id=challenge.id)
     create_dir(phase_data_base_directory)
 
     for phase in phases:
-        phase_data_directory = PHASE_DATA_DIR.format(challenge_id=challenge.id, phase_id=phase.id)
+        phase_data_directory = PHASE_DATA_DIR.format(
+            challenge_id=challenge.id, phase_id=phase.id)
         # create phase directory
         create_dir(phase_data_directory)
         annotation_file_url = phase.test_annotation.url
-        annotation_file_url = return_file_url_per_environment(annotation_file_url)
+        annotation_file_url = return_file_url_per_environment(
+            annotation_file_url)
         annotation_file_name = os.path.basename(phase.test_annotation.name)
-        PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id][phase.id] = annotation_file_name
-        annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(challenge_id=challenge.id, phase_id=phase.id,
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id][
+            phase.id] = annotation_file_name
+        annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(
+            challenge_id=challenge.id, phase_id=phase.id,
                                                                  annotation_file=annotation_file_name)
         download_and_extract_file(annotation_file_url, annotation_file_path)
 
     # import the challenge after everything is finished
-    challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
+    challenge_module = importlib.import_module(
+        CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
     EVALUATION_SCRIPTS[challenge.id] = challenge_module
 
 
@@ -246,16 +259,20 @@ def extract_submission_data(submission_id):
         return None
 
     submission_input_file = submission.input_file.url
-    submission_input_file = return_file_url_per_environment(submission_input_file)
+    submission_input_file = return_file_url_per_environment(
+        submission_input_file)
 
-    submission_data_directory = SUBMISSION_DATA_DIR.format(submission_id=submission.id)
+    submission_data_directory = SUBMISSION_DATA_DIR.format(
+        submission_id=submission.id)
     submission_input_file_name = os.path.basename(submission.input_file.name)
-    submission_input_file_path = SUBMISSION_INPUT_FILE_PATH.format(submission_id=submission.id,
+    submission_input_file_path = SUBMISSION_INPUT_FILE_PATH.format(
+        submission_id=submission.id,
                                                                    input_file=submission_input_file_name)
     # create submission directory
     create_dir_as_python_package(submission_data_directory)
 
-    download_and_extract_file(submission_input_file, submission_input_file_path)
+    download_and_extract_file(
+        submission_input_file, submission_input_file_path)
 
     return submission
 
@@ -269,10 +286,13 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     '''
     submission_output = None
     phase_id = challenge_phase.id
-    annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP.get(challenge_id).get(phase_id)
-    annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(challenge_id=challenge_id, phase_id=phase_id,
+    annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP.get(
+        challenge_id).get(phase_id)
+    annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(
+        challenge_id=challenge_id, phase_id=phase_id,
                                                              annotation_file=annotation_file_name)
-    submission_data_dir = SUBMISSION_DATA_DIR.format(submission_id=submission_id)
+    submission_data_dir = SUBMISSION_DATA_DIR.format(
+        submission_id=submission_id)
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, 'run')
@@ -287,14 +307,16 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     stdout = open(stdout_file, 'a+')
     stderr = open(stderr_file, 'a+')
 
-    # call `main` from globals and set `status` to running and hence `started_at`
+    # call `main` from globals and set `status` to running and hence
+    # `started_at`
     submission.status = Submission.RUNNING
     submission.started_at = timezone.now()
     submission.save()
     try:
         successful_submission_flag = True
         with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
-            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
+            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+                annotation_file_path,
                                                                           user_annotation_file_path,
                                                                           challenge_phase.codename,)
         '''
@@ -329,10 +351,13 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
             leaderboard_data_list = []
             for split_result in submission_output['result']:
 
-                # Check if the dataset_split exists for the codename in the result
+                # Check if the dataset_split exists for the codename in the
+                # result
                 try:
-                    split_code_name = split_result.items()[0][0]  # get split_code_name that is the key of the result
-                    dataset_split = DatasetSplit.objects.get(codename=split_code_name)
+                    split_code_name = split_result.items()[0][
+                        0]  # get split_code_name that is the key of the result
+                    dataset_split = DatasetSplit.objects.get(
+                        codename=split_code_name)
                 except:
                     stderr.write("ORGINIAL EXCEPTION: The codename specified by your Challenge Host doesn't match"
                                  " with that in the evaluation Script.\n")
@@ -340,9 +365,11 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
                     successful_submission_flag = False
                     break
 
-                # Check if the challenge_phase_split exists for the challenge_phase and dataset_split
+                # Check if the challenge_phase_split exists for the
+                # challenge_phase and dataset_split
                 try:
-                    challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(
+                        challenge_phase=challenge_phase,
                                                                             dataset_split=dataset_split)
                 except:
                     stderr.write("ORGINIAL EXCEPTION: No such relation between between Challenge Phase and DatasetSplit"
@@ -355,14 +382,16 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
                 leaderboard_data.challenge_phase_split = challenge_phase_split
                 leaderboard_data.submission = submission
                 leaderboard_data.leaderboard = challenge_phase_split.leaderboard
-                leaderboard_data.result = split_result.get(dataset_split.codename)
+                leaderboard_data.result = split_result.get(
+                    dataset_split.codename)
 
                 leaderboard_data_list.append(leaderboard_data)
 
             if successful_submission_flag:
                 LeaderboardData.objects.bulk_create(leaderboard_data_list)
 
-        # Once the submission_output is processed, then save the submission object with appropriate status
+        # Once the submission_output is processed, then save the submission
+        # object with appropriate status
         else:
             successful_submission_flag = False
 
@@ -375,7 +404,8 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     submission.completed_at = timezone.now()
     submission.save()
 
-    # after the execution is finished, set `status` to finished and hence `completed_at`
+    # after the execution is finished, set `status` to finished and hence
+    # `completed_at`
     if submission_output:
         output = {}
         output['result'] = submission_output.get('result', '')
@@ -383,11 +413,13 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
 
         # Save submission_result_file
         submission_result = submission_output.get('submission_result', '')
-        submission.submission_result_file.save('submission_result.json', ContentFile(submission_result))
+        submission.submission_result_file.save(
+            'submission_result.json', ContentFile(submission_result))
 
         # Save submission_metadata_file
         submission_metadata = submission_output.get('submission_metadata', '')
-        submission.submission_metadata_file.save('submission_metadata.json', ContentFile(submission_metadata))
+        submission.submission_metadata_file.save(
+            'submission_metadata.json', ContentFile(submission_metadata))
 
     submission.save()
 
@@ -403,7 +435,8 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     if (submission_status is Submission.FAILED):
         with open(stderr_file, 'r') as stderr:
             stderr_content = stderr.read()
-            submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
+            submission.stderr_file.save(
+                'stderr.txt', ContentFile(stderr_content))
 
     # delete the complete temp run directory
     shutil.rmtree(temp_run_dir)
@@ -426,9 +459,11 @@ def process_submission_message(message):
         traceback.print_exc()
         return
 
-    user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
+    user_annotation_file_path = join(
+        SUBMISSION_DATA_DIR.format(submission_id=submission_id),
                                      os.path.basename(submission_instance.input_file.name))
-    run_submission(challenge_id, challenge_phase, submission_id, submission_instance, user_annotation_file_path)
+    run_submission(challenge_id, challenge_phase, submission_id,
+                   submission_instance, user_annotation_file_path)
 
 
 def process_add_challenge_message(message):
@@ -452,7 +487,8 @@ def process_submission_callback(ch, method, properties, body):
         process_submission_message(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
-        logger.error('Error in receiving message from submission queue with error {}'.format(e))
+        logger.error(
+            'Error in receiving message from submission queue with error {}'.format(e))
         traceback.print_exc()
 
 
@@ -463,13 +499,15 @@ def add_challenge_callback(ch, method, properties, body):
         process_add_challenge_message(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
-        logger.error('Error in receiving message from add challenge queue with error {}'.format(e))
+        logger.error(
+            'Error in receiving message from add challenge queue with error {}'.format(e))
         traceback.print_exc()
 
 
 def main():
 
-    logger.info('Using {0} as temp directory to store data'.format(BASE_TEMP_DIR))
+    logger.info(
+        'Using {0} as temp directory to store data'.format(BASE_TEMP_DIR))
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
 
     sys.path.append(COMPUTE_DIRECTORY_PATH)
@@ -485,7 +523,8 @@ def main():
 
     # name can be a combination of hostname + process id
     # host name : to easily identify that the worker is running on which instance
-    # process id : to add uniqueness in case more than one worker is running on the same instance
+    # process id : to add uniqueness in case more than one worker is running
+    # on the same instance
     add_challenge_queue_name = '{hostname}_{process_id}'.format(hostname=socket.gethostname(),
                                                                 process_id=str(os.getpid()))
 
@@ -496,7 +535,8 @@ def main():
     # reason for using `exclusive` instead of `autodelete` is that
     # challenge addition queue should have only have one consumer on the connection
     # that creates it.
-    channel.queue_declare(queue=add_challenge_queue_name, durable=True, exclusive=True)
+    channel.queue_declare(
+        queue=add_challenge_queue_name, durable=True, exclusive=True)
     logger.info('[*] Waiting for messages. To exit press CTRL+C')
 
     # create submission base data directory
@@ -513,7 +553,8 @@ def main():
     channel.queue_bind(
         exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
         queue=add_challenge_queue_name, routing_key='challenge.*.*')
-    channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
+    channel.basic_consume(
+        add_challenge_callback, queue=add_challenge_queue_name)
 
     channel.start_consuming()
 

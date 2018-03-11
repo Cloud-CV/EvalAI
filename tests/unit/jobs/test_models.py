@@ -76,4 +76,5 @@ class SubmissionTestCase(BaseTestCase):
         )
 
     def test__str__(self):
-        self.assertEqual('{}'.format(self.submission.id), self.submission.__str__())
+        self.assertEqual(
+            '{}'.format(self.submission.id), self.submission.__str__())

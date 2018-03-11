@@ -33,7 +33,8 @@ from .utils import (get_list_of_challenges_for_participant_team,
 def participant_team_list(request):
 
     if request.method == 'GET':
-        participant_teams_id = Participant.objects.filter(user_id=request.user).values_list('team_id', flat=True)
+        participant_teams_id = Participant.objects.filter(
+            user_id=request.user).values_list('team_id', flat=True)
         participant_teams = ParticipantTeam.objects.filter(
             id__in=participant_teams_id)
         paginator, result_page = paginated_queryset(participant_teams, request)
@@ -76,12 +77,14 @@ def participant_team_detail(request, pk):
     elif request.method in ['PUT', 'PATCH']:
 
         if request.method == 'PATCH':
-            serializer = ParticipantTeamSerializer(participant_team, data=request.data,
+            serializer = ParticipantTeamSerializer(
+                participant_team, data=request.data,
                                                    context={
                                                        'request': request},
                                                    partial=True)
         else:
-            serializer = ParticipantTeamSerializer(participant_team, data=request.data,
+            serializer = ParticipantTeamSerializer(
+                participant_team, data=request.data,
                                                    context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -111,7 +114,8 @@ def invite_participant_to_team(request, pk):
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        response_data = {'error': 'User does not exist with this email address!'}
+        response_data = {
+            'error': 'User does not exist with this email address!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     invited_user_participated_challenges = get_list_of_challenges_participated_by_a_user(
@@ -130,7 +134,8 @@ def invite_participant_to_team(request, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     serializer = InviteParticipantToTeamSerializer(data=request.data,
-                                                   context={'participant_team': participant_team,
+                                                   context={
+                                                       'participant_team': participant_team,
                                                             'request': request})
     if serializer.is_valid():
         serializer.save()
@@ -184,9 +189,11 @@ def get_teams_and_corresponding_challenges_for_a_participant(request, challenge_
     Returns list of teams and corresponding challenges for a participant
     """
     # first get list of all the participants and teams related to the user
-    participant_objs = Participant.objects.filter(user=request.user).prefetch_related('team')
+    participant_objs = Participant.objects.filter(
+        user=request.user).prefetch_related('team')
 
-    is_challenge_host = is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk)
+    is_challenge_host = is_user_a_host_of_challenge(
+        user=request.user, challenge_pk=challenge_pk)
 
     challenge_participated_teams = []
     for participant_obj in participant_objs:
@@ -203,7 +210,8 @@ def get_teams_and_corresponding_challenges_for_a_participant(request, challenge_
             challenge = None
             challenge_participated_teams.append(ChallengeParticipantTeam(
                 challenge, participant_team))
-    serializer = ChallengeParticipantTeamListSerializer(ChallengeParticipantTeamList(challenge_participated_teams))
+    serializer = ChallengeParticipantTeamListSerializer(
+        ChallengeParticipantTeamList(challenge_participated_teams))
     response_data = serializer.data
     response_data['is_challenge_host'] = is_challenge_host
     return Response(response_data, status=status.HTTP_200_OK)
@@ -224,13 +232,15 @@ def remove_self_from_participant_team(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        participant = Participant.objects.get(user=request.user, team__pk=participant_team_pk)
+        participant = Participant.objects.get(
+            user=request.user, team__pk=participant_team_pk)
     except:
         response_data = {'error': 'Sorry, you do not belong to this team!'}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
     if get_list_of_challenges_for_participant_team([participant_team]).exists():
-        response_data = {'error': 'Sorry, you cannot delete this team since it has taken part in challenge(s)!'}
+        response_data = {
+            'error': 'Sorry, you cannot delete this team since it has taken part in challenge(s)!'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     else:
         participant.delete()

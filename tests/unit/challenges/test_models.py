@@ -60,16 +60,18 @@ class BaseTestCase(TestCase):
                 max_submissions=100000,
             )
 
-        self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Test Dataset Split", codename="test-split")
 
-        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
+        self.leaderboard = Leaderboard.objects.create(
+            schema=json.dumps({'hello': 'world'}))
 
         self.challenge_phase_split = ChallengePhaseSplit.objects.create(
-                dataset_split=self.dataset_split,
+            dataset_split=self.dataset_split,
                 challenge_phase=self.challenge_phase,
                 leaderboard=self.leaderboard,
                 visibility=ChallengePhaseSplit.PUBLIC
-            )
+        )
 
 
 class ChallengeTestCase(BaseTestCase):
@@ -85,7 +87,8 @@ class ChallengeTestCase(BaseTestCase):
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge.image = SimpleUploadedFile('test_sample_file.jpg',
                                                       'Dummy image content', content_type='image')
-            self.challenge.evaluation_script = SimpleUploadedFile('test_sample_file.zip',
+            self.challenge.evaluation_script = SimpleUploadedFile(
+                'test_sample_file.zip',
                                                                   'Dummy zip content', content_type='zip')
         self.challenge.save()
 
@@ -177,7 +180,8 @@ class LeaderboardTestCase(BaseTestCase):
 
     def setUp(self):
         super(LeaderboardTestCase, self).setUp()
-        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({"hello": "world"}))
+        self.leaderboard = Leaderboard.objects.create(
+            schema=json.dumps({"hello": "world"}))
 
     def test__str__(self):
         instance_id = str(self.leaderboard.id)
@@ -196,7 +200,8 @@ class ChallengePhaseSplitTestCase(BaseTestCase):
     def test__str__(self):
         challenge_phase_name = self.challenge_phase_split.challenge_phase.name
         dataset_split_name = self.challenge_phase_split.dataset_split.name
-        string_to_compare = '{} : {}'.format(challenge_phase_name, dataset_split_name)
+        string_to_compare = '{} : {}'.format(
+            challenge_phase_name, dataset_split_name)
         self.assertEqual(string_to_compare,
                          self.challenge_phase_split.__str__())
 
@@ -220,11 +225,12 @@ class LeaderboardDataTestCase(BaseTestCase):
         )
 
         self.leaderboard_data = LeaderboardData.objects.create(
-                challenge_phase_split=self.challenge_phase_split,
+            challenge_phase_split=self.challenge_phase_split,
                 submission=self.submission,
                 leaderboard=self.leaderboard,
                 result=json.dumps({'hello': 'world'}),)
 
     def test__str__(self):
-        self.assertEqual('{0} : {1}'.format(self.challenge_phase_split, self.submission),
+        self.assertEqual(
+            '{0} : {1}'.format(self.challenge_phase_split, self.submission),
                          self.leaderboard_data.__str__())

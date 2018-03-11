@@ -4,7 +4,8 @@ from rest_framework.decorators import (api_view,
                                        permission_classes,
                                        throttle_classes,)
 from rest_framework.response import Response
-from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
@@ -24,9 +25,12 @@ from .serializers import (ChallengeHostSerializer,
 def challenge_host_team_list(request):
 
     if request.method == 'GET':
-        challenge_host_team_ids = ChallengeHost.objects.filter(user=request.user).values_list('team_name', flat=True)
-        challenge_host_teams = ChallengeHostTeam.objects.filter(id__in=challenge_host_team_ids)
-        paginator, result_page = paginated_queryset(challenge_host_teams, request)
+        challenge_host_team_ids = ChallengeHost.objects.filter(
+            user=request.user).values_list('team_name', flat=True)
+        challenge_host_teams = ChallengeHostTeam.objects.filter(
+            id__in=challenge_host_team_ids)
+        paginator, result_page = paginated_queryset(
+            challenge_host_teams, request)
         serializer = HostTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
@@ -62,7 +66,8 @@ def challenge_host_team_detail(request, pk):
         if request.method == 'PATCH':
             serializer = ChallengeHostTeamSerializer(challenge_host_team,
                                                      data=request.data,
-                                                     context={'request': request},
+                                                     context={
+                                                         'request': request},
                                                      partial=True)
         else:
             serializer = ChallengeHostTeamSerializer(challenge_host_team,
@@ -87,7 +92,8 @@ def challenge_host_team_detail(request, pk):
 def challenge_host_list(request, challenge_host_team_pk):
 
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(
+            pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -110,7 +116,8 @@ def challenge_host_list(request, challenge_host_team_pk):
 
     elif request.method == 'POST':
         serializer = ChallengeHostSerializer(data=request.data,
-                                             context={'challenge_host_team': challenge_host_team,
+                                             context={
+                                                 'challenge_host_team': challenge_host_team,
                                                       'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -125,7 +132,8 @@ def challenge_host_list(request, challenge_host_team_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_detail(request, challenge_host_team_pk, pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(
+            pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -145,13 +153,15 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
         if request.method == 'PATCH':
             serializer = ChallengeHostSerializer(challenge_host,
                                                  data=request.data,
-                                                 context={'challenge_host_team': challenge_host_team,
+                                                 context={
+                                                     'challenge_host_team': challenge_host_team,
                                                           'request': request},
                                                  partial=True)
         else:
             serializer = ChallengeHostSerializer(challenge_host,
                                                  data=request.data,
-                                                 context={'challenge_host_team': challenge_host_team,
+                                                 context={
+                                                     'challenge_host_team': challenge_host_team,
                                                           'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -200,7 +210,8 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     try:
-        challenge_host = ChallengeHost.objects.filter(user=request.user.id, team_name__pk=challenge_host_team_pk)
+        challenge_host = ChallengeHost.objects.filter(
+            user=request.user.id, team_name__pk=challenge_host_team_pk)
         challenge_host.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     except:
@@ -221,7 +232,8 @@ def invite_host_to_team(request, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     serializer = InviteHostToTeamSerializer(data=request.data,
-                                            context={'challenge_host_team': challenge_host_team,
+                                            context={
+                                                'challenge_host_team': challenge_host_team,
                                                      'request': request})
     if serializer.is_valid():
         serializer.save()

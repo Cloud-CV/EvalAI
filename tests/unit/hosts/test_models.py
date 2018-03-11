@@ -11,17 +11,17 @@ class BaseTestCase(TestCase):
             username='user',
             email='user@test.com',
             password='password'
-            )
+        )
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name='Test Challenge Host Team',
             created_by=self.user
-            )
+        )
         self.challenge_host = ChallengeHost.objects.create(
             user=self.user,
             team_name=self.challenge_host_team,
             status=ChallengeHost.ACCEPTED,
             permissions=ChallengeHost.ADMIN
-            )
+        )
 
 
 class ChallengeHostTestCase(BaseTestCase):

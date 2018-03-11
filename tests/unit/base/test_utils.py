@@ -94,7 +94,8 @@ class TestRandomFileName(BaseAPITestClass):
 
     def setUp(self):
         super(TestRandomFileName, self).setUp()
-        self.test_file_path = os.path.join(settings.BASE_DIR, 'examples', 'example1', 'test_annotation.txt')
+        self.test_file_path = os.path.join(
+            settings.BASE_DIR, 'examples', 'example1', 'test_annotation.txt')
 
     def test_random_file_name_without_id(self):
         obj = RandomFileName("evaluation_scripts")
@@ -105,5 +106,6 @@ class TestRandomFileName(BaseAPITestClass):
     def test_random_file_name_with_id(self):
         obj = RandomFileName("submission_files/submission_{id}")
         filepath = obj.__call__(self.submission, self.test_file_path)
-        expected = "submission_files/submission_{}/{}".format(self.submission.pk, filepath.split('/')[2])
+        expected = "submission_files/submission_{}/{}".format(
+            self.submission.pk, filepath.split('/')[2])
         self.assertEqual(filepath, expected)

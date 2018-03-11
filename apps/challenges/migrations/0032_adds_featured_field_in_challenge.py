@@ -15,6 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='challenge',
             name='featured',
-            field=models.BooleanField(db_index=True, default=False, verbose_name='Featured'),
+            field=models.BooleanField(
+                db_index=True, default=False, verbose_name='Featured'),
         ),
     ]

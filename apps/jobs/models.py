@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 # submission.pk is not available when saving input_file
 # OutCome: `input_file` was saved for submission in folder named `submission_None`
 # why is the hack not done for `stdout_file` and `stderr_file`
-# Because they will be saved only after a submission instance is saved(pk will be available)
+# Because they will be saved only after a submission instance is saved(pk
+# will be available)
 
 
 @receiver(pre_save, sender='jobs.Submission')
@@ -61,7 +62,8 @@ class Submission(TimeStampedModel):
     challenge_phase = models.ForeignKey(
         ChallengePhase, related_name='submissions')
     created_by = models.ForeignKey(User)
-    status = models.CharField(max_length=30, choices=STATUS_OPTIONS, db_index=True)
+    status = models.CharField(
+        max_length=30, choices=STATUS_OPTIONS, db_index=True)
     is_public = models.BooleanField(default=False)
     is_flagged = models.BooleanField(default=False)
     submission_number = models.PositiveIntegerField(default=0)
@@ -71,9 +73,12 @@ class Submission(TimeStampedModel):
     started_at = models.DateTimeField(null=True, blank=True, db_index=True)
     completed_at = models.DateTimeField(null=True, blank=True, db_index=True)
     when_made_public = models.DateTimeField(null=True, blank=True)
-    input_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"))
-    stdout_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
-    stderr_file = models.FileField(upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
+    input_file = models.FileField(
+        upload_to=RandomFileName("submission_files/submission_{id}"))
+    stdout_file = models.FileField(upload_to=RandomFileName(
+        "submission_files/submission_{id}"), null=True, blank=True)
+    stderr_file = models.FileField(upload_to=RandomFileName(
+        "submission_files/submission_{id}"), null=True, blank=True)
     submission_result_file = models.FileField(
         upload_to=RandomFileName("submission_files/submission_{id}"), null=True, blank=True)
     submission_metadata_file = models.FileField(
@@ -123,12 +128,13 @@ class Submission(TimeStampedModel):
 
             if successful_count > self.challenge_phase.max_submissions:
                 logger.info("Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
-                        successful_count, self.challenge_phase.max_submissions))
+                    successful_count, self.challenge_phase.max_submissions))
 
                 logger.info("The submission request is submitted by user {0} from participant_team {1} ".format(
-                        self.created_by.pk, self.participant_team.pk))
+                    self.created_by.pk, self.participant_team.pk))
 
-                raise PermissionDenied({'error': 'The maximum number of submissions has been reached'})
+                raise PermissionDenied(
+                    {'error': 'The maximum number of submissions has been reached'})
             else:
                 logger.info("Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
                     self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk))
@@ -148,10 +154,13 @@ class Submission(TimeStampedModel):
 
                 if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
                         (self.challenge_phase.max_submissions_per_day == 0)):
-                    logger.info("Permission Denied: The maximum number of submission for today has been reached")
-                    raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
+                    logger.info(
+                        "Permission Denied: The maximum number of submission for today has been reached")
+                    raise PermissionDenied(
+                        {'error': 'The maximum number of submission for today has been reached'})
 
-            self.is_public = (True if self.challenge_phase.is_submission_public else False)
+            self.is_public = (
+                True if self.challenge_phase.is_submission_public else False)
 
             self.status = Submission.SUBMITTED
 

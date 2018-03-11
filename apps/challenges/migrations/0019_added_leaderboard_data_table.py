@@ -18,13 +18,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='LeaderboardData',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('modified_at', models.DateTimeField(auto_now=True)),
                 ('result', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('challenge_phase_split', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='challenges.ChallengePhaseSplit')),
-                ('leaderboard', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='challenges.Leaderboard')),
-                ('submission', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='jobs.Submission')),
+                ('challenge_phase_split', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='challenges.ChallengePhaseSplit')),
+                ('leaderboard', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='challenges.Leaderboard')),
+                ('submission', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='jobs.Submission')),
             ],
             options={
                 'db_table': 'leaderboard_data',

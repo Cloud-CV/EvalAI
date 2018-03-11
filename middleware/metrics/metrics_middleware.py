@@ -16,6 +16,7 @@ initialize(**options)
 
 
 class DatadogMiddleware(MiddlewareMixin):
+
     """
     Middleware to submit some metrics to DataDog about each requests.
     """
@@ -29,12 +30,15 @@ class DatadogMiddleware(MiddlewareMixin):
         if not hasattr(request, self.DATADOG_TIMING_ATTRIBUTE):
             return response
 
-        request_time = time.time() - getattr(request, self.DATADOG_TIMING_ATTRIBUTE)
+        request_time = time.time() - getattr(
+            request, self.DATADOG_TIMING_ATTRIBUTE)
 
         timing_metric = '{0}.request_time'.format(self.app_name)
         count_metric = '{0}.no_of_requests_metric'.format(self.app_name)
-        success_metric = '{0}.no_of_successful_requests_metric'.format(self.app_name)
-        unsuccess_metric = '{0}.no_of_unsuccessful_requests_metric'.format(self.app_name)
+        success_metric = '{0}.no_of_successful_requests_metric'.format(
+            self.app_name)
+        unsuccess_metric = '{0}.no_of_unsuccessful_requests_metric'.format(
+            self.app_name)
 
         tags = self._get_metric_tags(request)
 
@@ -55,7 +59,8 @@ class DatadogMiddleware(MiddlewareMixin):
 
         tags = self._get_metric_tags(request)
         event_tags = [self.app_name, 'unhandled_exception']
-        app_error_metric = '{0}.unhandled_errors.{1}'.format(self.app_name, request.path)
+        app_error_metric = '{0}.unhandled_errors.{1}'.format(
+            self.app_name, request.path)
 
         statsd.increment(app_error_metric, tags=tags)
         api.Event.create(title=title, text=text, tags=event_tags)

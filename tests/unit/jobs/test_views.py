@@ -379,7 +379,8 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
     def setUp(self):
         super(GetRemainingSubmissionTest, self).setUp()
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                kwargs={
+                                    'challenge_phase_id': self.challenge_phase.pk,
                                         'challenge_id': self.challenge.pk})
 
         self.submission1 = Submission.objects.create(
@@ -410,11 +411,12 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
-                                        'challenge_pk': self.challenge.pk+1})
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_pk': self.challenge.pk + 1})
 
         expected = {
-            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+1)
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk + 1)
         }
 
         response = self.client.get(self.url, {})
@@ -423,11 +425,12 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk+1,
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk + 1,
                                         'challenge_pk': self.challenge.pk})
 
         expected = {
-            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+1)
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk + 1)
         }
 
         response = self.client.get(self.url, {})
@@ -436,7 +439,8 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_participant_team_hasnt_participated_in_challenge(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
 
         expected = {
@@ -449,7 +453,8 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
         expected = {
             'remaining_submissions_today_count': 99998,
@@ -464,7 +469,8 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_time_when_limit_is_exhausted(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
         setattr(self.challenge_phase, 'max_submissions_per_day', 1)
         self.challenge_phase.save()
@@ -506,12 +512,12 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
     def test_change_submission_data_and_visibility_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
-                                kwargs={'challenge_pk': self.challenge.pk+10,
+                                kwargs={'challenge_pk': self.challenge.pk + 10,
                                         'challenge_phase_pk': self.challenge_phase.pk,
                                         'submission_pk': self.submission.pk})
 
         expected = {
-            'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
+            'detail': 'Challenge {} does not exist'.format(self.challenge.pk + 10)
         }
 
         response = self.client.patch(self.url, {})
@@ -521,11 +527,11 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk+10,
+                                        'challenge_phase_pk': self.challenge_phase.pk + 10,
                                         'submission_pk': self.submission.pk})
 
         expected = {
-            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+10)
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk + 10)
         }
 
         response = self.client.patch(self.url, {})
@@ -616,7 +622,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             'method_name': 'Updated Method Name'
         }
         expected = {
-                'id': self.submission.id,
+            'id': self.submission.id,
                 'participant_team': self.submission.participant_team.pk,
                 'participant_team_name': self.submission.participant_team.team_name,
                 'execution_time': self.submission.execution_time,
@@ -635,7 +641,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
                 "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
                                                     'Z').replace("+00:00", ""),
-            }
+        }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -662,7 +668,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             'is_public': False
         }
         expected = {
-                'id': self.submission.id,
+            'id': self.submission.id,
                 'participant_team': self.submission.participant_team.pk,
                 'participant_team_name': self.submission.participant_team.team_name,
                 'execution_time': self.submission.execution_time,
@@ -681,7 +687,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
                 "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(), 'Z')
                                     .replace("+00:00", ""),
-            }
+        }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)

@@ -16,7 +16,7 @@ class BaseAPITestClass(APITestCase):
             username='someuser',
             email="user@test.com",
             password='secret_password'
-            )
+        )
 
         self.client.force_authenticate(user=self.user)
 
@@ -28,10 +28,12 @@ class TestEvalAiUrls(BaseAPITestClass):
         self.assertEqual(url, '/api/auth/login')
 
         url = reverse_lazy('account_confirm_email', kwargs={'key': 1111})
-        self.assertEqual(url, '/api/auth/registration/account-confirm-email/1111/')
+        self.assertEqual(
+            url, '/api/auth/registration/account-confirm-email/1111/')
 
         url = reverse_lazy('password_reset_confirm',
-                           kwargs={'uidb64': urlsafe_base64_encode(force_bytes(self.user.pk)),
+                           kwargs={
+                               'uidb64': urlsafe_base64_encode(force_bytes(self.user.pk)),
                                    'token': default_token_generator.make_token(self.user)})
         self.assertEqual(url, '/auth/api/password/reset/confirm/' +
                          str(urlsafe_base64_encode(force_bytes(self.user.pk))) + '/' +

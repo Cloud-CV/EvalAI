@@ -12,7 +12,7 @@ class ContactTestCase(TestCase):
             name='user',
             email='user@domain.com',
             message='test message',
-            )
+        )
 
     def test__str__(self):
         name = self.contact.name

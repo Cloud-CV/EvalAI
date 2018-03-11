@@ -1,4 +1,5 @@
-# Command to run: python manage.py shell < scripts/migration/set_team_name_unique.py
+# Command to run: python manage.py shell <
+# scripts/migration/set_team_name_unique.py
 
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHostTeam

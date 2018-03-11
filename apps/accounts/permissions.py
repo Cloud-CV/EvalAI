@@ -3,6 +3,7 @@ from rest_framework import permissions
 
 
 class HasVerifiedEmail(permissions.BasePermission):
+
     """
     Permission class for if the user has verified the email or not
     """

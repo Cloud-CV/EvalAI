@@ -15,6 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='challenge',
             name='approved_by_admin',
-            field=models.BooleanField(default=False, verbose_name='Approved By Admin'),
+            field=models.BooleanField(
+                default=False, verbose_name='Approved By Admin'),
         ),
     ]

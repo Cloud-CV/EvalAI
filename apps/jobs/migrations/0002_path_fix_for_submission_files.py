@@ -16,16 +16,22 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='submission',
             name='input_file',
-            field=models.FileField(upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            field=models.FileField(
+                upload_to=base.utils.RandomFileName(
+                    'submission_files/submission_{id}')),
         ),
         migrations.AlterField(
             model_name='submission',
             name='stderr_file',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            field=models.FileField(
+                blank=True, null=True, upload_to=base.utils.RandomFileName(
+                    'submission_files/submission_{id}')),
         ),
         migrations.AlterField(
             model_name='submission',
             name='stdout_file',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            field=models.FileField(
+                blank=True, null=True, upload_to=base.utils.RandomFileName(
+                    'submission_files/submission_{id}')),
         ),
     ]

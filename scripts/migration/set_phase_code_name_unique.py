@@ -1,4 +1,5 @@
-# Command to run: python manage.py shell < scripts/migration/set_phase_code_name_unique.py
+# Command to run: python manage.py shell <
+# scripts/migration/set_phase_code_name_unique.py
 
 from challenges.models import ChallengePhase
 

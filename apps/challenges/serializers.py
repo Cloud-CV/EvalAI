@@ -26,7 +26,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Challenge
-        fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
+        fields = (
+            'id', 'title', 'short_description', 'description', 'terms_and_conditions',
                   'submission_guidelines', 'evaluation_details',
                   'image', 'start_date', 'end_date', 'creator',
                   'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',)
@@ -46,7 +47,8 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePhase
-        fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
+        fields = (
+            'id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
                   'is_public', 'is_active', 'codename',)
 
@@ -59,6 +61,7 @@ class DatasetSplitSerializer(serializers.ModelSerializer):
 
 
 class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
+
     """Serialize the ChallengePhaseSplits Model"""
 
     dataset_split_name = serializers.SerializerMethodField()
@@ -66,7 +69,8 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePhaseSplit
-        fields = ('id', 'dataset_split', 'challenge_phase', 'challenge_phase_name', 'dataset_split_name', 'visibility')
+        fields = ('id', 'dataset_split', 'challenge_phase',
+                  'challenge_phase_name', 'dataset_split_name', 'visibility')
 
     def get_dataset_split_name(self, obj):
         return obj.dataset_split.name
@@ -76,9 +80,11 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
 
 
 class ChallengeConfigSerializer(serializers.ModelSerializer):
+
     """
     Serialize the ChallengeConfiguration Model.
     """
+
     def __init__(self, *args, **kwargs):
         super(ChallengeConfigSerializer, self).__init__(*args, **kwargs)
         context = kwargs.get('context')
@@ -92,6 +98,7 @@ class ChallengeConfigSerializer(serializers.ModelSerializer):
 
 
 class LeaderboardSerializer(serializers.ModelSerializer):
+
     """
     Serialize the Leaderboard Model.
     """
@@ -101,9 +108,11 @@ class LeaderboardSerializer(serializers.ModelSerializer):
 
 
 class ZipChallengeSerializer(ChallengeSerializer):
+
     """
     Serializer used for creating challenge through zip file.
     """
+
     def __init__(self, *args, **kwargs):
         super(ZipChallengeSerializer, self).__init__(*args, **kwargs)
 
@@ -118,18 +127,21 @@ class ZipChallengeSerializer(ChallengeSerializer):
 
     class Meta:
         model = Challenge
-        fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
+        fields = (
+            'id', 'title', 'short_description', 'description', 'terms_and_conditions',
                   'submission_guidelines', 'start_date', 'end_date', 'creator', 'evaluation_details',
                   'published', 'enable_forum', 'anonymous_leaderboard', 'image', 'is_active', 'evaluation_script',)
 
 
 class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
+
     """
     Serializer used for creating challenge phase split through zip file.
     """
     class Meta:
         model = ChallengePhaseSplit
-        fields = ('id', 'challenge_phase', 'dataset_split', 'leaderboard', 'visibility')
+        fields = ('id', 'challenge_phase',
+                  'dataset_split', 'leaderboard', 'visibility')
 
 
 class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
@@ -149,7 +161,8 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePhase
-        fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
+        fields = (
+            'id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
                   'is_public', 'is_active', 'codename', 'test_annotation')
 
@@ -177,5 +190,6 @@ class StarChallengeSerializer(serializers.ModelSerializer):
         fields = ('user', 'challenge', 'count', 'is_starred')
 
     def get_count(self, obj):
-        count = StarChallenge.objects.filter(challenge=obj.challenge, is_starred=True).count()
+        count = StarChallenge.objects.filter(
+            challenge=obj.challenge, is_starred=True).count()
         return count

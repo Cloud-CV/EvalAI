@@ -250,7 +250,7 @@ htmlhelp_basename = 'EvalAIdoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-     # The paper size ('letterpaper' or 'a4paper').
+    # The paper size ('letterpaper' or 'a4paper').
      #
      # 'papersize': 'letterpaper',
 

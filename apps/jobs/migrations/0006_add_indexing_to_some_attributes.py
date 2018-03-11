@@ -50,7 +50,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='submission',
             name='status',
-            field=models.CharField(choices=[('submitted', 'submitted'), ('running', 'running'), ('failed', 'failed'), ('cancelled', 'cancelled'), ('finished', 'finished'), ('submitting', 'submitting')], db_index=True, max_length=30),
+            field=models.CharField(choices=[('submitted', 'submitted'), ('running', 'running'), ('failed', 'failed'), (
+                'cancelled', 'cancelled'), ('finished', 'finished'), ('submitting', 'submitting')], db_index=True, max_length=30),
         ),
         migrations.AlterField(
             model_name='submission',

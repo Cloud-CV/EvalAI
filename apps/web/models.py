@@ -6,6 +6,7 @@ from base.models import (TimeStampedModel, )
 
 
 class Contact(TimeStampedModel):
+
     """Model representing details of User submitting queries."""
     name = models.CharField(max_length=100,)
     email = models.EmailField(max_length=70,)
@@ -20,6 +21,7 @@ class Contact(TimeStampedModel):
 
 
 class Team(models.Model):
+
     """Model representing details of Team"""
 
     # Team Type Options
@@ -39,7 +41,8 @@ class Team(models.Model):
     github_url = models.CharField(max_length=200, null=True, blank=True)
     linkedin_url = models.CharField(max_length=200, null=True, blank=True)
     personal_website = models.CharField(max_length=200, null=True, blank=True)
-    background_image = models.ImageField(upload_to="bg-images", null=True, blank=True)
+    background_image = models.ImageField(
+        upload_to="bg-images", null=True, blank=True)
     team_type = models.CharField(choices=TEAM_TYPE_OPTIONS, max_length=50)
 
     def __unicode__(self):
