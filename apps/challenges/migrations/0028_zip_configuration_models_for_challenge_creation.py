@@ -19,15 +19,24 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ChallengeConfiguration',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('modified_at', models.DateTimeField(auto_now=True)),
-                ('zip_configuration', models.FileField(upload_to=base.utils.RandomFileName('zip_configuration_files/challenge_zip'))),
+                ('zip_configuration', models.FileField(
+                    upload_to=base.utils.RandomFileName(
+                        'zip_configuration_files/challenge_zip'))),
                 ('is_created', models.BooleanField(default=False)),
-                ('stdout_file', models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('zip_configuration_files/challenge_zip'))),
-                ('stderr_file', models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('zip_configuration_files/challenge_zip'))),
-                ('challenge', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='challenges.Challenge')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('stdout_file', models.FileField(blank=True, null=True,
+                 upload_to=base.utils.RandomFileName(
+                     'zip_configuration_files/challenge_zip'))),
+                ('stderr_file', models.FileField(blank=True, null=True,
+                 upload_to=base.utils.RandomFileName(
+                     'zip_configuration_files/challenge_zip'))),
+                ('challenge', models.OneToOneField(blank=True, null=True,
+                 on_delete=django.db.models.deletion.CASCADE, to='challenges.Challenge')),
+                ('user', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'challenge_zip_configuration',

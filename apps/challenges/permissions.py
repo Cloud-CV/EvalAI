@@ -4,6 +4,7 @@ from .models import Challenge
 
 
 class IsChallengeCreator(permissions.BasePermission):
+
     """
     Permission class for edit/delete a challenge.
     """
@@ -15,7 +16,8 @@ class IsChallengeCreator(permissions.BasePermission):
             return True
         elif request.method in ['DELETE', 'PATCH', 'PUT', 'POST']:
             try:
-                challenge = Challenge.objects.get(pk=request.parser_context['kwargs']['challenge_pk'])
+                challenge = Challenge.objects.get(
+                    pk=request.parser_context['kwargs']['challenge_pk'])
             except Challenge.DoesNotExist:
                 return False
 

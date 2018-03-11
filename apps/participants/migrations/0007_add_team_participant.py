@@ -24,7 +24,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='participant',
             name='team',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='participants', to='participants.ParticipantTeam'),
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='participants', to='participants.ParticipantTeam'),
         ),
         migrations.DeleteModel(
             name='ParticipantTeamMember',

@@ -6,6 +6,7 @@ class Command(BaseCommand):
     help = "Seeds the database with random but sensible values."
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('Starting the database seeder. Hang on...'))
+        self.stdout.write(
+            self.style.SUCCESS('Starting the database seeder. Hang on...'))
         call_command('runscript', 'seed', '--settings', 'settings.dev')
         self.stdout.write(self.style.SUCCESS('Database successfully seeded.'))

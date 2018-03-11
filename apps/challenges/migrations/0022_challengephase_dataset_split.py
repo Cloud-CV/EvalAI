@@ -15,6 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='challengephase',
             name='dataset_split',
-            field=models.ManyToManyField(blank=True, through='challenges.ChallengePhaseSplit', to='challenges.DatasetSplit'),
+            field=models.ManyToManyField(
+                blank=True, through='challenges.ChallengePhaseSplit', to='challenges.DatasetSplit'),
         ),
     ]

@@ -8,7 +8,8 @@ from rest_framework.decorators import (api_view,
                                        permission_classes,
                                        throttle_classes,)
 from rest_framework.response import Response
-from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
@@ -59,7 +60,8 @@ def get_participant_count(request, challenge_pk):
     """
     challenge = get_challenge_model(challenge_pk)
     participant_teams = challenge.participant_teams.all()
-    participant_count = Participant.objects.filter(team__in=participant_teams).count()
+    participant_count = Participant.objects.filter(
+        team__in=participant_teams).count()
     participant_count = ParticipantCount(participant_count)
     serializer = ParticipantCountSerializer(participant_count)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -81,7 +83,8 @@ def get_submission_count(request, challenge_pk, duration):
 
     challenge = get_challenge_model(challenge_pk)
 
-    challenge_phase_ids = challenge.challengephase_set.all().values_list('id', flat=True)
+    challenge_phase_ids = challenge.challengephase_set.all().values_list(
+        'id', flat=True)
 
     q_params = {'challenge_phase__id__in': challenge_phase_ids}
     since_date = None
@@ -126,7 +129,8 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     challenge_phase_submission_count = ChallengePhaseSubmissionCount(
         submission_count, participant_team_count, challenge_phase.pk)
     try:
-        serializer = ChallengePhaseSubmissionCountSerializer(challenge_phase_submission_count)
+        serializer = ChallengePhaseSubmissionCountSerializer(
+            challenge_phase_submission_count)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     except:
@@ -148,10 +152,12 @@ def get_last_submission_time(request, challenge_pk, challenge_phase_pk, submissi
 
     # To get the last submission time by a user in a challenge phase.
     if submission_by == 'user':
-        last_submitted_at = Submission.objects.filter(created_by=request.user.pk,
+        last_submitted_at = Submission.objects.filter(
+            created_by=request.user.pk,
                                                       challenge_phase=challenge_phase,
                                                       challenge_phase__challenge=challenge)
-        last_submitted_at = last_submitted_at.order_by('-submitted_at')[0].created_at
+        last_submitted_at = last_submitted_at.order_by(
+            '-submitted_at')[0].created_at
         last_submitted_at = LastSubmissionDateTime(last_submitted_at)
         serializer = LastSubmissionDateTimeSerializer(last_submitted_at)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -189,7 +195,8 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
         last_submission_timestamp_in_challenge, last_submission_timestamp_in_challenge_phase, challenge_phase.pk)
 
     try:
-        serializer = LastSubmissionTimestampSerializer(last_submission_timestamp)
+        serializer = LastSubmissionTimestampSerializer(
+            last_submission_timestamp)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     except:

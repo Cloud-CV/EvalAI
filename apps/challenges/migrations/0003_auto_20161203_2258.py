@@ -15,6 +15,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='challenge',
             name='participant_teams',
-            field=models.ManyToManyField(blank=True, to='participants.ParticipantTeam'),
+            field=models.ManyToManyField(
+                blank=True, to='participants.ParticipantTeam'),
         ),
     ]

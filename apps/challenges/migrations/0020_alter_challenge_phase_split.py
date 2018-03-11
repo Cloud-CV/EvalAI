@@ -15,6 +15,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='challengephasesplit',
             name='visibility',
-            field=models.PositiveSmallIntegerField(choices=[(1, 'host'), (2, 'owner and host'), (3, 'public')], default=3),
+            field=models.PositiveSmallIntegerField(
+                choices=[(
+                    1, 'host'), (2, 'owner and host'), (3, 'public')], default=3),
         ),
     ]

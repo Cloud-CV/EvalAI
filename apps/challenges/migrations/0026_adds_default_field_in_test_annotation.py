@@ -16,6 +16,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='challengephase',
             name='test_annotation',
-            field=models.FileField(default=False, upload_to=base.utils.RandomFileName('test_annotations')),
+            field=models.FileField(
+                default=False, upload_to=base.utils.RandomFileName(
+                    'test_annotations')),
         ),
     ]

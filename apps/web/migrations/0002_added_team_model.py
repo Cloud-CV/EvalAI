@@ -15,15 +15,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Team',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
                 ('email', models.EmailField(max_length=70)),
-                ('headshot', models.ImageField(blank=True, null=True, upload_to='headshots')),
+                ('headshot', models.ImageField(
+                    blank=True, null=True, upload_to='headshots')),
                 ('visible', models.BooleanField(default=True)),
                 ('github_url', models.URLField()),
                 ('linkedin_url', models.URLField()),
                 ('personal_website', models.URLField()),
-                ('team_type', models.CharField(choices=[('Core Team', 'Core Team'), ('Contributor', 'Contributor')], max_length=50)),
+                ('team_type', models.CharField(
+                    choices=[(
+                        'Core Team', 'Core Team'), ('Contributor', 'Contributor')], max_length=50)),
             ],
             options={
                 'db_table': 'teams',

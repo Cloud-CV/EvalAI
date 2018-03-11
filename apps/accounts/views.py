@@ -5,7 +5,8 @@ from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
                                        permission_classes,)
-from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,)
 
 
 @api_view(['POST'])

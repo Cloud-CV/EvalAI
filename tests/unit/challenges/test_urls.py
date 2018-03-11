@@ -61,7 +61,8 @@ class BaseAPITestClass(APITestCase):
             team_name='Participant Team for Challenge',
             created_by=self.user)
 
-        self.dataset_split = DatasetSplit.objects.create(name="Name of the dataset split",
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Name of the dataset split",
                                                          codename="codename of dataset split")
 
         self.leaderboard = Leaderboard.objects.create(schema=json.dumps({
@@ -73,7 +74,7 @@ class BaseAPITestClass(APITestCase):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC
-            )
+        )
 
         self.file_type = 'csv'
 
@@ -85,10 +86,12 @@ class TestChallengeUrls(BaseAPITestClass):
     def test_challenges_urls(self):
         url = reverse_lazy('challenges:get_challenge_list',
                            kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
-        self.assertEqual(url, '/api/challenges/challenge_host_team/' + str(self.challenge_host_team.pk) + '/challenge')
+        self.assertEqual(url, '/api/challenges/challenge_host_team/' + str(
+            self.challenge_host_team.pk) + '/challenge')
 
         url = reverse_lazy('challenges:get_challenge_detail',
-                           kwargs={'challenge_host_team_pk': self.challenge_host_team.pk,
+                           kwargs={
+                               'challenge_host_team_pk': self.challenge_host_team.pk,
                                    'challenge_pk': self.challenge.pk})
         self.assertEqual(url, '/api/challenges/challenge_host_team/' +
                          str(self.challenge_host_team.pk) + '/challenge/' + str(self.challenge.pk))
@@ -98,21 +101,28 @@ class TestChallengeUrls(BaseAPITestClass):
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/participant_team/' +
                          str(self.participant_team.pk))
 
-        url = reverse_lazy('challenges:disable_challenge', kwargs={'challenge_pk': self.challenge.pk})
-        self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/disable')
+        url = reverse_lazy(
+            'challenges:disable_challenge', kwargs={'challenge_pk': self.challenge.pk})
+        self.assertEqual(
+            url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/disable')
 
-        url = reverse_lazy('challenges:get_challenge_phase_list', kwargs={'challenge_pk': self.challenge.pk})
-        self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/challenge_phase')
+        url = reverse_lazy(
+            'challenges:get_challenge_phase_list', kwargs={'challenge_pk': self.challenge.pk})
+        self.assertEqual(url, '/api/challenges/challenge/' + str(
+            self.challenge.pk) + '/challenge_phase')
 
         url = reverse_lazy('challenges:get_challenge_phase_detail',
                            kwargs={'challenge_pk': self.challenge.pk, 'pk': self.challenge_phase.pk})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/challenge_phase/' +
                          str(self.challenge_phase.pk))
 
-        url = reverse_lazy('challenges:get_challenge_by_pk', kwargs={'pk': self.challenge.pk})
-        self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/')
+        url = reverse_lazy(
+            'challenges:get_challenge_by_pk', kwargs={'pk': self.challenge.pk})
+        self.assertEqual(
+            url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/')
 
-        url = reverse_lazy('challenges:get_all_challenges', kwargs={'challenge_time': "PAST"})
+        url = reverse_lazy(
+            'challenges:get_all_challenges', kwargs={'challenge_time': "PAST"})
         self.assertEqual(url, '/api/challenges/challenge/PAST')
 
         self.url = reverse_lazy('challenges:download_all_submissions',
@@ -123,7 +133,8 @@ class TestChallengeUrls(BaseAPITestClass):
                          '/api/challenges/{}/phase/{}/download_all_submissions/{}/'
                          .format(self.challenge.pk, self.challenge_phase.pk, self.file_type))
         resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'challenges:download_all_submissions')
+        self.assertEqual(
+            resolver.view_name, 'challenges:download_all_submissions')
 
         self.url = reverse_lazy('challenges:create_leaderboard')
         self.assertEqual(self.url,
@@ -137,7 +148,8 @@ class TestChallengeUrls(BaseAPITestClass):
                          '/api/challenges/challenge/create/leaderboard/{}/'
                          .format(self.leaderboard.pk))
         resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'challenges:get_or_update_leaderboard')
+        self.assertEqual(
+            resolver.view_name, 'challenges:get_or_update_leaderboard')
 
         self.url = reverse_lazy('challenges:create_dataset_split')
         self.assertEqual(self.url,
@@ -151,21 +163,25 @@ class TestChallengeUrls(BaseAPITestClass):
                          '/api/challenges/challenge/create/dataset_split/{}/'
                          .format(self.dataset_split.pk))
         resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'challenges:get_or_update_dataset_split')
+        self.assertEqual(
+            resolver.view_name, 'challenges:get_or_update_dataset_split')
 
         self.url = reverse_lazy('challenges:create_challenge_phase_split')
         self.assertEqual(self.url,
                          '/api/challenges/challenge/create/challenge_phase_split/step_5/')
         resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'challenges:create_challenge_phase_split')
+        self.assertEqual(
+            resolver.view_name, 'challenges:create_challenge_phase_split')
 
-        self.url = reverse_lazy('challenges:get_or_update_challenge_phase_split',
+        self.url = reverse_lazy(
+            'challenges:get_or_update_challenge_phase_split',
                                 kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk})
         self.assertEqual(self.url,
                          '/api/challenges/challenge/create/challenge_phase_split/{}/'
                          .format(self.challenge_phase_split.pk))
         resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'challenges:get_or_update_challenge_phase_split')
+        self.assertEqual(
+            resolver.view_name, 'challenges:get_or_update_challenge_phase_split')
 
         self.url = reverse_lazy('challenges:star_challenge',
                                 kwargs={'challenge_pk': self.challenge.pk})

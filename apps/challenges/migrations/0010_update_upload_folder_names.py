@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='challenge',
             name='evaluation_script',
-            field=models.FileField(default=False, upload_to='evaluation_scripts'),
+            field=models.FileField(
+                default=False, upload_to='evaluation_scripts'),
         ),
         migrations.AlterField(
             model_name='challengephase',

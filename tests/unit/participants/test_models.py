@@ -11,7 +11,7 @@ class BaseTestCase(TestCase):
             username='user',
             email='user@test.com',
             password='password'
-            )
+        )
         self.participant_team = ParticipantTeam.objects.create(
             team_name='Participant Team',
             created_by=self.user)

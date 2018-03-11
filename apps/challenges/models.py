@@ -6,7 +6,8 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models import signals
 
-from base.models import (TimeStampedModel, model_field_name, create_post_model_field, )
+from base.models import (
+    TimeStampedModel, model_field_name, create_post_model_field, )
 from base.utils import RandomFileName
 from participants.models import (ParticipantTeam, )
 
@@ -82,7 +83,8 @@ class Challenge(TimeStampedModel):
         return False
 
 
-signals.post_save.connect(model_field_name(field_name='evaluation_script')(create_post_model_field),
+signals.post_save.connect(
+    model_field_name(field_name='evaluation_script')(create_post_model_field),
                           sender=Challenge, weak=False)
 
 
@@ -101,6 +103,7 @@ class DatasetSplit(TimeStampedModel):
 class ChallengePhase(TimeStampedModel):
 
     """Model representing a Challenge Phase"""
+
     def __init__(self, *args, **kwargs):
         super(ChallengePhase, self).__init__(*args, **kwargs)
         self._original_test_annotation = self.test_annotation
@@ -115,11 +118,15 @@ class ChallengePhase(TimeStampedModel):
     challenge = models.ForeignKey('Challenge')
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
-    test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"), default=False)
-    max_submissions_per_day = models.PositiveIntegerField(default=100000, db_index=True)
-    max_submissions = models.PositiveIntegerField(default=100000, db_index=True)
+    test_annotation = models.FileField(
+        upload_to=RandomFileName("test_annotations"), default=False)
+    max_submissions_per_day = models.PositiveIntegerField(
+        default=100000, db_index=True)
+    max_submissions = models.PositiveIntegerField(
+        default=100000, db_index=True)
     codename = models.CharField(max_length=100, default="Phase Code Name")
-    dataset_split = models.ManyToManyField(DatasetSplit, blank=True, through='ChallengePhaseSplit')
+    dataset_split = models.ManyToManyField(
+        DatasetSplit, blank=True, through='ChallengePhaseSplit')
 
     class Meta:
         app_label = 'challenges'
@@ -146,7 +153,8 @@ class ChallengePhase(TimeStampedModel):
         return False
 
 
-signals.post_save.connect(model_field_name(field_name='test_annotation')(create_post_model_field),
+signals.post_save.connect(
+    model_field_name(field_name='test_annotation')(create_post_model_field),
                           sender=ChallengePhase, weak=False)
 
 
@@ -207,16 +215,20 @@ class LeaderboardData(TimeStampedModel):
 
 
 class ChallengeConfiguration(TimeStampedModel):
+
     """
     Model to store zip file for challenge creation.
     """
     user = models.ForeignKey(User)
     challenge = models.OneToOneField(Challenge, null=True, blank=True)
-    zip_configuration = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'))
+    zip_configuration = models.FileField(
+        upload_to=RandomFileName('zip_configuration_files/challenge_zip'))
     is_created = models.BooleanField(default=False, db_index=True)
-    stdout_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
+    stdout_file = models.FileField(
+        upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
                                    null=True, blank=True)
-    stderr_file = models.FileField(upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
+    stderr_file = models.FileField(
+        upload_to=RandomFileName('zip_configuration_files/challenge_zip'),
                                    null=True, blank=True)
 
     class Meta:
@@ -225,6 +237,7 @@ class ChallengeConfiguration(TimeStampedModel):
 
 
 class StarChallenge(TimeStampedModel):
+
     """
     Model to star a challenge
     """

@@ -56,7 +56,8 @@ class CreateContactMessage(BaseAPITestCase):
     def test_create_contact_message_with_all_data(self):
         if self.data['message']:
             response = self.client.post(self.url, self.data)
-            expected = {'message': 'We have received your request and will contact you shortly.'}
+            expected = {
+                'message': 'We have received your request and will contact you shortly.'}
             self.assertEqual(response.data, expected)
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -67,6 +68,7 @@ class CreateContactMessage(BaseAPITestCase):
 
 
 class CreateTeamMember(APITestCase):
+
     def setUp(self):
         self.url = reverse_lazy('web:our_team')
         self.data = {
@@ -114,6 +116,7 @@ class CreateTeamMember(APITestCase):
 
 
 class GetTeamTest(APITestCase):
+
     def setUp(self):
         self.url = reverse_lazy('web:our_team')
         self.team = Team.objects.create(

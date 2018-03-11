@@ -16,11 +16,15 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='submission',
             name='submission_metadata_file',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            field=models.FileField(
+                blank=True, null=True, upload_to=base.utils.RandomFileName(
+                    'submission_files/submission_{id}')),
         ),
         migrations.AddField(
             model_name='submission',
             name='submission_result_file',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            field=models.FileField(
+                blank=True, null=True, upload_to=base.utils.RandomFileName(
+                    'submission_files/submission_{id}')),
         ),
     ]

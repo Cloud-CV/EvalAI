@@ -9,6 +9,7 @@ from base.models import (TimeStampedModel,)
 
 
 class UserStatus(TimeStampedModel):
+
     """
     Model representing the status of a user being invited by
     other user to host/participate in a competition
@@ -34,6 +35,7 @@ class UserStatus(TimeStampedModel):
 
 
 class Profile(TimeStampedModel):
+
     """
     Model to store profile of a user
     """

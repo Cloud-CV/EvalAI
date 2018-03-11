@@ -7,6 +7,7 @@ from base.models import (TimeStampedModel,)
 
 
 class Participant(TimeStampedModel):
+
     """Model representing the Participant of the competition. """
     UNKNOWN = 'Unknown'
     SELF = 'Self'
@@ -24,7 +25,8 @@ class Participant(TimeStampedModel):
 
     user = models.ForeignKey(User, related_name='participation')
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
-    team = models.ForeignKey('ParticipantTeam', related_name='participants', null=True)
+    team = models.ForeignKey(
+        'ParticipantTeam', related_name='participants', null=True)
 
     def __unicode__(self):
         return '{}'.format(self.user)
@@ -35,6 +37,7 @@ class Participant(TimeStampedModel):
 
 
 class ParticipantTeam(TimeStampedModel):
+
     """Model representing the Teams associated with different challenges"""
     team_name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(User, null=True)
@@ -43,7 +46,8 @@ class ParticipantTeam(TimeStampedModel):
         return '{}'.format(self.team_name)
 
     def get_all_participants_email(self):
-        email_ids = Participant.objects.filter(team=self).values_list('user__email', flat=True)
+        email_ids = Participant.objects.filter(
+            team=self).values_list('user__email', flat=True)
         return list(email_ids)
 
     class Meta:

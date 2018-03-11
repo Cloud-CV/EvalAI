@@ -15,12 +15,14 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='challenge',
             name='approved_by_admin',
-            field=models.BooleanField(db_index=True, default=False, verbose_name='Approved By Admin'),
+            field=models.BooleanField(
+                db_index=True, default=False, verbose_name='Approved By Admin'),
         ),
         migrations.AlterField(
             model_name='challenge',
             name='end_date',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='End Date (UTC)'),
+            field=models.DateTimeField(
+                blank=True, db_index=True, null=True, verbose_name='End Date (UTC)'),
         ),
         migrations.AlterField(
             model_name='challenge',
@@ -30,12 +32,14 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='challenge',
             name='published',
-            field=models.BooleanField(db_index=True, default=False, verbose_name='Publicly Available'),
+            field=models.BooleanField(
+                db_index=True, default=False, verbose_name='Publicly Available'),
         ),
         migrations.AlterField(
             model_name='challenge',
             name='start_date',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='Start Date (UTC)'),
+            field=models.DateTimeField(
+                blank=True, db_index=True, null=True, verbose_name='Start Date (UTC)'),
         ),
         migrations.AlterField(
             model_name='challenge',
@@ -50,7 +54,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='challengephase',
             name='end_date',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='End Date (UTC)'),
+            field=models.DateTimeField(
+                blank=True, db_index=True, null=True, verbose_name='End Date (UTC)'),
         ),
         migrations.AlterField(
             model_name='challengephase',
@@ -70,7 +75,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='challengephase',
             name='start_date',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='Start Date (UTC)'),
+            field=models.DateTimeField(
+                blank=True, db_index=True, null=True, verbose_name='Start Date (UTC)'),
         ),
         migrations.AlterField(
             model_name='starchallenge',

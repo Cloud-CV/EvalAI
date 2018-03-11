@@ -16,11 +16,14 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='challenge',
             name='evaluation_script',
-            field=models.FileField(default=False, upload_to=base.utils.RandomFileName('evaluation_scripts')),
+            field=models.FileField(
+                default=False, upload_to=base.utils.RandomFileName(
+                    'evaluation_scripts')),
         ),
         migrations.AlterField(
             model_name='challengephase',
             name='test_annotation',
-            field=models.FileField(upload_to=base.utils.RandomFileName('test_annotations')),
+            field=models.FileField(
+                upload_to=base.utils.RandomFileName('test_annotations')),
         ),
     ]

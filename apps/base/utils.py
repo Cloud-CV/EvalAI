@@ -27,6 +27,7 @@ def paginated_queryset(queryset, request, pagination_class=PageNumberPagination(
 
 @deconstructible
 class RandomFileName(object):
+
     def __init__(self, path):
         self.path = path
 
@@ -46,8 +47,10 @@ def get_model_object(model_name):
             model_object = model_name.objects.get(pk=pk)
             return model_object
         except model_name.DoesNotExist:
-            raise NotFound('{} {} does not exist'.format(model_name.__name__, pk))
-    get_model_by_pk.__name__ = 'get_{}_object'.format(model_name.__name__.lower())
+            raise NotFound(
+                '{} {} does not exist'.format(model_name.__name__, pk))
+    get_model_by_pk.__name__ = 'get_{}_object'.format(
+        model_name.__name__.lower())
     return get_model_by_pk
 
 
@@ -67,5 +70,5 @@ def decode_data(data):
     """
     decoded = []
     for i in data:
-        decoded.append(base64.decodestring(i+"=="))
+        decoded.append(base64.decodestring(i + "=="))
     return decoded

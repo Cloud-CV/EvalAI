@@ -16,14 +16,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TestEnvironment',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('modified_at', models.DateTimeField(auto_now=True)),
                 ('name', models.CharField(max_length=100)),
                 ('description', models.TextField()),
                 ('leaderboard_public', models.BooleanField(default=False)),
-                ('start_date', models.DateTimeField(blank=True, null=True, verbose_name='Start Date (UTC)')),
-                ('end_date', models.DateTimeField(blank=True, null=True, verbose_name='End Date (UTC)')),
+                ('start_date', models.DateTimeField(
+                    blank=True, null=True, verbose_name='Start Date (UTC)')),
+                ('end_date', models.DateTimeField(
+                    blank=True, null=True, verbose_name='End Date (UTC)')),
                 ('test_annotation', models.FileField(upload_to=b'')),
             ],
             options={
@@ -45,6 +48,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='testenvironment',
             name='challenge',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='challenges.Challenge'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to='challenges.Challenge'),
         ),
     ]
