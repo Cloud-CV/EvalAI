@@ -28,26 +28,54 @@
                         </div>
                     </div>
                 </div>
-                <div class=" ev-card-body exist-team-card">
+                <div class="ev-card-body exist-team-card">
                     <div class="row">
                         <div class="col s12">
                             <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
                             <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight">
                                 <thead>
-                                    <tr>
-                                        <td data-field="rank">Rank</td>
-                                        <td data-field="team">Participant Team</td>
-                                        <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
-                                        <td data-field="submission_time">submission time</td>
-                                    </tr>
+                                <tr>
+                                    <td data-field="rank">
+                                        <a href="#" ng-click="challenge.getLeaderboard(challenge.phaseSplitId); challenge.reverseSort = !challenge.reverseSort">
+                                            Rank
+                                        </a>
+                                    </td>
+                                    <td data-field="team">
+                                        <a href="#" ng-click="challenge.sortColumn = 'team'; challenge.reverseSort = !challenge.reverseSort">
+                                            Team
+                                            <span ng-show="challenge.sortColumn == 'team'">
+                                                <span ng-show="!challenge.reverseSort">&uarr;</span>
+                                                <span ng-show="challenge.reverseSort">&darr;</span>
+                                            </span>
+                                        </a>
+                                    </td>
+                                    <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">
+                                        <a href="#" ng-click="$parent.challenge.sortColumn = 'score'; $parent.challenge.columnIndexSort = $index; $parent.challenge.reverseSort = !$parent.challenge.reverseSort">
+                                            {{key}}
+                                            <span ng-show="$parent.challenge.sortColumn == 'score' && $parent.challenge.columnIndexSort == '{{$index}}'">
+                                                <span ng-show="!$parent.challenge.reverseSort">&uarr;</span>
+                                                <span ng-show="$parent.challenge.reverseSort">&darr;</span>
+                                            </span>
+                                        </a>
+                                    </td>
+                                    <td data-field="submission_time">
+                                        <a href="#" ng-click="challenge.sortColumn = 'date'; challenge.reverseSort = !challenge.reverseSort">
+                                            submission time
+                                            <span ng-show="challenge.sortColumn == 'date'">
+                                                <span ng-show="!challenge.reverseSort" class="glyphicon glyphicon-chevron-up">&uarr;</span>
+                                                <span ng-show="challenge.reverseSort" class="glyphicon glyphicon-chevron-down">&darr;</span>
+                                            </span>
+                                        </a>
+                                    </td>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="key in challenge.leaderboard">
-                                        <td>{{$index+1}}</td>
-                                        <td>{{key.submission__participant_team__team_name}}</td>
-                                        <td ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
-                                        <td>{{ key.submission__submitted_at | date:'medium'}}</td>
-                                    </tr>
+                                <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort">
+                                    <td>{{$index+1}}</td>
+                                    <td>{{key.submission__participant_team__team_name}}</td>
+                                    <td ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
+                                    <td>{{ key.submission__submitted_at | date:'medium'}}</td>
+                                </tr>
                                 </tbody>
                             </table>
                             <div ng-if="challenge.isResult && challenge.leaderboard.error">
