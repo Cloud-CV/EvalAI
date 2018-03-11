@@ -33,7 +33,9 @@
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
-
+        vm.sortColumn = 'score';
+        vm.reverseSort = false;
+        vm.columnIndexSort = 0;
 
         // loader for existing teams
         vm.isExistLoader = false;
@@ -371,6 +373,25 @@
         };
 
         utilities.sendRequest(parameters);
+
+        // define a custom sorting function
+        vm.lastKey = null;
+        vm.sortFunction = function(key) {
+            // check which column is selected
+            // so that the values can be parsed properly
+            if (vm.sortColumn === 'date') {
+                return Date.parse(key.submission__submitted_at);
+            }
+            else if (vm.sortColumn === 'score') {
+                return parseFloat(key.result[vm.columnIndexSort]);
+            }
+            else if (vm.sortColumn === 'team'){
+                // sort teams alphabetically
+                return key.submission__participant_team__team_name.value;
+            }
+
+            return 0;
+        };
 
         // my submissions
         vm.isResult = false;
