@@ -22,8 +22,8 @@
                     </div>
                     <div class="row">
                         <div class="col xs12 s6">
-                            <span><md-select ng-model="challenge.phase.name" placeholder="Challenge Phase" class="rm-margin">
-                            <md-option ng-click="challenge.getLeaderboard(key.id)" value="{{key.id}}" ng-repeat="key in challenge.phaseSplits" ng-show="{{key.visibility}}==3">{{key.challenge_phase_name}}</md-option>
+                            <span><md-select ng-model="challenge.phaseName" placeholder="Challenge Phase" class="rm-margin">
+                            <md-option ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSplitId:key.id})" value="{{key.id}}" ng-repeat="key in challenge.phaseSplits" ng-show="{{key.visibility}}==3">{{key.challenge_phase_name}}</md-option>
                         </md-select></span>
                         </div>
                     </div>
