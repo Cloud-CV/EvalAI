@@ -237,6 +237,9 @@ def get_all_challenges(request, challenge_time):
         q_params['start_date__gt'] = timezone.now()
     # for `all` we dont need any condition in `q_params`
 
+    # don't return disabled challenges
+    q_params['is_disabled'] = False
+
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
@@ -252,6 +255,9 @@ def get_challenge_by_pk(request, pk):
     """
     try:
         challenge = Challenge.objects.get(pk=pk)
+        if (challenge.is_disabled):
+            response_data = {'error': 'Sorry, the challenge was removed!'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         serializer = ChallengeSerializer(challenge, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
