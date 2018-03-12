@@ -18,6 +18,9 @@ Contents:
    architecture
    architecture_decisions
    directory_structure
+   challenge_creation
+   participate
+   submission
    migrations
    contribution
    pull_request
@@ -30,4 +33,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
