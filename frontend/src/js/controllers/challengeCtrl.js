@@ -12,7 +12,7 @@
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
-        vm.phaseSplitId = null;
+        vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
         vm.methodName = null;
         vm.methodDesc = null;
@@ -400,6 +400,7 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
+                    vm.phaseName = vm.phaseSplitId; 
 
                     vm.startLeaderboard();
                     vm.stopLoader();
@@ -438,6 +439,11 @@
             };
 
         };
+
+        if (vm.phaseSplitId) {
+            vm.getLeaderboard(vm.phaseSplitId);
+        }
+
         vm.getResults = function(phaseId) {
 
             vm.stopFetchingSubmissions = function() {
