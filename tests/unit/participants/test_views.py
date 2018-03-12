@@ -731,3 +731,12 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
         response = self.client.delete(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_participant_team_remove_when_no_participants_exists(self):
+        self.url = reverse_lazy('participants:remove_self_from_participant_team',
+                                kwargs={'participant_team_pk': self.participant_team.pk,
+                                        })
+
+        self.client.delete(self.url, {})
+        participant_teams = ParticipantTeam.objects.all()
+        self.assertEqual(participant_teams.count(), 0)
