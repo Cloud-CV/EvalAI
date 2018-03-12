@@ -24,6 +24,7 @@ Contents:
    migrations
    contribution
    pull_request
+   windows_installation
    glossary
 
 Indices and tables
