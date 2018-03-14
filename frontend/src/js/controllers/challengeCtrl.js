@@ -33,7 +33,7 @@
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
-        vm.sortColumn = 'score';
+        vm.sortColumn = 'number';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
 
@@ -382,10 +382,10 @@
             if (vm.sortColumn === 'date') {
                 return Date.parse(key.submission__submitted_at);
             }
-            else if (vm.sortColumn === 'score') {
+            else if (vm.sortColumn === 'number') {
                 return parseFloat(key.result[vm.columnIndexSort]);
             }
-            else if (vm.sortColumn === 'team'){
+            else if (vm.sortColumn === 'string'){
                 // sort teams alphabetically
                 return key.submission__participant_team__team_name.value;
             }
