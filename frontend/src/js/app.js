@@ -11,5 +11,6 @@ angular
 		'ngSanitize',
 		'ngFileUpload',
 		'toaster',
-		'angularTrix'
+		'angularTrix',
+		'angularMoment'
 	]);

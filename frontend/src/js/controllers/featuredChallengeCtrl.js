@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('FeaturedChallengeCtrl', FeaturedChallengeCtrl);
 
-    FeaturedChallengeCtrl.$inject = ['utilities', 'loaderService','$scope', '$state', '$http', '$stateParams'];
+    FeaturedChallengeCtrl.$inject = ['utilities', 'loaderService','$scope', '$state', '$http', '$stateParams', 'moment'];
 
-    function FeaturedChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams) {
+    function FeaturedChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, moment) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseSplitId = $stateParams.phaseSplitId;
@@ -129,6 +129,13 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
+                    for (var i=0; i<vm.leaderboard.length; i++) {
+                        var dateTimeNow = moment(new Date());
+                        var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
+                        var duration = moment.duration(dateTimeNow.diff(submissionTime));
+                        var hours = duration.asHours();
+                        vm.leaderboard[i].submission__submitted_at = hours;
+                    }
                     vm.phase_name = vm.phaseSplitId;
                     vm.stopLoader();
                 },

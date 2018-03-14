@@ -46,7 +46,9 @@
                                         <td class="align-left">{{$index+1}}</td>
                                         <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
                                         <td class="align-right" ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
-                                        <td class="align-right">{{key.submission__submitted_at | date:'medium'}}</td>
+                                        <td class="align-right">
+                                        {{key.submission__submitted_at | number : 0}} hours ago
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

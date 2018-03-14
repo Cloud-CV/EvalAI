@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -400,8 +400,14 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
-                    vm.phaseName = vm.phaseSplitId; 
-
+                    for (var i=0; i<vm.leaderboard.length; i++) {
+                        var dateTimeNow = moment(new Date());
+                        var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
+                        var duration = moment.duration(dateTimeNow.diff(submissionTime));
+                        var hours = duration.asHours();
+                        vm.leaderboard[i].submission__submitted_at = hours;
+                    }
+                    vm.phaseName = vm.phaseSplitId;
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
