@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('FeaturedChallengeCtrl', FeaturedChallengeCtrl);
 
-    FeaturedChallengeCtrl.$inject = ['utilities', 'loaderService','$scope', '$state', '$http', '$stateParams'];
+    FeaturedChallengeCtrl.$inject = ['utilities', 'loaderService','$scope', '$state', '$http', '$stateParams', 'moment'];
 
-    function FeaturedChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams) {
+    function FeaturedChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, moment) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseSplitId = $stateParams.phaseSplitId;
@@ -129,6 +129,46 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
+                    for (var i=0; i<vm.leaderboard.length; i++) {
+                        var dateTimeNow = moment(new Date());
+                        var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
+                        var duration = moment.duration(dateTimeNow.diff(submissionTime));
+                        if (duration._data.hours > 24) {
+                            var hours = duration.asHours();
+                            vm.leaderboard[i].submission__submitted_at = hours;
+                            if (hours.toFixed(0)==1) {
+                                vm.timeSpan = 'hour';
+                            } else {
+                                vm.timeSpan = 'hours';
+                            }                        } 
+                        else if (duration._data.days > 0) {
+                            var days = duration.asDays();
+                            vm.leaderboard[i].submission__submitted_at = days;
+                            if (days.toFixed(0)==1) {
+                                vm.timeSpan = 'day';
+                            } else {
+                                vm.timeSpan = 'days';
+                            }
+                        }
+                        else if (duration._data.days > 30 || duration._data.days > 31) {
+                            var months = duration.asMonths();
+                            vm.leaderboard[i].submission__submitted_at = months;
+                            if (months.toFixed(0)==1) {
+                                vm.timeSpan = 'month';
+                            } else {
+                                vm.timeSpan = 'months';
+                            }
+                        }
+                        else if (duration._data.months > 12) {
+                            var years = duration.asYears();
+                            vm.leaderboard[i].submission__submitted_at = years;
+                            if (years.toFixed(0)==1) {
+                                vm.timeSpan = 'year';
+                            } else {
+                                vm.timeSpan = 'years';
+                            }
+                        }
+                    }
                     vm.phase_name = vm.phaseSplitId;
                     vm.stopLoader();
                 },
