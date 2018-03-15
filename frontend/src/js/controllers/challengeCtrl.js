@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -400,8 +400,47 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
-                    vm.phaseName = vm.phaseSplitId; 
-
+                    for (var i=0; i<vm.leaderboard.length; i++) {
+                        var dateTimeNow = moment(new Date());
+                        var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
+                        var duration = moment.duration(dateTimeNow.diff(submissionTime));
+                        if (duration._data.hours > 24) {
+                            var hours = duration.asHours();
+                            vm.leaderboard[i].submission__submitted_at = hours;
+                            if (hours.toFixed(0)==1) {
+                                vm.timeSpan = 'hour';
+                            } else {
+                                vm.timeSpan = 'hours';
+                            }                        } 
+                        else if (duration._data.days > 0) {
+                            var days = duration.asDays();
+                            vm.leaderboard[i].submission__submitted_at = days;
+                            if (days.toFixed(0)==1) {
+                                vm.timeSpan = 'day';
+                            } else {
+                                vm.timeSpan = 'days';
+                            }
+                        }
+                        else if (duration._data.days > 30 || duration._data.days > 31) {
+                            var months = duration.asMonths();
+                            vm.leaderboard[i].submission__submitted_at = months;
+                            if (months.toFixed(0)==1) {
+                                vm.timeSpan = 'month';
+                            } else {
+                                vm.timeSpan = 'months';
+                            }
+                        }
+                        else if (duration._data.months > 12) {
+                            var years = duration.asYears();
+                            vm.leaderboard[i].submission__submitted_at = years;
+                            if (years.toFixed(0)==1) {
+                                vm.timeSpan = 'year';
+                            } else {
+                                vm.timeSpan = 'years';
+                            }
+                        }
+                    }
+                    vm.phaseName = vm.phaseSplitId;
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
@@ -1036,9 +1075,9 @@
                     vm.count = details['count'] || 0;
                     vm.is_starred = details['is_starred'];
                     if (details['is_starred'] === false) {
-                        vm.data = 'Star';
+                        vm.caption = 'Star';
                     } else {
-                        vm.data = 'Unstar';
+                        vm.caption = 'Unstar';
                     }
                 },
                 onError: function() {}
@@ -1056,9 +1095,9 @@
                     vm.count = details['count'];
                     vm.is_starred = details['is_starred'];
                     if (details.is_starred === true) {
-                        vm.data = 'Unstar';
+                        vm.caption = 'Unstar';
                     } else {
-                        vm.data = 'Star';
+                        vm.caption = 'Star';
                     }
                 },
                 onError: function(response) {
