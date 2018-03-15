@@ -34,19 +34,21 @@
                             <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
                             <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight">
                                 <thead>
-                                    <tr>
-                                        <td data-field="rank">Rank</td>
-                                        <td data-field="team">Participant Team</td>
-                                        <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
-                                        <td data-field="submission_time">submission time</td>
+                                   <tr>
+                                        <td class="align-left" data-field="rank">Rank</td>
+                                        <td class="align-left" data-field="team">Participant Team</td>
+                                        <td class="align-right" ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
+                                        <td class="align-right" data-field="submission_time">Last Submission at</td>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="key in challenge.leaderboard">
-                                        <td>{{$index+1}}</td>
-                                        <td>{{key.submission__participant_team__team_name}}</td>
-                                        <td ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
-                                        <td>{{ key.submission__submitted_at | date:'medium'}}</td>
+                                        <td class="align-left">{{$index+1}}</td>
+                                        <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
+                                        <td class="align-right" ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
+                                        <td class="align-right">
+                                        {{key.submission__submitted_at | number: 0}} {{challenge.caption}} ago
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
