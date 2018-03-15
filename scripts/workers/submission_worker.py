@@ -329,24 +329,26 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
             leaderboard_data_list = []
             for split_result in submission_output['result']:
 
-                # Check if the dataset_split exists for the codename in the result
+                # get split_code_name that is the key of the result
+                split_code_name = split_result.items()[0][0]
+
+                # Check if the challenge_phase_split exists for the challenge_phaseand dataset_split
                 try:
-                    split_code_name = split_result.items()[0][0]  # get split_code_name that is the key of the result
-                    dataset_split = DatasetSplit.objects.get(codename=split_code_name)
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
+                                                                            dataset_split__codename=split_code_name)
                 except:
-                    stderr.write("ORGINIAL EXCEPTION: The codename specified by your Challenge Host doesn't match"
-                                 " with that in the evaluation Script.\n")
+                    stderr.write("ORGINIAL EXCEPTION: No such relation between between Challenge Phase and DatasetSplit"
+                                 " specified by Challenge Host \n")
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
                     break
 
-                # Check if the challenge_phase_split exists for the challenge_phase and dataset_split
+                # Check if the dataset_split exists for the codename in the result
                 try:
-                    challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
-                                                                            dataset_split=dataset_split)
+                    dataset_split = challenge_phase_split.dataset_split
                 except:
-                    stderr.write("ORGINIAL EXCEPTION: No such relation between between Challenge Phase and DatasetSplit"
-                                 " specified by Challenge Host \n")
+                    stderr.write("ORGINIAL EXCEPTION: The codename specified by your Challenge Host doesn't match"
+                                 " with that in the evaluation Script.\n")
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
                     break
