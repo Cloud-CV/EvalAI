@@ -16,7 +16,10 @@
       "ng-file-upload",
       "AngularJS-Toaster",
       "angular-trix",
-      "trix"
+      "trix",
+      "moment",
+      "locale",
+      "angular-moment"
     ]
   },
   "paths": {
@@ -35,7 +38,10 @@
        "ng-file-upload": "bower_components/ng-file-upload/ng-file-upload.min.js",
        "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.js",
        "angular-trix": "bower_components/angular-trix/dist/angular-trix.min.js",
-       "trix": "bower_components/trix/dist/trix.js"
+       "trix": "bower_components/trix/dist/trix.js",
+       "moment": "bower_components/moment/moment.js",
+       "locale": "bower_components/moment/locale/de.js",
+       "angular-moment": "bower_components/angular-moment/angular-moment.js"
 
      }
 }
