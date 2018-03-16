@@ -404,39 +404,58 @@
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
-                        if (duration._data.hours > 24) {
-                            var hours = duration.asHours();
-                            vm.leaderboard[i].submission__submitted_at = hours;
-                            if (hours.toFixed(0)==1) {
-                                vm.timeSpan = 'hour';
-                            } else {
-                                vm.timeSpan = 'hours';
-                            }                        } 
-                        else if (duration._data.days > 0) {
-                            var days = duration.asDays();
-                            vm.leaderboard[i].submission__submitted_at = days;
-                            if (days.toFixed(0)==1) {
-                                vm.timeSpan = 'day';
-                            } else {
-                                vm.timeSpan = 'days';
-                            }
-                        }
-                        else if (duration._data.days > 30 || duration._data.days > 31) {
-                            var months = duration.asMonths();
-                            vm.leaderboard[i].submission__submitted_at = months;
-                            if (months.toFixed(0)==1) {
-                                vm.timeSpan = 'month';
-                            } else {
-                                vm.timeSpan = 'months';
-                            }
-                        }
-                        else if (duration._data.months > 12) {
+                        if (duration._data.years != 0) {
                             var years = duration.asYears();
                             vm.leaderboard[i].submission__submitted_at = years;
                             if (years.toFixed(0)==1) {
-                                vm.timeSpan = 'year';
+                                vm.leaderboard[i].timeSpan = 'year';
                             } else {
-                                vm.timeSpan = 'years';
+                                vm.leaderboard[i].timeSpan= 'years';
+                            }
+                        }
+                        else if (duration._data.months !=0) {
+                            var months = duration.months();
+                            vm.leaderboard[i].submission__submitted_at = months;
+                            if (months.toFixed(0)==1) {
+                                vm.leaderboard[i].timeSpan = 'month';
+                            } else {
+                                vm.leaderboard[i].timeSpan = 'months';
+                            }
+                        }
+                        else if (duration._data.days !=0) {
+                            var days = duration.asDays();
+                            vm.leaderboard[i].submission__submitted_at = days;
+                            if (days.toFixed(0)==1) {
+                                vm.leaderboard[i].timeSpan = 'day';
+                            } else {
+                                vm.leaderboard[i].timeSpan = 'days';
+                            }
+                        }
+                        else if (duration._data.hours !=0) {
+                            var hours = duration.asHours();
+                            vm.leaderboard[i].submission__submitted_at = hours;
+                            if (hours.toFixed(0)==1) {
+                                vm.leaderboard[i].timeSpan = 'hour';
+                            } else {
+                                vm.leaderboard[i].timeSpan = 'hours';
+                            }                        
+                        } 
+                        else if (duration._data.minutes !=0) {
+                            var minutes = duration.asMinutes();
+                            vm.leaderboard[i].submission__submitted_at = minutes;
+                            if (minutes.toFixed(0)==1) {
+                                vm.leaderboard[i].timeSpan = 'minute';
+                            } else {
+                                vm.leaderboard[i].timeSpan = 'minutes';
+                            }
+                        }
+                        else if (duration._data.seconds != 0) {
+                            var second = duration.asSeconds();
+                            vm.leaderboard[i].submission__submitted_at = second;
+                            if (second.toFixed(0)==1) {
+                                vm.leaderboard[i].timeSpan = 'second';
+                            } else {
+                                vm.leaderboard[i].timeSpan = 'seconds';
                             }
                         }
                     }
