@@ -88,7 +88,7 @@ signals.post_save.connect(model_field_name(field_name='evaluation_script')(creat
 
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
-    codename = models.CharField(max_length=100, unique=True)
+    codename = models.CharField(max_length=100)
 
     def __unicode__(self):
         return self.name
