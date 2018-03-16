@@ -238,7 +238,7 @@ def leaderboard(request, challenge_phase_split_id):
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
     for item in distinct_sorted_leaderboard_data:
-        item['result'] = [item['result'][index.lower()] for index in leaderboard_labels]
+        item['result'] = [item['result'][index] for index in leaderboard_labels]
 
     paginator, result_page = paginated_queryset(
                                                 distinct_sorted_leaderboard_data,
