@@ -48,7 +48,6 @@ DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
 from challenges.models import (Challenge,
                                ChallengePhase,
                                ChallengePhaseSplit,
-                               DatasetSplit,
                                LeaderboardData) # noqa
 
 from jobs.models import Submission          # noqa
