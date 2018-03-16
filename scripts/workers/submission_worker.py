@@ -336,7 +336,7 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
                     challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
                                                                             dataset_split__codename=split_code_name)
                 except:
-                    stderr.write("ORGINIAL EXCEPTION: No such relation between between Challenge Phase and DatasetSplit"
+                    stderr.write("ORGINIAL EXCEPTION: No such relation between Challenge Phase and DatasetSplit"
                                  " specified by Challenge Host \n")
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
