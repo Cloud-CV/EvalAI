@@ -20,7 +20,7 @@
                     <div class="row">
                         <div class="col xs12 s6">
                             <span><md-select ng-model="featured_challenge.phase_name" placeholder="Challenge Phase" class="rm-margin">
-                            <md-option ui-sref="featured-challenge-page.phase-leaderboard({phaseSplitId:key.id})" value="{{key.id}}" ng-repeat="key in featured_challenge.phaseSplits" ng-show="{{key.visibility}}==3">{{key.challenge_phase_name}}</md-option>
+                            <md-option ui-sref="featured-challenge-page.phase-leaderboard({phaseSplitId:key.id})" value="{{key.id}}" ng-repeat="key in featured_challenge.phaseSplits" ng-show="{{key.visibility}}==3"><span class="font-weight-b">Phase: </span>{{key.challenge_phase_name}}, <span class="font-weight-b">Split: </span> {{key.dataset_split_name}}</md-option>
                         </md-select></span>
                         </div>
                     </div>
