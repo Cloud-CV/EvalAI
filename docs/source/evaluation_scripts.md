@@ -52,6 +52,6 @@ output['result'] = [
 
 ```
 
-`output` should contain a key named `result`, which is a list containing entries per challenge phase split. Each challenge phase split object contains various keys, which are then displayed as columns in leaderboard.
+`output` should contain a key named `result`, which is a list containing entries per challenge phase split. Each of these entries will have a key with the corresponding challenge phase codename. For this example, `challenge_phase_split_1` and `challenge_phase_split_2` are codenames for challenge phases. Each challenge phase split object contains various keys (`score` in this example), which are then displayed as columns in the leaderboard. 
 
 **Note**: If your evaluation script uses some precompiled libraries (<a href="https://github.com/pdollar/coco/">MSCOCO</a> for example), then make sure that the library is compiled against a Linux Distro (Ubuntu 14.04 recommended). Libraries compiled against OSx or Windows might or might not work properly.
