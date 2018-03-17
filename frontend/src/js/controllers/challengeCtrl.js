@@ -1177,6 +1177,45 @@
             }
         };
 
+        // Delete challenge
+        vm.deleteChallengeDialog = function(ev) {
+            vm.titleInput = "";
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/delete-challenge/delete-challenge.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.deleteChallenge = function(deleteChallengeForm) {
+            if(deleteChallengeForm){
+                var parameters = {};
+                parameters.url = "challenges/challenge/" + vm.challengeId + "/disable";
+                parameters.method = 'POST';
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 204){
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The Challenge is successfully deleted!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            } else {
+                $mdDialog.hide();
+            }
+        };
+
         // Edit submission guidelines
         vm.submissionGuidelinesDialog = function(ev) {
             vm.tempSubmissionGuidelines = vm.page.submission_guidelines;
