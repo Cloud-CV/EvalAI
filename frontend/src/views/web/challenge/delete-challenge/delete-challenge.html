@@ -1,0 +1,23 @@
+<section class="text-center pd-20 width-900">
+    <div class="row ht-wt-100p">
+        <div class="col s12 m12">
+            <div class="ev-card-body">
+                <form name="deleteChallengeForm" ng-submit="challenge.deleteChallenge(deleteChallengeForm.$valid)">
+                    <div class="pass-title">Delete Challenge</div>
+                    <div class="input-field align-left">
+                        <input placeholder="Please type in the name of the challenge to confirm" type="text" ng-model="nameInput">
+                    </div>
+                    <ul class="inline-list hide-on-med-and-down">
+                        <li>
+                            <a ng-click="challenge.deleteChallenge(false)" class="dark-link pointer"><strong>Cancel</strong></a>
+                        </li>
+                        <li>
+                            <button class="btn red waves-effect waves-dark grad-btn darken-2 fs-14" ng-disabled="!(nameInput==challenge.page.title)" type="submit" value="submit">I understand consequences, delete the challenge.</button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
