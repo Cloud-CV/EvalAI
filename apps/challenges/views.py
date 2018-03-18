@@ -568,7 +568,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         if (challenge_evaluation_details_file_path.endswith('.html') and
                 isfile(challenge_evaluation_details_file_path)):
             yaml_file_data['evaluation_details'] = get_file_content(challenge_evaluation_details_file_path,
-                                                                'rb').decode('utf-8')
+                                                                    'rb').decode('utf-8')
         else:
             yaml_file_data['evaluation_details'] = None
     except:
