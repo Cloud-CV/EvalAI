@@ -188,7 +188,7 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
     last_submission_timestamp_in_challenge = submissions.order_by(
         '-submitted_at')[0].created_at
 
-    submissions_in_challenge_phase = submissions.filter(
+    submissions_in_a_phase = submissions.filter(
         challenge_phase=challenge_phase)
 
     if not submissions_in_a_phase:
