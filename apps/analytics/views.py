@@ -179,11 +179,22 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
     submissions = Submission.objects.filter(
         challenge_phase__challenge=challenge)
 
+    if not submissions:
+        response_data = {
+            'message': 'You dont have any submissions in this challenge!' 
+        }
+        return Response(response_data, status.HTTP_200_OK)
+
     last_submission_timestamp_in_challenge = submissions.order_by(
         '-submitted_at')[0].created_at
 
-    last_submission_timestamp_in_challenge_phase = submissions.filter(
-        challenge_phase=challenge_phase).order_by('-submitted_at')[0].created_at
+    submissions_in_challenge_phase = submissions.filter(
+        challenge_phase=challenge_phase)
+
+    if not submissions_in_challenge_phase:
+        last_submission_timestamp_in_challenge_phase = 'You dont have any submissions in this challenge phase!'
+    else:
+        last_submission_timestamp_in_challenge_phase = submissions_in_challenge_phase.order_by('-submitted_at')[0].created_at
 
     last_submission_timestamp = LastSubmissionTimestamp(
         last_submission_timestamp_in_challenge, last_submission_timestamp_in_challenge_phase, challenge_phase.pk)
