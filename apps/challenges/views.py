@@ -546,9 +546,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     # check for challenge description file
     try:
         challenge_description_file_path = join(BASE_LOCATION,
-                                           unique_folder_name,
-                                           extracted_folder_name,
-                                           yaml_file_data['description'])
+                                               unique_folder_name,
+                                               extracted_folder_name,
+                                               yaml_file_data['description'])
         if challenge_description_file_path.endswith('.html') and isfile(challenge_description_file_path):
             yaml_file_data['description'] = get_file_content(challenge_description_file_path, 'rb').decode('utf-8')
         else:
@@ -561,9 +561,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     # check for evaluation details file
     try:
         challenge_evaluation_details_file_path = join(BASE_LOCATION,
-                                                  unique_folder_name,
-                                                  extracted_folder_name,
-                                                  yaml_file_data['evaluation_details'])
+                                                      unique_folder_name,
+                                                      extracted_folder_name,
+                                                      yaml_file_data['evaluation_details'])
 
         if (challenge_evaluation_details_file_path.endswith('.html') and
                 isfile(challenge_evaluation_details_file_path)):
@@ -579,12 +579,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     # check for terms and conditions file
     try:
         challenge_terms_and_cond_file_path = join(BASE_LOCATION,
-                                              unique_folder_name,
-                                              extracted_folder_name,
-                                              yaml_file_data['terms_and_conditions'])
+                                                  unique_folder_name,
+                                                  extracted_folder_name,
+                                                  yaml_file_data['terms_and_conditions'])
         if challenge_terms_and_cond_file_path.endswith('.html') and isfile(challenge_terms_and_cond_file_path):
             yaml_file_data['terms_and_conditions'] = get_file_content(challenge_terms_and_cond_file_path,
-                                                                  'rb').decode('utf-8')
+                                                                      'rb').decode('utf-8')
         else:
             yaml_file_data['terms_and_conditions'] = None
     except:
@@ -595,13 +595,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     # check for submission guidelines file
     try:
         challenge_submission_guidelines_file_path = join(BASE_LOCATION,
-                                                     unique_folder_name,
-                                                     extracted_folder_name,
-                                                     yaml_file_data['submission_guidelines'])
+                                                         unique_folder_name,
+                                                         extracted_folder_name,
+                                                         yaml_file_data['submission_guidelines'])
         if (challenge_submission_guidelines_file_path.endswith('.html')
                 and isfile(challenge_submission_guidelines_file_path)):
             yaml_file_data['submission_guidelines'] = get_file_content(challenge_submission_guidelines_file_path,
-                                                                   'rb').decode('utf-8')
+                                                                       'rb').decode('utf-8')
         else:
             yaml_file_data['submission_guidelines'] = None
     except:
