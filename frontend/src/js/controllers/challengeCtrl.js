@@ -525,7 +525,7 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.submissionCount = details.submissions_count_for_challenge_phase;
+                    vm.submissionCount = details.submission_count;
                 },
                 onError: function(response) {
                     var error = response.data;
