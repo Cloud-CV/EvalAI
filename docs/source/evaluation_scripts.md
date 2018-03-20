@@ -10,7 +10,7 @@ The syntax of evaluate function is:
 
 ```
 
-def evaluate(test_annotation_file, user_annotation_file, phase_codename):
+def evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs):
 
     pass
 
@@ -32,7 +32,35 @@ This is the `ChallengePhase` model codename. This is passed as an argument, so t
 
 After reading the files, some custom actions can be performed. This varies per challenge.
 
+The `evaluate()` method also accepts keyword arguments. By default, we provide you metadata of each submission to your challenge which you can use to send notifications to your slack channel or to some other webhook service. Following is an example code showing how to get the submission metadata in your evaluation script and send a slack notification if the accuracy is more than some value `X` (X being 90 in the expample given below). 
+
+```
+def evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs):
+
+    submission_metadata = kwargs.get("submission_metadata")
+    print submission_metadata
+
+    # Do stuff here
+    # Let's set `score` to 90 as an example
+
+    score = 91
+    if score > 90:
+        slack_data = kwargs.get("submission_metadata")
+        webhook_url = "Your Slack Webhook URL comes here"
+        # To know more about slack webhook, checkout this link: https://api.slack.com/incoming-webhooks
+
+        response = requests.post(
+            webhook_url,
+            data=json.dumps({'text': "*Flag raised for submission:* \n \n" + str(slack_data)}),
+            headers={'Content-Type': 'application/json'})
+
+    # Do more stuff here
+```
+
+The above example can be modified and used to find if some participant team is cheating or not. There are many more ways for which you can use this metadata.
+
 After all the processing is done, this script will send an output, which is used to populate the leaderboard. The output should be in the following format:
+
 
 ```
 
@@ -49,6 +77,7 @@ output['result'] = [
         }
     }
 ]
+return output
 
 ```
 
