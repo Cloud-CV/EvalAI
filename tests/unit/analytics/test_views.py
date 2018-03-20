@@ -63,6 +63,34 @@ class BaseAPITestClass(APITestCase):
             end_date=timezone.now() + timedelta(days=1),
         )
 
+        self.challenge1 = Challenge.objects.create(
+            title='Test Challenge 1',
+            short_description='Short description for test challenge 1',
+            description='Description for test challenge 1',
+            terms_and_conditions='Terms and conditions for test challenge 1',
+            submission_guidelines='Submission guidelines for test challenge 1',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.challenge2 = Challenge.objects.create(
+            title='Test Challenge 2',
+            short_description='Short description for test challenge 2',
+            description='Description for test challenge 2',
+            terms_and_conditions='Terms and conditions for test challenge 2',
+            submission_guidelines='Submission guidelines for test challenge 2',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
         self.challenge_host = ChallengeHost.objects.create(
             user=self.user,
             team_name=self.challenge_host_team,
@@ -93,9 +121,51 @@ class BaseAPITestClass(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   'Dummy file content', content_type='text/plain'),
+                codename='Phase Code Name'
             )
 
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase1 = ChallengePhase.objects.create(
+                name='Challenge Phase 1',
+                description='Description for Challenge Phase 1',
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge1,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain'),
+                codename='Phase Code Name1'
+            )
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase2 = ChallengePhase.objects.create(
+                name='Challenge Phase 2',
+                description='Description for Challenge Phase 1',
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge1,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain'),
+                codename='Phase Code Name2'
+            )
+
+        with self.settings(MEDIA_ROOT='/tmp/evalai'):
+            self.challenge_phase3 = ChallengePhase.objects.create(
+                name='Challenge Phase 3',
+                description='Description for Challenge Phase 3',
+                leaderboard_public=False,
+                is_public=True,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge2,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   'Dummy file content', content_type='text/plain'),
+                codename='Phase Code Name2'
+            )
         self.client.force_authenticate(user=self.user)
 
     def tearDown(self):
@@ -120,13 +190,13 @@ class GetParticipantTeamTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_participant_team_count_when_challenge_doe_not_exist(self):
+    def test_get_participant_team_count_when_challenge_does_not_exist(self):
 
         self.url = reverse_lazy('analytics:get_participant_team_count',
-                                kwargs={'challenge_pk': self.challenge.pk + 1})
+                                kwargs={'challenge_pk': self.challenge.pk + 10})
 
         expected = {
-            "detail": "Challenge {} does not exist".format(self.challenge.pk + 1)
+            "detail": "Challenge {} does not exist".format(self.challenge.pk + 10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -154,10 +224,10 @@ class GetParticipantCountTest(BaseAPITestClass):
     def test_get_participant_team_count_when_challenge_doe_not_exist(self):
 
         self.url = reverse_lazy('analytics:get_participant_count',
-                                kwargs={'challenge_pk': self.challenge.pk + 1})
+                                kwargs={'challenge_pk': self.challenge.pk + 10})
 
         expected = {
-            "detail": "Challenge {} does not exist".format(self.challenge.pk + 1)
+            "detail": "Challenge {} does not exist".format(self.challenge.pk + 10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -188,11 +258,11 @@ class GetSubmissionCountForChallengeTest(BaseAPITestClass):
     def test_get_participant_team_count_when_challenge_does_not_exist(self):
 
         self.url = reverse_lazy('analytics:get_submission_count',
-                                kwargs={'challenge_pk': self.challenge.pk + 1,
+                                kwargs={'challenge_pk': self.challenge.pk + 10,
                                         'duration': 'DAILY'})
 
         expected = {
-            "detail": "Challenge {} does not exist".format(self.challenge.pk + 1)
+            "detail": "Challenge {} does not exist".format(self.challenge.pk + 10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -409,6 +479,19 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
             is_public=True,
         )
 
+        self.submission1 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase1,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase1.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
     def test_get_last_submission_datetime_when_challenge_does_not_exists(self):
         self.url = reverse_lazy('analytics:get_last_submission_datetime_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk+10,
@@ -432,6 +515,37 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_last_submission_datetime_when_no_submission_is_made_to_challenge(self):
+        self.url = reverse_lazy('analytics:get_last_submission_datetime_analysis',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'challenge_phase_pk': self.challenge_phase3.pk})
+        expected = {
+            'message': 'You dont have any submissions in this challenge!'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_last_submission_datetime_when_no_submission_is_made_to_challenge_phase(self):
+        self.url = reverse_lazy('analytics:get_last_submission_datetime_analysis',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase2.pk})
+
+        datetime = self.submission.created_at.isoformat()
+        expected = {
+            'last_submission_timestamp_in_challenge_phase': "You dont have any submissions in this challenge phase!",
+            'last_submission_timestamp_in_challenge': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),
+            'challenge_phase': self.challenge_phase.pk
+            }
+        response = self.client.get(self.url, {})
+        response_data = {
+            'last_submission_timestamp_in_challenge_phase': "You dont have any submissions in this challenge phase!",
+            'last_submission_timestamp_in_challenge': "{0}{1}".format(datetime, 'Z').replace("+00:00", ""),
+            'challenge_phase': self.challenge_phase.pk
+        }
+        self.assertEqual(response_data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_last_submission_datetime_analysis(self):
         self.url = reverse_lazy('analytics:get_last_submission_datetime_analysis',
