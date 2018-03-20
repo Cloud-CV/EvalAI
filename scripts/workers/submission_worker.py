@@ -300,10 +300,12 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     try:
         successful_submission_flag = True
         with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
-            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
-                                                                          user_annotation_file_path,
-                                                                          challenge_phase.codename,
-                                                                          submission_metadata=submission_serializer.data)
+            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+                annotation_file_path,
+                user_annotation_file_path,
+                challenge_phase.codename,
+                submission_metadata=submission_serializer.data,
+            )
         '''
         A submission will be marked successful only if it is of the format
             {
