@@ -33,6 +33,6 @@ RUN npm install
 RUN bower install --allow-root
 
 # Set the command to run on startup
-CMD ["gulp", "connect"]
+CMD ["gulp", "dev:runserver"]
 
 EXPOSE 8888
