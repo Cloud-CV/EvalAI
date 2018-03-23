@@ -17,6 +17,7 @@
         vm.isValid = {};
         vm.user = {};
         vm.isFormError = false;
+        vm.buttonDisable = false;
 
         // start loader
         vm.startLoader =  loaderService.startLoader;
@@ -63,6 +64,7 @@
                             var message = response.data.message;
                             $rootScope.notify("success", message);
                             // navigate to home page
+                            vm.buttonDisable = true;
                             $state.go('home');
                             vm.stopLoader();
                         }
@@ -70,6 +72,7 @@
                     onError: function(response) {
                         if (response.status == 400) {
                             vm.isFormError = true;
+                            vm.buttonDisable = false;
                             var isUsernameValid, isEmailValid, isMessageValid;
                             try {
                                 isUsernameValid = response.data.name !== undefined ? true : false;

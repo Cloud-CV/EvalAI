@@ -38,7 +38,7 @@
 						<div class="row">
 							<br>
 							<div class="col s6 align-left rm-gut">
-								<button class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">Send</button>
+								<button ng-disabled="contactUs.buttonDisable" class="waves-effect waves-dark btn ev-btn-dark w-300" type="submit" value="Submit">Send</button>
 							</div>
 							<div ng-if="contactUs.isFormError" class="wrn-msg text-highlight align-right"> {{contactUs.FormError}}
                         </div>
