@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeHostTeamsCtrl', ChallengeHostTeamsCtrl);
 
-    ChallengeHostTeamsCtrl.$inject = ['utilities', 'loaderService', '$state', '$http', '$rootScope', '$mdDialog'];
+    ChallengeHostTeamsCtrl.$inject = ['utilities', 'loaderService', '$state', '$scope' , '$http', '$rootScope', '$mdDialog'];
 
-    function ChallengeHostTeamsCtrl(utilities, loaderService, $state, $http, $rootScope, $mdDialog) {
+    function ChallengeHostTeamsCtrl(utilities, loaderService, $state, $scope, $http, $rootScope, $mdDialog) {
         var vm = this;
         // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
@@ -309,43 +309,53 @@
 
         vm.inviteOthers = function(ev, hostTeamId) {
             ev.stopPropagation();
-            // Appending dialog to document.body 
-            var confirm = $mdDialog.prompt()
-                .title('Invite others to this Team')
-                .textContent('Enter the email address of the person')
-                .placeholder('email')
-                .ariaLabel('')
-                .targetEvent(ev)
-                .ok('Send Invite')
-                .cancel('Cancel');
 
-            $mdDialog.show(confirm).then(function(result) {
+            $mdDialog.show({
+                 clickOutsideToClose: true,
+                  scope: $scope,
+                  preserveScope: true,
+                  templateUrl: 'dist/views/web/invite-template.html',
+                  controller: function ($scope, $mdDialog) {
+                     $scope.closeDialog = function() {
+                        $mdDialog.hide();
+                     };
+                     $scope.result = function(result) {
+                        var parameters = {};
+                        parameters.url = 'hosts/challenge_host_teams/' + hostTeamId + '/invite';
+                        parameters.method = 'POST';
+                        parameters.data = {
+                        "email": result
+                        };
+                        parameters.token = userKey;
+                        parameters.callback = {
+                          onSuccess: function(response) {
+                             var status = response.status;
+                             if(status==200){
+                               $mdDialog.hide();
+                               $rootScope.notify("success", parameters.data.email + " has been invited successfully");
+                             }
+                          },
+                          onError: function(response) {
+                             $mdDialog.hide();
+                             var error = response.data;
+                             $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.", error);
+                          }
+                        };
 
-                var parameters = {};
-                parameters.url = 'hosts/challenge_host_teams/' + hostTeamId + '/invite';
-                parameters.method = 'POST';
-                parameters.data = {
-                    "email": result
-                };
-                parameters.token = userKey;
-                parameters.callback = {
-                    onSuccess: function() {
-                        $rootScope.notify("success", parameters.data.email + " has been invited successfully");
-                    },
-                    onError: function() {
-                        $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.");
-                    }
-                };
+                        utilities.sendRequest(parameters);
 
-                utilities.sendRequest(parameters);
+                     };
+                 }
             });
         };
 
-    vm.storeChallengeHostTeamId = function() {
 
-        utilities.storeData('challengeHostTeamId', vm.challengeHostTeamId);
-        $state.go('web.challenge-create');
-    };
+
+        vm.storeChallengeHostTeamId = function() {
+
+           utilities.storeData('challengeHostTeamId', vm.challengeHostTeamId);
+           $state.go('web.challenge-create');
+       };
 
     }
 
