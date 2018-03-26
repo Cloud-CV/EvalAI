@@ -234,4 +234,7 @@ def remove_self_from_participant_team(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     else:
         participant.delete()
+        participants = Participant.objects.filter(team=participant_team)
+        if participants.count() == 0:
+            participant_team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

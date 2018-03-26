@@ -20,7 +20,7 @@
                     <div class="row">
                         <div class="col xs12 s6">
                             <span><md-select ng-model="featured_challenge.phase_name" placeholder="Challenge Phase" class="rm-margin">
-                            <md-option ui-sref="featured-challenge-page.phase-leaderboard({phaseSplitId:key.id})" value="{{key.id}}" ng-repeat="key in featured_challenge.phaseSplits" ng-show="{{key.visibility}}==3">{{key.challenge_phase_name}}</md-option>
+                            <md-option ui-sref="featured-challenge-page.phase-leaderboard({phaseSplitId:key.id})" value="{{key.id}}" ng-repeat="key in featured_challenge.phaseSplits" ng-show="{{key.visibility}}==3"><span class="font-weight-b">Phase: </span>{{key.challenge_phase_name}}, <span class="font-weight-b">Split: </span> {{key.dataset_split_name}}</md-option>
                         </md-select></span>
                         </div>
                     </div>
@@ -32,18 +32,18 @@
                             <table ng-if="featured_challenge.isResult && featured_challenge.leaderboard.length" class="highlight">
                                 <thead>
                                     <tr>
-                                        <td data-field="rank">Rank</td>
-                                        <td data-field="team">Participant Team</td>
-                                        <td ng-repeat="key in featured_challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
-                                        <td data-field="submission_time">submission time</td>
+                                        <td class="align-left" data-field="rank">Rank</td>
+                                        <td class="align-left" data-field="team">Participant Team</td>
+                                        <td class="align-right" ng-repeat="key in featured_challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
+                                        <td class="align-right" data-field="submission_time">Last Submission at</td>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="key in featured_challenge.leaderboard">
-                                        <td>{{$index+1}}</td>
-                                        <td>{{key.submission__participant_team__team_name}}</td>
-                                        <td ng-repeat="score in key.result track by $index">{{score | number : 2}}</td>
-                                        <td>{{ key.submission__submitted_at | date:'medium'}}</td>
+                                        <td class="align-left">{{$index+1}}</td>
+                                        <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
+                                        <td class="align-right" ng-repeat="score in key.result track by $index">{{score | number : 2}}</td>
+                                        <td class="align-right"> {{key.submission__submitted_at | number: 0}}&nbsp; {{key.timeSpan}} ago</td>
                                     </tr>
                                 </tbody>
                             </table>

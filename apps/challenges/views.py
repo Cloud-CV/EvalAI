@@ -237,6 +237,9 @@ def get_all_challenges(request, challenge_time):
         q_params['start_date__gt'] = timezone.now()
     # for `all` we dont need any condition in `q_params`
 
+    # don't return disabled challenges
+    q_params['is_disabled'] = False
+
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
@@ -252,6 +255,9 @@ def get_challenge_by_pk(request, pk):
     """
     try:
         challenge = Challenge.objects.get(pk=pk)
+        if (challenge.is_disabled):
+            response_data = {'error': 'Sorry, the challenge was removed!'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         serializer = ChallengeSerializer(challenge, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
@@ -538,50 +544,70 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         challenge_image_file = None
 
     # check for challenge description file
-    challenge_description_file_path = join(BASE_LOCATION,
-                                           unique_folder_name,
-                                           extracted_folder_name,
-                                           yaml_file_data['description'])
-    if challenge_description_file_path.endswith('.html') and isfile(challenge_description_file_path):
-        yaml_file_data['description'] = get_file_content(challenge_description_file_path, 'rb').decode('utf-8')
-    else:
-        yaml_file_data['description'] = None
+    try:
+        challenge_description_file_path = join(BASE_LOCATION,
+                                               unique_folder_name,
+                                               extracted_folder_name,
+                                               yaml_file_data['description'])
+        if challenge_description_file_path.endswith('.html') and isfile(challenge_description_file_path):
+            yaml_file_data['description'] = get_file_content(challenge_description_file_path, 'rb').decode('utf-8')
+        else:
+            yaml_file_data['description'] = None
+    except:
+        response_data = {'error': ('There is no key for description. '
+                                   'Please add a key and try uploading it again!')}
+        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for evaluation details file
-    challenge_evaluation_details_file_path = join(BASE_LOCATION,
-                                                  unique_folder_name,
-                                                  extracted_folder_name,
-                                                  yaml_file_data['evaluation_details'])
+    try:
+        challenge_evaluation_details_file_path = join(BASE_LOCATION,
+                                                      unique_folder_name,
+                                                      extracted_folder_name,
+                                                      yaml_file_data['evaluation_details'])
 
-    if (challenge_evaluation_details_file_path.endswith('.html') and
-            isfile(challenge_evaluation_details_file_path)):
-        yaml_file_data['evaluation_details'] = get_file_content(challenge_evaluation_details_file_path,
-                                                                'rb').decode('utf-8')
-    else:
-        yaml_file_data['evaluation_details'] = None
+        if (challenge_evaluation_details_file_path.endswith('.html') and
+                isfile(challenge_evaluation_details_file_path)):
+            yaml_file_data['evaluation_details'] = get_file_content(challenge_evaluation_details_file_path,
+                                                                    'rb').decode('utf-8')
+        else:
+            yaml_file_data['evaluation_details'] = None
+    except:
+        response_data = {'error': ('There is no key for evalutaion details. '
+                                   'Please add a key and try uploading it again!')}
+        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for terms and conditions file
-    challenge_terms_and_cond_file_path = join(BASE_LOCATION,
-                                              unique_folder_name,
-                                              extracted_folder_name,
-                                              yaml_file_data['terms_and_conditions'])
-    if challenge_terms_and_cond_file_path.endswith('.html') and isfile(challenge_terms_and_cond_file_path):
-        yaml_file_data['terms_and_conditions'] = get_file_content(challenge_terms_and_cond_file_path,
-                                                                  'rb').decode('utf-8')
-    else:
-        yaml_file_data['terms_and_conditions'] = None
+    try:
+        challenge_terms_and_cond_file_path = join(BASE_LOCATION,
+                                                  unique_folder_name,
+                                                  extracted_folder_name,
+                                                  yaml_file_data['terms_and_conditions'])
+        if challenge_terms_and_cond_file_path.endswith('.html') and isfile(challenge_terms_and_cond_file_path):
+            yaml_file_data['terms_and_conditions'] = get_file_content(challenge_terms_and_cond_file_path,
+                                                                      'rb').decode('utf-8')
+        else:
+            yaml_file_data['terms_and_conditions'] = None
+    except:
+        response_data = {'error': ('There is no key for terms and conditions. '
+                                   'Please add a key and try uploading it again!')}
+        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for submission guidelines file
-    challenge_submission_guidelines_file_path = join(BASE_LOCATION,
-                                                     unique_folder_name,
-                                                     extracted_folder_name,
-                                                     yaml_file_data['submission_guidelines'])
-    if (challenge_submission_guidelines_file_path.endswith('.html')
-            and isfile(challenge_submission_guidelines_file_path)):
-        yaml_file_data['submission_guidelines'] = get_file_content(challenge_submission_guidelines_file_path,
-                                                                   'rb').decode('utf-8')
-    else:
-        yaml_file_data['submission_guidelines'] = None
+    try:
+        challenge_submission_guidelines_file_path = join(BASE_LOCATION,
+                                                         unique_folder_name,
+                                                         extracted_folder_name,
+                                                         yaml_file_data['submission_guidelines'])
+        if (challenge_submission_guidelines_file_path.endswith('.html')
+                and isfile(challenge_submission_guidelines_file_path)):
+            yaml_file_data['submission_guidelines'] = get_file_content(challenge_submission_guidelines_file_path,
+                                                                       'rb').decode('utf-8')
+        else:
+            yaml_file_data['submission_guidelines'] = None
+    except:
+        response_data = {'error': ('There is no key for submission guidelines. '
+                                   'Please add a key and try uploading it again!')}
+        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
         with transaction.atomic():
