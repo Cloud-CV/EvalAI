@@ -359,6 +359,62 @@
             }, function() {
             });
         };
+
+
+        vm.editTeamName = function(ev, participantTeamId) {
+            ev.stopPropagation();
+            // Edit the team name using UI.
+            var confirm = $mdDialog.prompt()
+                .title('Change Team Name')
+                .textContent('Enter new team name')
+                .placeholder('Team Name')
+                .ariaLabel('')
+                .targetEvent(ev)
+                .ok('confirm')
+                .cancel('Cancel');
+
+            $mdDialog.show(confirm).then(function(result) {
+                var parameters = {};
+                parameters.url = 'participants/participant_team/' + participantTeamId;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "team_name": result,
+                };
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function() {
+                        $rootScope.notify("success", "The Participant team name is successfully updated!");
+                        var parameters = {};
+                        // Retrives the updated lists and displays it.
+                        parameters.url = 'participants/participant_team';
+                        parameters.method = 'GET';
+                        parameters.token = userKey;
+                        parameters.callback = {
+                            onSuccess: function(response) {
+                                vm.existTeam.results = response.data.results;
+                            },
+                            onError: function() {
+                                $rootScope.notify("error", "Team name cannot be changed!");
+                            }
+                        };
+                        utilities.sendRequest(parameters);
+                    },
+                    onError: function(response) {
+                        var error;
+                        if ('team_name' in response.data) {
+                            error = response.data['team_name'];
+                        }
+                        else {
+                            error = response.data['error'];
+                        }
+                        $rootScope.notify("error", error[0]);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            }, function() {
+            });
+        };
     }
 
 })();
