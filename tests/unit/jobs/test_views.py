@@ -80,6 +80,8 @@ class BaseAPITestClass(APITestCase):
                 name='Challenge Phase',
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
+                max_submissions_per_day=10,
+                max_submissions=100,
                 is_public=True,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
@@ -447,13 +449,30 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_get_remaining_submission(self):
+    def test_get_remaining_submission_when_submission_made_three_days_back(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
         expected = {
-            'remaining_submissions_today_count': 99998,
-            'remaining_submissions': 99998
+            'remaining_submissions_today_count': 9,
+            'remaining_submissions': 98
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        self.submission1.submitted_at = timezone.now() - timedelta(days=3)
+        self.submission1.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submission_when__submission_made_today(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_pk': self.challenge.pk})
+        expected = {
+            'remaining_submissions_today_count': 8,
+            'remaining_submissions': 98
         }
 
         self.challenge.participant_teams.add(self.participant_team)
