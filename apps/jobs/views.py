@@ -222,7 +222,7 @@ def leaderboard(request, challenge_phase_split_id):
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',
-            'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
+            'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema')
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
 
@@ -238,7 +238,7 @@ def leaderboard(request, challenge_phase_split_id):
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
     for item in distinct_sorted_leaderboard_data:
-        item['result'] = [item['result'][index] for index in leaderboard_labels]
+        item['result'] = [item['result'][index.lower()] for index in leaderboard_labels]
 
     paginator, result_page = paginated_queryset(
                                                 distinct_sorted_leaderboard_data,
@@ -254,6 +254,14 @@ def leaderboard(request, challenge_phase_split_id):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
+    '''
+    Returns the number of remaining submissions that a participant can
+    do per day and in total to a particular challenge phase of a
+    challenge.
+    '''
+
+    # significance of get_challenge_model() here to check
+    # if the challenge exists or not
     get_challenge_model(challenge_pk)
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
@@ -266,26 +274,32 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         response_data = {'error': 'You haven\'t participated in the challenge'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-    max_submission_per_day = challenge_phase.max_submissions_per_day
+    max_submissions_per_day_count = challenge_phase.max_submissions_per_day
 
-    max_submission = challenge_phase.max_submissions
+    max_submissions_count = challenge_phase.max_submissions
 
-    submissions_done_today_count = Submission.objects.filter(
+    submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk,
-        submitted_at__gte=timezone.now().date()).count()
+        participant_team=participant_team_pk)
 
-    failed_submissions_count = Submission.objects.filter(
-        challenge_phase__challenge=challenge_pk,
-        challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk,
-        status=Submission.FAILED,
-        submitted_at__gte=timezone.now().date()).count()
+    failed_submissions = submissions_done.filter(
+        status=Submission.FAILED)
 
-    # Checks if today's successfull submission is greater than or equal to max submission per day.
-    if ((submissions_done_today_count - failed_submissions_count) >= max_submission_per_day
-            or (max_submission_per_day == 0)):
+    submissions_done_today = submissions_done.filter(
+        submitted_at__gte=timezone.now().date())
+
+    failed_submissions_done_today = submissions_done_today.filter(
+        status=Submission.FAILED)
+
+    submissions_done_count = submissions_done.count()
+    failed_submissions_count = failed_submissions.count()
+    submissions_done_today_count = submissions_done_today.count()
+    failed_submissions_done_today_count = failed_submissions_done_today.count()
+
+    # Checks if #today's successful submission is greater than or equal to max submission per day
+    if ((submissions_done_today_count - failed_submissions_done_today_count) >= max_submissions_per_day_count
+            or (max_submissions_per_day_count == 0)):
         # Get the UTC time of the instant when the above condition is true.
         date_time_now = timezone.now()
         # Calculate the next day's date.
@@ -303,13 +317,14 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         # Calculate the remaining submissions for today.
-        remaining_submissions_today_count = (max_submission_per_day -
+        remaining_submissions_today_count = (max_submissions_per_day_count -
                                              (submissions_done_today_count -
-                                              failed_submissions_count)
+                                              failed_submissions_done_today_count)
                                              )
+
         # calculate the remaining submissions from total submissions.
-        remaining_submission_count = max_submission - \
-            (submissions_done_today_count - failed_submissions_count)
+        remaining_submission_count = max_submissions_count - \
+            (submissions_done_count - failed_submissions_count)
         # Return the above calculated data.
         response_data = {'remaining_submissions_today_count': remaining_submissions_today_count,
                          'remaining_submissions': remaining_submission_count
