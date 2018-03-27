@@ -222,7 +222,7 @@ def leaderboard(request, challenge_phase_split_id):
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',
-            'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema')
+            'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
 
@@ -238,7 +238,7 @@ def leaderboard(request, challenge_phase_split_id):
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
     for item in distinct_sorted_leaderboard_data:
-        item['result'] = [item['result'][index.lower()] for index in leaderboard_labels]
+        item['result'] = [item['result'][index] for index in leaderboard_labels]
 
     paginator, result_page = paginated_queryset(
                                                 distinct_sorted_leaderboard_data,
