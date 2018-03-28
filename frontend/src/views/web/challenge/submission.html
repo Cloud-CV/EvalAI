@@ -1,6 +1,20 @@
-<section ng-if="challenge.isParticipated" class="ev-sm-container ev-view ">
+<section ng-if="challenge.isActive" class="ev-sm-container ev-view ">
     <div class="row">
         <div class="col s12 m12">
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card">
+                <div class="col s11 m11">
+                    <span class="fs-18">
+                        <strong>Submission Guidelines</strong>
+                    </span>
+                    <div ng-bind-html="challenge.page.submission_guidelines"></div>
+                </div>
+                <div ng-if="challenge.isChallengeHost" class="col s1 m1">
+                    <a class="pointer" ng-click="challenge.submissionGuidelinesDialog($event)">
+                        <i class="fa fa-pencil" aria-hidden="true">
+                        </i>
+                    </a>
+                </div>
+            </div>
             <div class=" ev-card-panel ev-z-depth-5 ">
                 <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
                     <div class="loader">
@@ -27,19 +41,17 @@
                                             <strong class="text-med-black">End Date: </strong>{{item.end_date | date:'medium'}}</div>
                                         <div class="clearfix"></div>
                                     </li>
-
                                     <div class="row">
                                         <div class="file-field input-field col s10">
                                             <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
                                                 <span>Upload File</span>
-                                                <input type="file" ngf-select ng-model="challenge.input_file" name="challenge.input_file" accept=".json">
+                                                <input type="file" ngf-select ng-model="challenge.input_file" name="challenge.input_file" accept=".json, .zip">
                                             </div>
                                             <div class="file-path-wrapper">
                                                 <input class="file-path validate" type="text">
                                             </div>
                                         </div>
                                     </div>
-
                                     <div class="row">
                                         <div class="input-field align-left col s10">
                                             <input type="text" id="methodName" name="methodName" ng-model="challenge.methodName" required>
@@ -47,15 +59,13 @@
                                             <label for="methodName">Method Name *</label>
                                         </div>
                                     </div>
-
                                     <div class="row">
                                         <div class="input-field align-left col s10">
                                             <textarea id="methodDesc" class="materialize-textarea" name="methodDesc" ng-model="challenge.methodDesc" required></textarea>
                                             <span class="form-icon"><i class="fa fa-text"></i></span>
                                             <label for="methodDesc">Method Description *</label>
-                                        </div>                                
+                                        </div>
                                     </div>
-
                                     <div class="row">
                                         <div class="input-field align-left col s10">
                                             <input type="text" id="projectUrl" name="projectUrl" ng-model="challenge.projectUrl" required>
@@ -68,9 +78,8 @@
                                             <input type="text" id="publicationUrl" name="publicationUrl" ng-model="challenge.publicationUrl" required>
                                             <span class="form-icon"><i class="fa fa-text"></i></span>
                                             <label for="publicationUrl">Publication URL (Enter N/A if not applicable)</label>
-                                        </div>                                
+                                        </div>
                                     </div>
-
                                     <div class="text-highlight red-text"><strong>
                                         {{challenge.subErrors.msg}}</strong></div>
                                     <section class="pagination">
@@ -92,16 +101,27 @@
                     <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
                         <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
                             <div class="row">
-                                <strong class="text-med-black">
+                            <span class="color-black">
+                                <strong>
                                     Today's Remaining Submissions:
+                                </strong> 
+                            <span class="color-black">
+                                <strong>
+                                    {{challenge.remainingSubmissions.remaining_submissions_today_count}}
                                 </strong>
-                                {{challenge.remainingSubmissions.remaining_submissions_today_count}}
+                            </span>
                             </div>
                             <div class="row">
-                                <strong class="text-med-black">
+                            <span class="color-black">
+                                <strong>
                                     Total Remaining Submissions:
                                 </strong>
+                            </span>
+                            <span class="color-black">
+                                <strong>
                                 {{challenge.remainingSubmissions.remaining_submissions}}
+                                </strong>
+                            </span>
                             </div>
                         </div>
                     </div>
@@ -110,19 +130,23 @@
                             <div class="row">
                                 <strong class="text-med-black">
                                     Message:
-                                </strong>
-                                {{challenge.message.message}}
+                                </strong> {{challenge.message.message}}
                             </div>
                             <div>
                                 Next set of submissions will be available after:
                             </div>
-                            <div> 
-                            {{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
+                            <div>
+                                {{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</section>
+<section ng-if="!challenge.isActive" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+        <p><strong>Sorry, The Challenge is not active!</strong></p>
     </div>
 </section>

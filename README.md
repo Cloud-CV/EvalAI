@@ -35,12 +35,36 @@ Our ultimate goal is to build a centralized platform to host, participate and co
 
 ## Performance comparison
 
-Some background: Last year, the [Visual Question Answering Challenge (VQA, 2016](http://www.visualqa.org/vqa_v1_challenge.html) was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview). This year, the dataset for the [VQA Challenge 2017](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
+Some background: Last year, the [Visual Question Answering Challenge (VQA) 2016](http://www.visualqa.org/vqa_v1_challenge.html) was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview). This year, the dataset for the [VQA Challenge 2017](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
 
 ## Installation Instructions
 
-Setting up EvalAI on your local machine is really easy.
-Follow this guide to setup your development machine.
+Setting up EvalAI on your local machine is really easy. You can setup EvalAI using two methods:
+
+### Using Docker
+
+You can also use Docker Compose to run all the components of EvalAI together. The steps are:
+
+1. Get the source code on to your machine via git.
+
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    ```
+
+2. Rename `settings/dev.sample.py` as `dev.py` and change credential in `settings/dev.py`
+
+    ```
+    cp settings/dev.sample.py settings/dev.py
+    ```
+    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
+
+3. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+
+    ```
+    docker-compose -f docker-compose.dev.yml up -d --build
+    ```
+
+### Using Virtual Environment
 
 1. Install [python] 2.x (EvalAI only supports python2.x for now.), [git], [postgresql] version >= 10.1, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
@@ -122,28 +146,6 @@ Follow this guide to setup your development machine.
 
     ```
     python scripts/workers/submission_worker.py
-    ```
-### Using Docker
-
-You can also use Docker Compose to run all the components of EvalAI together. The steps are:
-
-1. Get the source code on to your machine via git.
-
-    ```shell
-    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
-    ```
-
-2. Rename `settings/dev.sample.py` as `dev.py` and change credential in `settings/dev.py`
-
-    ```
-    cp settings/dev.sample.py settings/dev.py
-    ```
-    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
-
-3. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
-
-    ```
-    docker-compose -f docker-compose.dev.yml up -d --build
     ```
 
 ## The Team

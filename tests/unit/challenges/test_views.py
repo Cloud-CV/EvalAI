@@ -198,6 +198,54 @@ class GetParticularChallenge(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_update_challenge_when_user_is_not_its_creator(self):
+        self.user1 = User.objects.create(
+            username='someuser1',
+            email="user1@test.com",
+            password='secret_psassword')
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email='user1@test.com',
+            primary=True,
+            verified=True)
+
+        self.client.force_authenticate(user=self.user1)
+
+        expected = {"detail": "Sorry, you are not allowed to perform this operation!"}
+
+        response = self.client.put(self.url, {'title': 'Rose Challenge', 'description': 'Version 2.0'})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_challenge_when_user_is_its_creator(self):
+        new_title = 'Rose Challenge'
+        new_description = 'New description.'
+        expected = {
+            "id": self.challenge.pk,
+            "title": new_title,
+            "short_description": self.challenge.short_description,
+            "description": new_description,
+            "terms_and_conditions": self.challenge.terms_and_conditions,
+            "submission_guidelines": self.challenge.submission_guidelines,
+            "evaluation_details": self.challenge.evaluation_details,
+            "image": None,
+            "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "creator": {
+                "id": self.challenge.creator.pk,
+                "team_name": self.challenge.creator.team_name,
+                "created_by": self.challenge.creator.created_by.username
+            },
+            "published": self.challenge.published,
+            "enable_forum": self.challenge.enable_forum,
+            "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
+            "is_active": True
+        }
+        response = self.client.put(self.url, {'title': new_title, 'description': new_description})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_particular_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_challenge_detail',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk,
@@ -571,7 +619,7 @@ class GetAllChallengesTest(BaseAPITestClass):
         # Past Challenge challenge
         self.challenge3 = Challenge.objects.create(
             title='Test Challenge 3',
-            short_description='Short description for test challenge 2',
+            short_description='Short description for test challenge 3',
             description='Description for test challenge 3',
             terms_and_conditions='Terms and conditions for test challenge 3',
             submission_guidelines='Submission guidelines for test challenge 3',
@@ -598,6 +646,23 @@ class GetAllChallengesTest(BaseAPITestClass):
             anonymous_leaderboard=False,
             start_date=timezone.now() + timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+        )
+
+        # Disabled challenge
+        self.challenge5 = Challenge.objects.create(
+            title='Test Challenge 5',
+            short_description='Short description for test challenge 5',
+            description='Description for test challenge 5',
+            terms_and_conditions='Terms and conditions for test challenge 5',
+            submission_guidelines='Submission guidelines for test challenge 5',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() + timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            is_disabled=True
         )
 
     def test_get_past_challenges(self):
@@ -791,11 +856,36 @@ class GetChallengeByPk(BaseAPITestClass):
             end_date=timezone.now() + timedelta(days=1),
         )
 
+        self.challenge4 = Challenge.objects.create(
+            title='Test Challenge 4',
+            short_description='Short description for test challenge 4',
+            description='Description for test challenge 4',
+            terms_and_conditions='Terms and conditions for test challenge 4',
+            submission_guidelines='Submission guidelines for test challenge 4',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            is_disabled=True
+        )
+
     def test_get_challenge_by_pk_when_challenge_does_not_exists(self):
         self.url = reverse_lazy('challenges:get_challenge_by_pk',
                                 kwargs={'pk': self.challenge3.pk + 10})
         expected = {
             'error': 'Challenge does not exist!'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_get_challenge_by_pk_when_challenge_is_disabled(self):
+        self.url = reverse_lazy('challenges:get_challenge_by_pk',
+                                kwargs={'pk': self.challenge4.pk})
+        expected = {
+            'error': 'Sorry, the challenge was removed!'
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1240,6 +1330,47 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions": self.challenge_phase.max_submissions,
         }
         response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_phase_when_user_is_not_its_creator(self):
+        self.user1 = User.objects.create(
+            username='someuser1',
+            email="user1@test.com",
+            password='secret_psassword')
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email='user1@test.com',
+            primary=True,
+            verified=True)
+
+        self.client.force_authenticate(user=self.user1)
+
+        expected = {"detail": "Sorry, you are not allowed to perform this operation!"}
+
+        response = self.client.put(self.url, {'name': 'Rose Phase', 'description': 'New description.'})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_challenge_phase_when_user_is_its_creator(self):
+        new_name = 'Rose Phase'
+        new_description = 'New description.'
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": new_name,
+            "description": new_description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "is_public": self.challenge_phase.is_public,
+            "is_active": True,
+            "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
+        }
+        response = self.client.put(self.url, {'name': new_name, 'description': new_description})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -2235,6 +2366,7 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
 
 
 class StarChallengesTest(BaseAPITestClass):
+
     def setUp(self):
         super(StarChallengesTest, self).setUp()
         self.url = reverse_lazy('challenges:star_challenge',

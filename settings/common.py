@@ -158,11 +158,13 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_THROTTLE_CLASSES': (
         'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
+        'rest_framework.throttling.UserRateThrottle',
+        'accounts.throttles.ResendEmailThrottle',
     ),
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/minute',
-        'user': '100/minute'
+        'user': '100/minute',
+        'resend_email': '3/hour',
     },
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
@@ -225,7 +227,7 @@ LOGGING = {
         'logfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': "/tmp/logfile",
+            'filename': os.path.join(BASE_DIR, 'django.log'),
             'maxBytes': 50000,
             'backupCount': 10,
             'formatter': 'verbose'
@@ -283,3 +285,6 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
 REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER': 'accounts.serializers.ProfileSerializer',
 }
+
+# For inviting users to participant and host teams.
+ADMIN_EMAIL = "admin@cloudcv.org"

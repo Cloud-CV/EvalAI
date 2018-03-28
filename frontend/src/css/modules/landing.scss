@@ -107,11 +107,49 @@ section.bg-section {
 /*simple header*/
 
 .sim-header {
-    font-size: 18px;
-    top: 0;
-    left: 0;
-    z-index: 1001;
-    width: 100%;
+  font-size: 18px;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  width: 100%;
+  position: relative;
+  nav {
+      background-color:rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 0 0 #000;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: 0 100px;
+      transition: all 0.1s ease-in-out;
+      a.sim-header-link {
+	  color: #4d4d4d;
+	  font-weight: 400;
+	  transition: all 0.2s ease-in-out;
+          &:hover {
+	    color: #ffaf4b;
+	    background-color: rgba(0, 0, 0, 0);
+	  }
+      }
+      a.light-link {
+	  color: #9ca3be;
+	  transition: all 0.2s ease-in-out;
+          &:hover {
+	  color: #fff;
+          }
+      }
+      a.active {
+	  color: #ffaf4b;
+	  background-color: rgba(0, 0, 0, 0);
+      }
+      nav.grad-shadow-1 {
+	  box-shadow: 0 0 10px #9d9d9d;
+      }
+  }
+}
+@media only screen and (max-width: 992px) {
+  .sim-header nav {
+    padding: 0px 30px;
+  }
 }
 
 .grad-head {
@@ -120,6 +158,8 @@ section.bg-section {
 
 .landing-buttons {
     margin-top: 35px;
+    position: relative;
+    z-index: 3;
 }
 
 .rocket-anim {
