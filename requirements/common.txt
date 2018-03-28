@@ -9,6 +9,7 @@ django-rest-auth[with_social]==0.9.2
 drfdocs==0.0.11
 pika==0.10.0
 pickleshare==0.7.4
+python-memcached==1.58
 Pillow==3.4.2
 psycopg2==2.7.3.2
 PyYaml==3.12
