@@ -94,5 +94,5 @@ All of the codebase related to testing resides in `tests` folder in the root dir
 To perform certain actions like seeding the database, we use Django management commands. Since the management commands are common throughout the project, they are present in `base` application directory. At the moment, the only management command is `seed`, which is used to populate the database with some random values. The command can be invoked by calling
 
 ```
-python manage.py seed --settings=settings.dev
+python manage.py seed
 ```

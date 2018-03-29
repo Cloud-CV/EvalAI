@@ -38,13 +38,13 @@ Follow this guide to setup your development machine.
     ```
     Enter your password for authentication and a new database will be added.
     ```
-    python manage.py migrate --settings=settings.dev
+    python manage.py migrate
     ```
 
 6. Seed the database with some fake data to work with.
 
     ```
-    python manage.py seed --settings=settings.dev
+    python manage.py seed
     ```
     This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
 
@@ -55,7 +55,7 @@ Follow this guide to setup your development machine.
 7. That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
 
     ```
-    python manage.py runserver --settings=settings.dev
+    python manage.py runserver
     ```
 
 
