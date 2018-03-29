@@ -14,25 +14,27 @@ logger = logging.getLogger(__name__)
 
 @app.task
 def notify_admin_on_receiving_contact_message(webhook_url, name, email, message):
-
+    '''
+    Send email and slack notification to EvalAI Admin 
+    whenever someone submits a contact message
+    '''
     # Send slack notification
     webhook_url = webhook_url
-    data = {'text': '{} with email: {} has sent a message: {}'.format(name, email, message)}
+    data = {'text': '*{} ({})* has sent a message \n *{}*'.format(name, email, message)}
     header = {'Content-type': 'application/json'}
     try:
         response = requests.post(webhook_url, headers=header, data=json.dumps(data))
         logger.info("Notification successfully sent to slack with status code {}!".format(response.status_code))
     except requests.exceptions.HTTPError as e:
-        logger.info("There is an error in sending notification with error {}".format(e))
+        logger.exception("There is an error in sending notification with error: {}".format(e))
 
-    # Send Email to CloudCV Admin
+    # Send email to EvalAI Admin
     from_email = settings.EMAIL_HOST_USER
-    text = "wants to contact EvalAI admin"
-    subject = "{} {}".format(name, text)
+    subject = "EvalAI Contact message received from {}".format(name)
     message = message
-    to_email = [settings.ADMIN_EMAIL]
+    to_email = [to_email]
     try:
         send_mail(subject, message, from_email, to_email)
-        logger.info("Email successfully sent to CloudCV Admin!")
+        logger.info("Email successfully sent to EvalAI Admin!")
     except SMTPException as e:
-        logger.info("There was an error in sending an email: {}".format(e))
+        logger.exception("There was an error in sending an email: {}".format(e))
