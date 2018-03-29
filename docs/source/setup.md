@@ -347,6 +347,11 @@ Follow this guide to setup your development machine.
     python manage.py runserver
     ```
 
+* Open a new cmd window (make sure to activate the virtual environment) and run the following command to run celery as a service:
+
+    ```
+    celery worker -A evalai --loglevel=debug --concurrency=4 --autoreload
+    ```
 
 * Open a new cmd window with node>=(7.0.0) installed on your machine and type
 
