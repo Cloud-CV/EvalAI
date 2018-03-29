@@ -66,7 +66,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
 
 ### Using Virtual Environment
 
-1. Install [python] 2.x (EvalAI only supports python2.x for now.), [git], [postgresql] version >= 10.1, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
+1. Install [python] 2.7.10 or above, [git], [postgresql] version >= 10.1, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
