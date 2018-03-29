@@ -123,6 +123,12 @@ python manage.py runserver
 gulp dev:runserver
 ```
 
+* Open a new shell (make sure to activate the virtual environment) and run the following command to run celery as a service:
+
+    ```
+    celery worker -A evalai --loglevel=debug --concurrency=4 --autoreload
+    ```
+ 
 ## Fedora Installation Instructions
 
 ### Step 1: Install prerequisites
@@ -244,6 +250,12 @@ python manage.py runserver
 ```
 gulp dev:runserver
 ```
+
+* Open a new shell (make sure to activate the virtual environment) and run the following command to run celery as a service:
+
+    ```
+    celery worker -A evalai --loglevel=debug --concurrency=4 --autoreload
+    ```
 
 ### Common Errors
 
