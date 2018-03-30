@@ -93,7 +93,7 @@ createdb evalai -U postgres
 # update postgres user password
 psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 # run migrations
-python manage.py migrate --settings=settings.dev
+python manage.py migrate
 ```
 
 * For setting up frontend, run
@@ -110,7 +110,7 @@ bower install
 ```
 # activate virtual environment if not activated
 source venv/bin/activate
-python manage.py runserver --settings=settings.dev
+python manage.py runserver
 ```
 
 * To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888), simply do:
@@ -205,7 +205,7 @@ createdb evalai -U postgres
 # update postgres user password
 psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 # run migrations
-python manage.py migrate --settings=settings.dev
+python manage.py migrate
 ```
 
 * For setting up frontend, run
@@ -223,7 +223,7 @@ npm install -g bower
 ```
 # activate virtual environment if not activated
 source venv/bin/activate
-python manage.py runserver --settings=settings.dev
+python manage.py runserver
 ```
 
 * To run frontend development server for at [frontend]
@@ -236,7 +236,7 @@ gulp dev:runserver
 ```
 # activate virtual environment if not activated
 source venv/bin/activate
-python manage.py runserver --settings=settings.dev
+python manage.py runserver
 ```
 
 * To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888), simply do:
@@ -302,13 +302,13 @@ Follow this guide to setup your development machine.
     ```
     Enter your password for authentication and a new database will be added.
     ```
-    python manage.py migrate --settings=settings.dev
+    python manage.py migrate
     ```
 
 * Seed the database with some fake data to work with.
 
     ```
-    python manage.py seed --settings=settings.dev
+    python manage.py seed
     ```
     This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
 
@@ -321,7 +321,7 @@ Follow this guide to setup your development machine.
 * That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
 
     ```
-    python manage.py runserver --settings=settings.dev
+    python manage.py runserver
     ```
 
 
