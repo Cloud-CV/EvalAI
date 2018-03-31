@@ -1,3 +1,7 @@
+import boto3
+
+from botocore.exceptions import ClientError
+
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -5,6 +9,9 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from django.template import Context
 
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from email.MIMEImage import MIMEImage
 
 from .models import Team
@@ -49,12 +56,10 @@ def notify_users_about_challenge(request):
             return render(request, template_name)
 
         elif request.method == 'POST':
-            template_name = 'notification_email.html'
             emails = User.objects.all().exclude(email__isnull=True, email__exact='').values_list('email', flat=True)
-            htmly = get_template('notification_email.html')
 
-            subject = request.POST.get('subject')
-            body = request.POST.get('body')
+            SUBJECT = request.POST.get('subject')
+            BODY_HTML = request.POST.get('body')
 
             try:
                 challenge_image = request.FILES['challenge_image']
@@ -65,25 +70,42 @@ def notify_users_about_challenge(request):
                 image = MIMEImage(challenge_image.read())
                 image.add_header('Content-ID', '<{}>'.format(challenge_image))
 
-            context = Context({'body': body,
-                               'image': challenge_image})
+            AWS_REGION = "us-west-2"
+            CHARSET = "utf-8"
+            msg = MIMEMultipart('mixed')
 
-            for email in emails:
-                from_email = settings.EMAIL_HOST_USER
-                to = [email]
-                html_content = htmly.render(context)
+            SENDER = settings.EMAIL_HOST_USER
+            RECIPIENT = 'rishabhjain2018@gmail.com'
 
-                msg = EmailMultiAlternatives(subject, html_content, from_email, to)
-                msg.attach_alternative(html_content, "text/html")
-                msg.mixed_subtype = 'related'
 
-                if challenge_image:
-                    msg.attach(image)
+            client = boto3.client('ses', region_name=AWS_REGION)
+            msg['subject'] = SUBJECT
+            msg['From'] = SENDER
+            msg['To'] = RECIPIENT
 
-                msg.send()
-            return render(request,
-                          'notification_email_conformation.html',
-                          {'message': 'All the emails are sent successfully!'})
+            msg_body = MIMEMultipart('alternative')
+            htmlpart = MIMEText(BODY_HTML.encode(CHARSET), 'html', CHARSET)
+            msg_body.attach(htmlpart)
+
+            print "222222222"
+            if challenge_image:
+                msg.attach(image)
+
+
+            try:
+                response = client.send_raw_email(
+                    Source=SENDER,
+                    Destinations=[
+                    RECIPIENT],
+                    RawMessage={
+                    'Data':msg.as_string(),
+                    })
+                print "SENT EMAIL"
+                return render(request,
+                              'notification_email_conformation.html',
+                              {'message': 'All the emails are sent successfully!'})
+            except ClientError as e:
+                print e.response['Error']['Message']
         else:
             return render(request, 'error404.html')
     else:
