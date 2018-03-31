@@ -1,4 +1,4 @@
-# Command to run : python manage.py shell --settings=settings.dev  < scripts/seed.py
+# Command to run : python manage.py shell  < scripts/seed.py
 import os
 
 from datetime import timedelta

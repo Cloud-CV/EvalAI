@@ -24,13 +24,13 @@ python manage.py makemigrations jobs --name=execution_time_limit
 * While creating migrations on local environment, don't forget to add development settings.
 
 ```
-python manage.py makemigrations --settings=settings.dev
+python manage.py makemigrations
 ```
 
 The following is an example of a complete named migration for the `jobs` app, wherein a execution time limit field is added to the `Submission` model:
 
 ```
-python manage.py makemigrations jobs --name=execution_time_limit --settings=settings.dev
+python manage.py makemigrations jobs --name=execution_time_limit
 ```
 
 * Files create after running `makemigrations` should be committed along with other files

@@ -2,6 +2,22 @@
 
 EvalAI can run on Linux, Cloud, Windows, and macOS platforms. Use the following list to choose the best installation path for you. The links under *Platform* take you straight to the installation instructions for that platform.
 
+## Installation using Docker
+
+We recommend setting up EvalAI using Docker since there are only two steps involved. If you are not comfortable with docker, feel free to skip this section and move to the manual installation sections given below for different operating systems. Please follow the below steps for setting up using docker:
+
+1. Get the source code on to your machine via git
+
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    ```
+
+2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+
+    ```
+    docker-compose -f docker-compose.dev.yml up -d --build
+    ```
+
 ## Ubuntu Installation Instructions
 
 ### Step 1: Install prerequisites
@@ -53,7 +69,7 @@ git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 
 Don't forget to replace `YOUR_GITHUB_USER_NAME` with your git username.
 
-### Step 3: Setup code base
+### Step 3: Setup codebase
 
 * Create a python virtual environment and install python dependencies.
 
@@ -77,7 +93,7 @@ createdb evalai -U postgres
 # update postgres user password
 psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 # run migrations
-python manage.py migrate --settings=settings.dev
+python manage.py migrate
 ```
 
 * For setting up frontend, run
@@ -94,7 +110,7 @@ bower install
 ```
 # activate virtual environment if not activated
 source venv/bin/activate
-python manage.py runserver --settings=settings.dev
+python manage.py runserver
 ```
 
 * To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888), simply do:
@@ -165,7 +181,7 @@ git clone git@github.com:YOUR_GITHUB_USER_NAME/EvalAI.git evalai
 
 Don't forget to replace `YOUR_GITHUB_USER_NAME` with your git username.
 
-### Step 3: Setup code base
+### Step 3: Setup codebase
 
 * Create a python virtual environment and install python dependencies.
 
@@ -189,7 +205,7 @@ createdb evalai -U postgres
 # update postgres user password
 psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 # run migrations
-python manage.py migrate --settings=settings.dev
+python manage.py migrate
 ```
 
 * For setting up frontend, run
@@ -207,7 +223,7 @@ npm install -g bower
 ```
 # activate virtual environment if not activated
 source venv/bin/activate
-python manage.py runserver --settings=settings.dev
+python manage.py runserver
 ```
 
 * To run frontend development server for at [frontend]
@@ -220,7 +236,7 @@ gulp dev:runserver
 ```
 # activate virtual environment if not activated
 source venv/bin/activate
-python manage.py runserver --settings=settings.dev
+python manage.py runserver
 ```
 
 * To run frontend development server at [http://127.0.0.1:8888](http://127.0.0.1:8888), simply do:
@@ -241,22 +257,108 @@ sudo apt-get install libpq-dev
 
 Possible solutions for the same problem can be found at [link].
 
-## Installation using Docker
+## Windows Installation Instructions
 
-You can also use Docker Compose to run all the components of EvalAI together. The steps are:
+Setting up EvalAI on your local machine is really easy.
+Follow this guide to setup your development machine.
 
-1. Get the source code on to your machine via git.
+### Step 1: Install prerequisites
+
+* Install Python 2.x, Git, PostgreSQL version >= 9.4, RabbitMQ and virtualenv, in your computer, if you don't have it already.
+
+### Step 2: Get EvalAI Code
+
+* Get the source code on your machine via git.
 
     ```shell
-    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai
     ```
 
-2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+### Step 3: Setup the codebase
+
+* Create a python virtual environment and install python dependencies.
+
+    ```shell
+    cd evalai
+    virtualenv venv
+    cd venv/scripts
+    activate.bat    # run this command everytime before working on project
+    cd ../..
+    pip install -r requirements/dev.txt
+    ```
+
+* Rename `settings/dev.sample.py` as `dev.py` and change credential in `settings/dev.py`
 
     ```
-    docker-compose -f docker-compose.dev.yml up -d --build
+    cp settings/dev.sample.py settings/dev.py
     ```
+    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file. 
+
+* Create an empty postgres database and run database migration.
+    Make sure you have defined the PostgreSql path to the Environment Variables.
+    
+    ```
+    createdb evalai
+    ```
+    Enter your password for authentication and a new database will be added.
+    ```
+    python manage.py migrate
+    ```
+
+* Seed the database with some fake data to work with.
+
+    ```
+    python manage.py seed
+    ```
+    This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
+
+    **SUPERUSER-** username: `admin` password: `password`  
+    **HOST USER-** username: `host` password: `password`  
+    **PARTICIPANT USER-** username: `participant` password: `password`    
+
+### Step 4: Start the development environment
+
+* That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
+
+    ```
+    python manage.py runserver
+    ```
+
+
+* Open a new cmd window with node(6.9.2) and ruby(gem) installed on your machine and type
+
+    ```
+    npm install
+    ``` 
+
+* Install bower(1.8.0) globally by running:
+
+	```
+	npm install -g bower
+	```
+
+* Now install the bower dependencies by running:
+
+	```
+	bower install
+	```
+
+* If you running npm install behind a proxy server, use
+
+	```
+	npm config set proxy http://proxy:port
+	```
+
+* Now to connect to dev server at [http://127.0.0.1:8888] (for serving frontend)
+
+    ```
+    gulp dev:runserver
+    ```
+
+* That's it, Open web browser and hit the url [http://127.0.0.1:8888].
 
 [link]: http://stackoverflow.com/a/28938258/2534102
 [backend]: http://127.0.0.1:8000
 [frontend]: http://127.0.0.1:8888
+[http://127.0.0.1:8000]: http://127.0.0.1:8000
+[http://127.0.0.1:8888]: http://127.0.0.1:8888
