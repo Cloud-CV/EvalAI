@@ -598,7 +598,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "published": self.challenge1.published,
                         "enable_forum": self.challenge1.enable_forum,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
-                        "is_active": True
+                        "is_active": True,
+                        "allowed_email_domains": [],
+                        "blocked_email_domains": [],
                     },
                     "participant_team": {
                         "id": self.participant_team1.id,
