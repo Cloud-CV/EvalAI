@@ -105,7 +105,9 @@ class GetChallengeTest(BaseAPITestClass):
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-                "is_active": True
+                "is_active": True,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
             }
         ]
 
@@ -192,7 +194,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-            "is_active": True
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -240,7 +244,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-            "is_active": True
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
         }
         response = self.client.put(self.url, {'title': new_title, 'description': new_description})
         self.assertEqual(response.data, expected)
@@ -311,7 +317,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "is_active": True,
             "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
-
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -340,6 +347,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "is_active": True,
             "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -687,6 +696,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge3.enable_forum,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "is_active": False,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -718,6 +729,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge2.enable_forum,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "is_active": True,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -749,6 +762,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge4.enable_forum,
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "is_active": False,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -780,6 +795,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge2.enable_forum,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "is_active": True,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
             },
             {
                 "id": self.challenge3.pk,
@@ -801,6 +818,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge3.enable_forum,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "is_active": False,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
             },
             {
                 "id": self.challenge4.pk,
@@ -822,6 +841,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge4.enable_forum,
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "is_active": False,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -970,7 +991,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "published": self.challenge2.published,
             "enable_forum": self.challenge2.enable_forum,
             "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-            "is_active": True
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
         }]
 
         response = self.client.get(self.url, {'host_team': self.challenge_host_team2.pk})
@@ -999,7 +1022,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "published": self.challenge2.published,
             "enable_forum": self.challenge2.enable_forum,
             "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-            "is_active": True
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
         }]
 
         response = self.client.get(self.url, {'participant_team': self.participant_team2.pk})
@@ -1028,7 +1053,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "published": self.challenge2.published,
             "enable_forum": self.challenge2.enable_forum,
             "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-            "is_active": True
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
         }]
 
         response = self.client.get(self.url, {'mode': 'participant'})
@@ -1058,7 +1085,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
-                "is_active": True
+                "is_active": True,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
             },
             {
                 "id": self.challenge2.pk,
@@ -1079,7 +1108,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-                "is_active": True
+                "is_active": True,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
             }
         ]
 

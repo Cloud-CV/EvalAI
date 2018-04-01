@@ -19,6 +19,9 @@ ADD ./karma.conf.js /code
 
 WORKDIR /code
 
+# Bypass the ssl check
+RUN npm config set strict-ssl false
+
 # Install Prerequisites
 RUN npm install bower -g
 RUN npm install gulp -g
@@ -28,11 +31,10 @@ RUN npm link gulp
 RUN npm cache clean -f
 RUN npm install -g n
 RUN n stable
-
 RUN npm install
 RUN bower install --allow-root
 
 # Set the command to run on startup
-CMD ["gulp", "connect"]
+CMD ["gulp", "dev:runserver"]
 
 EXPOSE 8888
