@@ -11,7 +11,7 @@ if "test" in sys.argv:
 TEST = [arg for arg in sys.argv if 'py.test' in arg]
 if TEST:
     print("Using Test settings")
-    from .test import *
+    from .test import * # noqa
 else:
     try:
         from .dev import *  # noqa
