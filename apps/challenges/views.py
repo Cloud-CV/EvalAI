@@ -168,6 +168,29 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         response_data = {'error': 'ParticipantTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    # Check if user is in allowed list.
+
+    user_email = request.user.email
+
+    if len(challenge.allowed_email_domains) > 0:
+        present = False
+        for domain in challenge.allowed_email_domains:
+            domain = "@" + domain
+            if domain.lower() in user_email.lower():
+                present = True
+                break
+        if not present:
+            response_data = {'error': 'Sorry, you aren\'t allowed to participate in this challenge.'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if user is in blocked list.
+
+    for domain in challenge.blocked_email_domains:
+        domain = "@" + domain
+        if domain.lower() in user_email.lower():
+            response_data = {'error': 'Sorry, you aren\'t allowed to participate in this challenge.'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     # check to disallow the user if he is a Challenge Host for this challenge
 
     challenge_host_team_pk = challenge.creator.pk
