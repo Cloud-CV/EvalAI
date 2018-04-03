@@ -5,12 +5,8 @@ from botocore.exceptions import ClientError
 
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import render
-from django.template.loader import get_template
-from django.template import Context
 
-from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.MIMEImage import MIMEImage
@@ -58,9 +54,6 @@ def notify_users_about_challenge(request):
 
         elif request.method == 'POST':
             users = list(User.objects.exclude(email__exact='').values_list('email', flat=True))
-            Destinations = []
-            for email in users:
-                Destinations.append(email)
 
             # AWS Credentials
             AWS_REGION = os.environ.get('AWS_REGION')
@@ -88,7 +81,7 @@ def notify_users_about_challenge(request):
 
             msg['subject'] = subject
             msg['From'] = sender
-            msg['bcc'] = ','.join(Destinations)
+            msg['To'] = ','.join(users)
 
             msg_body = MIMEMultipart('mixed')
             htmlpart = MIMEText(body_html.encode(charset), 'html', charset)
@@ -100,17 +93,13 @@ def notify_users_about_challenge(request):
 
             client = boto3.client('ses',
                                   region_name=AWS_REGION,
-                                  aws_access_key_id = AWS_ACCESS_KEY_ID,
-                                  aws_secret_access_key = AWS_SECRET_ACCESS_KEY)
+                                  aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                  aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
             try:
-                response = client.send_raw_email(
-                            Source=sender,
-                            Destinations=Destinations,
-                            RawMessage={
-                                'Data':msg.as_string(),
-                                },
-                        )
+                client.send_raw_email(Source=sender,
+                                      Destinations=users,
+                                      RawMessage={'Data': msg.as_string(), }, )
                 return render(request,
                               'notification_email_conformation.html',
                               {'message': 'All the emails are sent successfully!'})
