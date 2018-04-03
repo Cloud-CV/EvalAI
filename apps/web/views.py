@@ -1,4 +1,5 @@
 import boto3
+import os
 
 from botocore.exceptions import ClientError
 
@@ -56,10 +57,18 @@ def notify_users_about_challenge(request):
             return render(request, template_name)
 
         elif request.method == 'POST':
-            emails = User.objects.all().exclude(email__isnull=True, email__exact='').values_list('email', flat=True)
+            users = list(User.objects.exclude(email__exact='').values_list('email', flat=True))
+            Destinations = []
+            for email in users:
+                Destinations.append(email)
 
-            SUBJECT = request.POST.get('subject')
-            BODY_HTML = request.POST.get('body')
+            # AWS Credentials
+            AWS_REGION = os.environ.get('AWS_REGION')
+            AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+            AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+            subject = request.POST.get('subject')
+            body_html = request.POST.get('body')
 
             try:
                 challenge_image = request.FILES['challenge_image']
@@ -68,39 +77,40 @@ def notify_users_about_challenge(request):
 
             if challenge_image:
                 image = MIMEImage(challenge_image.read())
-                image.add_header('Content-ID', '<{}>'.format(challenge_image))
+                image.add_header('Content-Disposition', 'inline', filename=challenge_image._name)
+                image.add_header('Content-ID', '{}'.format(challenge_image))
 
-            AWS_REGION = "us-west-2"
-            CHARSET = "utf-8"
+            charset = "utf-8"
+
             msg = MIMEMultipart('mixed')
 
-            SENDER = settings.EMAIL_HOST_USER
-            RECIPIENT = 'rishabhjain2018@gmail.com'
+            sender = settings.EMAIL_HOST_USER
 
+            msg['subject'] = subject
+            msg['From'] = sender
+            msg['bcc'] = ','.join(Destinations)
 
-            client = boto3.client('ses', region_name=AWS_REGION)
-            msg['subject'] = SUBJECT
-            msg['From'] = SENDER
-            msg['To'] = RECIPIENT
-
-            msg_body = MIMEMultipart('alternative')
-            htmlpart = MIMEText(BODY_HTML.encode(CHARSET), 'html', CHARSET)
+            msg_body = MIMEMultipart('mixed')
+            htmlpart = MIMEText(body_html.encode(charset), 'html', charset)
             msg_body.attach(htmlpart)
+            msg.attach(msg_body)
 
-            print "222222222"
             if challenge_image:
                 msg.attach(image)
 
+            client = boto3.client('ses',
+                                  region_name=AWS_REGION,
+                                  aws_access_key_id = AWS_ACCESS_KEY_ID,
+                                  aws_secret_access_key = AWS_SECRET_ACCESS_KEY)
 
             try:
                 response = client.send_raw_email(
-                    Source=SENDER,
-                    Destinations=[
-                    RECIPIENT],
-                    RawMessage={
-                    'Data':msg.as_string(),
-                    })
-                print "SENT EMAIL"
+                            Source=sender,
+                            Destinations=Destinations,
+                            RawMessage={
+                                'Data':msg.as_string(),
+                                },
+                        )
                 return render(request,
                               'notification_email_conformation.html',
                               {'message': 'All the emails are sent successfully!'})
