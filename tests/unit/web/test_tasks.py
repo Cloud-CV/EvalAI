@@ -26,3 +26,4 @@ class NotifyAdminOnContactMessage(TestCase):
                                                              self.name,
                                                              self.email,
                                                              self.message)
+            self.assertEqual(resp, None)
