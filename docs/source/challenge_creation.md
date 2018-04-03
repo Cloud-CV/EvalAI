@@ -35,9 +35,9 @@ The challenge configuration file on EvalAI consists of following fields:
 
 * **published**: True/False (Boolean field that gives the flexibility to publish the challenge once approved by EvalAI Admin. Default is `False`)
 
-* **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1", "domain2", "domain3"]` Participants with these email domains will only be allowed to participate.)
+* **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will only be allowed to participate.)
 
-* **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1", "domain2", "domain3"]` The participants with these email domains will not be allowed to participate.)
+* **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` The participants with these email domains will not be allowed to participate.)
 
 
 * **leaderboard**:

@@ -175,12 +175,16 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
     if len(challenge.allowed_email_domains) > 0:
         present = False
         for domain in challenge.allowed_email_domains:
-            domain = "@" + domain
             if domain.lower() in user_email.lower():
                 present = True
                 break
         if not present:
-            response_data = {'error': 'Sorry, you aren\'t allowed to participate in this challenge.'}
+            message = 'Sorry, users with {} email domain(s) are only allowed to participate in this challenge.'
+            domains = ""
+            for domain in challenge.allowed_email_domains:
+                domains = "{}{}{}".format(domains, "/", domain)
+            domains = domains[1:]
+            response_data = {'error': message.format(domains)}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is in blocked list.
@@ -188,7 +192,12 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
     for domain in challenge.blocked_email_domains:
         domain = "@" + domain
         if domain.lower() in user_email.lower():
-            response_data = {'error': 'Sorry, you aren\'t allowed to participate in this challenge.'}
+            message = 'Sorry, users with {} email domain(s) are not allowed to participate in this challenge.'
+            domains = ""
+            for domain in challenge.blocked_email_domains:
+                domains = "{}{}{}".format(domains, "/", domain)
+            domains = domains[1:]
+            response_data = {'error': message.format(domains)}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check to disallow the user if he is a Challenge Host for this challenge
