@@ -39,12 +39,12 @@ After all the processing is done, this script will send an output, which is used
 output = {}
 output['result'] = [
     {
-        'challege_phase_split_1': {
+        'dataset_split_1: {
             'score': score,
         }
     },
     {
-        'challege_phase_split_2': {
+        'dataset_split_2': {
             'score': score,
         }
     }
@@ -52,6 +52,8 @@ output['result'] = [
 
 ```
 
-`output` should contain a key named `result`, which is a list containing entries per challenge phase split. Each of these entries will have a key with the corresponding challenge phase codename. For this example, `challenge_phase_split_1` and `challenge_phase_split_2` are codenames for challenge phases. Each challenge phase split object contains various keys (`score` in this example), which are then displayed as columns in the leaderboard. 
+`output` should contain a key named `result`, which is a list containing entries per dataset split that is available for the challenge phase under consideration (In the function definition of `evaluate` shown above, the argument: `phase_codename` will receive the _codename_ for the challenge phase against which the submission was made). Each entry in the list should be an object that has a key with the corresponding dataset split codename(`dataset_split_1` and `dataset_split_2` for this example). Each of these dataset split objects contains various keys (`score` in this example), which are then displayed as columns in the leaderboard. 
+
+> NOTE: `dataset_split_1` and `dataset_split_2` are codenames for dataset splits that should be evaluated with each submission for the challenge phase obtained via *phase_codename*. 
 
 **Note**: If your evaluation script uses some precompiled libraries (<a href="https://github.com/pdollar/coco/">MSCOCO</a> for example), then make sure that the library is compiled against a Linux Distro (Ubuntu 14.04 recommended). Libraries compiled against OSx or Windows might or might not work properly.
