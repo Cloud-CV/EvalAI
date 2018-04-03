@@ -18,13 +18,10 @@ Contents:
    architecture
    architecture_decisions
    directory_structure
-   challenge_creation
    participate
-   submission
    migrations
    contribution
    pull_request
-   windows_installation
    glossary
 
 Indices and tables
