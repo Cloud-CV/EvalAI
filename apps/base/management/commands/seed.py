@@ -8,4 +8,3 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Starting the database seeder. Hang on...'))
         call_command('runscript', 'seed', '--settings', 'settings.dev')
-        self.stdout.write(self.style.SUCCESS('Database successfully seeded.'))
