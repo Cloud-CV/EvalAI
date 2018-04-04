@@ -28,6 +28,44 @@ except NameError:
     xrange = range  # Python 3
 
 
+def check_database():
+    if len(EmailAddress.objects.all()) > 0:
+        print("Are you sure you want to wipe the existing development database and reseed it? (Y/N)")
+        if raw_input().lower() == "y":
+            destroy_database()
+        else:
+            return False
+    else:
+        return True
+
+
+def destroy_database():
+    print("Destroying existing database...")
+    print("Destroying Participant objects...")
+    Participant.objects.all().delete()
+    print("Destroying ParticipantTeam objects...")
+    ParticipantTeam.objects.all().delete()
+    print("Destroying ChallengePhaseSplit objects...")
+    ChallengePhaseSplit.objects.all().delete()
+    print("Destroying DatasetSplit objects...")
+    DatasetSplit.objects.all().delete()
+    print("Destroying ChallengePhase objects...")
+    ChallengePhase.objects.all().delete()
+    print("Destroying Leaderboard objects...")
+    Leaderboard.objects.all().delete()
+    print("Destroying Challenge objects...")
+    Challenge.objects.all().delete()
+    print("Destroying ChallengeHostTeam objects...")
+    ChallengeHostTeam.objects.all().delete()
+    print("Destroying ChallengeHost objects...")
+    ChallengeHost.objects.all().delete()
+    print("Destroying User objects...")
+    User.objects.all().delete()
+    print("Destroying EmailAddress objects...")
+    EmailAddress.objects.all().delete()
+    return True
+
+
 def create_user(is_admin, username=""):
     """
     Creates superuser, participant user, host user and returns it.
@@ -205,6 +243,11 @@ def create_participant_team(user):
 
 
 def run():
+    status = check_database()
+    if status is False:
+        print("Seeding aborted.")
+        return 0
+    print("Seeding...")
     # Create superuser
     create_user(is_admin=True)
     # Create host user
@@ -229,3 +272,4 @@ def run():
                 create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split)
     participant_user = create_user(is_admin=False, username="participant")
     create_participant_team(user=participant_user)
+    print('Database successfully seeded.')
