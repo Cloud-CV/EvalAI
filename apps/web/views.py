@@ -1,9 +1,13 @@
+import logging
+import traceback
+
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.shortcuts import render
 
 from email.MIMEImage import MIMEImage
+from smtplib import SMTPException
 
 from .models import Team
 from .serializers import ContactSerializer, TeamSerializer
@@ -14,6 +18,8 @@ from rest_framework.decorators import (api_view,
                                        throttle_classes,)
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
+
+logger = logging.getLogger(__name__)
 
 
 def home(request, template_name="index.html"):
@@ -47,7 +53,7 @@ def notify_users_about_challenge(request):
             return render(request, template_name)
 
         elif request.method == 'POST':
-            users = list(User.objects.exclude(email__exact='').values_list('email', flat=True))
+            users = User.objects.exclude(email__exact='').values_list('email', flat=True)
 
             subject = request.POST.get('subject')
             body_html = request.POST.get('body')
@@ -69,21 +75,22 @@ def notify_users_about_challenge(request):
 
             if challenge_image:
                 email.mixed_subtype = 'related'
+                email.attach(image)
 
             try:
-                email.attach(image)
                 email.send()
                 return render(request,
                               'notification_email_conformation.html',
                               {'message': 'All the emails are sent successfully!'})
-            except:
+            except SMTPException:
+                logger.exception(traceback.format_exc())
                 return render(request,
                               'notification_email_data.html',
                               {'errors': 1})
         else:
             return render(request, 'error404.html')
     else:
-        return render(request, 'error_superuser.html')
+        return render(request, 'error404.html')
 
 
 @throttle_classes([AnonRateThrottle, ])
