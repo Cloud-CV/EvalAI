@@ -37,6 +37,9 @@
                 <h5><strong><a ui-sref="home" class="dark-link"><img class="auth-logo" src="{% static 'accounts/images/evalai-logo.png' %}"></a></strong></h5>
                 <br>
                 <p class="text-med-gray auth-home"> Notify all users about new challenge </p>
+                {% if error %}
+                    <p class="text-highlight auth-home"> Some Error have occured. Please try again! </p>
+                {% endif %}
             </div>
         </div>
         <div class="row">

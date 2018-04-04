@@ -1,14 +1,8 @@
-import boto3
-import os
-
-from botocore.exceptions import ClientError
-
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.mail import EmailMessage
 from django.shortcuts import render
 
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from email.MIMEImage import MIMEImage
 
 from .models import Team
@@ -55,11 +49,6 @@ def notify_users_about_challenge(request):
         elif request.method == 'POST':
             users = list(User.objects.exclude(email__exact='').values_list('email', flat=True))
 
-            # AWS Credentials
-            AWS_REGION = os.environ.get('AWS_REGION')
-            AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-            AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-
             subject = request.POST.get('subject')
             body_html = request.POST.get('body')
 
@@ -73,42 +62,28 @@ def notify_users_about_challenge(request):
                 image.add_header('Content-Disposition', 'inline', filename=challenge_image._name)
                 image.add_header('Content-ID', '{}'.format(challenge_image))
 
-            charset = "utf-8"
-
-            msg = MIMEMultipart('mixed')
-
             sender = settings.EMAIL_HOST_USER
 
-            msg['subject'] = subject
-            msg['From'] = sender
-            msg['To'] = ','.join(users)
-
-            msg_body = MIMEMultipart('mixed')
-            htmlpart = MIMEText(body_html.encode(charset), 'html', charset)
-            msg_body.attach(htmlpart)
-            msg.attach(msg_body)
+            email = EmailMessage(subject, body_html, sender, users)
+            email.content_subtype = 'html'
 
             if challenge_image:
-                msg.attach(image)
-
-            client = boto3.client('ses',
-                                  region_name=AWS_REGION,
-                                  aws_access_key_id=AWS_ACCESS_KEY_ID,
-                                  aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+                email.mixed_subtype = 'related'
 
             try:
-                client.send_raw_email(Source=sender,
-                                      Destinations=users,
-                                      RawMessage={'Data': msg.as_string(), }, )
+                email.attach(image)
+                email.send()
                 return render(request,
                               'notification_email_conformation.html',
                               {'message': 'All the emails are sent successfully!'})
-            except ClientError as e:
-                print e.response['Error']['Message']
+            except:
+                return render(request,
+                              'notification_email_data.html',
+                              {'errors': 1})
         else:
             return render(request, 'error404.html')
     else:
-        return render(request, 'error404.html')
+        return render(request, 'error_superuser.html')
 
 
 @throttle_classes([AnonRateThrottle, ])

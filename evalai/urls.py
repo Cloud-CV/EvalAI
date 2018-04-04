@@ -71,6 +71,7 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                url(r'^api/web/',
                    include('web.urls',
                            namespace='web')),
+               url(r'^email_reporting/', include('django_ses.urls')),
                ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.

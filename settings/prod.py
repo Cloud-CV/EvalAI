@@ -41,6 +41,8 @@ INSTALLED_APPS += ('storages', 'raven.contrib.django.raven_compat')  # noqa
 AWS_STORAGE_BUCKET_NAME = "evalai"
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+AWS_SES_REGION_NAME = os.environ.get('AWS_SES_REGION_NAME', '')
+AWS_SES_REGION_ENDPOINT = os.environ.get('AWS_SES_REGION_ENDPOINT', '')
 
 # Amazon S3 Configurations
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
@@ -57,7 +59,7 @@ DEFAULT_FILE_STORAGE = 'settings.custom_storages.MediaStorage'
 
 # Setup Email Backend related settings
 DEFAULT_FROM_EMAIL = "noreply@cloudcv.org"
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "django_ses.SESBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
