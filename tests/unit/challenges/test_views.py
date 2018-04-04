@@ -386,15 +386,18 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         # user who create a challenge host team
         self.user2 = User.objects.create(
             username='someuser2',
+            email='user@example2.com',
             password='some_secret_password')
         # user who maps a participant team to a challenge
         self.user3 = User.objects.create(
             username='someuser3',
+            email='user@example3.com',
             password='some_secret_password')
 
         # user invited to the participant team
         self.user4 = User.objects.create(
             username='someuser4',
+            email='user@example4.com',
             password='some_secret_password')
 
         self.challenge_host_team2 = ChallengeHostTeam.objects.create(
@@ -425,6 +428,8 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            allowed_email_domains=[],
+            blocked_email_domains=[]
         )
 
         self.participant_team2 = ParticipantTeam.objects.create(
@@ -520,6 +525,42 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participation_when_participant_is_in_blocked_list(self):
+        self.challenge2.blocked_email_domains.extend(["test", "test1"])
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+
+        response = self.client.post(self.url, {})
+        message = 'Sorry, users with {} email domain(s) are not allowed to participate in this challenge.'
+        expected = {'error': message.format('test/test1')}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participation_when_participant_is_not_in_allowed_list(self):
+        self.challenge2.allowed_email_domains.extend(["example1", "example2"])
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+
+        response = self.client.post(self.url, {})
+        message = 'Sorry, users with {} email domain(s) are only allowed to participate in this challenge.'
+        expected = {'error': message.format("example1/example2")}
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participation_when_participant_is_in_allowed_list(self):
+        self.challenge2.allowed_email_domains.append("test")
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
 class DisableChallengeTest(BaseAPITestClass):
