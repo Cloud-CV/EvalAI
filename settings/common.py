@@ -59,6 +59,7 @@ THIRD_PARTY_APPS = [
     'allauth',
     'allauth.account',
     'corsheaders',
+    'django_ses',
     'import_export',
     'rest_auth',
     'rest_auth.registration',
