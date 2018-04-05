@@ -280,6 +280,7 @@ REST_AUTH_SERIALIZERS = {
 }
 
 # For inviting users to participant and host teams.
+<<<<<<< HEAD
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
@@ -297,6 +298,9 @@ SWAGGER_SETTINGS = {
 REDOC_SETTINGS = {
     'SPEC_URL': ('docs.yaml', {'format': '.yaml'}),
 }
+=======
+ADMIN_EMAIL = "deshrajdry@gmail.com"
+>>>>>>> Add tests and minir fixes
 
 # Celery Broker Url
 CELERY_BROKER_URL = 'amqp://localhost'
