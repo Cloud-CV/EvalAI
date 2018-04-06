@@ -54,7 +54,6 @@ def notify_users_about_challenge(request):
 
         elif request.method == 'POST':
             users = User.objects.exclude(email__exact='').values_list('email', flat=True)
-
             subject = request.POST.get('subject')
             body_html = request.POST.get('body')
 
@@ -68,9 +67,9 @@ def notify_users_about_challenge(request):
                 image.add_header('Content-Disposition', 'inline', filename=challenge_image._name)
                 image.add_header('Content-ID', '{}'.format(challenge_image))
 
-            sender = settings.EMAIL_HOST_USER
+            sender = settings.CLOUDCV_TEAM_EMAIL
 
-            email = EmailMessage(subject, body_html, sender, users)
+            email = EmailMessage(subject, body_html, sender, [settings.CLOUDCV_TEAM_EMAIL], bcc=users)
             email.content_subtype = 'html'
 
             if challenge_image:
