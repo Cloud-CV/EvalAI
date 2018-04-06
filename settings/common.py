@@ -287,4 +287,4 @@ REST_AUTH_SERIALIZERS = {
 
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
-CLOUDCV_TEAM_EMAIL = "team@cloudcv.org"
+CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
