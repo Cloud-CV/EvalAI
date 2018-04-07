@@ -102,7 +102,7 @@ def create_challenge_host_team(user):
     return team
 
 
-def create_challenges(number_of_challenges=3, host_team=None):
+def create_challenges(number_of_challenges, host_team=None):
     """
     Creates past challenge, on-going challenge and upcoming challenge.
     """
@@ -114,13 +114,13 @@ def create_challenges(number_of_challenges=3, host_team=None):
                              host_team
                              )
         elif (i % 3 == 1):
-            create_challenge("{} Challenge" % (fake.first_name()),
+            create_challenge("{} Challenge".format(fake.first_name()),
                              timezone.now() - timedelta(days=500),
                              timezone.now() - timedelta(days=100),
                              host_team
                              )
         elif (i % 3 == 2):
-            create_challenge("{} Challenge" % (fake.first_name()),
+            create_challenge("{} Challenge".format(fake.first_name()),
                              timezone.now() + timedelta(days=100),
                              timezone.now() + timedelta(days=500),
                              host_team
@@ -242,7 +242,8 @@ def create_participant_team(user):
     return team
 
 
-def run():
+def run(*args):
+    NUMBER_OF_CHALLENGES = int(args[0])
     status = check_database()
     if status is False:
         print("Seeding aborted.")
