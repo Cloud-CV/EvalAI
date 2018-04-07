@@ -139,6 +139,17 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```
     gulp dev:runserver
     ```
+    *Optional* If you get an error about missing the sass gem, you may need to also install it globally.
+    ````
+events.js:160
+      throw er; // Unhandled 'error' event
+      ^
+Error: Gem sass is not installed.
+    ```
+    (remedy)
+    ```
+    npm install -g sass
+    ```
 
 10. That's it, Open web browser and hit the url [http://127.0.0.1:8888].
 
