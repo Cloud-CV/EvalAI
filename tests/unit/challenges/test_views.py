@@ -1754,7 +1754,7 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
         expected = {
-            'error': 'A server error occured while processing zip file. Please try uploading it again!'
+            'error': 'A server error occured while processing zip file. Please try again!'
             }
         response = self.client.post(self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
         self.assertEqual(response.data, expected)
