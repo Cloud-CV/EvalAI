@@ -21,7 +21,8 @@ from rest_framework.decorators import (api_view,
                                        permission_classes,
                                        throttle_classes,)
 from rest_framework.response import Response
-from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
@@ -72,7 +73,8 @@ except NameError:
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_list(request, challenge_host_team_pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(
+            pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -80,7 +82,8 @@ def challenge_list(request, challenge_host_team_pk):
     if request.method == 'GET':
         challenge = Challenge.objects.filter(creator=challenge_host_team)
         paginator, result_page = paginated_queryset(challenge, request)
-        serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
+        serializer = ChallengeSerializer(
+            result_page, many=True, context={'request': request})
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
 
@@ -108,7 +111,8 @@ def challenge_list(request, challenge_host_team_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, challenge_pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+        challenge_host_team = ChallengeHostTeam.objects.get(
+            pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {'error': 'ChallengeHostTeam does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -120,7 +124,8 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        serializer = ChallengeSerializer(challenge, context={'request': request})
+        serializer = ChallengeSerializer(
+            challenge, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -274,7 +279,8 @@ def get_all_challenges(request, challenge_time):
 
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
+    serializer = ChallengeSerializer(
+        result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
@@ -290,7 +296,8 @@ def get_challenge_by_pk(request, pk):
         if (challenge.is_disabled):
             response_data = {'error': 'Sorry, the challenge was removed!'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-        serializer = ChallengeSerializer(challenge, context={'request': request})
+        serializer = ChallengeSerializer(
+            challenge, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     except:
@@ -332,7 +339,8 @@ def get_challenges_based_on_teams(request):
 
     challenge = Challenge.objects.filter(**q_params)
     paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
+    serializer = ChallengeSerializer(
+        result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
@@ -349,7 +357,8 @@ def challenge_phase_list(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge_phase = ChallengePhase.objects.filter(challenge=challenge, is_public=True)
+        challenge_phase = ChallengePhase.objects.filter(
+            challenge=challenge, is_public=True)
         paginator, result_page = paginated_queryset(challenge_phase, request)
         serializer = ChallengePhaseSerializer(result_page, many=True)
         response_data = serializer.data
@@ -393,7 +402,8 @@ def challenge_phase_detail(request, challenge_pk, pk):
         if request.method == 'PATCH':
             serializer = ChallengePhaseCreateSerializer(challenge_phase,
                                                         data=request.data,
-                                                        context={'challenge': challenge},
+                                                        context={
+                                                            'challenge': challenge},
                                                         partial=True)
         else:
             serializer = ChallengePhaseCreateSerializer(challenge_phase,
@@ -425,8 +435,10 @@ def challenge_phase_split_list(request, challenge_pk):
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    challenge_phase_split = ChallengePhaseSplit.objects.filter(challenge_phase__challenge=challenge)
-    serializer = ChallengePhaseSplitSerializer(challenge_phase_split, many=True)
+    challenge_phase_split = ChallengePhaseSplit.objects.filter(
+        challenge_phase__challenge=challenge)
+    serializer = ChallengePhaseSplitSerializer(
+        challenge_phase_split, many=True)
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -441,7 +453,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
-    serializer = ChallengeConfigSerializer(data=request.data, context={'request': request})
+    serializer = ChallengeConfigSerializer(
+        data=request.data, context={'request': request})
     if serializer.is_valid():
         uploaded_zip_file = serializer.save()
         uploaded_zip_file_path = serializer.data['zip_configuration']
@@ -453,22 +466,31 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     BASE_LOCATION = tempfile.mkdtemp()
     try:
         response = requests.get(uploaded_zip_file_path, stream=True)
-        unique_folder_name = ''.join([random.choice(string.ascii_letters + string.digits) for i in xrange(10)])
-        CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(BASE_LOCATION, '{}.zip'.format(unique_folder_name))
+        unique_folder_name = ''.join(
+            [random.choice(
+                string.ascii_letters + string.digits) for i in xrange(10)])
+        CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(
+            BASE_LOCATION, '{}.zip'.format(unique_folder_name))
         try:
             if response and response.status_code == 200:
                 with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, 'w') as zip_file:
                     zip_file.write(response.content)
         except IOError:
+            message = ('Unable to process the uploaded zip file. '
+                       'Please try again!')
             response_data = {
-                'error': 'Unable to process the uploaded zip file. Please upload it again!'
-                }
+                'error': message
+            }
+            logger.exception(message)
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     except requests.exceptions.RequestException:
+        message = ('A server error occured while processing zip file. '
+                   'Please try again!')
         response_data = {
-            'error': 'A server error occured while processing zip file. Please try uploading it again!'
-            }
+            'error': message
+        }
+        logger.exception(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Extract zip file
@@ -477,9 +499,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         zip_ref.extractall(join(BASE_LOCATION, unique_folder_name))
         zip_ref.close()
     except zipfile.BadZipfile:
+        message = ('The zip file contents cannot be extracted. '
+                   'Please check the format!')
         response_data = {
-            'error': 'The zip file contents cannot be extracted. Please check the format!'
-            }
+            'error': message
+        }
+        logger.exception(message)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Search for yaml file
@@ -491,15 +516,19 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             yaml_file_count += 1
 
     if not yaml_file_count:
+        message = 'There is no YAML file in zip file you uploaded!'
         response_data = {
-            'error': 'There is no YAML file in zip configuration you provided!'
-            }
+            'error': message
+        }
+        logger.info(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if yaml_file_count > 1:
+        message = 'There are more than one YAML files in zip folder!'
         response_data = {
-            'error': 'There are more than one YAML files in zip folder!'
-            }
+            'error': message
+        }
+        logger.info(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -508,37 +537,53 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     except yaml.YAMLError as exc:
         response_data = {
             'error': exc
-            }
+        }
+        logger.exception(exc)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script path in yaml file.
-    evaluation_script = yaml_file_data['evaluation_script']
-    if evaluation_script:
+    try:
+        evaluation_script = yaml_file_data['evaluation_script']
         evaluation_script_path = join(BASE_LOCATION,
                                       unique_folder_name,
                                       extracted_folder_name,
                                       evaluation_script)
-    else:
+    except KeyError:
+        message = ('There is no key for evaluation script in YAML file. '
+                   'Please add it and then try again!')
         response_data = {
-            'error': ('There is no key for evaluation script in yaml file.'
-                      'Please add a key and then try uploading it again!')
-            }
+            'error': message
+        }
+        logger.exception(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script file in extracted zip folder.
     if isfile(evaluation_script_path):
         with open(evaluation_script_path, 'rb') as challenge_evaluation_script:
-            challenge_evaluation_script_file = ContentFile(challenge_evaluation_script.read(), evaluation_script_path)
+            challenge_evaluation_script_file = ContentFile(
+                challenge_evaluation_script.read(), evaluation_script_path)
     else:
+        message = ('No evaluation script is present in the zip file. '
+                   'Please add it and then try again!')
         response_data = {
-            'error': ('No evaluation script is present in the zip file.'
-                      'Please try uploading again the zip file after adding evaluation script!')
-            }
+            'error': message
+        }
+        logger.exception(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for test annotation file path in yaml file.
-    yaml_file_data_of_challenge_phases = yaml_file_data['challenge_phases']
-    for data in yaml_file_data_of_challenge_phases:
+    try:
+        challenge_phases_data = yaml_file_data['challenge_phases']
+    except KeyError:
+        message = ('No challenge phase key found. '
+                   'Please add challenge phases in YAML file and try again!')
+        response_data = {
+            'error': message
+        }
+        logger.exception(message)
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    for data in challenge_phases_data:
         test_annotation_file = data['test_annotation_file']
         if test_annotation_file:
             test_annotation_file_path = join(BASE_LOCATION,
@@ -546,30 +591,37 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                              extracted_folder_name,
                                              test_annotation_file)
         else:
+            message = ('There is no key for test annotation file for'
+                       'challenge phase {} in yaml file. Please add it'
+                       ' and then try again!'.format(data['name']))
             response_data = {
-                'error': ('There is no key for test annotation file for'
-                          'challenge phase {} in yaml file.'
-                          'Please add a key and then try uploading it again!'.format(data['name']))
-                }
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+                'error': message
+            }
+            logger.exception(message)
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         if not isfile(test_annotation_file_path):
+            message = ('No test annotation file found in zip file'
+                       'for challenge phase \'{}\'. Please add it and '
+                       ' then try again!'.format(data['name']))
             response_data = {
-                'error': ('No test annotation file is present in the zip file'
-                          'for challenge phase \'{}\'. Please try uploading '
-                          'again after adding test annotation file!'.format(data['name']))
+                'error': message
             }
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+            logger.exception(message)
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for challenge image in yaml file.
-    image = yaml_file_data['image']
-    if image.endswith('.jpg') or image.endswith('.jpeg') or image.endswith('.png'):
+    image = yaml_file_data.get('image')
+    if image and (image.endswith('.jpg') or image.endswith('.jpeg') or image.endswith('.png')):
         challenge_image_path = join(BASE_LOCATION,
                                     unique_folder_name,
                                     extracted_folder_name,
                                     image)
         if isfile(challenge_image_path):
-            challenge_image_file = ContentFile(get_file_content(challenge_image_path, 'rb'), image)
+            challenge_image_file = ContentFile(
+                get_file_content(challenge_image_path, 'rb'), image)
         else:
             challenge_image_file = None
     else:
@@ -582,77 +634,134 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                                                extracted_folder_name,
                                                yaml_file_data['description'])
         if challenge_description_file_path.endswith('.html') and isfile(challenge_description_file_path):
-            yaml_file_data['description'] = get_file_content(challenge_description_file_path, 'rb').decode('utf-8')
+            yaml_file_data['description'] = get_file_content(
+                challenge_description_file_path, 'rb').decode('utf-8')
         else:
             yaml_file_data['description'] = None
-    except:
-        response_data = {'error': ('There is no key for description. '
-                                   'Please add a key and try uploading it again!')}
+    except KeyError:
+        message = ('There is no key for description. '
+                   'Please add it and then try again!')
+        response_data = {
+            'error': message
+        }
+        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for evaluation details file
     try:
-        challenge_evaluation_details_file_path = join(BASE_LOCATION,
-                                                      unique_folder_name,
-                                                      extracted_folder_name,
-                                                      yaml_file_data['evaluation_details'])
+        challenge_evaluation_details_file_path = join(
+            BASE_LOCATION,
+            unique_folder_name,
+            extracted_folder_name,
+            yaml_file_data['evaluation_details']
+        )
 
         if (challenge_evaluation_details_file_path.endswith('.html') and
                 isfile(challenge_evaluation_details_file_path)):
-            yaml_file_data['evaluation_details'] = get_file_content(challenge_evaluation_details_file_path,
-                                                                    'rb').decode('utf-8')
+            yaml_file_data['evaluation_details'] = get_file_content(
+                challenge_evaluation_details_file_path, 'rb').decode('utf-8')
         else:
             yaml_file_data['evaluation_details'] = None
-    except:
-        response_data = {'error': ('There is no key for evalutaion details. '
-                                   'Please add a key and try uploading it again!')}
+    except KeyError:
+        message = ('There is no key for evalutaion details. '
+                   'Please add it and then try again!')
+        response_data = {
+            'error': message
+        }
+        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for terms and conditions file
     try:
-        challenge_terms_and_cond_file_path = join(BASE_LOCATION,
-                                                  unique_folder_name,
-                                                  extracted_folder_name,
-                                                  yaml_file_data['terms_and_conditions'])
+        challenge_terms_and_cond_file_path = join(
+            BASE_LOCATION,
+            unique_folder_name,
+            extracted_folder_name,
+            yaml_file_data['terms_and_conditions']
+        )
         if challenge_terms_and_cond_file_path.endswith('.html') and isfile(challenge_terms_and_cond_file_path):
-            yaml_file_data['terms_and_conditions'] = get_file_content(challenge_terms_and_cond_file_path,
-                                                                      'rb').decode('utf-8')
+            yaml_file_data['terms_and_conditions'] = get_file_content(
+                challenge_terms_and_cond_file_path, 'rb').decode('utf-8')
         else:
             yaml_file_data['terms_and_conditions'] = None
-    except:
-        response_data = {'error': ('There is no key for terms and conditions. '
-                                   'Please add a key and try uploading it again!')}
+    except KeyError:
+        message = ('There is no key for terms and conditions. '
+                   'Please add it and then try again!')
+        response_data = {
+            'error': message
+        }
+        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for submission guidelines file
     try:
-        challenge_submission_guidelines_file_path = join(BASE_LOCATION,
-                                                         unique_folder_name,
-                                                         extracted_folder_name,
-                                                         yaml_file_data['submission_guidelines'])
-        if (challenge_submission_guidelines_file_path.endswith('.html')
-                and isfile(challenge_submission_guidelines_file_path)):
-            yaml_file_data['submission_guidelines'] = get_file_content(challenge_submission_guidelines_file_path,
-                                                                       'rb').decode('utf-8')
+        submission_guidelines_file_path = join(
+            BASE_LOCATION,
+            unique_folder_name,
+            extracted_folder_name,
+            yaml_file_data['submission_guidelines']
+        )
+        if (submission_guidelines_file_path.endswith('.html') and
+                isfile(submission_guidelines_file_path)):
+            yaml_file_data['submission_guidelines'] = get_file_content(
+                submission_guidelines_file_path, 'rb').decode('utf-8')
         else:
             yaml_file_data['submission_guidelines'] = None
-    except:
-        response_data = {'error': ('There is no key for submission guidelines. '
-                                   'Please add a key and try uploading it again!')}
+    except KeyError:
+        message = ('There is no key for submission guidelines. '
+                   'Please add it and then try again!')
+        response_data = {
+            'error': message
+        }
+        logger.exception(message)
+        return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check for leaderboard schema in YAML file
+    leaderboard_schema = yaml_file_data.get('leaderboard')
+    if leaderboard_schema:
+        if 'default_order_by' not in leaderboard_schema:
+            message = ('There is no \'default_order_by\' key in leaderboard '
+                       'schema. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
+            logger.exception(message)
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+        if 'labels' not in leaderboard_schema:
+            message = ('There is no \'labels\' key in leaderboard '
+                       'schema. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
+            logger.exception(message)
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        message = ('There is no key \'leaderboard\' '
+                   'in the YAML file. Please add it and then try again!')
+        response_data = {
+            'error': message
+        }
+        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
         with transaction.atomic():
-            serializer = ZipChallengeSerializer(data=yaml_file_data,
-                                                context={'request': request,
-                                                         'challenge_host_team': challenge_host_team,
-                                                         'image': challenge_image_file,
-                                                         'evaluation_script': challenge_evaluation_script_file})
+            serializer = ZipChallengeSerializer(
+                data=yaml_file_data,
+                context={
+                    'request': request,
+                    'challenge_host_team': challenge_host_team,
+                    'image': challenge_image_file,
+                    'evaluation_script': challenge_evaluation_script_file
+                }
+            )
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
             else:
                 response_data = serializer.errors
+                # transaction.set_rollback(True)
+                # return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             # Create Leaderboard
             yaml_file_data_of_leaderboard = yaml_file_data['leaderboard']
@@ -666,37 +775,47 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     response_data = serializer.errors
 
             # Create Challenge Phase
-            yaml_file_data_of_challenge_phases = yaml_file_data['challenge_phases']
+            challenge_phases_data = yaml_file_data['challenge_phases']
             challenge_phase_ids = {}
-            for data in yaml_file_data_of_challenge_phases:
+            for data in challenge_phases_data:
                 # Check for challenge phase description file
-                challenge_phase_description_file_path = join(BASE_LOCATION,
-                                                             unique_folder_name,
-                                                             extracted_folder_name,
-                                                             data['description'])
-                if (challenge_phase_description_file_path.endswith('.html')
-                        and isfile(challenge_phase_description_file_path)):
-                    data['description'] = get_file_content(challenge_phase_description_file_path, 'rb').decode('utf-8')
+                phase_description_file_path = join(
+                    BASE_LOCATION,
+                    unique_folder_name,
+                    extracted_folder_name,
+                    data['description']
+                )
+                if (phase_description_file_path.endswith('.html') and isfile(phase_description_file_path)):
+                    data['description'] = get_file_content(
+                        phase_description_file_path, 'rb').decode('utf-8')
                 else:
                     data['description'] = None
 
                 test_annotation_file = data['test_annotation_file']
                 if test_annotation_file:
-                    test_annotation_file_path = join(BASE_LOCATION,
-                                                     unique_folder_name,
-                                                     extracted_folder_name,
-                                                     test_annotation_file
-                                                     )
+                    test_annotation_file_path = join(
+                        BASE_LOCATION,
+                        unique_folder_name,
+                        extracted_folder_name,
+                        test_annotation_file
+                    )
                 if isfile(test_annotation_file_path):
                     with open(test_annotation_file_path, 'rb') as test_annotation_file:
-                        challenge_test_annotation_file = ContentFile(test_annotation_file.read(),
-                                                                     test_annotation_file_path)
-                serializer = ChallengePhaseCreateSerializer(data=data,
-                                                            context={'challenge': challenge,
-                                                                     'test_annotation': challenge_test_annotation_file})
+                        challenge_test_annotation_file = ContentFile(
+                            test_annotation_file.read(),
+                            test_annotation_file_path
+                        )
+                serializer = ChallengePhaseCreateSerializer(
+                    data=data,
+                    context={
+                        'challenge': challenge,
+                        'test_annotation': challenge_test_annotation_file
+                    }
+                )
                 if serializer.is_valid():
                     serializer.save()
-                    challenge_phase_ids[str(data['id'])] = serializer.instance.pk
+                    challenge_phase_ids[str(data['id'])
+                                        ] = serializer.instance.pk
                 else:
                     response_data = serializer.errors
 
@@ -713,11 +832,23 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     response_data = serializer.errors
 
             # Create Challenge Phase Splits
-            yaml_file_data_of_challenge_phase_splits = yaml_file_data['challenge_phase_splits']
-            for data in yaml_file_data_of_challenge_phase_splits:
-                challenge_phase = challenge_phase_ids[str(data['challenge_phase_id'])]
+            try:
+                challenge_phase_splits_data = yaml_file_data['challenge_phase_splits']
+            except KeyError:
+                message = ('There is no key for challenge phase splits. '
+                           'Please add it and then try again!')
+                response_data = {
+                    'error': message
+                }
+                logger.exception(message)
+                return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+
+            for data in challenge_phase_splits_data:
+                challenge_phase = challenge_phase_ids[str(
+                    data['challenge_phase_id'])]
                 leaderboard = leaderboard_ids[str(data['leaderboard_id'])]
-                dataset_split = dataset_split_ids[str(data['dataset_split_id'])]
+                dataset_split = dataset_split_ids[str(
+                    data['dataset_split_id'])]
                 visibility = data['visibility']
 
                 data = {
@@ -733,12 +864,14 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 else:
                     response_data = serializer.errors
 
-        zip_config = ChallengeConfiguration.objects.get(pk=uploaded_zip_file.pk)
+        zip_config = ChallengeConfiguration.objects.get(
+            pk=uploaded_zip_file.pk)
         if zip_config:
             zip_config.challenge = challenge
             zip_config.save()
-            response_data = {'success': 'Challenge {} has been created successfully and'
-                                        ' sent for review to EvalAI Admin.'.format(challenge.title)}
+            response_data = {
+                'success': 'Challenge {} has been created successfully and'
+                ' sent for review to EvalAI Admin.'.format(challenge.title)}
             return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:
@@ -747,15 +880,16 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 response_data = {'error': response_data.values()[0]}
                 return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         except:
-            response_data = {'error': 'Error in creating challenge. Please check the yaml configuration!'}
+            response_data = {
+                'error': 'Error in creating challenge. Please check the yaml configuration!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         finally:
             try:
                 shutil.rmtree(BASE_LOCATION)
                 logger.info('Zip folder is removed')
             except:
-                logger.info('Zip folder for challenge {} is not removed from location'.format(challenge.pk,
-                                                                                              BASE_LOCATION))
+                logger.exception('Zip folder for challenge {} is not removed from location'.format(challenge.pk,
+                                                                                                   BASE_LOCATION))
     try:
         shutil.rmtree(BASE_LOCATION)
         logger.info('Zip folder is removed')
@@ -777,9 +911,11 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 
     # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
     try:
-        challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk, challenge=challenge)
+        challenge_phase = ChallengePhase.objects.get(
+            pk=challenge_phase_pk, challenge=challenge)
     except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+        response_data = {
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # To check for the user as a host of the challenge from the request and challenge_pk.
@@ -787,10 +923,12 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
-        submissions = Submission.objects.filter(challenge_phase=challenge_phase).order_by('-submitted_at')
+        submissions = Submission.objects.filter(
+            challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submissions, request)
         try:
-            serializer = ChallengeSubmissionManagementSerializer(result_page, many=True, context={'request': request})
+            serializer = ChallengeSubmissionManagementSerializer(
+                result_page, many=True, context={'request': request})
             response_data = serializer.data
             return paginator.get_paginated_response(response_data)
         except:
@@ -801,14 +939,15 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 
         # get participant team object for the user for a particular challenge.
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-                request.user, challenge_pk)
+            request.user, challenge_pk)
 
         # Filter submissions on the basis of challenge phase for a participant.
         submissions = Submission.objects.filter(participant_team=participant_team_pk,
                                                 challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submissions, request)
         try:
-            serializer = SubmissionSerializer(result_page, many=True, context={'request': request})
+            serializer = SubmissionSerializer(
+                result_page, many=True, context={'request': request})
             response_data = serializer.data
             return paginator.get_paginated_response(response_data)
         except:
@@ -816,7 +955,8 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 
     # when user is neither host not participant of the challenge.
     else:
-        response_data = {'error': 'You are neither host nor participant of the challenge!'}
+        response_data = {
+            'error': 'You are neither host nor participant of the challenge!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -831,15 +971,19 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
 
     # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
     try:
-        challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk, challenge=challenge)
+        challenge_phase = ChallengePhase.objects.get(
+            pk=challenge_phase_pk, challenge=challenge)
     except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+        response_data = {
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if file_type == 'csv':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
-            submissions = Submission.objects.filter(challenge_phase__challenge=challenge).order_by('-submitted_at')
-            submissions = ChallengeSubmissionManagementSerializer(submissions, many=True, context={'request': request})
+            submissions = Submission.objects.filter(
+                challenge_phase__challenge=challenge).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(
+                submissions, many=True, context={'request': request})
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
             writer = csv.writer(response)
@@ -862,8 +1006,10 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             for submission in submissions.data:
                 writer.writerow([submission['id'],
                                  submission['participant_team'],
-                                 ",".join(username['username'] for username in submission['participant_team_members']),
-                                 ",".join(email['email'] for email in submission['participant_team_members']),
+                                 ",".join(
+                                     username['username'] for username in submission['participant_team_members']),
+                                 ",".join(
+                                     email['email'] for email in submission['participant_team_members']),
                                  submission['challenge_phase'],
                                  submission['status'],
                                  submission['created_by'],
@@ -887,7 +1033,8 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             # Filter submissions on the basis of challenge phase for a participant.
             submissions = Submission.objects.filter(participant_team=participant_team_pk,
                                                     challenge_phase=challenge_phase).order_by('-submitted_at')
-            submissions = ChallengeSubmissionManagementSerializer(submissions, many=True, context={'request': request})
+            submissions = ChallengeSubmissionManagementSerializer(
+                submissions, many=True, context={'request': request})
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
             writer = csv.writer(response)
@@ -914,7 +1061,8 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                  ])
             return response
         else:
-            response_data = {'error': 'You are neither host nor participant of the challenge!'}
+            response_data = {
+                'error': 'You are neither host nor participant of the challenge!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     else:
         response_data = {'error': 'The file type requested is not valid!'}
@@ -929,7 +1077,8 @@ def create_leaderboard(request):
     """
     Creates a leaderboard
     """
-    serializer = LeaderboardSerializer(data=request.data, many=True, allow_empty=False)
+    serializer = LeaderboardSerializer(
+        data=request.data, many=True, allow_empty=False)
     if serializer.is_valid():
         serializer.save()
         response_data = serializer.data
@@ -972,7 +1121,8 @@ def create_dataset_split(request):
     """
     Creates a dataset split
     """
-    serializer = DatasetSplitSerializer(data=request.data, many=True, allow_empty=False)
+    serializer = DatasetSplitSerializer(
+        data=request.data, many=True, allow_empty=False)
     if serializer.is_valid():
         serializer.save()
         response_data = serializer.data
@@ -1017,7 +1167,8 @@ def create_challenge_phase_split(request):
     """
     Create Challenge Phase Split
     """
-    serializer = ZipChallengePhaseSplitSerializer(data=request.data, many=True, allow_empty=False)
+    serializer = ZipChallengePhaseSplitSerializer(
+        data=request.data, many=True, allow_empty=False)
     if serializer.is_valid():
         serializer.save()
         response_data = serializer.data
@@ -1035,7 +1186,8 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     """
     Returns or Updates challenge phase split
     """
-    challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+    challenge_phase_split = get_challenge_phase_split_model(
+        challenge_phase_split_pk)
 
     if request.method == 'PATCH':
         serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split,
@@ -1091,7 +1243,8 @@ def star_challenge(request, challenge_pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         except:
-            starred_challenge = StarChallenge.objects.filter(challenge=challenge)
+            starred_challenge = StarChallenge.objects.filter(
+                challenge=challenge)
             if not starred_challenge:
                 response_data = {'is_starred': False,
                                  'count': 0}
