@@ -718,8 +718,20 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
     # Check for leaderboard schema in YAML file
     leaderboard_schema = yaml_file_data.get('leaderboard')
+    '''
+    Format of leaderboard data is:
+    [
+      {
+        'id': 1,
+        'schema': {
+          'default_order_by': 'bleu',
+          'labels': ['bleu']
+        }
+      }
+    ]
+    '''
     if leaderboard_schema:
-        if 'default_order_by' not in leaderboard_schema:
+        if 'default_order_by' not in leaderboard_schema[0].get('schema'):
             message = ('There is no \'default_order_by\' key in leaderboard '
                        'schema. Please add it and then try again!')
             response_data = {
@@ -727,7 +739,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             }
             logger.exception(message)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-        if 'labels' not in leaderboard_schema:
+        if 'labels' not in leaderboard_schema[0].get('schema'):
             message = ('There is no \'labels\' key in leaderboard '
                        'schema. Please add it and then try again!')
             response_data = {
