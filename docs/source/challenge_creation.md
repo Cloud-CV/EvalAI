@@ -80,6 +80,10 @@ The challenge configuration file on EvalAI consists of following fields:
 
     * **is_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either hide or show the challenge phase to participants. Default is `False`)
 
+    * **leaderboard_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either make the leaderboard public or private. Default is `False`)
+
+    * **is_submission_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either make the submissions by default public/private. Note that this will only work when the `leaderboard_public` property is set to true. Default is `False`)
+
     * **start_date**: Start DateTime of the challenge phase (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10)
 
     * **end_date**: End DateTime of the challenge phase (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10)
