@@ -15,8 +15,6 @@ var gulp = require('gulp'),
     imagemin = require('gulp-imagemin'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
-    notify = require('gulp-notify'),
-    cache = require('gulp-cache'),
     livereload = require('gulp-livereload'),
     del = require('del'),
     connect = require('gulp-connect'),
@@ -149,16 +147,14 @@ gulp.task('js', function() {
         .pipe(gulp_if(flags.production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
-    // return merge(app, configs, controllers, directives, filters, services)
+    return merge(app, configs, controllers, directives, filters, services)
 });
 
 // minify and compress html files
 gulp.task('html', function() {
-
-    var webViews = gulp.src('frontend/src/views/web/**/*.html')
+    return gulp.src('frontend/src/views/web/**/*.html')
         .pipe(gulp_if(flags.production, htmlmin({ collapseWhitespace: true })))
         .pipe(gulp.dest('frontend/dist/views/web'));
-    // return merge(webViews, webPartials, challengePartials, webErrors);
 });
 
 
