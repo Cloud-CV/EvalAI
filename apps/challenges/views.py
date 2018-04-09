@@ -787,7 +787,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     response_data = serializer.errors
 
             # Create Challenge Phase
-            challenge_phases_data = yaml_file_data['challenge_phases']
             challenge_phase_ids = {}
             for data in challenge_phases_data:
                 # Check for challenge phase description file
@@ -817,6 +816,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                             test_annotation_file.read(),
                             test_annotation_file_path
                         )
+
                 serializer = ChallengePhaseCreateSerializer(
                     data=data,
                     context={
