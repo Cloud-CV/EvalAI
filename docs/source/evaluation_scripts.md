@@ -67,7 +67,7 @@ After all the processing is done, this script will send an output, which is used
 output = {}
 output['result'] = [
     {
-        'dataset_split_1: {
+        'dataset_split_1': {
             'score': score,
         }
     },
