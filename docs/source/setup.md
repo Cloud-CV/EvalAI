@@ -15,7 +15,7 @@ We recommend setting up EvalAI using Docker since there are only two steps invol
 2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
 
     ```
-    docker-compose -f docker-compose.dev.yml up -d --build
+    docker-compose up --build
     ```
 
 ## Ubuntu Installation Instructions
