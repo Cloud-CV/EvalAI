@@ -96,7 +96,7 @@ psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 python manage.py migrate
 ```
 
-* For setting up frontend, run
+* For setting up frontend, please make sure that node(`>=7.x.x`), npm(`>=5.x.x`) and bower(`>=1.8.x`) are installed globally on your machine. Install npm and bower dependencies by running
 
 ```shell
 npm install
@@ -208,12 +208,11 @@ psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 python manage.py migrate
 ```
 
-* For setting up frontend, run
+* For setting up frontend, please make sure that node(`>=7.x.x`), npm(`>=5.x.x`) and bower(`>=1.8.x`) are installed globally on your machine. Install npm and bower dependencies by running
 
 ```shell
-curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
-sudo yum install nodejs
-npm install -g bower
+npm install
+bower install
 ```
 
 ### Step 4: Start the development environment
@@ -325,7 +324,7 @@ Follow this guide to setup your development machine.
     ```
 
 
-* Open a new cmd window with node(6.9.2) and ruby(gem) installed on your machine and type
+* Open a new cmd window with node>=(7.0.0) installed on your machine and type
 
     ```
     npm install

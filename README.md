@@ -117,19 +117,12 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```
 
 
-8. Open a new terminal window with node(6.9.2) and ruby(gem) installed on your machine and type
-
+8. Please make sure that node(`>=7.x.x`), npm(`>=5.x.x`) and bower(`>=1.8.x`) are installed globally on your machine.
+    Install npm and bower dependencies by running
     ```
     npm install
-    ``` 
-    Install bower(1.8.0) globally by running:
-    ```
-    npm install -g bower
-    ```
-    Now install the bower dependencies by running:
-    ```
     bower install
-    ```
+    ``` 
     If you running npm install behind a proxy server, use
     ```
     npm config set proxy http://proxy:port
