@@ -61,7 +61,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
 3. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
 
     ```
-    docker-compose -f docker-compose.dev.yml up -d --build
+    docker-compose up --build
     ```
 
 ### Using Virtual Environment
