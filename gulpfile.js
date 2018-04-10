@@ -165,9 +165,18 @@ gulp.task('html', function() {
 
 // for image compression
 gulp.task('images', function() {
-    return gulp.src('frontend/src/images/*')
-        .pipe(gulp_if(flags.production, imagemin()))
-        .pipe(debug())
+    return gulp.src('frontend/src/images/**/*')
+        .pipe(imagemin([
+            imagemin.gifsicle({ interlaced: true }),
+            imagemin.jpegtran({ progressive: true }),
+            imagemin.optipng({ optimizationLevel: 5 }),
+            imagemin.svgo({
+                plugins: [
+                    { removeViewBox: true },
+                    { cleanupIDs: false }
+                ]
+            })
+        ]))
         .pipe(gulp.dest('frontend/dist/images'));
 });
 
