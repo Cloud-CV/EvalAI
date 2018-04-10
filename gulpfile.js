@@ -5,9 +5,11 @@ var gulp = require('gulp'),
     runSequence = require('run-sequence'),
     debug = require('gulp-debug'),
     merge = require('merge-stream'),
-    sass = require('gulp-ruby-sass'),
-    autoprefixer = require('gulp-autoprefixer'),
-    cssnano = require('gulp-cssnano'),
+    sass = require('gulp-sass'),
+    postcss = require('gulp-postcss'),
+    sourcemaps = require('gulp-sourcemaps'),
+    autoprefixer = require('autoprefixer'),
+    cleanCSS = require('gulp-clean-css'),
     eslint = require('gulp-eslint'),
     angularPlugin = require('eslint-plugin-angular'),
     gulp_if = require('gulp-if'),
@@ -94,11 +96,14 @@ gulp.task('vendorcss', function() {
 
 // minify and compress CSS files
 gulp.task('css', function() {
-    return sass('frontend/src/css/main.scss', { style: 'expanded' })
+    return gulp.src('frontend/src/css/main.scss')
         .pipe(prettyError())
-        .pipe(autoprefixer('last 2 version'))
+        .pipe(sass().on('error', sass.logError))
+        .pipe(sourcemaps.init())
+        .pipe(postcss([autoprefixer()]))
+        .pipe(gulp_if(flags.production, cleanCSS()))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, cssnano()))
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest('frontend/dist/css'));
 })
 
@@ -131,7 +136,7 @@ gulp.task('js', function() {
         .pipe(concat('directives.js'))
         .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
         .pipe(gulp_if(flags.production, uglify({ mangle: false })))
-        .pipe(gulp.dest('frontend/dist/js'));
+        .pipe(gulp.dest('frontend/dist/js'))
 
     var filters = gulp.src('frontend/src/js/filters/*.js')
         .pipe(prettyError())
@@ -160,8 +165,9 @@ gulp.task('html', function() {
 
 // for image compression
 gulp.task('images', function() {
-    return gulp.src('frontend/src/images/**/*')
-        .pipe(gulp_if(flags.production, imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
+    return gulp.src('frontend/src/images/*')
+        .pipe(gulp_if(flags.production, imagemin()))
+        .pipe(debug())
         .pipe(gulp.dest('frontend/dist/images'));
 });
 
@@ -246,7 +252,7 @@ gulp.task('lint', [], function() {
             var countWarning = results.warningCount;
             if (countError === 0) {
                 gulp.start('connect');
-                if(countWarning > 0) {
+                if (countWarning > 0) {
                     console.warn("Please remove lint warnings in production env.");
                 }
             } else {
@@ -346,20 +352,20 @@ gulp.task('watch', function() {
 /**
  * Run test once and exit
  */
-gulp.task('test', function (done) {
-  new Server({
-    configFile: __dirname + '/karma.conf.js',
-    singleRun: true
-  }, done).start();
+gulp.task('test', function(done) {
+    new Server({
+        configFile: __dirname + '/karma.conf.js',
+        singleRun: true
+    }, done).start();
 });
 
 /**
  * Watch for file changes and re-run tests on each change
  */
-gulp.task('test:watch', function (done) {
-  new Server({
-    configFile: __dirname + '/karma.conf.js'
-  }, done).start();
+gulp.task('test:watch', function(done) {
+    new Server({
+        configFile: __dirname + '/karma.conf.js'
+    }, done).start();
 });
 
 
