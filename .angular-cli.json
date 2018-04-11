@@ -19,9 +19,8 @@
       "testTsconfig": "tsconfig.spec.json",
       "prefix": "app",
       "styles": [
-        "styles/base.scss",
-        "styles/mixins.scss",
-        "styles/variables.scss"
+        "../node_modules/normalize.css/normalize.css",
+        "styles/base.scss"
       ],
       "stylePreprocessorOptions": {
         "includePaths": [
