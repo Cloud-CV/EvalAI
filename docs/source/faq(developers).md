@@ -1,11 +1,11 @@
-## Fequently Asked Questions
+## Frequently Asked Questions
 
-#### What to work on EvalAI?
+#### Q. How to start contributing?
 
 EvalAI’s issue tracker is good place to start. If you find something that interests you, comment on the thread and we’ll help get you started.
 Alternatively, if you come across a new bug on the site, please file a new issue and comment if you would like to be assigned. Existing issues are tagged with one or more labels, based on the part of the website it touches, its importance etc., which can help you select one.
 
-#### What are the technologies that EvalAI uses?
+#### Q. What are the technologies that EvalAI uses?
 
 ##### Django
 Django is the heart of the application, which powers our backend. We use Django version 1.10.
@@ -22,50 +22,50 @@ PostgresSQL is used as our primary datastore. All our tables currently reside in
 ##### Angular JS - ^1.6.1
 Angular JS is a well-known framework that powers our frontend.
 
-##### Task Runner used by us - Gulp
-
-#### Where could I learn Github Commands?
+#### Q. Where could I learn Github Commands?
 
 Refer to [Github Guide](https://help.github.com/articles/git-and-github-learning-resources/).
 
-#### Where could I learn Markdown
+#### Q. Where could I learn Markdown?
 
 Refer to [MarkDown Guide](https://guides.github.com/features/mastering-markdown/).
 
-#### What to do when coverage decreases in your pull request?
+#### Q. What to do when coverage decreases in your pull request?
 
 Coverage decreases when the existing test cases don't test the new code you wrote. If you click coverage, you can see exactly which all parts aren't covered and you can write new tests to test the parts. 
 
 ### Common Errors during installation
 
-#### While using ```pip install -r dev/requirement.txt``` 
+#### Q. While using `pip install -r dev/requirement.txt`
 
 ```
  Writing manifest file 'pip-egg-info/psycopg2.egg-info/SOURCES.txt'
- Error: You need to install postgresql-server-dev-X.Y for building a server-side extension or libpq-dev for building a client-side application.
+ Error: You need to install postgresql-server-dev-X.Y for building a server-side extension or
+ libpq-dev for building a client-side application.
  ----------------------------------------
  Command "python setup.py egg_info" failed with error code 1 in /tmp/pip-build-qIjU8G/psycopg2/
 ```
 
 Use the following commands in order to solve the error:
 
-1. ```sudo apt-get install postgresql```
-2. ```sudo apt-get install python-psycopg2```
-3. ```sudo apt-get install libpq-dev```
+1. `sudo apt-get install postgresql`
+2. `sudo apt-get install python-psycopg2`
+3. `sudo apt-get install libpq-dev`
 
-#### While using ```pip install -r dev/requirement.txt``` 
+#### Q. While using `pip install -r dev/requirement.txt`
 
 ```
-Command “python setup.py egg_info” failed with error code 1 in /private/var/folders/c7/b45s17816zn_b1dh3g7yzxrm0000gn/T/pip-build- GM2AG/psycopg2/
+Command “python setup.py egg_info” failed with error code 1 in 
+/private/var/folders/c7/b45s17816zn_b1dh3g7yzxrm0000gn/T/pip-build- GM2AG/psycopg2/
 ```
 
 Firstly check that you have installed all the mentioned dependencies.
 Then, Upgrade the version of postgresql to 10.1 in order to solve it.
 
-#### Getting an import error 
+#### Q. Getting an import error 
 
 ```
-Couldn't import Django,"when using command python manage.py migrate --settings=settings.dev.
+Couldn't import Django,"when using command python manage.py migrate
 ```
 
 Firstly, check that you have activated the virtualenv.
@@ -76,7 +76,7 @@ cd evalai
 pip install -r requirements/dev.txt
 ```
 
-#### Getting Mocha Error 
+#### Q. Getting Mocha Error 
 
 ```
 Can not load reporter “mocha”,it is not registered
@@ -88,19 +88,19 @@ Uninstall karma and then install
 npm uninstall -g generator-karma && npm install -g generator-angular.
 ```
 
-#### While trying to execute ```bower install``` 
+#### Q. While trying to execute `bower install` 
 
 ```
 bower: command not found
 ```
 
-Execute the following command first :- 
+Execute the following command first : 
 
 ```
 npm install -g bower 
 ```
 
-#### While trying to execute ```gulp dev:runserver``` 
+#### Q. While trying to execute `gulp dev:runserver` 
 
 ```
 gulp: command not found
@@ -113,7 +113,7 @@ npm install -g gulp-cli
 
 ```
 
-#### While executing ```gulp dev:runserver``` 
+#### Q. While executing `gulp dev:runserver`
 
 ```
 events.js:160
@@ -122,17 +122,17 @@ throw er; // Unhandled 'error' event
 Error: Gem sass is not installed.
 ```
 
-Execute the following command first :- 
+Execute the following command first : 
 
 ```
 gem install sass
 
 ```
 
-#### While trying to install ```npm config set proxy http://proxy:port``` on UBUNTU 
+#### Q. While trying to install `npm config set proxy http://proxy:port` on UBUNTU, I get the following error:
 
 ```
- ubuntu@ubuntu-Inspiron-3521:~/Desktop/Python-2.7.14$ npm install -g angular-cli
+ubuntu@ubuntu-Inspiron-3521:~/Desktop/Python-2.7.14$ npm install -g angular-cli
 npm ERR! Linux 4.4.0-21-generic
 npm ERR! argv "/usr/bin/nodejs" "/usr/bin/npm" "install" "-g" "angular-cli"
 npm ERR! node v4.2.6
@@ -151,16 +151,16 @@ npm ERR! Please include the following file with any support request:
 npm ERR!     /home/ubuntu/Desktop/Python-2.7.14/npm-debug.log
 ```
 
-Execute the following :-
-1. ```npm config set registry=registry.npmjs.org```
+To solve, execute the following commands:
+1. `npm config set registry=registry.npmjs.org`
  
-If the above does not work, try deleting them by following commands :-
-1. ```npm config delete proxy```
-2. ```npm config delete https-proxy```
+If the above does not work, try deleting them by following commands:
+1. `npm config delete proxy`
+2. `npm config delete https-proxy`
 
 Then, start the instllation process of frontend once more.
 
-#### Getting the following error on the url [http://localhost:8888/](http://localhost:8888/) 
+#### Q. While using docker, I am getting the following error on URL [http://localhost:8888/](http://localhost:8888/) 
 
 ```
 Cannot Get \
@@ -168,7 +168,7 @@ Cannot Get \
 Try removing the docker containers and then building them again.
 
 
-#### Getting the following error while running ```python manage.py seed --settings=settings.dev```
+#### Q. Getting the following error while running `python manage.py seed`
 
 ```
 Starting the database seeder. Hang on... Exception while running run() in 'scripts.seed' Database successfully seeded
@@ -176,7 +176,7 @@ Starting the database seeder. Hang on... Exception while running run() in 'scrip
 
 Change the pyhton version to 2.7.x . The problem might be because of the pyhton 3.0 version.
 
-#### Getting the following error while executing command ```createdb evalai -U postgres```
+#### Q. Getting the following error while executing command `createdb evalai -U postgres`
 
 ```
 createdb: could not connect to database template1: FATAL: Peer authentication failed for user "postgres"
@@ -184,12 +184,11 @@ createdb: could not connect to database template1: FATAL: Peer authentication fa
 
 Try creating a new user and then grant all the privileges to it and then create a db.
 
-#### Getting the following error while executing ```npm install```
+#### Q. Getting the following error while executing `npm install`
 
 ```
 npm WARN generator-angular@0.16.0 requires a peer of generator-
 karma@>=0.9.0 but none was installed.
 ```
 
-Uninstall and then install karma again and also don't forget to clean the global as well as project npm cache.
-Then try again the step 8.
+Uninstall and then install karma again and also don't forget to clean the global as well as project npm cache. Then try again the step 8.
