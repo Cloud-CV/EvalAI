@@ -19,6 +19,7 @@ Contents:
    architecture_decisions
    directory_structure
    participate
+   faq(developers)
    migrations
    contribution
    pull_request
