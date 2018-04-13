@@ -14,7 +14,7 @@ Fixes #
 -
 
 <!-- Demo Link: Add here the link where you changes can be seen. -->
--
+- Link to live demo: http://pr-XXX-evalai.surge.sh <!-- Replace XXX with your PR no: -->
 
 <!-- Screenshots for the change: Add here the screenshot of the fix. -->
 -
