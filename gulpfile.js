@@ -166,7 +166,7 @@ gulp.task('html', function() {
 // for image compression
 gulp.task('images', function() {
     return gulp.src('frontend/src/images/**/*')
-        .pipe(imagemin([
+        .pipe(gulp_if(flags.production, imagemin([
             imagemin.gifsicle({ interlaced: true }),
             imagemin.jpegtran({ progressive: true }),
             imagemin.optipng({ optimizationLevel: 5 }),
@@ -176,7 +176,7 @@ gulp.task('images', function() {
                     { cleanupIDs: false }
                 ]
             })
-        ]))
+        ])))
         .pipe(gulp.dest('frontend/dist/images'));
 });
 
