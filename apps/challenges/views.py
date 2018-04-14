@@ -250,7 +250,11 @@ def get_featured_challenges(request):
     """
     Returns the list of featured challenges
     """
-    challenge = Challenge.objects.filter(featured=True)
+    challenge = Challenge.objects.filter(
+        featured=True,
+        published=True,
+        approved_by_admin=True,
+        is_disabled=False)
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
