@@ -798,7 +798,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
         # Featured challenge
         self.challenge3 = Challenge.objects.create(
             title='Test Challenge 3',
-            short_description='Short description for test challenge 2',
+            short_description='Short description for test challenge 3',
             description='Description for test challenge 3',
             terms_and_conditions='Terms and conditions for test challenge 3',
             submission_guidelines='Submission guidelines for test challenge 3',
@@ -834,6 +834,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "enable_forum": self.challenge3.enable_forum,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "is_active": False,
+                "allowed_email_domains": self.challenge3.allowed_email_domains,
+                "blocked_email_domains": self.challenge3.blocked_email_domains,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
