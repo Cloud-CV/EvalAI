@@ -208,10 +208,6 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
 
     # check to disallow the user if he is a Challenge Host for this challenge
 
-    challenge_host_team_pk = challenge.creator.pk
-    challenge_host_team_user_ids = set(ChallengeHost.objects.select_related('user').filter(
-        team_name__id=challenge_host_team_pk).values_list('user', flat=True))
-
     participant_team_user_ids = set(Participant.objects.select_related('user').filter(
         team__id=participant_team_pk).values_list('user', flat=True))
 
