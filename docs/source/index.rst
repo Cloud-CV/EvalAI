@@ -12,11 +12,14 @@ Contents:
    :maxdepth: 2
 
    setup
+   challenge_creation
+   evaluation_scripts
+   submission
    architecture
    architecture_decisions
    directory_structure
-   challenge_creation
-   submission
+   participate
+   faq(developers)
    migrations
    contribution
    pull_request
@@ -28,4 +31,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

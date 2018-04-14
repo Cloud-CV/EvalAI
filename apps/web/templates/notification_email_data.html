@@ -1,0 +1,77 @@
+{% load static %}
+<html>
+<head>
+    <title>
+        Notify Users
+    </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/css/materialize.min.css">
+  <link type="text/css" rel="stylesheet" href="{% static 'accounts/css/main.css' %}">
+</head>
+
+<!-- loader init -->
+<eval-loader></eval-loader>
+<!--auth parent view -->
+<body>
+<section class="auth-container">
+    <!-- graphic animated view -->
+    <div class="graphic-cont">
+        <img class="star-img star1" src="{% static 'accounts/images/star1.png' %}">
+        <img class="star-img star2" src="{% static 'accounts/images/star2.png' %}">
+        <div class="moon">
+            <img src="{% static 'accounts/images/moon.png' %}">
+        </div>
+        <div class="sun">
+            <img src="{% static 'accounts/images/sun.png' %}">
+        </div>
+        <div class="auth-cloud-cont">
+            <img src="{% static 'accounts/images/auth-cloud.png' %}">
+        </div>
+        <div class="ufo">
+            <img src="{% static 'accounts/images/spaceman.png' %}">
+        </div>
+    </div>
+    <div class="auth-cont">
+        <div class="row">
+            <div class="col s12 m4 offset-m4 center">
+                <h5><strong><a ui-sref="home" class="dark-link"><img class="auth-logo" src="{% static 'accounts/images/evalai-logo.png' %}"></a></strong></h5>
+                <br>
+                <p class="text-med-gray auth-home"> Notify all users about new challenge </p>
+                {% if error %}
+                    <p class="text-highlight auth-home"> Some error occured. Please try again later! </p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12 m12">
+                <div class="ev-card-body exist-team-card">
+                    <form method="POST" action="" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="input-field align-left col s10">
+                                <input type="text" id="subject" name="subject" required>
+                                <label class="active" for="subject">Subject *</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="input-field align-left col s10">
+                                <textarea id="body" class="materialize-textarea" name="body" required></textarea>
+                                <label class="active" for="body">Email Body *</label>
+                            </div>
+                        </div>
+                        <div class="row rm-gut">
+                            <div class="col s12 m12">
+                                <div class="align-center">
+                                    <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+</section>
+</body>
+</html>

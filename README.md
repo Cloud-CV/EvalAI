@@ -35,14 +35,38 @@ Our ultimate goal is to build a centralized platform to host, participate and co
 
 ## Performance comparison
 
-Some background: Last year, the [Visual Question Answering Challenge (VQA, 2016](http://www.visualqa.org/vqa_v1_challenge.html) was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview). This year, the dataset for the [VQA Challenge 2017](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
+Some background: Last year, the [Visual Question Answering Challenge (VQA) 2016](http://www.visualqa.org/vqa_v1_challenge.html) was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview). This year, the dataset for the [VQA Challenge 2017](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
 
 ## Installation Instructions
 
-Setting up EvalAI on your local machine is really easy.
-Follow this guide to setup your development machine.
+Setting up EvalAI on your local machine is really easy. You can setup EvalAI using two methods:
 
-1. Install [python] 2.x (EvalAI only supports python2.x for now.), [git], [postgresql] version >= 10.1, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
+### Using Docker
+
+You can also use Docker Compose to run all the components of EvalAI together. The steps are:
+
+1. Get the source code on to your machine via git.
+
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    ```
+
+2. Rename `settings/dev.sample.py` as `dev.py` and change credential in `settings/dev.py`
+
+    ```
+    cp settings/dev.sample.py settings/dev.py
+    ```
+    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
+
+3. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+
+    ```
+    docker-compose up --build
+    ```
+
+### Using Virtual Environment
+
+1. Install [python] 2.7.10 or above, [git], [postgresql] version >= 10.1, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
@@ -72,13 +96,13 @@ Follow this guide to setup your development machine.
     ```
     sudo -i -u (username)
     createdb evalai
-    python manage.py migrate --settings=settings.dev
+    python manage.py migrate
     ```
 
 6. Seed the database with some fake data to work with.
 
     ```
-    python manage.py seed --settings=settings.dev
+    python manage.py seed
     ```
     This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
 
@@ -89,23 +113,16 @@ Follow this guide to setup your development machine.
 7. That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
 
     ```
-    python manage.py runserver --settings=settings.dev
+    python manage.py runserver
     ```
 
 
-8. Open a new terminal window with node(6.9.2) and ruby(gem) installed on your machine and type
-
+8. Please make sure that node(`>=7.x.x`), npm(`>=5.x.x`) and bower(`>=1.8.x`) are installed globally on your machine.
+    Install npm and bower dependencies by running
     ```
     npm install
-    ``` 
-    Install bower(1.8.0) globally by running:
-    ```
-    npm install -g bower
-    ```
-    Now install the bower dependencies by running:
-    ```
     bower install
-    ```
+    ``` 
     If you running npm install behind a proxy server, use
     ```
     npm config set proxy http://proxy:port
@@ -122,28 +139,6 @@ Follow this guide to setup your development machine.
 
     ```
     python scripts/workers/submission_worker.py
-    ```
-### Using Docker
-
-You can also use Docker Compose to run all the components of EvalAI together. The steps are:
-
-1. Get the source code on to your machine via git.
-
-    ```shell
-    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
-    ```
-
-2. Rename `settings/dev.sample.py` as `dev.py` and change credential in `settings/dev.py`
-
-    ```
-    cp settings/dev.sample.py settings/dev.py
-    ```
-    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
-
-3. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
-
-    ```
-    docker-compose -f docker-compose.dev.yml up -d --build
     ```
 
 ## The Team

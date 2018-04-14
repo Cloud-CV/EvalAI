@@ -1,7 +1,15 @@
+import logging
+import traceback
+
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.core.mail import EmailMessage
 from django.shortcuts import render
 
+from smtplib import SMTPException
+
 from .models import Team
+from .serializers import ContactSerializer, TeamSerializer
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -10,7 +18,7 @@ from rest_framework.decorators import (api_view,
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
-from .serializers import ContactSerializer, TeamSerializer
+logger = logging.getLogger(__name__)
 
 
 def home(request, template_name="index.html"):
@@ -32,6 +40,41 @@ def internal_server_error(request):
                       )
     response.status_code = 500
     return response
+
+
+def notify_users_about_challenge(request):
+    """
+    Email New Challenge Details to EvalAI Users
+    """
+    if request.user.is_authenticated() and request.user.is_superuser:
+        if request.method == 'GET':
+            template_name = 'notification_email_data.html'
+            return render(request, template_name)
+
+        elif request.method == 'POST':
+            users = User.objects.exclude(email__exact='').values_list('email', flat=True)
+            subject = request.POST.get('subject')
+            body_html = request.POST.get('body')
+
+            sender = settings.CLOUDCV_TEAM_EMAIL
+
+            email = EmailMessage(subject, body_html, sender, [settings.CLOUDCV_TEAM_EMAIL], bcc=users)
+            email.content_subtype = 'html'
+
+            try:
+                email.send()
+                return render(request,
+                              'notification_email_conformation.html',
+                              {'message': 'All the emails are sent successfully!'})
+            except SMTPException:
+                logger.exception(traceback.format_exc())
+                return render(request,
+                              'notification_email_data.html',
+                              {'errors': 1})
+        else:
+            return render(request, 'error404.html')
+    else:
+        return render(request, 'error404.html')
 
 
 @throttle_classes([AnonRateThrottle, ])

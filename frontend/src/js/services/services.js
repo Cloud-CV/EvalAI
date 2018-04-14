@@ -104,6 +104,53 @@
             angular.element("#sim-loader").fadeOut();
             angular.element(".web-container").removeClass('low-screen');
         };
+
+        this.showButton = function() {
+            angular.element("#scroll-up").show();
+        };
+
+        this.hideButton = function() {
+            angular.element("#scroll-up").fadeOut();
+        };
+
+        this.passwordStrength = function(password){
+
+           //Regular Expressions.  
+            var regex = new Array();
+            regex.push("[A-Z]","[a-z]","[0-9]","[$$!%*#?&]");
+
+            var passed = 0;
+            //Validate for each Regular Expression.  
+            for (var i = 0; i < regex.length; i++) {
+                if (new RegExp(regex[i]).test(password)) {
+                    passed++;
+                }
+            }
+            //Validate for length of Password.  
+            if (passed > 2 && password.length > 8) {
+                passed++;
+            }
+ 
+            var color = "";
+            var strength = "";
+            if (passed == 1) {
+                strength = "Weak";
+                color = "red";
+            } else if (passed == 2) {
+                strength = "Average";
+                color = "darkorange";
+            } else if (passed == 3) {
+                strength = "Good";
+                color = "green";
+            } else if (passed == 4) {
+                strength = "Strong";
+                color = "darkgreen";
+            } else if (passed == 5) {
+                strength = "Very Strong";
+                color = "darkgreen";
+            }
+            return [strength, color];
+       };
     }
 
 })();

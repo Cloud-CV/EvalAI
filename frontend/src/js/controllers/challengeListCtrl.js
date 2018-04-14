@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities'];
+    ChallengeListCtrl.$inject = ['utilities', '$window'];
 
-    function ChallengeListCtrl(utilities) {
+    function ChallengeListCtrl(utilities, $window) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -25,9 +25,13 @@
         // calls for ongoing challneges
         vm.challengeCreator = {};
         var parameters = {};
-        parameters.url = 'challenges/challenge/present';
         parameters.method = 'GET';
-        parameters.token = userKey;
+        if (userKey) {
+            parameters.token = userKey;
+        } else {
+            parameters.token = null;
+        }
+        parameters.url = 'challenges/challenge/present';
 
         parameters.callback = {
             onSuccess: function(response) {
@@ -49,17 +53,15 @@
                         vm.currentList[i].isLarge = "";
                     }
 
-                    var id = vm.currentList[i].id;              
-                    vm.challengeCreator[id]= vm.currentList[i].creator.id;
+                    var id = vm.currentList[i].id;
+                    vm.challengeCreator[id] = vm.currentList[i].creator.id;
                     utilities.storeData("challengeCreator", vm.challengeCreator);
                 }
 
                 // dependent api
                 // calls for upcoming challneges
-                var parameters = {};
                 parameters.url = 'challenges/challenge/future';
                 parameters.method = 'GET';
-                parameters.token = userKey;
 
                 parameters.callback = {
                     onSuccess: function(response) {
@@ -82,17 +84,15 @@
                                 vm.upcomingList[i].isLarge = "";
                             }
 
-                            var id = vm.upcomingList[i].id;              
+                            var id = vm.upcomingList[i].id;
                             vm.challengeCreator[id] = vm.upcomingList[i].creator.id;
                             utilities.storeData("challengeCreator", vm.challengeCreator);
                         }
 
                         // dependent api
                         // calls for upcoming challneges
-                        var parameters = {};
                         parameters.url = 'challenges/challenge/past';
                         parameters.method = 'GET';
-                        parameters.token = userKey;
 
                         parameters.callback = {
                             onSuccess: function(response) {
@@ -115,8 +115,8 @@
                                     } else {
                                         vm.pastList[i].isLarge = "";
                                     }
-                                    var id = vm.pastList[i].id;              
-                                    vm.challengeCreator[id]= vm.pastList[i].creator.id;
+                                    var id = vm.pastList[i].id;
+                                    vm.challengeCreator[id] = vm.pastList[i].creator.id;
                                     utilities.storeData("challengeCreator", vm.challengeCreator);
                                 }
 
@@ -147,9 +147,16 @@
 
         utilities.sendRequest(parameters);
 
-
-
-        // utilities.showLoader();
+        vm.scrollUp = function() {
+            utilities.hideButton();
+            angular.element($window).bind('scroll', function() {
+                if (this.pageYoffset >= 100) {
+                    utilities.showButton();
+                } else {
+                    utilities.hideButton();
+                }
+            });
+        };
     }
 
 })();

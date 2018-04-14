@@ -48,10 +48,11 @@ DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
 from challenges.models import (Challenge,
                                ChallengePhase,
                                ChallengePhaseSplit,
-                               DatasetSplit,
                                LeaderboardData) # noqa
 
 from jobs.models import Submission          # noqa
+from jobs.serializers import SubmissionSerializer # noqa
+
 
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'challenge_data')
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'submission_files')
@@ -260,19 +261,24 @@ def extract_submission_data(submission_id):
     return submission
 
 
-def run_submission(challenge_id, challenge_phase, submission_id, submission, user_annotation_file_path):
+def run_submission(challenge_id, challenge_phase, submission, user_annotation_file_path):
     '''
         * receives a challenge id, phase id and user annotation file path
         * checks whether the corresponding evaluation script for the challenge exists or not
         * checks the above for annotation file
         * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
     '''
+
+    # Use the submission serializer to send relevant data to evaluation script
+    # so that challenge hosts can use data for webhooks or any other service.
+    submission_serializer = SubmissionSerializer(submission)
+
     submission_output = None
     phase_id = challenge_phase.id
     annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP.get(challenge_id).get(phase_id)
     annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(challenge_id=challenge_id, phase_id=phase_id,
                                                              annotation_file=annotation_file_name)
-    submission_data_dir = SUBMISSION_DATA_DIR.format(submission_id=submission_id)
+    submission_data_dir = SUBMISSION_DATA_DIR.format(submission_id=submission.id)
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, 'run')
@@ -294,9 +300,12 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
     try:
         successful_submission_flag = True
         with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
-            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(annotation_file_path,
-                                                                          user_annotation_file_path,
-                                                                          challenge_phase.codename,)
+            submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+                annotation_file_path,
+                user_annotation_file_path,
+                challenge_phase.codename,
+                submission_metadata=submission_serializer.data,
+            )
         '''
         A submission will be marked successful only if it is of the format
             {
@@ -329,24 +338,26 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
             leaderboard_data_list = []
             for split_result in submission_output['result']:
 
-                # Check if the dataset_split exists for the codename in the result
+                # get split_code_name that is the key of the result
+                split_code_name = split_result.items()[0][0]
+
+                # Check if the challenge_phase_split exists for the challenge_phaseand dataset_split
                 try:
-                    split_code_name = split_result.items()[0][0]  # get split_code_name that is the key of the result
-                    dataset_split = DatasetSplit.objects.get(codename=split_code_name)
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
+                                                                            dataset_split__codename=split_code_name)
                 except:
-                    stderr.write("ORGINIAL EXCEPTION: The codename specified by your Challenge Host doesn't match"
-                                 " with that in the evaluation Script.\n")
+                    stderr.write("ORGINIAL EXCEPTION: No such relation between Challenge Phase and DatasetSplit"
+                                 " specified by Challenge Host \n")
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
                     break
 
-                # Check if the challenge_phase_split exists for the challenge_phase and dataset_split
+                # Check if the dataset_split exists for the codename in the result
                 try:
-                    challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
-                                                                            dataset_split=dataset_split)
+                    dataset_split = challenge_phase_split.dataset_split
                 except:
-                    stderr.write("ORGINIAL EXCEPTION: No such relation between between Challenge Phase and DatasetSplit"
-                                 " specified by Challenge Host \n")
+                    stderr.write("ORGINIAL EXCEPTION: The codename specified by your Challenge Host doesn't match"
+                                 " with that in the evaluation Script.\n")
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
                     break
@@ -410,6 +421,10 @@ def run_submission(challenge_id, challenge_phase, submission_id, submission, use
 
 
 def process_submission_message(message):
+    '''
+    Extracts the submission related metadata from the message
+    and send the submission object for evaluation
+    '''
     challenge_id = message.get('challenge_id')
     phase_id = message.get('phase_id')
     submission_id = message.get('submission_id')
@@ -428,7 +443,7 @@ def process_submission_message(message):
 
     user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
                                      os.path.basename(submission_instance.input_file.name))
-    run_submission(challenge_id, challenge_phase, submission_id, submission_instance, user_annotation_file_path)
+    run_submission(challenge_id, challenge_phase, submission_instance, user_annotation_file_path,)
 
 
 def process_add_challenge_message(message):
