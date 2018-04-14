@@ -97,3 +97,6 @@ LOGGING['handlers']['sentry'] = {                       # noqa
     'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
     'tags': {'custom-tag': 'x'},
 }
+
+# Celery Broker Url
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
