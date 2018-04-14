@@ -34,6 +34,7 @@ ENV/
 fabfile/
 
 # Frontend Files
+package-lock.json
 .sass-cache/
 node_modules/
 bower_components/
