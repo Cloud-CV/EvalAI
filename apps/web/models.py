@@ -1,11 +1,8 @@
 from __future__ import unicode_literals
 
-from django.conf import settings
 from django.db import models
 
 from base.models import (TimeStampedModel, )
-
-from .tasks import notify_admin_on_receiving_contact_message
 
 
 class Contact(TimeStampedModel):
@@ -20,14 +17,6 @@ class Contact(TimeStampedModel):
     class Meta:
         app_label = 'web'
         db_table = 'contact'
-
-    def save(self, *args, **kwargs):
-        name = self.name
-        email = self.email
-        message = self.message
-        super(Contact, self).save(*args, **kwargs)
-        webhook_url = settings.SLACK_WEBHOOK_URL
-        notify_admin_on_receiving_contact_message.delay(webhook_url, name, email, message)
 
 
 class Team(models.Model):
