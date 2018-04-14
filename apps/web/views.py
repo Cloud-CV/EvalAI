@@ -6,7 +6,6 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.shortcuts import render
 
-from email.MIMEImage import MIMEImage
 from smtplib import SMTPException
 
 from .models import Team
@@ -57,24 +56,10 @@ def notify_users_about_challenge(request):
             subject = request.POST.get('subject')
             body_html = request.POST.get('body')
 
-            try:
-                challenge_image = request.FILES['challenge_image']
-            except:
-                challenge_image = None
-
-            if challenge_image:
-                image = MIMEImage(challenge_image.read())
-                image.add_header('Content-Disposition', 'inline', filename=challenge_image._name)
-                image.add_header('Content-ID', '{}'.format(challenge_image))
-
             sender = settings.CLOUDCV_TEAM_EMAIL
 
             email = EmailMessage(subject, body_html, sender, [settings.CLOUDCV_TEAM_EMAIL], bcc=users)
             email.content_subtype = 'html'
-
-            if challenge_image:
-                email.mixed_subtype = 'related'
-                email.attach(image)
 
             try:
                 email.send()
