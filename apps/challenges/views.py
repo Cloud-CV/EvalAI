@@ -10,6 +10,7 @@ import zipfile
 
 from os.path import basename, isfile, join
 
+from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.http import HttpResponse
@@ -213,11 +214,6 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
 
     participant_team_user_ids = set(Participant.objects.select_related('user').filter(
         team__id=participant_team_pk).values_list('user', flat=True))
-
-    if challenge_host_team_user_ids & participant_team_user_ids:
-        response_data = {'error': 'Sorry, You cannot participate in your own challenge!',
-                         'challenge_id': int(challenge_pk), 'participant_team_id': int(participant_team_pk)}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     for user in participant_team_user_ids:
         if has_user_participated_in_challenge(user, challenge_pk):
@@ -896,6 +892,23 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         zip_config = ChallengeConfiguration.objects.get(
             pk=uploaded_zip_file.pk)
         if zip_config:
+
+            # Add the Challenge Host as a test participant.
+            emails = challenge_host_team.get_all_challenge_host_email()
+            participant_host_team = ParticipantTeam(
+                                        team_name=challenge_host_team.team_name,
+                                        created_by=challenge_host_team.created_by,)
+            participant_host_team.save()
+            for email in emails:
+                user = User.objects.get(email=email)
+                host = Participant(
+                            user=user,
+                            status=Participant.ACCEPTED,
+                            team=participant_host_team,
+                    )
+                host.save()
+            challenge.participant_teams.add(participant_host_team)
+
             zip_config.challenge = challenge
             zip_config.save()
             response_data = {
