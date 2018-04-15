@@ -108,6 +108,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "approved_by_admin": False,
             }
         ]
 
@@ -197,6 +198,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "approved_by_admin": False,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -247,6 +249,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "approved_by_admin": False,
         }
         response = self.client.put(self.url, {'title': new_title, 'description': new_description})
         self.assertEqual(response.data, expected)
@@ -319,6 +322,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "approved_by_admin": False,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -349,6 +353,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "end_date": "{0}{1}".format(self.challenge.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "approved_by_admin": False,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -429,7 +434,8 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
             allowed_email_domains=[],
-            blocked_email_domains=[]
+            blocked_email_domains=[],
+            approved_by_admin=False,
         )
 
         self.participant_team2 = ParticipantTeam.objects.create(
@@ -467,19 +473,6 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_when_challenge_host_maps_a_participant_team_with_his_challenge(self):
-        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
-                                kwargs={'challenge_pk': self.challenge2.pk,
-                                        'participant_team_pk': self.participant_team2.pk})
-        expected = {
-            'error': 'Sorry, You cannot participate in your own challenge!',
-            'challenge_id': self.challenge2.pk,
-            'participant_team_id': self.participant_team2.pk
-        }
-        response = self.client.post(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_particular_challenge_for_mapping_with_participant_team_does_not_exist(self):
         self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
@@ -739,6 +732,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "approved_by_admin": True,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -772,6 +766,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "approved_by_admin": True,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -805,6 +800,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "approved_by_admin": True,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -838,6 +834,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "approved_by_admin": True,
             },
             {
                 "id": self.challenge3.pk,
@@ -861,6 +858,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "approved_by_admin": True,
             },
             {
                 "id": self.challenge4.pk,
@@ -884,6 +882,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "approved_by_admin": True,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -1106,6 +1105,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "approved_by_admin": True,
         }]
 
         response = self.client.get(self.url, {'host_team': self.challenge_host_team2.pk})
@@ -1137,6 +1137,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "approved_by_admin": True,
         }]
 
         response = self.client.get(self.url, {'participant_team': self.participant_team2.pk})
@@ -1168,6 +1169,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "approved_by_admin": True,
         }]
 
         response = self.client.get(self.url, {'mode': 'participant'})
@@ -1200,6 +1202,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "approved_by_admin": True,
             },
             {
                 "id": self.challenge2.pk,
@@ -1223,6 +1226,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "approved_by_admin": True,
             }
         ]
 
