@@ -15,7 +15,7 @@ We recommend setting up EvalAI using Docker since there are only two steps invol
 2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
 
     ```
-    docker-compose -f docker-compose.dev.yml up -d --build
+    docker-compose up --build
     ```
 
 ## Ubuntu Installation Instructions
@@ -96,7 +96,7 @@ psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 python manage.py migrate
 ```
 
-* For setting up frontend, run
+* For setting up frontend, please make sure that node(`>=7.x.x`), npm(`>=5.x.x`) and bower(`>=1.8.x`) are installed globally on your machine. Install npm and bower dependencies by running
 
 ```shell
 npm install
@@ -208,12 +208,11 @@ psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
 python manage.py migrate
 ```
 
-* For setting up frontend, run
+* For setting up frontend, please make sure that node(`>=7.x.x`), npm(`>=5.x.x`) and bower(`>=1.8.x`) are installed globally on your machine. Install npm and bower dependencies by running
 
 ```shell
-curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
-sudo yum install nodejs
-npm install -g bower
+npm install
+bower install
 ```
 
 ### Step 4: Start the development environment
@@ -314,7 +313,18 @@ Follow this guide to setup your development machine.
 
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
-    **PARTICIPANT USER-** username: `participant` password: `password`    
+    **PARTICIPANT USER-** username: `participant` password: `password`
+
+    By default the seed commands seeds the database with only one challenge. Which can be changed by passing the argument
+    `-nc` along with the number of challenges you want to seed the database with.
+
+    For example, suppose I want to seed the database with 5 challenges. I would run the command
+
+    ```
+    python manage.py seed -nc 5
+    ```
+
+    This would seed the database with 5 different challenges.
 
 ### Step 4: Start the development environment
 
@@ -325,7 +335,7 @@ Follow this guide to setup your development machine.
     ```
 
 
-* Open a new cmd window with node(6.9.2) and ruby(gem) installed on your machine and type
+* Open a new cmd window with node>=(7.0.0) installed on your machine and type
 
     ```
     npm install

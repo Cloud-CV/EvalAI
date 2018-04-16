@@ -37,6 +37,9 @@
                 <h5><strong><a ui-sref="home" class="dark-link"><img class="auth-logo" src="{% static 'accounts/images/evalai-logo.png' %}"></a></strong></h5>
                 <br>
                 <p class="text-med-gray auth-home"> Notify all users about new challenge </p>
+                {% if error %}
+                    <p class="text-highlight auth-home"> Some error occured. Please try again later! </p>
+                {% endif %}
             </div>
         </div>
         <div class="row">
@@ -54,17 +57,6 @@
                             <div class="input-field align-left col s10">
                                 <textarea id="body" class="materialize-textarea" name="body" required></textarea>
                                 <label class="active" for="body">Email Body *</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="file-field input-field col s10">
-                                <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
-                                    <span>Upload Challenge Image</span>
-                                    <input type="file" name="challenge_image">
-                                </div>
-                                <div class="file-path-wrapper">
-                                    <input class="file-path validate" type="text" placeholder="Upload challenge logo">
-                                </div>
                             </div>
                         </div>
                         <div class="row rm-gut">

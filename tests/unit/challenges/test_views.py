@@ -386,15 +386,18 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         # user who create a challenge host team
         self.user2 = User.objects.create(
             username='someuser2',
+            email='user@example2.com',
             password='some_secret_password')
         # user who maps a participant team to a challenge
         self.user3 = User.objects.create(
             username='someuser3',
+            email='user@example3.com',
             password='some_secret_password')
 
         # user invited to the participant team
         self.user4 = User.objects.create(
             username='someuser4',
+            email='user@example4.com',
             password='some_secret_password')
 
         self.challenge_host_team2 = ChallengeHostTeam.objects.create(
@@ -425,6 +428,8 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            allowed_email_domains=[],
+            blocked_email_domains=[]
         )
 
         self.participant_team2 = ParticipantTeam.objects.create(
@@ -520,6 +525,42 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participation_when_participant_is_in_blocked_list(self):
+        self.challenge2.blocked_email_domains.extend(["test", "test1"])
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+
+        response = self.client.post(self.url, {})
+        message = 'Sorry, users with {} email domain(s) are not allowed to participate in this challenge.'
+        expected = {'error': message.format('test/test1')}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participation_when_participant_is_not_in_allowed_list(self):
+        self.challenge2.allowed_email_domains.extend(["example1", "example2"])
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+
+        response = self.client.post(self.url, {})
+        message = 'Sorry, users with {} email domain(s) are only allowed to participate in this challenge.'
+        expected = {'error': message.format("example1/example2")}
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participation_when_participant_is_in_allowed_list(self):
+        self.challenge2.allowed_email_domains.append("test")
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
 class DisableChallengeTest(BaseAPITestClass):
@@ -856,6 +897,77 @@ class GetAllChallengesTest(BaseAPITestClass):
         response = self.client.get(self.url, {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(response.data, expected)
+
+
+class GetFeaturedChallengesTest(BaseAPITestClass):
+    url = reverse_lazy('challenges:get_featured_challenges')
+
+    def setUp(self):
+        super(GetFeaturedChallengesTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_featured_challenges')
+
+        # Not a featured challenge
+        self.challenge2 = Challenge.objects.create(
+            title='Test Challenge 2',
+            short_description='Short description for test challenge 2',
+            description='Description for test challenge 2',
+            terms_and_conditions='Terms and conditions for test challenge 2',
+            submission_guidelines='Submission guidelines for test challenge 2',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        # Featured challenge
+        self.challenge3 = Challenge.objects.create(
+            title='Test Challenge 3',
+            short_description='Short description for test challenge 3',
+            description='Description for test challenge 3',
+            terms_and_conditions='Terms and conditions for test challenge 3',
+            submission_guidelines='Submission guidelines for test challenge 3',
+            creator=self.challenge_host_team,
+            published=True,
+            enable_forum=True,
+            approved_by_admin=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() - timedelta(days=1),
+            featured=True
+        )
+
+    def test_get_featured_challenges(self):
+        expected = [
+            {
+                "id": self.challenge3.pk,
+                "title": self.challenge3.title,
+                "short_description": self.challenge3.short_description,
+                "description": self.challenge3.description,
+                "terms_and_conditions": self.challenge3.terms_and_conditions,
+                "submission_guidelines": self.challenge3.submission_guidelines,
+                "evaluation_details": self.challenge3.evaluation_details,
+                "image": None,
+                "start_date": "{0}{1}".format(self.challenge3.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge3.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge3.creator.pk,
+                    "team_name": self.challenge3.creator.team_name,
+                    "created_by": self.challenge3.creator.created_by.username,
+                },
+                "published": self.challenge3.published,
+                "enable_forum": self.challenge3.enable_forum,
+                "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+                "is_active": False,
+                "allowed_email_domains": self.challenge3.allowed_email_domains,
+                "blocked_email_domains": self.challenge3.blocked_email_domains,
+            }
+        ]
+        response = self.client.get(self.url, {}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'], expected)
 
 
 class GetChallengeByPk(BaseAPITestClass):
@@ -1713,7 +1825,7 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
         expected = {
-            'error': 'A server error occured while processing zip file. Please try uploading it again!'
+            'error': 'A server error occured while processing zip file. Please try again!'
             }
         response = self.client.post(self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
         self.assertEqual(response.data, expected)

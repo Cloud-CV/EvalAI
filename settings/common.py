@@ -59,6 +59,7 @@ THIRD_PARTY_APPS = [
     'allauth',
     'allauth.account',
     'corsheaders',
+    'django_ses',
     'import_export',
     'rest_auth',
     'rest_auth.registration',
@@ -286,3 +287,4 @@ REST_AUTH_SERIALIZERS = {
 
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
+CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"

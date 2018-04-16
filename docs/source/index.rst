@@ -18,9 +18,8 @@ Contents:
    architecture
    architecture_decisions
    directory_structure
-   challenge_creation
    participate
-   submission
+   faq(developers)
    migrations
    contribution
    pull_request
