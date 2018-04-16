@@ -313,7 +313,18 @@ Follow this guide to setup your development machine.
 
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
-    **PARTICIPANT USER-** username: `participant` password: `password`    
+    **PARTICIPANT USER-** username: `participant` password: `password`
+
+    By default the seed commands seeds the database with only one challenge. Which can be changed by passing the argument
+    `-nc` along with the number of challenges you want to seed the database with.
+
+    For example, suppose I want to seed the database with 5 challenges. I would run the command
+
+    ```
+    python manage.py seed -nc 5
+    ```
+
+    This would seed the database with 5 different challenges.
 
 ### Step 4: Start the development environment
 
