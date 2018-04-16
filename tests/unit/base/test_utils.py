@@ -16,6 +16,8 @@ from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
 
+from scripts import seed
+
 
 class BaseAPITestClass(APITestCase):
 
@@ -107,3 +109,12 @@ class TestRandomFileName(BaseAPITestClass):
         filepath = obj.__call__(self.submission, self.test_file_path)
         expected = "submission_files/submission_{}/{}".format(self.submission.pk, filepath.split('/')[2])
         self.assertEqual(filepath, expected)
+
+
+class TestSeeding(BaseAPITestClass):
+
+    def test_if_seeding_works(self):
+        seed.run(1)
+        self.assertEqual(Challenge.objects.all().count(), 1)
+        seed.run(2)
+        self.assertEqual(Challenge.objects.all().count(), 2)
