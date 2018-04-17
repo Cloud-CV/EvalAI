@@ -14,12 +14,10 @@
 
         utilities.showLoader();
 
-        vm.myChallengeList = [];
         vm.currentList = {};
         vm.upcomingList = {};
         vm.pastList = {};
 
-        vm.noneMyChallenges = false;
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;

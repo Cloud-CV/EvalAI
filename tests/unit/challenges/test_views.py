@@ -962,6 +962,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
+                "approved_by_admin": True,
             }
         ]
         response = self.client.get(self.url, {}, format='json')

@@ -17,19 +17,21 @@
                             <br> <strong>{{challenge.start_date | date:'medium'}}</strong></p>
                         <p><strong class="text-light-black fs-12">Ends on</strong>
                             <br> <strong>{{challenge.end_date | date:'medium'}}</strong></p>
-                        <span ng-if="challenge.approved_by_admin">
-                            <strong ng-style="{color:'green'}">Not approved by admin.</strong>
-                        </span>
-                        <span ng-if="!challenge.approved_by_admin">
-                            <strong ng-style="{color:'red'}">Approved by admin</strong>
-                        </span>
                         <br>
-                        <span ng-if="challenge.published">
-                            <strong ng-style="{color:'green'}">Challenge published</strong>
-                        </span>
-                        <span ng-if="!challenge.published">
-                            <strong ng-style="{color:'red'}">Challenge not published.</strong>
-                        </span>
+                        <div>
+                            <span ng-if="challenge.approved_by_admin">
+                                <div class="chip chips-red">Not approved by admin</div>
+                            </span>
+                            <span ng-if="!challenge.approved_by_admin">
+                                <div class="chip chips-green">Approved by admin</div>
+                            </span>
+                            <span ng-if="challenge.published">
+                                <div class="chip chips-green">Challenge Published</div>
+                            </span>
+                            <span ng-if="!challenge.published">
+                                <div class="chip chips-red">Challenge not published</div>
+                            </span>
+                        </div>
                     </div>
                     <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
                 </div>
