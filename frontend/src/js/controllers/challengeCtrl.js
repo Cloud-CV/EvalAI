@@ -33,8 +33,8 @@
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
-        vm.sortColumn = 'number';
-        vm.reverseSort = true;
+        vm.sortColumn = 'rank';
+        vm.reverseSort = false;
         vm.columnIndexSort = 0;
         // save initial ranking
         vm.initial_ranking = {};
