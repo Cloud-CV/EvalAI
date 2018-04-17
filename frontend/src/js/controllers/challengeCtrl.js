@@ -36,7 +36,8 @@
         vm.sortColumn = 'number';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
-
+        // save initial ranking
+        vm.initial_ranking = {};
         // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
@@ -382,6 +383,9 @@
             if (vm.sortColumn === 'date') {
                 return Date.parse(key.submission__submitted_at);
             }
+            else if (vm.sortColumn === 'rank') {
+                return vm.initial_ranking[key.submission__participant_team__team_name];
+            }
             else if (vm.sortColumn === 'number') {
                 return parseFloat(key.result[vm.columnIndexSort]);
             }
@@ -422,6 +426,7 @@
                     var details = response.data;
                     vm.leaderboard = details.results;
                     for (var i=0; i<vm.leaderboard.length; i++) {
+                        vm.initial_ranking[vm.leaderboard[i].submission__participant_team__team_name] = i+1;
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
