@@ -42,11 +42,6 @@
                                                 <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
                                                 <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
                                             </span>
-                                            <!--<i ng-show="challenge.sortColumn != 'rank'" class="fa fa-sort text-light-black w-500"></i>-->
-                                            <!--<span ng-show="challenge.sortColumn == 'rank'">-->
-                                                <!--<span ng-show="!challenge.reverseSort" class="fa fa-sort-asc text-dark-black"></span>-->
-                                                <!--<span ng-show="challenge.reverseSort" class="fa fa-sort-desc text-dark-black"></span>-->
-                                            <!--</span>-->
                                         </a>
                                     </td>
                                     <td class="align-left" data-field="team">
@@ -81,7 +76,6 @@
                                 <tbody>
                                 <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort">
                                     <td class="align-left">{{challenge.initial_ranking[key.submission__participant_team__team_name]}}</td>
-                                    <!--<td class="align-left" ng-show="!challenge.reverseSort">{{challenge.leaderboard.length - $index}}</td>-->
                                     <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
                                     <td class="align-right" ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
                                     <td class="align-right">{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago</td>
