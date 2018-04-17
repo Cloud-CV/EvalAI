@@ -34,7 +34,7 @@
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
         vm.sortColumn = 'number';
-        vm.reverseSort = false;
+        vm.reverseSort = true;
         vm.columnIndexSort = 0;
         // save initial ranking
         vm.initial_ranking = {};
