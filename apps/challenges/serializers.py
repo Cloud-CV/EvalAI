@@ -30,7 +30,8 @@ class ChallengeSerializer(serializers.ModelSerializer):
                   'submission_guidelines', 'evaluation_details',
                   'image', 'start_date', 'end_date', 'creator',
                   'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',
-                  'allowed_email_domains', 'blocked_email_domains',)
+                  'allowed_email_domains', 'blocked_email_domains',
+                  'approved_by_admin',)
 
 
 class ChallengePhaseSerializer(serializers.ModelSerializer):
