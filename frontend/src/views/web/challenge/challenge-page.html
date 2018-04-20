@@ -29,24 +29,17 @@
                         <br>
                         <span ng-if="challenge.isChallengeHost">
                             <span ng-if="challenge.isPublished">
-                                <strong class="text-light-black">Published</strong>
                                 <a class="pointer" ng-click="challenge.publishChallenge($event)">
+                                    <strong class="text-light-black">Published </strong>
                                     <i class="fa fa-eye green-text" aria-hidden="true"></i>
                                 </a>
                             </span>
                             <span ng-if="!challenge.isPublished">
-                                <strong class="text-light-black">Not published</strong>
                                 <a class="pointer" ng-click="challenge.publishChallenge($event)">
+                                    <strong class="text-light-black">Not Published </strong>
                                     <i class="fa fa-eye red-text" aria-hidden="true"></i>
                                 </a>
                             </span>
-                        </span>
-                        <span ng-if="challenge.isChallengeHost">
-                        <strong class="green-text">
-                            <p>You can make submissions to your own challenge
-                            but the submissions won't be visible on leaderboard.
-                            This is only for testing purposes.</p>
-                        </strong>
                         </span>
                     </p>
                 </div>

@@ -14,9 +14,7 @@
 
         utilities.showLoader();
 
-        vm.hostedChallenges = [];
-
-        vm.noneMyChallenges = false;
+        vm.challengeList = [];
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
@@ -32,7 +30,7 @@
                         onSuccess: function(response) {
                             var data = response.data;
                             for (var j=0; j<data.results.length; j++){
-                                vm.hostedChallenges.push(data.results[j]);
+                                vm.challengeList.push(data.results[j]);
                             }
                         },
                         onError: function() {
@@ -41,14 +39,9 @@
                     };
                     utilities.sendRequest(parameters);
                 }
-                if (vm.noneMyChallenges.length === 0) {
-                    vm.noneMyChallenges = true;
-                } else {
-                    vm.noneMyChallenges = false;
-                }
                 utilities.hideLoader();
             },
-            onError: function(response) {
+            onError: function() {
                 utilities.hideLoader();
             }
         };
