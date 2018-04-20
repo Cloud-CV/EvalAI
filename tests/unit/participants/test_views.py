@@ -601,6 +601,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "is_active": True,
                         "allowed_email_domains": [],
                         "blocked_email_domains": [],
+                        "approved_by_admin": False,
                     },
                     "participant_team": {
                         "id": self.participant_team1.id,

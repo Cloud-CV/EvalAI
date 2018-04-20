@@ -33,11 +33,13 @@
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
+        vm.publishVariable = false;
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
         // save initial ranking
         vm.initial_ranking = {};
+      
         // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
@@ -68,6 +70,7 @@
                 var details = response.data;
                 vm.page = details;
                 vm.isActive = details.is_active;
+                vm.publishVariable = vm.page.published;
 
 
                 if (vm.page.image === null) {
@@ -1559,6 +1562,51 @@
                 utilities.sendRequest(parameters);
                 $mdDialog.hide();
             }
+        };
+
+        vm.challengePublish = function(ev) {
+            ev.stopPropagation();
+            vm.publishTitle = "";
+            vm.publishDesc = "";
+            if (vm.publishVariable)
+                vm.publishTitle = "private";
+            else
+                vm.publishTitle = "public";
+
+            var confirm = $mdDialog.confirm()
+                          .title('Make this challenge ' + vm.publishTitle + '?')
+                          .ariaLabel('')
+                          .targetEvent(ev)
+                          .ok('I\'m sure')
+                          .cancel('No.');
+
+            $mdDialog.show(confirm).then(function() {
+                parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/challenge/" + vm.page.id;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "published": !vm.publishVariable,
+                };
+                vm.publishVariable = !vm.publishVariable;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200) {
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The challenge was successfully made " + vm.publishTitle);
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        vm.page.description = vm.tempDesc;
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            }, function() {
+            // Nope
+            });
         };
 
         $scope.$on('$destroy', function() {
