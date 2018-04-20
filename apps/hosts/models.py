@@ -17,6 +17,10 @@ class ChallengeHostTeam(TimeStampedModel):
     def __unicode__(self):
         return '{0}: {1}'.format(self.team_name, self.created_by)
 
+    def get_all_challenge_host_email(self):
+        email_ids = ChallengeHost.objects.filter(team_name=self).values_list('user__email', flat=True)
+        return list(email_ids)
+
     class Meta:
         app_label = 'hosts'
         db_table = 'challenge_host_teams'
