@@ -34,8 +34,13 @@
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
         vm.isPublished = false;
+        vm.sortColumn = 'rank';
+        vm.reverseSort = false;
+        vm.columnIndexSort = 0;
+        // save initial ranking
+        vm.initial_ranking = {};
 
-        // loader for existing teams
+      // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
@@ -66,7 +71,6 @@
                 vm.page = details;
                 vm.isActive = details.is_active;
                 vm.isPublished = vm.page.published;
-
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -373,6 +377,28 @@
 
         utilities.sendRequest(parameters);
 
+        // define a custom sorting function
+        vm.lastKey = null;
+        vm.sortFunction = function(key) {
+            // check which column is selected
+            // so that the values can be parsed properly
+            if (vm.sortColumn === 'date') {
+                return Date.parse(key.submission__submitted_at);
+            }
+            else if (vm.sortColumn === 'rank') {
+                return vm.initial_ranking[key.submission__participant_team__team_name];
+            }
+            else if (vm.sortColumn === 'number') {
+                return parseFloat(key.result[vm.columnIndexSort]);
+            }
+            else if (vm.sortColumn === 'string'){
+                // sort teams alphabetically
+                return key.submission__participant_team__team_name.value;
+            }
+
+            return 0;
+        };
+
         // my submissions
         vm.isResult = false;
 
@@ -402,6 +428,7 @@
                     var details = response.data;
                     vm.leaderboard = details.results;
                     for (var i=0; i<vm.leaderboard.length; i++) {
+                        vm.initial_ranking[vm.leaderboard[i].submission__participant_team__team_name] = i+1;
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
