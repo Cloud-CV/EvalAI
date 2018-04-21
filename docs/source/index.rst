@@ -18,6 +18,8 @@ Contents:
    architecture
    architecture_decisions
    directory_structure
+   participate
+   faq(developers)
    migrations
    contribution
    pull_request
@@ -29,4 +31,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

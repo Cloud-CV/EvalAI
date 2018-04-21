@@ -29,7 +29,9 @@ class ChallengeSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
                   'submission_guidelines', 'evaluation_details',
                   'image', 'start_date', 'end_date', 'creator',
-                  'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',)
+                  'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',
+                  'allowed_email_domains', 'blocked_email_domains',
+                  'approved_by_admin',)
 
 
 class ChallengePhaseSerializer(serializers.ModelSerializer):
@@ -120,7 +122,8 @@ class ZipChallengeSerializer(ChallengeSerializer):
         model = Challenge
         fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
                   'submission_guidelines', 'start_date', 'end_date', 'creator', 'evaluation_details',
-                  'published', 'enable_forum', 'anonymous_leaderboard', 'image', 'is_active', 'evaluation_script',)
+                  'published', 'enable_forum', 'anonymous_leaderboard', 'image', 'is_active', 'evaluation_script',
+                  'allowed_email_domains', 'blocked_email_domains',)
 
 
 class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
@@ -151,7 +154,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
         model = ChallengePhase
         fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
-                  'is_public', 'is_active', 'codename', 'test_annotation')
+                  'is_public', 'is_active', 'is_submission_public', 'codename', 'test_annotation')
 
 
 class StarChallengeSerializer(serializers.ModelSerializer):

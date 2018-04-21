@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
@@ -45,6 +45,12 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Approved By Admin", db_index=True)
     featured = models.BooleanField(
         default=False, verbose_name="Featured", db_index=True)
+    allowed_email_domains = ArrayField(
+        models.CharField(max_length=50, blank=True),
+        default=[], blank=True)
+    blocked_email_domains = ArrayField(
+        models.CharField(max_length=50, blank=True),
+        default=[], blank=True)
 
     class Meta:
         app_label = 'challenges'
@@ -88,7 +94,7 @@ signals.post_save.connect(model_field_name(field_name='evaluation_script')(creat
 
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
-    codename = models.CharField(max_length=100, unique=True)
+    codename = models.CharField(max_length=100)
 
     def __unicode__(self):
         return self.name

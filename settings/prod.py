@@ -5,7 +5,8 @@ import raven
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['evalapi.cloudcv.org', 'evalai.cloudcv.org']
+ALLOWED_HOSTS = ['evalapi.cloudcv.org', 'evalai.cloudcv.org',
+                 'api.evalai.cloudcv.org', 'staging.evalai.cloudcv.org']
 
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
@@ -15,6 +16,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
     'evalai.cloudcv.org',
     'evalai.s3.amazonaws.com',
+    'staging.evalai.cloudcv.org',
 )
 
 DATABASES = {
@@ -36,9 +38,11 @@ MIDDLEWARE += ['middleware.metrics.DatadogMiddleware', ]     # noqa
 
 INSTALLED_APPS += ('storages', 'raven.contrib.django.raven_compat')  # noqa
 
-AWS_STORAGE_BUCKET_NAME = "evalai"
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+AWS_SES_REGION_NAME = os.environ.get('AWS_SES_REGION_NAME', '')
+AWS_SES_REGION_ENDPOINT = os.environ.get('AWS_SES_REGION_ENDPOINT', '')
 
 # Amazon S3 Configurations
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
@@ -55,7 +59,7 @@ DEFAULT_FILE_STORAGE = 'settings.custom_storages.MediaStorage'
 
 # Setup Email Backend related settings
 DEFAULT_FROM_EMAIL = "noreply@cloudcv.org"
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "django_ses.SESBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")

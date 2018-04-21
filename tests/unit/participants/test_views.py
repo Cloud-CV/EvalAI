@@ -598,7 +598,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "published": self.challenge1.published,
                         "enable_forum": self.challenge1.enable_forum,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
-                        "is_active": True
+                        "is_active": True,
+                        "allowed_email_domains": [],
+                        "blocked_email_domains": [],
+                        "approved_by_admin": False,
                     },
                     "participant_team": {
                         "id": self.participant_team1.id,
@@ -731,3 +734,12 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
         response = self.client.delete(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_participant_team_remove_when_no_participants_exists(self):
+        self.url = reverse_lazy('participants:remove_self_from_participant_team',
+                                kwargs={'participant_team_pk': self.participant_team.pk,
+                                        })
+
+        self.client.delete(self.url, {})
+        participant_teams = ParticipantTeam.objects.all()
+        self.assertEqual(participant_teams.count(), 0)

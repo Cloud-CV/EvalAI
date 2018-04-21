@@ -1,14 +1,15 @@
 <!-- include sidebar -->
-<side-bar></side-bar>
-<div class="light-dark-container" sim-loader> </div>
+<side-bar ng-if="isAuth"></side-bar>
+<!-- <div class="light-dark-container" sim-loader> </div> -->
 <sim-header></sim-header>
-<div class="web-container">
+<div class="web-container" ng-class="{'center': !$root.isAuth }">
     <div class="dashboard-flex">
         <div class="dashboard-content">
             <ui-view></ui-view>
         </div>
         <!--Dashboard-Footer-->
-        <dashboard-footer></dashboard-footer>
+        <dashboard-footer ng-if="isAuth"></dashboard-footer>
     </div>
 </div>
 <div class="clearfix"></div>
+<landing-footer ng-if="!isAuth"></landing-footer>
