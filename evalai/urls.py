@@ -22,7 +22,7 @@ from django.conf.urls.static import static
 
 from allauth.account.views import ConfirmEmailView
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
-
+from accounts.views import PasswordResetConfirmView
 from web import views
 
 handler404 = 'web.views.page_not_found'
@@ -35,6 +35,9 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                    admin.site.urls),
                url(r'^api/auth/login',
                    obtain_expiring_auth_token, name='obtain_expiring_auth_token'),
+               url(r'^api/auth/password/reset/confirm',
+                   PasswordResetConfirmView.as_view(),
+                    name='rest_password_reset_confirm'),
                url(r'^api/auth/',
                    include('rest_auth.urls')),
                url(r'^api/auth/registration/account-confirm-email/(?P<key>[-:\w]+)/$',   # noqa

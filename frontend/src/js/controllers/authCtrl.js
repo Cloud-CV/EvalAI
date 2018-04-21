@@ -26,9 +26,38 @@
         // form error
         vm.isFormError = false;
         vm.FormError = {};
+        vm.tokenCheck = false;
         // to store the next redirect route
         vm.redirectUrl = {};
+        vm.checkToken = function() {
+            var parameters = {};
+            parameters.url = 'accounts/tokenverify/';
+            parameters.method = 'POST';
+            parameters.data = {
+                "user_id": $state.params.user_id,
+                "token": $state.params.reset_token,
+                };
+            parameters.callback = {
+                    onSuccess: function() {
+                        vm.tokenCheck=true;
+                    },
+                    onError: function(response) {
+                        var token_valid;
+                        try {
+                            token_valid = response.data.token=='Token Expired or invalid';
+                            if (token_valid) {
+                                vm.deliveredMsg = "this link has been already used or expired.";
+                                vm.isResetPassword = true;
+                            } 
+                        } catch (error) {
+                            vm.FormError = "Something went wrong! Please refresh the page and try again.";
+                        }
+                    }
+                };
+                utilities.sendRequest(parameters, "no-header");
 
+
+        };
         // default parameters
         vm.isLoader = false;
         vm.isPassConf = true;
@@ -249,6 +278,7 @@
                     "new_password2": vm.getUser.new_password2,
                     "uid": $state.params.user_id,
                     "token": $state.params.reset_token,
+                    "host": window.location.hostname,
                 };
 
                 parameters.callback = {
