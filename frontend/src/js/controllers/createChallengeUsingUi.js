@@ -40,15 +40,15 @@
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
 
-        vm.formatDate = function(dateTimeObject) {
-            if (dateTimeObject.toISOString()) {          
-                var dateTime = dateTimeObject.toISOString();
-                var splitDateTime = dateTime.split("T");
-                var date = splitDateTime[0];
-                var time = splitDateTime[1].split(".")[0];
-                return date + " " + time;
-            }
-        };
+        // vm.formatDate = function(dateTimeObject) {
+        //     if (dateTimeObject.toISOString()) {          
+        //         var dateTime = dateTimeObject.toISOString();
+        //         var splitDateTime = dateTime.split("T");
+        //         var date = splitDateTime[0];
+        //         var time = splitDateTime[1].split(".")[0];
+        //         return date + " " + time;
+        //     }
+        // };
 
 // function to create a Challenge.
         vm.challengeCreate = function(challengeCreateFormValid) {
@@ -59,8 +59,8 @@
                         parameters.method = 'POST';
                         parameters.url = 'challenges/challenge_host_team/'+ vm.hostTeamId + '/challenge';
                         var formdata = new FormData();
-                        vm.challengeStartDate = vm.formatDate(vm.challengeStartDate);
-                        vm.challengeEndDate = vm.formatDate(vm.challengeEndDate);
+                        // vm.challengeStartDate = vm.formatDate(vm.challengeStartDate);
+                        // vm.challengeEndDate = vm.formatDate(vm.challengeEndDate);
                         formdata.append("title", vm.challengeTitle);
                         formdata.append("short_description", vm.challengeShortDescription);
                         formdata.append("description", vm.challengeDescription);
@@ -69,8 +69,8 @@
                         formdata.append("evaluation_details", vm.challengeEvaluationDetails);
                         formdata.append("published", vm.challengePublicallyAvailable);
                         formdata.append("enable_forum", vm.challengeEnableForum);
-                        formdata.append("start_date", vm.challengeStartDate);
-                        formdata.append("end_date", vm.challengeEndDate);
+                        formdata.append("start_date", "2018-04-22T01:37:21Z");
+                        formdata.append("end_date", "2018-05-22T01:37:21Z");
                         formdata.append("image", vm.challengeImage);
                         formdata.append("evaluation_script", vm.challengeEvalScript);
                         formdata.append("featured", false);
