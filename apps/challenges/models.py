@@ -153,12 +153,13 @@ class ChallengePhase(TimeStampedModel):
         return False
 
     def save(self, *args, **kwargs):
-        try:
-            # If the max_submissions_per_day is less than the max_concurrent_submissions_allowed.
-            if self.max_submissions_per_day < self.max_concurrent_submissions_allowed:
-                self.max_concurrent_submissions_allowed = self.max_submissions_per_day
-        except Exception as e:
-            print e
+
+        # If the max_submissions_per_day is less than the max_concurrent_submissions_allowed.
+        if self.max_submissions_per_day < self.max_concurrent_submissions_allowed:
+            self.max_concurrent_submissions_allowed = self.max_submissions_per_day
+
+        challenge_phase_instance = super(ChallengePhase, self).save(*args, **kwargs)
+        return challenge_phase_instance
 
 
 signals.post_save.connect(model_field_name(field_name='test_annotation')(create_post_model_field),
