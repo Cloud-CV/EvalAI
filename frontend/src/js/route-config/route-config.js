@@ -126,13 +126,13 @@
             authenticate: true
         };
 
-        var hosted_challenge = {
+        var hosted_challenges = {
             name: "web.hosted-challenge",
             parent: "web",
             url: "/hosted-challenges",
             templateUrl: baseUrl + "/web/hosted-challenges.html",
-            controller: 'HostedChallengeCtrl',
-            controllerAs: 'hostedChallenge',
+            controller: 'HostedChallengesCtrl',
+            controllerAs: 'hostedChallenges',
             title: 'Hosted Challenges',
             authenticate: true
         };
@@ -452,7 +452,7 @@
         $stateProvider.state(dashboard);
         $stateProvider.state(host_analytics);
         $stateProvider.state(teams);
-        $stateProvider.state(hosted_challenge);
+        $stateProvider.state(hosted_challenges);
 
         // challenge host teams
         $stateProvider.state(challenge_host_teams);

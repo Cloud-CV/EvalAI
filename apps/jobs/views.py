@@ -214,11 +214,18 @@ def leaderboard(request, challenge_phase_split_id):
         response_data = {'error': 'Sorry, Default filtering key not found in leaderboard schema!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    # Exclude the submissions done by members of the host team
+    # while populating leaderboard
+    challenge_obj = challenge_phase_split.challenge_phase.challenge
+    challenge_hosts_emails = challenge_obj.creator.get_all_challenge_host_email()
+    leaderboard_data = LeaderboardData.objects.exclude(
+        submission__created_by__email__in=challenge_hosts_emails)
+
     # Get all the successful submissions related to the challenge phase split
-    leaderboard_data = LeaderboardData.objects.filter(
-        challenge_phase_split=challenge_phase_split,
-        submission__is_public=True,
-        submission__is_flagged=False).order_by('created_at')
+    leaderboard_data = leaderboard_data.filter(
+            challenge_phase_split=challenge_phase_split,
+            submission__is_public=True,
+            submission__is_flagged=False).order_by('created_at')
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',

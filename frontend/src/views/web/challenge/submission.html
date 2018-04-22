@@ -6,6 +6,11 @@
                     <span class="fs-18">
                         <strong>Submission Guidelines</strong>
                     </span>
+                    <div ng-if="challenge.isChallengeHost">
+                        <strong class="red-text">
+                            <p>Your submissions won't be visible on leaderboard since you are a Challenge Host. This feature is only for your testing purposes.</p>
+                        </strong>
+                    </div>
                     <div ng-bind-html="challenge.page.submission_guidelines"></div>
                 </div>
                 <div ng-if="challenge.isChallengeHost" class="col s1 m1">

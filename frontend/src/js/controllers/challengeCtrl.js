@@ -33,14 +33,14 @@
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
-        vm.publishVariable = false;
+        vm.isPublished = false;
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
         // save initial ranking
         vm.initial_ranking = {};
-      
-        // loader for existing teams
+
+      // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
@@ -70,8 +70,7 @@
                 var details = response.data;
                 vm.page = details;
                 vm.isActive = details.is_active;
-                vm.publishVariable = vm.page.published;
-
+                vm.isPublished = vm.page.published;
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -1564,17 +1563,17 @@
             }
         };
 
-        vm.challengePublish = function(ev) {
+        vm.publishChallenge = function(ev) {
             ev.stopPropagation();
-            vm.publishTitle = "";
-            vm.publishDesc = "";
-            if (vm.publishVariable)
-                vm.publishTitle = "private";
+            vm.toggleChallengeState = null;
+            vm.publishDesc = null;
+            if (vm.isPublished)
+                vm.toggleChallengeState = "private";
             else
-                vm.publishTitle = "public";
+                vm.toggleChallengeState = "public";
 
             var confirm = $mdDialog.confirm()
-                          .title('Make this challenge ' + vm.publishTitle + '?')
+                          .title('Make this challenge ' + vm.toggleChallengeState + '?')
                           .ariaLabel('')
                           .targetEvent(ev)
                           .ok('I\'m sure')
@@ -1584,15 +1583,15 @@
                 parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/challenge/" + vm.page.id;
                 parameters.method = 'PATCH';
                 parameters.data = {
-                    "published": !vm.publishVariable,
+                    "published": !vm.isPublished,
                 };
-                vm.publishVariable = !vm.publishVariable;
+                vm.isPublished = !vm.isPublished;
                 parameters.callback = {
                     onSuccess: function(response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
-                            $rootScope.notify("success", "The challenge was successfully made " + vm.publishTitle);
+                            $rootScope.notify("success", "The challenge was successfully made " + vm.toggleChallengeState);
                         }
                     },
                     onError: function(response) {

@@ -28,25 +28,18 @@
 
                         <br>
                         <span ng-if="challenge.isChallengeHost">
-                            <span ng-if="challenge.publishVariable">
-                                <strong class="text-light-black">Challenge published.</strong>
-                                <a class="pointer" ng-click="challenge.challengePublish($event)">
+                            <span ng-if="challenge.isPublished">
+                                <a class="pointer" ng-click="challenge.publishChallenge($event)">
+                                    <strong class="text-light-black">Published </strong>
                                     <i class="fa fa-eye green-text" aria-hidden="true"></i>
                                 </a>
                             </span>
-                            <span ng-if="!challenge.publishVariable">
-                                <strong class="text-light-black">Challenge not published.</strong>
-                                <a class="pointer" ng-click="challenge.challengePublish($event)">
+                            <span ng-if="!challenge.isPublished">
+                                <a class="pointer" ng-click="challenge.publishChallenge($event)">
+                                    <strong class="text-light-black">Not Published </strong>
                                     <i class="fa fa-eye red-text" aria-hidden="true"></i>
                                 </a>
                             </span>
-                        </span>
-                        <span ng-if="challenge.isChallengeHost">
-                        <strong class="green-text">
-                            <p>You can make submissions to your own challenges
-                            and it won't be displayed on the published version.
-                            This is only for testing purposes.</p>
-                        </strong>
                         </span>
                     </p>
                 </div>
