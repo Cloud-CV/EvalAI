@@ -75,7 +75,6 @@
                                     $rootScope.notify("success", "Step 1 is completed");
                                     utilities.storeData('challenge', data);
                                     vm.challengeId = data.id;
-                                    console.log(vm.challengeId);
                                 }
                             },
                             onError: function(response) {
@@ -392,7 +391,6 @@
                         if (status === 400) {
                             vm.isFormError = true;
                             vm.formdata = error;
-                            console.log(error);
                         }
                     }
                 };
