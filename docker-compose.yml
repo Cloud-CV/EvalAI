@@ -24,8 +24,11 @@ services:
     ports:
       - "8000:8000"
     command: ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]
-    depends_on:
-      - "db"
+    links:
+      - db
+      - rabbitmq
+    volumes:
+      - .:/code
 
   submission-worker:
     env_file:
@@ -34,8 +37,12 @@ services:
       context: ./
       dockerfile: docker/dev/rabbitmq/Dockerfile
     command: ["./docker/wait-for-it.sh", "django:8000", "--", "python", "scripts/workers/submission_worker.py"]
+    links:
+      - rabbitmq
     depends_on:
-      - "django"
+      - rabbitmq
+    volumes:
+      - .:/code
 
   nodejs:
     container_name: nodejs
@@ -46,7 +53,7 @@ services:
     environment:
       NODE_ENV: development
     ports:
-      - '8888:8888'
+      - "8888:8888"
     volumes:
       - .:/code
       - /code/node_modules
