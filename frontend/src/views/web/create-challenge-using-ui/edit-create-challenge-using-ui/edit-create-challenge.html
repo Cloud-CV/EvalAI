@@ -4,7 +4,16 @@
     <div class="row">
         <div class="col s12 m6 offset-m3">
             <div class="ev-md-container ev-card-body auto">
-                <div class="pass-title">Edit Challenge</div>
+                <div class="pass-title">
+                  <span>
+                  Edit Challenge
+                </span>
+                  <span class="text-light-black margin-left-right-10">Or</span>
+                <span>
+                  
+                <a ng-click="createChallengeUsingUi.showEditChallenge(true)" class="dark-link pointer"><strong>Cancel</strong></a>
+                </span>
+                </div>
                 <form name="editChallengeForm" ng-submit="createChallengeUsingUi.editChallenge(editChallengeForm)" novalidate>
                     <div class="input-field align-left">
                         <input id="challengeTitle" name="challengeTitle" type="text" class="text-dark-black dark-autofill w-400" ng-model="createChallengeUsingUi.challenge.title" value="{{createChallengeUsingUi.challenge.title}}" focus-if="createChallengeUsingUi.challenge.title" required>
@@ -103,7 +112,8 @@
                                    ></trix-editor>
                     </div>
                     <div class="input-field align-left">
-                            <input mdc-datetime-picker="" date="true" time="true" type="text" id="challengeStartDate" show-todays-date="" ng-model="createChallengeUsingUi.challenge.start_date" class="md-input button-focus" placeholder="Start Date" readonly>
+                      <input ng-model="createChallengeUsingUi.challenge.start_date" ng-model-options="{ updateOn: 'blur' }"
+                              placeholder="Challenge Start Date" moment-picker="createChallengeUsingUi.challenge.start_date" value="{{createChallengeUsingUi.challengeStartDate}}" type="text">
                             <span class="form-icon form-icon-dark">
                                 <i class="fa fa-info-circle cursor-pointer">
                                     <md-tooltip md-direction="right">
@@ -113,8 +123,8 @@
                             </span>
                     </div>
                     <div class="input-field align-left">
-                        <input mdc-datetime-picker="" date="true" time="true" type="text" id="challengeEndDate"
-                         show-todays-date="" min-date="date" ng-model="createChallengeUsingUi.challenge.end_date" class="md-input" placeholder="End Date" readonly>
+                      <input ng-model="createChallengeUsingUi.challenge.end_date" ng-model-options="{ updateOn: 'blur' }"
+                              placeholder="Challenge End Date" moment-picker="createChallengeUsingUi.challenge.end_date" value="{{createChallengeUsingUi.challenge.end_date}}" type="text">
                         <span class="form-icon form-icon-dark">
                             <i class="fa fa-info-circle cursor-pointer">
                                 <md-tooltip md-direction="right">
@@ -124,7 +134,7 @@
                         </span>
                     </div>
                     <div class="input-field align-left">
-                        <input type="checkbox" id="challengeEnableForum" name="challengeEnableForum" ng-model="createChallengeUsingUi.challenge.enable_forum" value="createChallengeUsingUi.challenge.enable_forum">
+                        <input type="checkbox" id="challengeEnableForum" name="challengeEnableForum" ng-model="createChallengeUsingUi.challenge.enable_forum" value="{{createChallengeUsingUi.challenge.enable_forum}}">
                         <label for="challengeEnableForum">Enable Forum</label>
                         <span class="form-icon form-icon-dark">
                             <i class="fa fa-info-circle cursor-pointer">
@@ -144,6 +154,38 @@
                                 </md-tooltip>
                             </i>
                         </span>
+                    </div>
+                    <div class="file-field input-field">
+                        <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                            <span>Challenge Image</span>
+                            <input name="challengeImage" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="createChallengeUsingUi.challengeImage" required>
+                        </div>
+                        <div class="file-path-wrapper">
+                            <input class="file-path validate" type="text" value="{{createChallengeUsingUi.challengeImageName}}">
+                             <span class="form-icon form-icon-dark">
+                                <i class="fa fa-info-circle cursor-pointer">
+                                    <md-tooltip md-direction="right">
+                                        Challenge logo
+                                    </md-tooltip>
+                                </i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="file-field input-field">
+                        <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
+                            <span>Evaluation Script</span>
+                            <input name="challengeEvalScript" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="createChallengeUsingUi.challengeEvalScript" required>
+                        </div>
+                        <div class="file-path-wrapper">
+                            <input class="file-path validate eval-script" type="text" value="{{createChallengeUsingUi.evalScriptName}}">
+                             <span class="form-icon form-icon-dark">
+                                <i class="fa fa-info-circle cursor-pointer">
+                                    <md-tooltip md-direction="right">
+                                        Evaluation script for the challenge
+                                    </md-tooltip>
+                                </i>
+                            </span>
+                        </div>
                     </div>
                     <ul class="inline-list hide-on-med-and-down">
                       <li>

@@ -185,7 +185,6 @@
             title: 'Create Challenge',
             controller: 'CreateChallengeUsingUiCtrl',
             controllerAs: 'createChallengeUsingUi',
-            // redirectTo: "web.challenge-create.challenge-list",
             authenticate: true
         };
 

@@ -22,7 +22,7 @@
                             </div>
                         </div>
                         <div class="input-field align-left">
-                            <input id="{{'leaderboardSchema_'+$index}}" name="{{'leaderboardSchema_'+$index}}" type="text" class="text-dark-black dark-autofill w-400" ng-model="leaderboard.schema" required>
+                            <textarea id="{{'leaderboardSchema_'+$index}}" name="{{'leaderboardSchema_'+$index}}" type="text" class="materialize-textarea" ng-model="leaderboard.schema" required></textarea>
                                 <span class="form-icon form-icon-dark">
                                     <i class="fa fa-info-circle cursor-pointer">
                                         <md-tooltip md-direction="right">
@@ -37,18 +37,13 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col s12 m2">
-                           <button class="btn-floating btn-pagination waves-effect waves-dark" type="button" ng-click="createChallengeUsingUi.addNewLeaderboard()">
-                                <i class="fa fa-plus"></i>
-                            </button>
-                        </div>
-                        <div class="col s12 m2">
-                            <button ng-if="createChallengeUsingUi.leaderboards.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" type="button" ng-click="createChallengeUsingUi.removeNewLeaderboard($index)">
-                                <i class="fa fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
+                   <button class="btn-floating btn-pagination waves-effect waves-dark" type="button" ng-click="createChallengeUsingUi.addNewLeaderboard()">
+                        <i class="fa fa-plus"></i>
+                    </button>&nbsp;&nbsp;
+                    <button ng-if="createChallengeUsingUi.leaderboards.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" type="button" ng-click="createChallengeUsingUi.removeNewLeaderboard($index)">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <br>
                     <div class="align-left reg-control">
                         <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
                     </div>

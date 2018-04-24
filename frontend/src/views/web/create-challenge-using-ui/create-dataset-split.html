@@ -50,18 +50,13 @@
                             <p ng-message="required">Dataset split codename is required.</p>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col s12 m2">
-                           <button type="button" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.addNewDatasetSplit()">
-                                <i class="fa fa-plus"></i>
-                            </button>
-                        </div>
-                        <div class="col s12 m2">
-                            <button type="button" ng-if="createChallengeUsingUi.datasetSplits.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.removeNewDatasetSplit($index)">
-                                <i class="fa fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
+                   <button type="button" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.addNewDatasetSplit()">
+                        <i class="fa fa-plus"></i>
+                    </button>&nbsp;&nbsp;&nbsp;
+                    <button type="button" ng-if="createChallengeUsingUi.datasetSplits.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.removeNewDatasetSplit($index)">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <br>
                     <div class="align-left reg-control">
                         <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
                     </div>

@@ -57,7 +57,7 @@
                         <trix-editor class="editor" 
                                    ng-model-options="{ updateOn: 'blur' }" 
                                    spellcheck="false" class="trix-content" 
-                                   ng-model="createChallengeUsingUi.SubmissionGuidelines"
+                                   ng-model="createChallengeUsingUi.challengeSubmissionGuidelines"
                                    angular-trix 
                                    trix-initialize="trixInitialize(e, editor);" 
                                    trix-change="trixChange(e, editor);" 
@@ -103,18 +103,19 @@
                                    ></trix-editor>
                     </div>
                     <div class="input-field align-left">
-                            <input mdc-datetime-picker="" date="true" time="true" type="text" id="challengeStartDate" show-todays-date="" ng-model="createChallengeUsingUi.challengeStartDate" class="md-input button-focus" placeholder="Start Date" readonly>
-                            <span class="form-icon form-icon-dark">
-                                <i class="fa fa-info-circle cursor-pointer">
-                                    <md-tooltip md-direction="right">
-                                        Start Date of the Challenge
-                                    </md-tooltip>
-                                </i>
-                            </span>
+                      <input ng-model="createChallengeUsingUi.challengeStartDate" ng-model-options="{ updateOn: 'blur' }"
+                              placeholder="Challenge Start Date" moment-picker="createChallengeUsingUi.challengeStartDate" type="text">
+                        <span class="form-icon form-icon-dark">
+                            <i class="fa fa-info-circle cursor-pointer">
+                                <md-tooltip md-direction="right">
+                                    Start Date of the Challenge
+                                </md-tooltip>
+                            </i>
+                        </span>
                     </div>
                     <div class="input-field align-left">
-                        <input mdc-datetime-picker="" date="true" time="true" type="text" id="challengeEndDate"
-                         show-todays-date="" min-date="date" ng-model="createChallengeUsingUi.challengeEndDate" class="md-input" placeholder="End Date" readonly>
+                        <input ng-model="createChallengeUsingUi.challengeEndDate" ng-model-options="{ updateOn: 'blur' }"
+                              placeholder="Challenge End Date" min-date="createChallengeUsingUi.challengeStartDate" moment-picker="createChallengeUsingUi.challengeEndDate" type="text">
                         <span class="form-icon form-icon-dark">
                             <i class="fa fa-info-circle cursor-pointer">
                                 <md-tooltip md-direction="right">
@@ -148,7 +149,7 @@
                     <div class="file-field input-field">
                         <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
                             <span>Challenge Image</span>
-                            <input name="challengeImage" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="createChallengeUsingUi.challengeImage" required>
+                            <input name="challengeImage" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="createChallengeUsingUi.challengeImage" accept=".png, .jpg, .jpeg" required>
                         </div>
                         <div class="file-path-wrapper">
                             <input class="file-path validate" type="text">
@@ -164,7 +165,7 @@
                     <div class="file-field input-field">
                         <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
                             <span>Evaluation Script</span>
-                            <input name="challengeEvalScript" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="createChallengeUsingUi.challengeEvalScript" required>
+                            <input name="challengeEvalScript" ngf-select type="file" class="text-dark-black dark-autofill w-400" ng-model="createChallengeUsingUi.challengeEvalScript" accept=".zip" required>
                         </div>
                         <div class="file-path-wrapper">
                             <input class="file-path validate eval-script" type="text">

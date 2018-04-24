@@ -75,25 +75,27 @@
                         </div>
 
                     <div class="input-field align-left">
-                            <input mdc-datetime-picker="" date="true" time="true" type="text" id="{{'challengePhaseStartDate_'+$index}}" show-todays-date="" ng-model="challenge_phase.start_date" class="md-input" readonly="readonly" placeholder="Start Date">
-                            <span class="form-icon form-icon-dark">
-                                <i class="fa fa-info-circle cursor-pointer">
-                                    <md-tooltip md-direction="right">
-                                        Start date for challenge phase
-                                    </md-tooltip>
-                                </i>
-                            </span>
+                      <input ng-model="challenge_phase.start_date" ng-model-options="{ updateOn: 'blur' }"
+                              placeholder="Challenge Phase Start Date" moment-picker="challenge_phase.start_date" min-date="createChallengeUsingUi.challengeStartDate" type="text">
+                        <span class="form-icon form-icon-dark">
+                            <i class="fa fa-info-circle cursor-pointer">
+                                <md-tooltip md-direction="right">
+                                    Start Date of the Challenge Phase
+                                </md-tooltip>
+                            </i>
+                        </span>
                     </div>
 
                     <div class="input-field align-left">
-                            <input mdc-datetime-picker="" date="true" time="true" type="text" id="{{'challengePhaseEndDate_'+$index}}" show-todays-date="" ng-model="challenge_phase.end_date" class="md-input" readonly="readonly" placeholder="End Date">
-                            <span class="form-icon form-icon-dark">
-                                <i class="fa fa-info-circle cursor-pointer">
-                                    <md-tooltip md-direction="right">
-                                        End date for a challenge phase
-                                    </md-tooltip>
-                                </i>
-                            </span>
+                      <input ng-model="challenge_phase.end_date" ng-model-options="{ updateOn: 'blur' }"
+                              placeholder="Challenge Phase End Date" moment-picker="challenge_phase.end_date" type="text">
+                        <span class="form-icon form-icon-dark">
+                            <i class="fa fa-info-circle cursor-pointer">
+                                <md-tooltip md-direction="right">
+                                    End Date of the Challenge Phase
+                                </md-tooltip>
+                            </i>
+                        </span>
                     </div>
                         <div class="input-field align-left">
                             <input type="checkbox" id="{{'challengePhaseLeaderboardPublic_'+$index}}" name="{{'challengePhaseLeaderboardPublic_'+$index}}" ng-model="challenge_phase.leaderboard_public">
@@ -138,19 +140,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col s12 m2">
-                           <button type="button" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.addNewChallengePhase()">
-                                <i class="fa fa-plus"></i>
-                            </button>
-                        </div>
-                        <div class="col s12 m2">
-                            <button type="button" ng-if="createChallengeUsingUi.challengePhases.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.removeChallengePhase($index)">
-                                <i class="fa fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-
+                   <button type="button" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.addNewChallengePhase()">
+                        <i class="fa fa-plus"></i>
+                    </button> &nbsp;&nbsp;&nbsp;
+                    <button type="button" ng-if="createChallengeUsingUi.challengePhases.length > 1" class="btn-floating btn-pagination waves-effect waves-dark" ng-click="createChallengeUsingUi.removeChallengePhase($index)">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <br>
                     <div class="align-left reg-control">
                         <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
                     </div>
