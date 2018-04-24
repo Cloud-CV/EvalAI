@@ -1,3 +1,5 @@
+from django.conf import settings
+
 import json
 import pika
 
@@ -5,7 +7,7 @@ import pika
 def publish_submission_message(challenge_id, phase_id, submission_id):
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host='localhost'))
+        host=settings.RABBITMQ_PARAMETERS['HOST']))
     channel = connection.channel()
     channel.exchange_declare(exchange='evalai_submissions', type='topic')
 
