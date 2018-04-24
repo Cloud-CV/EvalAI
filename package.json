@@ -42,6 +42,7 @@
     "mocha": "^5.0.5"
   },
   "dependencies": {
+    "angular-moment-picker": "^0.10.2",
     "connect-modrewrite": "^0.10.2",
     "fs": "0.0.1-security",
     "gulp-config": "^0.3.0",

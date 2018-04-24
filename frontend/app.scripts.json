@@ -19,7 +19,9 @@
       "trix",
       "moment",
       "locale",
-      "angular-moment"
+      "angular-moment",
+      "angular-moment-picker"
+
     ]
   },
   "paths": {
@@ -41,6 +43,7 @@
        "trix": "bower_components/trix/dist/trix.js",
        "moment": "bower_components/moment/moment.js",
        "locale": "bower_components/moment/locale/de.js",
-       "angular-moment": "bower_components/angular-moment/angular-moment.js"
+       "angular-moment": "bower_components/angular-moment/angular-moment.js",
+       "angular-moment-picker": "bower_components/angular-moment-picker/dist/angular-moment-picker.min.js"
      }
 }
