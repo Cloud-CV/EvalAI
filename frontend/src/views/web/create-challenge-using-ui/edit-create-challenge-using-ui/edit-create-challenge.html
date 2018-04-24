@@ -1,0 +1,163 @@
+<!-- Edit Challenge creation form -->
+
+<section ng-if="createChallengeUsingUi.step1e" class="ev-md-container text-center">
+    <div class="row">
+        <div class="col s12 m6 offset-m3">
+            <div class="ev-md-container ev-card-body auto">
+                <div class="pass-title">Edit Challenge</div>
+                <form name="editChallengeForm" ng-submit="createChallengeUsingUi.editChallenge(editChallengeForm)" novalidate>
+                    <div class="input-field align-left">
+                        <input id="challengeTitle" name="challengeTitle" type="text" class="text-dark-black dark-autofill w-400" ng-model="createChallengeUsingUi.challenge.title" value="{{createChallengeUsingUi.challenge.title}}" focus-if="createChallengeUsingUi.challenge.title" required>
+                            <span class="form-icon form-icon-dark">
+                                <i class="fa fa-info-circle cursor-pointer">
+                                    <md-tooltip md-direction="right">
+                                      Title of the Challenge
+                                    </md-tooltip>
+                                </i>
+                            </span>
+                        <label for="challengeTitle">Challenge Title</label>
+                        <div class="wrn-msg text-highlight" ng-messages="editChallengeForm.challengeTitle.$error" ng-if="editChallengeForm.challengeTitle.$touched || editChallengeForm.$submitted">
+                            <p ng-message="required">Challenge Title is required.</p>
+                        </div>
+                    </div>
+                    <div class="input-field align-left">
+                        <trix-editor 
+                                   ng-model-options="{ updateOn: 'blur' }" 
+                                   spellcheck="false" class="trix-content" 
+                                   ng-model="createChallengeUsingUi.challenge.short_description"
+                                   angular-trix 
+                                   trix-initialize="trixInitialize(e, editor);" 
+                                   trix-change="trixChange(e, editor);" 
+                                   trix-selection-change="trixSelectionChange(e, editor);" 
+                                   trix-focus="trixFocus(e, editor);" 
+                                   trix-blur="trixBlur(e, editor);" 
+                                   trix-file-accept="trixFileAccept(e, editor);" 
+                                   trix-attachment-add="createChallengeUsingUi.trixAttachmentAdd(e, editor);" 
+                                   trix-attachment-remove="trixAttachmentRemove(e, editor);"
+                                   class="trix-content"
+                                   placeholder="Short Description for the Challenge"></trix-editor>
+                    </div>
+                    <div class="input-field align-left">
+                        <trix-editor class="editor"
+                                   ng-model-options="{ updateOn: 'blur' }" 
+                                   spellcheck="false" class="trix-content" 
+                                   ng-model="createChallengeUsingUi.challenge.description"
+                                   angular-trix 
+                                   trix-initialize="trixInitialize(e, editor);" 
+                                   trix-change="trixChange(e, editor);" 
+                                   trix-selection-change="trixSelectionChange(e, editor);" 
+                                   trix-focus="trixFocus(e, editor);" 
+                                   trix-blur="trixBlur(e, editor);" 
+                                   trix-file-accept="trixFileAccept(e, editor);" 
+                                   trix-attachment-add="createChallengeUsingUi.trixAttachmentAdd(e, editor);" 
+                                   trix-attachment-remove="trixAttachmentRemove(e, editor);"
+                                   placeholder="Long Description of the Challenge"></trix-editor>
+                    </div>
+                    <div class="input-field align-left">
+                        <trix-editor class="editor" 
+                                   ng-model-options="{ updateOn: 'blur' }" 
+                                   spellcheck="false" class="trix-content" 
+                                   ng-model="createChallengeUsingUi.challenge.submission_guidelines"
+                                   angular-trix 
+                                   trix-initialize="trixInitialize(e, editor);" 
+                                   trix-change="trixChange(e, editor);" 
+                                   trix-selection-change="trixSelectionChange(e, editor);" 
+                                   trix-focus="trixFocus(e, editor);" 
+                                   trix-blur="trixBlur(e, editor);" 
+                                   trix-file-accept="trixFileAccept(e, editor);" 
+                                   trix-attachment-add="createChallengeUsingUi.trixAttachmentAdd(e, editor);" 
+                                   trix-attachment-remove="trixAttachmentRemove(e, editor);"
+                                   placeholder="Submission Guidelines for the Challenge"></trix-editor>
+                    </div>
+                    <div class="input-field align-left">
+                        <trix-editor class="editor" 
+                                   ng-model-options="{ updateOn: 'blur' }" 
+                                   spellcheck="false" class="trix-content" 
+                                   ng-model="createChallengeUsingUi.challenge.terms_and_conditions"
+                                   angular-trix 
+                                   trix-initialize="trixInitialize(e, editor);" 
+                                   trix-change="trixChange(e, editor);" 
+                                   trix-selection-change="trixSelectionChange(e, editor);" 
+                                   trix-focus="trixFocus(e, editor);" 
+                                   trix-blur="trixBlur(e, editor);" 
+                                   trix-file-accept="trixFileAccept(e, editor);" 
+                                   trix-attachment-add="createChallengeUsingUi.trixAttachmentAdd(e, editor);" 
+                                   trix-attachment-remove="trixAttachmentRemove(e, editor);"
+                                   placeholder="Terms and Conditions"></trix-editor>
+                    </div>
+                    <div class="input-field align-left">
+                        <trix-editor class="editor"
+                                   ng-model-options="{ updateOn: 'blur' }" 
+                                   spellcheck="false" class="trix-content" 
+                                   ng-model="createChallengeUsingUi.challenge.evaluation_details"
+                                   angular-trix 
+                                   trix-initialize="trixInitialize(e, editor);" 
+                                   trix-change="trixChange(e, editor);" 
+                                   trix-selection-change="trixSelectionChange(e, editor);" 
+                                   trix-focus="trixFocus(e, editor);" 
+                                   trix-blur="trixBlur(e, editor);" 
+                                   trix-file-accept="trixFileAccept(e, editor);" 
+                                   trix-attachment-add="createChallengeUsingUi.trixAttachmentAdd(e, editor);" 
+                                   trix-attachment-remove="trixAttachmentRemove(e, editor);"
+                                   placeholder="Evaluation Details for the Challenge"
+                                   ></trix-editor>
+                    </div>
+                    <div class="input-field align-left">
+                            <input mdc-datetime-picker="" date="true" time="true" type="text" id="challengeStartDate" show-todays-date="" ng-model="createChallengeUsingUi.challenge.start_date" class="md-input button-focus" placeholder="Start Date" readonly>
+                            <span class="form-icon form-icon-dark">
+                                <i class="fa fa-info-circle cursor-pointer">
+                                    <md-tooltip md-direction="right">
+                                        Start Date of the Challenge
+                                    </md-tooltip>
+                                </i>
+                            </span>
+                    </div>
+                    <div class="input-field align-left">
+                        <input mdc-datetime-picker="" date="true" time="true" type="text" id="challengeEndDate"
+                         show-todays-date="" min-date="date" ng-model="createChallengeUsingUi.challenge.end_date" class="md-input" placeholder="End Date" readonly>
+                        <span class="form-icon form-icon-dark">
+                            <i class="fa fa-info-circle cursor-pointer">
+                                <md-tooltip md-direction="right">
+                                    End Date of the Challenge
+                                </md-tooltip>
+                            </i>
+                        </span>
+                    </div>
+                    <div class="input-field align-left">
+                        <input type="checkbox" id="challengeEnableForum" name="challengeEnableForum" ng-model="createChallengeUsingUi.challenge.enable_forum" value="createChallengeUsingUi.challenge.enable_forum">
+                        <label for="challengeEnableForum">Enable Forum</label>
+                        <span class="form-icon form-icon-dark">
+                            <i class="fa fa-info-circle cursor-pointer">
+                                <md-tooltip md-direction="right">
+                                    Enable challenge discussion forum
+                                </md-tooltip>
+                            </i>
+                        </span>
+                    </div>
+                    <div class="input-field align-left">
+                        <input type="checkbox" id="challengePublicallyAvailable" name="challengePublicallyAvailable" ng-model="createChallengeUsingUi.challenge.published" value="{{createChallengeUsingUi.challenge.published}}">
+                        <label for="challengePublicallyAvailable" class="checkbox-field">Publically Available</label>
+                        <span class="form-icon form-icon-dark">
+                            <i class="fa fa-info-circle cursor-pointer">
+                                <md-tooltip md-direction="right">
+                                    Make the challenge available to the public
+                                </md-tooltip>
+                            </i>
+                        </span>
+                    </div>
+                    <ul class="inline-list hide-on-med-and-down">
+                      <li>
+                        <a ng-click="createChallengeUsingUi.showEditChallenge(true)" class="dark-link pointer"><strong>Cancel</strong></a>
+                      </li>
+                      <li>
+                        <span class="text-light-black">Or</span>
+                      </li>
+                      <li>
+                        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="submit">Submit</button>
+                      </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

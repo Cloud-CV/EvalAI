@@ -332,3 +332,155 @@
         }
     }
 })();
+
+//Create Challenge Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createChallenge', createChallenge);
+
+    function createChallenge() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-challenge.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Leaderboard Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createLeaderboard', createLeaderboard);
+
+    function createLeaderboard() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-leaderboard.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Challenge Phase Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createChallengePhase', createChallengePhase);
+
+    function createChallengePhase() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-challenge-phase.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Dataset Split Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createDatasetSplit', createDatasetSplit);
+
+    function createDatasetSplit() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-dataset-split.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Challenge Phase Split Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createChallengePhaseSplit', createChallengePhaseSplit);
+
+    function createChallengePhaseSplit() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-challenge-phase-split.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Review Screen Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('reviewScreen', reviewScreen);
+
+    function reviewScreen() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/review-screen.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Submission Screen Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('submissionScreen', submissionScreen);
+
+    function submissionScreen() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/submission-screen.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Edit Challenge Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('editChallenge', editChallenge);
+
+    function editChallenge() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/edit-create-challenge-using-ui/edit-create-challenge.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();

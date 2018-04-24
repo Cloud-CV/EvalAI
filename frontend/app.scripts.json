@@ -42,6 +42,5 @@
        "moment": "bower_components/moment/moment.js",
        "locale": "bower_components/moment/locale/de.js",
        "angular-moment": "bower_components/angular-moment/angular-moment.js"
-
      }
 }
