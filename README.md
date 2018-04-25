@@ -92,4 +92,4 @@ You can also use Docker Compose to run all the components of EvalAI-ngx together
 
 ## The Team
 
-EvalAI-ngx is currently maintained by [Akash Jain](http://www.jainakash.in/), [Shiv Baran Singh](http://www.shivbaran.in/), [Rishabh Jain](https://rishabhjain2018.github.io/) and [Deshraj Yadav](https://deshraj.github.io).
+EvalAI-ngx is currently maintained by [Akash Jain](http://www.jainakash.in/), [Shiv Baran Singh](http://www.shivbaran.in/), [Shivani Prakash Gupta](https://www.behance.net/shivaniprakash19) [Rishabh Jain](https://rishabhjain2018.github.io/) and [Deshraj Yadav](https://deshraj.github.io).
