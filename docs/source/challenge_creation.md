@@ -76,11 +76,9 @@ The challenge configuration file on EvalAI consists of following fields:
 
     * **description**: Long description of the challenge phase (set relative path of the html file, e.g. `challenge_details/phase1_description.html`)
 
-    * **leaderboard_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to make their leaderboard public or private. Default is `False`)
+    * **leaderboard_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either make the leaderboard public or private. Default is `False`)
 
     * **is_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either hide or show the challenge phase to participants. Default is `False`)
-
-    * **leaderboard_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either make the leaderboard public or private. Default is `False`)
 
     * **is_submission_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either make the submissions by default public/private. Note that this will only work when the `leaderboard_public` property is set to true. Default is `False`)
 
