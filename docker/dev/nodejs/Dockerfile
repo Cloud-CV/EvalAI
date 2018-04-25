@@ -1,4 +1,4 @@
-FROM node:8.11.1
+FROM node:9.11.1
 MAINTAINER EvalAI Team <team@cloudcv.org>
 
 RUN apt-get update -qq && apt-get install -y build-essential git curl libfontconfig
@@ -21,8 +21,6 @@ RUN npm install -g bower gulp
 RUN npm link gulp
 
 RUN npm cache clean -f
-RUN npm install -g n
-RUN n stable
 RUN npm install
 RUN bower install --allow-root
 
