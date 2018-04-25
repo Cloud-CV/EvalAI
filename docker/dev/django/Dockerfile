@@ -23,5 +23,6 @@ COPY settings/dev.sample.py /code/settings/dev.py
 
 RUN pip install -r requirements/dev.txt
 
-CMD ["sh", "/code/docker/dev/django/container-start.sh"]
+CMD ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]
+
 EXPOSE 8000
