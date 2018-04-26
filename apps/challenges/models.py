@@ -112,7 +112,7 @@ class ChallengePhase(TimeStampedModel):
         self._original_test_annotation = self.test_annotation
 
     name = models.CharField(max_length=100, db_index=True)
-    index = models.PositiveIntegerField(default=0)
+    phase_id = models.PositiveIntegerField(default=0)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
     start_date = models.DateTimeField(
@@ -183,7 +183,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     )
 
     challenge_phase = models.ForeignKey('ChallengePhase')
-    index = models.PositiveIntegerField(default=0)
+    phase_split_id = models.PositiveIntegerField(default=0)
     dataset_split = models.ForeignKey('DatasetSplit')
     leaderboard = models.ForeignKey('Leaderboard')
     visibility = models.PositiveSmallIntegerField(

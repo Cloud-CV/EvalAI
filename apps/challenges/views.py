@@ -887,7 +887,22 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
         zip_config = ChallengeConfiguration.objects.get(
             pk=uploaded_zip_file.pk)
+
         if zip_config:
+
+            # Change the challenge id's to not update the pk.
+            phases = ChallengePhase.objects.filter(challenge=challenge)
+            phase_idx = 1
+            for phase in phases:
+                phase.phase_id = phase_idx
+                phase.save()
+                phase_idx += 1
+                challenge_phase_split_idx = 1
+                phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase=phase)
+                for phase_split in phase_splits:
+                    phase_split.phase_split_id = challenge_phase_split_idx
+                    phase_split.save()
+                    challenge_phase_split_idx += 1
 
             # Add the Challenge Host as a test participant.
             emails = challenge_host_team.get_all_challenge_host_email()
