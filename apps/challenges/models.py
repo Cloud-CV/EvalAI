@@ -112,6 +112,7 @@ class ChallengePhase(TimeStampedModel):
         self._original_test_annotation = self.test_annotation
 
     name = models.CharField(max_length=100, db_index=True)
+    index = models.PositiveIntegerField(default=0)
     description = models.TextField()
     leaderboard_public = models.BooleanField(default=False)
     start_date = models.DateTimeField(
