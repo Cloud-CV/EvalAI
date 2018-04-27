@@ -23,7 +23,8 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ChallengeParticipantTeamListSerializer,
                           ParticipantTeamDetailSerializer,)
 from .utils import (get_list_of_challenges_for_participant_team,
-                    get_list_of_challenges_participated_by_a_user,)
+                    get_list_of_challenges_participated_by_a_user,
+                    is_user_part_of_participant_team,)
 
 
 @throttle_classes([UserRateThrottle])
@@ -100,18 +101,26 @@ def participant_team_detail(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def invite_participant_to_team(request, pk):
-
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
     except ParticipantTeam.DoesNotExist:
-        response_data = {'error': 'ParticipantTeam does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        response_data = {'error': 'Participant Team does not exist'}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     email = request.data.get('email')
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         response_data = {'error': 'User does not exist with this email address!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not is_user_part_of_participant_team(request.user, participant_team):
+        response_data = {'error': 'You are not a member of this team!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    participant = Participant.objects.filter(team=participant_team, user=user)
+    if participant.exists():
+        response_data = {'error': 'User is already part of the team!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     invited_user_participated_challenges = get_list_of_challenges_participated_by_a_user(
@@ -224,8 +233,8 @@ def remove_self_from_participant_team(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        participant = Participant.objects.get(user=request.user, team__pk=participant_team_pk)
-    except:
+        participant = Participant.objects.get(user=request.user, team=participant_team)
+    except Participant.DoesNotExist:
         response_data = {'error': 'Sorry, you do not belong to this team!'}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 

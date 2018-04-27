@@ -496,40 +496,40 @@ class InviteHostToTeamTest(BaseAPITestClass):
 
     def test_invite_host_to_team_with_no_data(self):
         del self.data['email']
-        response = self.client.post(self.url, self.data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        expected = {
+            'error': 'User does not exist with this email address!'
+        }
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_invite_self_to_team(self):
         self.data = {
             'email': self.user.email
         }
         expected = {
-            'email': [
-                'A host cannot invite himself'
-            ]
+            'error': 'User is already part of the team!'
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_invite_user_which_does_not_exist_to_team(self):
         self.data = {
             'email': 'userwhichdoesnotexist@platform.com'
         }
         expected = {
-            'email': [
-                'User does not exist'
-            ]
+            'error': 'User does not exist with this email address!'
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_particular_challenge_host_team_for_invite_does_not_exist(self):
         self.url = reverse_lazy('hosts:invite_host_to_team',
                                 kwargs={'pk': self.challenge_host_team.pk + 1})
         expected = {
-            'error': 'ChallengeHostTeam does not exist'
+            'error': 'Host Team does not exist'
         }
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
