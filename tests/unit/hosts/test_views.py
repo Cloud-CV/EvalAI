@@ -534,3 +534,27 @@ class InviteHostToTeamTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_when_requesting_user_is_not_part_of_team(self):
+
+        # Create a new user and make a request using this user which doesn't
+        # belong to any team and still trying to invite other people
+        temp_user = User.objects.create(
+            username="username", password="password", email="temp@example.com")
+
+        EmailAddress.objects.create(
+            user=temp_user,
+            email='temp@example.com',
+            primary=True,
+            verified=True)
+
+        self.client.force_authenticate(user=temp_user)
+
+        self.url = reverse_lazy('hosts:invite_host_to_team',
+                                kwargs={'pk': self.challenge_host_team.pk})
+        expected = {
+            'error': 'You are not a member of this team!'
+        }
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
