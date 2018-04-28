@@ -21,6 +21,11 @@ NUMBER_OF_CHALLENGES = 1
 NUMBER_OF_PHASES = 2
 NUMBER_OF_DATASET_SPLITS = 2
 DATASET_SPLIT_ITERATOR = 0
+VISIBILITY = {
+    '1': ChallengePhaseSplit.HOST,
+    '2': ChallengePhaseSplit.OWNER_AND_HOST,
+    '3': ChallengePhaseSplit.PUBLIC
+}
 
 try:
     xrange          # Python 2
@@ -102,25 +107,25 @@ def create_challenge_host_team(user):
     return team
 
 
-def create_challenges(number_of_challenges, host_team=None):
+def create_challenges(number_of_challenges, host_team=None, challenge_name=None):
     """
     Creates past challenge, on-going challenge and upcoming challenge.
     """
     for i in xrange(number_of_challenges):
         if (i % 3 == 0):
-            create_challenge("{} Challenge".format(fake.first_name()),
+            create_challenge("{} Challenge".format(challenge_name),
                              timezone.now() - timedelta(days=100),
                              timezone.now() + timedelta(days=500),
                              host_team
                              )
         elif (i % 3 == 1):
-            create_challenge("{} Challenge".format(fake.first_name()),
+            create_challenge("{} Challenge".format(challenge_name),
                              timezone.now() - timedelta(days=500),
                              timezone.now() - timedelta(days=100),
                              host_team
                              )
         elif (i % 3 == 2):
-            create_challenge("{} Challenge".format(fake.first_name()),
+            create_challenge("{} Challenge".format(challenge_name),
                              timezone.now() + timedelta(days=100),
                              timezone.now() + timedelta(days=500),
                              host_team
@@ -131,7 +136,8 @@ def create_challenge(title, start_date, end_date, host_team):
     """
     Creates a challenge.
     """
-    evaluation_script = open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'string_matching.zip'), 'rb')
+    evaluation_script = open(os.path.join(settings.BASE_DIR, 'examples', 'random_challenge', 'evaluation_script.zip'), 'rb')
+    image = open(os.path.join(settings.BASE_DIR, 'examples', 'random_challenge', 'logo.jpg'), 'rb')
     Challenge.objects.create(
         title=title,
         short_description=fake.paragraph(),
@@ -147,6 +153,7 @@ def create_challenge(title, start_date, end_date, host_team):
         anonymous_leaderboard=False,
         start_date=start_date,
         end_date=end_date,
+        image=SimpleUploadedFile(image.name, image.read())
     )
     print("Challenge created with title: {} creator: {} start_date: {} end_date: {}".format(title,
                                                                                             host_team.team_name,
@@ -160,7 +167,7 @@ def create_challenge_phases(challenge, number_of_phases=1):
     challenge_phases = []
     for i in range(number_of_phases):
         name = "{} Phase".format(fake.first_name())
-        with open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'test_annotation.txt'), 'rb') as data_file:
+        with open(os.path.join(settings.BASE_DIR, 'examples', 'random_challenge', 'annotations', 'test_annotations_testsplit.json'), 'rb') as data_file:
             data = data_file.read()
         data = data or None
         challenge_phase = ChallengePhase.objects.create(
@@ -171,8 +178,8 @@ def create_challenge_phases(challenge, number_of_phases=1):
             start_date=challenge.start_date,
             end_date=challenge.end_date,
             challenge=challenge,
-            test_annotation=SimpleUploadedFile(fake.file_name(extension="txt"), data, content_type="text/plain"),
-            codename="{}{}".format("phase", i + 1),
+            test_annotation=SimpleUploadedFile(fake.file_name(extension="json"), data, content_type="text/plain"),
+            codename="{}{}".format("phase", i),
         )
         challenge_phases.append(challenge_phase)
         print("Challenge Phase created with name: {} challenge: {}".format(name, challenge.title))
@@ -184,8 +191,8 @@ def create_leaderboard():
     Creates Leaderboard schema and returns it.
     """
     schema = {
-        'labels': ['score', ],
-        'default_order_by': 'score',
+        'labels': ["Metric1", "Metric2", "Metric3", "Total"],
+        'default_order_by': 'Total',
     }
     leaderboard = Leaderboard.objects.create(
         schema=schema
@@ -213,7 +220,7 @@ def create_dataset_splits(number_of_splits):
     return dataset_splits
 
 
-def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
+def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split, visibility):
     """
     Creates a challenge phase split.
     """
@@ -221,7 +228,7 @@ def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
         challenge_phase=challenge_phase,
         leaderboard=leaderboard,
         dataset_split=dataset_split,
-        visibility=ChallengePhaseSplit.PUBLIC
+        visibility=visibility
     )
     print("Challenge Phase Split created with challenge_phase: {} dataset_split: {}".format(challenge_phase.name,
                                                                                             dataset_split.name))
@@ -256,7 +263,7 @@ def run(*args):
     # Create challenge host team with challenge host
     challenge_host_team = create_challenge_host_team(user=host_user)
     # Create challenge
-    create_challenges(number_of_challenges=NUMBER_OF_CHALLENGES, host_team=challenge_host_team)
+    create_challenges(number_of_challenges=NUMBER_OF_CHALLENGES, host_team=challenge_host_team, challenge_name="Random Number Generator")
 
     # Fetch all the created challenges
     challenges = Challenge.objects.all()
@@ -268,9 +275,11 @@ def run(*args):
         # Create Dataset Split for each Challenge
         dataset_splits = create_dataset_splits(number_of_splits=NUMBER_OF_DATASET_SPLITS)
         # Create Challenge Phase Split for each Phase and Dataset Split
-        for challenge_phase in challenge_phases:
-            for dataset_split in dataset_splits:
-                create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split)
+
+    create_challenge_phase_splits(challenge_phases[0], leaderboard, dataset_splits[0], VISIBILITY['3'])
+    create_challenge_phase_splits(challenge_phases[1], leaderboard, dataset_splits[0], VISIBILITY['3'])
+    create_challenge_phase_splits(challenge_phases[1], leaderboard, dataset_splits[1], VISIBILITY['1'])
+
     participant_user = create_user(is_admin=False, username="participant")
     create_participant_team(user=participant_user)
     print('Database successfully seeded.')
