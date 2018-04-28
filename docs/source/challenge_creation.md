@@ -188,6 +188,10 @@ challenge_phase_splits:
 
 Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) for examples on the different types of challenges on EvalAI.
 
+### How to host a challenge on EvalAI ?
+
+If you  want to host a challenge and are looking for a simple challenge configuration file that you can replicate to create a challenge on EvalAI, then please see this [repository](https://github.com/Cloud-CV/EvalAI-Starters) and follow the steps given in readme.
+
 ### Next Steps
 
 The next step is to create a zip file that contains the YAML config file, all the HTML templates for the challenge description, challenge phase description, evaluation criteria, submission guidelines, evaluation script, test annotation file(s) and challenge logo (optional).
