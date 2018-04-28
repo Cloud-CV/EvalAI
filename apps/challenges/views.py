@@ -389,7 +389,7 @@ def challenge_phase_list(request, challenge_pk):
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_phase_detail(request, challenge_pk, pk):
+def challenge_phase_detail(request, challenge_pk, challenge_phase_id):
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
@@ -397,7 +397,7 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge_phase = ChallengePhase.objects.get(pk=pk)
+        challenge_phase = ChallengePhase.objects.get(challenge=challenge, phase_id=challenge_phase_id)
     except ChallengePhase.DoesNotExist:
         response_data = {'error': 'ChallengePhase does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -956,20 +956,20 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
+def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_id):
     """
     Returns all the submissions for a particular challenge
     """
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
-    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
+    # To check for the corresponding challenge phase from the challenge_phase_id and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge)
+            challenge=challenge, phase_id=challenge_phase_id)
     except ChallengePhase.DoesNotExist:
         response_data = {
-            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # To check for the user as a host of the challenge from the request and challenge_pk.
@@ -1018,7 +1018,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_type):
+def download_all_submissions(request, challenge_pk, challenge_phase_id, file_type):
 
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
@@ -1026,10 +1026,10 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
     # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
     try:
         challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge)
+            challenge=challenge, phase_id=challenge_phase_id)
     except ChallengePhase.DoesNotExist:
         response_data = {
-            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if file_type == 'csv':

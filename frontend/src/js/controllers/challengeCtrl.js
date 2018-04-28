@@ -871,7 +871,6 @@
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
-
             vm.stopFetchingSubmissions();
             vm.isResult = true;
             vm.phaseId = phaseId;
@@ -1509,7 +1508,7 @@
 
         vm.editChallengePhase = function(editChallengePhaseForm) {
             if (editChallengePhaseForm) {
-                vm.challengePhaseId = vm.page.challenge_phase.id;
+                vm.challengePhaseId = vm.page.challenge_phase.phase_id;
                 parameters.url = "challenges/challenge/" + vm.challengeId + "/challenge_phase/" + vm.challengePhaseId;
                 parameters.method = 'PATCH';
                 var formData = new FormData();
