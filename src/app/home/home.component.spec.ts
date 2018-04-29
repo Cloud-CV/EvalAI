@@ -1,6 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HomeComponent } from './home.component';
+import { HeaderStaticComponent } from '../partials/nav/header-static/header-static.component';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -8,7 +9,10 @@ describe('HomeComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ HomeComponent ]
+      declarations: [
+        HomeComponent,
+        HeaderStaticComponent
+      ]
     })
     .compileComponents();
   }));
@@ -33,6 +37,6 @@ describe('HomeComponent', () => {
     fixture = TestBed.createComponent(HomeComponent);
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain('Welcome to EvalAI|Home');
+    expect(compiled.querySelector('h1').textContent).toContain('EvalAI');
   }));
 });

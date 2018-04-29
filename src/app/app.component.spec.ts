@@ -4,6 +4,7 @@ import {RouterTestingModule} from '@angular/router/testing';
 import {Router} from '@angular/router';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
+import { HeaderStaticComponent } from './partials/nav/header-static/header-static.component';
 
 describe('AppComponent', () => {
 
@@ -15,7 +16,8 @@ describe('AppComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         AppComponent,
-        HomeComponent
+        HomeComponent,
+        HeaderStaticComponent
       ],
       imports: [
         RouterTestingModule

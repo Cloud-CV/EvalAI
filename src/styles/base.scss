@@ -1,10 +1,16 @@
 /*Add global styles here*/
+
 @import './variables.scss';
 @import './mixins.scss';
 @import './grid.scss';
 @import './font.scss';
 
+body{
+  font-family: 'Open Sans';
+}
+
 /*Font sizes*/
+
 .fs-12 {
   font-size: $fs-12;
 }
@@ -35,4 +41,95 @@
 
 .fs-36 {
   font-size: $fs-36;
+}
+
+
+/*anchors*/
+a{
+  color: $blue-dark;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  &:hover{
+    color: $blue-light;
+  }
+  &:focus,
+  &:active{
+    text-decoration: none;
+  }
+}
+
+a.light-link{
+  color: $blue-light;
+  transition: all 0.2s ease-in-out;
+  &:hover{
+    color: white;
+  }
+}
+
+.pointer{
+  cursor: pointer;
+}
+
+
+/*list styles*/
+
+ul {
+  &.inline-list {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+     li {
+      display: inline-block;
+      margin: 15px 20px;
+    }
+    &.left-list {
+      li {
+        margin-left: 0;
+      }
+    }
+    &.right-list {
+      li {
+        margin-right: 0;
+      }
+    }
+   
+  }
+  &.right-nav{
+    margin-top: 7px;
+  }
+}
+
+/*alignment*/
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+.clear-fix {
+  clear: both;
+}
+
+.align-center{
+  text-align: center;
+}
+
+/*color*/
+.white{
+  color: white;
+}
+
+/*container*/
+
+.container{
+  position: relative;
+  z-index: 1;
+  padding: 15px 40px;
+}
+
+.container-top{
+  padding-top: 80px;
 }
