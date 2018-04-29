@@ -106,7 +106,8 @@ class TestChallengeUrls(BaseAPITestClass):
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/challenge_phase')
 
         url = reverse_lazy('challenges:get_challenge_phase_detail',
-                           kwargs={'challenge_pk': self.challenge.pk, 'challenge_phase_id': self.challenge_phase.phase_id})
+                           kwargs={'challenge_pk': self.challenge.pk,
+                                   'challenge_phase_id': self.challenge_phase.phase_id})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/challenge_phase/' +
                          str(self.challenge_phase.phase_id))
 

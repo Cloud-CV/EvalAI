@@ -15,7 +15,7 @@ from accounts.permissions import HasVerifiedEmail
 
 from challenges.models import ChallengePhase
 from challenges.permissions import IsChallengeCreator
-from challenges.utils import get_challenge_model, get_challenge_phase_model
+from challenges.utils import get_challenge_model
 from jobs.models import Submission
 from jobs.serializers import (LastSubmissionDateTime,
                               LastSubmissionDateTimeSerializer,

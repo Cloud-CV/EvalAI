@@ -22,7 +22,7 @@ from challenges.models import (
     Challenge,
     ChallengePhaseSplit,
     LeaderboardData,)
-from challenges.utils import get_challenge_model, get_challenge_phase_model
+from challenges.utils import get_challenge_model
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -49,7 +49,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
     # check if the challenge phase exists or not
     try:
         challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_id, challenge=challenge)
+            challenge=challenge, phase_id=challenge_phase_id)
     except ChallengePhase.DoesNotExist:
         response_data = {'error': 'Challenge Phase does not exist'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -113,7 +113,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             response_data = serializer.data
             submission = serializer.instance
             # publish message in the queue
-            publish_submission_message(challenge_id, challenge_phase_id, submission.id)
+            publish_submission_message(challenge_id, challenge_phase.pk, submission.id)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -122,7 +122,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 @api_view(['PATCH'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def change_submission_data_and_visibility(request, challenge_pk, challenge_phase_pk, submission_pk):
+def change_submission_data_and_visibility(request, challenge_pk, challenge_phase_id, submission_pk):
     """
     API Endpoint for updating the submission meta data
     and changing submission visibility.
@@ -132,7 +132,13 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
     challenge = get_challenge_model(challenge_pk)
 
     # check if the challenge phase exists or not
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            challenge=challenge, phase_id=challenge_phase_id)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if not challenge.is_active:
         response_data = {'error': 'Challenge is not active'}
@@ -259,7 +265,7 @@ def leaderboard(request, challenge_phase_split_id):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
+def get_remaining_submissions(request, challenge_phase_id, challenge_pk):
 
     '''
     Returns the number of remaining submissions that a participant can
@@ -269,9 +275,15 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
     # significance of get_challenge_model() here to check
     # if the challenge exists or not
-    get_challenge_model(challenge_pk)
+    challenge = get_challenge_model(challenge_pk)
 
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            challenge=challenge, phase_id=challenge_phase_id)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge_pk)
@@ -287,7 +299,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
-        challenge_phase=challenge_phase_pk,
+        challenge_phase=challenge_phase.pk,
         participant_team=participant_team_pk)
 
     failed_submissions = submissions_done.filter(
