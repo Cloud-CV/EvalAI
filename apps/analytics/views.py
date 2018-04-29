@@ -13,6 +13,7 @@ from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 
+from challenges.models import ChallengePhase
 from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
 from jobs.models import Submission
@@ -107,7 +108,7 @@ def get_submission_count(request, challenge_pk, duration):
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_pk):
+def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_id):
     """
     API to fetch
     1. The submissions count for challenge phase.
@@ -115,7 +116,13 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     """
     challenge = get_challenge_model(challenge_pk)
 
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            challenge=challenge, phase_id=challenge_phase_id)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     submissions = Submission.objects.filter(
         challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
@@ -138,13 +145,19 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_last_submission_time(request, challenge_pk, challenge_phase_pk, submission_by):
+def get_last_submission_time(request, challenge_pk, challenge_phase_id, submission_by):
     """
         Returns the last submission time for a particular challenge phase
     """
     challenge = get_challenge_model(challenge_pk)
 
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            challenge=challenge, phase_id=challenge_phase_id)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # To get the last submission time by a user in a challenge phase.
     if submission_by == 'user':
@@ -165,7 +178,7 @@ def get_last_submission_time(request, challenge_pk, challenge_phase_pk, submissi
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase_pk):
+def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase_id):
     """
     API to fetch
     1. To get the last submission time in a challenge phase.
@@ -173,8 +186,13 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
     """
 
     challenge = get_challenge_model(challenge_pk)
-
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            challenge=challenge, phase_id=challenge_phase_id)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     submissions = Submission.objects.filter(
         challenge_phase__challenge=challenge)

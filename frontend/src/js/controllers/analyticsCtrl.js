@@ -107,7 +107,7 @@
                             vm.currentPhase = details.results;
                             var challengePhaseId = [];
                             for (var phaseCount = 0; phaseCount < vm.currentPhase.length; phaseCount++) {
-                                parameters.url = 'analytics/challenge/' + vm.challengeId + '/challenge_phase/' +  vm.currentPhase[phaseCount].id + '/count';
+                                parameters.url = 'analytics/challenge/' + vm.challengeId + '/challenge_phase/' +  vm.currentPhase[phaseCount].phase_id + '/count';
                                 parameters.method = 'GET';
                                 parameters.token = userKey;
                                 challengePhaseId.push(vm.currentPhase[phaseCount].id);
@@ -147,7 +147,7 @@
                             }
 
                             for (phaseCount = 0; phaseCount < vm.currentPhase.length; phaseCount++) {
-                                parameters.url = 'analytics/challenge/' + vm.challengeId + '/challenge_phase/' +  vm.currentPhase[phaseCount].id + '/last_submission_datetime_analysis/';
+                                parameters.url = 'analytics/challenge/' + vm.challengeId + '/challenge_phase/' +  vm.currentPhase[phaseCount].phase_id + '/last_submission_datetime_analysis/';
                                 parameters.method = 'GET';
                                 parameters.token = userKey;
                                 challengePhaseId.push(vm.currentPhase[phaseCount].id);
