@@ -1,11 +1,17 @@
 from django.contrib.auth import logout
+from django.contrib.auth.models import User
 
+from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
-                                       permission_classes,)
+                                       permission_classes,
+                                       throttle_classes,)
+from rest_framework.throttling import UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+
+from .permissions import HasVerifiedEmail
 
 
 @api_view(['POST'])
@@ -18,3 +24,14 @@ def disable_user(request):
     user.save()
     logout(request)
     return Response(status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_auth_token(request):
+    user = User.objects.get(email=request.user.email)
+    token = Token.objects.get(user=user)
+    response_data = {"token": "{}".format(token)}
+    return Response(response_data, status=status.HTTP_200_OK)
