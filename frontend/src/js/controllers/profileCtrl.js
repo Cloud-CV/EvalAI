@@ -17,6 +17,9 @@
         vm.countLeft = 0;
         vm.compPerc = 0;
         var count = 0;
+        vm.inputType = 'password';
+        vm.status = 'Show';
+        vm.token = '';
 
         utilities.hideLoader();
 
@@ -65,14 +68,29 @@
 
         utilities.sendRequest(parameters);
 
-        vm.inputType = 'password';
-          
-          // Hide & show password function
+        parameters.url = 'accounts/user/get-auth-token';
+        parameters.method = 'GET';
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function(response) {
+                vm.token = response.data['token'];
+            },
+            onError: function() {
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
+        // Hide & show token function
         vm.hideShowPassword = function(){
-            if (vm.inputType == 'password')
-              vm.inputType = 'text';
-            else
-              vm.inputType = 'password';
+            if (vm.inputType == 'password'){
+                vm.inputType = 'text';
+                vm.status = 'Hide';
+            }
+            else{
+                vm.inputType = 'password';
+                vm.status = 'Show';
+            }
         };
 
         // Get token
@@ -88,20 +106,9 @@
         };
 
         vm.getAuthToken = function(getTokenForm) {
-            if(getTokenForm){
-                var parameters = {};
-                parameters.url = 'accounts/user/get-auth-token';
-                parameters.method = 'GET';
-                parameters.token = userKey;
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        console.log(response);
-                    },
-                    onError: function() {
-                    }
-                };
-                utilities.sendRequest(parameters);
-            } else {
+            if(!getTokenForm){
+                vm.inputType = 'password';
+                vm.status = 'Show';
                 $mdDialog.hide();
             }
         };

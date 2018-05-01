@@ -4,13 +4,13 @@
             <div class="ev-card-body">
                 <form name="getTokenForm" ng-submit="profile.getAuthToken(getTokenForm.$valid)">
                     <div class="pass-title">Your Auth Token.</div>
-                    <input type="{{profile.inputType}}" value="Put your password"/>
+                    <input type="{{profile.inputType}}" readonly="true" value="{{profile.token}}"/>
                     <ul class="inline-list hide-on-med-and-down">
                         <li>
                             <a ng-click="profile.getAuthToken(false)" class="dark-link pointer"><strong>Cancel</strong></a>
                         </li>
                         <li>
-                            <button class="btn waves-effect waves-dark grad-btn darken-2 fs-14" ng-click="profile.hideShowPassword()" type="submit" value="submit">Get Token.</button>
+                            <button class="btn waves-effect waves-dark grad-btn darken-2 fs-14" ng-click="profile.hideShowPassword()" type="submit" value="submit">{{profile.status}} Token.</button>
                         </li>
                     </ul>
                 </form>

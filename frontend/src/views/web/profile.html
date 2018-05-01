@@ -20,10 +20,10 @@
         </li> -->
     <div class="text-highlight"><span class="fs-12">Profile Completed</span>
         <br> <span class="text-dark-black">{{profile.user.complete}}%</span></div>
+    <br>
+    <br>
     <div>
-        <a class="pointer" ng-click="profile.getAuthTokenDialog($event)">
-            <i class="fa fa-pencil" aria-hidden="true"></i>
-        </a>
+            <button class="waves-effect waves-light btn" ng-click="profile.getAuthTokenDialog($event)">Get your Auth Token</button>
     </div>
     <ul class="inline-list hide-on-med-and-down profile-edit-group">
         <li>
