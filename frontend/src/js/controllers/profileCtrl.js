@@ -8,9 +8,9 @@
         .module('evalai')
         .controller('profileCtrl', profileCtrl);
 
-    profileCtrl.$inject = ['utilities', '$rootScope'];
+    profileCtrl.$inject = ['utilities', '$rootScope', '$scope', '$mdDialog'];
 
-    function profileCtrl(utilities, $rootScope) {
+    function profileCtrl(utilities, $rootScope, $scope, $mdDialog) {
         var vm = this;
 
         vm.user = {};
@@ -64,6 +64,47 @@
         };
 
         utilities.sendRequest(parameters);
+
+        vm.inputType = 'password';
+          
+          // Hide & show password function
+        vm.hideShowPassword = function(){
+            if (vm.inputType == 'password')
+              vm.inputType = 'text';
+            else
+              vm.inputType = 'password';
+        };
+
+        // Get token
+        vm.getAuthTokenDialog = function(ev) {
+            vm.titleInput = "";
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/auth/get-token.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.getAuthToken = function(getTokenForm) {
+            if(getTokenForm){
+                var parameters = {};
+                parameters.url = 'accounts/user/get-auth-token';
+                parameters.method = 'GET';
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        console.log(response);
+                    },
+                    onError: function() {
+                    }
+                };
+                utilities.sendRequest(parameters);
+            } else {
+                $mdDialog.hide();
+            }
+        };
     }
 
 })();

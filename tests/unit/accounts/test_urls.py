@@ -30,3 +30,6 @@ class TestStringMethods(BaseAPITestClass):
     def test_disable_user(self):
         url = reverse_lazy('accounts:disable_user')
         self.assertEqual(unicode(url), '/api/accounts/user/disable')
+
+        url = reverse_lazy('accounts:get_auth_token')
+        self.assertEqual(unicode(url), '/api/accounts/user/get-auth-token')

@@ -20,6 +20,11 @@
         </li> -->
     <div class="text-highlight"><span class="fs-12">Profile Completed</span>
         <br> <span class="text-dark-black">{{profile.user.complete}}%</span></div>
+    <div>
+        <a class="pointer" ng-click="profile.getAuthTokenDialog($event)">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+        </a>
+    </div>
     <ul class="inline-list hide-on-med-and-down profile-edit-group">
         <li>
             <a ng-click="main.hostChallenge($event)" ui-sref="web.change-password" class="dark-link"><strong>Change Password</strong></a>

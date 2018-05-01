@@ -32,6 +32,10 @@ def disable_user(request):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_auth_token(request):
     user = User.objects.get(email=request.user.email)
-    token = Token.objects.get(user=user)
+    try:
+        token = Token.objects.get(user=user)
+    except Token.DoesNotExist:
+        token = Token.objects.create(user=user)
+        token.save()
     response_data = {"token": "{}".format(token)}
     return Response(response_data, status=status.HTTP_200_OK)
