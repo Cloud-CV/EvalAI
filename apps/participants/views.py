@@ -107,17 +107,19 @@ def invite_participant_to_team(request, pk):
         response_data = {'error': 'Participant Team does not exist'}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    email = request.data.get('email')
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        response_data = {'error': 'User does not exist with this email address!'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
     if not is_user_part_of_participant_team(request.user, participant_team):
         response_data = {'error': 'You are not a member of this team!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+    email = request.data.get('email')
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        response_data = {
+            'error': 'User does not exist with this email address!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # challenge_host_emails = 
     participant = Participant.objects.filter(team=participant_team, user=user)
     if participant.exists():
         response_data = {'error': 'User is already part of the team!'}
@@ -130,17 +132,23 @@ def invite_participant_to_team(request, pk):
 
     if set(invited_user_participated_challenges) & set(team_participated_challenges):
         """
-        Condition to check if the user has already participated in challenges where
-        the inviting participant has participated. If this is the case,
-        then the user cannot be invited since he cannot participate in a challenge
-        via two teams.
+        Check if the user has already participated in
+        challenges where the inviting participant has participated.
+        If this is the case, then the user cannot be invited since
+        he cannot participate in a challenge via two teams.
         """
-        response_data = {'error': 'Sorry, cannot invite user to the team!'}
+        response_data = {
+            'error': 'Sorry, the invited user has already participated'
+            ' in atleast one of the challenges which you are already a'
+            ' part of. Please try creating a new team and then invite.'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    serializer = InviteParticipantToTeamSerializer(data=request.data,
-                                                   context={'participant_team': participant_team,
-                                                            'request': request})
+    serializer = InviteParticipantToTeamSerializer(
+        data=request.data,
+        context={
+            'participant_team': participant_team,
+            'request': request})
+
     if serializer.is_valid():
         serializer.save()
         response_data = {
