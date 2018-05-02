@@ -119,7 +119,6 @@ def invite_participant_to_team(request, pk):
             'error': 'User does not exist with this email address!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # challenge_host_emails = 
     participant = Participant.objects.filter(team=participant_team, user=user)
     if participant.exists():
         response_data = {'error': 'User is already part of the team!'}
