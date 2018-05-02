@@ -182,6 +182,7 @@ class ChallengePhaseSplit(TimeStampedModel):
         (PUBLIC, 'public'),
     )
     phase_split_id = models.PositiveIntegerField(default=0)
+    challenge = models.ForeignKey('Challenge', null=True)
     challenge_phase = models.ForeignKey('ChallengePhase')
     dataset_split = models.ForeignKey('DatasetSplit')
     leaderboard = models.ForeignKey('Leaderboard')
