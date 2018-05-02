@@ -390,7 +390,9 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
                                 kwargs={'pk': self.participant_team2.pk})
 
         expected = {
-            'error': 'Sorry, cannot invite user to the team!'
+            'error': 'Sorry, the invited user has already participated '
+            'in atleast one of the challenges which you are already'
+            ' a part of. Please try creating a new team and then invite.'
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
