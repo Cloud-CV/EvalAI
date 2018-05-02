@@ -19,7 +19,8 @@
       "trix",
       "moment",
       "locale",
-      "angular-moment"
+      "angular-moment",
+      "ngclipboard"
     ]
   },
   "paths": {
@@ -41,7 +42,8 @@
        "trix": "bower_components/trix/dist/trix.js",
        "moment": "bower_components/moment/moment.js",
        "locale": "bower_components/moment/locale/de.js",
-       "angular-moment": "bower_components/angular-moment/angular-moment.js"
+       "angular-moment": "bower_components/angular-moment/angular-moment.js",
+       "ngclipboard": "bower_components/clipboard/dist/clipboard.min.js"
 
      }
 }
