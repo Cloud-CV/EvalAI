@@ -192,3 +192,19 @@ karma@>=0.9.0 but none was installed.
 ```
 
 Uninstall and then install karma again and also don't forget to clean the global as well as project npm cache. Then try again the step 8.
+
+#### While running the unit tests, I am getting the error similar to as shown below:
+
+```
+________________ ERROR collecting tests/unit/web/test_views.py _________________
+import file mismatch:
+imported module 'tests.unit.web.test_views' has this __file__ attribute:
+  /path/to/evalai/tests/unit/web/test_views.py
+which is not the same as the test file we want to collect:
+  /code/tests/unit/web/test_views.py
+HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test file modules
+```
+
+It appears that you are trying to run `pytest` in a docker container. To fix this, delete the `__pycache__` and all `*.pyc` files using the following command:
+
+`find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf`

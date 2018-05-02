@@ -3,9 +3,9 @@ from challenges.models import Challenge
 from .models import Participant
 
 
-def is_user_part_of_participant_team(user, participant_team_id):
+def is_user_part_of_participant_team(user, participant_team):
     """Returns boolean if the user belongs to the participant team or not"""
-    return Participant.objects.filter(user=user, team__id=participant_team_id).exists()
+    return Participant.objects.filter(user=user, team=participant_team).exists()
 
 
 def has_participant_team_participated_in_challenge(participant_team_id, challenge_id):

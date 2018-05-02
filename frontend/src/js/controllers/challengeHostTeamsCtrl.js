@@ -56,7 +56,7 @@
 
                     if (vm.existTeam.count === 0) {
                         vm.showPagination = false;
-                        vm.paginationMsg = "No team exists for now, start by creating a new team!";
+                        vm.paginationMsg = "No team exists for now. Start by creating a new team!";
                     } else {
                         vm.activateCollapsible();
                         vm.showPagination = true;
@@ -311,12 +311,12 @@
             ev.stopPropagation();
             // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
-                .title('Invite others to this Team')
+                .title('Add other memebers to this Team')
                 .textContent('Enter the email address of the person')
                 .placeholder('email')
                 .ariaLabel('')
                 .targetEvent(ev)
-                .ok('Send Invite')
+                .ok('Add')
                 .cancel('Cancel');
 
             $mdDialog.show(confirm).then(function(result) {
@@ -330,10 +330,11 @@
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function() {
-                        $rootScope.notify("success", parameters.data.email + " has been invited successfully");
+                        $rootScope.notify("success", parameters.data.email + " has been added successfully");
                     },
-                    onError: function() {
-                        $rootScope.notify("error", "Couldn't invite " + parameters.data.email + ". Please try again.");
+                    onError: function(response) {
+                        var error = response.data.error;
+                        $rootScope.notify("error", error);
                     }
                 };
 

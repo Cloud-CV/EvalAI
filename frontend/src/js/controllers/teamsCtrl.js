@@ -53,7 +53,7 @@
 
                     if (vm.existTeam.count === 0) {
                         vm.showPagination = false;
-                        vm.paginationMsg = "No team exists for now, start by creating a new team!";
+                        vm.paginationMsg = "No team exists for now. Start by creating a new team!";
                     } else {
                         vm.activateCollapsible();
                         vm.showPagination = true;
@@ -298,7 +298,7 @@
                                     if (vm.existTeam.count === 0) {
 
                                         vm.showPagination = false;
-                                        vm.paginationMsg = "No team exists for now, start by creating a new team!";
+                                        vm.paginationMsg = "No team exists for now. Start by creating a new team!";
                                     } else {
                                         vm.showPagination = true;
                                         vm.paginationMsg = "";
@@ -328,12 +328,12 @@
             ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.prompt()
-                .title('Invite others to this team')
+                .title('Add other members to this Team')
                 .textContent('Enter the email address of the person')
                 .placeholder('email')
                 .ariaLabel('')
                 .targetEvent(ev)
-                .ok('Send Invite')
+                .ok('Add')
                 .cancel('Cancel');
 
             $mdDialog.show(confirm).then(function(result) {
