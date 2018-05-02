@@ -110,11 +110,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                                                 challenge_phase=challenge_phase,
                                                 status__in=submissions_in_progress_status).count()
 
-        if submissions_in_progress == challenge_phase.max_concurrent_submissions_allowed:
+        if submissions_in_progress >= challenge_phase.max_concurrent_submissions_allowed:
             message = 'You have {} submissions that are being processed. \
                        Please wait for them to finish and then try again.'
             response_data = {'error': message.format(submissions_in_progress)}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = SubmissionSerializer(data=request.data,
                                           context={'participant_team': participant_team,
