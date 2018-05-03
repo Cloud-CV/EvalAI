@@ -1,11 +1,11 @@
-FROM python:2.7
+FROM python:3.4
 MAINTAINER CloudCV
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update && apt-get install -y python python-pip python-dev libpq-dev libjpeg-dev libyaml-dev libffi-dev
 
-RUN mkdir /code
-ADD ./ /code/
+
+ADD . /code
 WORKDIR /code
 
 RUN pip install -U cffi service_identity
