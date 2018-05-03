@@ -332,3 +332,98 @@
         }
     }
 })();
+
+//Create Challenge Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createChallenge', createChallenge);
+
+    function createChallenge() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-challenge.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Leaderboard Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createLeaderboard', createLeaderboard);
+
+    function createLeaderboard() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-leaderboard.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Challenge Phase Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createChallengePhase', createChallengePhase);
+
+    function createChallengePhase() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-challenge-phase.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Dataset Split Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createDatasetSplit', createDatasetSplit);
+
+    function createDatasetSplit() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-dataset-split.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();
+
+//Create Challenge Phase Split Directive
+(function() {
+    'use strict';
+    // dynamic header directive       
+    angular.module('evalai').directive('createChallengePhaseSplit', createChallengePhaseSplit);
+
+    function createChallengePhaseSplit() {
+        var directive = {
+            link: function() {
+                //do nothing      
+            },
+            templateUrl: 'dist/views/web/create-challenge-using-ui/create-challenge-phase-split.html',
+            transclude: true,
+            restrict: 'EA'
+        };
+        return directive;
+    }
+})();

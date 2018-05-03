@@ -1,0 +1,84 @@
+.checkbox-field {
+	padding-bottom: 45px;
+}
+
+.description-circle {
+	padding-top: 100px;
+	margin-right: 3px;
+}
+
+.editor {
+	min-height: 150px;
+	margin-top: 20px;
+
+}
+
+.tooltip {
+	word-wrap: keep-all;
+	max-width: 100px;
+}
+
+.md-tooltip {
+	width: auto;
+}
+
+.btn-floating:hover {
+	background-color: #ffaf4b !important;
+}
+
+.btn-floating {
+	background-color: #ffaf4b !important;
+}
+
+.add-margin-bottom {
+	margin-bottom: 40px;
+}
+
+.add-margin-top {
+	margin-top: 40px;
+}
+
+.rm-padding {
+	padding: 0;
+}
+
+.cursor-pointer {
+	cursor: pointer;
+}
+
+.md-button:focus {
+	background-color: white;
+}
+
+trix-toolbar .trix-button-row {
+	display: block;
+}
+
+.margin-left-10 {
+	margin-left: 10px;
+}
+
+.edit-section a:hover {
+	color: #ffaf4b;
+}
+
+.pd-5 {
+	padding: 5px;
+}
+
+.margin-left-100 {
+	margin-left: 100px;
+}
+
+.margin-left-right-10 {
+	margin-right: 10px;
+	margin-left: 10px;
+}
+
+.moment-picker td.selected {
+	color: white;
+	text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+	border-color: $dark-gray;
+	background-color: $light-gray;
+	background-image: linear-gradient(#3c3e49, #3c3e49);
+}

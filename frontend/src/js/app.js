@@ -12,5 +12,6 @@ angular
 		'ngFileUpload',
 		'toaster',
 		'angularTrix',
-		'angularMoment'
+		'angularMoment',
+		'moment-picker'
 	]);

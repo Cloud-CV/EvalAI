@@ -1,6 +1,11 @@
 <section class="ev-md-container text-center ">
     <div class="row">
         <div class="col s12 m9 offset-m3">
+            <div class="add-margin-bottom">
+                <h5 class="mons-med-font">
+                    Create Challenge Using Zip File
+                </h5>
+            </div>
             <div class="zip-file-title">Please upload zip file to create a challenge!</div>
                 <div class="file-field input-field col s6">
                 <form name="ChallengeCreateForm" ng-submit="challengeCreate.challengeCreate(ChallengeCreateForm.$valid)" novalidate>
@@ -21,10 +26,44 @@
         </div>
     </div>
     <div class="row">
-        <div class="col s12 m9 offset-m3">
-            <i class="fa fa-info-circle"></i>
-            To know how to create a challenge using zip file configuration, please see our documentation
-            <a href="https://evalai.readthedocs.io/en/latest/challenge_creation.html#challenge-creation-using-zip-configuration" class="highlight-link" target="_blank">here.</a>.
+            <div class="col s12 m9 offset-m3">
+                <i class="fa fa-info-circle"></i>
+                To know how to create a challenge using zip file configuration, please see our documentation
+                <a href="https://evalai.readthedocs.io/en/latest/challenge_creation.html#challenge-creation-using-zip-configuration" class="highlight-link" target="_blank">here</a>.
+            </div>
+            <div class="row">
+                <div class="col s12 m9 offset-m6">
+                <div class="align-left add-margin-top">
+                    <h5 class="mons-med-font">
+                        <div>OR</div>
+                    </h5>
+                </div>
+            </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col s12 m9 offset-m3">
+            <div class="add-margin-bottom">
+                <h5 class="mons-med-font">
+                    Fill Challenge Creation Form
+                </h5>
+            </div>
+            <div class="zip-file-title add-margin-bottom">
+                <div>Please follow the steps to create a challenge!</div>
+            </div>
+            <div class="col s6">
+                <div class="align-left reg-control">
+                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit" ng-click="challengeCreate.fillChallengeCreationForm()"> Next
+                </button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="row">
+            <div class="col s12 m9 offset-m3">
+                <i class="fa fa-info-circle"></i>
+                To know how to create a challenge using web interface, please see our documentation
+                <a href="https://evalai.readthedocs.io/en/latest/challenge_creation.html#challenge-creation-using-zip-configuration" class="highlight-link" target="_blank">here</a>.
+            </div>
+        </div>
 </section>

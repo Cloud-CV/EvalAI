@@ -59,7 +59,6 @@
                                         angular.element(inputElem).val(null);
                                     }
                                 );
-
                                 angular.element(".file-path").val(null);
                                 $rootScope.notify("success", details.success);
                                 localStorage.removeItem('challengeHostTeamId');
@@ -67,10 +66,12 @@
                             }
                         },
                         onError: function(response) {
-                            utilities.hideLoader();
+                            var status = response.status;
                             var error = response.data;
-                            angular.element(".file-path").val(null);
-                            $rootScope.notify("error", error.error);
+                            if (status === 400) {
+                                angular.element(".file-path").val(null);
+                                $rootScope.notify("error", error.error);
+                            }
                             vm.stopLoader();
                         }
                     };
@@ -83,6 +84,14 @@
                 $rootScope.notify("info", "Please select a challenge host team!");
             }
         };
+
+        vm.fillChallengeCreationForm = function() {
+            if (hostTeamId) {
+                $state.go('web.create-challenge-using-ui');
+            }
+            else {
+                $rootScope.notify("info", "Please select a challenge host team!");
+            }
+        };
     }
 })();
-
