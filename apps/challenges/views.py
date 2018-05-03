@@ -27,7 +27,7 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import paginated_queryset, get_challenge_phase_from_phase_id
 from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model,
                               get_challenge_phase_split_model,

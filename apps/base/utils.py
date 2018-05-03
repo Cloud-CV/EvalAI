@@ -8,6 +8,8 @@ from django.utils.deconstruct import deconstructible
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 
+from challenges.models import ChallengePhase
+
 
 class StandardResultSetPagination(PageNumberPagination):
     page_size = 100
@@ -69,3 +71,11 @@ def decode_data(data):
     for i in data:
         decoded.append(base64.decodestring(i+"=="))
     return decoded
+
+
+def get_challenge_phase_from_phase_id(challenge, challenge_phase_id):
+    try:
+        challenge_phase_obj = ChallengePhase.objects.get(challenge=challenge, phase_id=challenge_phase_id)
+    except ChallengePhase.DoesNotExist:
+        return None
+    return challenge_phase_obj

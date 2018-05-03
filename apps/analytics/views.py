@@ -13,9 +13,9 @@ from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 
-from challenges.models import ChallengePhase
+from base.utils import get_challenge_phase_from_phase_id
 from challenges.permissions import IsChallengeCreator
-from challenges.utils import get_challenge_model, get_challenge_phase_from_phase_id
+from challenges.utils import get_challenge_model
 from jobs.models import Submission
 from jobs.serializers import (LastSubmissionDateTime,
                               LastSubmissionDateTimeSerializer,
@@ -116,7 +116,6 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     """
     challenge = get_challenge_model(challenge_pk)
 
-
     challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
 
     if not challenge_phase:
@@ -150,7 +149,6 @@ def get_last_submission_time(request, challenge_pk, challenge_phase_id, submissi
         Returns the last submission time for a particular challenge phase
     """
     challenge = get_challenge_model(challenge_pk)
-
 
     challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
 

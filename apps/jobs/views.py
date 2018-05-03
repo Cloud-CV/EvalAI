@@ -16,13 +16,14 @@ from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset, StandardResultSetPagination
+from base.utils import (paginated_queryset,
+                        StandardResultSetPaginationfrom,
+                        get_challenge_phase_from_phase_id,)
 from challenges.models import (
-    ChallengePhase,
     Challenge,
     ChallengePhaseSplit,
     LeaderboardData,)
-from challenges.utils import get_challenge_model, get_challenge_phase_from_phase_id
+from challenges.utils import get_challenge_model
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -276,7 +277,6 @@ def get_remaining_submissions(request, challenge_phase_id, challenge_pk):
     # significance of get_challenge_model() here to check
     # if the challenge exists or not
     challenge = get_challenge_model(challenge_pk)
-
 
     challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
 
