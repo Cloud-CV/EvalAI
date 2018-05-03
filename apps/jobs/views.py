@@ -22,7 +22,7 @@ from challenges.models import (
     Challenge,
     ChallengePhaseSplit,
     LeaderboardData,)
-from challenges.utils import get_challenge_model
+from challenges.utils import get_challenge_model, get_challenge_phase_from_phase_id
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -47,11 +47,11 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # check if the challenge phase exists or not
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            challenge=challenge, phase_id=challenge_phase_id)
-    except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'Challenge Phase does not exist'}
+    challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
+
+    if not challenge_phase:
+        response_data = {
+               'error': 'Challenge Phase does not exist'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'GET':
@@ -132,10 +132,10 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
     challenge = get_challenge_model(challenge_pk)
 
     # check if the challenge phase exists or not
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            challenge=challenge, phase_id=challenge_phase_id)
-    except ChallengePhase.DoesNotExist:
+
+    challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
+
+    if not challenge_phase:
         response_data = {
             'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
@@ -277,10 +277,10 @@ def get_remaining_submissions(request, challenge_phase_id, challenge_pk):
     # if the challenge exists or not
     challenge = get_challenge_model(challenge_pk)
 
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            challenge=challenge, phase_id=challenge_phase_id)
-    except ChallengePhase.DoesNotExist:
+
+    challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
+
+    if not challenge_phase:
         response_data = {
             'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)

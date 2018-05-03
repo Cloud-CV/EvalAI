@@ -58,7 +58,7 @@ from .serializers import (ChallengeConfigSerializer,
                           StarChallengeSerializer,
                           ZipChallengeSerializer,
                           ZipChallengePhaseSplitSerializer,)
-from .utils import get_file_content
+from .utils import get_file_content, get_challenge_phase_from_phase_id
 
 logger = logging.getLogger(__name__)
 
@@ -396,11 +396,12 @@ def challenge_phase_detail(request, challenge_pk, challenge_phase_id):
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    try:
-        challenge_phase = ChallengePhase.objects.get(challenge=challenge, phase_id=challenge_phase_id)
-    except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'ChallengePhase does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
+
+    if not challenge_phase:
+        response_data = {
+               'error': 'ChallengePhase does not exist'}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         serializer = ChallengePhaseSerializer(challenge_phase)
@@ -893,6 +894,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             # Change the challenge id's to not update the pk.
             phases = ChallengePhase.objects.filter(challenge=challenge)
             phase_idx = 1
+            challenge_phase_split_idx = 1
             for phase in phases:
                 phase.phase_id = phase_idx
                 phase.save()
@@ -901,6 +903,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase=phase)
                 for phase_split in phase_splits:
                     phase_split.phase_split_id = challenge_phase_split_idx
+                    phase_split.challenge = challenge
                     phase_split.save()
                     challenge_phase_split_idx += 1
 
@@ -964,10 +967,10 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_id):
     challenge = get_challenge_model(challenge_pk)
 
     # To check for the corresponding challenge phase from the challenge_phase_id and challenge.
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            challenge=challenge, phase_id=challenge_phase_id)
-    except ChallengePhase.DoesNotExist:
+
+    challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
+
+    if not challenge_phase:
         response_data = {
             'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
@@ -1024,10 +1027,9 @@ def download_all_submissions(request, challenge_pk, challenge_phase_id, file_typ
     challenge = get_challenge_model(challenge_pk)
 
     # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            challenge=challenge, phase_id=challenge_phase_id)
-    except ChallengePhase.DoesNotExist:
+    challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
+
+    if not challenge_phase:
         response_data = {
             'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)

@@ -1532,7 +1532,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_particular_challenge_host_team_for_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_challenge_phase_detail',
