@@ -68,7 +68,7 @@
 
         utilities.sendRequest(parameters);
 
-        parameters.url = 'accounts/user/get-auth-token';
+        parameters.url = 'accounts/user/get_auth_token';
         parameters.method = 'GET';
         parameters.token = userKey;
         parameters.callback = {
@@ -76,6 +76,7 @@
                 vm.token = response.data['token'];
             },
             onError: function() {
+                $rootScope.notify("error", "Some error have occured , please try again !");
             }
         };
 
@@ -91,6 +92,11 @@
                 vm.inputType = 'password';
                 vm.status = 'Show';
             }
+        };
+
+        // Hide & show token function
+        vm.showConfirmation = function(){
+            $rootScope.notify("success", "The token has been copied to your clipboard.");
         };
 
         // Get token

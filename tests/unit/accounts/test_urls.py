@@ -32,4 +32,4 @@ class TestStringMethods(BaseAPITestClass):
         self.assertEqual(unicode(url), '/api/accounts/user/disable')
 
         url = reverse_lazy('accounts:get_auth_token')
-        self.assertEqual(unicode(url), '/api/accounts/user/get-auth-token')
+        self.assertEqual(unicode(url), '/api/accounts/user/get_auth_token')
