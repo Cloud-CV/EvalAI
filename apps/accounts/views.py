@@ -35,7 +35,7 @@ def get_auth_token(request):
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
-        Response(response_data, status.status.HTTP_406_NOT_ACCEPTABLE)
+        Response(response_data, status.HTTP_404_NOT_FOUND)
 
     try:
         token = Token.objects.get(user=user)

@@ -73,6 +73,7 @@
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
+                vm.jsonResponse = response.data;
                 vm.token = response.data['token'];
             },
             onError: function() {
@@ -96,7 +97,7 @@
 
         // Hide & show token function
         vm.showConfirmation = function(){
-            $rootScope.notify("success", "The token has been copied to your clipboard.");
+            $rootScope.notify("success", "Token copied to your clipboard.");
         };
 
         // Get token
@@ -117,6 +118,15 @@
                 vm.status = 'Show';
                 $mdDialog.hide();
             }
+        };
+
+        vm.downloadToken = function() {
+            var anchor = angular.element('<a/>');
+            anchor.attr({
+                href: 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(vm.jsonResponse)),
+                download: 'token.json'
+            })[0].click();
+
         };
     }
 
