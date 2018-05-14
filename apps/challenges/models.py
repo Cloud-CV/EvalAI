@@ -124,6 +124,7 @@ class ChallengePhase(TimeStampedModel):
     test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"), default=False)
     max_submissions_per_day = models.PositiveIntegerField(default=100000, db_index=True)
     max_submissions = models.PositiveIntegerField(default=100000, db_index=True)
+    max_concurrent_submissions_allowed = models.PositiveIntegerField(default=3)
     codename = models.CharField(max_length=100, default="Phase Code Name")
     dataset_split = models.ManyToManyField(DatasetSplit, blank=True, through='ChallengePhaseSplit')
 
@@ -150,6 +151,15 @@ class ChallengePhase(TimeStampedModel):
         if self.start_date < timezone.now() and self.end_date > timezone.now():
             return True
         return False
+
+    def save(self, *args, **kwargs):
+
+        # If the max_submissions_per_day is less than the max_concurrent_submissions_allowed.
+        if self.max_submissions_per_day < self.max_concurrent_submissions_allowed:
+            self.max_concurrent_submissions_allowed = self.max_submissions_per_day
+
+        challenge_phase_instance = super(ChallengePhase, self).save(*args, **kwargs)
+        return challenge_phase_instance
 
 
 signals.post_save.connect(model_field_name(field_name='test_annotation')(create_post_model_field),
