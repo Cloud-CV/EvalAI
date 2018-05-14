@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
+import mock
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -1858,6 +1859,28 @@ class CreateChallengeUsingZipFile(APITestCase):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data.values()[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_challenge_using_zip_file_success(self):
+        self.url = reverse_lazy('challenges:create_challenge_using_zip_file',
+                                kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
+
+        self.assertEqual(Challenge.objects.count(), 1)
+        self.assertEqual(DatasetSplit.objects.count(), 1)
+        self.assertEqual(Leaderboard.objects.count(), 1)
+        self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
+
+        with mock.patch('challenges.views.requests.get') as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(self.url, {'zip_configuration': self.input_zip_file}, format='multipart')
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(Challenge.objects.count(), 2)
+        self.assertEqual(DatasetSplit.objects.count(), 2)
+        self.assertEqual(Leaderboard.objects.count(), 2)
+        self.assertEqual(ChallengePhaseSplit.objects.count(), 2)
 
 
 class GetAllSubmissionsTest(BaseAPITestClass):
