@@ -214,7 +214,7 @@ class BaseAPITestClass(APITestCase):
 
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_challenge_submission_when_form_encoding_is_wrong(self):
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -231,7 +231,7 @@ class BaseAPITestClass(APITestCase):
         response = self.client.post(
             self.url, {'status': 'submitting', 'input_file': self.input_file})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_challenge_submission_when_status_is_not_correct(self):
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -248,7 +248,7 @@ class BaseAPITestClass(APITestCase):
         response = self.client.post(
             self.url, {'status': 'XYZ', 'input_file': self.input_file}, format="multipart")
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_challenge_submission_for_successful_submission(self):
         self.url = reverse_lazy('jobs:challenge_submission',
