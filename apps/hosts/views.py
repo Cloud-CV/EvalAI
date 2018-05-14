@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
@@ -15,6 +17,7 @@ from .serializers import (ChallengeHostSerializer,
                           ChallengeHostTeamSerializer,
                           InviteHostToTeamSerializer,
                           HostTeamDetailSerializer,)
+from .utils import (is_user_part_of_host_team,)
 
 
 @throttle_classes([UserRateThrottle])
@@ -217,12 +220,36 @@ def invite_host_to_team(request, pk):
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(pk=pk)
     except ChallengeHostTeam.DoesNotExist:
-        response_data = {'error': 'ChallengeHostTeam does not exist'}
+        response_data = {'error': 'Host Team does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    serializer = InviteHostToTeamSerializer(data=request.data,
-                                            context={'challenge_host_team': challenge_host_team,
-                                                     'request': request})
+    email = request.data.get('email')
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        response_data = {
+            'error': 'User does not exist with this email address!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if the user requesting this API is part of host team
+    if not is_user_part_of_host_team(request.user, challenge_host_team):
+        response_data = {'error': 'You are not a member of this team!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    host = ChallengeHost.objects.filter(
+        team_name=challenge_host_team, user=user)
+
+    if host.exists():
+        response_data = {'error': 'User is already part of the team!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    serializer = InviteHostToTeamSerializer(
+        data=request.data,
+        context={
+            'challenge_host_team': challenge_host_team,
+            'request': request
+        })
+
     if serializer.is_valid():
         serializer.save()
         response_data = {
