@@ -5,6 +5,8 @@ services:
     image: postgres
     ports:
       - "5432:5432"
+    networks:
+      - evalai
 
   rabbitmq:
     image: rabbitmq
@@ -12,6 +14,8 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"  # here, we can access rabbitmq management plugin
+    networks:
+      - evalai
 
   django:
     container_name: django
@@ -23,19 +27,27 @@ services:
       dockerfile: docker/dev/django/Dockerfile
     ports:
       - "8000:8000"
-    command: ["./docker/wait-for-it.sh", "db:5432", "--", "sh", "/code/docker/dev/django/container-start.sh"]
     depends_on:
-      - "db"
+      - db
+      - rabbitmq
+    volumes:
+      - .:/code
+    networks:
+      - evalai
 
-  submission-worker:
+  worker:
     env_file:
       - docker/dev.env
     build:
       context: ./
-      dockerfile: docker/dev/rabbitmq/Dockerfile
-    command: ["./docker/wait-for-it.sh", "django:8000", "--", "python", "scripts/workers/submission_worker.py"]
+      dockerfile: docker/dev/worker/Dockerfile
     depends_on:
-      - "django"
+      - rabbitmq
+      - django
+    volumes:
+      - .:/code
+    networks:
+      - evalai
 
   nodejs:
     container_name: nodejs
@@ -46,8 +58,13 @@ services:
     environment:
       NODE_ENV: development
     ports:
-      - '8888:8888'
+      - "8888:8888"
     volumes:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+    networks:
+      - evalai
+
+networks:
+  evalai:

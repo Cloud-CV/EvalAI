@@ -891,9 +891,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
             # Add the Challenge Host as a test participant.
             emails = challenge_host_team.get_all_challenge_host_email()
+            team_name = "Host_{}_Team".format(random.randint(1, 100000))
             participant_host_team = ParticipantTeam(
-                                        team_name=challenge_host_team.team_name,
-                                        created_by=challenge_host_team.created_by,)
+                team_name=team_name,
+                created_by=challenge_host_team.created_by,)
             participant_host_team.save()
             for email in emails:
                 user = User.objects.get(email=email)
