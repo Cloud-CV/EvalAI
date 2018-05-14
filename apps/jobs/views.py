@@ -114,7 +114,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             message = 'You have {} submissions that are being processed. \
                        Please wait for them to finish and then try again.'
             response_data = {'error': message.format(submissions_in_progress)}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         serializer = SubmissionSerializer(data=request.data,
                                           context={'participant_team': participant_team,
@@ -128,7 +128,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             # publish message in the queue
             publish_submission_message(challenge_id, challenge_phase_id, submission.id)
             return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @throttle_classes([UserRateThrottle])
