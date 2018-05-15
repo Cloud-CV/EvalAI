@@ -2395,3 +2395,7 @@ trix-toolbar .trix-button-row {
     padding: 0px 30px;
   }
 }
+
+.token-width {
+    width: 400px;
+}

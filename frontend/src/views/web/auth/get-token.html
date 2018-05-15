@@ -1,0 +1,30 @@
+<section class="text-center pd-20 width-1200">
+    <div class="row ht-wt-100p">
+        <div class="col s12 m12">
+            <div class="ev-card-body">
+                <form name="getTokenForm" ng-submit="profile.getAuthToken(getTokenForm.$valid)">
+                    <div class="pass-title">Your Auth Token.</div>
+                    <div class="token-width inline-list hide-on-med-and-down">
+                        <input class="col s11 md-display-3" type="{{profile.inputType}}" readonly="true" value="{{profile.token}}"/>
+                        <button class="col s1 btn ev-btn-dark waves-effect waves-dark grad-btn" ng-click="profile.showConfirmation()" ngclipboard data-clipboard-text="{{profile.token}}">
+                            <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                        </button>
+                    </div>
+                    <br>
+                    <ul class="inline-list hide-on-med-and-down">
+                        <li>
+                            <a ng-click="profile.getAuthToken(false)" class="dark-link pointer"><strong>Cancel</strong></a>
+                        </li>
+                        <li>
+                            <a ng-click="profile.downloadToken()" class="dark-link pointer"><strong>Download JSON</strong></a>
+                        </li>
+                        <li>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn-dark fs-14 grad-btn" ng-click="profile.hideShowPassword()" type="submit" value="submit">{{profile.status}} Token</button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
