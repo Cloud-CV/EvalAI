@@ -620,6 +620,44 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_participant_team_challenge_list(self):
+        self.url = reverse_lazy('participants:get_participant_team_challenge_list',
+                                kwargs={'participant_team_pk': self.participant_team.pk})
+        expected = [
+            {
+                "id": self.challenge1.id,
+                "title": self.challenge1.title,
+                "description": self.challenge1.description,
+                "short_description": self.challenge1.short_description,
+                "terms_and_conditions": self.challenge1.terms_and_conditions,
+                "submission_guidelines": self.challenge1.submission_guidelines,
+                "evaluation_details": self.challenge1.evaluation_details,
+                "image": self.challenge1.image,
+                "start_date":
+                    "{0}{1}".format(self.challenge1.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge1.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge_host_team.id,
+                    "team_name": self.challenge_host_team.team_name,
+                    "created_by": self.challenge_host_team.created_by.username
+                    },
+                "published": self.challenge1.published,
+                "enable_forum": self.challenge1.enable_forum,
+                "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
+                "is_active": True,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
+                "approved_by_admin": False,
+            }
+        ]
+
+        self.challenge1.participant_teams.add(self.participant_team)
+        self.challenge1.save()
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_when_participant_team_hasnot_participated_in_any_challenge(self):
 
         expected = {
