@@ -216,7 +216,7 @@ def load_active_challenges():
     '''
          * Fetches active challenges and corresponding active phases for it.
     '''
-    q_params = {'published': True, 'approved_by_admin': True}
+    q_params = {'approved_by_admin': True}
     q_params['start_date__lt'] = timezone.now()
     q_params['end_date__gt'] = timezone.now()
 
