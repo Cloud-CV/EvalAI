@@ -10,25 +10,21 @@ long_description = \
 
 setup(
     name=PROJECT,
-    version='1.0',
+    version='1.6a1',
 
     description='Use EvalAI through the CLI!',
+    long_description=long_description,
 
     author='Cloud-CV',
     author_email='team@cloudcv.org',
 
-    url='https://github.com/Cloud-CV/evalai_cli',
-    download_url='https://github.com/Cloud-CV/evalai_cli/tarball/master',
+    url='https://github.com/Cloud-CV/evalai_cli ',
 
-    classifiers=['Development Status :: 1 - Alpha',
-                 'Programming Language :: Python',
-                 'Programming Language :: Python :: 2',
-                 'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 3',
-                 'Programming Language :: Python :: 3.4',
-                 'Intended Audience :: Developers',
-                 'Environment :: Console',
-                 ],
+    classifiers=(
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ),
 
     platforms=['Any'],
 
@@ -36,11 +32,12 @@ setup(
 
     provides=[],
     install_requires=[
-        'click==6.7',
-        'pandas==0.22.0',
-        'pylsy==3.6',
-        'requests==2.18.4',
-        'responses==0.9.0',
+        'click',
+        'colorama',
+        'pandas',
+        'pylsy',
+        'requests',
+        'responses',
     ],
 
     namespace_packages=[],
