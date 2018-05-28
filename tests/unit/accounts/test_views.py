@@ -1,5 +1,7 @@
 import os
 
+from rest_framework.authtoken.models import Token
+
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
 
@@ -48,3 +50,15 @@ class TestUpdateUser(BaseAPITestClass):
         self.assertNotContains(response, 'anotheruser')
         self.assertContains(response, 'someuser')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class GetAuthTokenTest(BaseAPITestClass):
+
+    url = reverse_lazy('accounts:get_auth_token')
+
+    def test_get_auth_token(self):
+        response = self.client.get(self.url, {})
+        token = Token.objects.get(user=self.user)
+        expected_data = {"token": "{}".format(token)}
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
