@@ -13,6 +13,7 @@ from rest_framework.throttling import UserRateThrottle
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from challenges.models import Challenge
+from challenges.serializers import ChallengeSerializer
 from hosts.utils import is_user_a_host_of_challenge
 
 from .models import (Participant, ParticipantTeam)
@@ -55,6 +56,30 @@ def participant_team_list(request):
             participant.save()
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_participant_team_challenge_list(request, participant_team_pk):
+    """
+    Returns a challenge list in which the participant team has participated.
+    """
+    try:
+        participant_team = ParticipantTeam.objects.get(
+            pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'Participant Team does not exist'}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        challenge = Challenge.objects.filter(participant_teams=participant_team)
+        paginator, result_page = paginated_queryset(challenge, request)
+        serializer = ChallengeSerializer(
+            result_page, many=True, context={'request': request})
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
 
 
 @throttle_classes([UserRateThrottle])
