@@ -1,20 +1,35 @@
 /*Color variables*/
 
+
 /*Blue Shades*/
+
 $blue-dark: #33526e;
 $blue-light: #adc8e0;
 
+
 /*Orange Shades*/
+
 $orange: #ffc149;
 $yellow: #d7387f;
 
+
 /*Gray Shades*/
+
 $gray-light: #ebebeb;
 $gray-medium: #d4d4d4;
 $gray-dark: #9d9d9d;
+$gray-darker: #273e54;
+
+
+/*Overlay Shades*/
+
+$overlay-dark: rgba(0, 0, 0, 0.7);
+$overlay-light: rgba(0, 0, 0, 0.2);
+
 
 
 /*Font sizes*/
+
 $fs-12: 12px;
 $fs-14: 14px;
 $fs-16: 16px;
@@ -23,3 +38,17 @@ $fs-20: 20px;
 $fs-22: 22px;
 $fs-24: 24px;
 $fs-36: 36px;
+
+
+/*Font weights*/
+
+$fw-light: 300;
+$fw-regular: 400;
+$fw-semibold: 500;
+$fw-bold: 700;
+
+
+/*Screen Sizes*/
+
+$screen-sm: 810px;
+$screen-md: 1130px;

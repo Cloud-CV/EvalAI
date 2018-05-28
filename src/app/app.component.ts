@@ -1,4 +1,5 @@
-import { Component, OnInit, HostListener, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, Inject } from '@angular/core';
+import { GlobalService } from './global.service';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Title } from '@angular/platform-browser';
@@ -9,32 +10,42 @@ import 'rxjs/add/operator/mergeMap';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  styleUrls: ['./app.component.scss']
 })
 
 
 
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+  private scrolledState = false;
+  globalServiceSubscription: any;
   constructor(
   @Inject(DOCUMENT) private document: Document,
   public router: Router,
   public activatedRoute: ActivatedRoute,
-  public titleService: Title
-
-  ) {}
+  public titleService: Title,
+  private globalService: GlobalService
+  ) {
+  }
 
   // Added listener for header scroll event
   @HostListener('window:scroll', [])
     onWindowScroll(): void {
     const HEADER_ELE = document.getElementById('header-static');
     if (this.document.documentElement.scrollTop > 50) {
-      HEADER_ELE.style.background = 'rgba(255, 255, 255, 1)';
+      if (this.scrolledState === false) {
+        this.globalService.scrolledStateChange(true);
+      }
     } else {
-      HEADER_ELE.style.background = 'rgba(255, 255, 255, 0)';
+      if (this.scrolledState === true) {
+        this.globalService.scrolledStateChange(false);
+      }
     }
     }
 
   ngOnInit() {
+    this.globalServiceSubscription = this.globalService.change.subscribe(scrolledState => {
+      this.scrolledState = scrolledState;
+    });
     // set page title form routes data
     this.router.events
         // filter for navigation end
@@ -53,5 +64,8 @@ export class AppComponent implements OnInit {
         .mergeMap((route) => route.data)
         // set platform based title service
       .subscribe((event) => this.titleService.setTitle(event['title']));
+  }
+  ngOnDestroy() {
+    this.globalServiceSubscription.unsubscribe();
   }
 }

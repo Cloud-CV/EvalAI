@@ -2,6 +2,7 @@ import {Location} from '@angular/common';
 import {TestBed, fakeAsync, tick, async} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {Router} from '@angular/router';
+import {GlobalService} from './global.service';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { HeaderStaticComponent } from './partials/nav/header-static/header-static.component';
@@ -21,6 +22,9 @@ describe('AppComponent', () => {
       ],
       imports: [
         RouterTestingModule
+      ],
+      providers: [
+        GlobalService
       ]
     }).compileComponents();
 

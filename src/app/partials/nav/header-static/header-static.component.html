@@ -1,25 +1,35 @@
-<header id="header-static">
-  <ul class="inline-list left-list left">
-    <li class="logo">
-      <img src="/assets/images/EvalAI_favicon.png" alt="">
-    </li>
-  </ul>
-  <ul class="inline-list right-list right right-nav">
-    <li>
-      <a class="light-link" href="/"> Challenges</a>
-    </li>
-    <li>
-      <a class="light-link" href="/"> News</a>
-    </li>
-    <li>
-      <a class="light-link" href="/"> Forum</a>
-    </li>
-    <li>
-      <a class="light-link" href="/"> Join Us</a>
-    </li>
-    <li class="pointer">
-      ...
-    </li>
-  </ul>
-  <div class="clear-fix"></div>
+<header id="header-static" [class.header-shadow]="headerWhite" [class.header-shadow-large]="scrolledState" [class.white-bg]="headerWhite" [class.dark-bg]="isMenuExpanded && atHome && innerWidth <= 810">
+  <div class="logo-container">
+    <img src="assets/images/EvalAI_favicon.png" class="logo-header" [class.invert-color]="headerWhite" *ngIf="atHome" (click)="navigateTo([''])" />
+    <img src="assets/images/evalai_logo_light.png" *ngIf="!atHome" class="logo-header" [class.invert-color]="headerWhite" (click)="navigateTo([''])" />
+  </div>
+  <div class="menu-expander" [class.menu-change]="isMenuExpanded" (click)="menuExpander()">
+    <div class="menu-bar1" [class.dark-bg]="headerWhite" [class.white-bg]="!headerWhite"></div>
+    <div class="menu-bar2" [class.dark-bg]="headerWhite" [class.white-bg]="!headerWhite"></div>
+    <div class="menu-bar3" [class.dark-bg]="headerWhite" [class.white-bg]="!headerWhite"></div>
+  </div>
+  <div class="navlinks-container" [class.height-zero]="!isMenuExpanded" [class.white-bg]="headerWhite">
+    <ul class="main-wrapper clearfix">
+      <li class="navlinks navlinktext fw-light" (click)="navigateTo(['challenges'])" [class.dark-text]="headerWhite"> Challenges </li>
+      <li class="navlinks navlinktext fw-light" (click)="navigateTo(['news'])" [class.dark-text]="headerWhite"> News </li>
+      <li class="navlinks navlinktext fw-light" (click)="navigateTo(['forum'])" [class.dark-text]="headerWhite"> Forum </li>
+      <li class="navlinks navlinktext fw-light" (click)="navigateTo(['join-us'])" [class.dark-text]="headerWhite"> Join Us </li>
+      <li class="navlinks navlinktext">
+        <img src="assets/images/dots.png" />
+      </li>
+      <li class="navlinks center btn btn-nofill fw-regular" [class.btn-white-bg]="headerWhite" [class.dark-text]="headerWhite" (click)="navigateTo(['/auth/signup']);" *ngIf="!authState.isLoggedIn">
+        Sign Up
+      </li>
+      <li class="navlinks center btn btn-fill fw-regular" [class.btn-white-bg]="headerWhite" (click)="logIn();navigateTo(['/auth/login']);" *ngIf="!authState.isLoggedIn">
+        Log In
+      </li>
+      <li class="navlinks navlinktext fw-regular" *ngIf="authState.isLoggedIn" [class.dark-text]="headerWhite">
+        Hi {{authState.username}}!
+      </li>
+      <li class="navlinks center btn btn-fire fw-regular" *ngIf="authState.isLoggedIn" (click)="logOut();navigateTo(['']);">
+        Log Out
+      </li>
+    </ul>
+  </div>
 </header>
+<div class="overlay-container" (click)="isMenuExpanded = false;" [class.dark-overlay]="isMenuExpanded && innerWidth<=810"></div>

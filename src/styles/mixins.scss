@@ -1,12 +1,35 @@
 /*Mixins for global styles*/
+
 @import './variables.scss';
 
+
+
 /*Box Shadow-------*/
+
 @mixin box-shadow($x: 0px, $y:0px, $blur:4px, $rad:0px, $color:$gray-medium) {
   box-shadow: $x $y $blur $rad $color;
 }
 
+
+
 /*Gradient -------*/
+
 @mixin linear-gradient-bg($dir, $from, $to) {
   background-image: linear-gradient($dir, $from, $to);
+}
+
+
+
+/*Screen size mixins*/
+
+@mixin screen-small() {
+  @media (max-width: $screen-sm) {
+    @content;
+  }
+}
+
+@mixin screen-medium() {
+  @media(min-width: $screen-sm) and (max-width: $screen-md) {
+    @content;
+  }
 }

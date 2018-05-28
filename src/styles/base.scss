@@ -4,10 +4,39 @@
 @import './mixins.scss';
 @import './grid.scss';
 @import './font.scss';
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700');
 
-body{
-  font-family: 'Open Sans';
+body {
+  font-family: 'Roboto', sans-serif;
+  * {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+  }
 }
+
+
+/*Font weights*/
+
+.fw-light {
+  font-weight: $fw-light;
+}
+
+.fw-regular {
+  font-weight: $fw-regular;
+}
+
+.fw-semibold {
+  font-weight: $fw-semibold;
+}
+
+.fw-bold {
+  font-weight: $fw-bold;
+}
+
+
+
+
 
 /*Font sizes*/
 
@@ -44,31 +73,38 @@ body{
 }
 
 
+
+
+
 /*anchors*/
-a{
+
+a {
   color: $blue-dark;
   transition: all 0.2s ease-in-out;
   text-decoration: none;
-  &:hover{
+  &:hover {
     color: $blue-light;
   }
   &:focus,
-  &:active{
+  &:active {
     text-decoration: none;
   }
 }
 
-a.light-link{
+a.light-link {
   color: $blue-light;
   transition: all 0.2s ease-in-out;
-  &:hover{
+  &:hover {
     color: white;
   }
 }
 
-.pointer{
+.pointer {
   cursor: pointer;
 }
+
+
+
 
 
 /*list styles*/
@@ -78,7 +114,7 @@ ul {
     display: inline-block;
     margin: 0;
     padding: 0;
-     li {
+    li {
       display: inline-block;
       margin: 15px 20px;
     }
@@ -92,12 +128,14 @@ ul {
         margin-right: 0;
       }
     }
-   
   }
-  &.right-nav{
+  &.right-nav {
     margin-top: 7px;
   }
 }
+
+
+
 
 /*alignment*/
 
@@ -113,23 +151,96 @@ ul {
   clear: both;
 }
 
-.align-center{
+.align-center {
   text-align: center;
 }
 
+
+
+
 /*color*/
-.white{
+
+.white {
   color: white;
 }
 
+
+
+
 /*container*/
 
-.container{
+.container {
   position: relative;
   z-index: 1;
   padding: 15px 40px;
 }
 
-.container-top{
-  padding-top: 80px;
+.container-top {
+  padding-top: 100px;
+}
+
+@include screen-medium {
+  .container-top {
+    padding-top: 200px;
+  }
+}
+
+@include screen-small {
+  .container-top {
+    padding-top: 100px;
+  }
+}
+
+
+
+/*Buttons*/
+
+.btn {
+  border-radius: 20px;
+  margin-left: 10px;
+  margin-top: 5px;
+  margin-bottom: 0 !important;
+  text-align: center;
+  cursor: pointer;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.btn-nofill {
+  padding: 10px 30px 10px 30px;
+  border: 1.5px solid white;
+  color: white;
+  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  &:hover {
+    background: $gray-light;
+    border: 1.5px solid $gray-light;
+    color: black;
+    @include box-shadow(0px, 15px, 20px, 0px, $overlay-light);
+  }
+}
+
+.btn-fire {
+  padding: 13px 33px 13px 33px;
+  border: none;
+  color: white;
+  @include linear-gradient-bg(-90deg, $yellow, $orange);
+  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  &:hover {
+    @include linear-gradient-bg(-90deg, $orange, $yellow);
+    @include box-shadow(0px, 15px, 20px, 0px, $overlay-light);
+  }
+}
+
+.btn-fill {
+  padding: 10px 30px 10px 30px;
+  border: 1.5px solid white;
+  background: white;
+  color: $blue-dark;
+  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  &:hover {
+    @include box-shadow(0px, 15px, 20px, 0px, $overlay-light);
+    border: 1.5px solid $gray-light;
+    background: $gray-light;
+    color: black;
+  }
 }
