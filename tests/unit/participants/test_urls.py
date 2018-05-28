@@ -78,6 +78,15 @@ class TestStringMethods(BaseAPITestClass):
         self.assertEqual(resolver.view_name,
                          'participants:get_participant_team_list')
 
+    def test_get_participant_team_challenge_list(self):
+        self.url = reverse_lazy('participants:get_participant_team_challenge_list',
+                                kwargs={'participant_team_pk': self.participant_team.pk})
+        self.assertEqual(unicode(self.url),
+                         '/api/participants/participant_team/%s/challenge' % (self.participant_team.pk))
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.view_name,
+                         'participants:get_participant_team_challenge_list')
+
     def test_participant_team_detail_url(self):
         self.url = reverse_lazy('participants:get_participant_team_details',
                                 kwargs={'pk': self.participant_team.pk})
