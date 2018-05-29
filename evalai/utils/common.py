@@ -8,7 +8,8 @@ def valid_token(response):
 
     if ('detail' in response):
         if (response['detail'] == 'Invalid token'):
-            echo("The authentication token you are using isn't valid. Please try again.")
+            echo("The authentication token you are using isn't valid."
+                 " Please try again.")
             return False
         if (response['detail'] == 'Token has expired'):
             echo("Sorry, the token has expired.")

@@ -15,3 +15,11 @@ necessitatibus debitis esse eveniet consequatur. Provident saepe officiis incidu
 nihil blanditiis itaque. Fugiat sed quod nostrum.', 'allowed_email_domains': [], 'end_date': '2018-02-02T18:56:42.752795Z', 'creator': {'team_name': 'South Lisafurt Host Team', 'created_by': 'host', 'id': 2},\
 'approved_by_admin': True, 'published': True}], 'next': None, 'count': 10, 'previous': None}
 """
+
+challenge_participant_teams = """
+{'results': [{'team_name': 'Test1', 'members': [{'member_id': 5, 'status': 'Self', 'member_name': 'host'}], 'created_by': 'host', 'id': 3}], 'next': None, 'count': 2, 'previous': None}
+"""
+
+challenge_host_teams = """
+{'next': None, 'previous': None, 'count': 1, 'results': [{'id': 2, 'members': [{'id': 2, 'team_name': 2, 'permissions': 'Admin', 'user': 'host', 'status': 'Self'}], 'team_name': 'South Lisafurt Host Team', 'created_by': 'host'}]}
+"""

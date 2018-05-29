@@ -5,7 +5,8 @@ from evalai.utils.challenges import (
                                     get_challenge_list,
                                     get_ongoing_challenge_list,
                                     get_past_challenge_list,
-                                    get_future_challenge_list,)
+                                    get_future_challenge_list,
+                                    get_challenge_count,)
 
 
 @click.group(invoke_without_command=True)
@@ -15,18 +16,27 @@ def challenges(ctx):
     Challenges and related options.
     """
     if ctx.invoked_subcommand is None:
-        welcome_text = """Welcome to the EvalAI CLI. Use evalai challenges --help for viewing all the options."""
+        welcome_text = ("Welcome to the EvalAI CLI. Use evalai"
+                        "challenges --help for viewing all the options.")
         echo(welcome_text)
 
 
 @click.group(invoke_without_command=True, name='list')
 @click.pass_context
-def list_challenges(ctx):
+@click.option('--participant', is_flag=True,
+              help="Show the challenges that you've participated")
+@click.option('--host', is_flag=True,
+              help="Show the challenges that you've hosted")
+def list_challenges(ctx, participant, host):
     """
-    Used to list all the challenges.
+    Used to list challenges.
     Invoked by running `evalai challenges list`
     """
-    if ctx.invoked_subcommand is None:
+    if participant:
+        get_challenge_count(host, participant)
+    elif host:
+        get_challenge_count(host, participant)
+    elif ctx.invoked_subcommand is None:
         get_challenge_list()
 
 
