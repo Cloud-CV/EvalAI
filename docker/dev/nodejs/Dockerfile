@@ -24,8 +24,6 @@ RUN npm cache clean -f
 RUN npm install
 RUN bower install --allow-root
 
-ADD . /code
-
 CMD ["gulp", "dev:runserver"]
 
 EXPOSE 8888
