@@ -271,8 +271,7 @@ RABBITMQ_PARAMETERS = {
     'EVALAI_EXCHANGE': {
         'NAME': 'evalai_submissions',
         'TYPE': 'direct',
-    },
-    'SUBMISSION_QUEUE': 'submission_task_queue',
+    }
 }
 
 # The maximum size in bytes for request body

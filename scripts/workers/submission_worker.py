@@ -212,7 +212,7 @@ def extract_challenge_data(challenge, phases):
     EVALUATION_SCRIPTS[challenge.id] = challenge_module
 
 
-def load_active_challenge(challenge_pk):
+def load_challenge(challenge_pk):
     '''
          * Fetches active challenges and corresponding active phases for it.
     '''
@@ -223,10 +223,14 @@ def load_active_challenge(challenge_pk):
     # make sure that the challenge base directory exists
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
 
-    active_challenge = Challenge.objects.filter(**q_params)
+    try:
+        challenge = Challenge.objects.get(**q_params)
+    except Challenge.DoesNotExist:
+        logger.error('Challenge {} does not exists'.format(challenge_pk))
+        traceback.print_exc()
 
-    phases = active_challenge[0].challengephase_set.all()
-    extract_challenge_data(active_challenge[0], phases)
+    phases = challenge.challengephase_set.all()
+    extract_challenge_data(challenge, phases)
 
 
 def extract_submission_data(submission_id):
@@ -466,7 +470,7 @@ def main(challenge_pk):
 
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
-    load_active_challenge(challenge_pk)
+    load_challenge(challenge_pk)
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host=settings.RABBITMQ_PARAMETERS['HOST'], heartbeat_interval=0))
