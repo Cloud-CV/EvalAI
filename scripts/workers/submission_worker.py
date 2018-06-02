@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import click
 import contextlib
 import django
 import importlib
@@ -212,22 +213,21 @@ def extract_challenge_data(challenge, phases):
     EVALUATION_SCRIPTS[challenge.id] = challenge_module
 
 
-def load_active_challenges():
+def load_active_challenge(challenge_pk):
     '''
          * Fetches active challenges and corresponding active phases for it.
     '''
-    q_params = {'approved_by_admin': True}
+    q_params = {'approved_by_admin': True, 'pk': challenge_pk}
     q_params['start_date__lt'] = timezone.now()
     q_params['end_date__gt'] = timezone.now()
 
     # make sure that the challenge base directory exists
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
 
-    active_challenges = Challenge.objects.filter(**q_params)
+    active_challenge = Challenge.objects.filter(**q_params)
 
-    for challenge in active_challenges:
-        phases = challenge.challengephase_set.all()
-        extract_challenge_data(challenge, phases)
+    phases = active_challenge[0].challengephase_set.all()
+    extract_challenge_data(active_challenge[0], phases)
 
 
 def extract_submission_data(submission_id):
@@ -446,19 +446,6 @@ def process_submission_message(message):
     run_submission(challenge_id, challenge_phase, submission_instance, user_annotation_file_path,)
 
 
-def process_add_challenge_message(message):
-    challenge_id = message.get('challenge_id')
-
-    try:
-        challenge = Challenge.objects.get(id=challenge_id)
-    except Challenge.DoesNotExist:
-        logger.critical('Challenge {} does not exist'.format(challenge_id))
-        traceback.print_exc()
-
-    phases = challenge.challengephase_set.all()
-    extract_challenge_data(challenge, phases)
-
-
 def process_submission_callback(ch, method, properties, body):
     try:
         logger.info("[x] Received submission message %s" % body)
@@ -471,47 +458,30 @@ def process_submission_callback(ch, method, properties, body):
         traceback.print_exc()
 
 
-def add_challenge_callback(ch, method, properties, body):
-    try:
-        logger.info("[x] Received add challenge message %s" % body)
-        body = yaml.safe_load(body)
-        process_add_challenge_message(body)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-    except Exception as e:
-        logger.error('Error in receiving message from add challenge queue with error {}'.format(e))
-        traceback.print_exc()
-
-
-def main():
+@click.command()
+@click.option('--challenge_pk', help='Please enter the challenge pk')
+def main(challenge_pk):
 
     logger.info('Using {0} as temp directory to store data'.format(BASE_TEMP_DIR))
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
 
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
-    load_active_challenges()
+    load_active_challenge(challenge_pk)
+
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host=settings.RABBITMQ_PARAMETERS['HOST'], heartbeat_interval=0))
 
     channel = connection.channel()
+
     channel.exchange_declare(
         exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
         type=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['TYPE'])
 
-    # name can be a combination of hostname + process id
-    # host name : to easily identify that the worker is running on which instance
-    # process id : to add uniqueness in case more than one worker is running on the same instance
-    add_challenge_queue_name = '{hostname}_{process_id}'.format(hostname=socket.gethostname(),
-                                                                process_id=str(os.getpid()))
-
     channel.queue_declare(
-        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
+        queue='submission_challenge_{}'.format(challenge_pk),
         durable=True)
 
-    # reason for using `exclusive` instead of `autodelete` is that
-    # challenge addition queue should have only have one consumer on the connection
-    # that creates it.
-    channel.queue_declare(queue=add_challenge_queue_name, durable=True, exclusive=True)
     logger.info('[*] Waiting for messages. To exit press CTRL+C')
 
     # create submission base data directory
@@ -519,16 +489,12 @@ def main():
 
     channel.queue_bind(
         exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
-        routing_key='submission.*.*')
+        queue='submission_challenge_{}'.format(challenge_pk),
+        routing_key='submission_challenge_{}'.format(challenge_pk))
+
     channel.basic_consume(
         process_submission_callback,
-        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'])
-
-    channel.queue_bind(
-        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=add_challenge_queue_name, routing_key='challenge.*.*')
-    channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
+        queue='submission_challenge_{}'.format(challenge_pk))
 
     channel.start_consuming()
 

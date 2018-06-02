@@ -270,7 +270,7 @@ RABBITMQ_PARAMETERS = {
     'HOST': os.environ.get("RABBITMQ_HOST", 'localhost'),
     'EVALAI_EXCHANGE': {
         'NAME': 'evalai_submissions',
-        'TYPE': 'topic',
+        'TYPE': 'direct',
     },
     'SUBMISSION_QUEUE': 'submission_task_queue',
 }
