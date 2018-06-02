@@ -8,7 +8,6 @@ import os
 import pika
 import requests
 import shutil
-import socket
 import sys
 import tempfile
 import traceback
