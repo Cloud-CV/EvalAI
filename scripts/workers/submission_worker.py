@@ -226,7 +226,7 @@ def load_challenge(challenge_pk):
     try:
         challenge = Challenge.objects.get(**q_params)
     except Challenge.DoesNotExist:
-        logger.error('Challenge {} does not exists'.format(challenge_pk))
+        logger.error('Challenge {} does not exist'.format(challenge_pk))
         traceback.print_exc()
 
     phases = challenge.challengephase_set.all()
