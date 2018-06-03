@@ -1,17 +1,12 @@
-# Creating a Challenge
+# Create challenge
 
-One can create a challenge in EvalAI using either:
+Creating a challenge on EvalAI is really easy. You just need to follow the following three steps and we will take care of the rest. To make life easier for the challenge hosts, we provide a sample challenge configuration that you can use to get started. Fork and clone [EvalAI-Starters](https://github.com/cloud-CV/evalai-starters) repository to start.
 
-1. zip configuration
-2. web interface
+#### 1. Create challenge configuration file 
+___
 
-## Challenge creation using zip configuration
+First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) if you have cloned the [EvalAI-Starters](https://github.com/cloud-CV/evalai-starters) repository or create one. This file will define the start date, end date, number of phases and many more details of the challenge. Start editing this file according to your needs. For reference to the fields, refer to the following description:
 
-### Getting Started
-
-Creating a challenge on EvalAI is a three-step process. You just need to upload the challenge details in a challenge configuration file (**YAML file**) and we will take care of the rest.
-
-The challenge configuration file on EvalAI consists of following fields:
 
 * **title**: Title of the challenge
 
@@ -39,26 +34,23 @@ The challenge configuration file on EvalAI consists of following fields:
 
 * **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` The participants with these email domains will not be allowed to participate.)
 
-
 * **leaderboard**:
-
   A leaderboard for a challenge on EvalAI consists of following subfields:
 
   * **id**: Unique integer field for each leaderboard entry
 
   * **schema**: Schema field contains the information about the rows of the leaderboard. Schema contains two keys in the leaderboard:
 
-  1. `labels`: Labels are the header rows in the leaderboard according to which the challenge ranking is done.
+    1. `labels`: Labels are the header rows in the leaderboard according to which the challenge ranking is done.
 
-  2. `default_order_by`: This key decides the default sorting of the leaderboard based on one of the labels defined above.
+    2. `default_order_by`: This key decides the default sorting of the leaderboard based on one of the labels defined above.
 
-  The leaderboard schema for VQA Challenge 2017 looks something like this:
+  The leaderboard schema for the sample challenge configuration given [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) looks like this:
 
-  ```
-    {
-      "labels": ["yes/no", "number", "others", "overall"],
-      "default_order_by": "overall"
-    }
+  ```yaml
+  leaderboard:
+    - id: 1
+      schema: { "labels": ["Metric1", "Metric2", "Metric3", "Total"], "default_order_by": "Total" }
   ```
 
   The above schema of leaderboard for VQA Challenge creates the leaderboard web interface like this:
