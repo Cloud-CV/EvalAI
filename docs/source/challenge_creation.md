@@ -1,4 +1,5 @@
-# Create challenge
+
+## Challenge creation
 
 Creating a challenge on EvalAI is really easy. You just need to follow the following three steps and we will take care of the rest. To make life easier for the challenge hosts, we provide a sample challenge configuration that you can use to get started. Fork and clone [EvalAI-Starters](https://github.com/cloud-CV/evalai-starters) repository to start.
 
@@ -12,15 +13,15 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
 
 * **short_description**: Short description of the challenge (preferably 140 characters max)
 
-* **description**: Long description of the challenge (use a relative path for the html file, e.g. `challenge_details/description.html`)
+* **description**: Long description of the challenge (use a relative path for the HTML file, e.g. `challenge_details/description.html`)
 
-* **evaluation_criteria**: Evaluation criteria and details of the challenge (use a relative path for the html file, e.g. `challenge_details/evaluation.html`)
+* **evaluation_criteria**: Evaluation criteria and details of the challenge (use a relative path for the HTML file, e.g. `challenge_details/evaluation.html`)
 
-* **terms_and_conditions**: Terms and conditions of the challenge (use a relative path for the html file, e.g. `challenge_details/tnc.html`)
+* **terms_and_conditions**: Terms and conditions of the challenge (use a relative path for the HTML file, e.g. `challenge_details/tnc.html`)
 
 * **image**: Logo of the challenge (use a relative path for the logo in the zip configuration, e.g. `images/logo/challenge_logo.jpg`). **Note**: The image must be in jpg, jpeg or png format.
 
-* **submission_guidelines**: Submission guidelines of the challenge (use a relative path for the html file, e.g. `challenge_details/submission_guidelines.html`)
+* **submission_guidelines**: Submission guidelines of the challenge (use a relative path for the HTML file, e.g. `challenge_details/submission_guidelines.html`)
 
 * **evaluation_script**: The evaluation script using which the submissions will be evaluated (path of the evaluation script file or folder relative to this YAML file.)
 
@@ -28,9 +29,9 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
 
 * **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` timezone
 
-* **published**: True/False (Boolean field that gives the flexibility to publish the challenge once approved by EvalAI Admin. Default is `False`)
+* **published**: True/False (a Boolean field that gives the flexibility to publish the challenge once approved by EvalAI Admin. Default is `False`)
 
-* **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will only be allowed to participate.)
+* **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants in these email domains will only be allowed to participate.)
 
 * **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` The participants with these email domains will not be allowed to participate.)
 
@@ -39,7 +40,7 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
 
   * **id**: Unique integer field for each leaderboard entry
 
-  * **schema**: Schema field contains the information about the rows of the leaderboard. Schema contains two keys in the leaderboard:
+  * **schema**: Schema field contains the information about the rows of the leaderboard. A schema contains two keys in the leaderboard:
 
     1. `labels`: Labels are the header rows in the leaderboard according to which the challenge ranking is done.
 
@@ -53,10 +54,9 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
       schema: { "labels": ["Metric1", "Metric2", "Metric3", "Total"], "default_order_by": "Total" }
   ```
 
-  The above schema of leaderboard for VQA Challenge creates the leaderboard web interface like this:
+  The above schema of the leaderboard for Random Number Generator Challenge creates the leaderboard web interface like this:
 
-  ![VQA Leaderboard](_static/img/vqa_leaderboard.png "VQA Leaderboard")
-
+  ![Leaderboard](_static/img/leaderboard.png "Random Number Generator Challenge - Leaderboard")
 
 * **challenge_phases**:
 
@@ -66,13 +66,13 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
 
     * **name**: Name of the challenge phase
 
-    * **description**: Long description of the challenge phase (set relative path of the html file, e.g. `challenge_details/phase1_description.html`)
+    * **description**: Long description of the challenge phase (set the relative path of the HTML file, e.g. `challenge_details/phase1_description.html`)
 
-    * **leaderboard_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either make the leaderboard public or private. Default is `False`)
+    * **leaderboard_public**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to either make the leaderboard public or private. Default is `False`)
 
-    * **is_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either hide or show the challenge phase to participants. Default is `False`)
+    * **is_public**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to either hide or show the challenge phase to participants. Default is `False`)
 
-    * **is_submission_public**: True/False (Boolean field that gives the flexibility to Challenge Hosts to either make the submissions by default public/private. Note that this will only work when the `leaderboard_public` property is set to true. Default is `False`)
+    * **is_submission_public**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to either make the submissions by default public/private. Note that this will only work when the `leaderboard_public` property is set to true. Default is `False`)
 
     * **start_date**: Start DateTime of the challenge phase (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10)
 
@@ -84,23 +84,25 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
 
     * **max_submissions_per_day**: Positive integer which tells the maximum number of submissions per day to a challenge phase.
 
-    * **max_submissions**: Positive integer that decides the overall maximum number of submissions that can be done to a challenge phase.
-
+    * **max_submissions**: a Positive integer that decides the overall maximum number of submissions that can be done to a challenge phase.
 
 * **dataset_splits**:
 
-  A dataset in EvalAI is the main entity on which an AI challenge is based on. Participants are expected to make submissions corresponding to different splits of the corresponding dataset. A dataset is generally divided into different parts and each part is called dataset split. Generally, a dataset has three different splits:
+  Many of the AI challenges are based on static datasets. A dataset related to a challenge generally has 3 dataset splits:
 
   1. Training set
   2. Validation set
   3. Test set
+
+  While creating splits for a challenge, you can have any number of splits where you can use some splits for checking if some participant team is cheating or not by doing some extra analysis on that split. The possibilities are endless.
+
+  A dataset split has the following subfields:
 
   * **id**: Unique integer identifier for the dataset split
 
   * **name**: Name of the dataset split (it must be unique for every dataset split)
 
   * **codename**: Codename of dataset split. Note that the codename of a dataset split is used to map the results returned by the evaluation script to a particular dataset split in EvalAI's database. Please make sure that no two dataset splits have the same codename. Again, make sure that the dataset split's codename match with what is in the evaluation script provided by the challenge host.
-
 
 * **challenge_phase_splits**:
 
@@ -114,83 +116,34 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
 
   * **visibility**: Enter any of the positive integers given below.
 
-    a) HOST -> 1
+    - HOST: 1
 
-    b) OWNER AND HOST -> 2
+    - OWNER AND HOST: 2
 
-    c) PUBLIC -> 3
+    - PUBLIC: 3
 
-### Sample zip configuration file
+#### 2. Write evaluation script
+---
 
-Here is a sample configuration file for a challenge with 1 phase and 2 dataset split:
+Please refer to the [writing evaluation script section](evaluation_scripts.html) to know more.
 
-```yaml
+#### 3. Add challenge details and upload
+---
 
-title: Challenge Title
-short_description: Short description of the challenge (preferably 140 characters)
-description: description.html
-evaluation_details: evaluation_details.html
-terms_and_conditions: terms_and_conditions.html
-image : logo.jpg
-submission_guidelines: submission_guidelines.html
-evaluation_script: evaluation_script.zip
-start_date: 2017-06-09 20:00:00
-end_date: 2017-06-19 20:00:00
-published: True
+We are almost there. Now, you just need to update the HTML templates. EvalAI supports all kinds of HTML tags which means you can add images, videos, tables etc. Moreover, you can add inline CSS to add custom styling to your challenge details.
 
-leaderboard:
-  - id: 1
-    schema: {"labels": ["yes/no", "number", "others", "overall"], "default_order_by": "overall"}
-  - id: 2
-    schema: {"labels": ["yes/no", "number", "others", "overall"], "default_order_by": "yes/no"}
-
-challenge_phases:
-  - id: 1
-    name: Challenge name of the challenge phase
-    description: challenge_phase_description.html
-    leaderboard_public: True
-    is_public: True
-    start_date: 2017-06-09 20:00:00
-    end_date: 2017-06-19 20:00:00
-    test_annotation_file: test_annotation.txt
-    codename: Challenge phase codename
-    max_submissions_per_day: 100
-    max_submissions: 1000
-
-dataset_splits:
-  - id: 1
-    name: Name of the dataset split
-    codename: codename of dataset split 1
-  - id: 2
-    name: Name of the dataset split
-    codename: codename of dataset split 2
-
-challenge_phase_splits:
-  - challenge_phase_id: 1
-    leaderboard_id: 2
-    dataset_split_id: 1
-    visibility: 3
-  - challenge_phase_id: 1
-    leaderboard_id: 1
-    dataset_split_id: 2
-    visibility: 3
-
-```
-### Challenge Creation Examples
-
-Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) for examples on the different types of challenges on EvalAI.
-
-### How to host a challenge on EvalAI ?
-
-If you  want to host a challenge and are looking for a simple challenge configuration file that you can replicate to create a challenge on EvalAI, then please see this [repository](https://github.com/Cloud-CV/EvalAI-Starters) and follow the steps given in readme.
-
-### Next Steps
+#### Next Steps
+---
 
 The next step is to create a zip file that contains the YAML config file, all the HTML templates for the challenge description, challenge phase description, evaluation criteria, submission guidelines, evaluation script, test annotation file(s) and challenge logo (optional).
 
 The final step is to create a challenge host team for the challenge on EvalAI. After that, just upload the zip folder created in the above steps and the challenge will be created.
 
-If you have issues in creating a challenge on EvalAI, please feel free to create an issue on our Github Issues Page.
+If you have issues in creating a challenge on EvalAI, please feel free to create an issue on our [Github Issues Page](https://github.com/Cloud-CV/EvalAI/issues/new).
+
+## Challenge configuration examples
+
+Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) to see different types of challenge configurations you can have for your challenge.
 
 ## Create challenge using web interface
 
