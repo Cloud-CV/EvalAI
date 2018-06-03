@@ -45,6 +45,7 @@ class BaseAPITestClass(APITestCase):
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge_phase = ChallengePhase.objects.create(
                 name='Challenge Phase',
+                phase_id=1,
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 is_public=False,
@@ -105,9 +106,10 @@ class TestChallengeUrls(BaseAPITestClass):
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/challenge_phase')
 
         url = reverse_lazy('challenges:get_challenge_phase_detail',
-                           kwargs={'challenge_pk': self.challenge.pk, 'pk': self.challenge_phase.pk})
+                           kwargs={'challenge_pk': self.challenge.pk,
+                                   'challenge_phase_id': self.challenge_phase.phase_id})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/challenge_phase/' +
-                         str(self.challenge_phase.pk))
+                         str(self.challenge_phase.phase_id))
 
         url = reverse_lazy('challenges:get_challenge_by_pk', kwargs={'pk': self.challenge.pk})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/')
@@ -117,11 +119,11 @@ class TestChallengeUrls(BaseAPITestClass):
 
         self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'file_type': self.file_type})
         self.assertEqual(self.url,
                          '/api/challenges/{}/phase/{}/download_all_submissions/{}/'
-                         .format(self.challenge.pk, self.challenge_phase.pk, self.file_type))
+                         .format(self.challenge.pk, self.challenge_phase.phase_id, self.file_type))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'challenges:download_all_submissions')
 

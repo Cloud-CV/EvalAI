@@ -1271,6 +1271,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge_phase = ChallengePhase.objects.create(
                 name='Challenge Phase',
+                phase_id=1,
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 is_public=True,
@@ -1297,7 +1298,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
     def test_get_challenge_phase(self):
         expected = [
             {
-                "id": self.challenge_phase.id,
+                "phase_id": self.challenge_phase.phase_id,
                 "name": self.challenge_phase.name,
                 "description": self.challenge_phase.description,
                 "leaderboard_public": self.challenge_phase.leaderboard_public,
@@ -1319,7 +1320,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
     def test_get_challenge_phase_when_user_is_not_authenticated(self):
         expected = [
             {
-                "id": self.challenge_phase.id,
+                "phase_id": self.challenge_phase.phase_id,
                 "name": self.challenge_phase.name,
                 "description": self.challenge_phase.description,
                 "leaderboard_public": self.challenge_phase.leaderboard_public,
@@ -1461,11 +1462,11 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         super(GetParticularChallengePhase, self).setUp()
         self.url = reverse_lazy('challenges:get_challenge_phase_detail',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'pk': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
     def test_get_particular_challenge_phase(self):
         expected = {
-            "id": self.challenge_phase.id,
+            "phase_id": self.challenge_phase.phase_id,
             "name": self.challenge_phase.name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
@@ -1506,7 +1507,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         new_name = 'Rose Phase'
         new_description = 'New description.'
         expected = {
-            "id": self.challenge_phase.id,
+            "phase_id": self.challenge_phase.phase_id,
             "name": new_name,
             "description": new_description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
@@ -1526,18 +1527,18 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
     def test_particular_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_challenge_phase_detail',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'pk': self.challenge_phase.pk + 1})
+                                        'challenge_phase_id': self.challenge_phase.phase_id + 1})
         expected = {
             'error': 'ChallengePhase does not exist'
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_particular_challenge_host_team_for_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_challenge_phase_detail',
                                 kwargs={'challenge_pk': self.challenge.pk + 1,
-                                        'pk': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
         expected = {
             'error': 'Challenge does not exist'
         }
@@ -1563,7 +1564,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
         super(UpdateParticularChallengePhase, self).setUp()
         self.url = reverse_lazy('challenges:get_challenge_phase_detail',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'pk': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.partial_update_challenge_phase_name = 'Partial Update Challenge Phase Name'
         self.update_challenge_phase_title = 'Update Challenge Phase Name'
@@ -1578,7 +1579,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             'name': self.partial_update_challenge_phase_name
         }
         expected = {
-            "id": self.challenge_phase.id,
+            "phase_id": self.challenge_phase.phase_id,
             "name": self.partial_update_challenge_phase_name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
@@ -1629,7 +1630,7 @@ class DeleteParticularChallengePhase(BaseChallengePhaseClass):
         super(DeleteParticularChallengePhase, self).setUp()
         self.url = reverse_lazy('challenges:get_challenge_phase_detail',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'pk': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
     def test_particular_challenge_delete(self):
         response = self.client.delete(self.url, {})
@@ -1972,6 +1973,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge5_phase1 = ChallengePhase.objects.create(
                 name='Challenge Phase 1',
+                phase_id=1,
                 description='Description for Challenge Phase 1',
                 leaderboard_public=False,
                 codename="Phase Code Name 1",
@@ -1986,6 +1988,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge5_phase2 = ChallengePhase.objects.create(
                 name='Challenge Phase 2',
+                phase_id=2,
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 codename="Phase Code Name 2",
@@ -2000,6 +2003,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge5_phase3 = ChallengePhase.objects.create(
                 name='Challenge Phase',
+                phase_id=3,
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 is_public=True,
@@ -2060,7 +2064,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
     def test_get_all_submissions_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk+10,
-                                        'challenge_phase_pk': self.challenge5_phase3.pk})
+                                        'challenge_phase_id': self.challenge5_phase3.phase_id})
         expected = {
             'detail': 'Challenge {} does not exist'.format(self.challenge5.pk+10)
         }
@@ -2071,9 +2075,9 @@ class GetAllSubmissionsTest(BaseAPITestClass):
     def test_get_all_submissions_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk,
-                                        'challenge_phase_pk': self.challenge5_phase3.pk+10})
+                                        'challenge_phase_id': self.challenge5_phase3.phase_id+10})
         expected = {
-            'error': 'Challenge Phase {} does not exist'.format(self.challenge5_phase3.pk+10)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge5_phase3.phase_id+10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -2082,10 +2086,10 @@ class GetAllSubmissionsTest(BaseAPITestClass):
     def test_get_all_submissions_when_user_is_host_of_challenge(self):
         self.url_phase1 = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                        kwargs={'challenge_pk': self.challenge5.pk,
-                                               'challenge_phase_pk': self.challenge5_phase1.pk})
+                                               'challenge_phase_id': self.challenge5_phase1.phase_id})
         self.url_phase2 = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                        kwargs={'challenge_pk': self.challenge5.pk,
-                                               'challenge_phase_pk': self.challenge5_phase2.pk})
+                                               'challenge_phase_id': self.challenge5_phase2.phase_id})
         self.client.force_authenticate(user=self.user5)
         submissions = [self.submission3, self.submission2]
         expected = []
@@ -2122,7 +2126,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
     def test_get_all_submissions_when_user_is_participant_of_challenge(self):
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk,
-                                        'challenge_phase_pk': self.challenge5_phase3.pk})
+                                        'challenge_phase_id': self.challenge5_phase3.phase_id})
         self.client.force_authenticate(user=self.user6)
         expected = [
             {
@@ -2156,7 +2160,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.client.force_authenticate(user=self.user7)
         self.url = reverse_lazy('challenges:get_all_submissions_of_challenge',
                                 kwargs={'challenge_pk': self.challenge5.pk,
-                                        'challenge_phase_pk': self.challenge5_phase3.pk})
+                                        'challenge_phase_id': self.challenge5_phase3.phase_id})
         expected = {
             'error': 'You are neither host nor participant of the challenge!'
         }
@@ -2242,7 +2246,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def test_download_all_submissions_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk+10,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'file_type': self.file_type_csv})
         expected = {
             'detail': 'Challenge {} does not exist'.format(self.challenge.pk+10)
@@ -2254,10 +2258,10 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def test_download_all_submissions_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk+10,
+                                        'challenge_phase_id': self.challenge_phase.phase_id+10,
                                         'file_type': self.file_type_csv})
         expected = {
-            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk+10)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.phase_id+10)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -2266,7 +2270,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def test_download_all_submissions_when_file_type_is_not_csv(self):
         self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'file_type': self.file_type_pdf})
         expected = {
             'error': 'The file type requested is not valid!'
@@ -2278,7 +2282,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def test_download_all_submissions_when_user_is_challenge_host(self):
         self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'file_type': self.file_type_csv})
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2286,7 +2290,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def test_download_all_submissions_when_user_is_challenge_participant(self):
         self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'file_type': self.file_type_csv})
 
         self.challenge.participant_teams.add(self.participant_team1)
@@ -2297,7 +2301,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
     def test_download_all_submissions_when_user_is_neither_a_challenge_host_nor_a_participant(self):
         self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'file_type': self.file_type_csv})
 
         self.client.force_authenticate(user=self.user2)

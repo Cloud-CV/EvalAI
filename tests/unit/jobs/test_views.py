@@ -78,6 +78,7 @@ class BaseAPITestClass(APITestCase):
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge_phase = ChallengePhase.objects.create(
                 name='Challenge Phase',
+                phase_id=1,
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 max_submissions_per_day=10,
@@ -92,7 +93,7 @@ class BaseAPITestClass(APITestCase):
 
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.client.force_authenticate(user=self.user1)
 
@@ -105,7 +106,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge.delete()
 
@@ -121,7 +122,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_challenge_is_not_active(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge.end_date = timezone.now() - timedelta(days=1)
         self.challenge.save()
@@ -138,7 +139,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge_phase.delete()
 
@@ -154,7 +155,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_challenge_phase_is_not_public(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge_phase.is_public = False
         self.challenge_phase.save()
@@ -171,7 +172,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.participant_team.delete()
 
@@ -187,7 +188,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         # Note that we haven't added the self.participant_team to Challenge
         expected = {
@@ -202,7 +203,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_status_and_file_is_not_submitted(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
@@ -219,7 +220,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_form_encoding_is_wrong(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
@@ -236,7 +237,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_status_is_not_correct(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
@@ -253,7 +254,7 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_for_successful_submission(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
@@ -269,7 +270,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
         super(GetChallengeSubmissionTest, self).setUp()
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.submission = Submission.objects.create(
             participant_team=self.participant_team,
@@ -287,7 +288,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
     def test_challenge_submission_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge.delete()
 
@@ -302,7 +303,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.challenge_phase.delete()
 
@@ -317,7 +318,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         self.participant_team.delete()
 
@@ -332,7 +333,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
 
         # Note that we haven't added the self.participant_team to Challenge
         expected = {
@@ -346,7 +347,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
     def test_get_challenge_submissions(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
         expected = [
             {
                 'id': self.submission.id,
@@ -381,7 +382,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
     def setUp(self):
         super(GetRemainingSubmissionTest, self).setUp()
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_id': self.challenge_phase.pk,
+                                kwargs={'challenge_phase_id': self.challenge_phase.phase_id,
                                         'challenge_id': self.challenge.pk})
 
         self.submission1 = Submission.objects.create(
@@ -412,7 +413,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                kwargs={'challenge_phase_id': self.challenge_phase.phase_id,
                                         'challenge_pk': self.challenge.pk+1})
 
         expected = {
@@ -425,11 +426,11 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk+1,
+                                kwargs={'challenge_phase_id': self.challenge_phase.phase_id+1,
                                         'challenge_pk': self.challenge.pk})
 
         expected = {
-            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+1)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.phase_id+1)
         }
 
         response = self.client.get(self.url, {})
@@ -438,7 +439,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_participant_team_hasnt_participated_in_challenge(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                kwargs={'challenge_phase_id': self.challenge_phase.phase_id,
                                         'challenge_pk': self.challenge.pk})
 
         expected = {
@@ -451,7 +452,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_submission_made_three_days_back(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                kwargs={'challenge_phase_id': self.challenge_phase.phase_id,
                                         'challenge_pk': self.challenge.pk})
         expected = {
             'remaining_submissions_today_count': 9,
@@ -468,7 +469,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when__submission_made_today(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                kwargs={'challenge_phase_id': self.challenge_phase.phase_id,
                                         'challenge_pk': self.challenge.pk})
         expected = {
             'remaining_submissions_today_count': 8,
@@ -483,7 +484,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_time_when_limit_is_exhausted(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                kwargs={'challenge_phase_id': self.challenge_phase.phase_id,
                                         'challenge_pk': self.challenge.pk})
         setattr(self.challenge_phase, 'max_submissions_per_day', 1)
         self.challenge_phase.save()
@@ -520,13 +521,13 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
 
     def test_change_submission_data_and_visibility_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk+10,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
 
         expected = {
@@ -540,11 +541,11 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk+10,
+                                        'challenge_phase_id': self.challenge_phase.phase_id+10,
                                         'submission_pk': self.submission.pk})
 
         expected = {
-            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+10)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.phase_id+10)
         }
 
         response = self.client.patch(self.url, {})
@@ -554,7 +555,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_challenge_is_not_active(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
         self.data = {
             'method_name': 'Updated Method Name'
@@ -572,7 +573,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_challenge_is_not_public(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
 
         self.challenge_phase.is_public = False
@@ -592,7 +593,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
 
         self.participant_team.delete()
@@ -611,7 +612,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_participant_team_hasnt_participated_in_challenge(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
 
         # Note that we haven't added the self.participant_team to Challenge
@@ -629,7 +630,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_submission_exist(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
         self.data = {
             'method_name': 'Updated Method Name'
@@ -663,7 +664,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_is_public_is_true(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
         self.data = {
             'is_public': True
@@ -675,7 +676,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_is_public_is_false(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
         self.data = {
             'is_public': False
@@ -709,7 +710,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
     def test_change_submission_data_and_visibility_when_submission_doesnt_exist(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
 
         expected = {

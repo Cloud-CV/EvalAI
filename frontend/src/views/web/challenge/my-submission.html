@@ -23,7 +23,7 @@
                     <div class="row">
                         <div class="col xs12 s6">
                             <span><md-select ng-model="challenge.phase.name" placeholder="Phase" class="rm-margin">
-                            <md-option ng-click="challenge.getResults(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}}</md-option>
+                            <md-option ng-click="challenge.getResults(key.phase_id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}}</md-option>
                         </md-select></span>
                         </div>
                     </div>
@@ -100,11 +100,11 @@
                                             <td>{{key.submitted_at | date:'medium'}}</td>
 
                                             <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
-                                                <input ng-checked="key.is_public" ng-if="key.status == 'finished'" ng-model="challenge.submissionVisibility[key.id]" type="checkbox" id="isPublic{{ key.id }}" ng-change="challenge.changeSubmissionVisibility(key.id)" />
-                                                <label for="isPublic{{ key.id }}"></label>
+                                                <input ng-checked="key.is_public" ng-if="key.status == 'finished'" ng-model="challenge.submissionVisibility[key.phase_id]" type="checkbox" id="isPublic{{ key.phase_id }}" ng-change="challenge.changeSubmissionVisibility(key.phase_id)" />
+                                                <label for="isPublic{{ key.phase_id }}"></label>
                                                 <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                             </td>
-                                            <td><a class="pointer" ng-click="challenge.showMdDialog($event, key.id)"><i class="fa fa-pencil" aria-hidden="true"></i></a></td>
+                                            <td><a class="pointer" ng-click="challenge.showMdDialog($event, key.phase_id)"><i class="fa fa-pencil" aria-hidden="true"></i></a></td>
                                         </tr>
                                     </tbody>
                                 </table>

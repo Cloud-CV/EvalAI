@@ -78,6 +78,7 @@ class BaseAPITestClass(APITestCase):
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge_phase = ChallengePhase.objects.create(
                 name='Challenge Phase',
+                phase_id=1,
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 is_public=False,
@@ -123,11 +124,11 @@ class TestJobsUrls(BaseAPITestClass):
     def test_change_submisson_visibility_url(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_phase_id': self.challenge_phase.phase_id,
                                         'submission_pk': self.submission.pk})
         self.assertEqual(self.url,
                          '/api/jobs/challenge/{}/challenge_phase/{}/submission/{}'.format(self.challenge.pk,
-                                                                                          self.challenge_phase.pk,
+                                                                                          self.challenge_phase.phase_id,
                                                                                           self.submission.pk))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:change_submission_data_and_visibility')
@@ -135,19 +136,19 @@ class TestJobsUrls(BaseAPITestClass):
     def test_challenge_submisson_url(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
         self.assertEqual(self.url,
                          '/api/jobs/challenge/{}/challenge_phase/{}/submission/'.format(self.challenge.pk,
-                                                                                        self.challenge_phase.pk))
+                                                                                        self.challenge_phase.phase_id))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:challenge_submission')
 
     def test_get_remaining_submissons_url(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk})
+                                        'challenge_phase_id': self.challenge_phase.phase_id})
         self.assertEqual(self.url, '/api/jobs/{}/phases/{}/remaining_submissions'.format(self.challenge.pk,
-                                                                                         self.challenge_phase.pk))
+                                                                                         self.challenge_phase.phase_id))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:get_remaining_submissions')
 

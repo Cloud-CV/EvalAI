@@ -48,7 +48,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePhase
-        fields = ('id', 'name', 'description', 'leaderboard_public', 'start_date',
+        fields = ('phase_id', 'name', 'description', 'leaderboard_public', 'start_date',
                   'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
                   'is_public', 'is_active', 'codename',)
 

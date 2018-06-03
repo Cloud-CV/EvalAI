@@ -20,3 +20,11 @@ def get_file_content(file_path, mode):
     if os.path.isfile(file_path):
         with open(file_path, mode) as file_content:
             return file_content.read()
+
+
+def get_challenge_phase_from_phase_id(challenge, challenge_phase_id):
+    try:
+        challenge_phase_obj = ChallengePhase.objects.get(challenge=challenge, phase_id=challenge_phase_id)
+    except ChallengePhase.DoesNotExist:
+        return None
+    return challenge_phase_obj

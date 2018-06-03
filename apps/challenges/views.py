@@ -27,7 +27,7 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import paginated_queryset, get_challenge_phase_from_phase_id
 from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model,
                               get_challenge_phase_split_model,
@@ -58,7 +58,7 @@ from .serializers import (ChallengeConfigSerializer,
                           StarChallengeSerializer,
                           ZipChallengeSerializer,
                           ZipChallengePhaseSplitSerializer,)
-from .utils import get_file_content
+from .utils import get_file_content, get_challenge_phase_from_phase_id
 
 logger = logging.getLogger(__name__)
 
@@ -389,18 +389,19 @@ def challenge_phase_list(request, challenge_pk):
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_phase_detail(request, challenge_pk, pk):
+def challenge_phase_detail(request, challenge_pk, challenge_phase_id):
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    try:
-        challenge_phase = ChallengePhase.objects.get(pk=pk)
-    except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'ChallengePhase does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
+
+    if not challenge_phase:
+        response_data = {
+               'error': 'ChallengePhase does not exist'}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         serializer = ChallengePhaseSerializer(challenge_phase)
@@ -887,7 +888,24 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
         zip_config = ChallengeConfiguration.objects.get(
             pk=uploaded_zip_file.pk)
+
         if zip_config:
+
+            # Change the challenge id's to not update the pk.
+            phases = ChallengePhase.objects.filter(challenge=challenge)
+            phase_idx = 1
+            challenge_phase_split_idx = 1
+            for phase in phases:
+                phase.phase_id = phase_idx
+                phase.save()
+                phase_idx += 1
+                challenge_phase_split_idx = 1
+                phase_splits = ChallengePhaseSplit.objects.filter(challenge_phase=phase)
+                for phase_split in phase_splits:
+                    phase_split.phase_split_id = challenge_phase_split_idx
+                    phase_split.challenge = challenge
+                    phase_split.save()
+                    challenge_phase_split_idx += 1
 
             # Add the Challenge Host as a test participant.
             emails = challenge_host_team.get_all_challenge_host_email()
@@ -941,20 +959,20 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
+def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_id):
     """
     Returns all the submissions for a particular challenge
     """
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
-    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge)
-    except ChallengePhase.DoesNotExist:
+    # To check for the corresponding challenge phase from the challenge_phase_id and challenge.
+
+    challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
+
+    if not challenge_phase:
         response_data = {
-            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # To check for the user as a host of the challenge from the request and challenge_pk.
@@ -1003,18 +1021,17 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_type):
+def download_all_submissions(request, challenge_pk, challenge_phase_id, file_type):
 
     # To check for the corresponding challenge from challenge_pk.
     challenge = get_challenge_model(challenge_pk)
 
     # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_pk, challenge=challenge)
-    except ChallengePhase.DoesNotExist:
+    challenge_phase = get_challenge_phase_from_phase_id(challenge, challenge_phase_id)
+
+    if not challenge_phase:
         response_data = {
-            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if file_type == 'csv':
