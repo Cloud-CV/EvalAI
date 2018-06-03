@@ -12,7 +12,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "^1.5.8",
+    "angular": "^1.7.0",
     "animate.css": "^3.5.2",
     "font-awesome": "^4.7.0",
     "angular-ui-router": "^0.3.1",
@@ -34,6 +34,6 @@
     "ngclipboard": "^2.0.0"
   },
   "resolutions": {
-    "angular": "^1.6.1"
+    "angular": "^1.7.0"
   }
 }
