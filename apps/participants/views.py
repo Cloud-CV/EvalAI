@@ -13,6 +13,7 @@ from rest_framework.throttling import UserRateThrottle
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from challenges.models import Challenge
+from challenges.serializers import ChallengeSerializer
 from hosts.utils import is_user_a_host_of_challenge
 
 from .models import (Participant, ParticipantTeam)
@@ -23,7 +24,8 @@ from .serializers import (InviteParticipantToTeamSerializer,
                           ChallengeParticipantTeamListSerializer,
                           ParticipantTeamDetailSerializer,)
 from .utils import (get_list_of_challenges_for_participant_team,
-                    get_list_of_challenges_participated_by_a_user,)
+                    get_list_of_challenges_participated_by_a_user,
+                    is_user_part_of_participant_team,)
 
 
 @throttle_classes([UserRateThrottle])
@@ -54,6 +56,30 @@ def participant_team_list(request):
             participant.save()
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_participant_team_challenge_list(request, participant_team_pk):
+    """
+    Returns a challenge list in which the participant team has participated.
+    """
+    try:
+        participant_team = ParticipantTeam.objects.get(
+            pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {'error': 'Participant Team does not exist'}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        challenge = Challenge.objects.filter(participant_teams=participant_team)
+        paginator, result_page = paginated_queryset(challenge, request)
+        serializer = ChallengeSerializer(
+            result_page, many=True, context={'request': request})
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
 
 
 @throttle_classes([UserRateThrottle])
@@ -100,18 +126,27 @@ def participant_team_detail(request, pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def invite_participant_to_team(request, pk):
-
     try:
         participant_team = ParticipantTeam.objects.get(pk=pk)
     except ParticipantTeam.DoesNotExist:
-        response_data = {'error': 'ParticipantTeam does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        response_data = {'error': 'Participant Team does not exist'}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    if not is_user_part_of_participant_team(request.user, participant_team):
+        response_data = {'error': 'You are not a member of this team!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     email = request.data.get('email')
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        response_data = {'error': 'User does not exist with this email address!'}
+        response_data = {
+            'error': 'User does not exist with this email address!'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    participant = Participant.objects.filter(team=participant_team, user=user)
+    if participant.exists():
+        response_data = {'error': 'User is already part of the team!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     invited_user_participated_challenges = get_list_of_challenges_participated_by_a_user(
@@ -121,17 +156,23 @@ def invite_participant_to_team(request, pk):
 
     if set(invited_user_participated_challenges) & set(team_participated_challenges):
         """
-        Condition to check if the user has already participated in challenges where
-        the inviting participant has participated. If this is the case,
-        then the user cannot be invited since he cannot participate in a challenge
-        via two teams.
+        Check if the user has already participated in
+        challenges where the inviting participant has participated.
+        If this is the case, then the user cannot be invited since
+        he cannot participate in a challenge via two teams.
         """
-        response_data = {'error': 'Sorry, cannot invite user to the team!'}
+        response_data = {
+            'error': 'Sorry, the invited user has already participated'
+            ' in atleast one of the challenges which you are already a'
+            ' part of. Please try creating a new team and then invite.'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    serializer = InviteParticipantToTeamSerializer(data=request.data,
-                                                   context={'participant_team': participant_team,
-                                                            'request': request})
+    serializer = InviteParticipantToTeamSerializer(
+        data=request.data,
+        context={
+            'participant_team': participant_team,
+            'request': request})
+
     if serializer.is_valid():
         serializer.save()
         response_data = {
@@ -224,8 +265,8 @@ def remove_self_from_participant_team(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        participant = Participant.objects.get(user=request.user, team__pk=participant_team_pk)
-    except:
+        participant = Participant.objects.get(user=request.user, team=participant_team)
+    except Participant.DoesNotExist:
         response_data = {'error': 'Sorry, you do not belong to this team!'}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 

@@ -38,6 +38,11 @@ class BaseAPITestClass(APITestCase):
             team_name='Participant Team',
             created_by=self.user)
 
+        self.participant = Participant.objects.create(
+            user=self.user,
+            team=self.participant_team,
+            status=Participant.SELF,)
+
         self.client.force_authenticate(user=self.user)
 
 
@@ -47,12 +52,6 @@ class GetParticipantTeamTest(BaseAPITestClass):
 
     def setUp(self):
         super(GetParticipantTeamTest, self).setUp()
-
-        self.participant = Participant.objects.create(
-            user=self.user,
-            status=Participant.ACCEPTED,
-            team=self.participant_team
-        )
 
         self.user2 = User.objects.create(
             username='user2',
@@ -147,11 +146,6 @@ class GetParticularParticipantTeam(BaseAPITestClass):
             primary=True,
             verified=True)
 
-        self.participant1 = Participant.objects.create(
-            user=self.user,
-            status=Participant.SELF,
-            team=self.participant_team)
-
         self.participant2 = Participant.objects.create(
             user=self.user2,
             status=Participant.ACCEPTED,
@@ -164,9 +158,9 @@ class GetParticularParticipantTeam(BaseAPITestClass):
             "created_by": self.user.username,
             "members": [
                 {
-                    "member_name": self.participant1.user.username,
-                    "status": self.participant1.status,
-                    "member_id": self.participant1.user.id
+                    "member_name": self.participant.user.username,
+                    "status": self.participant.status,
+                    "member_id": self.participant.user.id
                 },
                 {
                     "member_name": self.participant2.user.username,
@@ -249,8 +243,6 @@ class DeleteParticularParticipantTeam(BaseAPITestClass):
 
 class InviteParticipantToTeamTest(BaseAPITestClass):
 
-    url = reverse_lazy('participants:invite_participant_to_team')
-
     def setUp(self):
         super(InviteParticipantToTeamTest, self).setUp()
         self.data = {
@@ -277,10 +269,25 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
             'email': self.user.email
         }
         expected = {
-            'email': [
-                'A participant cannot invite himself'
-            ]
+            'error': 'User is already part of the team!'
         }
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_invite_to_other_team_which_doesnot_belong_to_user(self):
+        temp_user = User.objects.create(
+            username="temp_user", password="test_password")
+        temp_participant_team = ParticipantTeam.objects.create(
+            team_name="Test Team 1", created_by=temp_user)
+
+        expected = {
+            'error': 'You are not a member of this team!'
+        }
+
+        self.url = reverse_lazy('participants:invite_participant_to_team',
+                                kwargs={'pk': temp_participant_team.pk})
+
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -300,11 +307,11 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.url = reverse_lazy('participants:invite_participant_to_team',
                                 kwargs={'pk': self.participant_team.pk + 1})
         expected = {
-            'error': 'ParticipantTeam does not exist'
+            'error': 'Participant Team does not exist'
         }
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_invite_participant_to_team_when_user_cannot_be_invited(self):
         '''
@@ -383,7 +390,9 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
                                 kwargs={'pk': self.participant_team2.pk})
 
         expected = {
-            'error': 'Sorry, cannot invite user to the team!'
+            'error': 'Sorry, the invited user has already participated '
+            'in atleast one of the challenges which you are already'
+            ' a part of. Please try creating a new team and then invite.'
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -395,7 +404,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
     def setUp(self):
         super(DeleteParticipantFromTeamTest, self).setUp()
 
-        self.participant1 = Participant.objects.create(
+        self.participant = Participant.objects.create(
             user=self.user,
             status=Participant.SELF,
             team=self.participant_team)
@@ -446,7 +455,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
     def test_when_participant_is_admin_and_wants_to_delete_himself(self):
         self.url = reverse_lazy('participants:delete_participant_from_team',
                                 kwargs={'participant_team_pk': self.participant_team.pk,
-                                        'participant_pk': self.participant1.pk
+                                        'participant_pk': self.participant.pk
                                         })
 
         expected = {
@@ -514,18 +523,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             primary=True,
             verified=True)
 
-        self.participant_team1 = ParticipantTeam.objects.create(
-            team_name='Team A',
-            created_by=self.user)
-
         self.participant_team2 = ParticipantTeam.objects.create(
             team_name='Team B',
             created_by=self.user2)  # created by user2 and not user
-
-        self.participant1 = Participant.objects.create(
-            user=self.user,
-            status=Participant.SELF,
-            team=self.participant_team1)
 
         self.participant2 = Participant.objects.create(
             user=self.user2,
@@ -572,7 +572,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
     def test_get_teams_and_corresponding_challenges_for_a_participant(self):
 
-        self.challenge1.participant_teams.add(self.participant_team1)
+        self.challenge1.participant_teams.add(self.participant_team)
         self.challenge1.save()
 
         expected = {
@@ -604,9 +604,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "approved_by_admin": False,
                     },
                     "participant_team": {
-                        "id": self.participant_team1.id,
-                        "team_name": self.participant_team1.team_name,
-                        "created_by": self.participant_team1.created_by.username
+                        "id": self.participant_team.id,
+                        "team_name": self.participant_team.team_name,
+                        "created_by": self.participant_team.created_by.username
                     }
                 }
             ],
@@ -620,6 +620,44 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_participant_team_challenge_list(self):
+        self.url = reverse_lazy('participants:get_participant_team_challenge_list',
+                                kwargs={'participant_team_pk': self.participant_team.pk})
+        expected = [
+            {
+                "id": self.challenge1.id,
+                "title": self.challenge1.title,
+                "description": self.challenge1.description,
+                "short_description": self.challenge1.short_description,
+                "terms_and_conditions": self.challenge1.terms_and_conditions,
+                "submission_guidelines": self.challenge1.submission_guidelines,
+                "evaluation_details": self.challenge1.evaluation_details,
+                "image": self.challenge1.image,
+                "start_date":
+                    "{0}{1}".format(self.challenge1.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge1.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "creator": {
+                    "id": self.challenge_host_team.id,
+                    "team_name": self.challenge_host_team.team_name,
+                    "created_by": self.challenge_host_team.created_by.username
+                    },
+                "published": self.challenge1.published,
+                "enable_forum": self.challenge1.enable_forum,
+                "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
+                "is_active": True,
+                "allowed_email_domains": [],
+                "blocked_email_domains": [],
+                "approved_by_admin": False,
+            }
+        ]
+
+        self.challenge1.participant_teams.add(self.participant_team)
+        self.challenge1.save()
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_when_participant_team_hasnot_participated_in_any_challenge(self):
 
         expected = {
@@ -627,9 +665,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 {
                     "challenge": None,
                     "participant_team": {
-                        "id": self.participant_team1.id,
-                        "team_name": self.participant_team1.team_name,
-                        "created_by": self.participant_team1.created_by.username
+                        "id": self.participant_team.id,
+                        "team_name": self.participant_team.team_name,
+                        "created_by": self.participant_team.created_by.username
                     }
                 }
             ],
@@ -645,7 +683,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
 
     def test_when_there_is_no_participant_team_of_user(self):
 
-        self.participant_team1.delete()
+        self.participant_team.delete()
 
         expected = {
             "challenge_participant_team_list": [],
@@ -665,11 +703,6 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
 
     def setUp(self):
         super(RemoveSelfFromParticipantTeamTest, self).setUp()
-
-        self.participant = Participant.objects.create(
-            user=self.user,
-            status=Participant.SELF,
-            team=self.participant_team)
 
         # user who create a challenge host team
         self.user2 = User.objects.create(
