@@ -1,45 +1,42 @@
-// Gulp Tasks
-'use strict';
-
 var gulp = require('gulp'),
-    runSequence = require('run-sequence'),
-    debug = require('gulp-debug'),
-    merge = require('merge-stream'),
+    del = require('del'),
+    _ = require('lodash'),
+    fs = require('fs'),
+    path = require('path'),
+    concat = require('gulp-concat'),
+    // imagemin = require('gulp-imagemin'),
+    // htmlmin = require('gulp-htmlmin'),
     sass = require('gulp-sass'),
     postcss = require('gulp-postcss'),
+    cleanCSS = require('gulp-clean-css'),
     sourcemaps = require('gulp-sourcemaps'),
     autoprefixer = require('autoprefixer'),
-    cleanCSS = require('gulp-clean-css'),
-    eslint = require('gulp-eslint'),
-    angularPlugin = require('eslint-plugin-angular'),
-    gulp_if = require('gulp-if'),
-    uglify = require('gulp-uglify'),
-    imagemin = require('gulp-imagemin'),
+    merge = require('merge-stream'),
     rename = require('gulp-rename'),
-    concat = require('gulp-concat'),
-    livereload = require('gulp-livereload'),
-    del = require('del'),
-    connect = require('gulp-connect'),
-    htmlmin = require('gulp-html-minifier'),
-    fs = require('fs'),
-    connectModRewrite = require('connect-modrewrite'),
-    ngConfig = require('gulp-ng-config'),
-    prettyError = require('gulp-prettyerror'),
-    path = require('path'),
     inject = require('gulp-inject'),
-    _ = require('lodash'),
-    Server = require('karma').Server;
+    uglify = require('gulp-uglify'),
+    eslint = require('gulp-eslint'),
+    connectModRewrite = require('connect-modrewrite'),
+    connect = require('gulp-connect'),
+    gulp_if = require('gulp-if'),
+    karmaServer = require('karma').Server;
 
+// development task
+var production = false;
 
-var scripts = require('./frontend/app.scripts.json');
-var styles = require('./frontend/app.styles.json');
+var scripts = JSON.parse(fs.readFileSync('frontend/app.scripts.json'));
+var styles = JSON.parse(fs.readFileSync('frontend/app.styles.json'));
 
+function clean() {
+    return del(['frontend/dist/']);
+};
 
-//include all bower scripts files
-gulp.task('vendorjs', function() {
-
+/*
+Concat all js libs
+*/
+function vendorjs() {
+    var paths = [];
     _.forIn(scripts.chunks, function(chunkScripts, chunkName) {
-        var paths = [];
         chunkScripts.forEach(function(script) {
             var scriptFileName = scripts.paths[script];
 
@@ -49,27 +46,18 @@ gulp.task('vendorjs', function() {
             }
             paths.push(scriptFileName);
         });
-        gulp.src(paths)
-            .pipe(concat(chunkName + '.js'))
-            //.on('error', swallowError)
-            .pipe(gulp.dest("frontend/dist/vendors"))
-            .pipe(gulp.watch(paths).on('change', function(event) {
-                if (event.type == 'deleted') {
-                    var filePathFromSrc = path.relative(path.resolve(paths), event.path);
-                    var destFilePath = path.resolve('frontend/dist/vendors', filePathFromSrc);
-                    del.sync(destFilePath);
-                }
-            }))
-    })
+    });
+    return gulp.src(paths)
+        .pipe(concat('vendor.js'))
+        .pipe(gulp.dest("frontend/dist/vendors"))
+}
 
-});
-
-
-//include all bower  styles files
-gulp.task('vendorcss', function() {
-
+/*
+Concat all css libs
+*/
+function vendorcss() {
+    var paths = [];
     _.forIn(styles.chunks, function(chunkStyles, chunkName) {
-        var paths = [];
         chunkStyles.forEach(function(style) {
             var styleFileName = styles.paths[style];
 
@@ -79,188 +67,185 @@ gulp.task('vendorcss', function() {
             }
             paths.push(styleFileName);
         });
-        gulp.src(paths)
-            .pipe(concat(chunkName + '.css'))
-            //.on('error', swallowError)
-            .pipe(gulp.dest("frontend/dist/vendors"))
-            .pipe(gulp.watch(paths).on('change', function(event) {
-                if (event.type == 'deleted') {
-                    var filePathFromSrc = path.relative(path.resolve(paths), event.path);
-                    var destFilePath = path.resolve('frontend/dist/vendors', filePathFromSrc);
-                    del.sync(destFilePath);
-                }
-            }))
-    })
+    });
+    return gulp.src(paths)
+        .pipe(concat('vendor.css'))
+        .pipe(gulp.dest("frontend/dist/vendors"))
+}
 
-});
-
-// minify and compress CSS files
-gulp.task('css', function() {
+/*
+minify and compress custom css files
+*/
+function css() {
     return gulp.src('frontend/src/css/main.scss')
-        .pipe(prettyError())
         .pipe(sass().on('error', sass.logError))
         .pipe(sourcemaps.init())
         .pipe(postcss([autoprefixer()]))
-        .pipe(gulp_if(flags.production, cleanCSS()))
-        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(production, cleanCSS()))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
         .pipe(sourcemaps.write())
-        .pipe(gulp.dest('frontend/dist/css'));
-})
+        .pipe(gulp.dest('frontend/dist/css'))
+        pipe(connect.reload());
+}
 
-// minify angular scripts
-gulp.task('js', function() {
-
+/*
+minify angular scripts
+*/
+function js() {
     var app = gulp.src('frontend/src/js/app.js')
-        .pipe(prettyError())
         .pipe(concat('app.js'))
-        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     var configs = gulp.src('frontend/src/js/route-config/*.js')
-        .pipe(prettyError())
         .pipe(concat('route-config.js'))
-        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     var controllers = gulp.src('frontend/src/js/controllers/*.js')
-        .pipe(prettyError())
         .pipe(concat('controllers.js'))
-        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     var directives = gulp.src('frontend/src/js/directives/*.js')
-        .pipe(prettyError())
         .pipe(concat('directives.js'))
-        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'))
 
     var filters = gulp.src('frontend/src/js/filters/*.js')
-        .pipe(prettyError())
         .pipe(concat('filters.js'))
-        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(production, uglify({ mangle: false })))
         .pipe(gulp.dest('frontend/dist/js'));
 
     var services = gulp.src('frontend/src/js/services/*.js')
-        .pipe(prettyError())
         .pipe(concat('services.js'))
-        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify({ mangle: false })))
-        .pipe(gulp.dest('frontend/dist/js'));
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp_if(production, uglify({ mangle: false })))
+        .pipe(gulp.dest('frontend/dist/js'))
+    return merge(app, configs, controllers, directives, filters, services).
+        pipe(connect.reload());
+}
 
-    return merge(app, configs, controllers, directives, filters, services)
-});
-
-// minify and compress html files
-gulp.task('html', function() {
+/*
+minify and compress html files
+*/
+function html() {
     return gulp.src('frontend/src/views/web/**/*.html')
-        .pipe(gulp_if(flags.production, htmlmin({ collapseWhitespace: true })))
-        .pipe(gulp.dest('frontend/dist/views/web'));
-});
+        // .pipe(gulp_if(production, htmlmin({ collapseWhitespace: true })))
+        .pipe(gulp.dest('frontend/dist/views/web/'))
+        .pipe(connect.reload());
+}
 
 
-// for image compression
-gulp.task('images', function() {
+/*
+for image compression
+*/
+function images() {
     return gulp.src('frontend/src/images/**/*')
-        .pipe(gulp_if(flags.production, imagemin([
-            imagemin.gifsicle({ interlaced: true }),
-            imagemin.jpegtran({ progressive: true }),
-            imagemin.optipng({ optimizationLevel: 5 }),
-            imagemin.svgo({
-                plugins: [
-                    { removeViewBox: true },
-                    { cleanupIDs: false }
-                ]
-            })
-        ])))
+        // .pipe(gulp_if(production, imagemin()))
         .pipe(gulp.dest('frontend/dist/images'));
-});
+}
 
-
-// Fonts
-gulp.task('fonts', function() {
+/*
+Fonts
+*/
+function fonts() {
     var font = gulp.src([
-            'bower_components/font-awesome/fonts/fontawesome-webfont.*', 'bower_components/materialize/fonts/**/*', 'frontend/src/fonts/*'
+            'bower_components/font-awesome/fonts/fontawesome-webfont.*',
+            'bower_components/materialize/fonts/**/*',
+            'frontend/src/fonts/*'
         ])
         .pipe(gulp.dest('frontend/dist/fonts/'));
 
     var fontCss = gulp.src([
             'bower_components/font-awesome/css/font-awesome.css'
         ])
+        .pipe(gulp_if(production, cleanCSS()))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest('frontend/dist/css/'));
 
     return merge(font, fontCss);
-});
+}
 
-// Inject path of css and js files in index.html 
-gulp.task('inject', function() {
+/*
+config for prod server
+*/
+function configProd() {
+    return gulp.src('frontend/src/js/env/config.prod.js')
+        .pipe(rename({
+            basename: 'config'
+        }))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp.dest('frontend/dist/js'))
+}
+
+/* 
+config for staging server
+*/
+function configStaging() {
+    return gulp.src('frontend/src/js/env/config.staging.js')
+        .pipe(rename({
+            basename: 'config'
+        }))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp.dest('frontend/dist/js/'))
+}
+
+/*
+config for dev server
+*/
+function configDev() {
+    return gulp.src('frontend/src/js/env/config.local.js')
+        .pipe(rename({
+            basename: 'config'
+        }))
+        .pipe(gulp_if(production, rename({ suffix: '.min' })))
+        .pipe(gulp.dest('frontend/dist/js/'))
+}
+
+/*
+Inject path of css and js files in index.html 
+*/
+function injectpaths() {
+    var target = gulp.src('frontend/base.html');
     var sources = gulp.src([
-        './frontend/dist/vendors/*.js',
-        './frontend/dist/js/*.js',
-        './frontend/dist/vendors/*.css',
-        './frontend/dist/css/*.css',
+        'frontend/dist/vendors/*.js',
+        'frontend/dist/js/*.js',
+        'frontend/dist/vendors/*.css',
+        'frontend/dist/css/*.css',
     ], { read: false });
-
-    gulp.src('./frontend/base.html')
+    return target
         .pipe(inject(sources, { ignorePath: 'frontend', addRootSlash: true }))
         .pipe(rename({
             basename: "index"
         }))
-        .pipe(gulp.dest('./frontend/'));
-});
+        .pipe(gulp.dest('frontend/'));
+}
 
-// config for dev server
-gulp.task('configDev', function() {
-    gulp.src('frontend/src/js/config.json', { base: 'frontend/src/js/' })
-        .pipe(ngConfig('evalai-config', {
-            environment: 'local'
-        }))
-        .pipe(gulp.dest('frontend/dist/js'))
-});
 
-// config for staging server
-gulp.task('configStaging', function() {
-    gulp.src('frontend/src/js/config.json')
-        .pipe(ngConfig('evalai-config', {
-            environment: 'staging'
-        }))
-        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'))
-});
-
-// config for prod server
-gulp.task('configProd', function() {
-    gulp.src('frontend/src/js/config.json')
-        .pipe(ngConfig('evalai-config', {
-            environment: 'production'
-        }))
-        .pipe(gulp_if(flags.production, rename({ suffix: '.min' })))
-        .pipe(gulp_if(flags.production, uglify()))
-        .pipe(gulp.dest('frontend/dist/js'))
-});
-
-// js linting
+/*
+js linting
+*/
 var lint_path = {
     js: ['frontend/src/js/**/*.js', ]
 }
 
-gulp.task('lint', [], function() {
+function lint() {
     return gulp.src(lint_path.js)
         .pipe(eslint({}))
         .pipe(eslint.format())
         .pipe(eslint.results(function(results) {
-
             // Get the count of lint errors 
             var countError = results.errorCount;
             //Get the count of lint warnings
             var countWarning = results.warningCount;
             if (countError === 0) {
-                gulp.start('connect');
                 if (countWarning > 0) {
                     console.warn("Please remove lint warnings in production env.");
                 }
@@ -269,123 +254,19 @@ gulp.task('lint', [], function() {
                 console.error("Please remove lint errors to connect the server");
             }
         }))
-});
+}
 
-// cleaning build process- run clean before deploy and rebuild files again
-gulp.task('clean', function() {
-    return del(['frontend/dist/'], { force: true });
-});
-
-
-// watch function
-gulp.task('watch', function() {
-
-    // Watch .scss files
-    gulp.watch('frontend/src/css/**/*.scss', ['css']).on('change', function(event) {
-        if (event.type == 'deleted') {
-            var filePathFromSrc = path.relative(path.resolve('frontend/src/css/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/css', filePathFromSrc);
-            del.sync(destFilePath);
-        }
-    });
-
-    // Watch .js files
-    gulp.watch('frontend/src/js/**/*.js', ['js']).on('change', function(event) {
-        if (event.type == 'deleted') {
-            var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
-            del.sync(destFilePath);
-        }
-    });
-
-    // Watch html files
-    gulp.watch('frontend/src/views/**/*.html', ['html']).on('change', function(event) {
-        if (event.type == 'deleted') {
-            var filePathFromSrc = path.relative(path.resolve('frontend/src/views/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/views/web', filePathFromSrc);
-            del.sync(destFilePath);
-        }
-    });
-
-    // Watch image files
-    gulp.watch('frontend/src/images/**/*', ['images']).on('change', function(event) {
-        if (event.type == 'deleted') {
-            var filePathFromSrc = path.relative(path.resolve('frontend/src/images/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/images', filePathFromSrc);
-            del.sync(destFilePath);
-        }
-    });
-
-    // Watch config dev
-    gulp.watch('frontend/src/js/config.json', ['configDev']).on('change', function(event) {
-        if (event.type == 'deleted') {
-            var filePathFromSrc = path.relative(path.resolve('frontend/src/js/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/js', filePathFromSrc);
-            del.sync(destFilePath);
-        }
-    });
-
-    gulp.watch('bower_components/font-awesome/fonts/fontawesome-webfont.*', ['fonts']).on('change', function(event) {
-        if (event.type == 'deleted') {
-            var filePathFromSrc = path.relative(path.resolve('bower_components/font-awesome/fonts/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
-            del.sync(destFilePath);
-        }
-    });
-
-    gulp.watch('bower_components/materialize/fonts/**/*', ['fonts']).on('change', function(event) {
-        if (event.type == 'deleted') {
-            var filePathFromSrc = path.relative(path.resolve('bower_components/materialize/fonts/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/fonts/', filePathFromSrc);
-            del.sync(destFilePath);
-        }
-    });
-
-
-    gulp.watch('bower_components/font-awesome/css/font-awesome.css', ['fonts']).on('change', function(event) {
-        if (event.type == 'deleted') {
-            var filePathFromSrc = path.relative(path.resolve('bower_components/font-awesome/css/'), event.path);
-            var destFilePath = path.resolve('frontend/dist/css/', filePathFromSrc);
-            del.sync(destFilePath);
-        }
-    });
-
-    // Create LiveReload server
-    livereload.listen();
-
-    // Watch any files in dist/, reload on change
-    gulp.watch(['frontend/dist/**'], ['lint']).on('change', livereload.changed);
-
-});
-
-/**
- * Run test once and exit
- */
-gulp.task('test', function(done) {
-    new Server({
-        configFile: __dirname + '/karma.conf.js',
-        singleRun: true
-    }, done).start();
-});
-
-/**
- * Watch for file changes and re-run tests on each change
- */
-gulp.task('test:watch', function(done) {
-    new Server({
-        configFile: __dirname + '/karma.conf.js'
-    }, done).start();
-});
-
-
-// Start a server for serving frontend
-gulp.task('connect', ['lint'], function() {
+/* 
+Start a server for serving frontend
+*/
+function startServer() {
     // initially close the existance server if exists
     connect.serverClose();
     connect.server({
         root: 'frontend/',
         port: 8888,
         host: '0.0.0.0',
+        livereload: true,
         middleware: function(connect) {
             return [
                 connectModRewrite([
@@ -394,31 +275,38 @@ gulp.task('connect', ['lint'], function() {
             ];
         }
     });
-})
+}
 
-// development task
-var flags = {
-    production: false
-};
+function watch() {
+    gulp.watch('frontend/src/js/**/*.js', js);
+    gulp.watch('frontend/src/css/**/*.scss', css);
+    gulp.watch('frontend/src/views/web/**/*.html', html);
+    gulp.watch('frontend/src/images/**/*', images);
+    gulp.watch('bower_components/materialize/fonts/**/*', fonts);
+}
 
-gulp.task('dev', function(callback) {
-    runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configDev'], 'inject', callback);
 
-});
 
-// staging task
-gulp.task('staging', function(callback) {
-    flags.production = true; //Making this 'true' enables file compression. This will be done after js test integration
-    runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configStaging'], 'inject', callback);
-});
+var parallelTasks = gulp.parallel(vendorcss, vendorjs, css, js, html, images, fonts);
 
-// production task
-gulp.task('prod', function(callback) {
-    flags.production = true; //Making this 'true' enables file compression. This will be done after js test integration
-    runSequence('clean', ['css', 'js', 'html', 'images', 'vendorjs', 'vendorcss', 'fonts', 'configProd'], 'inject', callback);
-});
+gulp.task('prod', gulp.series(clean, function(done) {
+    production = true;
+    done();
+}, parallelTasks, configProd, injectpaths, lint));
 
-// Runserver for development
-gulp.task('dev:runserver', function(callback) {
-    runSequence('dev', 'connect', 'watch', 'test:watch', callback);
-});
+gulp.task('staging', gulp.series(clean, function(done) {
+    production = true;
+    done();
+}, parallelTasks, configStaging, injectpaths, lint));
+
+gulp.task('dev', gulp.series(clean, function(done) {
+    production = false;
+    done();
+}, parallelTasks, configDev, injectpaths, lint));
+
+gulp.task('dev:runserver', gulp.series(function(done) {
+    production = false;
+    done();
+}, parallelTasks, configDev, injectpaths, lint, gulp.parallel(watch, startServer)));
+
+
