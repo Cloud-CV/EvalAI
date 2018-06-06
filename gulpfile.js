@@ -177,7 +177,7 @@ function fonts() {
 config for prod server
 */
 function configProd() {
-    return gulp.src('frontend/src/js/env/config.prod.js')
+    return gulp.src('frontend/src/js/environment/config.prod.js')
         .pipe(rename({
             basename: 'config'
         }))
@@ -189,7 +189,7 @@ function configProd() {
 config for staging server
 */
 function configStaging() {
-    return gulp.src('frontend/src/js/env/config.staging.js')
+    return gulp.src('frontend/src/js/environment/config.staging.js')
         .pipe(rename({
             basename: 'config'
         }))
@@ -201,7 +201,7 @@ function configStaging() {
 config for dev server
 */
 function configDev() {
-    return gulp.src('frontend/src/js/env/config.local.js')
+    return gulp.src('frontend/src/js/environment/config.local.js')
         .pipe(rename({
             basename: 'config'
         }))
@@ -282,6 +282,7 @@ function watch() {
     gulp.watch('frontend/src/css/**/*.scss', css);
     gulp.watch('frontend/src/views/web/**/*.html', html);
     gulp.watch('frontend/src/images/**/*', images);
+    gulp.watch('bower_components/materialize/fonts/**/*', fonts);
     gulp.watch('bower_components/materialize/fonts/**/*', fonts);
 }
 
