@@ -27,7 +27,7 @@ A question we’re often asked is: Doesn’t Kaggle already do this? The central
 
 - **Easy Hosting**: Hosting a challenge is streamlined. One can create the challenge on EvalAI using the intuitive UI (work-in-progress) or using zip configuration file.
 
-- **Centralized Leaderboard**: Challenge Organizers whether host their challenge on EvalAI or forked version of EvalAI, they can send the results to main EvalAI server. This helps to build a centralized platform to keep track of different challenges. 
+- **Centralized Leaderboard**: Challenge Organizers whether host their challenge on EvalAI or forked version of EvalAI, they can send the results to main EvalAI server. This helps to build a centralized platform to keep track of different challenges.
 
 ## Goal
 
@@ -50,15 +50,9 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```shell
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
     ```
-
-2. Rename `settings/dev.sample.py` as `dev.py` and change credential in `settings/dev.py`
-
-    ```
-    cp settings/dev.sample.py settings/dev.py
-    ```
     Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
 
-3. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
 
     ```
     docker-compose up --build
@@ -126,7 +120,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```
     npm install
     bower install
-    ``` 
+    ```
 
     If you running npm install behind a proxy server, use
 
