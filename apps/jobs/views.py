@@ -357,21 +357,21 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def submission_detail(request, submission_id):
+def get_submission_by_pk(request, submission_id):
     """
-    Returns the details of a single submission.
-    Only the submission owner or the Challenge Hosts are authorized.
+    API endpoint to fetch the details of a submission.
+    Only the submission owner or the challenge hosts are allowed.
     """
     try:
         submission = Submission.objects.get(pk=submission_id)
     except Submission.DoesNotExist:
-        response_data = {'error': 'Submission does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        response_data = {'error': 'Submission {} does not exist'.format(submission_id)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     host_team = submission.challenge_phase.challenge.creator
 
-    if (request.user.id == submission.created_by.id or
-                ChallengeHost.objects.filter(user=request.user.id, team_name__pk=host_team.pk).exists()):
+    if (request.user.id == submission.created_by.id
+            or ChallengeHost.objects.filter(user=request.user.id, team_name__pk=host_team.pk).exists()):
         serializer = SubmissionSerializer(
             submission, context={'request': request})
         response_data = serializer.data
