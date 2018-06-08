@@ -20,19 +20,19 @@ After signing up you would be on the dashboard page.
 
 <img src="_static/img/4.png" />
 
-### 4. Choose challenge
+### 3. Choose challenge
 
 Then, go to challenges section and choose an active challenge.
 
 <img src="_static/img/5.png" />
 
-### 5. Challenge Page
+### 4. Challenge Page
 
 After reading the challenge instructions on the challenge page, you can participate in the challenge.
 
 <img src="_static/img/6.png" />
 
-### 6. Create Participant Team
+### 5. Create Participant Team
 
 Create a participant team if there isn't any or you can select from the existing ones.
 
