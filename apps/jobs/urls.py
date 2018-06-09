@@ -15,4 +15,6 @@ urlpatterns = [
         views.get_remaining_submissions, name='get_remaining_submissions'),
     url(r'^challenge_phase_split/(?P<challenge_phase_split_id>[0-9]+)/leaderboard/$',
         views.leaderboard, name='leaderboard'),
+    url(r'^submission/(?P<submission_id>[0-9]+)$',
+        views.get_submission_by_pk, name='get_submission_by_pk'),
 ]

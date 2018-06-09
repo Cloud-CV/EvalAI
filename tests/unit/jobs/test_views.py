@@ -723,3 +723,89 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_submission_by_pk_when_submission_doesnt_exist(self):
+        self.url = reverse_lazy('jobs:get_submission_by_pk',
+                                kwargs={'submission_id': self.submission.id + 1})
+
+        expected = {'error': 'Submission {} does not exist'.format(self.submission.id + 1)}
+
+        self.challenge.participant_teams.add(self.participant_team)
+        response = self.client.get(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_submission_by_pk_when_user_created_the_submission(self):
+        self.url = reverse_lazy('jobs:get_submission_by_pk',
+                                kwargs={'submission_id': self.submission.id})
+        expected = {
+                'id': self.submission.id,
+                'participant_team': self.submission.participant_team.pk,
+                'participant_team_name': self.submission.participant_team.team_name,
+                'execution_time': self.submission.execution_time,
+                'challenge_phase': self.submission.challenge_phase.pk,
+                'created_by': self.submission.created_by.pk,
+                'status': self.submission.status,
+                'input_file': "http://testserver%s" % (self.submission.input_file.url),
+                'method_name': self.submission.method_name,
+                'method_description': self.submission.method_description,
+                'project_url': self.submission.project_url,
+                'publication_url': self.submission.publication_url,
+                'stdout_file': None,
+                'stderr_file': None,
+                'submission_result_file': None,
+                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+                "is_public": self.submission.is_public,
+                "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
+                                                    'Z').replace("+00:00", ""),
+            }
+
+        self.client.force_authenticate(user=self.submission.created_by)
+
+        self.challenge.participant_teams.add(self.participant_team)
+        response = self.client.get(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_submission_by_pk_when_user_is_challenge_host(self):
+        self.url = reverse_lazy('jobs:get_submission_by_pk',
+                                kwargs={'submission_id': self.submission.id})
+        expected = {
+                'id': self.submission.id,
+                'participant_team': self.submission.participant_team.pk,
+                'participant_team_name': self.submission.participant_team.team_name,
+                'execution_time': self.submission.execution_time,
+                'challenge_phase': self.submission.challenge_phase.pk,
+                'created_by': self.submission.created_by.pk,
+                'status': self.submission.status,
+                'input_file': "http://testserver%s" % (self.submission.input_file.url),
+                'method_name': self.submission.method_name,
+                'method_description': self.submission.method_description,
+                'project_url': self.submission.project_url,
+                'publication_url': self.submission.publication_url,
+                'stdout_file': None,
+                'stderr_file': None,
+                'submission_result_file': None,
+                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+                "is_public": self.submission.is_public,
+                "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
+                                                    'Z').replace("+00:00", ""),
+            }
+
+        self.client.force_authenticate(user=self.user)
+
+        self.challenge.participant_teams.add(self.participant_team)
+        response = self.client.get(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_submission_by_pk_when_user_is_neither_challenge_host_nor_submission_owner(self):
+        self.url = reverse_lazy('jobs:get_submission_by_pk',
+                                kwargs={'submission_id': self.submission.id})
+
+        expected = {'error': 'Sorry, you are not authorized to access this submission.'}
+
+        self.challenge.participant_teams.add(self.participant_team)
+        response = self.client.get(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -23,6 +23,7 @@ from challenges.models import (
     ChallengePhaseSplit,
     LeaderboardData,)
 from challenges.utils import get_challenge_model, get_challenge_phase_model
+from hosts.models import ChallengeHost
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -350,3 +351,31 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
                          'remaining_submissions': remaining_submission_count
                          }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_submission_by_pk(request, submission_id):
+    """
+    API endpoint to fetch the details of a submission.
+    Only the submission owner or the challenge hosts are allowed.
+    """
+    try:
+        submission = Submission.objects.get(pk=submission_id)
+    except Submission.DoesNotExist:
+        response_data = {'error': 'Submission {} does not exist'.format(submission_id)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    host_team = submission.challenge_phase.challenge.creator
+
+    if (request.user.id == submission.created_by.id
+            or ChallengeHost.objects.filter(user=request.user.id, team_name__pk=host_team.pk).exists()):
+        serializer = SubmissionSerializer(
+            submission, context={'request': request})
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    response_data = {'error': 'Sorry, you are not authorized to access this submission.'}
+    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
