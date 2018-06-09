@@ -1,22 +1,33 @@
-# EvalAI-CLI
+# EvalAI CLI
 
-Official Command Line utility to use EvalAI in your terminal. This package offers almost all of the full suite of features available on the website withing your terminal.
+Official Command Line utility to use EvalAI in your terminal. 
 
-## Setting up EvalAI-CLI
+This package offers almost all of the full suite of features available on the website within your terminal.
 
-Setting up Virtual Environment.
+## Development Setup
 
+1. Clone the repository to your machine
+
+```bash
+git clone https://github.com/Cloud-CV/evalai-cli.git EvalAI-CLI
 ```
+
+2. Setup the virtual environment.
+
+```bash
 $ cd EvalAI-CLI
 $ virtualenv -v python3 venv
-New python executable in venv/bin/python
-Installing setuptools, pip............done.
+$ source venv/bin/activate
+```
+3. Install the dependencies.
+
+```bash
+$ pip install -r requirements.txt
 ```
 
-Starting Venv.
 
-`$ . venv/bin/activate`
+2. Install the package locally to try it out.
 
-Installing your package locally.
-
-`pip install --editable . `
+```bash
+$ pip install -e . 
+```
