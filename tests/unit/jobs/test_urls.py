@@ -158,3 +158,11 @@ class TestJobsUrls(BaseAPITestClass):
                          '/api/jobs/challenge_phase_split/{}/leaderboard/'.format(self.challenge_phase_split.pk))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:leaderboard')
+
+    def test_get_submission_by_pk(self):
+        self.url = reverse_lazy('jobs:get_submission_by_pk',
+                                kwargs={'submission_id': self.submission.pk})
+        self.assertEqual(self.url,
+                         '/api/jobs/submission/{}'.format(self.submission.pk))
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.view_name, 'jobs:get_submission_by_pk')
