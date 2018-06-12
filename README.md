@@ -39,9 +39,17 @@ Some background: Last year, the [Visual Question Answering Challenge (VQA) 2016]
 Setting up EvalAI-ngx on your local machine is really easy.
 Follow this guide to setup your development machine.
 
-```shell
-npm install -g @angular/cli
+Get the source code on your machine via git
+```
 git clone git@github.com:Cloud-CV/EvalAI-ngx.git
+```
+If you have not added [ssh key](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/) to your GitHub account then get the source code by running the following command
+```
+git clone https://github.com/Cloud-CV/EvalAI-ngx
+```
+
+```
+npm install -g @angular/cli
 cd EvalAI-ngx/
 npm install
 ```
