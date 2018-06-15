@@ -1,0 +1,13 @@
+[run]
+omit =
+    */python?.?/*
+source = evalai/
+
+[report]
+exclude_lines =
+    import
+    @click.*
+
+omit =
+    */python?.?/*
+    */tests/*
