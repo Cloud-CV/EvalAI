@@ -19,6 +19,7 @@ var gulp = require('gulp'),
     connectModRewrite = require('connect-modrewrite'),
     connect = require('gulp-connect'),
     gulp_if = require('gulp-if'),
+    replace = require('gulp-replace'),
     karmaServer = require('karma').Server;
 
 // development task
@@ -26,6 +27,7 @@ var production = false;
 
 var scripts = JSON.parse(fs.readFileSync('frontend/app.scripts.json'));
 var styles = JSON.parse(fs.readFileSync('frontend/app.styles.json'));
+var configJson = JSON.parse(fs.readFileSync('frontend/src/js/config.json'));
 
 function clean() {
     return del(['frontend/dist/']);
@@ -177,7 +179,11 @@ function fonts() {
 config for prod server
 */
 function configProd() {
-    return gulp.src('frontend/src/js/environment/config.prod.js')
+    return gulp.src('frontend/src/js/config.sample.js')
+        .pipe(replace('moduleName', 'evalai-config'))
+        .pipe(replace('constantName', Object.keys(configJson.production)))
+        .pipe(replace('configKey', Object.keys(configJson.production.EnvironmentConfig)))
+        .pipe(replace('configValue', configJson.production.EnvironmentConfig.API))
         .pipe(rename({
             basename: 'config'
         }))
@@ -189,7 +195,11 @@ function configProd() {
 config for staging server
 */
 function configStaging() {
-    return gulp.src('frontend/src/js/environment/config.staging.js')
+    return gulp.src('frontend/src/js/config.sample.js')
+        .pipe(replace('moduleName', 'evalai-config'))
+        .pipe(replace('constantName', Object.keys(configJson.staging)))
+        .pipe(replace('configKey', Object.keys(configJson.staging.EnvironmentConfig)))
+        .pipe(replace('configValue', configJson.staging.EnvironmentConfig.API))
         .pipe(rename({
             basename: 'config'
         }))
@@ -201,7 +211,11 @@ function configStaging() {
 config for dev server
 */
 function configDev() {
-    return gulp.src('frontend/src/js/environment/config.local.js')
+    return gulp.src('frontend/src/js/config.sample.js')
+        .pipe(replace('moduleName', 'evalai-config'))
+        .pipe(replace('constantName', Object.keys(configJson.local)))
+        .pipe(replace('configKey', Object.keys(configJson.local.EnvironmentConfig)))
+        .pipe(replace('configValue', configJson.local.EnvironmentConfig.API))
         .pipe(rename({
             basename: 'config'
         }))
