@@ -13,6 +13,7 @@ services:
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
+  - export DEPLOY_DOMAIN=https://pr-${TRAVIS_PULL_REQUEST}-evalai.surge.sh
   - sh -e /etc/init.d/xvfb start
 
 before_script:
