@@ -4,8 +4,6 @@ import sys
 
 from click import echo, style
 
-from pylsy import pylsytable
-
 from evalai.utils.auth import get_headers
 from evalai.utils.urls import Urls
 from evalai.utils.common import valid_token

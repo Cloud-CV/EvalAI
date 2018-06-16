@@ -1,10 +1,7 @@
-import ast
-import click
+import json
 import responses
-import subprocess
 
 from click.testing import CliRunner
-from pylsy import pylsytable
 
 from evalai.challenges import challenges
 from tests.data import challenge_response
@@ -17,7 +14,7 @@ class TestChallenges:
 
     def setup(self):
 
-        json_data = ast.literal_eval(challenge_response.challenges)
+        json_data = json.loads(challenge_response.challenges)
 
         url = "{}{}"
         responses.add(responses.GET, url.format(API_HOST_URL, Urls.challenge_list.value),
@@ -53,14 +50,12 @@ class TestChallenges:
 
             self.output = self.output + challenge
 
-
     @responses.activate
     def test_challenge_lists(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['list'])
         response_table = result.output
         assert response_table == self.output
-
 
     @responses.activate
     def test_challenge_lists_past(self):
@@ -88,9 +83,9 @@ class TestTeamChallenges:
 
     def setup(self):
 
-        challenge_data = ast.literal_eval(challenge_response.challenges)
-        host_team_data = ast.literal_eval(challenge_response.challenge_host_teams)
-        participant_team_data = ast.literal_eval(challenge_response.challenge_participant_teams)
+        challenge_data = json.loads(challenge_response.challenges)
+        host_team_data = json.loads(challenge_response.challenge_host_teams)
+        participant_team_data = json.loads(challenge_response.challenge_participant_teams)
 
         url = "{}{}"
         responses.add(responses.GET, url.format(API_HOST_URL, Urls.participant_teams.value),
