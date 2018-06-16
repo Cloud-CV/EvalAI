@@ -15,7 +15,7 @@ WORKDIR /code
 
 # Install Prerequisites
 RUN npm install bower -g
-RUN npm install gulp -g
+RUN npm install gulp@next -g
 
 RUN npm link gulp
 

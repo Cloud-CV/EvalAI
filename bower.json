@@ -12,7 +12,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "^1.7.0",
+    "angular": "1.7.0",
     "animate.css": "^3.5.2",
     "font-awesome": "^4.7.0",
     "angular-ui-router": "^0.3.1",
@@ -25,7 +25,7 @@
     "lodash": "^4.17.2",
     "ngSmoothScroll": "master",
     "ng-focus-if": "master",
-    "angular-sanitize": "^1.6.1",
+    "angular-sanitize": "1.7.0",
     "ng-file-upload": "^12.2.13",
     "AngularJS-Toaster": "angularjs-toaster#^2.1.0",
     "angular-trix": "^1.0.2",
@@ -34,6 +34,6 @@
     "ngclipboard": "^2.0.0"
   },
   "resolutions": {
-    "angular": "^1.7.0"
+    "angular": "1.7.0"
   }
 }
