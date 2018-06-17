@@ -58,7 +58,7 @@ class LeaderboardDataAdmin(ImportExportTimeStampedAdmin):
 
 @admin.register(ChallengeConfiguration)
 class ChallengeConfigurationAdmin(ImportExportTimeStampedAdmin):
-    list_display = ('user', 'challenge', 'is_created', 'zip_configuration',)
+    list_display = ('user', 'challenge', 'created_at', 'is_created', 'zip_configuration',)
     list_filter = ('user', 'is_created',)
     search_fields = ('user__username', 'challenge__title',)
 
