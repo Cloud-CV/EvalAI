@@ -84,20 +84,22 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     pip install -r requirements/dev.txt
     ```
 
-4. Rename `settings/dev.sample.py` as `dev.py` and change credential in `settings/dev.py`
-
-    ```
-    cp settings/dev.sample.py settings/dev.py
-    ```
-    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
-
-5. Create an empty postgres database and run database migration.
+4. Create an empty postgres database.
 
     ```
     sudo -i -u (username)
     createdb evalai
+    ```
+
+5. Change Postgresql credentials in `settings/dev.py` and run migrations
+
+
+    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file. After changing credentials, run migrations using the following command:
+
+    ```
     python manage.py migrate
     ```
+
 
 6. Seed the database with some fake data to work with.
 
@@ -118,15 +120,20 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
 
 
 8. Please make sure that node(`>=7.x.x`), npm(`>=5.x.x`) and bower(`>=1.8.x`) are installed globally on your machine.
+
     Install npm and bower dependencies by running
+
     ```
     npm install
     bower install
     ``` 
+
     If you running npm install behind a proxy server, use
+
     ```
     npm config set proxy http://proxy:port
     ```
+
 9. Now to connect to dev server at [http://127.0.0.1:8888] (for serving frontend)
 
     ```

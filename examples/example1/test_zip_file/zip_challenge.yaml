@@ -3,9 +3,9 @@ short_description: Short description of the challenge (preferably 140 characters
 description: description.html
 evaluation_details: evaluation_details.html
 terms_and_conditions: terms_and_conditions.html
-image : logo.jpg
+image : logo.png
 submission_guidelines: submission_guidelines.html
-evaluation_script: data.py
+evaluation_script: evaluation_script.zip
 start_date: 2017-06-09 20:00:00
 end_date: 2017-06-19 20:00:00
 

@@ -23,6 +23,7 @@ from challenges.models import (
     ChallengePhaseSplit,
     LeaderboardData,)
 from challenges.utils import get_challenge_model, get_challenge_phase_model
+from hosts.models import ChallengeHost
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -103,6 +104,19 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             response_data = {'error': 'You haven\'t participated in the challenge'}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
+        # Fetch the number of submissions under progress.
+        submissions_in_progress_status = [Submission.SUBMITTED, Submission.SUBMITTING, Submission.RUNNING]
+        submissions_in_progress = Submission.objects.filter(
+                                                participant_team=participant_team_id,
+                                                challenge_phase=challenge_phase,
+                                                status__in=submissions_in_progress_status).count()
+
+        if submissions_in_progress >= challenge_phase.max_concurrent_submissions_allowed:
+            message = 'You have {} submissions that are being processed. \
+                       Please wait for them to finish and then try again.'
+            response_data = {'error': message.format(submissions_in_progress)}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
         serializer = SubmissionSerializer(data=request.data,
                                           context={'participant_team': participant_team,
                                                    'challenge_phase': challenge_phase,
@@ -115,7 +129,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             # publish message in the queue
             publish_submission_message(challenge_id, challenge_phase_id, submission.id)
             return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @throttle_classes([UserRateThrottle])
@@ -337,3 +351,31 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
                          'remaining_submissions': remaining_submission_count
                          }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_submission_by_pk(request, submission_id):
+    """
+    API endpoint to fetch the details of a submission.
+    Only the submission owner or the challenge hosts are allowed.
+    """
+    try:
+        submission = Submission.objects.get(pk=submission_id)
+    except Submission.DoesNotExist:
+        response_data = {'error': 'Submission {} does not exist'.format(submission_id)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    host_team = submission.challenge_phase.challenge.creator
+
+    if (request.user.id == submission.created_by.id
+            or ChallengeHost.objects.filter(user=request.user.id, team_name__pk=host_team.pk).exists()):
+        serializer = SubmissionSerializer(
+            submission, context={'request': request})
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    response_data = {'error': 'Sorry, you are not authorized to access this submission.'}
+    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)

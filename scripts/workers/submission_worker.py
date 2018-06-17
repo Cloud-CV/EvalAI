@@ -216,7 +216,7 @@ def load_active_challenges():
     '''
          * Fetches active challenges and corresponding active phases for it.
     '''
-    q_params = {'published': True, 'approved_by_admin': True}
+    q_params = {'approved_by_admin': True}
     q_params['start_date__lt'] = timezone.now()
     q_params['end_date__gt'] = timezone.now()
 
@@ -268,16 +268,6 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
         * checks the above for annotation file
         * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
     '''
-
-    # If submission are from the Challenge Host and
-    # the challenge is published ignore the submissions.
-    challenge = Challenge.objects.get(id=challenge_id)
-    challenge_creator_id = challenge.creator.created_by.id
-    submission_creator_id = submission.participant_team.created_by.id
-
-    if (challenge_creator_id == submission_creator_id) and challenge.published:
-        logger.info("[x] Challenge host submission, ignored.")
-        return
 
     # Use the submission serializer to send relevant data to evaluation script
     # so that challenge hosts can use data for webhooks or any other service.
