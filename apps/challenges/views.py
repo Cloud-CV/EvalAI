@@ -367,7 +367,7 @@ def challenge_phase_list(request, challenge_pk):
 
     if request.method == 'GET':
         challenge_phase = ChallengePhase.objects.filter(
-            challenge=challenge, is_public=True)
+            challenge=challenge, is_public=True).order_by('pk')
         paginator, result_page = paginated_queryset(challenge_phase, request)
         serializer = ChallengePhaseSerializer(result_page, many=True)
         response_data = serializer.data
