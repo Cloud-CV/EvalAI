@@ -168,6 +168,10 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    if challenge.end_date < timezone.now() or challenge.start_date > timezone.now():
+        response_data = {'error': 'Sorry, cannot accept participant team since challenge is not active.'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     try:
         participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
     except ParticipantTeam.DoesNotExist:

@@ -486,6 +486,28 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    def test_participant_team_for_mapping_with_past_challenge(self):
+        self.challenge2.end_date = timezone.now() - timedelta(days=1)
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+        expected = {'error': 'Sorry, cannot accept participant team since challenge is not active.'}
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participant_team_for_mapping_with_future_challenge(self):
+        self.challenge2.start_date = timezone.now() + timedelta(days=3)
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+        expected = {'error': 'Sorry, cannot accept participant team since challenge is not active.'}
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
     def test_particular_participant_team_for_mapping_with_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
                                 kwargs={'challenge_pk': self.challenge.pk,
