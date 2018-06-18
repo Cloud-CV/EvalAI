@@ -1,10 +1,6 @@
-FROM node:9.11.1
-MAINTAINER EvalAI Team <team@cloudcv.org>
+FROM node:8.11.2
 
-RUN apt-get update -qq && apt-get install -y build-essential git curl libfontconfig
-RUN apt-get update
-
-RUN mkdir /code
+WORKDIR /code
 
 # Add dependencies
 ADD ./package.json /code
@@ -13,10 +9,8 @@ ADD ./gulpfile.js /code
 ADD ./.eslintrc /code
 ADD ./karma.conf.js /code
 
-WORKDIR /code
-
 # Install Prerequisites
-RUN npm install -g bower gulp
+RUN npm install -g bower gulp@next
 
 RUN npm link gulp
 
