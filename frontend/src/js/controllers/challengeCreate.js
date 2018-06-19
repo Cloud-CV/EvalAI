@@ -70,7 +70,7 @@
                             utilities.hideLoader();
                             var error = response.data;
                             angular.element(".file-path").val(null);
-                            $rootScope.notify("error", error.error);
+                            $rootScope.notify("Error in creating challenge. Please check the yaml configuration!", error.error);
                             vm.stopLoader();
                         }
                     };
