@@ -5,11 +5,9 @@ import sys
 from click import echo, style
 
 from evalai.utils.auth import get_headers
-from evalai.utils.urls import Urls
 from evalai.utils.common import valid_token
-
-
-API_HOST_URL = os.environ.get("EVALAI_API_URL", 'http://localhost:8000')
+from evalai.utils.urls import URLS
+from evalai.utils.config import API_HOST_URL
 
 
 def print_challenge_table(challenge):
@@ -58,7 +56,7 @@ def get_challenge_list():
     """
     Fetches the list of challenges from the backend.
     """
-    url = "{}{}".format(API_HOST_URL, Urls.challenge_list.value)
+    url = "{}{}".format(API_HOST_URL, URLS.challenge_list.value)
     get_challenges(url)
 
 
@@ -66,7 +64,7 @@ def get_past_challenge_list():
     """
     Fetches the list of past challenges from the backend.
     """
-    url = "{}{}".format(API_HOST_URL, Urls.past_challenge_list.value)
+    url = "{}{}".format(API_HOST_URL, URLS.past_challenge_list.value)
     get_challenges(url)
 
 
@@ -74,7 +72,7 @@ def get_ongoing_challenge_list():
     """
     Fetches the list of ongoing challenges from the backend.
     """
-    url = "{}{}".format(API_HOST_URL, Urls.challenge_list.value)
+    url = "{}{}".format(API_HOST_URL, URLS.challenge_list.value)
     get_challenges(url)
 
 
@@ -82,7 +80,7 @@ def get_future_challenge_list():
     """
     Fetches the list of future challenges from the backend.
     """
-    url = "{}{}".format(API_HOST_URL, Urls.future_challenge_list.value)
+    url = "{}{}".format(API_HOST_URL, URLS.future_challenge_list.value)
     get_challenges(url)
 
 
@@ -140,14 +138,14 @@ def get_challenge_count(is_host=False, is_participant=False):
 
     if is_host:
         team_url = "{}{}".format(API_HOST_URL,
-                                 Urls.host_teams.value)
+                                 URLS.host_teams.value)
         challenge_url = "{}{}".format(API_HOST_URL,
-                                      Urls.host_challenges.value)
+                                      URLS.host_challenges.value)
     elif is_participant:
         team_url = "{}{}".format(API_HOST_URL,
-                                 Urls.participant_teams.value)
+                                 URLS.participant_teams.value)
         challenge_url = "{}{}".format(API_HOST_URL,
-                                      Urls.participant_challenges.value)
+                                      URLS.participant_challenges.value)
     else:
         echo("Option doesn't exist. Use --help for information")
         sys.exit(1)

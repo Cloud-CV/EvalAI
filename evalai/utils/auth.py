@@ -1,12 +1,8 @@
 import os
 import json
-from os.path import expanduser
 
 from click import echo
-
-
-AUTH_TOKEN = 'token.json'
-AUTH_TOKEN_PATH = "{}/.evalai/{}".format(expanduser('~'), AUTH_TOKEN)
+from evalai.utils.config import AUTH_TOKEN_PATH
 
 
 def get_token():
