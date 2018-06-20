@@ -8,8 +8,10 @@ from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL
 from tests.data import challenge_response
 
+from .base import BaseTestClass
 
-class TestChallenges:
+
+class TestChallenges(BaseTestClass):
 
     def setup(self):
 
@@ -78,7 +80,7 @@ class TestChallenges:
         assert response_table == self.output
 
 
-class TestTeamChallenges:
+class TestTeamChallenges(BaseTestClass):
 
     def setup(self):
 
