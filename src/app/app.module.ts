@@ -11,6 +11,7 @@ import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HeaderStaticComponent } from './partials/nav/header-static/header-static.component';
+import { InputComponent } from './input/input.component';
 import { GetInvolvedComponent } from './get-involved/get-involved.component';
 import { AboutComponent } from './about/about.component';
 
@@ -20,6 +21,7 @@ import { AboutComponent } from './about/about.component';
     AppComponent,
     HomeComponent,
     HeaderStaticComponent,
+    InputComponent,
     GetInvolvedComponent,
     AboutComponent
   ],
