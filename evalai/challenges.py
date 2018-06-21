@@ -1,76 +1,56 @@
 import click
-from click import echo
 
 from evalai.utils.challenges import (
-                                    get_challenge_list,
-                                    get_ongoing_challenge_list,
-                                    get_past_challenge_list,
-                                    get_future_challenge_list,
-                                    get_challenge_count,)
+                                    display_all_challenge_list,
+                                    display_future_challenge_list,
+                                    display_ongoing_challenge_list,
+                                    display_past_challenge_list,
+                                    display_participated_or_hosted_challenges,)
 
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-def challenges(ctx):
-    """
-    Challenges and related options.
-    """
-    if ctx.invoked_subcommand is None:
-        welcome_text = ("Welcome to the EvalAI CLI. Use evalai"
-                        "challenges --help for viewing all the options.")
-        echo(welcome_text)
-
-
-@click.group(invoke_without_command=True, name='list')
-@click.pass_context
 @click.option('--participant', is_flag=True,
-              help="Show the challenges that you've participated")
+              help="List the challenges that you've participated")
 @click.option('--host', is_flag=True,
-              help="Show the challenges that you've hosted")
-def list_challenges(ctx, participant, host):
+              help="List the challenges that you've hosted")
+def challenges(ctx, participant, host):
     """
-    Used to list challenges.
-    Invoked by running `evalai challenges list`
+    Lists challenges
+
+    Invoked by running `evalai challenges`
     """
-    if participant:
-        get_challenge_count(host, participant)
-    elif host:
-        get_challenge_count(host, participant)
+    if participant or host:
+        display_participated_or_hosted_challenges(host, participant)
     elif ctx.invoked_subcommand is None:
-        get_challenge_list()
+        display_all_challenge_list()
 
 
-@click.command(name='ongoing')
-def list_ongoing_challenges():
+@challenges.command()
+def ongoing():
     """
-    Used to list all the challenges which are active.
-    Invoked by running `evalai challenges list ongoing`
+    List all active challenges
+
+    Invoked by running `evalai challenges ongoing`
     """
-    get_ongoing_challenge_list()
+    display_ongoing_challenge_list()
 
 
-@click.command(name='past')
-def list_past_challenges():
+@challenges.command()
+def past():
     """
-    Used to list all the past challenges.
-    Invoked by running `evalai challenges list past`
+    List all past challenges
+
+    Invoked by running `evalai challenges past`
     """
-    get_past_challenge_list()
+    display_past_challenge_list()
 
 
-@click.command(name='future')
-def list_future_challenges():
+@challenges.command()
+def future():
     """
-    Used to list all the challenges which are coming up.
-    Invoked by running `evalai challenges list future`
+    List all upcoming challenges
+
+    Invoked by running `evalai challenges future`
     """
-    get_future_challenge_list()
-
-
-# Command -> evalai challenges list
-challenges.add_command(list_challenges)
-
-# Command -> evalai challenges list ongoing/past/future
-list_challenges.add_command(list_ongoing_challenges)
-list_challenges.add_command(list_past_challenges)
-list_challenges.add_command(list_future_challenges)
+    display_future_challenge_list()

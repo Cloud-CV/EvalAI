@@ -1,6 +1,6 @@
 challenges = """
                 {
-                    "count": 10,
+                    "count": 2,
                     "next": null,
                     "previous": null,
                     "results": [
@@ -80,7 +80,7 @@ challenges = """
 
 challenge_participant_teams = """
                 {
-                    "count": 2,
+                    "count": 1,
                     "next": null,
                     "previous": null,
                     "results": [

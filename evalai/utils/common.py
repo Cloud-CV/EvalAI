@@ -1,9 +1,9 @@
 from click import echo
 
 
-def valid_token(response):
+def validate_token(response):
     """
-    Checks if token is valid.
+    Function to check if the authentication token provided by user is valid or not.
     """
 
     if ('detail' in response):

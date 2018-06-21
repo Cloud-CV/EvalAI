@@ -5,7 +5,7 @@ from click import echo
 from evalai.utils.config import AUTH_TOKEN_PATH
 
 
-def get_token():
+def get_user_auth_token():
     """
     Loads token to be used for sending requests.
     """
@@ -24,12 +24,12 @@ def get_token():
         return None
 
 
-def get_headers():
+def get_request_header():
     """
-    Returns token formatted in header for sending requests.
+    Returns user auth token formatted in header for sending requests.
     """
-    headers = {
-            "Authorization": "Token {}".format(get_token()),
+    header = {
+            "Authorization": "Token {}".format(get_user_auth_token()),
     }
 
-    return headers
+    return header
