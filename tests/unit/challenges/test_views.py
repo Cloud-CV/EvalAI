@@ -82,6 +82,23 @@ class GetChallengeTest(BaseAPITestClass):
 
     def setUp(self):
         super(GetChallengeTest, self).setUp()
+
+        self.disabled_challenge = Challenge.objects.create(
+            title='Disabled Challenge',
+            short_description='Short description for disabled challenge',
+            description='Description for disabled challenge',
+            terms_and_conditions='Terms and conditions for disabled challenge',
+            submission_guidelines='Submission guidelines for disabled challenge',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            is_disabled=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+        )
+
         self.url = reverse_lazy('challenges:get_challenge_list',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
 
