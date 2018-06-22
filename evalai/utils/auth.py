@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 
 from click import echo
 from evalai.utils.config import AUTH_TOKEN_PATH
@@ -21,7 +22,7 @@ def get_user_auth_token():
     else:
         echo("\nYour token file doesn't exists.")
         echo("\nIt should be present at ~/.evalai/token.json\n")
-        return None
+        sys.exit(1)
 
 
 def get_request_header():

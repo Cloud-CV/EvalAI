@@ -147,11 +147,10 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
                                  URLS.host_teams.value)
         challenge_url = "{}{}".format(API_HOST_URL,
                                       URLS.host_challenges.value)
-        echo(style("\nHosted Challenges\n", bold=True))
 
         teams = get_participant_or_host_teams(team_url)
-
         challenges = get_participant_or_host_team_challenges(challenge_url, teams)
+        echo(style("\nHosted Challenges\n", bold=True))
 
         if len(challenges) != 0:
             for challenge in challenges:
@@ -164,11 +163,10 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
                                  URLS.participant_teams.value)
         challenge_url = "{}{}".format(API_HOST_URL,
                                       URLS.participant_challenges.value)
-        echo(style("\nParticipated Challenges\n", bold=True))
 
         teams = get_participant_or_host_teams(team_url)
-
         challenges = get_participant_or_host_team_challenges(challenge_url, teams)
+        echo(style("\nParticipated Challenges\n", bold=True))
 
         if len(challenges) != 0:
             for challenge in challenges:
