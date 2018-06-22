@@ -544,8 +544,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         with open(join(BASE_LOCATION, unique_folder_name, yaml_file), "r") as stream:
             yaml_file_data = yaml.load(stream)
     except yaml.YAMLError as exc:
+        message = 'Error in creating challenge. Please check the yaml configuration!'
         response_data = {
-            'error': exc
+            'error': message
         }
         logger.exception(exc)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
