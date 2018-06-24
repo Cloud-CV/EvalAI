@@ -124,3 +124,9 @@ challenge_host_teams = """
                     ]
                 }
 """
+
+
+invalid_token = '{"detail": "Invalid token"}'
+
+
+token_expired = '{"detail": "Token has expired"}'

@@ -40,6 +40,8 @@ def display_challenges(url):
         response = requests.get(url, headers=header)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
+        if (response.status_code == 401):
+            validate_token(response.json())
         echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
@@ -47,14 +49,13 @@ def display_challenges(url):
         sys.exit(1)
 
     response = response.json()
-    if validate_token(response):
 
-        challenges = response["results"]
-        if len(challenges) is not 0:
-            for challenge in challenges:
-                pretty_print_challenge_data(challenge)
-        else:
-            echo("Sorry, no challenges found!")
+    challenges = response["results"]
+    if len(challenges) is not 0:
+        for challenge in challenges:
+            pretty_print_challenge_data(challenge)
+    else:
+        echo("Sorry, no challenges found!")
 
 
 def display_all_challenge_list():
@@ -99,6 +100,8 @@ def get_participant_or_host_teams(url):
         response = requests.get(url, headers=header)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
+        if (response.status_code == 401):
+            validate_token(response.json())
         echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
@@ -107,11 +110,7 @@ def get_participant_or_host_teams(url):
 
     response = response.json()
 
-    if validate_token(response):
-        return response['results']
-    else:
-        echo("The authentication token is not valid. Please try again!")
-        sys.exit(1)
+    return response['results']
 
 
 def get_participant_or_host_team_challenges(url, teams):
@@ -125,6 +124,8 @@ def get_participant_or_host_team_challenges(url, teams):
             response = requests.get(url.format(team['id']), headers=header)
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
+            if (response.status_code == 401):
+                validate_token(response.json())
             echo(err)
             sys.exit(1)
         except requests.exceptions.RequestException as err:

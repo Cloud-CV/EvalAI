@@ -2,7 +2,7 @@ import os
 import json
 import sys
 
-from click import echo
+from click import echo, style
 from evalai.utils.config import AUTH_TOKEN_PATH
 
 
@@ -20,8 +20,9 @@ def get_user_auth_token():
         token = data["token"]
         return token
     else:
-        echo("\nYour token file doesn't exists.")
-        echo("\nIt should be present at ~/.evalai/token.json\n")
+        echo(style("\nThe authentication token json file doesn't exists at the required path. "
+                   "Please download the file from the Profile section of the EvalAI webapp and "
+                   "place it at ~/.evalai/token.json\n", bold=True, bg="red"))
         sys.exit(1)
 
 
