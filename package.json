@@ -4,6 +4,9 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
+    "doc:build": "compodoc -p src/tsconfig.app.json",
+    "doc:serve": "compodoc -s",
+    "doc:buildandserve": "compodoc -p src/tsconfig.app.json;mkdir -p documentation/src/assets;cp -R src/assets/images documentation/src/assets/;compodoc -s",
     "start": "ng serve",
     "build": "ng build --prod",
     "test": "ng test",
@@ -30,6 +33,7 @@
     "@angular/cli": "1.6.5",
     "@angular/compiler-cli": "^5.2.0",
     "@angular/language-service": "^5.2.0",
+    "@compodoc/compodoc": "^1.1.2",
     "@types/jasmine": "~2.8.3",
     "@types/jasminewd2": "~2.0.2",
     "@types/node": "~6.0.60",

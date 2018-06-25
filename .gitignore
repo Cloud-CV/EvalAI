@@ -6,6 +6,9 @@
 /tmp
 /out-tsc
 
+# compodoc documentation
+/documentation
+
 # dependencies
 /node_modules
 
