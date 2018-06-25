@@ -44,6 +44,7 @@ def display_participant_teams():
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
+            validate_token(response.json())
             echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
         else:
             echo(err)
@@ -53,12 +54,11 @@ def display_participant_teams():
         sys.exit(1)
     response = response.json()
 
-    if validate_token(response):
-        teams = response["results"]
-        if len(teams) != 0:
-            pretty_print_team_data(teams)
-        else:
-            echo("Sorry, no teams found!")
+    teams = response["results"]
+    if len(teams) != 0:
+        pretty_print_team_data(teams)
+    else:
+        echo("Sorry, no teams found!")
 
 
 def create_participant_team(team_name):
@@ -83,6 +83,7 @@ def create_participant_team(team_name):
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
             if "team_name" in response.json().keys():
+                validate_token(response.json())
                 echo(style("Error: {}".format(response.json()["team_name"][0]), fg="red", bold=True))
             else:
                 echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
@@ -117,6 +118,7 @@ def participate_in_a_challenge(challenge_id, participant_team_id):
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
+            validate_token(response.json())
             echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
         else:
             echo(err)
