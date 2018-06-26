@@ -6,7 +6,8 @@ Revamped codebase of EvalAI Frontend
 ------------------------------------------------------------------------------------------
 
 [![Join the chat at https://gitter.im/Cloud-CV/EvalAI](https://badges.gitter.im/Cloud-CV/EvalAI.svg)](https://gitter.im/Cloud-CV/EvalAI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
+[![codecov](https://codecov.io/gh/Cloud-CV/EvalAI-ngx/branch/master/graph/badge.svg)](https://codecov.io/gh/Cloud-CV/EvalAI-ngx)
+[![Build Status](https://travis-ci.org/Cloud-CV/EvalAI-ngx.svg?branch=master)](https://travis-ci.org/Cloud-CV/EvalAI-ngx)
 
 EvalAI is an open source web application that helps researchers, students and data-scientists to create, collaborate and participate in various AI challenges organized round the globe.
 
@@ -114,4 +115,4 @@ You can also use Docker Compose to run all the components of EvalAI-ngx together
 
 ## The Team
 
-EvalAI-ngx is currently maintained by [Akash Jain](http://www.jainakash.in/), [Shiv Baran Singh](http://www.shivbaran.in/), [Shivani Prakash Gupta](https://www.behance.net/shivaniprakash19) [Rishabh Jain](https://rishabhjain2018.github.io/) and [Deshraj Yadav](https://deshraj.github.io).
+EvalAI-ngx is currently maintained by [Akash Jain](http://www.jainakash.in/), [Shiv Baran Singh](http://www.shivbaran.in/), [Shivani Prakash Gupta](https://www.behance.net/shivaniprakash19), [Rishabh Jain](https://rishabhjain2018.github.io/) and [Deshraj Yadav](https://deshraj.github.io).
