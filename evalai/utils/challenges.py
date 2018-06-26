@@ -1,12 +1,13 @@
 import requests
 import sys
 
+from bs4 import BeautifulSoup
 from click import echo, style
 
 from evalai.utils.auth import get_request_header
 from evalai.utils.common import validate_token
 from evalai.utils.urls import URLS
-from evalai.utils.config import API_HOST_URL
+from evalai.utils.config import API_HOST_URL, EVALAI_ERROR_CODES
 
 
 def pretty_print_challenge_data(challenge):
@@ -23,8 +24,9 @@ def pretty_print_challenge_data(challenge):
 
     title = "{} {}".format(challenge_title, challenge_id)
 
-    description = "{}\n".format(challenge["short_description"])
-    end_date = "End Date : " + style(challenge["end_date"].split("T")[0], fg="red")
+    cleaned_desc = BeautifulSoup(challenge["short_description"], "lxml").text
+    description = "{}\n".format(cleaned_desc)
+    end_date = "End Date : {}".format(style(challenge["end_date"].split("T")[0], fg="red"))
     end_date = "\n{}\n\n".format(style(end_date, bold=True))
     challenge = "{}{}{}{}".format(title, description, end_date, br)
     echo(challenge)
@@ -174,3 +176,119 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
                 pretty_print_challenge_data(challenge)
         else:
             echo("Sorry, no challenges found!")
+
+
+def pretty_print_all_challenge_phases(phases):
+    """
+    Function to print all the challenge phases of a challenge
+    """
+    for phase in phases:
+        br = style("--------------------------------"
+                   "----------------------------------", bold=True)
+
+        phase_title = "\n{}".format(style(phase["name"], bold=True,
+                                          fg="green"))
+        challenge_id = "Challenge ID: {}".format(style(str(phase["challenge"]),
+                                                       bold=True, fg="blue"))
+        phase_id = "Phase ID: {}\n\n".format(style(str(phase["id"]),
+                                                   bold=True, fg="blue"))
+
+        phase_title = "{} {} {}".format(phase_title, challenge_id, phase_id)
+
+        cleaned_desc = BeautifulSoup(phase["description"], "lxml").text
+        description = "{}\n\n".format(cleaned_desc)
+        challenge_phase = "{}{}{}".format(phase_title, description, br)
+        echo(challenge_phase)
+
+
+def display_challenge_phase_list(challenge_id):
+    """
+    Function to display all challenge phases for a particular challenge.
+    """
+    url = URLS.challenge_phase_list.value
+    url = "{}{}".format(API_HOST_URL, url)
+    url = url.format(challenge_id)
+    headers = get_request_header()
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        if (response.status_code in EVALAI_ERROR_CODES):
+            validate_token(response.json())
+            echo(style("Error: {}".format(response.json()["error"], fg="red", bold=True)))
+        else:
+            echo(err)
+    except requests.exceptions.RequestException as err:
+        echo(err)
+        sys.exit(1)
+
+    response = response.json()
+    challenge_phases = response["results"]
+    pretty_print_all_challenge_phases(challenge_phases)
+
+
+def pretty_print_challenge_phase_data(phase):
+    """
+    Function to print the details of a challenge phase.
+    """
+    phase_title = "\n{}".format(style(phase["name"], bold=True, fg="green"))
+    challenge_id = "Challenge ID: {}".format(style(str(phase["challenge"]), bold=True, fg="blue"))
+    phase_id = "Phase ID: {}\n\n".format(style(str(phase["id"]), bold=True, fg="blue"))
+
+    title = "{} {} {}".format(phase_title, challenge_id, phase_id)
+
+    cleaned_desc = BeautifulSoup(phase["description"], "lxml").text
+    description = "{}\n".format(cleaned_desc)
+
+    start_date = "Start Date : {}".format(style(phase["start_date"].split("T")[0], fg="green"))
+    start_date = "\n{}\n".format(style(start_date, bold=True))
+
+    end_date = "End Date : {}".format(style(phase["end_date"].split("T")[0], fg="red"))
+    end_date = "\n{}\n".format(style(end_date, bold=True))
+    max_submissions_per_day = style("\nMaximum Submissions per day : {}\n".format(
+                                    str(phase["max_submissions_per_day"])), bold=True)
+
+    max_submissions = style("\nMaximum Submissions : {}\n".format(str(phase["max_submissions"])),
+                            bold=True)
+
+    codename = style("\nCode Name : {}\n".format(phase["codename"]), bold=True)
+    leaderboard_public = style("\nLeaderboard Public : {}\n".format(phase["leaderboard_public"]), bold=True)
+    is_active = style("\nActive : {}\n".format(phase["is_active"]), bold=True)
+    is_public = style("\nPublic : {}\n".format(phase["is_public"]), bold=True)
+
+    challenge_phase = "{}{}{}{}{}{}{}{}{}{}".format(title, description, start_date,
+                                                    end_date,
+                                                    max_submissions_per_day,
+                                                    max_submissions,
+                                                    leaderboard_public,
+                                                    codename, is_active, is_public)
+    echo(challenge_phase)
+
+
+def display_challenge_phase_detail(challenge_id, phase_id):
+    """
+    Function to print details of a challenge phase.
+    """
+    url = URLS.challenge_phase_detail.value
+    url = "{}{}".format(API_HOST_URL, url)
+    url = url.format(challenge_id, phase_id)
+    headers = get_request_header()
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        if (response.status_code in EVALAI_ERROR_CODES):
+            validate_token(response.json())
+            echo(style("Error: {}".format(response.json()["error"], fg="red", bold=True)))
+        else:
+            echo(err)
+    except requests.exceptions.RequestException as err:
+        echo(err)
+        sys.exit(1)
+
+    response = response.json()
+
+    phase = response
+    pretty_print_challenge_phase_data(phase)

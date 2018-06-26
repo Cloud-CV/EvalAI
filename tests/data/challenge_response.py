@@ -126,6 +126,75 @@ challenge_host_teams = """
 """
 
 
+challenge_phase_list = """
+    {
+        "count": 2,
+        "next": null,
+        "previous": null,
+        "results": [
+            {
+                "challenge": 10,
+                "codename": "phase1",
+                "description": "Ipsa id minima commodi quo itaque. Reprehenderit eos iusto\
+                 maiores iusto impedit dolores. Nihil possimus repudiandae animi quasi nulla\
+                  molestias reiciendis necessitatibus. Minus eos similique facilis accusamus\
+                   reprehenderit in officiis.",
+                "end_date": "2019-09-25T18:56:42.789372Z",
+                "id": 19,
+                "is_active": false,
+                "is_public": true,
+                "leaderboard_public": true,
+                "max_submissions": 100000,
+                "max_submissions_per_day": 100000,
+                "name": "Kimberly Phase",
+                "start_date": "2018-08-21T18:56:42.789363Z"
+            },
+            {
+                "challenge": 10,
+                "codename": "phase2",
+                "description": "Est nobis consequatur quam sint in nemo distinctio magni.\
+                 Eaque a natus laboriosam ipsa molestiae corrupti.",
+                "end_date": "2019-09-25T18:56:42.789372Z",
+                "id": 20,
+                "is_active": false,
+                "is_public": true,
+                "leaderboard_public": true,
+                "max_submissions": 100000,
+                "max_submissions_per_day": 100000,
+                "name": "Philip Phase",
+                "start_date": "2018-08-21T18:56:42.789363Z"
+            }
+        ]
+    }
+"""
+
+
+challenge_phase_details = """
+            {
+                "challenge": 10,
+                "codename": "phase2",
+                "description": "Est nobis consequatur quam sint in nemo distinctio magni. \
+                Eaque a natus laboriosam ipsa molestiae corrupti.",
+                "end_date": "2019-09-25T18:56:42.789372Z",
+                "id": 20,
+                "is_active": false,
+                "is_public": true,
+                "leaderboard_public": true,
+                "max_submissions": 100000,
+                "max_submissions_per_day": 100000,
+                "name": "Philip Phase",
+                "start_date": "2018-08-21T18:56:42.789363Z"
+            }
+"""
+
+
+object_error = """
+{
+    "error": "Sorry, the object does not exist."
+}
+"""
+
+
 invalid_token = '{"detail": "Invalid token"}'
 
 

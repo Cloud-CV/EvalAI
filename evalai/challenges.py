@@ -5,8 +5,9 @@ from evalai.utils.challenges import (
                                     display_future_challenge_list,
                                     display_ongoing_challenge_list,
                                     display_past_challenge_list,
-                                    display_participated_or_hosted_challenges,)
-
+                                    display_participated_or_hosted_challenges,
+                                    display_challenge_phase_list,
+                                    display_challenge_phase_detail,)
 from evalai.utils.teams import participate_in_a_challenge
 
 
@@ -14,8 +15,9 @@ class Challenge(object):
     """
     Stores user input ID's.
     """
-    def __init__(self, challenge_id=None):
-        self.challenge_id = challenge_id
+    def __init__(self, challenge=None, phase=None):
+        self.challenge_id = challenge
+        self.phase_id = phase
 
 
 @click.group(invoke_without_command=True)
@@ -78,6 +80,31 @@ def future():
     Invoked by running `evalai challenges future`
     """
     display_future_challenge_list()
+
+
+@challenge.command()
+@click.pass_obj
+def phases(ctx):
+    """
+    List all phases of a challenge
+    """
+    """
+    Invoked by running `evalai challenges CHALLENGE phases`
+    """
+    display_challenge_phase_list(ctx.challenge_id)
+
+
+@challenge.command()
+@click.pass_obj
+@click.argument('PHASE', type=int)
+def phase(ctx, phase):
+    """
+    List phase details of a phase
+    """
+    """
+    Invoked by running `evalai challenges CHALLENGE phase PHASE`
+    """
+    display_challenge_phase_detail(ctx.challenge_id, phase)
 
 
 @challenge.command()

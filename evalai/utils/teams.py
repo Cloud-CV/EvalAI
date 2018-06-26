@@ -82,6 +82,7 @@ def create_participant_team(team_name):
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
+            validate_token(response.json())
             if "team_name" in response.json().keys():
                 validate_token(response.json())
                 echo(style("Error: {}".format(response.json()["team_name"][0]), fg="red", bold=True))
