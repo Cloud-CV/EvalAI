@@ -82,6 +82,23 @@ class GetChallengeTest(BaseAPITestClass):
 
     def setUp(self):
         super(GetChallengeTest, self).setUp()
+
+        self.disabled_challenge = Challenge.objects.create(
+            title='Disabled Challenge',
+            short_description='Short description for disabled challenge',
+            description='Description for disabled challenge',
+            terms_and_conditions='Terms and conditions for disabled challenge',
+            submission_guidelines='Submission guidelines for disabled challenge',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            is_disabled=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+        )
+
         self.url = reverse_lazy('challenges:get_challenge_list',
                                 kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
 
@@ -486,6 +503,28 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    def test_participant_team_for_mapping_with_past_challenge(self):
+        self.challenge2.end_date = timezone.now() - timedelta(days=1)
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+        expected = {'error': 'Sorry, cannot accept participant team since challenge is not active.'}
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participant_team_for_mapping_with_future_challenge(self):
+        self.challenge2.start_date = timezone.now() + timedelta(days=3)
+        self.challenge2.save()
+        self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
+                                kwargs={'challenge_pk': self.challenge2.pk,
+                                        'participant_team_pk': self.participant_team3.pk})
+        expected = {'error': 'Sorry, cannot accept participant team since challenge is not active.'}
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
     def test_particular_participant_team_for_mapping_with_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:add_participant_team_to_challenge',
                                 kwargs={'challenge_pk': self.challenge.pk,
@@ -814,25 +853,25 @@ class GetAllChallengesTest(BaseAPITestClass):
 
         expected = [
             {
-                "id": self.challenge2.pk,
-                "title": self.challenge2.title,
-                "short_description": self.challenge2.short_description,
-                "description": self.challenge2.description,
-                "terms_and_conditions": self.challenge2.terms_and_conditions,
-                "submission_guidelines": self.challenge2.submission_guidelines,
-                "evaluation_details": self.challenge2.evaluation_details,
+                "id": self.challenge4.pk,
+                "title": self.challenge4.title,
+                "short_description": self.challenge4.short_description,
+                "description": self.challenge4.description,
+                "terms_and_conditions": self.challenge4.terms_and_conditions,
+                "submission_guidelines": self.challenge4.submission_guidelines,
+                "evaluation_details": self.challenge4.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(self.challenge2.start_date.isoformat(), 'Z').replace("+00:00", ""),
-                "end_date": "{0}{1}".format(self.challenge2.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "start_date": "{0}{1}".format(self.challenge4.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge4.end_date.isoformat(), 'Z').replace("+00:00", ""),
                 "creator": {
-                    "id": self.challenge2.creator.pk,
-                    "team_name": self.challenge2.creator.team_name,
-                    "created_by": self.challenge2.creator.created_by.username,
+                    "id": self.challenge4.creator.pk,
+                    "team_name": self.challenge4.creator.team_name,
+                    "created_by": self.challenge4.creator.created_by.username,
                 },
-                "published": self.challenge2.published,
-                "enable_forum": self.challenge2.enable_forum,
-                "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
-                "is_active": True,
+                "published": self.challenge4.published,
+                "enable_forum": self.challenge4.enable_forum,
+                "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+                "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
@@ -862,25 +901,25 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
             },
             {
-                "id": self.challenge4.pk,
-                "title": self.challenge4.title,
-                "short_description": self.challenge4.short_description,
-                "description": self.challenge4.description,
-                "terms_and_conditions": self.challenge4.terms_and_conditions,
-                "submission_guidelines": self.challenge4.submission_guidelines,
-                "evaluation_details": self.challenge4.evaluation_details,
+                "id": self.challenge2.pk,
+                "title": self.challenge2.title,
+                "short_description": self.challenge2.short_description,
+                "description": self.challenge2.description,
+                "terms_and_conditions": self.challenge2.terms_and_conditions,
+                "submission_guidelines": self.challenge2.submission_guidelines,
+                "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
-                "start_date": "{0}{1}".format(self.challenge4.start_date.isoformat(), 'Z').replace("+00:00", ""),
-                "end_date": "{0}{1}".format(self.challenge4.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "start_date": "{0}{1}".format(self.challenge2.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge2.end_date.isoformat(), 'Z').replace("+00:00", ""),
                 "creator": {
-                    "id": self.challenge4.creator.pk,
-                    "team_name": self.challenge4.creator.team_name,
-                    "created_by": self.challenge4.creator.created_by.username,
+                    "id": self.challenge2.creator.pk,
+                    "team_name": self.challenge2.creator.team_name,
+                    "created_by": self.challenge2.creator.created_by.username,
                 },
-                "published": self.challenge4.published,
-                "enable_forum": self.challenge4.enable_forum,
-                "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
-                "is_active": False,
+                "published": self.challenge2.published,
+                "enable_forum": self.challenge2.enable_forum,
+                "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
+                "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,

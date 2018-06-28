@@ -81,7 +81,7 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge = Challenge.objects.filter(creator=challenge_host_team)
+        challenge = Challenge.objects.filter(creator=challenge_host_team, is_disabled=False)
         paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
             result_page, many=True, context={'request': request})
@@ -166,6 +166,10 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if challenge.end_date < timezone.now() or challenge.start_date > timezone.now():
+        response_data = {'error': 'Sorry, cannot accept participant team since challenge is not active.'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -269,7 +273,7 @@ def get_all_challenges(request, challenge_time):
     # don't return disabled challenges
     q_params['is_disabled'] = False
 
-    challenge = Challenge.objects.filter(**q_params)
+    challenge = Challenge.objects.filter(**q_params).order_by('-pk')
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={'request': request})
@@ -367,7 +371,7 @@ def challenge_phase_list(request, challenge_pk):
 
     if request.method == 'GET':
         challenge_phase = ChallengePhase.objects.filter(
-            challenge=challenge, is_public=True)
+            challenge=challenge, is_public=True).order_by('pk')
         paginator, result_page = paginated_queryset(challenge_phase, request)
         serializer = ChallengePhaseSerializer(result_page, many=True)
         response_data = serializer.data

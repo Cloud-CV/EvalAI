@@ -1,4 +1,4 @@
-FROM node:9.11.1
+FROM node:8.11.2
 
 WORKDIR /code
 
@@ -10,7 +10,7 @@ ADD ./.eslintrc /code
 ADD ./karma.conf.js /code
 
 # Install Prerequisites
-RUN npm install -g bower gulp
+RUN npm install -g bower gulp@next
 
 RUN npm link gulp
 
