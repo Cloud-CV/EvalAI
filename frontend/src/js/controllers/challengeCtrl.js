@@ -581,11 +581,23 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.submissionResult = details;
 
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                        if (details['results'][i]['method_name'] == "null") {
+                            details['results'][i]['method_name'] = "...";
+                        }
+                        if (details['results'][i]['method_description'] == "null") {
+                            details['results'][i]['method_description'] = "...";
+                        }
+                        if (details['results'][i]['project_url'] == "null") {
+                            details['results'][i]['project_url'] = "...";
+                        }
+                        if (details['results'][i]['publication_url'] == "null") {
+                            details['results'][i]['publication_url'] = "...";
+                        }
                     }
+                    vm.submissionResult = details;
 
                     vm.start();
 
