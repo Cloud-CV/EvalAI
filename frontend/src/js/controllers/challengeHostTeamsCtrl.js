@@ -165,7 +165,8 @@
             parameters.url = 'hosts/create_challenge_host_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_name": vm.team.name
+                "team_name": vm.team.name,
+                "team_url": vm.team.url
             };
             parameters.token = userKey;
             parameters.callback = {
@@ -175,6 +176,7 @@
                     vm.teamId = details.id;
                     vm.team.error = false;
                     vm.team.name = '';
+                    vm.team.url = '';
                     vm.stopLoader();
 
                     vm.startLoader("Loading Teams");

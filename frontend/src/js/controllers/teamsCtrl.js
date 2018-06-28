@@ -180,7 +180,8 @@
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_name": vm.team.name
+                "team_name": vm.team.name,
+                "team_url": vm.team.url
             };
             parameters.token = userKey;
             parameters.callback = {
@@ -189,6 +190,7 @@
                     vm.team.error = false;
                     vm.stopLoader();
                     vm.team.name = '';
+                    vm.team.url = '';
 
                     vm.startLoader("Loading Teams");
                     var parameters = {};
