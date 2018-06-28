@@ -26,6 +26,8 @@ from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
+from yaml.scanner import ScannerError
+
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from challenges.utils import (get_challenge_model,
