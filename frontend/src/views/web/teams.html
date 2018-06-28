@@ -19,7 +19,8 @@
                         <li ng-repeat="(key, value) in teams.existTeam.results">
                             <div class="collapsible-header"><i class="fa fa-lg fa-users" aria-hidden="true"></i>
                                 <div class="show-member-title pointer">
-                                    <span><b class="text-med-black">Team: </b><a href="{{value.team_url}}" target="_blank">{{value.team_name}}</a></span>
+                                    <span ng-if="value.team_url != '#'"><b class="text-med-black">Team: </b><a class="orange-text" href="{{value.team_url}}" target="_blank">{{value.team_name}}</a></span>
+                                    <span ng-if="value.team_url == '#'"><b class="text-med-black">Team: </b>{{value.team_name}}</span>
                                     <a ng-click="teams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
                                     <a ng-click="teams.editTeamName($event, value.id)"><i class="fa fa fa-pencil list-icon text-highlight w-300 right grey-text"></i></a>
                                     <a ng-click="teams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
