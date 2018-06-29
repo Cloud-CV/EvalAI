@@ -15,7 +15,8 @@
                                 <div class="card-content">
                                     <p><span class="fs-18"><strong>{{featured_challenge.page.title}}</strong></span>
                                         <br>
-                                        <span><strong class="text-light-black">Organized by:</strong> {{featured_challenge.page.creator.team_name}} </span>
+                                        <span ng-if="featured_challenge.page.creator.team_url != ''"><strong class="text-light-black">Organized by:</strong><a class="orange-text" href="{{featured_challenge.page.creator.team_url}}" target="_blank"> {{featured_challenge.page.creator.team_name}} </a></span>
+                                        <span ng-if="featured_challenge.page.creator.team_url == ''"><strong class="text-light-black">Organized by:</strong> {{featured_challenge.page.creator.team_name}} </span>
                                     </p>
                                 </div>
                             </div>
