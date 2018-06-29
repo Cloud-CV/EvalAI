@@ -983,12 +983,12 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.showRemainingSubmissions = function() {
+        vm.showRemainingSubmissions = function(phaseId) {
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
-            parameters.url = "jobs/" + vm.challengeId + "/phases/" + vm.phaseId + "/remaining_submissions";
+            parameters.url = "jobs/" + vm.challengeId + "/phases/" + phaseId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
