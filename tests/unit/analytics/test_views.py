@@ -372,7 +372,7 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
     def test_get_challenge_phase_submission_analysis(self):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
-        
+
         self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
