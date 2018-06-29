@@ -123,6 +123,8 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     submissions = Submission.objects.filter(
         challenge_phase=challenge_phase, challenge_phase__challenge=challenge, participant_team=participant_team)
     submission_count = submissions.count()
+    submissions = Submission.objects.filter(
+        challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
     participant_team_count = submissions.values_list(
         'participant_team', flat=True).distinct().count()
 
