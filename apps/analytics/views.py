@@ -22,6 +22,7 @@ from jobs.serializers import (LastSubmissionDateTime,
                               SubmissionCountSerializer,
                               )
 from participants.models import Participant
+from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from participants.serializers import (ParticipantCount,
                                       ParticipantCountSerializer,
                                       ParticipantTeamCount,
@@ -117,9 +118,13 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
+    participant_team = get_participant_team_id_of_user_for_a_challenge(request.user, challenge.pk)
+
+    submissions = Submission.objects.filter(
+        challenge_phase=challenge_phase, challenge_phase__challenge=challenge, participant_team=participant_team)
+    submission_count = submissions.count()
     submissions = Submission.objects.filter(
         challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
-    submission_count = submissions.count()
     participant_team_count = submissions.values_list(
         'participant_team', flat=True).distinct().count()
 
