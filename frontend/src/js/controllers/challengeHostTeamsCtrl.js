@@ -11,7 +11,6 @@
 
     function ChallengeHostTeamsCtrl(utilities, loaderService, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
-        // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
 
         utilities.showLoader();
@@ -175,8 +174,7 @@
                     var details = response.data;
                     vm.teamId = details.id;
                     vm.team.error = false;
-                    vm.team.name = '';
-                    vm.team.url = '';
+                    vm.team = {};
                     vm.stopLoader();
 
                     vm.startLoader("Loading Teams");

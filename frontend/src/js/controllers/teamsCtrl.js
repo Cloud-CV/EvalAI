@@ -11,7 +11,6 @@
 
     function TeamsCtrl(utilities,loaderService, $scope, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
-        // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
         var challengePk = 1;
 
@@ -189,8 +188,8 @@
                     $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
-                    vm.team.name = '';
-                    vm.team.url = '';
+                    // reset the team attributes
+                    vm.team = {};
 
                     vm.startLoader("Loading Teams");
                     var parameters = {};
