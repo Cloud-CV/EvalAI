@@ -79,10 +79,18 @@
                                     <tbody>
                                         <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
                                             <td>{{key.participant_team_name}}</td>
-                                            <td>{{key.method_name}}</td>
-                                            <td>{{key.method_description}}</td>
-                                            <td>{{key.project_url}}</td>
-                                            <td>{{key.publication_url}}</td>
+                                            <td ng-if="key.method_name != ''">{{key.method_name}}</td>
+                                            <td ng-if="key.method_name == ''"> None </td>
+
+                                            <td ng-if="key.method_description != ''">{{key.method_description}}</td>
+                                            <td ng-if="key.method_description == ''"> None </td>
+
+                                            <td ng-if="key.project_url != ''">{{key.project_url}}</td>
+                                            <td ng-if="key.project_url == ''"> None </td>
+
+                                            <td ng-if="key.publication_url != ''">{{key.publication_url}}</td>
+                                            <td ng-if="key.publication_url == ''"> None </td>
+
                                             <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
                                             <td class="align-center">{{key.execution_time}}</td>
 
