@@ -118,7 +118,8 @@ class GetChallengeTest(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge.creator.pk,
                     "team_name": self.challenge.creator.team_name,
-                    "created_by": self.challenge.creator.created_by.username
+                    "created_by": self.challenge.creator.created_by.username,
+                    "team_url": self.challenge.creator.team_url
                 },
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
@@ -208,7 +209,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
-                "created_by": self.challenge.creator.created_by.username
+                "created_by": self.challenge.creator.created_by.username,
+                "team_url": self.challenge.creator.team_url
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
@@ -259,7 +261,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "creator": {
                 "id": self.challenge.creator.pk,
                 "team_name": self.challenge.creator.team_name,
-                "created_by": self.challenge.creator.created_by.username
+                "created_by": self.challenge.creator.created_by.username,
+                "team_url": self.challenge.creator.team_url
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
@@ -330,7 +333,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "creator": {
                 'id': self.challenge.creator.pk,
                 'team_name': self.challenge.creator.team_name,
-                'created_by': self.challenge.creator.created_by.username
+                'created_by': self.challenge.creator.created_by.username,
+                'team_url': self.challenge.creator.team_url
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
@@ -361,7 +365,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "creator": {
                 'id': self.challenge.creator.pk,
                 'team_name': self.challenge.creator.team_name,
-                'created_by': self.challenge.creator.created_by.username
+                'created_by': self.challenge.creator.created_by.username,
+                'team_url': self.challenge.creator.team_url
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
@@ -765,6 +770,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "id": self.challenge3.creator.pk,
                     "team_name": self.challenge3.creator.team_name,
                     "created_by": self.challenge3.creator.created_by.username,
+                    "team_url": self.challenge3.creator.team_url
                 },
                 "published": self.challenge3.published,
                 "enable_forum": self.challenge3.enable_forum,
@@ -799,6 +805,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
                     "created_by": self.challenge2.creator.created_by.username,
+                    "team_url": self.challenge2.creator.team_url
                 },
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,
@@ -833,6 +840,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "id": self.challenge4.creator.pk,
                     "team_name": self.challenge4.creator.team_name,
                     "created_by": self.challenge4.creator.created_by.username,
+                    "team_url": self.challenge4.creator.team_url
                 },
                 "published": self.challenge4.published,
                 "enable_forum": self.challenge4.enable_forum,
@@ -867,6 +875,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "id": self.challenge4.creator.pk,
                     "team_name": self.challenge4.creator.team_name,
                     "created_by": self.challenge4.creator.created_by.username,
+                    "team_url": self.challenge4.creator.team_url
                 },
                 "published": self.challenge4.published,
                 "enable_forum": self.challenge4.enable_forum,
@@ -891,6 +900,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "id": self.challenge3.creator.pk,
                     "team_name": self.challenge3.creator.team_name,
                     "created_by": self.challenge3.creator.created_by.username,
+                    "team_url": self.challenge3.creator.team_url
                 },
                 "published": self.challenge3.published,
                 "enable_forum": self.challenge3.enable_forum,
@@ -915,6 +925,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
                     "created_by": self.challenge2.creator.created_by.username,
+                    "team_url": self.challenge2.creator.team_url
                 },
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,
@@ -995,6 +1006,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                     "id": self.challenge3.creator.pk,
                     "team_name": self.challenge3.creator.team_name,
                     "created_by": self.challenge3.creator.created_by.username,
+                    "team_url": self.challenge3.creator.team_url
                 },
                 "published": self.challenge3.published,
                 "enable_forum": self.challenge3.enable_forum,
@@ -1138,7 +1150,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "creator": {
                 "id": self.challenge2.creator.pk,
                 "team_name": self.challenge2.creator.team_name,
-                "created_by": self.challenge2.creator.created_by.username
+                "created_by": self.challenge2.creator.created_by.username,
+                "team_url": self.challenge2.creator.team_url
             },
             "published": self.challenge2.published,
             "enable_forum": self.challenge2.enable_forum,
@@ -1170,7 +1183,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "creator": {
                 "id": self.challenge2.creator.pk,
                 "team_name": self.challenge2.creator.team_name,
-                "created_by": self.challenge2.creator.created_by.username
+                "created_by": self.challenge2.creator.created_by.username,
+                "team_url": self.challenge2.creator.team_url
             },
             "published": self.challenge2.published,
             "enable_forum": self.challenge2.enable_forum,
@@ -1202,7 +1216,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "creator": {
                 "id": self.challenge2.creator.pk,
                 "team_name": self.challenge2.creator.team_name,
-                "created_by": self.challenge2.creator.created_by.username
+                "created_by": self.challenge2.creator.created_by.username,
+                "team_url": self.challenge2.creator.team_url
             },
             "published": self.challenge2.published,
             "enable_forum": self.challenge2.enable_forum,
@@ -1235,7 +1250,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge.creator.pk,
                     "team_name": self.challenge.creator.team_name,
-                    "created_by": self.challenge.creator.created_by.username
+                    "created_by": self.challenge.creator.created_by.username,
+                    "team_url": self.challenge.creator.team_url
                 },
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
@@ -1259,7 +1275,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge2.creator.pk,
                     "team_name": self.challenge2.creator.team_name,
-                    "created_by": self.challenge2.creator.created_by.username
+                    "created_by": self.challenge2.creator.created_by.username,
+                    "team_url": self.challenge2.creator.team_url
                 },
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,

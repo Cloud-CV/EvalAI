@@ -75,6 +75,7 @@ class GetParticipantTeamTest(BaseAPITestClass):
                 "id": self.participant_team.pk,
                 "team_name": self.participant_team.team_name,
                 "created_by": self.user.username,
+                "team_url": self.participant_team.team_url,
                 "members": [
                     {
                         "member_name": self.participant.user.username,
@@ -156,6 +157,7 @@ class GetParticularParticipantTeam(BaseAPITestClass):
             "id": self.participant_team.pk,
             "team_name": self.participant_team.team_name,
             "created_by": self.user.username,
+            "team_url": self.participant_team.team_url,
             "members": [
                 {
                     "member_name": self.participant.user.username,
@@ -205,7 +207,8 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
         expected = {
             "id": self.participant_team.pk,
             "team_name": self.partial_update_participant_team_name,
-            "created_by": self.user.username
+            "created_by": self.user.username,
+            "team_url": self.participant_team.team_url
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -215,7 +218,8 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
         expected = {
             "id": self.participant_team.pk,
             "team_name": self.update_participant_team_name,
-            "created_by": self.user.username
+            "created_by": self.user.username,
+            "team_url": self.participant_team.team_url
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -593,7 +597,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "creator": {
                             "id": self.challenge_host_team.id,
                             "team_name": self.challenge_host_team.team_name,
-                            "created_by": self.challenge_host_team.created_by.username
+                            "created_by": self.challenge_host_team.created_by.username,
+                            "team_url": self.challenge_host_team.team_url
                             },
                         "published": self.challenge1.published,
                         "enable_forum": self.challenge1.enable_forum,
@@ -606,7 +611,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "participant_team": {
                         "id": self.participant_team.id,
                         "team_name": self.participant_team.team_name,
-                        "created_by": self.participant_team.created_by.username
+                        "created_by": self.participant_team.created_by.username,
+                        "team_url": self.participant_team.team_url
                     }
                 }
             ],
@@ -639,7 +645,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "creator": {
                     "id": self.challenge_host_team.id,
                     "team_name": self.challenge_host_team.team_name,
-                    "created_by": self.challenge_host_team.created_by.username
+                    "created_by": self.challenge_host_team.created_by.username,
+                    "team_url": self.challenge_host_team.team_url
                     },
                 "published": self.challenge1.published,
                 "enable_forum": self.challenge1.enable_forum,
@@ -667,7 +674,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "participant_team": {
                         "id": self.participant_team.id,
                         "team_name": self.participant_team.team_name,
-                        "created_by": self.participant_team.created_by.username
+                        "created_by": self.participant_team.created_by.username,
+                        "team_url": self.participant_team.team_url
                     }
                 }
             ],

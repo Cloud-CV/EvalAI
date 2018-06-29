@@ -19,7 +19,7 @@ class ChallengeHostTeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengeHostTeam
-        fields = ('id', 'team_name', 'created_by',)
+        fields = ('id', 'team_name', 'created_by', 'team_url')
 
 
 class ChallengeHostSerializer(serializers.ModelSerializer):
@@ -77,7 +77,7 @@ class HostTeamDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengeHostTeam
-        fields = ('id', 'team_name', 'created_by', 'members')
+        fields = ('id', 'team_name', 'created_by', 'members', 'team_url')
 
     def get_members(self, obj):
         hosts = ChallengeHost.objects.filter(team_name_id=obj.id)

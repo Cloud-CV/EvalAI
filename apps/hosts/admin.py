@@ -8,7 +8,7 @@ from .models import (ChallengeHost,
 
 @admin.register(ChallengeHostTeam)
 class ChallengeHostTeamModelAdmin(ImportExportTimeStampedAdmin):
-    list_display = ("team_name", "created_by")
+    list_display = ("team_name", "created_by", "team_url")
     search_fields = ("team_name", "created_by__username")
 
 
