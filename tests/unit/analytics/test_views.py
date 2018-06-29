@@ -335,7 +335,7 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         self.submission = Submission.objects.create(
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
-            created_by=self.challenge_host_team.created_by,
+            created_by=self.participant_team.created_by,
             status='submitted',
             input_file=self.challenge_phase.test_annotation,
             method_name="Test Method",
@@ -370,6 +370,9 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_challenge_phase_submission_analysis(self):
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        
         self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
@@ -379,6 +382,7 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
                 "participant_team_count": 1,
                 "challenge_phase": self.challenge_phase.pk
             }
+        self.client.force_authenticate(user=self.user2)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
