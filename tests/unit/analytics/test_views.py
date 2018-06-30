@@ -45,6 +45,17 @@ class BaseAPITestClass(APITestCase):
             primary=True,
             verified=True)
 
+        self.user3 = User.objects.create(
+            username='user3',
+            email="user3@test.com",
+            password='secret_password')
+
+        EmailAddress.objects.create(
+            user=self.user3,
+            email='user3@test.com',
+            primary=True,
+            verified=True)
+
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name='Test Challenge Host Team',
             created_by=self.user)
@@ -101,10 +112,19 @@ class BaseAPITestClass(APITestCase):
             team_name='Participant Team',
             created_by=self.user2)
 
+        self.participant_team3 = ParticipantTeam.objects.create(
+            team_name='Participant Team3',
+            created_by=self.user3)
+
         self.participant = Participant.objects.create(
             user=self.user2,
             status=Participant.SELF,
             team=self.participant_team)
+
+        self.participant3 = Participant.objects.create(
+            user=self.user3,
+            status=Participant.SELF,
+            team=self.participant_team3)
 
         try:
             os.makedirs('/tmp/evalai')
@@ -211,11 +231,12 @@ class GetParticipantCountTest(BaseAPITestClass):
                                 kwargs={'challenge_pk': self.challenge.pk})
 
         self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.participant_teams.add(self.participant_team3)
 
     def test_get_participant_team_count(self):
 
         expected = {
-            "participant_count": 1
+            "participant_count": 2
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -335,7 +356,46 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         self.submission = Submission.objects.create(
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
-            created_by=self.challenge_host_team.created_by,
+            created_by=self.participant_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission2 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission3 = Submission.objects.create(
+            participant_team=self.participant_team3,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team3.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission4 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team.created_by,
             status='submitted',
             input_file=self.challenge_phase.test_annotation,
             method_name="Test Method",
@@ -369,16 +429,38 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phase_submission_analysis(self):
+    def test_get_challenge_phase_submission_analysis_for_participant_team_1(self):
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.participant_teams.add(self.participant_team3)
+
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk})
+
+        expected = {
+                "submission_count": 3,
+                "participant_team_count": 2,
+                "challenge_phase": self.challenge_phase.pk
+            }
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_phase_submission_analysis_for_participant_team_3(self):
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.participant_teams.add(self.participant_team3)
+
         self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
                 "submission_count": 1,
-                "participant_team_count": 1,
+                "participant_team_count": 2,
                 "challenge_phase": self.challenge_phase.pk
             }
+        self.client.force_authenticate(user=self.user3)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
