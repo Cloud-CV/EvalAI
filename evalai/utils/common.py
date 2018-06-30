@@ -1,5 +1,25 @@
 import sys
+import click
+
 from click import echo, style
+from datetime import datetime
+
+
+class Date(click.ParamType):
+    """
+    Date object parsed using datetime.
+    """
+    name = 'date'
+
+    def __init__(self, format):
+        self.format = format
+
+    def convert(self, value, param, ctx):
+        try:
+            date = datetime.strptime(value, self.format)
+            return date
+        except ValueError:
+            raise self.fail("Incorrect date format, please use {} format".format(self.format))
 
 
 def validate_token(response):
