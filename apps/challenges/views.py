@@ -26,6 +26,8 @@ from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
+from yaml.scanner import ScannerError
+
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from challenges.utils import (get_challenge_model,
@@ -547,9 +549,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     try:
         with open(join(BASE_LOCATION, unique_folder_name, yaml_file), "r") as stream:
             yaml_file_data = yaml.load(stream)
-    except yaml.YAMLError as exc:
+    except (yaml.YAMLError, ScannerError) as exc:
+        message = 'Error in creating challenge. Please check the yaml configuration!'
         response_data = {
-            'error': exc
+            'error': message
         }
         logger.exception(exc)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
