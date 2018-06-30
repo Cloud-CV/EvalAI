@@ -32,12 +32,14 @@ setup(
 
     provides=[],
     install_requires=[
+        'beautifulsoup4',
+        'beautifultable',
         'click',
         'colorama',
         'pandas',
-        'pylsy',
         'requests',
         'responses',
+        'validators',
     ],
 
     namespace_packages=[],
