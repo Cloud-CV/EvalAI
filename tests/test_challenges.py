@@ -1,13 +1,16 @@
 import json
 import responses
 
+from beautifultable import BeautifulTable
 from click.testing import CliRunner
+from datetime import datetime
+from dateutil import tz
 
 from evalai.challenges import (challenge,
                                challenges)
 from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL
-from tests.data import challenge_response
+from tests.data import challenge_response, submission_response
 
 from .base import BaseTestClass
 
@@ -298,3 +301,81 @@ class TestDisplayChallengePhases(BaseTestClass):
         result = runner.invoke(challenge, ['10', 'phase', '20'])
         response = result.output
         assert response == phase
+
+
+class TestDisplaySubmission(BaseTestClass):
+
+    def setup(self):
+        json_data = json.loads(submission_response.submission)
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
+                      json=json_data, status=200)
+        self.submissions = json_data["results"]
+
+    @responses.activate
+    def test_display_my_submission_details(self):
+        table = BeautifulTable(max_width=100)
+        attributes = ["id", "participant_team_name", "execution_time", "status"]
+        columns_attributes = ["ID", "Participant Team", "Execution Time(sec)", "Status", "Submitted At", "Method Name"]
+        table.column_headers = columns_attributes
+
+        for submission in self.submissions:
+            # Format date
+            date = datetime.strptime(submission['submitted_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
+            from_zone = tz.tzutc()
+            to_zone = tz.tzlocal()
+
+            # Convert to local timezone from UTC.
+            date = date.replace(tzinfo=from_zone)
+            converted_date = date.astimezone(to_zone)
+            date = converted_date.strftime('%D %r')
+
+            # Check for empty method name
+            method_name = submission["method_name"] if submission["method_name"] else "None"
+            values = list(map(lambda item: submission[item], attributes))
+            values.append(date)
+            values.append(method_name)
+            table.append_row(values)
+        output = str(table).rstrip()
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions'])
+        response = result.output.rstrip()
+        assert response == output
+
+    @responses.activate
+    def test_display_my_submission_details_with_single_argument(self):
+        output = ("Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
+                  "\nError: Invalid value for \"PHASE\": submissions is not a valid integer\n")
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2', 'phase', 'submissions'])
+        response = result.output
+        assert response == output
+
+    @responses.activate
+    def test_display_my_submission_details_with_string_argument(self):
+        output = ("Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
+                  "\nError: Invalid value for \"PHASE\": two is not a valid integer\n")
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2', 'phase', 'two'])
+        response = result.output
+        assert response == output
+
+
+class TestDisplaySubmissionWithoutSubmissionData(BaseTestClass):
+
+    def setup(self):
+        data = '{"count": 4, "next": null, "previous": null, "results": []}'
+        json_data = json.loads(data)
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
+                      json=json_data, status=200)
+
+    @responses.activate
+    def test_display_my_submission_details_without_submissions(self):
+        expected = "\nSorry, you have not made any submissions to this challenge phase."
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions'])
+        response = result.output.rstrip()
+        assert response == expected

@@ -8,6 +8,7 @@ from evalai.utils.challenges import (
                                     display_participated_or_hosted_challenges,
                                     display_challenge_phase_list,
                                     display_challenge_phase_detail,)
+from evalai.utils.submissions import display_my_submission_details
 from evalai.utils.teams import participate_in_a_challenge
 
 
@@ -15,9 +16,20 @@ class Challenge(object):
     """
     Stores user input ID's.
     """
-    def __init__(self, challenge=None, phase=None):
+    def __init__(self, challenge=None, phase=None, subcommand=None):
         self.challenge_id = challenge
         self.phase_id = phase
+        self.subcommand = subcommand
+
+
+class PhaseGroup(click.Group):
+    """
+    Fetch the submcommand data in the phase group.
+    """
+    def invoke(self, ctx):
+        subcommand = tuple(ctx.protected_args)
+        ctx.obj.subcommand = subcommand
+        super(PhaseGroup, self).invoke(ctx)
 
 
 @click.group(invoke_without_command=True)
@@ -44,9 +56,9 @@ def challenges(ctx, participant, host):
 @click.argument('CHALLENGE', type=int)
 def challenge(ctx, challenge):
     """
-    View challenge specific details.
+    Display challenge specific details.
     """
-    ctx.obj = Challenge(challenge)
+    ctx.obj = Challenge(challenge=challenge)
 
 
 @challenges.command()
@@ -94,7 +106,7 @@ def phases(ctx):
     display_challenge_phase_list(ctx.challenge_id)
 
 
-@challenge.command()
+@click.group(invoke_without_command=True, cls=PhaseGroup)
 @click.pass_obj
 @click.argument('PHASE', type=int)
 def phase(ctx, phase):
@@ -104,7 +116,21 @@ def phase(ctx, phase):
     """
     Invoked by running `evalai challenges CHALLENGE phase PHASE`
     """
-    display_challenge_phase_detail(ctx.challenge_id, phase)
+    ctx.phase_id = phase
+    if len(ctx.subcommand) == 0:
+        display_challenge_phase_detail(ctx.challenge_id, phase)
+
+
+@phase.command()
+@click.pass_obj
+def submissions(ctx):
+    """
+    Display submissions to a particular challenge.
+    """
+    """
+    Invoked by running `evalai challenge CHALLENGE phase PHASE submissions`.
+    """
+    display_my_submission_details(ctx.challenge_id, ctx.phase_id)
 
 
 @challenge.command()
@@ -118,3 +144,6 @@ def participate(ctx, team):
     Invoked by running `evalai challenge CHALLENGE participate TEAM`
     """
     participate_in_a_challenge(ctx.challenge_id, team)
+
+
+challenge.add_command(phase)

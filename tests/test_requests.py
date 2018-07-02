@@ -2,6 +2,7 @@ import json
 import responses
 
 from click.testing import CliRunner
+from requests.exceptions import RequestException
 
 from evalai.challenges import challenge, challenges
 from evalai.teams import teams
@@ -53,6 +54,9 @@ class TestHTTPErrorRequests(BaseTestClass):
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_detail.value).format('10', '20'),
                       status=404)
+
+        # Submission URLS
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"), status=404)
 
         self.expected = "404 Client Error: Not Found for url: {}"
 
@@ -139,6 +143,15 @@ class TestHTTPErrorRequests(BaseTestClass):
         result = runner.invoke(challenge, ['2', 'participate', '3'])
         response = result.output
         url = "{}{}".format(API_HOST_URL, URLS.participate_in_a_challenge.value).format("2", "3")
+        expected = "{}{}".format(self.expected.format(url), "\n")
+        assert response == expected
+
+    @responses.activate
+    def test_display_my_submission_details_for_http_error_404(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions'])
+        response = result.output
+        url = "{}{}".format(API_HOST_URL, URLS.my_submissions.value).format("3", "7")
         expected = "{}{}".format(self.expected.format(url), "\n")
         assert response == expected
 
@@ -327,6 +340,10 @@ class TestRequestForExceptions(BaseTestClass):
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_detail.value).format('10', '20'),
                       body=Exception('...'))
 
+        # Submission URLS
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
+                      body=RequestException('...'))
+
     @responses.activate
     def test_display_challenge_list_for_request_exception(self):
         runner = CliRunner()
@@ -398,3 +415,9 @@ class TestRequestForExceptions(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenge, ['10', 'phase', '20'])
         assert result.exit_code == -1
+
+    @responses.activate
+    def test_display_my_submission_details_for_request_exception(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions'])
+        assert result.output.strip() == "..."
