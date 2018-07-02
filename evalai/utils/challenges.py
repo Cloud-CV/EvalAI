@@ -216,9 +216,10 @@ def display_challenge_phase_list(challenge_id):
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
             validate_token(response.json())
-            echo(style("Error: {}".format(response.json()["error"], fg="red", bold=True)))
+            echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
         else:
             echo(err)
+        sys.exit(1)
     except requests.exceptions.RequestException as err:
         echo(err)
         sys.exit(1)
@@ -281,9 +282,10 @@ def display_challenge_phase_detail(challenge_id, phase_id):
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
             validate_token(response.json())
-            echo(style("Error: {}".format(response.json()["error"], fg="red", bold=True)))
+            echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
         else:
             echo(err)
+        sys.exit(1)
     except requests.exceptions.RequestException as err:
         echo(err)
         sys.exit(1)
