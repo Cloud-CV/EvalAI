@@ -32,14 +32,13 @@ setup(
 
     provides=[],
     install_requires=[
-        'beautifulsoup4',
-        'beautifultable',
-        'click',
-        'colorama',
-        'pandas',
-        'requests',
-        'responses',
-        'validators',
+        'beautifulsoup4==4.6.0',
+        'beautifultable==0.5.0',
+        'click==6.7',
+        'lxml==4.2.1',
+        'python-dateutil==2.7.3',
+        'requests==2.18.4',
+        'responses==0.9.0',
     ],
 
     namespace_packages=[],
