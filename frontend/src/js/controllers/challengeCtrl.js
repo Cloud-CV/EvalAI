@@ -14,10 +14,10 @@
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
-        vm.methodName = null;
-        vm.methodDesc = null;
-        vm.projectUrl = null;
-        vm.publicationUrl = null;
+        vm.methodName = "";
+        vm.methodDesc = "";
+        vm.projectUrl = "";
+        vm.publicationUrl = "";
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
@@ -297,12 +297,12 @@
                             angular.element(".file-path").val(null);
 
 
+                            // Reset the value of fields related to a submission
                             vm.phaseId = null;
-                            vm.methodName = null;
-                            vm.methodDesc = null;
-                            vm.projectUrl = null;
-                            vm.publicationUrl = null;
-                            // vm.subErrors.msg = "Your submission has been recorded succesfully!";
+                            vm.methodName = "";
+                            vm.methodDesc = "";
+                            vm.projectUrl = "";
+                            vm.publicationUrl = "";
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
 
                             vm.stopLoader();
@@ -581,11 +581,11 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.submissionResult = details;
 
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                     }
+                    vm.submissionResult = details;
 
                     vm.start();
 
@@ -983,12 +983,12 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.showRemainingSubmissions = function() {
+        vm.showRemainingSubmissions = function(phaseId) {
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
-            parameters.url = "jobs/" + vm.challengeId + "/phases/" + vm.phaseId + "/remaining_submissions";
+            parameters.url = "jobs/" + vm.challengeId + "/phases/" + phaseId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {

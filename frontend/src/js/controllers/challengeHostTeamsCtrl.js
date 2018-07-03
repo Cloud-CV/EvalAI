@@ -11,7 +11,6 @@
 
     function ChallengeHostTeamsCtrl(utilities, loaderService, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
-        // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
 
         utilities.showLoader();
@@ -165,7 +164,8 @@
             parameters.url = 'hosts/create_challenge_host_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_name": vm.team.name
+                "team_name": vm.team.name,
+                "team_url": vm.team.url
             };
             parameters.token = userKey;
             parameters.callback = {
@@ -174,7 +174,7 @@
                     var details = response.data;
                     vm.teamId = details.id;
                     vm.team.error = false;
-                    vm.team.name = '';
+                    vm.team = {};
                     vm.stopLoader();
 
                     vm.startLoader("Loading Teams");
