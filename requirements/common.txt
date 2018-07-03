@@ -1,6 +1,6 @@
 asgi-redis==1.4.3
 commonmark==0.5.4
-django==1.10.2
+django==1.11
 django-import-export==0.5.1
 djangorestframework==3.5.2
 djangorestframework-expiring-authtoken==0.1.4
