@@ -26,7 +26,7 @@ class Challenge(TimeStampedModel):
     submission_guidelines = models.TextField(null=True, blank=True)
     evaluation_details = models.TextField(null=True, blank=True)
     image = models.ImageField(
-        upload_to='logos', null=True, blank=True, verbose_name="Logo")
+        upload_to=RandomFileName('logos'), null=True, blank=True, verbose_name="Logo")
     start_date = models.DateTimeField(
         null=True, blank=True, verbose_name="Start Date (UTC)", db_index=True)
     end_date = models.DateTimeField(
