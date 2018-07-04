@@ -21,7 +21,8 @@
                                 <input type="radio" name="selectHostTeam" class="with-gap selectTeam" id="{{value.id}}" value={{value.id}} ng-model="challengeHostTeams.challengeHostTeamId">
                                 <label for="{{value.id}}"></label>
                                 <div class="show-member-title pointer">
-                                    <span><b class="text-med-black">Team: </b>{{value.team_name}}</span>
+                                    <span ng-if="value.team_url != ''"><b class="text-med-black">Team: </b><a class="orange-text" href="{{value.team_url}}" target="_blank">{{value.team_name}}</a></span>
+                                    <span ng-if="value.team_url == ''"><b class="text-med-black">Team: </b>{{value.team_name}}</span>
                                     <a ng-click="challengeHostTeams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
                                     <a ng-click="challengeHostTeams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
                                     <br>
@@ -75,10 +76,15 @@
                 <div class="ev-md-container ev-card-body new-team-card">
                     <form ng-submit="challengeHostTeams.createNewTeam()">
                         <div class="input-field align-left">
-                            <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeHostTeams.team.name" ng-pattern="/^[\w -]*$/" focus-if>
+                            <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeHostTeams.team.name" ng-pattern="/^[\w -.]*$/" focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                             <label for="name" data-error="wrong" data-success="right">Team Name*</label>
                             <div class="wrn-msg text-highlight" ng-show="challengeHostTeams.team.error">{{challengeHostTeams.team.error}}</div>
+                        </div>
+                        <div class="input-field align-left">
+                            <input id="url" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challengeHostTeams.team.url" focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-link"></i></span>
+                            <label for="url" data-error="wrong" data-success="right">Team URL (Optional)</label>
                         </div>
                         <div class="align-left reg-control">
                             <button class="waves-effect waves-dark btn grad-btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Create Host Team</button>
