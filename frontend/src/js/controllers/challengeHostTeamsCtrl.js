@@ -222,7 +222,7 @@
                     var error = response.data;
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
-                    $rootScope.notify("error", "New team couldn't be created.");
+                    $rootScope.notify("error",  error.team_name[0]);
                 }
             };
 
@@ -309,7 +309,7 @@
 
         vm.inviteOthers = function(ev, hostTeamId) {
             ev.stopPropagation();
-            // Appending dialog to document.body 
+            // Appending dialog to document.body
             var confirm = $mdDialog.prompt()
                 .title('Add other memebers to this Team')
                 .textContent('Enter the email address of the person')
