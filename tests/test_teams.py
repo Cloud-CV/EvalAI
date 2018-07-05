@@ -1,6 +1,7 @@
 import json
 import responses
 
+from beautifultable import BeautifulTable
 from click.testing import CliRunner
 
 from evalai.teams import teams
@@ -31,26 +32,19 @@ class TestTeams:
 
     @responses.activate
     def test_teams_list(self):
-
-        output = ""
+        table = BeautifulTable(max_width=200)
+        attributes = ["id", "team_name", "created_by"]
+        columns_attributes = ["ID", "Team Name", "Created By", "Members"]
+        table.column_headers = columns_attributes
         for team in self.teams:
-            br = ("----------------------------------------"
-                  "--------------------------")
-
-            team_name = "\n{}".format(team["team_name"],)
-            team_id = "ID: {}\n\n".format(str(team["id"]),)
-            team_name = "{} {}".format(team_name, team_id)
-            created_by = "Created by : {}\n\n".format(team["created_by"])
-            members = "{}\n".format("Members")
-            for member in team["members"]:
-                members = "{}* {}\n".format(members, member["member_name"])
-            team = "{}{}{}\n{}\n".format(team_name, created_by, members, br)
-
-            output = "{}{}".format(output, team)
-
+            values = list(map(lambda item: team[item], attributes))
+            members = ", ".join(map(lambda member: member["member_name"], team["members"]))
+            values.append(members)
+            table.append_row(values)
+        output = str(table)
         runner = CliRunner()
         result = runner.invoke(teams)
-        response = result.output
+        response = result.output.rstrip()
         assert response == output
 
     @responses.activate

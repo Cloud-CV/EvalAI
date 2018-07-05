@@ -401,7 +401,7 @@ class TestRequestForExceptions(BaseTestClass):
                       body=Exception('...'))
 
         responses.add(responses.POST, url.format(API_HOST_URL, URLS.participate_in_a_challenge.value).format("2", "3"),
-                      body=Exception('...'))
+                      body=RequestException('...'))
 
         # Phase URLS
 
@@ -477,13 +477,15 @@ class TestRequestForExceptions(BaseTestClass):
     def test_create_participant_team_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(teams, ['create'], input="TeamTest\ny\n")
-        assert result.exit_code == -1
+        output = ("Enter team name: : TeamTest\n"
+                  "Please confirm the team name - TeamTest [y/N]: y")
+        assert result.output.strip() == output
 
     @responses.activate
     def test_participate_in_a_challenge_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenge, ['2', 'participate', '3'])
-        assert result.exit_code == -1
+        assert result.output.strip() == "..."
 
     @responses.activate
     def test_display_challenge_phase_list_for_request_exception(self):
