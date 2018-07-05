@@ -1,9 +1,15 @@
 import click
 
-from click import echo
+from evalai.utils.submissions import display_submission_details
 
 
-@click.command()
-def submissions():
-    """Example script."""
-    echo('Hello Submissions!')
+@click.group(invoke_without_command=True)
+@click.argument('SUBMISSION', type=int)
+def submission(submission):
+    """
+    View submission specific details.
+    """
+    """
+    Invoked by `evalai submission SUBMISSION`.
+    """
+    display_submission_details(submission)

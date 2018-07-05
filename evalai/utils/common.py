@@ -3,6 +3,7 @@ import click
 
 from click import echo, style
 from datetime import datetime
+from dateutil import tz
 
 
 class Date(click.ParamType):
@@ -34,3 +35,25 @@ def validate_token(response):
         if (response['detail'] == 'Token has expired'):
             echo(style("\nSorry, the token has expired. Please generate it again.\n", bold=True, bg="red"))
             sys.exit(1)
+
+
+def validate_date_format(date):
+    for date_format in ("%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"):
+        try:
+            return datetime.strptime(date, date_format)
+        except ValueError:
+            pass
+    raise ValueError('Invalid date format. Please check again!')
+
+
+def convert_UTC_date_to_local(date):
+    # Format date
+    date = validate_date_format(date)
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+
+    # Convert to local timezone from UTC.
+    date = date.replace(tzinfo=from_zone)
+    converted_date = date.astimezone(to_zone)
+    date = converted_date.strftime('%D %r')
+    return date

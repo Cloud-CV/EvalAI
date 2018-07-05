@@ -14,3 +14,5 @@ class URLS(Enum):
     challenge_phase_list = "/api/challenges/challenge/{}/challenge_phase"
     challenge_phase_detail = "/api/challenges/challenge/{}/challenge_phase/{}"
     my_submissions = "/api/jobs/challenge/{}/challenge_phase/{}/submission/"
+    make_submission = "/api/jobs/challenge/{}/challenge_phase/{}/submission/"
+    get_submission = "/api/jobs/submission/{}"
