@@ -309,7 +309,7 @@
 
         vm.inviteOthers = function(ev, hostTeamId) {
             ev.stopPropagation();
-            // Appending dialog to document.body
+            // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
                 .title('Add other memebers to this Team')
                 .textContent('Enter the email address of the person')
