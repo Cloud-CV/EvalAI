@@ -63,6 +63,10 @@ class TestHTTPErrorRequests(BaseTestClass):
 
         responses.add(responses.POST, url.format(API_HOST_URL, URLS.make_submission.value).format("1", "2"), status=404)
 
+        # PhaseSplit URLS
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format("1"),
+                      status=404)
+
         self.expected = "404 Client Error: Not Found for url: {}"
 
     @responses.activate
@@ -179,6 +183,15 @@ class TestHTTPErrorRequests(BaseTestClass):
             result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "test_file.txt"])
             response = result.output.rstrip()
             assert response == self.expected.format(url)
+
+    @responses.activate
+    def test_display_challenge_phase_split_list_for_http_error_404(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['1', 'phase', '2', 'splits'])
+        response = result.output.rstrip()
+        url = "{}{}".format(API_HOST_URL, URLS.challenge_phase_split_detail.value)
+        expected = self.expected.format(url).format("1")
+        assert response == expected
 
 
 class TestSubmissionDetailsWhenObjectDoesNotExist(BaseTestClass):
@@ -408,6 +421,10 @@ class TestRequestForExceptions(BaseTestClass):
         responses.add(responses.POST, url.format(API_HOST_URL, URLS.make_submission.value).format("1", "2"),
                       body=RequestException('RequestException'))
 
+        # Phase Split URLS
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format("1"),
+                      body=RequestException('...'))
+
     @responses.activate
     def test_display_challenge_list_for_request_exception(self):
         runner = CliRunner()
@@ -503,3 +520,10 @@ class TestRequestForExceptions(BaseTestClass):
             result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "test_file.txt"])
             response = result.output.strip()
             assert response == "RequestException"
+
+    @responses.activate
+    def test_display_challenge_phase_split_list_for_request_exception(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['1', 'phase', '2', 'splits'])
+        response = result.output.strip()
+        assert response == "..."

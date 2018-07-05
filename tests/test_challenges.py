@@ -11,7 +11,6 @@ from evalai.challenges import (challenge,
 from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL
 from tests.data import challenge_response, submission_response
-
 from .base import BaseTestClass
 
 
@@ -110,6 +109,9 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_challenges.value).format("2"),
                       json=json.loads(challenges), status=200)
 
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format("1"),
+                      json=[], status=200)
+
         self.output = "Sorry, no challenges found!\n"
 
     @responses.activate
@@ -146,6 +148,13 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
         result = runner.invoke(challenges, ['--participant', '--host'])
         response = result.output
         assert response == self.output
+
+    @responses.activate
+    def test_display_challenge_phase_splits_with_no_challenge_data(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['1', 'phase', '2', 'splits'])
+        response = result.output
+        assert response == "Sorry, no Challenge Phase Splits found.\n"
 
 
 class TestParticipantOrHostTeamChallenges(BaseTestClass):
@@ -352,6 +361,44 @@ class TestDisplaySubmission(BaseTestClass):
         response = result.output
         assert response == output
 
+
+class TestDisplayChallengePhaseSplit(BaseTestClass):
+
+    def setup(self):
+        json_data = json.loads(challenge_response.challenge_phase_splits)
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format("1"),
+                      json=json_data, status=200)
+        self.splits = json_data
+
+    @responses.activate
+    def test_display_challenge_phase_split(self):
+        output = ""
+        table = BeautifulTable(max_width=100)
+        attributes = ["id", "dataset_split_name", "challenge_phase_name"]
+        columns_attributes = ["Challenge Phase ID", "Dataset Split", "Challenge Phase Name"]
+        table.column_headers = columns_attributes
+
+        for split in self.splits:
+            if split['visibility'] == 3:
+                values = list(map(lambda item: split[item], attributes))
+                table.append_row(values)
+        output = str(table)
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['1', 'phase', '2', 'splits'])
+        response = result.output.rstrip()
+        assert response == output
+
+    @responses.activate
+    def test_display_challenge_phase_split_list_with_a_single_argument(self):
+        output = ("Usage: challenge [OPTIONS] CHALLENGE COMMAND [ARGS]...\n"
+                  "\nError: Missing command.\n")
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2'])
+        response = result.output
+        assert response == output
+
     @responses.activate
     def test_display_my_submission_details_with_string_argument(self):
         output = ("Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
@@ -379,3 +426,12 @@ class TestDisplaySubmissionWithoutSubmissionData(BaseTestClass):
         result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions'])
         response = result.output.rstrip()
         assert response == expected
+
+    @responses.activate
+    def test_display_challenge_phase_split_list_with_string_argument(self):
+        output = ("Usage: challenge [OPTIONS] CHALLENGE COMMAND [ARGS]...\n"
+                  "\nError: Invalid value for \"CHALLENGE\": two is not a valid integer\n")
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['two', 'participate', '3'])
+        response = result.output
+        assert response == output

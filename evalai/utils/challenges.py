@@ -2,6 +2,7 @@ import requests
 import sys
 
 from bs4 import BeautifulSoup
+from beautifultable import BeautifulTable
 from click import echo, style
 
 from evalai.utils.auth import get_request_header
@@ -209,7 +210,6 @@ def display_challenge_phase_list(challenge_id):
     url = "{}{}".format(API_HOST_URL, url)
     url = url.format(challenge_id)
     headers = get_request_header()
-
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
@@ -294,3 +294,47 @@ def display_challenge_phase_detail(challenge_id, phase_id):
 
     phase = response
     pretty_print_challenge_phase_data(phase)
+
+
+def pretty_print_challenge_phase_split_data(phase_splits):
+    """
+    Function to print the details of a Challenge Phase Split.
+    """
+    table = BeautifulTable(max_width=100)
+    attributes = ["id", "dataset_split_name", "challenge_phase_name"]
+    columns_attributes = ["Challenge Phase ID", "Dataset Split", "Challenge Phase Name"]
+    table.column_headers = columns_attributes
+
+    for split in phase_splits:
+        if split['visibility'] == 3:
+            values = list(map(lambda item: split[item], attributes))
+            table.append_row(values)
+    echo(table)
+
+
+def display_challenge_phase_split_list(challenge_id):
+    """
+    Function to display Challenge Phase Splits of a particular challenge.
+    """
+    url = URLS.challenge_phase_split_detail.value
+    url = "{}{}".format(API_HOST_URL, url)
+    url = url.format(challenge_id)
+    headers = get_request_header()
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        if (response.status_code in EVALAI_ERROR_CODES):
+            validate_token(response.json())
+            echo(style("Error: {}".format(response.json()["error"], fg="red", bold=True)))
+        else:
+            echo(err)
+    except requests.exceptions.RequestException as err:
+        echo(err)
+        sys.exit(1)
+
+    phase_splits = response.json()
+    if len(phase_splits) != 0:
+        pretty_print_challenge_phase_split_data(phase_splits)
+    else:
+        echo("Sorry, no Challenge Phase Splits found.")

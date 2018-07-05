@@ -38,12 +38,23 @@ class TestUserRequestWithInvalidToken(BaseTestClass):
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
                       json=invalid_token_data, status=401)
 
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_teams.value),
+                      json=invalid_token_data, status=401)
+
     @responses.activate
     def test_display_all_challenge_lists_when_token_is_invalid(self):
         expected = "\nThe authentication token you are using isn't valid. Please generate it again.\n\n"
         runner = CliRunner()
         result = runner.invoke(challenges)
         response = result.output
+        assert response == expected
+
+    @responses.activate
+    def test_display_participant_challenge_lists_when_token_is_invalid(self):
+        expected = "The authentication token you are using isn't valid. Please generate it again."
+        runner = CliRunner()
+        result = runner.invoke(challenges, ['--host'])
+        response = result.output.strip()
         assert response == expected
 
 

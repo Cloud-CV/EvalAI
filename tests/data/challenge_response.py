@@ -199,3 +199,41 @@ invalid_token = '{"detail": "Invalid token"}'
 
 
 token_expired = '{"detail": "Token has expired"}'
+
+
+challenge_phase_splits = """
+[
+    {
+        "challenge_phase": 4,
+        "challenge_phase_name": "William Phase",
+        "dataset_split": 3,
+        "dataset_split_name": "Split 3",
+        "id": 7,
+        "visibility": 3
+    },
+    {
+        "challenge_phase": 4,
+        "challenge_phase_name": "William Phase",
+        "dataset_split": 4,
+        "dataset_split_name": "Split 4",
+        "id": 8,
+        "visibility": 3
+    },
+    {
+        "challenge_phase": 3,
+        "challenge_phase_name": "Scott Phase",
+        "dataset_split": 3,
+        "dataset_split_name": "Split 3",
+        "id": 5,
+        "visibility": 3
+    },
+    {
+        "challenge_phase": 3,
+        "challenge_phase_name": "Scott Phase",
+        "dataset_split": 4,
+        "dataset_split_name": "Split 4",
+        "id": 6,
+        "visibility": 3
+    }
+]
+"""

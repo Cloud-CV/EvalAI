@@ -7,7 +7,8 @@ from evalai.utils.challenges import (
                                     display_past_challenge_list,
                                     display_participated_or_hosted_challenges,
                                     display_challenge_phase_list,
-                                    display_challenge_phase_detail,)
+                                    display_challenge_phase_detail,
+                                    display_challenge_phase_split_list,)
 from evalai.utils.submissions import display_my_submission_details
 from evalai.utils.teams import participate_in_a_challenge
 from evalai.utils.submissions import make_submission
@@ -132,6 +133,18 @@ def submissions(ctx):
     Invoked by running `evalai challenge CHALLENGE phase PHASE submissions`.
     """
     display_my_submission_details(ctx.challenge_id, ctx.phase_id)
+
+
+@phase.command()
+@click.pass_obj
+def splits(ctx):
+    """
+    View the phase splits of a challenge.
+    """
+    """
+    Invoked by running `evalai challenge CHALLENGE phase PHASE splits`
+    """
+    display_challenge_phase_split_list(ctx.challenge_id)
 
 
 @challenge.command()
