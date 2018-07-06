@@ -17,7 +17,7 @@ challenges = """
                             "description": "Excepturi eligendi minus modi delectus doloreasperiores voluptatem. \
                             Aspernatur itaque vitae repellendus. Natus ut tenetur labore dolores ex repudiandae.",
                             "enable_forum": true,
-                            "end_date": "2019-0925T18:56:42.747145Z",
+                            "end_date": "2019-06-18T20:00:00Z",
                             "evaluation_details": "Amet officia saepe quis tempora magnam eum. Quidem ab \
                             consectetur exercitationem omnis. Nostrumconsequuntur architecto eaque mollitia \
                             ab minima expedita quam. Velit itaque voluptates suscipit aliquam perspiciatis \
@@ -54,7 +54,7 @@ challenges = """
                             provident ipsa cupiditate enim blanditiis autem. Recusandae veronecessitatibus \
                             debitis esse eveniet consequatur. Provident saepe officiis incidunt cum.",
                             "enable_forum": true,
-                            "end_date": "2018-02-02T18:56:42.752795Z",
+                            "end_date": "2019-06-18T20:00:00Z",
                             "evaluation_details": "Adipisci possimus tenetur illum maiores. Laboriosam error \
                             nostrum illum nesciunt cumque officiis suscipit. Occaecati velit fugiat alias \
                             magnamvoluptas voluptatem ad. Repudiandae velit impedit veniam numquam.",

@@ -4,9 +4,13 @@ import sys
 from bs4 import BeautifulSoup
 from beautifultable import BeautifulTable
 from click import echo, style
+from datetime import datetime
 
 from evalai.utils.auth import get_request_header
-from evalai.utils.common import validate_token, convert_UTC_date_to_local
+from evalai.utils.common import (validate_token,
+                                 convert_UTC_date_to_local,
+                                 validate_date_format
+                                 )
 from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL, EVALAI_ERROR_CODES
 
@@ -170,11 +174,21 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
 
         teams = get_participant_or_host_teams(team_url)
         challenges = get_participant_or_host_team_challenges(challenge_url, teams)
-        echo(style("\nParticipated Challenges\n", bold=True))
 
         if len(challenges) != 0:
-            for challenge in challenges:
-                pretty_print_challenge_data(challenge)
+
+            # Filter out past/unapproved/unpublished challenges.
+            challenges = list(filter(lambda challenge:
+                                     validate_date_format(challenge['end_date']) > datetime.now() and
+                                     challenge["approved_by_admin"] and
+                                     challenge["published"],
+                                     challenges))
+            if challenges:
+                echo(style("\nParticipated Challenges\n", bold=True))
+                for challenge in challenges:
+                    pretty_print_challenge_data(challenge)
+            else:
+                echo("Sorry, no challenges found!")
         else:
             echo("Sorry, no challenges found!")
 

@@ -138,8 +138,6 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
     @responses.activate
     def test_display_participant_challenge_lists_with_no_challenge_data(self):
         runner = CliRunner()
-        expected = "\nParticipated Challenges\n\n"
-        self.output = "{}{}".format(expected, self.output)
         result = runner.invoke(challenges, ['--participant'])
         response = result.output
         assert response == self.output
@@ -147,9 +145,8 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
     @responses.activate
     def test_display_participant_and_host_challenge_lists_with_no_challenge_data(self):
         runner = CliRunner()
-        participant_string = "\nParticipated Challenges\n\n"
         host_string = "\nHosted Challenges\n\n"
-        self.output = "{}{}{}{}".format(host_string, self.output, participant_string, self.output)
+        self.output = "{}{}{}".format(host_string, self.output, self.output)
         result = runner.invoke(challenges, ['--participant', '--host'])
         response = result.output
         assert response == self.output
@@ -167,6 +164,72 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
         result = runner.invoke(challenge, ['2', 'leaderboard', '1'])
         response = result.output.rstrip()
         assert response == "Sorry, no Leaderboard results found."
+
+
+class TestParticipantChallengesConditions(BaseTestClass):
+
+    @responses.activate
+    def test_display_participant_challenges_when_challenge_is_not_publicly_available(self):
+
+        challenge_data = json.loads(challenge_response.challenges)
+        participant_team_data = json.loads(challenge_response.challenge_participant_teams)
+
+        for i in range(len(challenge_data["results"])):
+            challenge_data["results"][i]["published"] = False
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value),
+                      json=participant_team_data, status=200)
+
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+                      json=challenge_data, status=200)
+
+        runner = CliRunner()
+        expected = "Sorry, no challenges found!"
+        result = runner.invoke(challenges, ['--participant'])
+        assert result.output.strip() == expected
+
+    @responses.activate
+    def test_display_participant_challenges_when_challenge_is_not_approved_by_admin(self):
+
+        challenge_data = json.loads(challenge_response.challenges)
+        participant_team_data = json.loads(challenge_response.challenge_participant_teams)
+
+        for i in range(len(challenge_data["results"])):
+            challenge_data["results"][i]["approved_by_admin"] = False
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value),
+                      json=participant_team_data, status=200)
+
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+                      json=challenge_data, status=200)
+
+        runner = CliRunner()
+        expected = "Sorry, no challenges found!"
+        result = runner.invoke(challenges, ['--participant'])
+        assert result.output.strip() == expected
+
+    @responses.activate
+    def test_display_participant_challenges_when_challenge_is_not_active(self):
+
+        challenge_data = json.loads(challenge_response.challenges)
+        participant_team_data = json.loads(challenge_response.challenge_participant_teams)
+
+        for i in range(len(challenge_data["results"])):
+            challenge_data["results"][i]["end_date"] = "2017-06-18T20:00:00Z"
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value),
+                      json=participant_team_data, status=200)
+
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+                      json=challenge_data, status=200)
+
+        runner = CliRunner()
+        expected = "Sorry, no challenges found!"
+        result = runner.invoke(challenges, ['--participant'])
+        assert result.output.strip() == expected
 
 
 class TestParticipantOrHostTeamChallenges(BaseTestClass):
