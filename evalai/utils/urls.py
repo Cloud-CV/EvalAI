@@ -17,3 +17,4 @@ class URLS(Enum):
     my_submissions = "/api/jobs/challenge/{}/challenge_phase/{}/submission/"
     make_submission = "/api/jobs/challenge/{}/challenge_phase/{}/submission/"
     get_submission = "/api/jobs/submission/{}"
+    leaderboard = "/api/jobs/challenge_phase_split/{}/leaderboard/"

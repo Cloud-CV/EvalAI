@@ -4,7 +4,7 @@ import responses
 import shutil
 from click.testing import CliRunner
 
-from evalai.challenges import challenges
+from evalai.challenges import challenge, challenges
 from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL, AUTH_TOKEN_DIR
 
@@ -41,13 +41,24 @@ class TestUserRequestWithInvalidToken(BaseTestClass):
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_teams.value),
                       json=invalid_token_data, status=401)
 
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.leaderboard.value).format("1"),
+                      json=invalid_token_data, status=401)
+
+        self.expected = "\nThe authentication token you are using isn't valid. Please generate it again.\n\n"
+
     @responses.activate
     def test_display_all_challenge_lists_when_token_is_invalid(self):
-        expected = "\nThe authentication token you are using isn't valid. Please generate it again.\n\n"
         runner = CliRunner()
         result = runner.invoke(challenges)
         response = result.output
-        assert response == expected
+        assert response == self.expected
+
+    @responses.activate
+    def test_display_leaderboard_when_token_is_invalid(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2', 'leaderboard', '1'])
+        response = result.output
+        assert response == self.expected
 
     @responses.activate
     def test_display_participant_challenge_lists_when_token_is_invalid(self):

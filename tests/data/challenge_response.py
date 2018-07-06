@@ -237,3 +237,120 @@ challenge_phase_splits = """
     }
 ]
 """
+
+
+leaderboard = """
+{
+    "count": 6,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "challenge_phase_split": 189,
+            "filtering_score": 0.8202264740335806,
+            "id": 26652,
+            "leaderboard__schema": {
+                "default_order_by": "score",
+                "labels": [
+                    "score"
+                ]
+            },
+            "result": [
+                0.8202264740335806
+            ],
+            "submission__participant_team__team_name": "cyberagent",
+            "submission__submitted_at": "2018-05-25T05:45:26.215498Z"
+        },
+        {
+            "challenge_phase_split": 189,
+            "filtering_score": 0.686372510737993,
+            "id": 17372,
+            "leaderboard__schema": {
+                "default_order_by": "score",
+                "labels": [
+                    "score"
+                ]
+            },
+            "result": [
+                0.686372510737993
+            ],
+            "submission__participant_team__team_name": "ADVISE (PITT)",
+            "submission__submitted_at": "2018-05-14T02:24:22.639441Z"
+        },
+        {
+            "challenge_phase_split": 189,
+            "filtering_score": 0.6226474033580632,
+            "id": 16133,
+            "leaderboard__schema": {
+                "default_order_by": "score",
+                "labels": [
+                    "score"
+                ]
+            },
+            "result": [
+                0.6226474033580632
+            ],
+            "submission__participant_team__team_name": "VSE (PITT)",
+            "submission__submitted_at": "2018-05-11T21:37:15.490292Z"
+        },
+        {
+            "challenge_phase_split": 189,
+            "filtering_score": 0.5284654431862553,
+            "id": 27346,
+            "leaderboard__schema": {
+                "default_order_by": "score",
+                "labels": [
+                    "score"
+                ]
+            },
+            "result": [
+                0.5284654431862553
+            ],
+            "submission__participant_team__team_name": "planb",
+            "submission__submitted_at": "2018-05-29T16:04:37.491494Z"
+        },
+        {
+            "challenge_phase_split": 189,
+            "filtering_score": 0.24709098008590394,
+            "id": 27407,
+            "leaderboard__schema": {
+                "default_order_by": "score",
+                "labels": [
+                    "score"
+                ]
+            },
+            "result": [
+                0.24709098008590394
+            ],
+            "submission__participant_team__team_name": "titan",
+            "submission__submitted_at": "2018-05-30T09:45:49.672613Z"
+        },
+        {
+            "challenge_phase_split": 189,
+            "filtering_score": 0.20484185864896526,
+            "id": 15304,
+            "leaderboard__schema": {
+                "default_order_by": "score",
+                "labels": [
+                    "score"
+                ]
+            },
+            "result": [
+                0.20484185864896526
+            ],
+            "submission__participant_team__team_name": "idxm",
+            "submission__submitted_at": "2018-05-09T08:51:10.900548Z"
+        }
+    ]
+}
+"""
+
+empty_leaderboard = """
+{
+    "count": 6,
+    "next": null,
+    "previous": null,
+    "results": [
+    ]
+}
+"""

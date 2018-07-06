@@ -10,6 +10,7 @@ from evalai.challenges import (challenge,
                                challenges)
 from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL
+from evalai.utils.common import convert_UTC_date_to_local
 from tests.data import challenge_response, submission_response
 from .base import BaseTestClass
 
@@ -89,6 +90,7 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
 
         participant_team_data = json.loads(challenge_response.challenge_participant_teams)
         host_team_data = json.loads(challenge_response.challenge_host_teams)
+        empty_leaderboard = json.loads(challenge_response.empty_leaderboard)
 
         url = "{}{}"
 
@@ -111,6 +113,9 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format("1"),
                       json=[], status=200)
+
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.leaderboard.value).format("1"),
+                      json=empty_leaderboard, status=200)
 
         self.output = "Sorry, no challenges found!\n"
 
@@ -155,6 +160,13 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
         result = runner.invoke(challenge, ['1', 'phase', '2', 'splits'])
         response = result.output
         assert response == "Sorry, no Challenge Phase Splits found.\n"
+
+    @responses.activate
+    def test_display_leaderboard_with_no_challenge_data(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2', 'leaderboard', '1'])
+        response = result.output.rstrip()
+        assert response == "Sorry, no Leaderboard results found."
 
 
 class TestParticipantOrHostTeamChallenges(BaseTestClass):
@@ -358,6 +370,58 @@ class TestDisplaySubmission(BaseTestClass):
                   "\nError: Invalid value for \"PHASE\": submissions is not a valid integer\n")
         runner = CliRunner()
         result = runner.invoke(challenge, ['2', 'phase', 'submissions'])
+        response = result.output
+        assert response == output
+
+
+class TestDisplayLeaderboard(BaseTestClass):
+
+    def setup(self):
+        json_data = json.loads(challenge_response.leaderboard)
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.leaderboard.value).format("1"),
+                      json=json_data, status=200)
+        self.leaderboard = json_data["results"]
+
+    @responses.activate
+    def test_display_leaderboard(self):
+        attributes = self.leaderboard[0]["leaderboard__schema"]["labels"]
+
+        table = BeautifulTable(max_width=150)
+        attributes = ["Rank", "Participant Team"] + attributes + ["Last Submitted"]
+        table.column_headers = attributes
+
+        for rank, result in enumerate(self.leaderboard, start=1):
+            name = result['submission__participant_team__team_name']
+            scores = result['result']
+            last_submitted = convert_UTC_date_to_local(result['submission__submitted_at'])
+
+            value = [rank, name] + scores + [last_submitted]
+            table.append_row(value)
+
+        output = str(table).rstrip()
+
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2', 'leaderboard', '1'])
+        response = result.output.rstrip()
+        assert response == output
+
+    @responses.activate
+    def test_test_display_leaderboard_with_string_argument(self):
+        output = ("Usage: challenge leaderboard [OPTIONS] CPS\n"
+                  "\nError: Invalid value for \"CPS\": two is not a valid integer\n")
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2', 'leaderboard', 'two'])
+        response = result.output
+        assert response == output
+
+    @responses.activate
+    def test_display_leaderboard_with_single_argument(self):
+        output = ("Usage: challenge leaderboard [OPTIONS] CPS\n"
+                  "\nError: Missing argument \"CPS\".\n")
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2', 'leaderboard'])
         response = result.output
         assert response == output
 

@@ -58,6 +58,8 @@ class TestHTTPErrorRequests(BaseTestClass):
 
         # Submission URLS
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"), status=404)
+        # Leaderboard URLS
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.leaderboard.value).format("1"), status=404)
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.get_submission.value).format("9"), status=404)
 
@@ -191,6 +193,15 @@ class TestHTTPErrorRequests(BaseTestClass):
         response = result.output.rstrip()
         url = "{}{}".format(API_HOST_URL, URLS.challenge_phase_split_detail.value)
         expected = self.expected.format(url).format("1")
+        assert response == expected
+
+    @responses.activate
+    def test_display_leaderboard_for_http_error_404(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2', 'leaderboard', '1'])
+        response = result.output.rstrip()
+        url = "{}{}".format(API_HOST_URL, URLS.leaderboard.value).format("1")
+        expected = self.expected.format(url)
         assert response == expected
 
 
@@ -425,6 +436,10 @@ class TestRequestForExceptions(BaseTestClass):
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format("1"),
                       body=RequestException('...'))
 
+        # Leaderboard URLS
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.leaderboard.value).format("1"),
+                      body=RequestException('...'))
+
     @responses.activate
     def test_display_challenge_list_for_request_exception(self):
         runner = CliRunner()
@@ -527,5 +542,12 @@ class TestRequestForExceptions(BaseTestClass):
     def test_display_challenge_phase_split_list_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenge, ['1', 'phase', '2', 'splits'])
+        response = result.output.strip()
+        assert response == "..."
+
+    @responses.activate
+    def test_display_leaderboard_for_request_exception(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['2', 'leaderboard', '1'])
         response = result.output.strip()
         assert response == "..."

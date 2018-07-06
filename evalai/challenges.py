@@ -8,7 +8,8 @@ from evalai.utils.challenges import (
                                     display_participated_or_hosted_challenges,
                                     display_challenge_phase_list,
                                     display_challenge_phase_detail,
-                                    display_challenge_phase_split_list,)
+                                    display_challenge_phase_split_list,
+                                    display_leaderboard,)
 from evalai.utils.submissions import display_my_submission_details
 from evalai.utils.teams import participate_in_a_challenge
 from evalai.utils.submissions import make_submission
@@ -145,6 +146,19 @@ def splits(ctx):
     Invoked by running `evalai challenge CHALLENGE phase PHASE splits`
     """
     display_challenge_phase_split_list(ctx.challenge_id)
+
+
+@challenge.command()
+@click.pass_obj
+@click.argument('CPS', type=int)
+def leaderboard(ctx, cps):
+    """
+    Displays the Leaderboard to a Challenge Phase Split.
+    """
+    """
+    Invoked by running `evalai challenge CHALLENGE leaderboard CPS`.
+    """
+    display_leaderboard(ctx.challenge_id, cps)
 
 
 @challenge.command()
