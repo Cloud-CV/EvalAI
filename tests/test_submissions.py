@@ -80,10 +80,10 @@ class TestMakeSubmission(BaseTestClass):
 
     @responses.activate
     def test_make_submission_when_file_is_not_valid(self):
-        expected = ("Usage: challenge phase submit [OPTIONS] FILE\n"
-                    "\nError: Invalid value for \"FILE\": Could not open file: file: No such file or directory\n")
+        expected = ("Usage: challenge phase submit [OPTIONS]\n"
+                    "\nError: Invalid value for \"--file\": Could not open file: file: No such file or directory\n")
         runner = CliRunner()
-        result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', 'file'])
+        result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', '--file', 'file'])
         response = result.output
         assert response == expected
 
@@ -98,6 +98,6 @@ class TestMakeSubmission(BaseTestClass):
             with open('test_file.txt', 'w') as f:
                 f.write('1 2 3 4 5 6')
 
-            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "test_file.txt"])
+            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', '--file', "test_file.txt"])
             assert result.exit_code == 0
             assert result.output.strip() == expected

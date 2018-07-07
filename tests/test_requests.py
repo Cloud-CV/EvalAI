@@ -182,7 +182,7 @@ class TestHTTPErrorRequests(BaseTestClass):
             with open('test_file.txt', 'w') as f:
                 f.write('1 2 3 4 5 6')
 
-            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "test_file.txt"])
+            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"])
             response = result.output.rstrip()
             assert response == self.expected.format(url)
 
@@ -233,7 +233,7 @@ class TestSubmissionDetailsWhenObjectDoesNotExist(BaseTestClass):
             with open('test_file.txt', 'w') as f:
                 f.write('1 2 3 4 5 6')
 
-            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "test_file.txt"])
+            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"])
             response = result.output.rstrip()
             assert response == self.expected
 
@@ -534,7 +534,7 @@ class TestRequestForExceptions(BaseTestClass):
             with open('test_file.txt', 'w') as f:
                 f.write('1 2 3 4 5 6')
 
-            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "test_file.txt"])
+            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"])
             response = result.output.strip()
             assert response == "RequestException"
 

@@ -176,7 +176,8 @@ def participate(ctx, team):
 
 @phase.command()
 @click.pass_obj
-@click.argument('FILE', type=click.File('rb'))
+@click.option('--file', type=click.File('rb'),
+              help="File path to the submission file")
 def submit(ctx, file):
     """
     Make submission to a challenge.
