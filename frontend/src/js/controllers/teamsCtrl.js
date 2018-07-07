@@ -236,7 +236,7 @@
 
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
-                    $rootScope.notify("error", "New team couldn't be created.");
+                    $rootScope.notify("error", error.team_name[0]);
                 }
             };
 
