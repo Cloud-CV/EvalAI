@@ -10,7 +10,7 @@ from evalai.challenges import (challenge,
                                challenges)
 from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL
-from evalai.utils.common import convert_UTC_date_to_local
+from evalai.utils.common import convert_UTC_date_to_local, clean_data
 from tests.data import challenge_response, submission_response
 from .base import BaseTestClass
 
@@ -320,28 +320,20 @@ class TestDisplayChallengePhases(BaseTestClass):
 
     @responses.activate
     def test_display_challenge_phase_list(self):
-
-        self.output = ""
-
+        table = BeautifulTable(max_width=150)
+        attributes = ["id", "name", "challenge"]
+        columns_attributes = ["Phase ID", "Phase Name", "Challenge ID", "Description"]
+        table.column_headers = columns_attributes
         for phase in self.phases:
-            br = ("--------------------------------"
-                  "----------------------------------")
-
-            phase_title = "\n{}".format(phase["name"])
-            challenge_id = "Challenge ID: {}".format(str(phase["challenge"]))
-            phase_id = "Phase ID: {}\n\n".format(str(phase["id"]))
-
-            title = "{} {} {}".format(phase_title, challenge_id, phase_id)
-
-            description = "{}\n\n".format(phase["description"])
-            phase = "{}{}{}\n".format(title, description, br)
-
-            self.output += phase
-
+            values = list(map(lambda item: phase[item], attributes))
+            description = clean_data(phase["description"])
+            values.append(description)
+            table.append_row(values)
+        output = str(table)
         runner = CliRunner()
         result = runner.invoke(challenge, ['10', 'phases'])
-        response = result.output
-        assert response == self.output
+        response = result.output.rstrip()
+        assert response == output
 
     @responses.activate
     def test_display_challenge_phase_detail(self):

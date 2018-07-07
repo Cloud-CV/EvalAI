@@ -7,7 +7,8 @@ from click import echo, style
 from datetime import datetime
 
 from evalai.utils.auth import get_request_header
-from evalai.utils.common import (validate_token,
+from evalai.utils.common import (clean_data,
+                                 validate_token,
                                  convert_UTC_date_to_local,
                                  validate_date_format
                                  )
@@ -197,23 +198,16 @@ def pretty_print_all_challenge_phases(phases):
     """
     Function to print all the challenge phases of a challenge
     """
+    table = BeautifulTable(max_width=150)
+    attributes = ["id", "name", "challenge"]
+    columns_attributes = ["Phase ID", "Phase Name", "Challenge ID", "Description"]
+    table.column_headers = columns_attributes
     for phase in phases:
-        br = style("--------------------------------"
-                   "----------------------------------", bold=True)
-
-        phase_title = "\n{}".format(style(phase["name"], bold=True,
-                                          fg="green"))
-        challenge_id = "Challenge ID: {}".format(style(str(phase["challenge"]),
-                                                       bold=True, fg="blue"))
-        phase_id = "Phase ID: {}\n\n".format(style(str(phase["id"]),
-                                                   bold=True, fg="blue"))
-
-        phase_title = "{} {} {}".format(phase_title, challenge_id, phase_id)
-
-        cleaned_desc = BeautifulSoup(phase["description"], "lxml").text
-        description = "{}\n\n".format(cleaned_desc)
-        challenge_phase = "{}{}{}".format(phase_title, description, br)
-        echo(challenge_phase)
+        values = list(map(lambda item: phase[item], attributes))
+        description = clean_data(phase["description"])
+        values.append(description)
+        table.append_row(values)
+    echo(table)
 
 
 def display_challenge_phase_list(challenge_id):

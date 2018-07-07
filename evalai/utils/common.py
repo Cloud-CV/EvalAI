@@ -1,6 +1,7 @@
 import sys
 import click
 
+from bs4 import BeautifulSoup
 from click import echo, style
 from datetime import datetime
 from dateutil import tz
@@ -57,3 +58,12 @@ def convert_UTC_date_to_local(date):
     converted_date = date.astimezone(to_zone)
     date = converted_date.strftime('%D %r')
     return date
+
+
+def clean_data(data):
+    """
+    Strip HTML and clean spaces
+    """
+    data = BeautifulSoup(data, "lxml").text.strip()
+    data = ' '.join(data.split())
+    return data
