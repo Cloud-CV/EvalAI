@@ -182,9 +182,10 @@ class TestHTTPErrorRequests(BaseTestClass):
             with open('test_file.txt', 'w') as f:
                 f.write('1 2 3 4 5 6')
 
-            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"])
+            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"], input="N")
             response = result.output.rstrip()
-            assert response == self.expected.format(url)
+            expected = "Do you want to include the Submission Details? [y/N]: N\n{}".format(self.expected.format(url))
+            assert response == expected
 
     @responses.activate
     def test_display_challenge_phase_split_list_for_http_error_404(self):
@@ -233,9 +234,10 @@ class TestSubmissionDetailsWhenObjectDoesNotExist(BaseTestClass):
             with open('test_file.txt', 'w') as f:
                 f.write('1 2 3 4 5 6')
 
-            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"])
+            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"], input="N")
             response = result.output.rstrip()
-            assert response == self.expected
+            expected = "Do you want to include the Submission Details? [y/N]: N\n{}".format(self.expected)
+            assert response == expected
 
 
 class TestTeamsWhenObjectDoesNotExist(BaseTestClass):
@@ -534,9 +536,10 @@ class TestRequestForExceptions(BaseTestClass):
             with open('test_file.txt', 'w') as f:
                 f.write('1 2 3 4 5 6')
 
-            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"])
-            response = result.output.strip()
-            assert response == "RequestException"
+            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"], input="N")
+            response = result.output.rstrip()
+            expected = "Do you want to include the Submission Details? [y/N]: N\n{}".format("RequestException")
+            assert response == expected
 
     @responses.activate
     def test_display_challenge_phase_split_list_for_request_exception(self):

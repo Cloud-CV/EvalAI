@@ -10,7 +10,7 @@ from evalai.utils.urls import URLS
 from evalai.utils.common import validate_token, convert_UTC_date_to_local
 
 
-def make_submission(challenge_id, phase_id, file):
+def make_submission(challenge_id, phase_id, file, submission_metadata={}):
     """
     Function to submit a file to a challenge
     """
@@ -21,8 +21,8 @@ def make_submission(challenge_id, phase_id, file):
     input_file = {'input_file': file}
     data = {
             'status': 'submitting',
+            **submission_metadata,
            }
-
     try:
         response = requests.post(
                                 url,

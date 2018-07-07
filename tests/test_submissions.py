@@ -88,16 +88,35 @@ class TestMakeSubmission(BaseTestClass):
         assert response == expected
 
     @responses.activate
-    def test_make_submission_when_file_is_valid(self):
+    def test_make_submission_when_file_is_valid_without_metadata(self):
         expected = ("Your file {} with the ID {} is successfully submitted.\n\n"
                     "You can use `evalai submission {}` to view this submission's status.").format("test_file.txt",
                                                                                                    "9", "9")
+        expected = "Do you want to include the Submission Details? [y/N]: N\n\n{}".format(expected)
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            with open('test_file.txt', 'w') as f:
+                f.write('1 2 3 4 5 6')
+
+            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', '--file', 'test_file.txt'], input="N")
+            assert result.exit_code == 0
+            assert result.output.strip() == expected
+
+    @responses.activate
+    def test_make_submission_when_file_is_valid_with_metadata(self):
+        expected = "Do you want to include the Submission Details? [y/N]: Y"
+        expected = "{}\n{}".format(expected, ("Method Name: Test\nMethod Description: "
+                                              "Test\nProject URL: Test\nPublication URL: Test\n"))
+        expected = "{}\n{}".format(expected, ("Your file {} with the ID {} is successfully submitted.\n\n"
+                                              "You can use `evalai submission {}` to view this "
+                                              "submission's status.").format("test_file.txt", "9", "9"))
 
         runner = CliRunner()
         with runner.isolated_filesystem():
             with open('test_file.txt', 'w') as f:
                 f.write('1 2 3 4 5 6')
 
-            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', '--file', "test_file.txt"])
+            result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', '--file', "test_file.txt"],
+                                   input="Y\nTest\nTest\nTest\nTest")
             assert result.exit_code == 0
             assert result.output.strip() == expected

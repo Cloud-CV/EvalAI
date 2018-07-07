@@ -1,5 +1,7 @@
 import click
 
+from click import style
+
 from evalai.utils.challenges import (
                                     display_all_challenge_list,
                                     display_future_challenge_list,
@@ -185,7 +187,14 @@ def submit(ctx, file):
     """
     Invoked by running `evalai challenge CHALLENGE phase PHASE submit FILE`
     """
-    make_submission(ctx.challenge_id, ctx.phase_id, file)
+    submission_metadata = {}
+    if click.confirm('Do you want to include the Submission Details?'):
+        submission_metadata = {}
+        submission_metadata["method_name"] = click.prompt(style('Method Name', fg="yellow"), type=str)
+        submission_metadata["method_description"] = click.prompt(style('Method Description', fg="yellow"), type=str)
+        submission_metadata["project_url"] = click.prompt(style('Project URL', fg="yellow"), type=str)
+        submission_metadata["publication_url"] = click.prompt(style('Publication URL', fg="yellow"), type=str)
+    make_submission(ctx.challenge_id, ctx.phase_id, file, submission_metadata)
 
 
 challenge.add_command(phase)
