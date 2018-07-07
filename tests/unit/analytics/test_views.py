@@ -438,7 +438,8 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-                "submission_count": 3,
+                "submission_count": 4,
+                "participant_team_submission_count": 3,
                 "participant_team_count": 2,
                 "challenge_phase": self.challenge_phase.pk
             }
@@ -456,7 +457,8 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-                "submission_count": 1,
+                "submission_count": 4,
+                "participant_team_submission_count": 1,
                 "participant_team_count": 2,
                 "challenge_phase": self.challenge_phase.pk
             }

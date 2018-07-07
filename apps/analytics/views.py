@@ -120,16 +120,21 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
 
     participant_team = get_participant_team_id_of_user_for_a_challenge(request.user, challenge.pk)
 
-    submissions = Submission.objects.filter(
-        challenge_phase=challenge_phase, challenge_phase__challenge=challenge, participant_team=participant_team)
-    submission_count = submissions.count()
+    # Get total submission count in a challenge phase
     submissions = Submission.objects.filter(
         challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
+    submission_count = submissions.count()
+
+    # Get submission count on the basis of participant team
+    participant_team_submissions = submissions.filter(participant_team=participant_team)
+    participant_team_submission_count = participant_team_submissions.count()
+
+    # Get participant team count
     participant_team_count = submissions.values_list(
         'participant_team', flat=True).distinct().count()
 
     challenge_phase_submission_count = ChallengePhaseSubmissionCount(
-        submission_count, participant_team_count, challenge_phase.pk)
+        submission_count, participant_team_submission_count, participant_team_count, challenge_phase.pk)
     try:
         serializer = ChallengePhaseSubmissionCountSerializer(challenge_phase_submission_count)
         response_data = serializer.data
