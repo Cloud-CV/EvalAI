@@ -1,6 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InputComponent } from './input.component';
+import { GlobalService } from '../global.service';
 
 describe('InputComponent', () => {
   let component: InputComponent;
@@ -8,7 +9,8 @@ describe('InputComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ InputComponent ]
+      declarations: [ InputComponent ],
+      providers: [ GlobalService ]
     })
     .compileComponents();
   }));

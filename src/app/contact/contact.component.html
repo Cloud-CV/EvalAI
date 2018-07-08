@@ -1,0 +1,27 @@
+<app-header-static></app-header-static>
+<div class="container-top container contact-container white">
+  <div class="contact-form">
+    <div class="contact-form-inner">
+      <span class="contact-title">Get in touch</span>
+      <br>
+      <div class="contact-form-elements">
+        <app-input [label]="'Name'" [isRequired]="true" #formgroup></app-input>
+        <app-input [label]="'Email'" [isRequired]="true" [type]="'email'" #formgroup></app-input>
+        <app-input [label]="'Message'" [isRequired]="true" #formgroup></app-input>
+        <span class="btn btn-fire" (click)="formValidate('formgroup')">SEND</span>
+        <div class="contact-links">
+          <table>
+            <tr>
+              <td><a target="_blank" href="https://www.facebook.com/mlcloudcv/"><img src="assets/images/fb.png" /></a></td>
+              <td><a target="_blank" href="https://github.com/Cloud-CV"><img src="assets/images/git_black.png" /></a></td>
+              <td><a target="_blank" href="https://twitter.com/project_cloudcv"><img src="assets/images/twitter_black.png" /></a></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="contact-map">
+  </div>
+</div>
+<app-footer></app-footer>

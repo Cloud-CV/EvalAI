@@ -18,6 +18,7 @@ import 'rxjs/add/operator/mergeMap';
 export class AppComponent implements OnInit, OnDestroy {
   private scrolledState = false;
   globalServiceSubscription: any;
+  globalServiceSubscriptionScrollTop: any;
   constructor(
   @Inject(DOCUMENT) private document: Document,
   public router: Router,
@@ -43,9 +44,16 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
   ngOnInit() {
+    const SELF = this;
+
     this.globalServiceSubscription = this.globalService.change.subscribe(scrolledState => {
       this.scrolledState = scrolledState;
     });
+
+    this.globalServiceSubscriptionScrollTop = this.globalService.scrolltop.subscribe(() => {
+      SELF.document.body.scrollTop = SELF.document.documentElement.scrollTop = 0;
+    });
+
     // set page title form routes data
     this.router.events
         // filter for navigation end
@@ -66,6 +74,11 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe((event) => this.titleService.setTitle(event['title']));
   }
   ngOnDestroy() {
-    this.globalServiceSubscription.unsubscribe();
+    if (this.globalServiceSubscription) {
+      this.globalServiceSubscription.unsubscribe();
+    }
+    if (this.globalServiceSubscriptionScrollTop) {
+      this.globalServiceSubscriptionScrollTop.unsubscribe();
+    }
   }
 }

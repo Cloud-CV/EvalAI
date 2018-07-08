@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { GlobalService } from '../global.service';
 
 @Component({
   selector: 'app-get-involved',
@@ -7,7 +8,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class GetInvolvedComponent implements OnInit {
 
-  constructor() { }
+  constructor(private globalService: GlobalService) { }
   description = 'Thanks for your interest in helping out with the EvalAI\
   project! We\'re a team of volunteers around the world who want to\
   reduce the barrier to entry for doing AI research and make it easier\
@@ -17,6 +18,7 @@ export class GetInvolvedComponent implements OnInit {
   Here are different ways in which how you can help:';
 
   ngOnInit() {
+    this.globalService.scrollToTop();
   }
 
 }

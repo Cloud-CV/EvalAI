@@ -1,4 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { GlobalService } from '../global.service';
 
 @Component({
   selector: 'app-input',
@@ -21,7 +22,7 @@ export class InputComponent implements OnInit {
   value = '';
   message = 'Required field';
   requiredMessage = 'Required field';
-  constructor() {  }
+  constructor(private globalService: GlobalService) {  }
 
   ngOnInit() {
     if (!this.type || this.type === 'email') {
@@ -56,34 +57,15 @@ export class InputComponent implements OnInit {
        this.isValid = this.validate(e).is_valid;
        this.isValid ? this.message = '' : this.message = this.validate(e).message;
     } else if (this.isEmail) {
-       this.isValid = this.validateEmail(e);
+       this.isValid = this.globalService.validateEmail(e);
        this.isValid ? this.message = '' : this.message = 'Enter a valid email';
     } else if (this.type === 'text') {
-       this.isValid = this.validateText(e);
+       this.isValid = this.globalService.validateText(e);
        this.isValid ? this.message = '' : this.message = 'Enter a valid text';
     } else if (this.type === 'password') {
-       this.isValid = this.validatePassword(e);
+       this.isValid = this.globalService.validatePassword(e);
        this.isValid ? this.message = '' : this.message = 'Password minimum 8 characters';
     }
   }
 
-  validateEmail(email) {
-    const RE = new RegExp (['^(([^<>()[\\]\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\.,;:\\s@\"]+)*)',
-                        '|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.',
-                        '[0-9]{1,3}\])|(([a-zA-Z\\-0-9]+\\.)+',
-                        '[a-zA-Z]{2,}))$'].join(''));
-    return RE.test(email);
-  }
-  validateText(text) {
-    if (text.length >= 2) {
-      return true;
-    }
-    return false;
-  }
-  validatePassword(password) {
-    if (password.length >= 8) {
-      return true;
-    }
-    return false;
-  }
 }

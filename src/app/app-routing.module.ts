@@ -3,11 +3,16 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
+import { AuthComponent } from './auth/auth.component';
+import { LoginComponent } from './login/login.component';
+import { SignupComponent } from './signup/signup.component';
+import { ContactComponent } from './contact/contact.component';
 import { GetInvolvedComponent } from './get-involved/get-involved.component';
 import { AboutComponent } from './about/about.component';
 
 const routes: Routes = [
-  { path: '',
+  {
+    path: '',
     component: HomeComponent,
     data: {
       'title': 'EvalAI - Welcome'
@@ -16,7 +21,21 @@ const routes: Routes = [
   { path: 'privacy-policy',
     component: PrivacyPolicyComponent
   },
-  { path: 'get-involved',
+  {
+    path: 'auth',
+    component: AuthComponent,
+    children: [
+      {path: '', redirectTo: 'login', pathMatch: 'full'},
+      {path: 'login', component: LoginComponent},
+      {path: 'signup', component: SignupComponent}
+    ]
+  },
+  {
+    path: 'contact',
+    component: ContactComponent
+  },
+  {
+    path: 'get-involved',
     component: GetInvolvedComponent
   },
   {

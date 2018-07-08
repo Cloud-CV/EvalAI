@@ -1,5 +1,6 @@
 import { Component, OnInit, Inject, HostListener } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { GlobalService } from '../global.service';
 
 @Component({
   selector: 'app-privacy-policy',
@@ -8,7 +9,7 @@ import { DOCUMENT } from '@angular/common';
 })
 export class PrivacyPolicyComponent implements OnInit {
 
-  constructor(@Inject(DOCUMENT) private document: Document) { }
+  constructor(@Inject(DOCUMENT) private document: Document, private globalService: GlobalService) { }
 
   /**
    * Checks if element is visible (called after scroll event)
@@ -42,6 +43,7 @@ export class PrivacyPolicyComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.globalService.scrollToTop();
     this.document['manuallyScrolling'] = false;
     const ID_TEXT = 'privacy-';
     let i = 1;

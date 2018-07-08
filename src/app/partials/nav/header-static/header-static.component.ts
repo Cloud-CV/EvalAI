@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, HostListener } from '@angular/core';
-import {GlobalService} from '../../../global.service';
-import {AuthService} from '../../../services/auth.service';
+import { GlobalService } from '../../../global.service';
+import { AuthService } from '../../../services/auth.service';
 import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 

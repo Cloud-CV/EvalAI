@@ -15,6 +15,9 @@ body {
   }
 }
 
+.go {
+  -webkit-animation-fill-mode: forwards;
+}
 
 /*Font weights*/
 
@@ -73,9 +76,6 @@ body {
 }
 
 
-
-
-
 /*anchors*/
 
 a {
@@ -102,9 +102,6 @@ a.light-link {
 .pointer {
   cursor: pointer;
 }
-
-
-
 
 
 /*list styles*/
@@ -135,8 +132,6 @@ ul {
 }
 
 
-
-
 /*alignment*/
 
 .left {
@@ -151,12 +146,18 @@ ul {
   clear: both;
 }
 
+
+.align-left {
+  text-align: left;
+}
+
 .align-center {
   text-align: center;
 }
 
-
-
+.align-right {
+  text-align: right;
+}
 
 /*color*/
 
@@ -190,8 +191,6 @@ ul {
     padding-top: 100px;
   }
 }
-
-
 
 /*Buttons*/
 
@@ -244,3 +243,4 @@ ul {
     color: black;
   }
 }
+
