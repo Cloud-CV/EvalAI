@@ -9,7 +9,7 @@ from evalai.challenges import challenge
 
 from tests.data import teams_response
 
-from evalai.utils.challenges import API_HOST_URL
+from evalai.utils.config import API_HOST_URL
 from evalai.utils.urls import URLS
 
 

@@ -4,8 +4,8 @@ import sys
 from beautifultable import BeautifulTable
 from click import echo, style
 
-from evalai.utils.auth import get_request_header
-from evalai.utils.config import API_HOST_URL, EVALAI_ERROR_CODES
+from evalai.utils.auth import get_request_header, get_host_url
+from evalai.utils.config import EVALAI_ERROR_CODES
 from evalai.utils.urls import URLS
 from evalai.utils.common import validate_token, convert_UTC_date_to_local
 
@@ -14,7 +14,7 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
     """
     Function to submit a file to a challenge
     """
-    url = "{}{}".format(API_HOST_URL, URLS.make_submission.value)
+    url = "{}{}".format(get_host_url(), URLS.make_submission.value)
     url = url.format(challenge_id, phase_id)
 
     headers = get_request_header()
@@ -76,7 +76,7 @@ def display_my_submission_details(challenge_id, phase_id):
     Function to display the details of a particular submission.
     """
     url = URLS.my_submissions.value
-    url = "{}{}".format(API_HOST_URL, url)
+    url = "{}{}".format(get_host_url(), url)
     url = url.format(challenge_id, phase_id)
     headers = get_request_header()
 
@@ -121,7 +121,7 @@ def display_submission_details(submission_id):
     """
     Function to display details of a particular submission
     """
-    url = "{}{}".format(API_HOST_URL, URLS.get_submission.value)
+    url = "{}{}".format(get_host_url(), URLS.get_submission.value)
     url = url.format(submission_id)
 
     headers = get_request_header()

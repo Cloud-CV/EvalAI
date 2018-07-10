@@ -388,7 +388,7 @@ class TestRequestForExceptions(BaseTestClass):
 
         # Challenge URLS
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value), body=Exception('...'))
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value), body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.past_challenge_list.value), body=Exception('...'))
 
@@ -446,7 +446,7 @@ class TestRequestForExceptions(BaseTestClass):
     def test_display_challenge_list_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenges)
-        assert result.exit_code == -1
+        assert result.output.strip() == "..."
 
     @responses.activate
     def test_display_past_challenge_list_for_request_exception(self):
@@ -458,7 +458,7 @@ class TestRequestForExceptions(BaseTestClass):
     def test_display_ongoing_challenge_list_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['ongoing'])
-        assert result.exit_code == -1
+        assert result.output.strip() == "..."
 
     @responses.activate
     def test_display_future_challenge_list_for_request_exception(self):

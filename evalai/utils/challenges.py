@@ -6,14 +6,14 @@ from beautifultable import BeautifulTable
 from click import echo, style
 from datetime import datetime
 
-from evalai.utils.auth import get_request_header
+from evalai.utils.auth import get_request_header, get_host_url
 from evalai.utils.common import (clean_data,
                                  validate_token,
                                  convert_UTC_date_to_local,
                                  validate_date_format
                                  )
+from evalai.utils.config import EVALAI_ERROR_CODES
 from evalai.utils.urls import URLS
-from evalai.utils.config import API_HOST_URL, EVALAI_ERROR_CODES
 
 
 def pretty_print_challenge_data(challenge):
@@ -42,7 +42,6 @@ def display_challenges(url):
     """
     Function to fetch & display the challenge list based on API
     """
-
     header = get_request_header()
     try:
         response = requests.get(url, headers=header)
@@ -70,7 +69,7 @@ def display_all_challenge_list():
     """
     Displays the list of all challenges from the backend
     """
-    url = "{}{}".format(API_HOST_URL, URLS.challenge_list.value)
+    url = "{}{}".format(get_host_url(), URLS.challenge_list.value)
     display_challenges(url)
 
 
@@ -78,7 +77,7 @@ def display_past_challenge_list():
     """
     Displays the list of past challenges from the backend
     """
-    url = "{}{}".format(API_HOST_URL, URLS.past_challenge_list.value)
+    url = "{}{}".format(get_host_url(), URLS.past_challenge_list.value)
     display_challenges(url)
 
 
@@ -86,7 +85,7 @@ def display_ongoing_challenge_list():
     """
     Displays the list of ongoing challenges from the backend
     """
-    url = "{}{}".format(API_HOST_URL, URLS.challenge_list.value)
+    url = "{}{}".format(get_host_url(), URLS.challenge_list.value)
     display_challenges(url)
 
 
@@ -94,7 +93,7 @@ def display_future_challenge_list():
     """
     Displays the list of future challenges from the backend
     """
-    url = "{}{}".format(API_HOST_URL, URLS.future_challenge_list.value)
+    url = "{}{}".format(get_host_url(), URLS.future_challenge_list.value)
     display_challenges(url)
 
 
@@ -152,9 +151,9 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
     challenges = []
 
     if is_host:
-        team_url = "{}{}".format(API_HOST_URL,
+        team_url = "{}{}".format(get_host_url(),
                                  URLS.host_teams.value)
-        challenge_url = "{}{}".format(API_HOST_URL,
+        challenge_url = "{}{}".format(get_host_url(),
                                       URLS.host_challenges.value)
 
         teams = get_participant_or_host_teams(team_url)
@@ -168,9 +167,9 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
             echo("Sorry, no challenges found!")
 
     if is_participant:
-        team_url = "{}{}".format(API_HOST_URL,
+        team_url = "{}{}".format(get_host_url(),
                                  URLS.participant_teams.value)
-        challenge_url = "{}{}".format(API_HOST_URL,
+        challenge_url = "{}{}".format(get_host_url(),
                                       URLS.participant_challenges.value)
 
         teams = get_participant_or_host_teams(team_url)
@@ -215,7 +214,7 @@ def display_challenge_phase_list(challenge_id):
     Function to display all challenge phases for a particular challenge.
     """
     url = URLS.challenge_phase_list.value
-    url = "{}{}".format(API_HOST_URL, url)
+    url = "{}{}".format(get_host_url(), url)
     url = url.format(challenge_id)
     headers = get_request_header()
     try:
@@ -280,7 +279,7 @@ def display_challenge_phase_detail(challenge_id, phase_id):
     Function to print details of a challenge phase.
     """
     url = URLS.challenge_phase_detail.value
-    url = "{}{}".format(API_HOST_URL, url)
+    url = "{}{}".format(get_host_url(), url)
     url = url.format(challenge_id, phase_id)
     headers = get_request_header()
 
@@ -325,7 +324,7 @@ def display_challenge_phase_split_list(challenge_id):
     Function to display Challenge Phase Splits of a particular challenge.
     """
     url = URLS.challenge_phase_split_detail.value
-    url = "{}{}".format(API_HOST_URL, url)
+    url = "{}{}".format(get_host_url(), url)
     url = url.format(challenge_id)
     headers = get_request_header()
     try:
@@ -371,7 +370,7 @@ def display_leaderboard(challenge_id, phase_split_id):
     """
     Function to display the Leaderboard of a particular CPS.
     """
-    url = "{}{}".format(API_HOST_URL, URLS.leaderboard.value)
+    url = "{}{}".format(get_host_url(), URLS.leaderboard.value)
     url = url.format(phase_split_id)
     headers = get_request_header()
     try:

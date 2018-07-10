@@ -9,7 +9,7 @@ from evalai.challenges import challenge
 from evalai.submissions import submission
 from tests.data import submission_response
 
-from evalai.utils.challenges import API_HOST_URL
+from evalai.utils.config import API_HOST_URL
 from evalai.utils.urls import URLS
 from .base import BaseTestClass
 
