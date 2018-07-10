@@ -32,6 +32,9 @@ class PhaseGroup(click.Group):
     Fetch the submcommand data in the phase group.
     """
     def invoke(self, ctx):
+        if "--json" in tuple(ctx.protected_args):
+            ctx.protected_args = []
+            ctx.params["json"] = True
         subcommand = tuple(ctx.protected_args)
         ctx.obj.subcommand = subcommand
         super(PhaseGroup, self).invoke(ctx)
@@ -113,8 +116,10 @@ def phases(ctx):
 
 @click.group(invoke_without_command=True, cls=PhaseGroup)
 @click.pass_obj
+@click.option('--json', is_flag=True,
+              help="Get phase details in JSON format.")
 @click.argument('PHASE', type=int)
-def phase(ctx, phase):
+def phase(ctx, json, phase):
     """
     List phase details of a phase
     """
@@ -123,7 +128,7 @@ def phase(ctx, phase):
     """
     ctx.phase_id = phase
     if len(ctx.subcommand) == 0:
-        display_challenge_phase_detail(ctx.challenge_id, phase)
+        display_challenge_phase_detail(ctx.challenge_id, phase, json)
 
 
 @phase.command()

@@ -378,6 +378,14 @@ class TestDisplayChallengePhases(BaseTestClass):
         response = result.output
         assert response == phase
 
+    @responses.activate
+    def test_display_challenge_phase_detail_with_json_flag(self):
+        expected = json.dumps(self.phase, indent=4, sort_keys=True)
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['10', 'phase', '20', '--json'])
+        response = result.output.strip()
+        assert response == expected
+
 
 class TestDisplaySubmission(BaseTestClass):
 
