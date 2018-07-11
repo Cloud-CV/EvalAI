@@ -464,6 +464,166 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(ChallengePhaseSubmissionAnalyticsTest, self).setUp()
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk})
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission2 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team.created_by,
+            status='running',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission3 = Submission.objects.create(
+            participant_team=self.participant_team3,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team3.created_by,
+            status='failed',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission4 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team.created_by,
+            status='cancelled',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission5 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team.created_by,
+            status='finished',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission6 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team.created_by,
+            status='finished',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission7 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.participant_team.created_by,
+            status='submitting',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+    def test_get_challenge_phase_submission_analysis_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+                                kwargs={'challenge_pk': self.challenge.pk+10,
+                                        'challenge_phase_pk': self.challenge_phase.pk})
+
+        expected = {
+            "detail": "Challenge {} does not exist".format(self.challenge.pk+10)
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_challenge_phase_submission_analysis_when_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk+10})
+
+        expected = {
+            "detail": "ChallengePhase {} does not exist".format(self.challenge_phase.pk+10)
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_challenge_phase_submission_analysis(self):
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk})
+        setattr(self.submission, 'status', 'submitted')
+        setattr(self.submission2, 'status', 'running')
+        setattr(self.submission3, 'status', 'failed')
+        setattr(self.submission4, 'status', 'cancelled')
+        setattr(self.submission5, 'status', 'finished')
+        setattr(self.submission6, 'status', 'finished')
+        setattr(self.submission7, 'status', 'submitting')
+        self.submission.save()
+        self.submission2.save()
+        self.submission3.save()
+        self.submission4.save()
+        self.submission5.save()
+        self.submission6.save()
+        self.submission7.save()
+
+        expected = {
+                "total_submission_count": 7,
+                "participant_team_count": 2,
+                "submission_status_counts": {
+                    'finished': 2,
+                    'submitted': 1,
+                    'failed': 1,
+                    'running': 1,
+                    'submitting': 1,
+                    'cancelled': 1
+                },
+                "challenge_phase": self.challenge_phase.pk
+            }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 class GetLastSubmissionTimeTest(BaseAPITestClass):
 
     def setUp(self):

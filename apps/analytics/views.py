@@ -215,7 +215,7 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_pk):
     """
