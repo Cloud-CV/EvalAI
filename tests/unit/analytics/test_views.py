@@ -345,10 +345,10 @@ class GetSubmissionCountForChallengeTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
 
 
-class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
+class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
 
     def setUp(self):
-        super(ChallengePhaseSubmissionAnalysisTest, self).setUp()
+        super(ChallengePhaseSubmissionCountByTeamTest, self).setUp()
         self.url = reverse_lazy('analytics:get_challenge_phase_submission_count_by_team',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
