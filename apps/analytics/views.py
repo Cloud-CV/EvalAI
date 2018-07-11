@@ -245,7 +245,7 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     failed_count = submissions.filter(status='failed').count()
 
     cancelled_count = submissions.filter(status='cancelled').count()
-    
+
     finished_count = submissions.filter(status='finished').count()
 
     submitting_count = submissions.filter(status='submitting').count()
