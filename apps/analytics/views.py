@@ -110,7 +110,11 @@ def get_submission_count(request, challenge_pk, duration):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_submission_count_by_team(request, challenge_pk, challenge_phase_pk):
     """
+<<<<<<< HEAD
     Returns number of submissions done by a participant team in a challenge phase
+=======
+    API to fetch the submissions count in a challenge phase for a participant team.
+>>>>>>> Restrict API to give results for only participant team
     """
     challenge = get_challenge_model(challenge_pk)
 

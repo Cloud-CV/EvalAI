@@ -348,7 +348,11 @@ class GetSubmissionCountForChallengeTest(BaseAPITestClass):
 class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
 
     def setUp(self):
+<<<<<<< HEAD
         super(ChallengePhaseSubmissionCountByTeamTest, self).setUp()
+=======
+        super(ChallengePhaseSubmissionAnalysisTest, self).setUp()
+>>>>>>> Restrict API to give results for only participant team
         self.url = reverse_lazy('analytics:get_challenge_phase_submission_count_by_team',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
