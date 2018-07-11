@@ -349,7 +349,7 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
 
     def setUp(self):
         super(ChallengePhaseSubmissionAnalysisTest, self).setUp()
-        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_count_by_team',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
@@ -405,8 +405,8 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
             is_public=True,
         )
 
-    def test_get_challenge_phase_submission_analysis_when_challenge_does_not_exist(self):
-        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+    def test_get_challenge_phase_submission_count_by_team_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_count_by_team',
                                 kwargs={'challenge_pk': self.challenge.pk+10,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
@@ -417,8 +417,8 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phase_submission_analysis_when_challenge_phase_does_not_exist(self):
-        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+    def test_get_challenge_phase_submission_count_by_team_when_challenge_phase_does_not_exist(self):
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_count_by_team',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk+10})
 
@@ -429,17 +429,16 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phase_submission_analysis_for_participant_team_1(self):
+    def test_get_challenge_phase_submission_count_by_team_for_participant_team_1(self):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.participant_teams.add(self.participant_team3)
 
-        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_count_by_team',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-                "submission_count": 3,
-                "participant_team_count": 2,
+                "participant_team_submission_count": 3,
                 "challenge_phase": self.challenge_phase.pk
             }
         self.client.force_authenticate(user=self.user2)
@@ -447,17 +446,16 @@ class ChallengePhaseSubmissionAnalysisTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_phase_submission_analysis_for_participant_team_3(self):
+    def test_get_challenge_phase_submission_count_by_team_for_participant_team_3(self):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.participant_teams.add(self.participant_team3)
 
-        self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
+        self.url = reverse_lazy('analytics:get_challenge_phase_submission_count_by_team',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-                "submission_count": 1,
-                "participant_team_count": 2,
+                "participant_team_submission_count": 1,
                 "challenge_phase": self.challenge_phase.pk
             }
         self.client.force_authenticate(user=self.user3)

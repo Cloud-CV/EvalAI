@@ -108,11 +108,9 @@ def get_submission_count(request, challenge_pk, duration):
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_pk):
+def get_challenge_phase_submission_count_by_team(request, challenge_pk, challenge_phase_pk):
     """
-    API to fetch
-    1. The submissions count for challenge phase.
-    2. The participated team count for challenge phase.
+    API to fetch the submissions count in a challenge phase for a participant team.
     """
     challenge = get_challenge_model(challenge_pk)
 
@@ -122,14 +120,10 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
 
     submissions = Submission.objects.filter(
         challenge_phase=challenge_phase, challenge_phase__challenge=challenge, participant_team=participant_team)
-    submission_count = submissions.count()
-    submissions = Submission.objects.filter(
-        challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
-    participant_team_count = submissions.values_list(
-        'participant_team', flat=True).distinct().count()
+    participant_team_submission_count = submissions.count()
 
     challenge_phase_submission_count = ChallengePhaseSubmissionCount(
-        submission_count, participant_team_count, challenge_phase.pk)
+        participant_team_submission_count, challenge_phase.pk)
     try:
         serializer = ChallengePhaseSubmissionCountSerializer(challenge_phase_submission_count)
         response_data = serializer.data
