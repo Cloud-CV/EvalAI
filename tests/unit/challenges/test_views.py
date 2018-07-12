@@ -1418,10 +1418,10 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
     def test_error_challenge_phase_does_not_exist_for_a_challenge(self):
         self.url = reverse_lazy('challenges:get_challenge_phase_detail',
                                 kwargs={'challenge_pk': self.challenge.pk,
-                                        'pk': self.challenge_phase.pk})
+                                        'pk': self.challenge_phase2.pk})
 
         expected = {
-            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase2.pk)
         }
 
         response = self.client.get(self.url, {})
