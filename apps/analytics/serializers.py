@@ -3,15 +3,13 @@ from rest_framework import serializers
 
 class ChallengePhaseSubmissionCount(object):
 
-    def __init__(self, submission_count, participant_team_count, challenge_phase_pk):
-        self.submission_count = submission_count
-        self.participant_team_count = participant_team_count
+    def __init__(self, participant_team_submission_count, challenge_phase_pk):
+        self.participant_team_submission_count = participant_team_submission_count
         self.challenge_phase = challenge_phase_pk
 
 
 class ChallengePhaseSubmissionCountSerializer(serializers.Serializer):
-    submission_count = serializers.IntegerField()
-    participant_team_count = serializers.IntegerField()
+    participant_team_submission_count = serializers.IntegerField()
     challenge_phase = serializers.IntegerField()
 
 
