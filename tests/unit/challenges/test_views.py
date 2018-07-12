@@ -1404,7 +1404,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                                         'pk': self.challenge_phase.pk})
 
         expected = {
-            'error': 'Challenge Phase {} does not exist'.format(pk)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk)
         }
 
         response = self.client.get(self.url, {})
@@ -1580,7 +1580,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'pk': self.challenge_phase.pk + 1})
         expected = {
-            'error': 'Challenge Phase {} does not exist'.format(pk)
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk + 1)
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
