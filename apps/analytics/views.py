@@ -262,8 +262,11 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     flagged_and_public_submissions = {'is_flagged_count': flagged_submissions_count,
                                       'is_public_count': public_submissions_count}
 
-    challenge_phase_submission_count = ChallengePhaseSubmissionAnalytics(
-        total_submissions, participant_team_count, submission_status_counts, flagged_and_public_submissions, challenge_phase.pk)
+    challenge_phase_submission_count = ChallengePhaseSubmissionAnalytics(total_submissions,
+                                                                         participant_team_count,
+                                                                         submission_status_counts,
+                                                                         flagged_and_public_submissions,
+                                                                         challenge_phase.pk)
     try:
         serializer = ChallengePhaseSubmissionAnalyticsSerializer(challenge_phase_submission_count)
         response_data = serializer.data
