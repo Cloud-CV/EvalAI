@@ -8,6 +8,7 @@ from evalai.utils.challenges import (
                                     display_ongoing_challenge_list,
                                     display_past_challenge_list,
                                     display_participated_or_hosted_challenges,
+                                    display_challenge_details,
                                     display_challenge_phase_list,
                                     display_challenge_phase_detail,
                                     display_challenge_phase_split_list,
@@ -59,7 +60,7 @@ def challenges(ctx, participant, host):
         display_all_challenge_list()
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.pass_context
 @click.argument('CHALLENGE', type=int)
 def challenge(ctx, challenge):
@@ -67,6 +68,8 @@ def challenge(ctx, challenge):
     Display challenge specific details.
     """
     ctx.obj = Challenge(challenge=challenge)
+    if ctx.invoked_subcommand is None:
+        display_challenge_details(challenge)
 
 
 @challenges.command()

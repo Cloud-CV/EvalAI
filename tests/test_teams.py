@@ -77,10 +77,10 @@ class TestTeams:
 
     @responses.activate
     def test_participate_in_a_challenge_with_single_argument(self):
-        output = ("Usage: challenge [OPTIONS] CHALLENGE COMMAND [ARGS]...\n"
-                  "\nError: Missing command.\n")
+        output = ("Usage: challenge participate [OPTIONS] TEAM\n"
+                  "\nError: Missing argument \"TEAM\".\n")
         runner = CliRunner()
-        result = runner.invoke(challenge, ['2'])
+        result = runner.invoke(challenge, ['2', 'participate'])
         response = result.output
         assert response == output
 

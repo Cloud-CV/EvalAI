@@ -78,6 +78,44 @@ challenges = """
 """
 
 
+challenge_details = """
+        {
+            "allowed_email_domains": [],
+            "anonymous_leaderboard": false,
+            "approved_by_admin": true,
+            "blocked_email_domains": [],
+            "creator": {
+                "created_by": "host",
+                "id": 1,
+                "team_name": "Lake Cynthiabury Host Team",
+                "team_url": ""
+            },
+            "description": "Ex voluptatum accusantium dignissimos voluptatem eveniet enim non \
+            aspernatur. Expedita consequatur velit vitae enim. Vel asperiores deserunt suscipit \
+            non eaque veritatis labore. A atque illo fuga suscipit mollitia dignissimos assumenda.",
+            "enable_forum": true,
+            "end_date": "2019-11-11T06:31:31.594239Z",
+            "evaluation_details": "Perspiciatis harum molestias iste corporis \
+            aspernatur sit doloribus. Occaecati aliquid ullam odit aperiam in. Cupiditate consectetur \
+            ab doloremque dolore.",
+            "id": 1,
+            "image": null,
+            "is_active": true,
+            "published": true,
+            "short_description": "Nisi vero sint ipsam recusandae. Eveniet provident expedita iusto \
+            atque delectus et recusandae. Odio blanditiis qui alias autem minima blanditiis. Iste et \
+            ipsa minima placeat cupiditate fuga.",
+            "start_date": "2018-03-21T06:31:31.594224Z",
+            "submission_guidelines": "Ratione vitae dolor eos officia rem exercitationem. \
+            Ipsam pariatur a alias mollitia perspiciatis. Ipsa sit esse officiis quam eaque.",
+            "terms_and_conditions": "Officia dolores non labore nihil exercitationem minima. \
+            Esse repellendus accusamus minus nisi. Commodi cum adipisci molestias ipsum beatae qui \
+            enim porro. Cumque saepe distinctio repellendus et sed labore ratione aspernatur.",
+            "title": "Sarah Challenge"
+        }
+"""
+
+
 challenge_participant_teams = """
                 {
                     "count": 1,

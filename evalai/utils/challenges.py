@@ -194,6 +194,47 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
             echo("Sorry, no challenges found!")
 
 
+def pretty_print_challenge_details(challenge):
+    table = BeautifulTable(max_width=200)
+    attributes = ["description", "submission_guidelines", "evaluation_details", "terms_and_conditions"]
+    table.column_headers = ["Start Date", "End Date", "Description", "Submission Guidelines",
+                            "Evaluation Details", "Terms and Conditions"]
+    values = []
+    start_date = convert_UTC_date_to_local(challenge["start_date"]).split(" ")[0]
+    end_date = convert_UTC_date_to_local(challenge["end_date"]).split(" ")[0]
+    values.extend([start_date, end_date])
+    values.extend(list(map(lambda item: clean_data(challenge[item]), attributes)))
+    table.append_row(values)
+    echo(table)
+
+
+def display_challenge_details(challenge):
+    """
+    Function to display challenge details.
+    """
+    url = URLS.challenge_details.value
+    url = "{}{}".format(get_host_url(), url)
+    url = url.format(challenge)
+
+    header = get_request_header()
+    try:
+        response = requests.get(url, headers=header)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        if (response.status_code in EVALAI_ERROR_CODES):
+            validate_token(response.json())
+            echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
+        else:
+            echo(err)
+        sys.exit(1)
+    except requests.exceptions.RequestException as err:
+        echo(err)
+        sys.exit(1)
+
+    response = response.json()
+    pretty_print_challenge_details(response)
+
+
 def pretty_print_all_challenge_phases(phases):
     """
     Function to print all the challenge phases of a challenge

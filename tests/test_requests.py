@@ -37,6 +37,8 @@ class TestHTTPErrorRequests(BaseTestClass):
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
                       status=404)
 
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_details.value.format("1")), status=404)
+
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_challenges.value).format("2"), status=404)
 
         # Teams URLS
@@ -194,6 +196,15 @@ class TestHTTPErrorRequests(BaseTestClass):
         response = result.output.rstrip()
         url = "{}{}".format(API_HOST_URL, URLS.challenge_phase_split_detail.value)
         expected = self.expected.format(url).format("1")
+        assert response == expected.format(url)
+
+    @responses.activate
+    def test_display_challenge_details_for_http_error_404(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ["1"])
+        response = result.output
+        url = "{}{}".format(API_HOST_URL, URLS.challenge_details.value).format("1")
+        expected = "{}{}".format(self.expected.format(url), "\n")
         assert response == expected
 
     @responses.activate
@@ -390,11 +401,13 @@ class TestRequestForExceptions(BaseTestClass):
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value), body=RequestException('...'))
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.past_challenge_list.value), body=Exception('...'))
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.past_challenge_list.value),
+                      body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value), body=Exception('...'))
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.future_challenge_list.value), body=Exception('...'))
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.future_challenge_list.value),
+                      body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value), body=Exception('...'))
 
@@ -405,6 +418,9 @@ class TestRequestForExceptions(BaseTestClass):
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_challenges.value).format("2"),
                       body=Exception('...'))
+
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_details.value.format("1")),
+                      body=RequestException('...'))
 
         # Teams URLS
 
@@ -446,25 +462,25 @@ class TestRequestForExceptions(BaseTestClass):
     def test_display_challenge_list_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenges)
-        assert result.output.strip() == "..."
+        assert result.exit_code == 1
 
     @responses.activate
     def test_display_past_challenge_list_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['past'])
-        assert result.exit_code == -1
+        assert result.exit_code == 1
 
     @responses.activate
     def test_display_ongoing_challenge_list_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['ongoing'])
-        assert result.output.strip() == "..."
+        assert result.exit_code == 1
 
     @responses.activate
     def test_display_future_challenge_list_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['future'])
-        assert result.exit_code == -1
+        assert result.exit_code == 1
 
     @responses.activate
     def test_display_host_challenge_list_for_request_exception(self):
@@ -554,3 +570,9 @@ class TestRequestForExceptions(BaseTestClass):
         result = runner.invoke(challenge, ['2', 'leaderboard', '1'])
         response = result.output.strip()
         assert response == "..."
+
+    @responses.activate
+    def test_display_challenge_details_for_request_exception(self):
+        runner = CliRunner()
+        result = runner.invoke(challenge, ["1"])
+        assert result.output.strip() == "..."

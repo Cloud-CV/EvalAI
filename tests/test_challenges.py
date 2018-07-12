@@ -84,6 +84,37 @@ class TestDisplayChallenges(BaseTestClass):
         assert response_table == self.output
 
 
+class TestDisplayChallengeDetails(BaseTestClass):
+
+    def setup(self):
+
+        self.challenge_data = json.loads(challenge_response.challenge_details)
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_details.value.format("1")),
+                      json=self.challenge_data, status=200)
+
+    @responses.activate
+    def test_display_challenge_details(self):
+        table = BeautifulTable(max_width=200)
+        attributes = ["description", "submission_guidelines", "evaluation_details", "terms_and_conditions"]
+        column_attributes = ["Start Date", "End Date", "Description", "Submission Guidelines",
+                             "Evaluation Details", "Terms and Conditions"]
+        table.column_headers = column_attributes
+        values = []
+        start_date = convert_UTC_date_to_local(self.challenge_data["start_date"]).split(" ")[0]
+        end_date = convert_UTC_date_to_local(self.challenge_data["end_date"]).split(" ")[0]
+        values.extend([start_date, end_date])
+        values.extend(list(map(lambda item: clean_data(self.challenge_data[item]), attributes)))
+        table.append_row(values)
+        expected = str(table)
+
+        runner = CliRunner()
+        result = runner.invoke(challenge, ["1"])
+        response = result.output.strip()
+        assert response == expected
+
+
 class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
 
     def setup(self):
@@ -519,10 +550,10 @@ class TestDisplayChallengePhaseSplit(BaseTestClass):
 
     @responses.activate
     def test_display_challenge_phase_split_list_with_a_single_argument(self):
-        output = ("Usage: challenge [OPTIONS] CHALLENGE COMMAND [ARGS]...\n"
-                  "\nError: Missing command.\n")
+        output = ("Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
+                  "\nError: Missing argument \"PHASE\".\n")
         runner = CliRunner()
-        result = runner.invoke(challenge, ['2'])
+        result = runner.invoke(challenge, ['2', 'phase'])
         response = result.output
         assert response == output
 
