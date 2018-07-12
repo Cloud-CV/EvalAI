@@ -438,7 +438,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-                "participant_team_submission_count": 3,
+                "participant_team_submission_count": self.participant_team.submissions.count(),
                 "challenge_phase": self.challenge_phase.pk
             }
         self.client.force_authenticate(user=self.user2)
@@ -455,7 +455,7 @@ class ChallengePhaseSubmissionCountByTeamTest(BaseAPITestClass):
                                         'challenge_phase_pk': self.challenge_phase.pk})
 
         expected = {
-                "participant_team_submission_count": 1,
+                "participant_team_submission_count": self.participant_team3.submissions.count(),
                 "challenge_phase": self.challenge_phase.pk
             }
         self.client.force_authenticate(user=self.user3)
