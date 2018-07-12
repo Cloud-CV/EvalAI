@@ -118,7 +118,7 @@
                                         if (status == 200) {
                                             for(var i=0; i<challengePhaseId.length; i++) {
                                                 if (challengePhaseId[i] == details.challenge_phase) {
-                                                    vm.totalSubmission[challengePhaseId[i]] = details.total_submission_count;
+                                                    vm.totalSubmission[challengePhaseId[i]] = details.total_submissions;
                                                     vm.totalParticipatedTeams[challengePhaseId[i]] = details.participant_team_count;
                                                     i++;
                                                     break;

@@ -112,11 +112,7 @@ def get_submission_count(request, challenge_pk, duration):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_submission_count_by_team(request, challenge_pk, challenge_phase_pk):
     """
-<<<<<<< HEAD
     Returns number of submissions done by a participant team in a challenge phase
-=======
-    API to fetch the submissions count in a challenge phase for a participant team.
->>>>>>> Restrict API to give results for only participant team
     """
     challenge = get_challenge_model(challenge_pk)
 
@@ -219,10 +215,11 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_pk):
     """
-    API to fetch
-    1. The total submissions count in a challenge phase.
-    2. The participant team count in a challenge phase.
-    3. Submission count for Submitted/Running/Failed/Cancelled/Finished/Submitting submissions.
+    Returns
+    1. Total number of submissions in a challenge phase
+    2. Number of teams which made submissions in a challenge phase
+    3. Number of submissions with status a)Submitting, b)Submitted, c)Running, d)Failed, e)Cancelled, f)Finished status
+    4. Number of flagged & public submissions in challenge phase
     """
 
     challenge = get_challenge_model(challenge_pk)
@@ -232,12 +229,14 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     # Get the total submissions in a challenge phase
     submissions = Submission.objects.filter(
         challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
-    submission_count = submissions.count()
+    total_submissions = submissions.count()
 
     # Get the total participant teams in a challenge phase
-    participant_team_count = submissions.values_list('participant_team', flat=True).distinct().count()
+    participant_team_count = submissions.values('participant_team').distinct().count()
 
-    # Get the Submission count for Submitted/Running/Failed/Cancelled/Finished/Submitting Submissions
+    # Get the Submission count for Submitting/Submitted/Running/Failed/Cancelled/Finished Submissions
+    submitting_count = submissions.filter(status='submitting').count()
+
     submitted_count = submissions.filter(status='submitted').count()
 
     running_count = submissions.filter(status='running').count()
@@ -248,8 +247,6 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
 
     finished_count = submissions.filter(status='finished').count()
 
-    submitting_count = submissions.filter(status='submitting').count()
-
     submission_status_counts = {'submitted': submitted_count,
                                 'running': running_count,
                                 'failed': failed_count,
@@ -257,12 +254,20 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
                                 'finished': finished_count,
                                 'submitting': submitting_count}
 
+    # Get flagged and public submission counts
+    flagged_submissions_count = submissions.filter(is_flagged=True).count()
+
+    public_submissions_count = submissions.filter(is_public=True).count()
+
+    flagged_and_public_submissions = {'is_flagged_count': flagged_submissions_count,
+                                      'is_public_count': public_submissions_count}
+
     challenge_phase_submission_count = ChallengePhaseSubmissionAnalytics(
-        submission_count, participant_team_count, submission_status_counts, challenge_phase.pk)
+        total_submissions, participant_team_count, submission_status_counts, flagged_and_public_submissions, challenge_phase.pk)
     try:
         serializer = ChallengePhaseSubmissionAnalyticsSerializer(challenge_phase_submission_count)
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
-    except:
+    except ValueError:
         response_data = {'error': "Bad request. Please try again later!"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
