@@ -485,13 +485,26 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
+
+        """
+        The value of max_submissions_per_day and max_submissions is set explicitly in order to test for a corner case
+        in which max_submissions_per_day > max_submissions.
+        """
         setattr(self.challenge_phase, 'max_submissions_per_day', 9)
         setattr(self.challenge_phase, 'max_submissions', 5)
         self.challenge_phase.save()
 
+        failed_submissions = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                       challenge_phase__challenge=self.challenge,
+                                                       status='failed').count()
+        other_submissions = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                      challenge_phase__challenge=self.challenge).count()
+
+        submission_count = self.challenge_phase.max_submissions - other_submissions - failed_submissions
+
         expected = {
-            'remaining_submissions_today_count': 3,
-            'remaining_submissions': 3
+            'remaining_submissions_today_count': submission_count,
+            'remaining_submissions': submission_count
         }
 
         self.challenge.participant_teams.add(self.participant_team)
