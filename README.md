@@ -16,7 +16,17 @@ The goal of this package is to offer almost all the features available on the we
 
 ### Step 1:
 
-Setup the development environment for EvalAI and make sure that django server & submission worker is running perfectly
+1. Setup the development environment for EvalAI and make sure that it is running perfectly.
+
+2. Now, Open web browser and hit the url http://127.0.0.1:8888.
+
+3. Login with your credentials and move to the profile section.
+
+4. Click on `Get your Auth Token` to get the authentication token & download it as a JSON file.
+
+5. Create a folder with name `.evalai` in your home directory by using the command `mkdir ~/.evalai`.
+
+6. Place the downloaded authentication token in this folder by using the command `mv ~/Downloads/token.json ~/.evalai/`.
 
 ### Step 2:
 
@@ -29,20 +39,21 @@ git clone https://github.com/Cloud-CV/evalai-cli.git EvalAI-CLI
 2. Create a virtual environment
 
 ```bash
-$ cd EvalAI-CLI
-$ virtualenv -v python3 venv
-$ source venv/bin/activate
+cd EvalAI-CLI
+virtualenv -p python3 venv
+source venv/bin/activate
 ```
+
 3. Install the package dependencies
 
 ```bash
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 4. Install the package locally to try it out
 
 ```bash
-$ pip install -e .
+pip install -e .
 ```
 
 ## Contributing Guidelines
