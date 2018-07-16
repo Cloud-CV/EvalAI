@@ -591,22 +591,9 @@ class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
         self.url = reverse_lazy('analytics:get_challenge_phase_submission_analysis',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk})
-        setattr(self.submission1, 'status', 'submitted')
         setattr(self.submission1, 'is_flagged', True)
         setattr(self.submission1, 'is_public', True)
-        setattr(self.submission2, 'status', 'running')
-        setattr(self.submission3, 'status', 'failed')
-        setattr(self.submission4, 'status', 'cancelled')
-        setattr(self.submission5, 'status', 'finished')
-        setattr(self.submission6, 'status', 'finished')
-        setattr(self.submission7, 'status', 'submitting')
         self.submission1.save()
-        self.submission2.save()
-        self.submission3.save()
-        self.submission4.save()
-        self.submission5.save()
-        self.submission6.save()
-        self.submission7.save()
 
         submissions = Submission.objects.filter(challenge_phase=self.challenge_phase,
                                                 challenge_phase__challenge=self.challenge)
@@ -614,14 +601,6 @@ class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
         expected = {
                 "total_submissions": submissions.count(),
                 "participant_team_count":  submissions.values('participant_team').distinct().count(),
-                "submission_status_counts": {
-                    'finished': submissions.filter(status='finished').count(),
-                    'submitted': submissions.filter(status='submitted').count(),
-                    'failed': submissions.filter(status='failed').count(),
-                    'running': submissions.filter(status='running').count(),
-                    'submitting': submissions.filter(status='submitting').count(),
-                    'cancelled': submissions.filter(status='cancelled').count()
-                },
                 "flagged_and_public_submissions": {
                     'is_public_count': submissions.filter(is_flagged=True).count(),
                     'is_flagged_count': submissions.filter(is_public=True).count()

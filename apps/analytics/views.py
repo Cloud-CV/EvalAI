@@ -234,26 +234,6 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     # Get the total participant teams in a challenge phase
     participant_team_count = submissions.values('participant_team').distinct().count()
 
-    # Get the Submission count for Submitting/Submitted/Running/Failed/Cancelled/Finished Submissions
-    submitting_count = submissions.filter(status='submitting').count()
-
-    submitted_count = submissions.filter(status='submitted').count()
-
-    running_count = submissions.filter(status='running').count()
-
-    failed_count = submissions.filter(status='failed').count()
-
-    cancelled_count = submissions.filter(status='cancelled').count()
-
-    finished_count = submissions.filter(status='finished').count()
-
-    submission_status_counts = {'submitted': submitted_count,
-                                'running': running_count,
-                                'failed': failed_count,
-                                'cancelled': cancelled_count,
-                                'finished': finished_count,
-                                'submitting': submitting_count}
-
     # Get flagged and public submission counts
     flagged_submissions_count = submissions.filter(is_flagged=True).count()
 
@@ -264,7 +244,6 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
 
     challenge_phase_submission_count = ChallengePhaseSubmissionAnalytics(total_submissions,
                                                                          participant_team_count,
-                                                                         submission_status_counts,
                                                                          flagged_and_public_submissions,
                                                                          challenge_phase.pk)
     try:

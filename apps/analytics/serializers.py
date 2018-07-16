@@ -6,12 +6,10 @@ class ChallengePhaseSubmissionAnalytics(object):
     def __init__(self,
                  total_submissions,
                  participant_team_count,
-                 submission_status_counts,
                  flagged_and_public_submissions,
                  challenge_phase_pk):
         self.total_submissions = total_submissions
         self.participant_team_count = participant_team_count
-        self.submission_status_counts = submission_status_counts
         self.flagged_and_public_submissions = flagged_and_public_submissions
         self.challenge_phase = challenge_phase_pk
 
@@ -19,7 +17,6 @@ class ChallengePhaseSubmissionAnalytics(object):
 class ChallengePhaseSubmissionAnalyticsSerializer(serializers.Serializer):
     total_submissions = serializers.IntegerField()
     participant_team_count = serializers.IntegerField()
-    submission_status_counts = serializers.JSONField(True)
     flagged_and_public_submissions = serializers.JSONField(True)
     challenge_phase = serializers.IntegerField()
 
