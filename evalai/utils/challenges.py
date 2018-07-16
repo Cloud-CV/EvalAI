@@ -87,7 +87,35 @@ def display_ongoing_challenge_list():
     Displays the list of ongoing challenges from the backend
     """
     url = "{}{}".format(get_host_url(), URLS.challenge_list.value)
-    display_challenges(url)
+
+    header = get_request_header()
+    try:
+        response = requests.get(url, headers=header)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        if (response.status_code == 401):
+            validate_token(response.json())
+        echo(err)
+        sys.exit(1)
+    except requests.exceptions.RequestException as err:
+        echo(err)
+        sys.exit(1)
+
+    response = response.json()
+    challenges = response["results"]
+
+    # Filter out past/unapproved/unpublished challenges.
+    challenges = list(filter(lambda challenge:
+                             validate_date_format(challenge['end_date']) > datetime.now() and
+                             challenge["approved_by_admin"] and
+                             challenge["published"],
+                             challenges))
+
+    if len(challenges) != 0:
+        for challenge in challenges:
+            pretty_print_challenge_data(challenge)
+    else:
+        echo("Sorry, no challenges found!")
 
 
 def display_future_challenge_list():

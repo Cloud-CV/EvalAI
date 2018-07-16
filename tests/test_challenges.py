@@ -115,6 +115,60 @@ class TestDisplayChallengeDetails(BaseTestClass):
         assert response == expected
 
 
+class TestOngoingChallengesConditions(BaseTestClass):
+
+    @responses.activate
+    def test_display_ongoing_challenges_when_challenge_is_not_publicly_available(self):
+
+        challenge_data = json.loads(challenge_response.challenges)
+
+        for i in range(len(challenge_data["results"])):
+            challenge_data["results"][i]["published"] = False
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
+                      json=challenge_data, status=200)
+
+        runner = CliRunner()
+        expected = "Sorry, no challenges found!"
+        result = runner.invoke(challenges, ['ongoing'])
+        assert result.output.strip() == expected
+
+    @responses.activate
+    def test_display_ongoing_challenges_when_challenge_is_not_approved_by_admin(self):
+
+        challenge_data = json.loads(challenge_response.challenges)
+
+        for i in range(len(challenge_data["results"])):
+            challenge_data["results"][i]["approved_by_admin"] = False
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
+                      json=challenge_data, status=200)
+
+        runner = CliRunner()
+        expected = "Sorry, no challenges found!"
+        result = runner.invoke(challenges, ['ongoing'])
+        assert result.output.strip() == expected
+
+    @responses.activate
+    def test_display_ongoing_challenges_when_challenge_is_not_active(self):
+
+        challenge_data = json.loads(challenge_response.challenges)
+
+        for i in range(len(challenge_data["results"])):
+            challenge_data["results"][i]["end_date"] = "2017-06-18T20:00:00Z"
+
+        url = "{}{}"
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
+                      json=challenge_data, status=200)
+
+        runner = CliRunner()
+        expected = "Sorry, no challenges found!"
+        result = runner.invoke(challenges, ['ongoing'])
+        assert result.output.strip() == expected
+
+
 class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
 
     def setup(self):
