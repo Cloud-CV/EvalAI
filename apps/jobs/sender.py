@@ -1,31 +1,36 @@
-from django.conf import settings
-
 import json
-import pika
+import os
+
+import boto3
 
 
 def publish_submission_message(challenge_id, phase_id, submission_id):
+    """
+    Args:
+        challenge_id: Challenge Id
+        phase_id: Challenge Phase Id
+        submission_id: Submission Id
 
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=settings.RABBITMQ_PARAMETERS['HOST']))
-    channel = connection.channel()
-    channel.exchange_declare(exchange='evalai_submissions', type='topic')
-
-    # though worker is creating the queue(queue creation is idempotent too)
-    # but lets create the queue here again, so that messages dont get missed
-    # later on we can apply a check on queue message length to raise some alert
-    # this way we will be notified of worker being up or not
-    channel.queue_declare(queue='submission_task_queue', durable=True)
+    Returns:
+        Returns SQS response
+    """
+    sqs = boto3.resource('sqs')
+    AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME')
+    AWS_SQS_MESSAGE_GROUP_ID = os.environ.get('AWS_SQS_MESSAGE_GROUP_ID')
+    queue = sqs.get_queue_by_name(QueueName=AWS_SQS_QUEUE_NAME)
 
     message = {
         'challenge_id': challenge_id,
         'phase_id': phase_id,
-        'submission_id': submission_id
+        'submission_id': submission_id,
     }
-    channel.basic_publish(exchange='evalai_submissions',
-                          routing_key='submission.*.*',
-                          body=json.dumps(message),
-                          properties=pika.BasicProperties(delivery_mode=2))    # make message persistent
 
-    print(" [x] Sent %r" % message)
-    connection.close()
+    response = queue.send_message(
+        MessageBody=json.dumps(message),
+        MessageGroupId=AWS_SQS_MESSAGE_GROUP_ID,
+    )
+
+    # TODO: Replace print statements with logging
+    print(response.get('MessageId'))
+    print(response.get('MD5OfMessageBody'))
+    return response

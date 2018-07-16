@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import boto3
 import contextlib
 import django
 import importlib
@@ -10,6 +11,7 @@ import shutil
 import socket
 import sys
 import tempfile
+import time
 import traceback
 import yaml
 import zipfile
@@ -19,30 +21,15 @@ from os.path import dirname, join
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from django.conf import settings
-# need to add django project path in sys path
-# root directory : where manage.py lives
-# worker is present in root-directory/scripts/workers
-# but make sure that this worker is run like `python scripts/workers/submission_worker.py`
-DJANGO_PROJECT_PATH = dirname(dirname(dirname(os.path.abspath(__file__))))
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
-
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, 'compute')
 
-# default settings module will be `dev`, to override it pass
-# as command line arguments
-DJANGO_SETTINGS_MODULE = 'settings.dev'
-if len(sys.argv) == 2:
-    DJANGO_SETTINGS_MODULE = sys.argv[1]
-
 logger = logging.getLogger(__name__)
-
-sys.path.insert(0, DJANGO_PROJECT_PATH)
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
+DJANGO_SETTINGS_MODULE = os.environ.get('DJANGO_SETTINGS_MODULE')
 DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
 
 from challenges.models import (Challenge,
@@ -459,27 +446,27 @@ def process_add_challenge_message(message):
     extract_challenge_data(challenge, phases)
 
 
-def process_submission_callback(ch, method, properties, body):
+def process_submission_callback(body):
     try:
         logger.info("[x] Received submission message %s" % body)
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.iteritems())
         process_submission_message(body)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        # ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
         logger.error('Error in receiving message from submission queue with error {}'.format(e))
         traceback.print_exc()
 
 
-def add_challenge_callback(ch, method, properties, body):
-    try:
-        logger.info("[x] Received add challenge message %s" % body)
-        body = yaml.safe_load(body)
-        process_add_challenge_message(body)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-    except Exception as e:
-        logger.error('Error in receiving message from add challenge queue with error {}'.format(e))
-        traceback.print_exc()
+# def add_challenge_callback(ch, method, properties, body):
+#     try:
+#         logger.info("[x] Received add challenge message %s" % body)
+#         body = yaml.safe_load(body)
+#         process_add_challenge_message(body)
+#         ch.basic_ack(delivery_tag=method.delivery_tag)
+#     except Exception as e:
+#         logger.error('Error in receiving message from add challenge queue with error {}'.format(e))
+#         traceback.print_exc()
 
 
 def main():
@@ -488,49 +475,62 @@ def main():
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
 
     sys.path.append(COMPUTE_DIRECTORY_PATH)
-
     load_active_challenges()
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=settings.RABBITMQ_PARAMETERS['HOST'], heartbeat_interval=0))
+    # connection = pika.BlockingConnection(pika.ConnectionParameters(
+    #     host=settings.RABBITMQ_PARAMETERS['HOST'], heartbeat_interval=0))
 
-    channel = connection.channel()
-    channel.exchange_declare(
-        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        type=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['TYPE'])
+    # channel = connection.channel()
+    # channel.exchange_declare(
+    #     exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+    #     type=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['TYPE'])
 
     # name can be a combination of hostname + process id
     # host name : to easily identify that the worker is running on which instance
     # process id : to add uniqueness in case more than one worker is running on the same instance
-    add_challenge_queue_name = '{hostname}_{process_id}'.format(hostname=socket.gethostname(),
-                                                                process_id=str(os.getpid()))
+    # add_challenge_queue_name = '{hostname}_{process_id}'.format(hostname=socket.gethostname(),
+    #                                                             process_id=str(os.getpid()))
 
-    channel.queue_declare(
-        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
-        durable=True)
+    # channel.queue_declare(
+    #     queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
+    #     durable=True)
 
     # reason for using `exclusive` instead of `autodelete` is that
     # challenge addition queue should have only have one consumer on the connection
     # that creates it.
-    channel.queue_declare(queue=add_challenge_queue_name, durable=True, exclusive=True)
-    logger.info('[*] Waiting for messages. To exit press CTRL+C')
+    # channel.queue_declare(queue=add_challenge_queue_name, durable=True, exclusive=True)
+    # logger.info('[*] Waiting for messages. To exit press CTRL+C')
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
 
-    channel.queue_bind(
-        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
-        routing_key='submission.*.*')
-    channel.basic_consume(
-        process_submission_callback,
-        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'])
+    # channel.queue_bind(
+    #     exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+    #     queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
+    #     routing_key='submission.*.*')
+    # channel.basic_consume(
+    #     process_submission_callback,
+    #     queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'])
 
-    channel.queue_bind(
-        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=add_challenge_queue_name, routing_key='challenge.*.*')
-    channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
+    # channel.queue_bind(
+    #     exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
+    #     queue=add_challenge_queue_name, routing_key='challenge.*.*')
+    # channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
 
-    channel.start_consuming()
+    # channel.start_consuming()
+
+    # Get the service resource
+    sqs = boto3.resource('sqs', region_name=os.environ.get('AWS_DEFAULT_REGION'))
+    AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME')
+    queue = sqs.get_queue_by_name(QueueName=AWS_SQS_QUEUE_NAME)
+
+    while True:
+        for message in queue.receive_messages():
+            # Print out the body of the message
+            print('Processing message body: {0}'.format(message.body))
+            process_submission_callback(message.body)
+            # Let the queue know that the message is processed
+            message.delete()
+        time.sleep(0.1)
 
 
 if __name__ == '__main__':
