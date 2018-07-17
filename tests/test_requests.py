@@ -435,7 +435,7 @@ class TestRequestForExceptions(BaseTestClass):
         # Phase URLS
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_list.value).format('10'),
-                      body=Exception('...'))
+                      body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_detail.value).format('10', '20'),
                       body=Exception('...'))
@@ -524,7 +524,7 @@ class TestRequestForExceptions(BaseTestClass):
     def test_display_challenge_phase_list_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenge, ['10', 'phases'])
-        assert result.exit_code == -1
+        assert result.exit_code == 1
 
     @responses.activate
     def test_display_challenge_phase_detail_for_request_exception(self):

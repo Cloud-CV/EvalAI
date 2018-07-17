@@ -2,6 +2,7 @@ import json
 import os
 import responses
 import shutil
+from beautifultable import BeautifulTable
 from click.testing import CliRunner
 
 from evalai.challenges import challenge, challenges
@@ -10,6 +11,7 @@ from evalai.utils.urls import URLS
 from evalai.utils.config import (API_HOST_URL,
                                  AUTH_TOKEN_DIR,
                                  HOST_URL_FILE_PATH)
+from evalai.utils.common import convert_UTC_date_to_local
 
 from tests.data import challenge_response
 from tests.base import BaseTestClass
@@ -139,26 +141,20 @@ class TestSetAndLoadHostURL(BaseTestClass):
         responses.add(responses.GET, url.format("https://evalapi.cloudcv.org", URLS.challenge_list.value),
                       json=challenge_data, status=200)
 
-        challenges_json = challenge_data["results"]
-
         self.output = ""
-
-        title = "\n{}".format("{}")
-        id_field = "{}\n\n".format("{}")
-        subtitle = "\n{}\n\n".format("{}")
-
-        for challenge_data in challenges_json:
-            challenge_title = title.format(challenge_data["title"])
-            challenge_id = "ID: " + id_field.format(challenge_data["id"])
-
-            heading = "{} {}".format(challenge_title, challenge_id)
-            description = "{}\n".format(challenge_data["short_description"])
-            end_date = "End Date : " + challenge_data["end_date"].split("T")[0]
-            end_date = subtitle.format(end_date)
-            br = "------------------------------------------------------------------\n"
-            challenge_data = "{}{}{}{}".format(heading, description, end_date, br)
-
-            self.output = "{}{}".format(self.output, challenge_data)
+        challenge_data = challenge_data["results"]
+        table = BeautifulTable(max_width=200)
+        attributes = ["id", "title", "short_description"]
+        columns_attributes = ["ID", "Title", "Short Description", "Creator", "Start Date", "End Date"]
+        table.column_headers = columns_attributes
+        for challenge_json in reversed(challenge_data):
+            values = list(map(lambda item: challenge_json[item], attributes))
+            creator = challenge_json["creator"]["team_name"]
+            start_date = convert_UTC_date_to_local(challenge_json["start_date"])
+            end_date = convert_UTC_date_to_local(challenge_json["end_date"])
+            values.extend([creator, start_date, end_date])
+            table.append_row(values)
+        self.output = str(table)
 
     def teardown(self):
         if os.path.exists(HOST_URL_FILE_PATH):
@@ -169,5 +165,5 @@ class TestSetAndLoadHostURL(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(host, ['-sh', "https://evalapi.cloudcv.org"])
         result = runner.invoke(challenges)
-        response_table = result.output
-        assert response_table == self.output
+        response = result.output.strip()
+        assert response == self.output

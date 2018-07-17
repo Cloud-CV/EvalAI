@@ -38,50 +38,46 @@ class TestDisplayChallenges(BaseTestClass):
 
         self.output = ""
 
-        title = "\n{}".format("{}")
-        id_field = "{}\n\n".format("{}")
-        subtitle = "\n{}\n\n".format("{}")
-
-        for challenge_data in challenges_json:
-            challenge_title = title.format(challenge_data["title"])
-            challenge_id = "ID: " + id_field.format(challenge_data["id"])
-
-            heading = "{} {}".format(challenge_title, challenge_id)
-            description = "{}\n".format(challenge_data["short_description"])
-            end_date = "End Date : " + challenge_data["end_date"].split("T")[0]
-            end_date = subtitle.format(end_date)
-            br = "------------------------------------------------------------------\n"
-            challenge_data = "{}{}{}{}".format(heading, description, end_date, br)
-
-            self.output = "{}{}".format(self.output, challenge_data)
+        table = BeautifulTable(max_width=200)
+        attributes = ["id", "title", "short_description"]
+        columns_attributes = ["ID", "Title", "Short Description", "Creator", "Start Date", "End Date"]
+        table.column_headers = columns_attributes
+        for challenge_data in reversed(challenges_json):
+            values = list(map(lambda item: challenge_data[item], attributes))
+            creator = challenge_data["creator"]["team_name"]
+            start_date = convert_UTC_date_to_local(challenge_data["start_date"])
+            end_date = convert_UTC_date_to_local(challenge_data["end_date"])
+            values.extend([creator, start_date, end_date])
+            table.append_row(values)
+        self.output = str(table)
 
     @responses.activate
-    def test_diaplay_all_challenge_lists(self):
+    def test_display_all_challenge_lists(self):
         runner = CliRunner()
         result = runner.invoke(challenges)
-        response_table = result.output
-        assert response_table == self.output
+        response = result.output.strip()
+        assert response == self.output
 
     @responses.activate
     def test_display_past_challenge_lists(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['past'])
-        response_table = result.output
-        assert response_table == self.output
+        response = result.output.strip()
+        assert response == self.output
 
     @responses.activate
     def test_display_ongoing_challenge_lists(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['ongoing'])
-        response_table = result.output
-        assert response_table == self.output
+        response = result.output.strip()
+        assert response == self.output
 
     @responses.activate
     def test_display_future_challenge_lists(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['future'])
-        response_table = result.output
-        assert response_table == self.output
+        response = result.output.strip()
+        assert response == self.output
 
 
 class TestDisplayChallengeDetails(BaseTestClass):
@@ -340,24 +336,18 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
 
         challenges_json = challenge_data["results"]
 
-        self.output = ""
-
-        title = "\n{}".format("{}")
-        id_field = "{}\n\n".format("{}")
-        subtitle = "\n{}\n\n".format("{}")
-        br = "------------------------------------------------------------------\n"
-
-        for challenge_data in challenges_json:
-            challenge_title = title.format(challenge_data["title"])
-            challenge_id = "ID: " + id_field.format(challenge_data["id"])
-
-            heading = "{} {}".format(challenge_title, challenge_id)
-            description = "{}\n".format(challenge_data["short_description"])
-            end_date = "End Date : " + challenge_data["end_date"].split("T")[0]
-            end_date = subtitle.format(end_date)
-            challenge_data = "{}{}{}{}".format(heading, description, end_date, br)
-
-            self.output = "{}{}".format(self.output, challenge_data)
+        table = BeautifulTable(max_width=200)
+        attributes = ["id", "title", "short_description"]
+        columns_attributes = ["ID", "Title", "Short Description", "Creator", "Start Date", "End Date"]
+        table.column_headers = columns_attributes
+        for challenge_data in reversed(challenges_json):
+            values = list(map(lambda item: challenge_data[item], attributes))
+            creator = challenge_data["creator"]["team_name"]
+            start_date = convert_UTC_date_to_local(challenge_data["start_date"])
+            end_date = convert_UTC_date_to_local(challenge_data["end_date"])
+            values.extend([creator, start_date, end_date])
+            table.append_row(values)
+        self.output = str(table)
 
     @responses.activate
     def test_display_host_challenge_list(self):
@@ -365,7 +355,7 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         expected = "\nHosted Challenges\n\n"
         self.output = "{}{}".format(expected, self.output)
         result = runner.invoke(challenges, ['--host'])
-        response = result.output
+        response = result.output.rstrip()
         assert response == self.output
 
     @responses.activate
@@ -374,7 +364,7 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         expected = "\nParticipated Challenges\n\n"
         self.output = "{}{}".format(expected, self.output)
         result = runner.invoke(challenges, ['--participant'])
-        response = result.output
+        response = result.output.rstrip()
         assert response == self.output
 
     @responses.activate
@@ -382,9 +372,9 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         runner = CliRunner()
         participant_string = "\nParticipated Challenges\n\n"
         host_string = "\nHosted Challenges\n\n"
-        self.output = "{}{}{}{}".format(host_string, self.output, participant_string, self.output)
+        self.output = "{}{}\n{}{}".format(host_string, self.output, participant_string, self.output)
         result = runner.invoke(challenges, ['--participant', '--host'])
-        response = result.output
+        response = result.output.rstrip()
         assert response == self.output
 
 
