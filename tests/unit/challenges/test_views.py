@@ -1415,19 +1415,6 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_error_challenge_phase_does_not_exist_for_a_challenge(self):
-        self.url = reverse_lazy('challenges:get_challenge_phase_detail',
-                                kwargs={'challenge_pk': self.challenge.pk,
-                                        'pk': self.challenge_phase.pk + 10})
-
-        expected = {
-            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk + 10)
-        }
-
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-
 
 class CreateChallengePhaseTest(BaseChallengePhaseClass):
 
