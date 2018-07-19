@@ -2,6 +2,7 @@ import click
 
 from click import style
 
+from evalai.utils.common import Date
 from evalai.utils.challenges import (
                                     display_all_challenge_list,
                                     display_future_challenge_list,
@@ -136,14 +137,18 @@ def phase(ctx, json, phase):
 
 @phase.command()
 @click.pass_obj
-def submissions(ctx):
+@click.option('--start-date', '-s', type=Date(format='%m/%d/%y'),
+              help="Start date for submissions in `mm/dd/yyyy` format.")
+@click.option('--end-date', '-e', type=Date(format='%m/%d/%y'),
+              help="End date for submissions in `mm/dd/yyyy` format.")
+def submissions(ctx, start_date, end_date):
     """
     Display submissions to a particular challenge.
     """
     """
     Invoked by running `evalai challenge CHALLENGE phase PHASE submissions`.
     """
-    display_my_submission_details(ctx.challenge_id, ctx.phase_id)
+    display_my_submission_details(ctx.challenge_id, ctx.phase_id, start_date, end_date)
 
 
 @phase.command()

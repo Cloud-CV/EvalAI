@@ -22,7 +22,7 @@ submission = """
             "stderr_file": null,
             "stdout_file": null,
             "submission_result_file": null,
-            "submitted_at": "2018-06-08T09:24:09.866590Z",
+            "submitted_at": "2018-06-03T09:24:09.866590Z",
             "when_made_public": null
         },
         {
@@ -46,7 +46,7 @@ submission = """
             ae3c23bd5e7d.txt",
             "submission_result_file": "http://testserver/media/submission_files/submission_8/2eebf2ab-6f6e-485f-\
             ab54-aea3cbbeb06b.json",
-            "submitted_at": "2018-06-07T18:18:08.996609Z",
+            "submitted_at": "2018-06-05T18:18:08.996609Z",
             "when_made_public": null
         },
         {
@@ -93,7 +93,7 @@ submission = """
             a352-d41e15348a20.txt",
             "submission_result_file": "http://testserver/media/submission_files/submission_6/b0f44621-\
             0560-4baa-a758-9b4d9e328e39.json",
-            "submitted_at": "2018-06-07T18:17:08.739749Z",
+            "submitted_at": "2018-06-09T18:17:08.739749Z",
             "when_made_public": null
         }
     ]

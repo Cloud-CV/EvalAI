@@ -21,7 +21,7 @@ class Date(click.ParamType):
             date = datetime.strptime(value, self.format)
             return date
         except ValueError:
-            raise self.fail("Incorrect date format, please use {} format".format(self.format))
+            raise self.fail("Incorrect date format, please use {} format. Example: 8/23/17.".format(self.format))
 
 
 def validate_token(response):

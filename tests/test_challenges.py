@@ -10,7 +10,9 @@ from evalai.challenges import (challenge,
                                challenges)
 from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL
-from evalai.utils.common import convert_UTC_date_to_local, clean_data
+from evalai.utils.common import (convert_UTC_date_to_local,
+                                 validate_date_format,
+                                 clean_data)
 from tests.data import challenge_response, submission_response
 from .base import BaseTestClass
 
@@ -509,6 +511,89 @@ class TestDisplaySubmission(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenge, ['2', 'phase', 'submissions'])
         response = result.output
+        assert response == output
+
+    @responses.activate
+    def test_display_my_submission_details_with_start_date(self):
+        table = BeautifulTable(max_width=100)
+        attributes = ["id", "participant_team_name", "execution_time", "status"]
+        columns_attributes = ["ID", "Participant Team", "Execution Time(sec)", "Status", "Submitted At", "Method Name"]
+        table.column_headers = columns_attributes
+
+        start_date = datetime.strptime('6/7/18', "%m/%d/%y")
+        end_date = datetime.max
+        for submission in self.submissions:
+            date = validate_date_format(submission['submitted_at'])
+            if (date >= start_date and date <= end_date):
+                # Check for empty method name
+                date = convert_UTC_date_to_local(submission['submitted_at'])
+                method_name = submission["method_name"] if submission["method_name"] else "None"
+                values = list(map(lambda item: submission[item], attributes))
+                values.append(date)
+                values.append(method_name)
+                table.append_row(values)
+        output = str(table).rstrip()
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions', '-s', '6/7/18'])
+        response = result.output.rstrip()
+        assert response == output
+
+    @responses.activate
+    def test_display_my_submission_details_with_end_date(self):
+        table = BeautifulTable(max_width=100)
+        attributes = ["id", "participant_team_name", "execution_time", "status"]
+        columns_attributes = ["ID", "Participant Team", "Execution Time(sec)", "Status", "Submitted At", "Method Name"]
+        table.column_headers = columns_attributes
+
+        start_date = datetime.min
+        end_date = datetime.strptime('6/7/18', "%m/%d/%y")
+        for submission in self.submissions:
+            date = validate_date_format(submission['submitted_at'])
+            if (date >= start_date and date <= end_date):
+                # Check for empty method name
+                date = convert_UTC_date_to_local(submission['submitted_at'])
+                method_name = submission["method_name"] if submission["method_name"] else "None"
+                values = list(map(lambda item: submission[item], attributes))
+                values.append(date)
+                values.append(method_name)
+                table.append_row(values)
+        output = str(table).rstrip()
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions', '-e', '6/7/18'])
+        response = result.output.rstrip()
+        assert response == output
+
+    @responses.activate
+    def test_display_my_submission_details_with_end_date_and_start_date(self):
+        table = BeautifulTable(max_width=100)
+        attributes = ["id", "participant_team_name", "execution_time", "status"]
+        columns_attributes = ["ID", "Participant Team", "Execution Time(sec)", "Status", "Submitted At", "Method Name"]
+        table.column_headers = columns_attributes
+
+        start_date = datetime.strptime('6/5/18', "%m/%d/%y")
+        end_date = datetime.strptime('6/9/18', "%m/%d/%y")
+        for submission in self.submissions:
+            date = validate_date_format(submission['submitted_at'])
+            if (date >= start_date and date <= end_date):
+                # Check for empty method name
+                date = convert_UTC_date_to_local(submission['submitted_at'])
+                method_name = submission["method_name"] if submission["method_name"] else "None"
+                values = list(map(lambda item: submission[item], attributes))
+                values.append(date)
+                values.append(method_name)
+                table.append_row(values)
+        output = str(table).rstrip()
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions', '-s', '6/5/18', '-e', '6/9/18'])
+        response = result.output.rstrip()
+        assert response == output
+
+    @responses.activate
+    def test_display_my_submission_details_with_end_date_and_start_date_without_submissions(self):
+        output = "Sorry, no submissions were made during this time period."
+        runner = CliRunner()
+        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions', '-s', '6/10/18', '-e', '6/15/18'])
+        response = result.output.strip()
         assert response == output
 
 
