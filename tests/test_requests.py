@@ -402,25 +402,29 @@ class TestRequestForExceptions(BaseTestClass):
 
         # Challenge URLS
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value), body=RequestException('...'))
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
+                      body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.past_challenge_list.value),
                       body=RequestException('...'))
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value), body=Exception('...'))
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
+                      body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.future_challenge_list.value),
                       body=RequestException('...'))
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value), body=Exception('...'))
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value),
+                      body=RequestException('...'))
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_teams.value), body=Exception('...'))
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_teams.value),
+                      body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
-                      body=Exception('...'))
+                      body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_challenges.value).format("2"),
-                      body=Exception('...'))
+                      body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_details.value.format("1")),
                       body=RequestException('...'))
@@ -442,17 +446,17 @@ class TestRequestForExceptions(BaseTestClass):
                       body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_detail.value).format('10', '20'),
-                      body=Exception('...'))
+                      body=RequestException('...'))
 
         # Submission URLS
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
                       body=RequestException('...'))
 
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.get_submission.value).format("9"),
-                      body=RequestException('RequestException'))
+                      body=RequestException('...'))
 
         responses.add(responses.POST, url.format(API_HOST_URL, URLS.make_submission.value).format("1", "2"),
-                      body=RequestException('RequestException'))
+                      body=RequestException('...'))
 
         # Phase Split URLS
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format("1"),
@@ -490,25 +494,25 @@ class TestRequestForExceptions(BaseTestClass):
     def test_display_host_challenge_list_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['--host'])
-        assert result.exit_code == -1
+        assert result.exit_code == 1
 
     @responses.activate
     def test_display_participant_challenge_lists_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['--participant'])
-        assert result.exit_code == -1
+        assert result.exit_code == 1
 
     @responses.activate
     def test_display_participant_and_host_challenge_lists_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenges, ['--participant', '--host'])
-        assert result.exit_code == -1
+        assert result.exit_code == 1
 
     @responses.activate
     def test_display_participant_team_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(teams, ["--participant"])
-        assert result.exit_code == -1
+        assert result.exit_code == 1
 
     @responses.activate
     def test_create_team_for_request_exception(self):
@@ -532,7 +536,7 @@ class TestRequestForExceptions(BaseTestClass):
     def test_display_challenge_phase_detail_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(challenge, ['10', 'phase', '20'])
-        assert result.exit_code == -1
+        assert result.exit_code == 1
 
     @responses.activate
     def test_display_my_submission_details_for_request_exception(self):
@@ -544,8 +548,7 @@ class TestRequestForExceptions(BaseTestClass):
     def test_display_submission_details_for_request_exception(self):
         runner = CliRunner()
         result = runner.invoke(submission, ['9'])
-        response = result.output.strip()
-        assert response == "RequestException"
+        assert result.exit_code == 1
 
     @responses.activate
     def test_make_submission_for_request_exception(self):
@@ -556,7 +559,7 @@ class TestRequestForExceptions(BaseTestClass):
 
             result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"], input="N")
             response = result.output.rstrip()
-            expected = "Do you want to include the Submission Details? [y/N]: N\n{}".format("RequestException")
+            expected = "Do you want to include the Submission Details? [y/N]: N\n{}".format("...")
             assert response == expected
 
     @responses.activate
