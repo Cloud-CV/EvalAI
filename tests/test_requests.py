@@ -236,8 +236,10 @@ class TestSubmissionDetailsWhenObjectDoesNotExist(BaseTestClass):
     def test_display_submission_details_for_object_does_not_exist(self):
         runner = CliRunner()
         result = runner.invoke(submission, ['9'])
-        response = result.output.rstrip()
-        assert response == self.expected
+        response = result.output.strip()
+        expected = "{}\n\n{}".format(self.expected, "Use `evalai challenge CHALLENGE "
+                                     "phase PHASE submissions` to view your submission.")
+        assert response == expected
 
     @responses.activate
     def test_make_submission_for_object_does_not_exist(self):
@@ -247,8 +249,12 @@ class TestSubmissionDetailsWhenObjectDoesNotExist(BaseTestClass):
                 f.write('1 2 3 4 5 6')
 
             result = runner.invoke(challenge, ['1', 'phase', '2', 'submit', "--file", "test_file.txt"], input="N")
-            response = result.output.rstrip()
-            expected = "Do you want to include the Submission Details? [y/N]: N\n{}".format(self.expected)
+            response = result.output.strip()
+
+            expected = "Do you want to include the Submission Details? [y/N]: N\n\n{}".format(self.expected)
+            expected = "{}\n\n{}".format(expected, "Use `evalai challenges` to fetch the active challenges.")
+            expected = "{}\n\n{}".format(expected, "Use `evalai challenge CHALLENGE phases` "
+                                                   "to fetch the active phases.")
             assert response == expected
 
 
@@ -292,7 +298,9 @@ class TestTeamsWhenObjectDoesNotExist(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenge, ['2', 'participate', '3'])
         response = result.output.rstrip()
-        assert response == self.expected
+        expected = "\n{}\n\n{}".format(self.expected, "Use `evalai challenges` to fetch the active challenges.")
+        expected = "{}\n\n{}".format(expected, "Use `evalai teams` to fetch your participant teams.")
+        assert response == expected
 
 
 class TestTeamsWhenTeamNameAlreadyExists(BaseTestClass):
@@ -338,14 +346,19 @@ class TestDisplayChallengePhasesWhenObjectDoesNotExist(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenge, ['10', 'phases'])
         response = result.output.rstrip()
-        assert response == self.expected
+        expected = "\n{}\n\n{}".format(self.expected, "Use `evalai challenges` to fetch the active challenges.\n"
+                                                      "\nUse `evalai challenge CHALLENGE phases` to fetch the "
+                                                      "active phases.")
+        assert response == expected
 
     @responses.activate
     def test_display_challenge_phase_detail_for_object_does_not_exist(self):
         runner = CliRunner()
         result = runner.invoke(challenge, ['10', 'phase', '20'])
         response = result.output.rstrip()
-        assert response == self.expected
+        expected = "\n{}\n\n{}".format(self.expected, "Use `evalai challenges` to fetch the active challenges.")
+        expected = "{}\n\n{}".format(expected, "Use `evalai challenge CHALLENGE phases` to fetch the active phases.")
+        assert response == expected
 
 
 class TestGetParticipantOrHostTeamChallengesHTTPErrorRequests(BaseTestClass):

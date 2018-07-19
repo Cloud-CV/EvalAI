@@ -37,7 +37,11 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
             validate_token(response.json())
-            echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
+            echo(style("\nError: {}\n"
+                       "\nUse `evalai challenges` to fetch the active challenges.\n"
+                       "\nUse `evalai challenge CHALLENGE phases` to fetch the "
+                       "active phases.\n".format(response.json()["error"]),
+                       fg="red", bold=True))
         else:
             echo(err)
         sys.exit(1)
@@ -100,7 +104,11 @@ def display_my_submission_details(challenge_id, phase_id, start_date, end_date):
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
             validate_token(response.json())
-            echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
+            echo(style("\nError: {}\n"
+                       "\nUse `evalai challenges` to fetch the active challenges.\n"
+                       "\nUse `evalai challenge CHALLENGE phases` to fetch the "
+                       "active phases.\n".format(response.json()["error"]),
+                       fg="red", bold=True))
         else:
             echo(err)
         sys.exit(1)
@@ -145,7 +153,10 @@ def display_submission_details(submission_id):
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
             validate_token(response.json())
-            echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
+            echo(style("\nError: {}\n"
+                       "\nUse `evalai challenge CHALLENGE phase PHASE submissions` "
+                       "to view your submission.\n".format(response.json()["error"]),
+                       fg="red", bold=True))
         else:
             echo(err)
         sys.exit(1)

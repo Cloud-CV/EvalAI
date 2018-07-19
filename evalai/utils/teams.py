@@ -137,7 +137,11 @@ def participate_in_a_challenge(challenge_id, participant_team_id):
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
             validate_token(response.json())
-            echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
+            echo(style("\nError: {}\n"
+                       "\nUse `evalai challenges` to fetch the active challenges.\n"
+                       "\nUse `evalai teams` to fetch your participant "
+                       "teams.\n".format(response.json()["error"]),
+                       fg="red", bold=True))
         else:
             echo(err)
         sys.exit(1)

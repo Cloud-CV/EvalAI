@@ -15,8 +15,9 @@ def main(ctx):
     Welcome to the EvalAI CLI.
     """
     if ctx.invoked_subcommand is None:
-        welcome_text = ("Welcome to the EvalAI CLI. Use evalai"
-                        "--help for viewing all the options")
+        welcome_text = ("Welcome to the EvalAI CLI. Use evalai --help for viewing all the options\n"
+                        "CHALLENGE and PHASE placeholders used throughout the CLI are"
+                        " for challenge_id\nand phase_id of the challenges and phases.")
         echo(welcome_text)
 
 
