@@ -132,18 +132,19 @@ class TestHTTPErrorRequests(BaseTestClass):
     @responses.activate
     def test_display_participant_team_for_http_error_404(self):
         runner = CliRunner()
-        result = runner.invoke(teams)
+        result = runner.invoke(teams, ["--participant"])
         response = result.output
         url = "{}{}".format(API_HOST_URL, URLS.participant_team_list.value)
         expected = "{}{}".format(self.expected.format(url), "\n")
         assert response == expected
 
     @responses.activate
-    def test_create_participant_team_for_http_error_404(self):
-        user_prompt_text = ("Enter team name: : TeamTest\n"
-                            "Please confirm the team name - TeamTest [y/N]: y\n")
+    def test_create_team_for_http_error_404(self):
+        user_prompt_text = ("Enter team name: TeamTest\n"
+                            "Please confirm the team name - TeamTest [y/N]: y\n"
+                            "Do you want to enter the Team URL [y/N]: N\n")
         runner = CliRunner()
-        result = runner.invoke(teams, ['create'], input="TeamTest\ny\n")
+        result = runner.invoke(teams, ['create', 'participant'], input="TeamTest\ny\nN")
         response = result.output
         url = "{}{}".format(API_HOST_URL, URLS.participant_team_list.value)
         expected = "{}{}".format(self.expected.format(url), "\n")
@@ -271,16 +272,17 @@ class TestTeamsWhenObjectDoesNotExist(BaseTestClass):
     @responses.activate
     def test_display_participant_team_for_object_does_not_exist(self):
         runner = CliRunner()
-        result = runner.invoke(teams)
+        result = runner.invoke(teams, ["--participant"])
         response = result.output.rstrip()
         assert response == self.expected
 
     @responses.activate
-    def test_create_participant_team_for_object_does_not_exist(self):
-        user_prompt_text = ("Enter team name: : TeamTest\n"
-                            "Please confirm the team name - TeamTest [y/N]: y\n")
+    def test_create_team_for_object_does_not_exist(self):
+        user_prompt_text = ("Enter team name: TeamTest\n"
+                            "Please confirm the team name - TeamTest [y/N]: y\n"
+                            "Do you want to enter the Team URL [y/N]: N\n")
         runner = CliRunner()
-        result = runner.invoke(teams, ['create'], input="TeamTest\ny\n")
+        result = runner.invoke(teams, ['create', 'participant'], input="TeamTest\ny\nN")
         response = result.output.rstrip()
         expected = "{}{}".format(user_prompt_text, self.expected)
         assert response == expected
@@ -305,10 +307,11 @@ class TestTeamsWhenTeamNameAlreadyExists(BaseTestClass):
 
     @responses.activate
     def test_participate_in_a_challenge_for_team_name_exists(self):
-        user_prompt_text = ("Enter team name: : TeamTest\n"
-                            "Please confirm the team name - TeamTest [y/N]: y\n")
+        user_prompt_text = ("Enter team name: TeamTest\n"
+                            "Please confirm the team name - TeamTest [y/N]: y\n"
+                            "Do you want to enter the Team URL [y/N]: N\n")
         runner = CliRunner()
-        result = runner.invoke(teams, ['create'], input="TeamTest\ny\n")
+        result = runner.invoke(teams, ['create', 'participant'], input="TeamTest\ny\nN")
         response = result.output.rstrip()
         expected = "Error: participant team with this team name already exists."
         expected = "{}{}".format(user_prompt_text, expected)
@@ -424,10 +427,11 @@ class TestRequestForExceptions(BaseTestClass):
 
         # Teams URLS
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_team_list.value), body=Exception('...'))
+        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_team_list.value),
+                      body=RequestException('...'))
 
         responses.add(responses.POST, url.format(API_HOST_URL, URLS.participant_team_list.value),
-                      body=Exception('...'))
+                      body=RequestException('...'))
 
         responses.add(responses.POST, url.format(API_HOST_URL, URLS.participate_in_a_challenge.value).format("2", "3"),
                       body=RequestException('...'))
@@ -503,16 +507,14 @@ class TestRequestForExceptions(BaseTestClass):
     @responses.activate
     def test_display_participant_team_for_request_exception(self):
         runner = CliRunner()
-        result = runner.invoke(teams)
+        result = runner.invoke(teams, ["--participant"])
         assert result.exit_code == -1
 
     @responses.activate
-    def test_create_participant_team_for_request_exception(self):
+    def test_create_team_for_request_exception(self):
         runner = CliRunner()
-        result = runner.invoke(teams, ['create'], input="TeamTest\ny\n")
-        output = ("Enter team name: : TeamTest\n"
-                  "Please confirm the team name - TeamTest [y/N]: y")
-        assert result.output.strip() == output
+        result = runner.invoke(teams, ['create', 'participant'], input="TeamTest\ny\nN")
+        assert result.exit_code == 1
 
     @responses.activate
     def test_participate_in_a_challenge_for_request_exception(self):
