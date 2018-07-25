@@ -29,7 +29,8 @@ def get_or_create_sqs_queue():
             else:
                 # create a FIFO queue in the production environment
                 name = AWS_SQS_QUEUE_NAME + '.fifo'
-                queue = sqs.create_queue(QueueName=name,
+                queue = sqs.create_queue(
+                    QueueName=name,
                     Attributes={
                         'FifoQueue': 'true',
                         'ContentBasedDeduplication': 'true'
