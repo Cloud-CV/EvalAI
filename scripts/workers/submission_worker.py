@@ -7,10 +7,8 @@ import django
 import importlib
 import logging
 import os
-import pika
 import requests
 import shutil
-import socket
 import sys
 import tempfile
 import time
@@ -18,7 +16,7 @@ import traceback
 import yaml
 import zipfile
 
-from os.path import dirname, join
+from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
@@ -472,7 +470,6 @@ def get_or_create_sqs_queue():
                          aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
 
     AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME', 'evalai_submission_queue')
-    AWS_SQS_MESSAGE_GROUP_ID = os.environ.get('AWS_SQS_MESSAGE_GROUP_ID', 'evalai_msg_group')
     # Check if the FIFO queue exists. If no, then create one
     try:
         queue = sqs.get_queue_by_name(QueueName=AWS_SQS_QUEUE_NAME)
@@ -483,7 +480,8 @@ def get_or_create_sqs_queue():
             else:
                 # create a FIFO queue in the production environment
                 name = AWS_SQS_QUEUE_NAME + '.fifo'
-                queue = sqs.create_queue(QueueName=name,
+                queue = sqs.create_queue(
+                    QueueName=name,
                     Attributes={
                         'FifoQueue': 'true',
                         'ContentBasedDeduplication': 'true'
