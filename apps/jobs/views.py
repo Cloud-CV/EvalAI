@@ -320,8 +320,8 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     failed_submissions_done_today_count = failed_submissions_done_today.count()
 
     # Checks if #today's successful submission is greater than or equal to max submission per day
-    if ((submissions_done_today_count - failed_submissions_done_today_count) >= max_submissions_per_day_count
-            or (max_submissions_per_day_count == 0)):
+    if ((submissions_done_today_count - failed_submissions_done_today_count) >= max_submissions_per_day_count or
+            (max_submissions_per_day_count == 0)):
         # Get the UTC time of the instant when the above condition is true.
         date_time_now = timezone.now()
         # Calculate the next day's date.
@@ -355,7 +355,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
 
 @throttle_classes([UserRateThrottle])
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_submission_by_pk(request, submission_id):
@@ -371,12 +371,31 @@ def get_submission_by_pk(request, submission_id):
 
     host_team = submission.challenge_phase.challenge.creator
 
-    if (request.user.id == submission.created_by.id
-            or ChallengeHost.objects.filter(user=request.user.id, team_name__pk=host_team.pk).exists()):
-        serializer = SubmissionSerializer(
-            submission, context={'request': request})
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
+    if (request.user.id == submission.created_by.id or
+            ChallengeHost.objects.filter(user=request.user.id, team_name__pk=host_team.pk).exists()):
+
+        if request.method == 'GET':
+            serializer = SubmissionSerializer(
+                submission, context={'request': request})
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        elif request.method == 'PATCH':
+            challenge_phase = ChallengePhase.objects.get(id=submission.challenge_phase.id)
+            participant_team = ParticipantTeam.objects.get(id=submission.participant_team.id)
+            serializer = SubmissionSerializer(submission,
+                                              data=request.data,
+                                              context={
+                                                       'participant_team': participant_team,
+                                                       'challenge_phase': challenge_phase,
+                                                       'request': request
+                                              },
+                                              partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_200_OK)
 
     response_data = {'error': 'Sorry, you are not authorized to access this submission.'}
     return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
