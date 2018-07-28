@@ -10,6 +10,8 @@ urlpatterns = [
         views.get_participant_count, name='get_participant_count'),
     url(r'^challenge/(?P<challenge_pk>[0-9]+)/submission/(?P<duration>[A-Za-z]+)/count$',
         views.get_submission_count, name='get_submission_count'),
+    url(r'^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/analytics$',
+        views.get_challenge_phase_submission_analysis, name='get_challenge_phase_submission_analysis'),
     url(r'^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/(?P<challenge_phase_pk>[0-9]+)/count$',
         views.get_challenge_phase_submission_count_by_team, name='get_challenge_phase_submission_count_by_team'),
     url(r'^challenge/(?P<challenge_pk>[0-9]+)/challenge_phase/'
