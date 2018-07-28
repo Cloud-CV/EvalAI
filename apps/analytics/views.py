@@ -223,23 +223,17 @@ def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_pha
     """
 
     challenge = get_challenge_model(challenge_pk)
-
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-
     # Get the total submissions in a challenge phase
     submissions = Submission.objects.filter(
         challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
     total_submissions = submissions.count()
-
     # Get the total participant teams in a challenge phase
     participant_team_count = submissions.values('participant_team').distinct().count()
-
     # Get flagged submission count
     flagged_submissions_count = submissions.filter(is_flagged=True).count()
-
     # Get public submission count
     public_submissions_count = submissions.filter(is_public=True).count()
-
     challenge_phase_submission_count = ChallengePhaseSubmissionAnalytics(total_submissions,
                                                                          participant_team_count,
                                                                          flagged_submissions_count,
