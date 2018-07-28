@@ -38,7 +38,7 @@ class ParticipantTeam(TimeStampedModel):
     """Model representing the Teams associated with different challenges"""
     team_name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(User, null=True)
-    team_url = models.CharField(max_length=1000, default="", null=True)
+    team_url = models.CharField(max_length=1000, default="", blank=True)
 
     def __unicode__(self):
         return '{}'.format(self.team_name)
