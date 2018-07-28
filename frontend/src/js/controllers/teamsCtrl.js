@@ -374,7 +374,9 @@
                     vm.team.url = response.data.team_url;
                 },
                 onError: function() {
-                    $rootScope.notify("error", "Team name cannot be changed!");
+                    var error = response.data['error'];
+                    vm.stopLoader();
+                    $rootScope.notify("error", error);
                 }
             };
             utilities.sendRequest(parameters);
@@ -401,7 +403,7 @@
                 onSuccess: function() {
                     $mdDialog.hide();
                     vm.team = {};
-                    $rootScope.notify("success", "The Participant team name is successfully updated!");
+                    $rootScope.notify("success", "Participant Team updated!");
                     var parameters = {};
                     // Retrives the updated lists and displays it.
                     parameters.url = 'participants/participant_team';
@@ -412,7 +414,9 @@
                             vm.existTeam.results = response.data.results;
                         },
                         onError: function() {
-                            $rootScope.notify("error", "Team name cannot be changed!");
+                            var error = response.data['error'];
+                            vm.stopLoader();
+                            $rootScope.notify("error", error);
                         }
                     };
                     utilities.sendRequest(parameters);
