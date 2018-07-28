@@ -601,10 +601,8 @@ class ChallengePhaseSubmissionAnalyticsTest(BaseAPITestClass):
         expected = {
                 "total_submissions": submissions.count(),
                 "participant_team_count":  submissions.values('participant_team').distinct().count(),
-                "flagged_and_public_submissions": {
-                    'is_public_count': submissions.filter(is_flagged=True).count(),
-                    'is_flagged_count': submissions.filter(is_public=True).count()
-                },
+                "flagged_submissions_count": submissions.filter(is_flagged=True).count(),
+                "public_submissions_count": submissions.filter(is_public=True).count(),
                 "challenge_phase": self.challenge_phase.pk
             }
         response = self.client.get(self.url, {})
