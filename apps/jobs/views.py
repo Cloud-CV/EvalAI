@@ -347,6 +347,10 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         # calculate the remaining submissions from total submissions.
         remaining_submission_count = max_submissions_count - \
             (submissions_done_count - failed_submissions_count)
+
+        if remaining_submissions_today_count > remaining_submission_count:
+            remaining_submissions_today_count = remaining_submission_count
+
         # Return the above calculated data.
         response_data = {'remaining_submissions_today_count': remaining_submissions_today_count,
                          'remaining_submissions': remaining_submission_count
