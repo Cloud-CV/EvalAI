@@ -808,14 +808,15 @@
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_name": vm.team.name
+                "team_name": vm.team.name,
+                "team_url": vm.team.url
             };
             parameters.callback = {
                 onSuccess: function() {
                     $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
-                    vm.team.name = '';
+                    vm.team = {};
 
                     vm.startLoader("Loading Teams");
                     parameters.url = 'participants/participant_team';
