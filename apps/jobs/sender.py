@@ -3,10 +3,14 @@ from __future__ import absolute_import
 from django.conf import settings
 
 import json
+import logging
 import os
 
 import botocore
 import boto3
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_or_create_sqs_queue():
@@ -37,8 +41,7 @@ def get_or_create_sqs_queue():
                     }
                 )
         else:
-            # TODO: Replace with logging statements
-            print("Cannot get or create Queue")
+            logger.info("Cannot get or create Queue")
     return queue
 
 

@@ -286,7 +286,7 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     submission.save()
     try:
         successful_submission_flag = True
-        print(EVALUATION_SCRIPTS)
+        logger.info(EVALUATION_SCRIPTS)
         with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                 annotation_file_path,
@@ -506,7 +506,7 @@ def main():
     while True:
         for message in queue.receive_messages():
             # Print out the body of the message
-            print('Processing message body: {0}'.format(message.body))
+            logger.info('Processing message body: {0}'.format(message.body))
             process_submission_callback(message.body)
             # Let the queue know that the message is processed
             message.delete()
