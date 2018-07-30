@@ -286,7 +286,6 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     submission.save()
     try:
         successful_submission_flag = True
-        logger.info(EVALUATION_SCRIPTS)
         with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                 annotation_file_path,
