@@ -383,7 +383,7 @@
             // check which column is selected
             // so that the values can be parsed properly
             if (vm.sortColumn === 'date') {
-                return Date.parse(key.submission__submitted_at);
+                return Date.parse(key.submission__submitted_at_formatted);
             }
             else if (vm.sortColumn === 'rank') {
                 return vm.initial_ranking[key.submission__participant_team__team_name];
@@ -393,10 +393,21 @@
             }
             else if (vm.sortColumn === 'string'){
                 // sort teams alphabetically
-                return key.submission__participant_team__team_name.value;
+                return key.submission__participant_team__team_name;
             }
 
             return 0;
+        };
+
+        vm.sortLeaderboard = function(scope, column, index = null) {
+            if (!index) {
+                scope.reverseSort = scope.sortColumn != column ? false : !scope.reverseSort;
+            } else {
+                scope.reverseSort = scope.sortColumn != column && scope.columnIndexSort != index ? false : scope.reverseSort;
+                scope.reverseSort = scope.sortColumn == column && scope.columnIndexSort == index ? !scope.reverseSort : scope.reverseSort;
+                scope.columnIndexSort = index;
+            }
+            scope.sortColumn = column;
         };
 
         // my submissions
@@ -428,6 +439,7 @@
                     var details = response.data;
                     vm.leaderboard = details.results;
                     for (var i=0; i<vm.leaderboard.length; i++) {
+                        vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].submission__participant_team__team_name] = i+1;
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
