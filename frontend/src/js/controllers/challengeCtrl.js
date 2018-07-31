@@ -412,11 +412,10 @@
         };
 
         vm.sortLeaderboard = function(scope, column, index = null) {
-            if (!index) {
+            if (index == null) {
                 scope.reverseSort = scope.sortColumn != column ? false : !scope.reverseSort;
             } else {
-                scope.reverseSort = scope.sortColumn != column && scope.columnIndexSort != index ? false : scope.reverseSort;
-                scope.reverseSort = scope.sortColumn == column && scope.columnIndexSort == index ? !scope.reverseSort : scope.reverseSort;
+                scope.reverseSort = scope.sortColumn == column && scope.columnIndexSort == index ? !scope.reverseSort : false;
                 scope.columnIndexSort = index;
             }
             scope.sortColumn = column;
