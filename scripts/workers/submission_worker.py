@@ -8,6 +8,7 @@ import importlib
 import logging
 import os
 import requests
+import signal
 import shutil
 import sys
 import tempfile
@@ -58,6 +59,16 @@ EVALUATION_SCRIPTS = {}
 PHASE_ANNOTATION_FILE_NAME_MAP = {}
 
 django.db.close_old_connections()
+
+
+class GracefulKiller:
+  kill_now = False
+  def __init__(self):
+    signal.signal(signal.SIGINT, self.exit_gracefully)
+    signal.signal(signal.SIGTERM, self.exit_gracefully)
+
+  def exit_gracefully(self,signum, frame):
+    self.kill_now = True
 
 
 class ExecutionTimeLimitExceeded(Exception):
@@ -492,6 +503,7 @@ def get_or_create_sqs_queue():
 
 
 def main():
+    killer = GracefulKiller()
     logger.info('Using {0} as temp directory to store data'.format(BASE_TEMP_DIR))
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
@@ -509,8 +521,11 @@ def main():
             process_submission_callback(message.body)
             # Let the queue know that the message is processed
             message.delete()
+        if killer.kill_now:
+              break
         time.sleep(0.1)
 
 
 if __name__ == '__main__':
     main()
+    logger.info("Quitting Submission Worker.")
