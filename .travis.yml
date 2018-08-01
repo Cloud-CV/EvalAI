@@ -8,8 +8,15 @@ matrix:
     allow_failures:
         - python: "3.6"
 
+before_script:
+  - wget https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar
+  - java -jar elasticmq-server-0.14.2.jar
+
 addons:
   postgresql: "9.4"
+  apt:
+    packages:
+      - oracle-java8-set-default
 
 cache:
   directories:
