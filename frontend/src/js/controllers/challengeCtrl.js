@@ -411,8 +411,8 @@
             return 0;
         };
 
-        vm.sortLeaderboard = function(scope, column, index = null) {
-            if (index == null) {
+        vm.sortLeaderboard = function(scope, column, index) {
+            if (index == null || index == undefined) {
                 scope.reverseSort = scope.sortColumn != column ? false : !scope.reverseSort;
             } else {
                 scope.reverseSort = scope.sortColumn == column && scope.columnIndexSort == index ? !scope.reverseSort : false;
