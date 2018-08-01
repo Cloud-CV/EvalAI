@@ -62,13 +62,14 @@ django.db.close_old_connections()
 
 
 class GracefulKiller:
-  kill_now = False
-  def __init__(self):
-    signal.signal(signal.SIGINT, self.exit_gracefully)
-    signal.signal(signal.SIGTERM, self.exit_gracefully)
+    kill_now = False
 
-  def exit_gracefully(self,signum, frame):
-    self.kill_now = True
+    def __init__(self):
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
+
+    def exit_gracefully(self, signum, frame):
+        self.kill_now = True
 
 
 class ExecutionTimeLimitExceeded(Exception):
@@ -522,7 +523,7 @@ def main():
             # Let the queue know that the message is processed
             message.delete()
         if killer.kill_now:
-              break
+            break
         time.sleep(0.1)
 
 
