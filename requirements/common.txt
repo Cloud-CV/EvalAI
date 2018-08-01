@@ -1,4 +1,5 @@
 asgi-redis==1.4.3
+click==6.7
 commonmark==0.5.4
 django==1.11
 django-import-export==0.5.1
