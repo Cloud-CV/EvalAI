@@ -18,6 +18,10 @@ addons:
     packages:
       - oracle-java8-set-default
 
+env:
+  - AWS_SECRET_ACCESS_KEY=x
+  - AWS_ACCESS_KEY_ID=x
+
 cache:
   directories:
     - $HOME/.cache/pip
