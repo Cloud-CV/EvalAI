@@ -35,17 +35,18 @@ services:
     networks:
       - evalai
 
-  worker:
+  master-worker:
+    container_name: master-worker
     env_file:
       - docker/dev.env
     build:
       context: ./
-      dockerfile: docker/dev/worker/Dockerfile
+      dockerfile: docker/dev/master-worker/Dockerfile
     depends_on:
-      - rabbitmq
       - django
     volumes:
       - .:/code
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - evalai
 
