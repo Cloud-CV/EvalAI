@@ -7,7 +7,6 @@ from io import BytesIO
 from os.path import dirname
 
 from django.utils import timezone
-from django.conf import settings
 
 # need to add django project path in sys path
 # root directory : where manage.py lives
@@ -35,20 +34,22 @@ def load_active_challenges():
     q_params['start_date__lt'] = timezone.now()
     q_params['end_date__gt'] = timezone.now()
 
-
-    active_challenges = Challenge.objects.filter(**q_params)
-
-    for challenge in active_challenges:
-    	print(challenge)
-
-
-def main():
     client = docker.from_env()
-    load_active_challenges()
     file = open("docker/dev/submission-worker/Dockerfile", "r+")
     dockerfile = file.read()
     f = BytesIO(dockerfile.encode('utf-8'))
-    image = client.images.build(fileobj=f, rm=True, tag='test', nocache=True)
+
+    active_challenges = Challenge.objects.filter(**q_params)
+    image = client.images.build(fileobj=f, rm=True, tag="challenge", nocache=True)
+    print(image)
+
+    for challenge in active_challenges:
+        print(challenge.id)
+
+
+def main():
+    load_active_challenges()
+
 
 if __name__ == '__main__':
     main()
