@@ -373,7 +373,7 @@
                     vm.team.name = response.data.team_name;
                     vm.team.url = response.data.team_url;
                 },
-                onError: function(response) {
+                onError: function() {
                     var error = response.data['error'];
                     vm.stopLoader();
                     $rootScope.notify("error", error);
@@ -413,7 +413,7 @@
                         onSuccess: function(response) {
                             vm.existTeam.results = response.data.results;
                         },
-                        onError: function(response) {
+                        onError: function() {
                             var error = response.data['error'];
                             vm.stopLoader();
                             $rootScope.notify("error", error);
