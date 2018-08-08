@@ -9,7 +9,9 @@ matrix:
         - python: "3.6"
 
 env:
-  - AWS_SECRET_ACCESS_KEY=x AWS_ACCESS_KEY_ID=x AWS_SQS_ENDPOINT="http://localhost:9324"
+  - AWS_SECRET_ACCESS_KEY=x
+  - AWS_ACCESS_KEY_ID=x
+  - AWS_SQS_ENDPOINT="http://localhost:9324"
 
 addons:
   postgresql: "9.4"
