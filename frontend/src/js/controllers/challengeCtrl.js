@@ -411,8 +411,13 @@
             return 0;
         };
 
+<<<<<<< HEAD
         vm.sortLeaderboard = function(scope, column, index) {
             if (index == null || index == undefined) {
+=======
+        vm.sortLeaderboard = function(scope, column, index = null) {
+            if (index == null) {
+>>>>>>> parent of baa945de... Revert "Frontend: Fix bug in leaderboard while switching sort between different columns(#1755)" (#1761)
                 scope.reverseSort = scope.sortColumn != column ? false : !scope.reverseSort;
             } else {
                 scope.reverseSort = scope.sortColumn == column && scope.columnIndexSort == index ? !scope.reverseSort : false;
