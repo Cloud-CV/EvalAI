@@ -1,0 +1,29 @@
+Metadata-Version: 2.0
+Name: docker-pycreds
+Version: 0.2.3
+Summary: Python bindings for the docker credentials store API
+Home-page: https://github.com/shin-/dockerpy-creds
+Author: UNKNOWN
+Author-email: UNKNOWN
+License: Apache License 2.0
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Other Environment
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Utilities
+Classifier: License :: OSI Approved :: Apache Software License
+Requires-Dist: six (>=1.4.0)
+
+UNKNOWN
+
+

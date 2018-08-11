@@ -1,0 +1,15 @@
+Metadata-Version: 2.0
+Name: recommonmark
+Version: 0.4.0
+Summary: UNKNOWN
+Home-page: UNKNOWN
+Author: UNKNOWN
+Author-email: UNKNOWN
+License: UNKNOWN
+Platform: UNKNOWN
+Requires-Dist: commonmark (<=0.5.4)
+Requires-Dist: docutils (>=0.11)
+
+UNKNOWN
+
+

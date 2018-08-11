@@ -19,9 +19,26 @@ DATABASES = {
 }
 
 # E-Mail Settings
+
+# --- Comment these when trying out local SMTP --- #
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 1025
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# --- Comment these when trying out local SMTP --- #
+
+# --- Un-comment these when trying out local SMTP --- #
+# EMAIL_USE_TLS = True
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'your email (gmail)'
+# EMAIL_HOST_PASSWORD = 'your email password'
+# --- Un-comment these when trying out local SMTP --- #
+
+## Local SMTP setup -- https://www.lifewire.com/what-are-the-gmail-smtp-settings-1170854
+
+
+# For overriding allauth.account.adapter.DefaultAccountAdapter
+ACCOUNT_ADAPTER = 'settings.adapter.MyAccountAdapter'
 
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 

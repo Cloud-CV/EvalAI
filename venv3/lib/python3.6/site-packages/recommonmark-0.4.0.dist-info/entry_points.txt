@@ -1,0 +1,8 @@
+[console_scripts]
+cm2html = recommonmark.scripts:cm2html
+cm2latex = recommonmark.scripts:cm2latex
+cm2man = recommonmark.scripts:cm2man
+cm2pseudoxml = recommonmark.scripts:cm2pseudoxml
+cm2xetex = recommonmark.scripts:cm2xetex
+cm2xml = recommonmark.scripts:cm2xml
+

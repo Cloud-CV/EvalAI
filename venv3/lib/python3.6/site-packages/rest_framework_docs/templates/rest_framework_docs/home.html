@@ -1,0 +1,104 @@
+{% extends "rest_framework_docs/docs.html" %}
+
+{% block apps_menu %}
+{% regroup endpoints by name_parent as endpoints_grouped %}
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Jump To <span class="caret"></span></a>
+  <ul class="dropdown-menu">
+    {% for group in endpoints_grouped %}
+      <li><a href="#{{ group.grouper|lower }}-group">{{ group.grouper }}</a></li>
+    {% endfor %}
+  </ul>
+</li>
+{% endblock %}
+
+
+{% block content %}
+
+  {% regroup endpoints by name_parent as endpoints_grouped %}
+
+  {% if endpoints_grouped %}
+  {% for group in endpoints_grouped %}
+
+    <h1 id="{{ group.grouper|lower }}-group">{{group.grouper}}</h1>
+
+    <div class="panel-group" role="tablist">
+
+    {% for endpoint in group.list %}
+
+      <div class="panel panel-default endpoint">
+
+        <div class="panel-heading" role="tab" data-toggle="collapse" data-target="#{{ endpoint.path|slugify }}">
+          <div class="row">
+            <div class="col-md-7">
+              <h4 class="panel-title title">
+                <i class="fa fa-link"></i> {{ endpoint.path }}
+              </h4>
+            </div>
+
+            <div class="col-md-5">
+              <ul class="list-inline methods">
+                {% for method in endpoint.allowed_methods %}
+                  <li class="method {{ method|lower }}">{{ method }}</li>
+                {% endfor %}
+                  <li class="method plug"
+                    data-toggle="modal"
+                    data-path="{{ endpoint.path }}"
+                    data-methods="{{ endpoint.allowed_methods }}"
+                    data-permissions="{{ endpoint.permissions }}"
+                    data-fields="{{ endpoint.fields_json }}">
+                    <i class="fa fa-plug"></i></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div id="{{ endpoint.path|slugify }}" class="panel-collapse collapse" role="tabpanel">
+          <div class="panel-body">
+            {% if endpoint.docstring %}
+            <p class="lead">{{ endpoint.docstring }}</p>
+            {% endif %}
+
+            {% if endpoint.errors %}
+            <div class="alert alert-danger" role="alert">Oops! There was something wrong with {{ endpoint.errors }}. Please check your code.</div>
+            {% endif %}
+
+            {% if endpoint.fields %}
+            <p class="fields-desc">Fields:</p>
+              <ul class="list fields">
+              {% for field in endpoint.fields %}
+                <li class="field">{{ field.name }}: {{ field.type }} {% if field.required %}<span class="label label-primary label-required" title="Required">R</span>{% endif %}</li>
+              {% endfor %}
+              </ul>
+            {% elif not endpoint.errors %}
+            <p>No fields.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+
+    </div>
+
+  {% endfor %}
+  {% elif not query %}
+    <h2 class="text-center">There are currently no api endpoints to document.</h2>
+  {% else %}
+    <h2 class="text-center">No endpoints found for {{ query }}.</h2>
+  {% endif %}
+
+  <!-- Modal -->
+  <div class="modal fade api-modal" id="liveAPIModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Live API Endpoints <span class="label label-info">Beta</span></h4>
+        </div>
+
+        <div id="liveAPIEndpoints"></div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

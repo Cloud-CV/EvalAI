@@ -1,0 +1,41 @@
+{% block extra_scripts %}
+<script src="//cdnjs.cloudflare.com/ajax/libs/vis/4.7.0/vis.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.7.0/vis.min.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+<div id="visualization"></div>
+
+<script>
+  var nodes = new vis.DataSet(
+      {{ meatballs|safe }}
+  );
+
+  var edges = new vis.DataSet(
+      {{ spaghetti|safe }}
+  );
+
+  var data = {
+    nodes: nodes,
+    edges: edges
+  };
+
+  var container = document.getElementById('visualization');
+  var options = {
+    "edges": {
+      "smooth": {
+        "type": "cubicBezier",
+        "roundness": 0.55
+      }
+    },
+  
+    "layout": {
+        hierarchical: {
+            sortMethod: 'hubsize',
+            direction:'LR'
+        }
+    },
+
+  };
+
+  var timeline = new vis.Network(container, data, options);
+
+</script>

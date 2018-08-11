@@ -1,0 +1,308 @@
+@import "node_modules/bootstrap/less/bootstrap";
+@import "node_modules/bootswatch/flatly/variables.less";
+@import "node_modules/font-awesome/less/font-awesome.less";
+@import url(//fonts.googleapis.com/css?family=ABeeZee);
+
+/* @group Colours */
+
+@ThemeAlt: #c9c9c9;
+
+@BgColor: #FEFEFE;
+@AccordionBgColor: #ecf0f1;
+
+@GetColor: #18bc9c;
+@PostColor: #f39c12;
+@PutColor: #028d94;
+@PatchColor: #028d94;
+@DeleteColor: #e74c3c;
+@OptionsColor: #3498db;
+
+/* @end Colours */
+
+
+/* @group Mixins */
+
+// Border Radius (Same Corners)
+.BorderRadius(@radius: 5px) {
+    -webkit-border-radius: @radius;
+    -moz-border-radius:    @radius;
+    border-radius:         @radius;
+
+    -moz-background-clip:    padding;
+    -webkit-background-clip: padding-box;
+    background-clip:         padding-box;
+}
+
+/* @end Mixins */
+
+
+/* @group Misc */
+
+body {
+  background-color: @BgColor;
+}
+
+.navbar {
+  margin-top: 20px;
+}
+
+.jumbotron {
+  margin: 50px 0 40px;
+  text-align: center;
+}
+
+.label-required {
+  padding: 2px 5px;
+  margin-left: 5px;
+}
+
+.btn:focus,
+.btn:active {
+  outline: none !important;
+}
+
+/* @end Misc */
+
+
+/* @group Endpoint */
+
+.endpoint {
+  padding: 5px 20px;
+  margin: 0;
+  background-color: #ecf0f1;
+
+  &:hover {
+    background-color: darken(@AccordionBgColor, 5%);
+
+    .panel-heading {
+      background-color: darken(@AccordionBgColor, 5%);
+    }
+  }
+
+  .panel-heading {
+    padding: 5px;
+    cursor: pointer;
+
+    .title {
+      margin-top: 6px;
+      font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+      word-wrap: break-word;
+
+      .fa {
+        color: darken(@AccordionBgColor, 15%);
+      }
+    }
+
+    .methods {
+      margin: 10px 0 5px;
+
+      @media (min-width: @screen-md-min) {
+        text-align: right;
+        margin: 0;
+      }
+
+     .method {
+      padding: 4px 8px;
+      margin-top: 5px;
+      color: #FFF;
+
+      @media (min-width: @screen-md-min) {
+        margin-top: 0;
+      }
+
+      &.get { background-color: @GetColor; }
+      &.post { background-color: @PostColor; }
+      &.patch { background-color: @PutColor; }
+      &.put { background-color: @PatchColor; }
+      &.delete { background-color: @DeleteColor; }
+      &.options { background-color: @OptionsColor; }
+
+      &.plug {
+        color: @brand-primary;
+        border: 1px solid @brand-primary;
+        .BorderRadius(50%);
+        font-size: 14px;
+        width: 30px;
+        height: 29px;
+        margin-left: 10px;
+      }
+    }
+    }
+  }
+
+  .panel-body {
+    padding: 0;
+
+    .lead {
+      margin-bottom: 5px;
+    }
+
+    .alert {
+      padding: 5px 10px;
+      margin-top: 10px;
+    }
+
+    .fields-desc {
+      margin-bottom: 5px;
+    }
+
+    .fields {
+      list-style-type: square;
+    }
+  }
+
+  > .panel-heading +.panel-collapse > .panel-body { border: 0; }
+}
+
+/* @end Endpoint */
+
+
+/* @group Footer */
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+
+  .links {
+    padding: 20px 0;
+
+   .fa {
+      margin: 0 10px;
+      font-size: 22px;
+    }
+  }
+}
+
+/* @end Footer */
+
+
+/* @group Modal API */
+
+.modal {
+
+  @media (min-width: @screen-md-min) {
+    h3 {
+      margin-top: 0;
+    }
+  }
+
+  .control-label {
+    padding-top: 7px;
+    text-transform: capitalize;
+  }
+
+  .request {
+
+    .section-title {
+      background-color: @gray-lighter;
+      text-align: center;
+      padding: 5px;
+      .BorderRadius(3px);
+    }
+
+    .methods {
+
+      .method {
+        color: #FFF;
+        background-color: @gray-light;
+        border-left: 1px solid @gray;
+
+        &:first-child {
+          border-left: 0;
+        }
+
+        &.get.active { background-color: @GetColor; }
+        &.post.active { background-color: @PostColor; }
+        &.patch.active { background-color: @PutColor; }
+        &.put.active { background-color: @PatchColor; }
+        &.delete.active { background-color: @DeleteColor; }
+        &.options.active { background-color: @OptionsColor; }
+      }
+    }
+
+    .form-group {
+
+      label {
+
+        .fa {
+          margin-right: 5px;
+          color: @brand-danger;
+        }
+      }
+    }
+  }
+
+  .response {
+    .status-code {
+      font-weight: 300;
+
+      &.status-code-1 { background-color: @brand-info; }
+      &.status-code-2 { background-color: @brand-success; }
+      &.status-code-3 { background-color: @brand-warning; }
+      &.status-code-4 { background-color: @brand-danger; }
+      &.status-code-5 { background-color: @brand-primary; }
+    }
+
+    .status-text {
+      text-transform: capitalize;
+    }
+
+    pre {
+      font-size: 12px;
+      margin-top: 20px;
+    }
+  }
+}
+
+
+/* @end Modal API */
+
+
+/* @group Response / JSON View */
+
+.json-key {
+  color: brown;
+}
+
+.json-value {
+  color: navy;
+}
+
+.json-string {
+  color: olive;
+}
+
+/* @end Response / JSON View */
+
+
+/* @group Github Ribbon - SVG */
+
+.github-corner:hover .octo-arm {
+  animation: octocat-wave 560ms ease-in-out;
+}
+
+@keyframes octocat-wave {
+  0% { transform: rotate(0deg); }
+  20% { transform: rotate(-25deg); }
+  40% { transform: rotate(10deg); }
+  60% { transform: rotate(-25deg); }
+  80% { transform: rotate(10deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@media (max-width: 768px) {
+    .github-corner {
+      display: none;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: none;
+    }
+
+    .github-corner .octo-arm {
+        animation: octocat-wave 560ms ease-in-out;
+    }
+}
+
+/* @end Github Ribbon - SVG */

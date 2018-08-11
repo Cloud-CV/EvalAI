@@ -1,0 +1,24 @@
+<div style="max-width:350px;white-space: normal;">
+<div style="border-bottom:1px solid black">
+    {% if model.is_proxy %}
+    Proxy for: {{ model.proxy }} <br>
+    {% endif %}
+    Model: {{ model.model }}<br>
+    App: {{ model.app_label }}
+</div>
+<div style="white-space:pre-line">
+    {{ model.doc }}
+</div>
+{% if fields %}
+    <b>Fields:</b>
+    <ul>
+        {% for field in fields %}
+        <li>
+            {% if field.unique %}<u>{{field.name}}</u>{%else%}{{field.name}}{%endif%}
+            <small>{{field.ftype}}</small><br>
+            <small>{{field.help_text}}</small>
+        </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+</div>

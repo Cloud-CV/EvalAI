@@ -9,5 +9,6 @@ ADD requirements/* /code/
 
 RUN pip install -U cffi service_identity
 RUN pip install -r dev.txt
+RUN echo "Fire in the hole"
 
 CMD ["./docker/wait-for-it.sh", "django:8000", "--", "python", "scripts/workers/submission_worker.py" ]

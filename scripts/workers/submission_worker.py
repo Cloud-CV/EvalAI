@@ -297,6 +297,7 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     submission.status = Submission.RUNNING
     submission.started_at = timezone.now()
     submission.save()
+    print('hoogabooga',EVALUATION_SCRIPTS)
     try:
         successful_submission_flag = True
         with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
