@@ -10,11 +10,8 @@ class MyAccountAdapter(DefaultAccountAdapter):
         confirmations are sent outside of the request context `request`
         can be `None` here.
         """
-        print('lol')
-        # url = reverse(
-        #     "account_confirm_email",
-        #     args=[emailconfirmation.key])
-        # ret = build_absolute_uri(
-        #     request,
-        #     url)
-        return 'http://localhost:4200/auth/verify-email/' + str(emailconfirmation.key)
+        if (settings.FRONTEND_URL):
+            path = settings.FRONTEND_URL
+        else:
+            path = 'https://evalai.cloudcv.org/'
+        return  str(path) + 'auth/verify-email/' + str(emailconfirmation.key)

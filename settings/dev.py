@@ -4,6 +4,7 @@ from .common import *  # noqa: ignore=F405
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 
 DEBUG = True
+FRONTEND_URL = 'http://localhost:4200/'
 
 ALLOWED_HOSTS = ["*"]
 

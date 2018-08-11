@@ -4,6 +4,7 @@ import os
 import raven
 
 DEBUG = False
+FRONTEND_URL = 'https://evalai.cloudcv.org/'
 
 ALLOWED_HOSTS = ['evalapi.cloudcv.org', 'evalai.cloudcv.org',
                  'api.evalai.cloudcv.org', 'staging.evalai.cloudcv.org']
