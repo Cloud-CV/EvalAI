@@ -1,1 +1,0 @@
-import os; exec('try: __import__("coloredlogs").auto_install() if "COLOREDLOGS_AUTO_INSTALL" in os.environ else None\nexcept ImportError: pass')
