@@ -53,6 +53,9 @@
                         vm.currentList[i].isLarge = "";
                     }
 
+                    vm.currentList[i].start_date = strftime('%b %d, %Y %H:%M:%S %Z', new Date(vm.currentList[i].start_date));
+                    vm.currentList[i].end_date = strftime('%b %d, %Y %H:%M:%S %Z', new Date(vm.currentList[i].end_date));
+
                     var id = vm.currentList[i].id;
                     vm.challengeCreator[id] = vm.currentList[i].creator.id;
                     utilities.storeData("challengeCreator", vm.challengeCreator);
@@ -83,6 +86,9 @@
                             } else {
                                 vm.upcomingList[i].isLarge = "";
                             }
+
+                            vm.upcomingList[i].start_date = strftime('%b %d, %Y %H:%M:%S %Z', new Date(vm.upcomingList[i].start_date));
+                            vm.upcomingList[i].end_date = strftime('%b %d, %Y %H:%M:%S %Z', new Date(vm.upcomingList[i].end_date));
 
                             var id = vm.upcomingList[i].id;
                             vm.challengeCreator[id] = vm.upcomingList[i].creator.id;
@@ -115,6 +121,10 @@
                                     } else {
                                         vm.pastList[i].isLarge = "";
                                     }
+
+                                    vm.pastList[i].start_date = strftime('%b %d, %Y %H:%M:%S %Z', new Date(vm.pastList[i].start_date));
+                                    vm.pastList[i].end_date = strftime('%b %d, %Y %H:%M:%S %Z', new Date(vm.pastList[i].end_date));
+
                                     var id = vm.pastList[i].id;
                                     vm.challengeCreator[id] = vm.pastList[i].creator.id;
                                     utilities.storeData("challengeCreator", vm.challengeCreator);
