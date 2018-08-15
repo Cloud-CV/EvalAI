@@ -345,7 +345,6 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
-                // console.log(vm.phases);
                 for (var i=0; i<vm.phases.results.length; i++) {
                     vm.phases.results[i].start_date = strftime('%b %d, %Y %H:%M:%S %Z', new Date(vm.phases.results[i].start_date));
                     vm.phases.results[i].end_date = strftime('%b %d, %Y %H:%M:%S %Z', new Date(vm.phases.results[i].end_date));

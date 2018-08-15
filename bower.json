@@ -31,7 +31,8 @@
     "angular-trix": "^1.0.2",
     "angular-moment": "^1.2.0",
     "moment": "^2.21.0",
-    "ngclipboard": "^2.0.0"
+    "ngclipboard": "^2.0.0",
+    "strftime": "^0.10.0"
   },
   "resolutions": {
     "angular": "1.7.0"
