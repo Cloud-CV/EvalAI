@@ -345,8 +345,19 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
+ 
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
+                for (var i=0; i<vm.phases.results.length; i++) {
+                    if (vm.phases.results[i].end_date)
+                        var challengeEndDate = Date.parse(vm.phases.results[i].end_date);
+                        var dateNow = Date.now();
+                        var diffInSeconds = (challengeEndDate - dateNow)/1000;
+                        if (diffInSeconds > 0 && diffInSeconds < 86400) { // 86400 are the total seconds in a day
+                            vm.countDownTime = parseInt(diffInSeconds);
+                            vm.phases.results[i].showCountdownTimer=true;
+                        }
+                }
                 utilities.hideLoader();
             },
             onError: function(response) {
