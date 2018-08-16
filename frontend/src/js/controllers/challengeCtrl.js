@@ -349,13 +349,23 @@
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 for (var i=0; i<vm.phases.results.length; i++) {
-                    if (vm.phases.results[i].end_date)
-                        var challengeEndDate = Date.parse(vm.phases.results[i].end_date);
+                    if (vm.phases.results[i].end_date) {
+                        var challengePhaseEndDate = Date.parse(vm.phases.results[i].end_date);
                         var dateNow = Date.now();
-                        var diffInSeconds = (challengeEndDate - dateNow)/1000;
-                        if (diffInSeconds > 0 && diffInSeconds < 86400) { // 86400 are the total seconds in a day
-                            vm.countDownTime = parseInt(diffInSeconds);
+                        var timeDiff = parseInt((challengePhaseEndDate - dateNow)/1000);
+
+                        if (timeDiff > 0 && dateNow < challengePhaseEndDate) {
+                            vm.countDownTime = timeDiff;
                             vm.phases.results[i].showCountdownTimer=true;
+                        }
+
+                        // The below code can used to make a coundown timer that will start one day before a challenge deadline
+
+                        // var dateNow = Date.now();
+                        // var diffInSeconds = (challengePhaseEndDate - dateNow)/1000;
+                        // if (diffInSeconds > 0 && diffInSeconds < 86400) { // 86400 are the total number seconds in a day
+                        //     vm.countDownTime = parseInt(diffInSeconds);
+                        //     vm.phases.results[i].showCountdownTimer=true;
                         }
                 }
                 utilities.hideLoader();

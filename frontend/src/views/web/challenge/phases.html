@@ -3,12 +3,12 @@
         <div class="row">
             <div class="col s11 m11">
                 <div class="row">
-                    <div class="col s6">
+                    <div class="col s4">
                         <span class="fs-18 text-med-black"><strong>{{item.name}}</strong></span>
                     </div>
-                    <div class="col s6" ng-if="item.showCountdownTimer">
+                    <div class="col s8" ng-if="item.showCountdownTimer">
                         <span class="fs-18 text-med-black"><strong>Time Remaining :</strong></span>
-                        <span class="fs-18 text-med-black"><timer countdown=challenge.countDownTime max-time-unit="" interval="1000">{{hhours}} hour{{hourS}}: {{mminutes}} minute{{minutesS}}: {{sseconds}} second{{secondsS}}</timer></span>
+                        <span class="fs-18 text-med-black"><timer countdown=challenge.countDownTime max-time-unit="" interval="1000">{{ddays}} days{{dayS}}, {{hhours}} hour{{hourS}}, {{mminutes}} minute{{minutesS}}, {{sseconds}} second{{secondsS}}</timer></span>
                     </div>
                 </div>
                 <div class="row">
