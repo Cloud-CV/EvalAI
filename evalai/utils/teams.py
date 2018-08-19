@@ -56,7 +56,8 @@ def display_teams(is_host):
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(err)
+        echo(style("\nCould not establish a connection to EvalAI."
+                   " Please check the Host URL.\n", bold=True, fg="red"))
         sys.exit(1)
     response = response.json()
 
@@ -105,7 +106,8 @@ def create_team(team_name, team_url, is_host):
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(err)
+        echo(style("\nCould not establish a connection to EvalAI."
+                   " Please check the Host URL.\n", bold=True, fg="red"))
         sys.exit(1)
 
     if response.status_code == 201:
@@ -146,7 +148,8 @@ def participate_in_a_challenge(challenge_id, participant_team_id):
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(err)
+        echo(style("\nCould not establish a connection to EvalAI."
+                   " Please check the Host URL.\n", bold=True, fg="red"))
         sys.exit(1)
 
     if response.status_code == 201:
