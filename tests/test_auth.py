@@ -1,7 +1,7 @@
 import json
 import os
 import responses
-import shutil
+
 from beautifultable import BeautifulTable
 from click.testing import CliRunner
 
@@ -10,6 +10,7 @@ from evalai.set_host import host
 from evalai.utils.urls import URLS
 from evalai.utils.config import (API_HOST_URL,
                                  AUTH_TOKEN_DIR,
+                                 AUTH_TOKEN_FILE_NAME,
                                  HOST_URL_FILE_PATH)
 from evalai.utils.common import convert_UTC_date_to_local
 
@@ -19,9 +20,16 @@ from tests.base import BaseTestClass
 
 class TestGetUserAuthToken(BaseTestClass):
 
+    token_file = os.path.join(AUTH_TOKEN_DIR, AUTH_TOKEN_FILE_NAME)
+
     def setup(self):
-        if os.path.exists(AUTH_TOKEN_DIR):
-            shutil.rmtree(AUTH_TOKEN_DIR)
+        with open(self.token_file) as fo:
+            self.token = fo.read()
+        os.remove(self.token_file)
+
+    def teardown(self):
+        with open(self.token_file, 'w') as f:
+            f.write(self.token)
 
     def test_get_user_auth_token_when_file_does_not_exist(self):
         expected = ("\nThe authentication token json file doesn't exists at the required path. "
