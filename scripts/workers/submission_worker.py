@@ -1,4 +1,9 @@
+
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import contextlib
 import django
 import importlib
@@ -112,7 +117,7 @@ def download_and_extract_file(url, download_location):
         response = None
 
     if response and response.status_code == 200:
-        with open(download_location, 'w') as f:
+        with open(download_location, 'wb') as f:
             f.write(response.content)
 
 
@@ -128,7 +133,7 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         response = None
 
     if response and response.status_code == 200:
-        with open(download_location, 'w') as f:
+        with open(download_location, 'wb') as f:
             f.write(response.content)
         # extract zip file
         zip_ref = zipfile.ZipFile(download_location, 'r')
@@ -186,6 +191,7 @@ def extract_challenge_data(challenge, phases):
     evaluation_script_url = return_file_url_per_environment(evaluation_script_url)
     # create challenge directory as package
     create_dir_as_python_package(challenge_data_directory)
+
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id] = {}
 
@@ -337,9 +343,8 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
 
             leaderboard_data_list = []
             for split_result in submission_output['result']:
-
                 # get split_code_name that is the key of the result
-                split_code_name = split_result.items()[0][0]
+                split_code_name = list(split_result.keys())[0]
 
                 # Check if the challenge_phase_split exists for the challenge_phaseand dataset_split
                 try:
@@ -463,7 +468,7 @@ def process_submission_callback(ch, method, properties, body):
     try:
         logger.info("[x] Received submission message %s" % body)
         body = yaml.safe_load(body)
-        body = dict((k, int(v)) for k, v in body.iteritems())
+        body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
