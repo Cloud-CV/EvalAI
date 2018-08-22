@@ -439,6 +439,7 @@ def pretty_print_leaderboard_data(attributes, results):
     """
     leaderboard_table = BeautifulTable(max_width=150)
     attributes = ["Rank", "Participant Team"] + attributes + ["Last Submitted"]
+    attributes = list(map(lambda item: str(item), attributes))
     leaderboard_table.column_headers = attributes
 
     for rank, result in enumerate(results, start=1):
@@ -465,9 +466,10 @@ def display_leaderboard(challenge_id, phase_split_id):
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
             validate_token(response.json())
-            echo(style("Error: {}".format(response.json()["error"], fg="red", bold=True)))
+            echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
         else:
             echo(err)
+        sys.exit(1)
     except requests.exceptions.RequestException as err:
         echo(style("\nCould not establish a connection to EvalAI."
                    " Please check the Host URL.\n", bold=True, fg="red"))

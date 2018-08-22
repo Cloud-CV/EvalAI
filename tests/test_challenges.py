@@ -613,6 +613,7 @@ class TestDisplayLeaderboard(BaseTestClass):
 
         table = BeautifulTable(max_width=150)
         attributes = ["Rank", "Participant Team"] + attributes + ["Last Submitted"]
+        attributes = list(map(lambda item: str(item), attributes))
         table.column_headers = attributes
 
         for rank, result in enumerate(self.leaderboard, start=1):

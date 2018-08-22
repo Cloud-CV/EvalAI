@@ -105,8 +105,8 @@ class TestMakeSubmission(BaseTestClass):
     @responses.activate
     def test_make_submission_when_file_is_valid_with_metadata(self):
         expected = "Do you want to include the Submission Details? [y/N]: Y"
-        expected = "{}\n{}".format(expected, ("Method Name: Test\nMethod Description: "
-                                              "Test\nProject URL: Test\nPublication URL: Test\n"))
+        expected = "{}\n{}".format(expected, ("Method Name []: Test\nMethod Description []: "
+                                              "Test\nProject URL []: Test\nPublication URL []: Test\n"))
         expected = "{}\n{}".format(expected, ("Your file {} with the ID {} is successfully submitted.\n\n"
                                               "You can use `evalai submission {}` to view this "
                                               "submission's status.").format("test_file.txt", "9", "9"))

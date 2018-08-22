@@ -1,11 +1,13 @@
 #!/usr/bin/env python
+import io
+
 from setuptools import setup, find_packages
 
 
 PROJECT = 'evalai'
 
 
-with open('README.md', encoding='utf-8') as f:
+with io.open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(

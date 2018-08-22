@@ -24,8 +24,9 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
     input_file = {'input_file': file}
     data = {
             'status': 'submitting',
-            **submission_metadata,
            }
+    data = dict(data, **submission_metadata)
+
     try:
         response = requests.post(
                                 url,
