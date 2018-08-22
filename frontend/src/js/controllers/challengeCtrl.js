@@ -1026,7 +1026,7 @@
                             vm.message = details;
                             vm.showClock = true;
                             vm.countDownTimer = function() {
-                                vm.remainingTime = vm.message.remaining_time;
+                                vm.remainingTime = Math.floor(vm.message.remaining_time);
                                 vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
                                 vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
                                 vm.hours = Math.floor(vm.hoursLeft / 3600);
