@@ -290,4 +290,4 @@ REST_AUTH_SERIALIZERS = {
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
-LOGIN_REDIRECT_URL = "/xyz"
+LOGIN_REDIRECT_URL = "/<profile>"
