@@ -24,7 +24,7 @@
         vm.color = {};
         vm.isResetPassword = false;
         // form error
-        vm.isFormError = false;
+        vm.isFormError = {};
         vm.FormError = {};
         // to store the next redirect route
         vm.redirectUrl = {};
@@ -62,7 +62,7 @@
             vm.wrnMsg = {};
 
             //switch off form errors
-            vm.isFormError = false;
+            vm.isFormError = {};
 
             //reset form when link sent for reset password
             vm.isMail = true;
@@ -85,7 +85,7 @@
                 parameters.callback = {
                     onSuccess: function(response) {
                         if (response.status == 201) {
-                            vm.isFormError = false;
+                            vm.isFormError = {};
                             // vm.regMsg = "Registered successfully, Login to continue!";
                             $rootScope.notify("success", "Registered successfully. Please verify your email address!");
                             $state.go('auth.login');
@@ -95,7 +95,7 @@
                     onError: function(response) {
                         if (response.status == 400) {
                             vm.stopLoader();
-                            vm.isFormError = true;
+                            // vm.isFormError = true;
                             var non_field_errors, isUsername_valid, isEmail_valid, isPassword1_valid, isPassword2_valid;
                             try {
                                 non_field_errors = typeof(response.data.non_field_errors) !== 'undefined' ? true : false;
@@ -104,15 +104,20 @@
                                 isPassword1_valid = typeof(response.data.password1) !== 'undefined' ? true : false;
                                 isPassword2_valid = typeof(response.data.password2) !== 'undefined' ? true : false;
                                 if (non_field_errors) {
-                                    vm.FormError = response.data.non_field_errors[0];
+                                    vm.FormError.non_field = response.data.non_field_errors[0];
+                                    vm.isFormError.non_field = true;
                                 } else if (isUsername_valid) {
-                                    vm.FormError = response.data.username[0];
+                                    vm.FormError.username = response.data.username[0];
+                                    vm.isFormError.username = true;
                                 } else if (isEmail_valid) {
-                                    vm.FormError = response.data.email[0];
+                                    vm.FormError.email = response.data.email[0];
+                                    vm.isFormError.email= true;
                                 } else if (isPassword1_valid) {
-                                    vm.FormError = response.data.password1[0];
+                                    vm.FormError.password1 = response.data.password1[0];
+                                    vm.isFormError.password1 = true;
                                 } else if (isPassword2_valid) {
-                                    vm.FormError = response.data.password2[0];
+                                    vm.FormError.password2 = response.data.password2[0];
+                                    vm.isFormError.password2 = true;
 
                                 }
 

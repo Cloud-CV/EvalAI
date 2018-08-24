@@ -16,6 +16,7 @@
             <div class="wrn-msg text-highlight" ng-messages="signupForm.name.$error" ng-if="signupForm.name.$touched || signupForm.$submitted">
                 <p ng-message="minlength">Username is too short.</p>
                 <p ng-message="required">Username is required.</p>
+                <div ng-if="auth.isFormError.username" class="text-highlight align-left"> {{auth.FormError.username}}</div>
             </div>
         </div>
         <!-- email -->
@@ -26,6 +27,7 @@
             <div class="wrn-msg text-highlight" ng-messages="signupForm.email.$error" ng-if="signupForm.email.$touched || signupForm.$submitted">
                 <p ng-message="email">Please enter valid email address.</p>
                 <p ng-message="required">Email address is required.</p>
+                <div ng-if="auth.isFormError.email" class="text-highlight align-left"> {{auth.FormError.email}}</div>
             </div>
         </div>
         <!-- password -->
@@ -40,6 +42,7 @@
                 <p ng-message="minlength">Password is less than 8 characters.</p>
                 <p ng-message="maxlength">Password is more than 32 characters.</p>
                 <p ng-message="required">Password is required.</p>
+                <div ng-if="auth.isFormError.password1" class="text-highlight align-left"> {{auth.FormError.password1}}</div>
             </div>
         </div>
         <!-- confirm password -->
@@ -52,13 +55,14 @@
                 <p ng-message="minlength">Password is less than 8 characters.</p>
                 <p ng-message="maxlength">Password is more than 32 characters.</p>
                 <p ng-message="required">Password confirmation is required.</p>
+                <div ng-if="auth.isFormError.password2" class="text-highlight align-left"> {{auth.FormError.password2}}</div>
             </div>
         </div>
         <!-- submit button -->
         <div class="align-left reg-control">
             <button class="waves-effect waves-dark btn ev-btn-dark grad-btn grad-btn-dark w-300" type="submit" value="Submit">Sign Up</button>
         </div>
-        <div ng-if="auth.isFormError" class="text-highlight align-left"> {{auth.FormError}}</div>
+        <div ng-if="auth.isFormError.non_field" class="text-highlight align-left"> {{auth.FormError.non_field}}</div>
         <div>
             <p class="text-light-gray">
                 <span class="text-med-black">Already have an account?</span> <a class="highlight-link" ui-sref="auth.login">Log In</a>
