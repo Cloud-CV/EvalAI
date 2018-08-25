@@ -385,7 +385,7 @@
                 scope: $scope,
                 preserveScope: true,
                 targetEvent: ev,
-                templateUrl: 'dist/views/web/edit-teams.html'
+                templateUrl: 'dist/views/web/edit_teams.html'
             });
         };
 
