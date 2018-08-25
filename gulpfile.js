@@ -30,7 +30,7 @@ var styles = JSON.parse(fs.readFileSync('frontend/app.styles.json'));
 var configJson = JSON.parse(fs.readFileSync('frontend/src/js/config.json'));
 
 function clean() {
-    return del(['frontend/dist/']);
+    return del(['frontend/dist/*']);
 };
 
 /*
@@ -319,9 +319,12 @@ gulp.task('dev', gulp.series(clean, function(done) {
     done();
 }, parallelTasks, configDev, injectpaths, lint));
 
-gulp.task('dev:runserver', gulp.series(function(done) {
+gulp.task('dev:runserver', gulp.series(clean ,function(done) {
     production = false;
     done();
 }, parallelTasks, configDev, injectpaths, lint, gulp.parallel(watch, startServer)));
 
-
+gulp.task('runserver', gulp.series(function(done) {
+    production = false;
+    done();
+}, gulp.parallel(watch, startServer)));
