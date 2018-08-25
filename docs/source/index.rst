@@ -1,5 +1,5 @@
 .. EvalAI documentation master file, created by
-   sphinx-quickstart on Fri Jul 14 11:32:35 2017.
+   sphinx-quick start on Fri Jul 14 11:32:35 2017.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
