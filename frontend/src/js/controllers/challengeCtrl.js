@@ -14,10 +14,10 @@
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
-        vm.methodName = null;
-        vm.methodDesc = null;
-        vm.projectUrl = null;
-        vm.publicationUrl = null;
+        vm.methodName = "";
+        vm.methodDesc = "";
+        vm.projectUrl = "";
+        vm.publicationUrl = "";
         vm.wrnMsg = {};
         vm.page = {};
         vm.isParticipated = false;
@@ -297,12 +297,12 @@
                             angular.element(".file-path").val(null);
 
 
+                            // Reset the value of fields related to a submission
                             vm.phaseId = null;
-                            vm.methodName = null;
-                            vm.methodDesc = null;
-                            vm.projectUrl = null;
-                            vm.publicationUrl = null;
-                            // vm.subErrors.msg = "Your submission has been recorded succesfully!";
+                            vm.methodName = "";
+                            vm.methodDesc = "";
+                            vm.projectUrl = "";
+                            vm.publicationUrl = "";
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
 
                             vm.stopLoader();
@@ -553,7 +553,7 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.submissionCount = details.submission_count;
+                    vm.submissionCount = details.participant_team_submission_count;
                 },
                 onError: function(response) {
                     var error = response.data;
@@ -581,11 +581,11 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.submissionResult = details;
 
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                     }
+                    vm.submissionResult = details;
 
                     vm.start();
 
@@ -808,14 +808,15 @@
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_name": vm.team.name
+                "team_name": vm.team.name,
+                "team_url": vm.team.url
             };
             parameters.callback = {
                 onSuccess: function() {
                     $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
-                    vm.team.name = '';
+                    vm.team = {};
 
                     vm.startLoader("Loading Teams");
                     parameters.url = 'participants/participant_team';
@@ -983,12 +984,12 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.showRemainingSubmissions = function() {
+        vm.showRemainingSubmissions = function(phaseId) {
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
-            parameters.url = "jobs/" + vm.challengeId + "/phases/" + vm.phaseId + "/remaining_submissions";
+            parameters.url = "jobs/" + vm.challengeId + "/phases/" + phaseId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {

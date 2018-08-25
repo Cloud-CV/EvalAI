@@ -11,7 +11,6 @@
 
     function TeamsCtrl(utilities,loaderService, $scope, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
-        // console.log(vm.teamId)
         var userKey = utilities.getData('userKey');
         var challengePk = 1;
 
@@ -180,7 +179,8 @@
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_name": vm.team.name
+                "team_name": vm.team.name,
+                "team_url": vm.team.url
             };
             parameters.token = userKey;
             parameters.callback = {
@@ -188,7 +188,8 @@
                     $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
-                    vm.team.name = '';
+                    // reset the team attributes
+                    vm.team = {};
 
                     vm.startLoader("Loading Teams");
                     var parameters = {};
@@ -235,7 +236,7 @@
 
                     vm.team.error = error.team_name[0];
                     vm.stopLoader();
-                    $rootScope.notify("error", "New team couldn't be created.");
+                    $rootScope.notify("error", error.team_name[0]);
                 }
             };
 
@@ -361,59 +362,82 @@
         };
 
 
-        vm.editTeamName = function(ev, participantTeamId) {
-            ev.stopPropagation();
-            // Edit the team name using UI.
-            var confirm = $mdDialog.prompt()
-                .title('Change Team Name')
-                .textContent('Enter new team name')
-                .placeholder('Team Name')
-                .ariaLabel('')
-                .targetEvent(ev)
-                .ok('confirm')
-                .cancel('Cancel');
+        vm.showMdDialog = function(ev, participantTeamId) {
+            vm.participantTeamId = participantTeamId;
 
-            $mdDialog.show(confirm).then(function(result) {
-                var parameters = {};
-                parameters.url = 'participants/participant_team/' + participantTeamId;
-                parameters.method = 'PATCH';
-                parameters.data = {
-                    "team_name": result,
-                };
-                parameters.token = userKey;
-                parameters.callback = {
-                    onSuccess: function() {
-                        $rootScope.notify("success", "The Participant team name is successfully updated!");
-                        var parameters = {};
-                        // Retrives the updated lists and displays it.
-                        parameters.url = 'participants/participant_team';
-                        parameters.method = 'GET';
-                        parameters.token = userKey;
-                        parameters.callback = {
-                            onSuccess: function(response) {
-                                vm.existTeam.results = response.data.results;
-                            },
-                            onError: function() {
-                                $rootScope.notify("error", "Team name cannot be changed!");
-                            }
-                        };
-                        utilities.sendRequest(parameters);
-                    },
-                    onError: function(response) {
-                        var error;
-                        if ('team_name' in response.data) {
-                            error = response.data['team_name'];
-                        }
-                        else {
-                            error = response.data['error'];
-                        }
-                        $rootScope.notify("error", error[0]);
-                    }
-                };
+            parameters.url = 'participants/participant_team/' + vm.participantTeamId;
+            parameters.method = 'GET';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.team.name = response.data.team_name;
+                    vm.team.url = response.data.team_url;
+                },
+                onError: function(response) {
+                    var error = response.data['error'];
+                    vm.stopLoader();
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
 
-                utilities.sendRequest(parameters);
-            }, function() {
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/edit-teams.html'
             });
+        };
+
+        vm.updateParticipantTeamData = function(updateParticipantTeamDataForm) {
+            if (updateParticipantTeamDataForm) {
+            var parameters = {};
+            parameters.url = 'participants/participant_team/' + vm.participantTeamId;
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "team_name": vm.team.name,
+                "team_url": vm.team.url
+            };
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function() {
+                    $mdDialog.hide();
+                    vm.team = {};
+                    $rootScope.notify("success", "Participant Team updated!");
+                    var parameters = {};
+                    // Retrives the updated lists and displays it.
+                    parameters.url = 'participants/participant_team';
+                    parameters.method = 'GET';
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            vm.existTeam.results = response.data.results;
+                        },
+                        onError: function(response) {
+                            var error = response.data['error'];
+                            vm.stopLoader();
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                },
+                onError: function(response) {
+                    var error;
+                    if ('team_name' in response.data) {
+                        error = response.data['team_name'];
+                    }
+                    else {
+                        error = response.data['error'];
+                    }
+                    $rootScope.notify("error", error[0]);
+                }
+            };
+
+            utilities.sendRequest(parameters);
+            }
+            else {
+                $mdDialog.hide();
+            }
         };
     }
 

@@ -17,11 +17,12 @@
                     <div ng-if="!showPagination" class="page-msg">{{teams.paginationMsg}}</div>
                     <ul class="collapsible" data-collapsible="accordion">
                         <li ng-repeat="(key, value) in teams.existTeam.results">
-                            <div class="collapsible-header"> <i class="fa fa-lg fa-users" aria-hidden="true"></i>
+                            <div class="collapsible-header"><i class="fa fa-lg fa-users" aria-hidden="true"></i>
                                 <div class="show-member-title pointer">
-                                    <span><b class="text-med-black">Team: </b>{{value.team_name}}</span>
+                                    <span ng-if="value.team_url != ''"><b class="text-med-black">Team: </b><a class="orange-text" href="{{value.team_url}}" target="_blank">{{value.team_name}}</a></span>
+                                    <span ng-if="value.team_url == ''"><b class="text-med-black">Team: </b>{{value.team_name}}</span>
                                     <a ng-click="teams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
-                                    <a ng-click="teams.editTeamName($event, value.id)"><i class="fa fa fa-pencil list-icon text-highlight w-300 right grey-text"></i></a>
+                                    <a ng-click="teams.showMdDialog($event, value.id)"><i class="fa fa fa-pencil list-icon text-highlight w-300 right grey-text"></i></a>
                                     <a ng-click="teams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
                                     <br>
                                     <span><b class="text-med-black">Created by: </b>{{value.created_by}}</span>
@@ -65,10 +66,15 @@
                 <div class="ev-md-container ev-card-body new-team-card">
                     <form ng-submit="teams.createNewTeam()">
                         <div class="input-field align-left">
-                            <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="teams.team.name" ng-pattern="/^[\w -]*$/" focus-if>
+                            <input id="name" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="teams.team.name" ng-pattern="/^[\w -.]*$/" focus-if>
                             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                             <label for="name" data-error="wrong" data-success="right">Team Name*</label>
                             <div class="wrn-msg text-highlight" ng-show="teams.team.error">{{teams.team.error}}</div>
+                        </div>
+                        <div class="input-field align-left">
+                            <input id="url" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="teams.team.url" focus-if>
+                            <span class="form-icon form-icon-dark"><i class="fa fa-link"></i></span>
+                            <label for="url" data-error="wrong" data-success="right">Team URL (Optional)</label>
                         </div>
                         <div class="align-left reg-control">
                             <button class="waves-effect waves-dark btn grad-btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Create Participant Team</button>

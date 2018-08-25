@@ -22,12 +22,15 @@ from jobs.serializers import (LastSubmissionDateTime,
                               SubmissionCountSerializer,
                               )
 from participants.models import Participant
+from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from participants.serializers import (ParticipantCount,
                                       ParticipantCountSerializer,
                                       ParticipantTeamCount,
                                       ParticipantTeamCountSerializer,
                                       )
-from .serializers import (ChallengePhaseSubmissionCount,
+from .serializers import (ChallengePhaseSubmissionAnalytics,
+                          ChallengePhaseSubmissionAnalyticsSerializer,
+                          ChallengePhaseSubmissionCount,
                           ChallengePhaseSubmissionCountSerializer,
                           LastSubmissionTimestamp,
                           LastSubmissionTimestampSerializer,
@@ -107,24 +110,22 @@ def get_submission_count(request, challenge_pk, duration):
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_pk):
+def get_challenge_phase_submission_count_by_team(request, challenge_pk, challenge_phase_pk):
     """
-    API to fetch
-    1. The submissions count for challenge phase.
-    2. The participated team count for challenge phase.
+    Returns number of submissions done by a participant team in a challenge phase
     """
     challenge = get_challenge_model(challenge_pk)
 
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
+    participant_team = get_participant_team_id_of_user_for_a_challenge(request.user, challenge.pk)
+
     submissions = Submission.objects.filter(
-        challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
-    submission_count = submissions.count()
-    participant_team_count = submissions.values_list(
-        'participant_team', flat=True).distinct().count()
+        challenge_phase=challenge_phase, challenge_phase__challenge=challenge, participant_team=participant_team)
+    participant_team_submissions = submissions.count()
 
     challenge_phase_submission_count = ChallengePhaseSubmissionCount(
-        submission_count, participant_team_count, challenge_phase.pk)
+        participant_team_submissions, challenge_phase.pk)
     try:
         serializer = ChallengePhaseSubmissionCountSerializer(challenge_phase_submission_count)
         response_data = serializer.data
@@ -204,5 +205,44 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     except:
+        response_data = {'error': 'Bad request. Please try again later!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_pk):
+    """
+    Returns
+    1. Total number of submissions in a challenge phase
+    2. Number of teams which made submissions in a challenge phase
+    3. Number of submissions with status a)Submitting, b)Submitted, c)Running, d)Failed, e)Cancelled, f)Finished status
+    4. Number of flagged & public submissions in challenge phase
+    """
+
+    challenge = get_challenge_model(challenge_pk)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+    # Get the total submissions in a challenge phase
+    submissions = Submission.objects.filter(
+        challenge_phase=challenge_phase, challenge_phase__challenge=challenge)
+    total_submissions = submissions.count()
+    # Get the total participant teams in a challenge phase
+    participant_team_count = submissions.values('participant_team').distinct().count()
+    # Get flagged submission count
+    flagged_submissions_count = submissions.filter(is_flagged=True).count()
+    # Get public submission count
+    public_submissions_count = submissions.filter(is_public=True).count()
+    challenge_phase_submission_count = ChallengePhaseSubmissionAnalytics(total_submissions,
+                                                                         participant_team_count,
+                                                                         flagged_submissions_count,
+                                                                         public_submissions_count,
+                                                                         challenge_phase.pk)
+    try:
+        serializer = ChallengePhaseSubmissionAnalyticsSerializer(challenge_phase_submission_count)
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    except ValueError:
         response_data = {'error': 'Bad request. Please try again later!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
