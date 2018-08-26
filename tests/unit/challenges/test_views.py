@@ -1584,7 +1584,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'pk': self.challenge_phase.pk + 1})
         expected = {
-            'error': 'ChallengePhase does not exist'
+            'error': 'ChallengePhase 137 does not exist'
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
