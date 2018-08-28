@@ -13,6 +13,9 @@ from evalai.utils.common import (validate_token,
                                  convert_UTC_date_to_local)
 
 
+requests.packages.urllib3.disable_warnings()
+
+
 def make_submission(challenge_id, phase_id, file, submission_metadata={}):
     """
     Function to submit a file to a challenge
@@ -33,6 +36,7 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
                                 headers=headers,
                                 files=input_file,
                                 data=data,
+                                verify=False
                                 )
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
@@ -103,7 +107,7 @@ def display_my_submission_details(challenge_id, phase_id, start_date, end_date):
     headers = get_request_header()
 
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, verify=False)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
@@ -153,7 +157,7 @@ def display_submission_details(submission_id):
 
     headers = get_request_header()
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, verify=False)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
