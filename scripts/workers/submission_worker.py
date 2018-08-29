@@ -340,9 +340,8 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
                "submission_result": ['foo', 'bar'],
             }
         '''
-        # submission_output = yaml.safe_load(submission_output)
-        # submission_output = dict(submission_output)
         if 'result' in submission_output:
+
             leaderboard_data_list = []
             for split_result in submission_output['result']:
                 # get split_code_name that is the key of the result
@@ -395,8 +394,6 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
 
     # after the execution is finished, set `status` to finished and hence `completed_at`
     if submission_output:
-        # submission_output = yaml.safe_load(submission_output)
-        # submission_output = dict(submission_output)
         output = {}
         output['result'] = submission_output.get('result', '')
         submission.output = output
