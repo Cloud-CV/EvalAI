@@ -1,4 +1,3 @@
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -40,7 +39,8 @@ DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
 from challenges.models import (Challenge,
                                ChallengePhase,
                                ChallengePhaseSplit,
-                               LeaderboardData) # noqa
+                               LeaderboardData,
+                               DatasetSplit)  # noqa
 
 from jobs.models import Submission          # noqa
 from jobs.serializers import SubmissionSerializer # noqa
@@ -353,8 +353,16 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
                     challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
                                                                             dataset_split__codename=split_code_name)
                 except:
-                    stderr.write("ORGINIAL EXCEPTION: No such relation between Challenge Phase and DatasetSplit"
-                                 " specified by Challenge Host \n")
+                    try:
+                        dataset_split = DatasetSplit.objects.get(codename=split_code_name)
+                    except:
+                        error_message = "DatasetSplit with codename %s does not exist" % split_code_name
+                    else:
+                        error_message = "ORIGINAL EXCEPTION: No such relation between Challenge Phase (%s-%s) and" \
+                                        " DatasetSplit (%s-%s) specified by Challenge Host \n" % (
+                                            challenge_phase.id, challenge_phase.name, dataset_split.id,
+                                            dataset_split.name)
+                    stderr.write(error_message)
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
                     break
