@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import contextlib
 import django
 import importlib
+import json
 import logging
 import os
 import pika
@@ -339,8 +340,9 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
                "submission_result": ['foo', 'bar'],
             }
         '''
+        # submission_output = yaml.safe_load(submission_output)
+        # submission_output = dict(submission_output)
         if 'result' in submission_output:
-
             leaderboard_data_list = []
             for split_result in submission_output['result']:
                 # get split_code_name that is the key of the result
@@ -393,12 +395,15 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
 
     # after the execution is finished, set `status` to finished and hence `completed_at`
     if submission_output:
+        # submission_output = yaml.safe_load(submission_output)
+        # submission_output = dict(submission_output)
         output = {}
         output['result'] = submission_output.get('result', '')
         submission.output = output
 
         # Save submission_result_file
         submission_result = submission_output.get('submission_result', '')
+        submission_result = json.dumps(submission_output).encode()
         submission.submission_result_file.save('submission_result.json', ContentFile(submission_result))
 
         # Save submission_metadata_file
@@ -430,6 +435,8 @@ def process_submission_message(message):
     Extracts the submission related metadata from the message
     and send the submission object for evaluation
     '''
+    message = yaml.safe_load(message)
+    message = dict((k, int(v)) for k, v in message.items())
     challenge_id = message.get('challenge_id')
     phase_id = message.get('phase_id')
     submission_id = message.get('submission_id')
@@ -467,8 +474,6 @@ def process_add_challenge_message(message):
 def process_submission_callback(ch, method, properties, body):
     try:
         logger.info("[x] Received submission message %s" % body)
-        body = yaml.safe_load(body)
-        body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
