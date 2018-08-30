@@ -432,8 +432,6 @@ def process_submission_message(message):
     Extracts the submission related metadata from the message
     and send the submission object for evaluation
     '''
-    message = yaml.safe_load(message)
-    message = dict((k, int(v)) for k, v in message.items())
     challenge_id = message.get('challenge_id')
     phase_id = message.get('phase_id')
     submission_id = message.get('submission_id')
@@ -471,6 +469,8 @@ def process_add_challenge_message(message):
 def process_submission_callback(ch, method, properties, body):
     try:
         logger.info("[x] Received submission message %s" % body)
+        body = yaml.safe_load(body)
+        body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
