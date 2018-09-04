@@ -12,9 +12,9 @@ Django is the heart of the application, which powers our backend. We use Django 
 
 We use Django Rest Framework for writing and providing REST APIs. Its permission and serializers have helped write a maintainable codebase.
 
-#### RabbitMQ
+#### Amazon SQS
 
-We currently use RabbitMQ for queueing submission messages which are then later on processed by a Python worker.
+We currently use Amazon SQS for queueing submission messages which are then later on processed by a Python worker.
 
 #### PostgreSQL
 
