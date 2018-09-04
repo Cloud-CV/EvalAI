@@ -8,8 +8,14 @@ matrix:
     allow_failures:
         - python: "3.6"
 
+env:
+  - AWS_SECRET_ACCESS_KEY=x AWS_ACCESS_KEY_ID=x AWS_SQS_ENDPOINT="http://localhost:9324"
+
 addons:
   postgresql: "9.4"
+  apt:
+    packages:
+      - oracle-java8-set-default
 
 cache:
   directories:
@@ -20,13 +26,12 @@ before_cache:
 
 before_script:
   - psql -c "CREATE DATABASE evalai" -U postgres
+  - wget https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar
+  - java -jar elasticmq-server-0.14.2.jar &
 
 install:
   - pip install -r requirements/dev.txt
   - pip install coveralls
-
-services:
-  - rabbitmq
 
 script:
   - flake8 ./

@@ -60,7 +60,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
 
 ### Using Virtual Environment
 
-1. Install [python] 2.7.10 or above, [git], [postgresql] version >= 10.1, [RabbitMQ] and [virtualenv], in your computer, if you don't have it already.
+1. Install [python] 2.7.10 or above, [git], [postgresql] version >= 10.1, have ElasticMQ installed (Amazon SQS is used in production) and [virtualenv], in your computer, if you don't have it already.
 *If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
 
 2. Get the source code on your machine via git.
@@ -136,7 +136,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
 
 10. That's it, Open web browser and hit the url [http://127.0.0.1:8888].
 
-11. (Optional) If you want to see the whole game into play, then start the RabbitMQ worker in a new terminal window using the following command that consumes the submissions done for every challenge:
+11. (Optional) If you want to see the whole game into play, then install the ElasticMQ Queue service and start the worker in a new terminal window using the following command that consumes the submissions done for every challenge:
 
     ```
     python scripts/workers/submission_worker.py
@@ -155,6 +155,6 @@ If you are interested in contributing to EvalAI, follow our [contribution guidel
 [virtualenv]: https://virtualenv.pypa.io/
 [postgresql]: http://www.postgresql.org/download/
 [postgresqlhelp]: http://bobbyong.com/blog/installing-postgresql-on-windoes/
-[rabbitmq]: https://www.rabbitmq.com/
+[amazon SQS]: https://aws.amazon.com/sqs/
 [http://127.0.0.1:8888]: http://127.0.0.1:8888
 [http://127.0.0.1:8000]: http://127.0.0.1:8000

@@ -34,12 +34,16 @@ sudo apt-get install git
 sudo apt-get install postgresql libpq-dev
 ```
 
-* Install rabbitmq
+* Register and configure Amazon SQS
+
+Follow [these
+instructions](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-setting-up.html) for the detailed steps on how to setup Amazon SQS for the production environment.
+
+
+For setting up a Queue service for development environment download the stand-alone [ElasticMQ distribution](https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar). Java 8 or above is required for running the server. Run the following command for which binds to localhost:9324, for running the ElasticMQ Queue service which mocks the Amazon SQS functionality.
 
 ```shell
-echo 'deb http://www.rabbitmq.com/debian/ stable main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
-sudo apt-get update
-sudo apt-get install rabbitmq-server
+java -jar elasticmq-server-0.14.2.jar
 ```
 
 * Install virtualenv
@@ -140,19 +144,16 @@ export PATH=$PATH:/usr/pgsql-x.x/bin
 ```
 where `x.x` is your version, such as /usr/pgsql-9.5./bin.
 
-* Install rabbitmq
+* Register and configure Amazon SQS
+
+Follow [these
+instructions](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-setting-up.html) for the detailed steps on how to setup Amazon SQS for the production environment.
+
+
+For setting up a Queue service for development environment download the stand-alone [ElasticMQ distribution](https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar). Java 8 or above is required for running the server. Run the following command for which binds to localhost:9324, for running the ElasticMQ Queue service which mocks the Amazon SQS functionality.
 
 ```shell
-# use the below commands to get Erlang on our system:
-wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
-sudo rpm -Uvh remi-release-6*.rpm epel-release-6*.rpm
-# Finally, download and install Erlang:
-sudo yum install -y erlang
-# Once we have Erlang, we can continue with installing RabbitMQ:
-wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.2.2/rabbitmq-server-3.2.2-1.noarch.rpm
-rpm --import http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
-sudo yum install rabbitmq-server-3.2.2-1.noarch.rpm
+java -jar elasticmq-server-0.14.2.jar
 ```
 
 * Install virtualenv
@@ -263,7 +264,7 @@ Follow this guide to setup your development machine.
 
 ### Step 1: Install prerequisites
 
-* Install Python 2.x, Git, PostgreSQL version >= 9.4, RabbitMQ and virtualenv, in your computer, if you don't have it already.
+* Install Python 2.x, Git, PostgreSQL version >= 9.4, have Amazon SQS configured or ElasticMQ installed and virtualenv, in your computer, if you don't have it already.
 
 ### Step 2: Get EvalAI Code
 

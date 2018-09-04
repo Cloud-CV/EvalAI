@@ -33,6 +33,7 @@ def check_database():
         print("Are you sure you want to wipe the existing development database and reseed it? (Y/N)")
         if settings.TEST or raw_input().lower() == "y":
             destroy_database()
+            return True
         else:
             return False
     else:
@@ -131,7 +132,8 @@ def create_challenge(title, start_date, end_date, host_team):
     """
     Creates a challenge.
     """
-    evaluation_script = open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'string_matching.zip'), 'rb')
+    evaluation_script = open(
+        os.path.join(settings.BASE_DIR, 'examples', 'example1', 'sample_evaluation_script.zip'), 'rb')
     Challenge.objects.create(
         title=title,
         short_description=fake.paragraph(),
