@@ -5,13 +5,10 @@ import raven
 
 DEBUG = False
 
-# TODO: Remove localhost from the list of allowed hosts in production env
 ALLOWED_HOSTS = [
     '*.evalai.cloudcv.org',
     'evalai.cloudcv.org',
     'evalapi.cloudcv.org',
-    'localhost',
-    '127.0.0.1',
 ]
 
 # Database
@@ -19,13 +16,10 @@ ALLOWED_HOSTS = [
 
 CORS_ORIGIN_ALLOW_ALL = False
 
-# TODO: Remove localhost from the list in production env
 CORS_ORIGIN_WHITELIST = (
     'evalai.cloudcv.org',
     'evalai.s3.amazonaws.com',
     'staging.evalai.cloudcv.org',
-    '127.0.0.1:8888',
-    'localhost:8888',
 )
 
 DATABASES = {
