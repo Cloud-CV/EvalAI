@@ -24,7 +24,10 @@
                                     <li ng-repeat="(key, value) in challenge.existTeam.results">
                                         <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="challenge.teamId">
                                         <label for="{{value.id}}"></label>
-                                        <div class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
+                                        <div ng-if="value.team_url != ''" class="show-member-title pointer"><strong class="text-med-black">Team: </strong><a class="orange-text" href="{{value.team_url}}" target="_blank">{{value.team_name}}</a>
+                                            <br>
+                                            <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
+                                        <div ng-if="value.team_url == ''" class="show-member-title pointer"><strong class="text-med-black">Team: </strong>{{value.team_name}}
                                             <br>
                                             <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
                                         <div class="clearfix"></div>
@@ -75,6 +78,11 @@
                                     <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
                                     <label for="name" data-error="wrong" data-success="right">Team Name*</label>
                                     <div class="wrn-msg text-highlight" ng-show="teams.team.error">{{challenge.team.error}}</div>
+                                </div>
+                                <div class="input-field align-left">
+                                    <input id="url" type="text" class="validate text-dark-black dark-autofill w-400" ng-model="challenge.team.url" focus-if>
+                                    <span class="form-icon form-icon-dark"><i class="fa fa-link"></i></span>
+                                    <label for="url" data-error="wrong" data-success="right">Team URL (Optional)</label>
                                 </div>
                                 <div class="align-left reg-control">
                                     <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" value="Submit">Create Participant Team</button>

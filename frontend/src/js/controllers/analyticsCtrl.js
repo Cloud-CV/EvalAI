@@ -107,7 +107,7 @@
                             vm.currentPhase = details.results;
                             var challengePhaseId = [];
                             for (var phaseCount = 0; phaseCount < vm.currentPhase.length; phaseCount++) {
-                                parameters.url = 'analytics/challenge/' + vm.challengeId + '/challenge_phase/' +  vm.currentPhase[phaseCount].id + '/count';
+                                parameters.url = 'analytics/challenge/' + vm.challengeId + '/challenge_phase/' +  vm.currentPhase[phaseCount].id + '/analytics';
                                 parameters.method = 'GET';
                                 parameters.token = userKey;
                                 challengePhaseId.push(vm.currentPhase[phaseCount].id);
@@ -118,7 +118,7 @@
                                         if (status == 200) {
                                             for(var i=0; i<challengePhaseId.length; i++) {
                                                 if (challengePhaseId[i] == details.challenge_phase) {
-                                                    vm.totalSubmission[challengePhaseId[i]] = details.submission_count;
+                                                    vm.totalSubmission[challengePhaseId[i]] = details.total_submissions;
                                                     vm.totalParticipatedTeams[challengePhaseId[i]] = details.participant_team_count;
                                                     i++;
                                                     break;

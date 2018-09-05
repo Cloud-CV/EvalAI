@@ -1,13 +1,16 @@
-FROM python:2.7
+FROM python:3.4
+MAINTAINER CloudCV
 
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir /code
+ADD . /code
+
 WORKDIR /code
 
 ADD requirements/* /code/
 
 RUN pip install -U cffi service_identity
 RUN pip install -r dev.txt
+RUN pip install -r worker.txt
 
-CMD ["./docker/wait-for-it.sh", "django:8000", "--", "python", "scripts/workers/submission_worker.py" ]
+CMD ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.submission_worker"]
