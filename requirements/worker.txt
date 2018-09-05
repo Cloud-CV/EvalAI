@@ -1,4 +1,5 @@
-networkx==2.1
-numpy==1.14.5
 scipy==1.1.0
 sklearn==0.0
+numpy==1.14.5
+networkx==2.1
+tqdm==4.25.0
