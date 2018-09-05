@@ -11,12 +11,6 @@ services:
       dockerfile: docker/prod/django/Dockerfile
     ports:
       - "8000:8000"
-    logging:
-      driver: awslogs
-      options: 
-        awslogs-group: evalai
-        awslogs-region: us-east-1
-        awslogs-stream-prefix: django
 
   worker:
     image: 937891341272.dkr.ecr.us-east-1.amazonaws.com/evalai-worker:latest
@@ -27,12 +21,6 @@ services:
       - django
     env_file:
       - docker/prod/docker.env
-    logging:
-      driver: awslogs
-      options: 
-        awslogs-group: evalai
-        awslogs-region: us-east-1
-        awslogs-stream-prefix: worker
 
   nodejs:
     image: 937891341272.dkr.ecr.us-east-1.amazonaws.com/evalai-nodejs:latest
@@ -41,16 +29,10 @@ services:
       context: ./
       dockerfile: docker/prod/nodejs/Dockerfile
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
     ports:
       - "8888:8888"
       - "80:80"
     volumes:
       - /code/node_modules
       - /code/bower_components
-    logging:
-      driver: awslogs
-      options: 
-        awslogs-group: evalai
-        awslogs-region: us-east-1
-        awslogs-stream-prefix: nodejs
