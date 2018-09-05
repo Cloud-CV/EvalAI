@@ -11,6 +11,7 @@ ADD ./karma.conf.js /code
 
 # Install Prerequisites
 RUN npm install -g bower gulp@next
+RUN npm install phantomjs-prebuilt
 RUN npm link gulp
 RUN npm cache clean -f
 RUN npm install
