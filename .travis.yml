@@ -38,20 +38,8 @@ script:
   - py.test --cov . --cov-config .coveragerc
 
 after_success:
-  env:
-    - DEBUG = False
   - coveralls --rcfile=.coveragerc
-  - pip install awscli
 
-  # Set AWS default region
-  - aws configure set default.region us-east-1
-
-  # Authenticate against our Docker registry
-  - eval $(aws ecr get-login --no-include-email)
-
-  # Build and push the Django container image
-  - docker-compose -f docker-compose-prod.yml build
-  - docker-compose -f docker-compose-prod.yml push
 
 notifications:
   email:
