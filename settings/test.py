@@ -1,6 +1,6 @@
 from .common import *  # noqa
 
-DEBUG = False
+DEBUG = True
 
 DATABASES = {
     'default': {
@@ -22,4 +22,5 @@ CACHES = {
     }
 }
 
+DEV = False
 TEST = True
