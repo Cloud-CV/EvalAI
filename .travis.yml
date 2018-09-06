@@ -12,9 +12,6 @@ matrix:
     allow_failures:
         - python: "3.6"
 
-env:
-  - AWS_SQS_ENDPOINT="http://localhost:9324"
-
 addons:
   postgresql: "9.4"
   apt:
@@ -35,7 +32,6 @@ before_script:
 
 # Issue: No module named google_compute_engine
 # Fix: https://github.com/travis-ci/travis-ci/issues/7940
-
 before_install:
   - sudo rm -f /etc/boto.cfg
 
@@ -50,16 +46,7 @@ script:
 after_success:
   - coveralls --rcfile=.coveragerc
   - pip install awscli
-
-  # Set AWS default region
-  - aws configure set default.region us-east-1
-
-  # Authenticate against our Docker registry
-  - eval $(aws ecr get-login --no-include-email)
-
-  # Build and push the Django container image
-  - docker-compose -f docker-compose-prod.yml build
-  - docker-compose -f docker-compose-prod.yml push
+  - bash scripts/deploy/staging.sh
 
 notifications:
   email:

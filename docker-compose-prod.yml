@@ -2,7 +2,7 @@ version: "3"
 services:
 
   django:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${TRAVIS_BUILD_ID}
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${TRAVIS_COMMIT}
     container_name: django
     environment:
       # TODO: Sort these entries
@@ -39,7 +39,7 @@ services:
       - "8000:8000"
 
   worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${TRAVIS_BUILD_ID}
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${TRAVIS_COMMIT}
     build:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
@@ -62,7 +62,7 @@ services:
       - RDS_USERNAME=${RDS_USERNAME}
       - RDS_PASSWORD=${RDS_PASSWORD}
   nodejs:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend:${TRAVIS_BUILD_ID}
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend:${TRAVIS_COMMIT}
     container_name: nodejs
     build:
       context: ./
