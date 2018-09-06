@@ -19,13 +19,13 @@ services:
       - DATADOG_APP_KEY=${DATADOG_APP_KEY}
       - DATADOG_API_KEY=${DATADOG_API_KEY}
       - DJANGO_SETTINGS_MODULE=settings.prod
-      - DJANGO_SERVER=${DJANGO_SERVER}
+      - DJANGO_SERVER=django
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST=${EMAIL_HOST}
       - EMAIL_PORT=${EMAIL_PORT}
       - EMAIL_USE_TLS=${EMAIL_USE_TLS}
-      - MEMCACHED_LOCATION=${MEMCACHED_LOCATION}
+      - MEMCACHED_LOCATION=None
       - RDS_DB_NAME=${RDS_DB_NAME}
       - RDS_HOSTNAME=${RDS_HOSTNAME}
       - RDS_USERNAME=${RDS_USERNAME}
@@ -55,14 +55,14 @@ services:
       - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
       - DEBUG=False
       - DJANGO_SETTINGS_MODULE=settings.prod
-      - DJANGO_SERVER=${DJANGO_SERVER}
-      - MEMCACHED_LOCATION=${MEMCACHED_LOCATION}
+      - DJANGO_SERVER=django
+      - MEMCACHED_LOCATION=None
       - RDS_DB_NAME=${RDS_DB_NAME}
       - RDS_HOSTNAME=${RDS_HOSTNAME}
       - RDS_USERNAME=${RDS_USERNAME}
       - RDS_PASSWORD=${RDS_PASSWORD}
   nodejs:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-nodejs:${TRAVIS_BUILD_ID}
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend:${TRAVIS_BUILD_ID}
     container_name: nodejs
     build:
       context: ./
