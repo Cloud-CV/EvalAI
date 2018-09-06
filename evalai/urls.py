@@ -75,7 +75,7 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
-if not settings.DEBUG or settings.DEV:
+if settings.DEBUG or not settings.TEST:
     urlpatterns += [url(r'^dbschema/',
                         include('django_spaghetti.urls')),
                     url(r'^docs/',
