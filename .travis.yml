@@ -38,6 +38,8 @@ script:
   - py.test --cov . --cov-config .coveragerc
 
 after_success:
+  env:
+    - DEBUG = False
   - coveralls --rcfile=.coveragerc
   - pip install awscli
 

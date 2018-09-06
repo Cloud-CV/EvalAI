@@ -4,35 +4,35 @@ services:
   django:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${TRAVIS_BUILD_ID}
     container_name: django
-    env_file:
-      - docker/prod/docker.env
+    environment:
+      - DEBUG=${DUBUG}
     build:
       context: ./
       dockerfile: docker/prod/django/Dockerfile
     ports:
       - "8000:8000"
 
-  worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${TRAVIS_BUILD_ID}
-    build:
-      context: ./
-      dockerfile: docker/prod/worker/Dockerfile
-    depends_on:
-      - django
-    env_file:
-      - docker/prod/docker.env
+  # worker:
+  #   image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${TRAVIS_BUILD_ID}
+  #   build:
+  #     context: ./
+  #     dockerfile: docker/prod/worker/Dockerfile
+  #   depends_on:
+  #     - django
+  #   env_file:
+  #     - docker/prod/docker.env
 
-  nodejs:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-nodejs:${TRAVIS_BUILD_ID}
-    container_name: nodejs
-    build:
-      context: ./
-      dockerfile: docker/prod/nodejs/Dockerfile
-    environment:
-      NODE_ENV: production
-    ports:
-      - "8888:8888"
-      - "80:80"
-    volumes:
-      - /code/node_modules
-      - /code/bower_components
+  # nodejs:
+  #   image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-nodejs:${TRAVIS_BUILD_ID}
+  #   container_name: nodejs
+  #   build:
+  #     context: ./
+  #     dockerfile: docker/prod/nodejs/Dockerfile
+  #   environment:
+  #     NODE_ENV: production
+  #   ports:
+  #     - "8888:8888"
+  #     - "80:80"
+  #   volumes:
+  #     - /code/node_modules
+  #     - /code/bower_components
