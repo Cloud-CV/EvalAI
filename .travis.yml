@@ -47,6 +47,7 @@ after_success:
   - coveralls --rcfile=.coveragerc
   - pip install awscli
   - bash scripts/deploy/staging.sh
+  - bash scripts/deploy/production.sh
 
 notifications:
   email:

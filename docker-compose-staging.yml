@@ -1,0 +1,76 @@
+version: "3"
+services:
+
+  django:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${TRAVIS_COMMIT}
+    container_name: django
+    environment:
+      # TODO: Sort these entries
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SQS_ENDPOINT=${AWS_SQS_ENDPOINT}
+      - AWS_SQS_QUEUE_NAME=${AWS_SQS_QUEUE_NAME}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - AWS_SES_REGION_NAME=${AWS_SES_REGION_NAME}
+      - AWS_SES_REGION_ENDPOINT=${AWS_SES_REGION_ENDPOINT}
+      - DEBUG=False
+      - DATADOG_APP_NAME=${DATADOG_APP_NAME}
+      - DATADOG_APP_KEY=${DATADOG_APP_KEY}
+      - DATADOG_API_KEY=${DATADOG_API_KEY}
+      - DJANGO_SETTINGS_MODULE=settings.prod
+      - DJANGO_SERVER=django
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS}
+      - MEMCACHED_LOCATION=None
+      - RDS_DB_NAME=${RDS_DB_NAME}
+      - RDS_HOSTNAME=${RDS_HOSTNAME}
+      - RDS_USERNAME=${RDS_USERNAME}
+      - RDS_PASSWORD=${RDS_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - SENTRY_URL=${SENTRY_URL}
+    build:
+      context: ./
+      dockerfile: docker/prod/django/Dockerfile
+    ports:
+      - "8000:8000"
+
+  worker:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${TRAVIS_COMMIT}
+    build:
+      context: ./
+      dockerfile: docker/prod/worker/Dockerfile
+    depends_on:
+      - django
+    environment:
+      # TODO: Sort these entries
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SQS_ENDPOINT=${AWS_SQS_ENDPOINT}
+      - AWS_SQS_QUEUE_NAME=${AWS_SQS_QUEUE_NAME}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - DEBUG=False
+      - DJANGO_SETTINGS_MODULE=settings.prod
+      - DJANGO_SERVER=django
+      - MEMCACHED_LOCATION=None
+      - RDS_DB_NAME=${RDS_DB_NAME}
+      - RDS_HOSTNAME=${RDS_HOSTNAME}
+      - RDS_USERNAME=${RDS_USERNAME}
+      - RDS_PASSWORD=${RDS_PASSWORD}
+  nodejs:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend:${TRAVIS_COMMIT}
+    container_name: nodejs
+    build:
+      context: ./
+      dockerfile: docker/prod/nodejs/Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - "80:80"
+    volumes:
+      - /code/node_modules
+      - /code/bower_components
