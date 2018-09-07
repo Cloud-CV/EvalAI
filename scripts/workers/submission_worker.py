@@ -42,9 +42,8 @@ from challenges.models import (Challenge,
                                LeaderboardData,
                                DatasetSplit)  # noqa
 
-from jobs.models import Submission          # noqa
-from jobs.serializers import SubmissionSerializer # noqa
-
+from jobs.models import Submission  # noqa
+from jobs.serializers import SubmissionSerializer  # noqa
 
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'challenge_data')
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'submission_files')
@@ -160,13 +159,12 @@ def create_dir_as_python_package(directory):
     '''
     create_dir(directory)
     init_file_path = join(directory, '__init__.py')
-    with open(init_file_path, 'w') as init_file:        # noqa
+    with open(init_file_path, 'w') as init_file:  # noqa
         # to create empty file
         pass
 
 
 def return_file_url_per_environment(url):
-
     if DJANGO_SETTINGS_MODULE == "settings.dev":
         base_url = "http://{0}:8000".format(DJANGO_SERVER)
         url = "{0}{1}".format(base_url, url)
@@ -307,7 +305,7 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     submission.save()
     try:
         successful_submission_flag = True
-        with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
+        with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:  # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                 annotation_file_path,
                 user_annotation_file_path,
@@ -353,15 +351,9 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
                     challenge_phase_split = ChallengePhaseSplit.objects.get(challenge_phase=challenge_phase,
                                                                             dataset_split__codename=split_code_name)
                 except:
-                    try:
-                        dataset_split = DatasetSplit.objects.get(codename=split_code_name)
-                    except:
-                        error_message = "DatasetSplit with codename %s does not exist" % split_code_name
-                    else:
-                        error_message = "ORIGINAL EXCEPTION: No such relation between Challenge Phase (%s-%s) and" \
-                                        " DatasetSplit (%s-%s) specified by Challenge Host \n" % (
-                                            challenge_phase.id, challenge_phase.name, dataset_split.id,
-                                            dataset_split.name)
+                    error_message = stderr.write("ORIGINAL EXCEPTION: No such relation between Challenge Phase {} and "
+                                                 "DatasetSplit specified ""by Challenge Host \n {}".format(
+                        challenge_phase, split_code_name))
                     stderr.write(error_message)
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
@@ -458,7 +450,7 @@ def process_submission_message(message):
 
     user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
                                      os.path.basename(submission_instance.input_file.name))
-    run_submission(challenge_id, challenge_phase, submission_instance, user_annotation_file_path,)
+    run_submission(challenge_id, challenge_phase, submission_instance, user_annotation_file_path, )
 
 
 def process_add_challenge_message(message):
