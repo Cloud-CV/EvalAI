@@ -39,8 +39,7 @@ DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
 from challenges.models import (Challenge,
                                ChallengePhase,
                                ChallengePhaseSplit,
-                               LeaderboardData,
-                               DatasetSplit)  # noqa
+                               LeaderboardData)  # noqa
 
 from jobs.models import Submission  # noqa
 from jobs.serializers import SubmissionSerializer  # noqa
@@ -352,8 +351,8 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
                                                                             dataset_split__codename=split_code_name)
                 except:
                     error_message = stderr.write("ORIGINAL EXCEPTION: No such relation between Challenge Phase {} and "
-                                                 "DatasetSplit specified ""by Challenge Host \n {}".format(
-                        challenge_phase, split_code_name))
+                                                 "DatasetSplit specified by Challenge Host \n {}".
+                                                 format(challenge_phase, split_code_name))
                     stderr.write(error_message)
                     stderr.write(traceback.format_exc())
                     successful_submission_flag = False
@@ -486,7 +485,7 @@ def get_or_create_sqs_queue():
                          endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
                          region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
                          aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-                         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
+                         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'), )
 
     AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME', 'evalai_submission_queue')
     # Check if the FIFO queue exists. If no, then create one
