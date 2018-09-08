@@ -1,5 +1,9 @@
 language: python
 sudo: false
+
+services:
+  - docker
+
 python:
   - "2.7"
   - "3.6"
@@ -7,9 +11,6 @@ python:
 matrix:
     allow_failures:
         - python: "3.6"
-
-env:
-  - AWS_SECRET_ACCESS_KEY=x AWS_ACCESS_KEY_ID=x AWS_SQS_ENDPOINT="http://localhost:9324"
 
 addons:
   postgresql: "9.4"
@@ -29,6 +30,11 @@ before_script:
   - wget https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar
   - java -jar elasticmq-server-0.14.2.jar &
 
+# Issue: No module named google_compute_engine
+# Fix: https://github.com/travis-ci/travis-ci/issues/7940
+before_install:
+  - sudo rm -f /etc/boto.cfg
+
 install:
   - pip install -r requirements/dev.txt
   - pip install coveralls
@@ -39,7 +45,8 @@ script:
 
 after_success:
   - coveralls --rcfile=.coveragerc
-
+  - pip install awscli
+  - bash scripts/deploy/deploy.sh
 
 notifications:
   email:
