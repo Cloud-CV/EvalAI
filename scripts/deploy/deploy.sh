@@ -10,11 +10,11 @@ build_and_push() {
         docker-compose -f docker-compose-$1.yml push
 }
 
-if [ "${TRAVIS_PULL_REQUEST}" != "false"]; then
+if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "Skipping deploy to staging or production server; The request or commit is not on staging or production branch"
     exit 0
 
-elif [ "${TRAVIS_BRANCH}" == "staging" -o "${TRAVIS_BRANCH}" == "production"]; then
+elif [ "${TRAVIS_BRANCH}" == "staging" -o "${TRAVIS_BRANCH}" == "production" ]; then
     build_and_push $TRAVIS_BRANCH
     exit 0
 
