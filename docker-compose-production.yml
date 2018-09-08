@@ -1,0 +1,74 @@
+version: "3"
+services:
+
+  django:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-backend:${TRAVIS_COMMIT}
+    container_name: django
+    environment:
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME_PROD}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_PROD}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_PROD}
+      - AWS_SQS_ENDPOINT=${AWS_SQS_ENDPOINT_PROD}
+      - AWS_SQS_QUEUE_NAME=${AWS_SQS_QUEUE_NAME_PROD}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION_PROD}
+      - AWS_SES_REGION_NAME=${AWS_SES_REGION_NAME_PROD}
+      - AWS_SES_REGION_ENDPOINT=${AWS_SES_REGION_ENDPOINT_PROD}
+      - DEBUG=False
+      - DATADOG_APP_NAME=${DATADOG_APP_NAME_PROD}
+      - DATADOG_APP_KEY=${DATADOG_APP_KEY_PROD}
+      - DATADOG_API_KEY=${DATADOG_API_KEY_PROD}
+      - DJANGO_SETTINGS_MODULE=settings.prod
+      - DJANGO_SERVER=django
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD_PROD}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER_PROD}
+      - EMAIL_HOST=${EMAIL_HOST_PROD}
+      - EMAIL_PORT=${EMAIL_PORT_PROD}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS_PROD}
+      - MEMCACHED_LOCATION=None
+      - RDS_DB_NAME=${RDS_DB_NAME_PROD}
+      - RDS_HOSTNAME=${RDS_HOSTNAME_PROD}
+      - RDS_USERNAME=${RDS_USERNAME_PROD}
+      - RDS_PASSWORD=${RDS_PASSWORD_PROD}
+      - SECRET_KEY=${SECRET_KEY_PROD}
+      - SENTRY_URL=${SENTRY_URL_PROD}
+    build:
+      context: ./
+      dockerfile: docker/prod/django/Dockerfile
+    ports:
+      - "8000:8000"
+
+  worker:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-worker:${TRAVIS_COMMIT}
+    build:
+      context: ./
+      dockerfile: docker/prod/worker/Dockerfile
+    depends_on:
+      - django
+    environment:
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME_PROD}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_PROD}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_PROD}
+      - AWS_SQS_ENDPOINT=${AWS_SQS_ENDPOINT_PROD}
+      - AWS_SQS_QUEUE_NAME=${AWS_SQS_QUEUE_NAME_PROD}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION_PROD}
+      - DEBUG=False
+      - DJANGO_SETTINGS_MODULE=settings.prod
+      - DJANGO_SERVER=django
+      - MEMCACHED_LOCATION=None
+      - RDS_DB_NAME=${RDS_DB_NAME_PROD}
+      - RDS_HOSTNAME=${RDS_HOSTNAME_PROD}
+      - RDS_USERNAME=${RDS_USERNAME_PROD}
+      - RDS_PASSWORD=${RDS_PASSWORD_PROD}
+  nodejs:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-frontend:${TRAVIS_COMMIT}
+    container_name: nodejs
+    build:
+      context: ./
+      dockerfile: docker/prod/nodejs/Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - "80:80"
+    volumes:
+      - /code/node_modules
+      - /code/bower_components
