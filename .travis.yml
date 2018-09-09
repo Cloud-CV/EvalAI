@@ -47,6 +47,8 @@ after_success:
   - coveralls --rcfile=.coveragerc
   - pip install awscli
   - bash scripts/deploy/deploy.sh
+  - bash echo $DEBUG
+  - bash echo $EMAIL_PORT_STAGING
 
 notifications:
   email:
