@@ -12,6 +12,11 @@ build_and_push() {
 
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "Skipping deploy to staging or production server; The request or commit is not on staging or production branch"
+    echo ${DEBUG}
+    echo ${EMAIL_PORT_STAGING}
+    echo "Printed the varibales"
+    echo $DEBUG
+    echo $EMAIL_PORT_STAGING
     exit 0
 
 elif [ "${TRAVIS_BRANCH}" == "staging" -o "${TRAVIS_BRANCH}" == "production" ]; then
