@@ -65,5 +65,5 @@ def clean_data(data):
     Strip HTML and clean spaces
     """
     data = BeautifulSoup(data, "lxml").text.strip()
-    data = ' '.join(data.split())
-    data.encode("utf-8")
+    data = ' '.join(data.split()).encode("utf-8")
+    return data
