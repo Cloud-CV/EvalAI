@@ -46,7 +46,11 @@ script:
 after_success:
   - coveralls --rcfile=.coveragerc
   - pip install awscli
-  - bash scripts/deploy/deploy.sh
+  - aws configure set default.region us-east-1
+  - eval $(aws ecr get-login --no-include-email)
+  - docker build -t evalai-staging-backend:latest -f docker/prod/django/Dockerfile .
+  - docker tag evalai-staging-backend:latest $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:$TRAVIS_BUILD_ID
+  - docker push $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:$TRAVIS_BUILD_ID
 
 notifications:
   email:

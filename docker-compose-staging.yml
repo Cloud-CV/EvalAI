@@ -34,6 +34,33 @@ services:
     build:
       context: ./
       dockerfile: docker/prod/django/Dockerfile
+      args:
+        - AWS_STORAGE_BUCKET_NAME
+        - AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY
+        - AWS_SQS_ENDPOINT
+        - AWS_SQS_QUEUE_NAME
+        - AWS_DEFAULT_REGION
+        - AWS_SES_REGION_NAME
+        - AWS_SES_REGION_ENDPOINT
+        - DEBUG="False"
+        - DATADOG_APP_NAME
+        - DATADOG_APP_KEY
+        - DATADOG_API_KEY
+        - DJANGO_SETTINGS_MODULE=settings.prod
+        - DJANGO_SERVER=django
+        - EMAIL_HOST_PASSWORD
+        - EMAIL_HOST_USER
+        - EMAIL_HOST
+        - EMAIL_PORT
+        - EMAIL_USE_TLS
+        - MEMCACHED_LOCATION=None
+        - RDS_DB_NAME
+        - RDS_HOSTNAME
+        - RDS_USERNAME
+        - RDS_PASSWORD
+        - SECRET_KEY
+        - SENTRY_URL
     ports:
       - "8000:8000"
 
