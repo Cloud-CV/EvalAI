@@ -4,7 +4,7 @@ services:
   django:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${TRAVIS_COMMIT}
     container_name: django
-    environment:
+    args:
       - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME_STAGING}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_STAGING}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_STAGING}
