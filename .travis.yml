@@ -23,8 +23,7 @@ before_script:
 - wget https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar
 - java -jar elasticmq-server-0.14.2.jar &
 before_install:
-- openssl aes-256-cbc -K $encrypted_932c648f8890_key -iv $encrypted_932c648f8890_iv
-  -in secrets.tar.enc -out secrets.tar -d
+- openssl aes-256-cbc -K $encrypted_932c648f8890_key -iv $encrypted_932c648f8890_iv -in secrets.tar.enc -out secrets.tar -d
 - sudo rm -f /etc/boto.cfg
 install:
 - pip install -r requirements/dev.txt
@@ -35,7 +34,7 @@ script:
 after_success:
 - coveralls --rcfile=.coveragerc
 - pip install awscli
-- tar xzvf secrets.tar
+- tar xvf secrets.tar
 - bash scripts/deploy/deploy.sh
 notifications:
   email:
