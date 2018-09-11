@@ -50,5 +50,6 @@ media/
 .DS_Store
 
 # Encrypted files
-scripts/deploy/config/staging.txt
-scripts/deploy/config/production.txt
+docker/prod/docker_staging.env
+docker/prod/docker_prod.env
+secrets.tar

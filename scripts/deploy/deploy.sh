@@ -5,9 +5,6 @@ build_and_push() {
         # Authenticate against our Docker registry
         eval $(aws ecr get-login --no-include-email)
 
-        if [ $1 == "staging" ]; then
-            openssl aes-256-cbc -K $encrypted_932c648f8890_key -iv $encrypted_932c648f8890_iv -in scripts/deploy/config/staging.txt.env -out scripts/deploy/config/staging.txt -d
-        fi
         # Build and push the container images
         docker-compose -f docker-compose-$1.yml build
         docker-compose -f docker-compose-$1.yml push
