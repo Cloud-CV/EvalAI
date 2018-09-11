@@ -24,6 +24,7 @@ before_script:
 - java -jar elasticmq-server-0.14.2.jar &
 before_install:
 - openssl aes-256-cbc -K $encrypted_932c648f8890_key -iv $encrypted_932c648f8890_iv -in secrets.tar.enc -out secrets.tar -d
+- tar xvf secrets.tar
 - sudo rm -f /etc/boto.cfg
 install:
 - pip install -r requirements/dev.txt
@@ -34,8 +35,6 @@ script:
 after_success:
 - coveralls --rcfile=.coveragerc
 - pip install awscli
-- tar xvf secrets.tar
-- ls -l docker/prod/
 - bash scripts/deploy/deploy.sh
 notifications:
   email:
