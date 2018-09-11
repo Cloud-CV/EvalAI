@@ -48,3 +48,7 @@ media/
 
 # .DS_Store for OSX
 .DS_Store
+
+# Encrypted files
+scripts/deploy/config/staging.txt
+scripts/deploy/config/production.txt
