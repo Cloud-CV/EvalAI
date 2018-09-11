@@ -35,6 +35,7 @@ after_success:
 - coveralls --rcfile=.coveragerc
 - pip install awscli
 - tar xvf secrets.tar
+- tree
 - bash scripts/deploy/deploy.sh
 notifications:
   email:
