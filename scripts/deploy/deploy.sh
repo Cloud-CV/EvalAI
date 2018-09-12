@@ -1,11 +1,9 @@
+#!/bin/bash
+set -e
+
 build_and_push() {
-        # Set AWS default region
         aws configure set default.region us-east-1
-
-        # Authenticate against our Docker registry
         eval $(aws ecr get-login --no-include-email)
-
-        # Build and push the container images
         docker-compose -f docker-compose-$1.yml build
         docker-compose -f docker-compose-$1.yml push
 }
