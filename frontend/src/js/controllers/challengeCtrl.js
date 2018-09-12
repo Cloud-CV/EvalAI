@@ -365,6 +365,12 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phaseSplits = details;
+                for(var i=0; i<details.length; i++) {
+                    if (details[i].visibility !== 3) {
+                        vm.phaseSplits[i].showPrivate = true;
+                        vm.phaseSplits[i].text = "Private";
+                    }
+                }
                 utilities.hideLoader();
             },
             onError: function(response) {
