@@ -4,50 +4,37 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import boto3
+import botocore
 import contextlib
 import django
 import importlib
 import logging
 import os
-import pika
 import requests
+import signal
 import shutil
-import socket
 import sys
 import tempfile
+import time
 import traceback
 import yaml
 import zipfile
 
-from os.path import dirname, join
+from os.path import join
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from django.conf import settings
-# need to add django project path in sys path
-# root directory : where manage.py lives
-# worker is present in root-directory/scripts/workers
-# but make sure that this worker is run like `python scripts/workers/submission_worker.py`
-DJANGO_PROJECT_PATH = dirname(dirname(dirname(os.path.abspath(__file__))))
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
-
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, 'compute')
 
-# default settings module will be `dev`, to override it pass
-# as command line arguments
-DJANGO_SETTINGS_MODULE = 'settings.dev'
-if len(sys.argv) == 2:
-    DJANGO_SETTINGS_MODULE = sys.argv[1]
-
 logger = logging.getLogger(__name__)
-
-sys.path.insert(0, DJANGO_PROJECT_PATH)
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
+DJANGO_SETTINGS_MODULE = os.environ.get('DJANGO_SETTINGS_MODULE', 'settings.dev')
 DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
 
 from challenges.models import (Challenge,
@@ -76,6 +63,17 @@ EVALUATION_SCRIPTS = {}
 PHASE_ANNOTATION_FILE_NAME_MAP = {}
 
 django.db.close_old_connections()
+
+
+class GracefulKiller:
+    kill_now = False
+
+    def __init__(self):
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
+
+    def exit_gracefully(self, signum, frame):
+        self.kill_now = True
 
 
 class ExecutionTimeLimitExceeded(Exception):
@@ -213,9 +211,13 @@ def extract_challenge_data(challenge, phases):
                                                                  annotation_file=annotation_file_name)
         download_and_extract_file(annotation_file_url, annotation_file_path)
 
-    # import the challenge after everything is finished
-    challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
-    EVALUATION_SCRIPTS[challenge.id] = challenge_module
+    try:
+        # import the challenge after everything is finished
+        challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
+        EVALUATION_SCRIPTS[challenge.id] = challenge_module
+    except:
+        logger.error('Error while creating Python module for challenge_id: %s' % (challenge.id))
+        traceback.print_exc()
 
 
 def load_active_challenges():
@@ -464,79 +466,75 @@ def process_add_challenge_message(message):
     extract_challenge_data(challenge, phases)
 
 
-def process_submission_callback(ch, method, properties, body):
+def process_submission_callback(body):
     try:
         logger.info("[x] Received submission message %s" % body)
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as e:
         logger.error('Error in receiving message from submission queue with error {}'.format(e))
         traceback.print_exc()
 
 
-def add_challenge_callback(ch, method, properties, body):
+def get_or_create_sqs_queue():
+    """
+    Returns:
+        Returns the SQS Queue object
+    """
+    sqs = boto3.resource('sqs',
+                         endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
+                         region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                         aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
+
+    AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME', 'evalai_submission_queue')
+    # Check if the FIFO queue exists. If no, then create one
     try:
-        logger.info("[x] Received add challenge message %s" % body)
-        body = yaml.safe_load(body)
-        process_add_challenge_message(body)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-    except Exception as e:
-        logger.error('Error in receiving message from add challenge queue with error {}'.format(e))
-        traceback.print_exc()
+        queue = sqs.get_queue_by_name(QueueName=AWS_SQS_QUEUE_NAME)
+    except botocore.exceptions.ClientError as ex:
+        if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
+            if settings.DEBUG:
+                queue = sqs.create_queue(QueueName=AWS_SQS_QUEUE_NAME)
+            else:
+                # create a FIFO queue in the production environment
+                name = AWS_SQS_QUEUE_NAME + '.fifo'
+                queue = sqs.create_queue(
+                    QueueName=name,
+                    Attributes={
+                        'FifoQueue': 'true',
+                        'ContentBasedDeduplication': 'true'
+                    }
+                )
+        else:
+            logger.error('Cannot get or create queue!')
+    return queue
 
 
 def main():
-
+    killer = GracefulKiller()
     logger.info('Using {0} as temp directory to store data'.format(BASE_TEMP_DIR))
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
-
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     load_active_challenges()
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=settings.RABBITMQ_PARAMETERS['HOST'], heartbeat_interval=0))
-
-    channel = connection.channel()
-    channel.exchange_declare(
-        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        type=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['TYPE'])
-
-    # name can be a combination of hostname + process id
-    # host name : to easily identify that the worker is running on which instance
-    # process id : to add uniqueness in case more than one worker is running on the same instance
-    add_challenge_queue_name = '{hostname}_{process_id}'.format(hostname=socket.gethostname(),
-                                                                process_id=str(os.getpid()))
-
-    channel.queue_declare(
-        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
-        durable=True)
-
-    # reason for using `exclusive` instead of `autodelete` is that
-    # challenge addition queue should have only have one consumer on the connection
-    # that creates it.
-    channel.queue_declare(queue=add_challenge_queue_name, durable=True, exclusive=True)
-    logger.info('[*] Waiting for messages. To exit press CTRL+C')
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
+    queue = get_or_create_sqs_queue()
 
-    channel.queue_bind(
-        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'],
-        routing_key='submission.*.*')
-    channel.basic_consume(
-        process_submission_callback,
-        queue=settings.RABBITMQ_PARAMETERS['SUBMISSION_QUEUE'])
-
-    channel.queue_bind(
-        exchange=settings.RABBITMQ_PARAMETERS['EVALAI_EXCHANGE']['NAME'],
-        queue=add_challenge_queue_name, routing_key='challenge.*.*')
-    channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
-
-    channel.start_consuming()
+    while True:
+        for message in queue.receive_messages():
+            # Print out the body of the message
+            logger.info('Processing message body: {0}'.format(message.body))
+            process_submission_callback(message.body)
+            # Let the queue know that the message is processed
+            message.delete()
+        if killer.kill_now:
+            break
+        time.sleep(0.1)
 
 
 if __name__ == '__main__':
     main()
+    logger.info("Quitting Submission Worker.")
