@@ -449,7 +449,7 @@ def challenge_phase_split_list(request, challenge_pk):
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    
+
     challenge_phase_split = ChallengePhaseSplit.objects.filter(
         challenge_phase__challenge=challenge)
 

@@ -1711,7 +1711,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             os.makedirs('/tmp/evalai')
         except OSError:
             pass
-        
+       
         self.participant_user = User.objects.create(
             username='someuser1',
             email="participant@test.com",
