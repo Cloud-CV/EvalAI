@@ -1711,7 +1711,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             os.makedirs('/tmp/evalai')
         except OSError:
             pass
-       
+
         self.participant_user = User.objects.create(
             username='someuser1',
             email="participant@test.com",
@@ -1746,7 +1746,8 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             )
 
         self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
-        self.dataset_split_host = DatasetSplit.objects.create(name="Test Dataset Split host", codename="test-split-host")
+        self.dataset_split_host = DatasetSplit.objects.create(name="Test Dataset Split host",
+                                                              codename="test-split-host")
 
         self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
 
