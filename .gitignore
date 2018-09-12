@@ -48,3 +48,8 @@ media/
 
 # .DS_Store for OSX
 .DS_Store
+
+# Encrypted files
+docker/prod/docker_staging.env
+docker/prod/docker_prod.env
+secrets.tar
