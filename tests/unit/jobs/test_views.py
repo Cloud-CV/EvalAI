@@ -481,6 +481,38 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_remaining_submission_when_today_submissions_is_more_than_max_submissions(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_pk': self.challenge.pk})
+
+        """
+        The value of max_submissions_per_day and max_submissions is set explicitly in order to test for a corner case
+        in which max_submissions_per_day > max_submissions.
+        """
+        setattr(self.challenge_phase, 'max_submissions_per_day', 9)
+        setattr(self.challenge_phase, 'max_submissions', 5)
+        self.challenge_phase.save()
+
+        failed_submissions = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                       challenge_phase__challenge=self.challenge,
+                                                       status='failed').count()
+        other_submissions = Submission.objects.filter(challenge_phase=self.challenge_phase,
+                                                      challenge_phase__challenge=self.challenge).count()
+
+        submission_count = self.challenge_phase.max_submissions - other_submissions - failed_submissions
+
+        expected = {
+            'remaining_submissions_today_count': submission_count,
+            'remaining_submissions': submission_count
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_get_remaining_submission_time_when_limit_is_exhausted(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
