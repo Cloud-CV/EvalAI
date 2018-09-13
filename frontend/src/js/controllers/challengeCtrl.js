@@ -357,6 +357,11 @@
 
         utilities.sendRequest(parameters);
 
+        var challengePhaseVisibility = {
+            owner_and_host: 1,
+            host: 2,
+            public: 3,
+        };
         // get details of the particular challenge phase split
         parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
         parameters.method = 'GET';
@@ -366,9 +371,8 @@
                 var details = response.data;
                 vm.phaseSplits = details;
                 for(var i=0; i<details.length; i++) {
-                    if (details[i].visibility !== 3) {
+                    if (details[i].visibility !== challengePhaseVisibility.public) {
                         vm.phaseSplits[i].showPrivate = true;
-                        vm.phaseSplits[i].text = "Private";
                     }
                 }
                 utilities.hideLoader();

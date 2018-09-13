@@ -265,17 +265,16 @@ def leaderboard(request, challenge_phase_split_id):
 
     challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
 
-    # Check if the user is challenge host or not
-    if challenge_host_user is True:
+    # Show the Private leaderboard only if the user is a challenge host
+    if challenge_host_user:
         response_data = result_page
         return paginator.get_paginated_response(response_data)
 
     # Check if challenge phase leaderboard is public for participant user or not
     elif challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC:
-        response_data = {'error': 'Sorry, leaderboard is not public yet for this Challenge Phase Split!'}
+        response_data = {'error': 'Sorry, the leaderboard is not public!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # If the leaderboard is public then display it
     else:
         response_data = result_page
         return paginator.get_paginated_response(response_data)
