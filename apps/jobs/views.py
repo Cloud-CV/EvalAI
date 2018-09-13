@@ -24,6 +24,7 @@ from challenges.models import (
     LeaderboardData,)
 from challenges.utils import get_challenge_model, get_challenge_phase_model
 from hosts.models import ChallengeHost
+from hosts.utils import is_user_a_host_of_challenge
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -213,11 +214,6 @@ def leaderboard(request, challenge_phase_split_id):
         response_data = {'error': 'Challenge Phase Split does not exist'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # Check if the Challenge Phase Split is publicly visible or not
-    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC:
-        response_data = {'error': 'Sorry, leaderboard is not public yet for this Challenge Phase Split!'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     # Get the leaderboard associated with the Challenge Phase Split
     leaderboard = challenge_phase_split.leaderboard
 
@@ -266,8 +262,22 @@ def leaderboard(request, challenge_phase_split_id):
                                                 distinct_sorted_leaderboard_data,
                                                 request,
                                                 pagination_class=StandardResultSetPagination())
-    response_data = result_page
-    return paginator.get_paginated_response(response_data)
+
+    challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
+
+    # Show the Private leaderboard only if the user is a challenge host
+    if challenge_host_user:
+        response_data = result_page
+        return paginator.get_paginated_response(response_data)
+
+    # Check if challenge phase leaderboard is public for participant user or not
+    elif challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC:
+        response_data = {'error': 'Sorry, the leaderboard is not public!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    else:
+        response_data = result_page
+        return paginator.get_paginated_response(response_data)
 
 
 @throttle_classes([UserRateThrottle])
