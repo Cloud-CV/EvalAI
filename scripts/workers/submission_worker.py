@@ -1,3 +1,4 @@
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -39,10 +40,11 @@ DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
 from challenges.models import (Challenge,
                                ChallengePhase,
                                ChallengePhaseSplit,
-                               LeaderboardData)  # noqa
+                               LeaderboardData) # noqa
 
-from jobs.models import Submission  # noqa
-from jobs.serializers import SubmissionSerializer  # noqa
+from jobs.models import Submission          # noqa
+from jobs.serializers import SubmissionSerializer # noqa
+
 
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'challenge_data')
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, 'submission_files')
@@ -158,12 +160,13 @@ def create_dir_as_python_package(directory):
     '''
     create_dir(directory)
     init_file_path = join(directory, '__init__.py')
-    with open(init_file_path, 'w') as init_file:  # noqa
+    with open(init_file_path, 'w') as init_file:        # noqa
         # to create empty file
         pass
 
 
 def return_file_url_per_environment(url):
+
     if DJANGO_SETTINGS_MODULE == "settings.dev":
         base_url = "http://{0}:8000".format(DJANGO_SERVER)
         url = "{0}{1}".format(base_url, url)
@@ -304,7 +307,7 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     submission.save()
     try:
         successful_submission_flag = True
-        with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:  # noqa
+        with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                 annotation_file_path,
                 user_annotation_file_path,
@@ -449,7 +452,7 @@ def process_submission_message(message):
 
     user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
                                      os.path.basename(submission_instance.input_file.name))
-    run_submission(challenge_id, challenge_phase, submission_instance, user_annotation_file_path, )
+    run_submission(challenge_id, challenge_phase, submission_instance, user_annotation_file_path,)
 
 
 def process_add_challenge_message(message):
@@ -485,7 +488,7 @@ def get_or_create_sqs_queue():
                          endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
                          region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
                          aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-                         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'), )
+                         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
 
     AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME', 'evalai_submission_queue')
     # Check if the FIFO queue exists. If no, then create one
