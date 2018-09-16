@@ -22,9 +22,11 @@
                     </div>
                     <div class="row">
                         <div class="col xs12 s6">
-                            <span><md-select ng-model="challenge.phaseName" placeholder="Challenge Phase" class="rm-margin">
-                            <md-option ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSplitId:key.id})" value="{{key.id}}" ng-repeat="key in challenge.phaseSplits" ng-show="{{key.visibility}}==3"><span class="font-weight-b">Phase: </span>{{key.challenge_phase_name}}, <span class="font-weight-b">Split: </span> {{key.dataset_split_name}}</md-option>
-                        </md-select></span>
+                            <span>
+                                <md-select ng-model="challenge.phaseName" placeholder="Challenge Phase" class="rm-margin">
+                                    <md-option ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSplitId:key.id})" value="{{key.id}}" ng-repeat="key in challenge.phaseSplits" ng-show="{{key.visibility}}"><span class="font-weight-b">Phase: </span>{{key.challenge_phase_name}}, <span class="font-weight-b">Split: </span> {{key.dataset_split_name}} &nbsp; <span class="new badge red" data-badge-caption="Private" ng-if="key.showPrivate"></span></md-option>
+                                </md-select>
+                            </span>
                         </div>
                     </div>
                 </div>
