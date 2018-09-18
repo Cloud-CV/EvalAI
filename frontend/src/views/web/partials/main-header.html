@@ -4,8 +4,10 @@
             <a href="#" data-activates="mobile-demo" class="button-collapse main-header-link"><i class="fa fa-bars"></i></a>
             <ul class="hide-on-med-and-down">
                 <li><a class="waves-effect waves-dark main-header-link evalai-logo" ui-sref="home" ui-sref-active="active"><img src="dist/images/evalai-logo-single.png"></a></li>
+                <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank">Forum</a></li>
                 <!-- show after authenticate user -->
                 <li ng-if="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
+                <li ng-if="isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank">Forum</a></li>
             </ul>
             <ul class="right hide-on-med-and-down">
                 <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active">Sign Up</a></li>
@@ -34,7 +36,7 @@
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.challenge-main" ui-sref-active="active"><i class="fa fa-fire"></i>All Challenges</a></li>
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.teams" ui-sref-active="active"><i class="fa fa-users"></i>Participant Teams</a></li>
                 <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.challenge-host-teams" ui-sref-active="active"><i class="fa fa-paper-plane"></i>Create Challenge</a></li>
-                <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.profile" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{header.user.name}}!</a></li>
+                <li ng-show="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.profile" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{header.user.name}}!</a></li>                
             </ul>
         </div>
     </nav>
