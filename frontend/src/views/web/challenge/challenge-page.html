@@ -60,6 +60,7 @@
                     <li ng-if="challenge.isParticipated"><a ui-sref=".my-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i> My Submissions</a></li>
                     <li ng-if="challenge.isChallengeHost"><a ui-sref=".my-challenge-all-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i>View All Submissions</a></li>
                     <li><a ui-sref=".leaderboard" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-th-list"></i> Leaderboard</a></li>
+                    <li ng-if="challenge.isForumEnabled"><a href="{{challenge.forumURL}}" target="_blank" class="text-light-black w-500"><i class="fa fa-comments"></i> Discussions</a></li>
                 </ul>
             </div>
         </div>
