@@ -28,6 +28,7 @@ services:
       - .:/code
 
   worker:
+    container_name: worker
     env_file:
       - docker/dev/docker.env
     build:
