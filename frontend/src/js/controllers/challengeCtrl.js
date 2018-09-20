@@ -71,6 +71,8 @@
                 vm.page = details;
                 vm.isActive = details.is_active;
                 vm.isPublished = vm.page.published;
+                vm.isForumEnabled = details.enable_forum;
+                vm.forumURL = details.forum_url;
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
