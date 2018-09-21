@@ -1,9 +1,18 @@
+from __future__ import print_function
 from .common import *  # noqa: ignore=F405
 
 import os
 import raven
 
 DEBUG = False
+
+if SECRET_KEY == 'random_secret_key':   # noqa: ignore=F405
+    print('\n{prefix}{color}{message}\n'.format(
+        prefix='\x1B[',
+        color='38;31m',  # Red Color Text
+        message='Please Set SECRET_KEY Evironment Variable'
+    ))
+    os._exit(1)
 
 ALLOWED_HOSTS = [
     '*.evalai.cloudcv.org',
@@ -75,7 +84,7 @@ REST_FRAMEWORK_DOCS = {
 }
 
 # Port number for the python-memcached cache backend.
-CACHES['default']['LOCATION'] = os.environ.get('MEMCACHED_LOCATION') # noqa: ignore=F405
+CACHES['default']['LOCATION'] = os.environ.get('MEMCACHED_LOCATION')  # noqa: ignore=F405
 
 RAVEN_CONFIG = {
     'dsn': os.environ.get('SENTRY_URL'),
