@@ -125,8 +125,9 @@
             anchor.attr({
                 href: 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(vm.jsonResponse)),
                 download: 'token.json'
-            })[0].click();
-
+            });
+            var ev = new MouseEvent('click');
+            anchor[0].dispatchEvent(ev);
         };
     }
 
