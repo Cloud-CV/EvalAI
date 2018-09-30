@@ -36,6 +36,7 @@ class Challenge(TimeStampedModel):
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True)
     enable_forum = models.BooleanField(default=True)
+    forum_url = models.URLField(max_length=100, blank=True, null=True)
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False, db_index=True)

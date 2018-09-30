@@ -211,9 +211,13 @@ def extract_challenge_data(challenge, phases):
                                                                  annotation_file=annotation_file_name)
         download_and_extract_file(annotation_file_url, annotation_file_path)
 
-    # import the challenge after everything is finished
-    challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
-    EVALUATION_SCRIPTS[challenge.id] = challenge_module
+    try:
+        # import the challenge after everything is finished
+        challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
+        EVALUATION_SCRIPTS[challenge.id] = challenge_module
+    except:
+        logger.error('Error while creating Python module for challenge_id: %s' % (challenge.id))
+        traceback.print_exc()
 
 
 def load_active_challenges():
