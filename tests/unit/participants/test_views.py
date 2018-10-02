@@ -607,6 +607,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "allowed_email_domains": [],
                         "blocked_email_domains": [],
                         "approved_by_admin": False,
+                        "forum_url": self.challenge1.forum_url,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -655,6 +656,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": False,
+                "forum_url": self.challenge1.forum_url,
             }
         ]
 

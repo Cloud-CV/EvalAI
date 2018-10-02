@@ -10,7 +10,7 @@
 						<div class="input-field align-left">
 							<input type="text" id="name" name="name" ng-minlength="3" ng-model="contactUs.user.name"  ng-disabled="contactUs.isDisabled"  required focus-if="contactUs.user.name">
 							<span class="form-icon"><i class="fa fa-user"></i></span>
-							<label class="active" for="name">Name *</label>
+							<label ng-class="{'active': contactUs.user.name.length > 0}" for="name">Name *</label>
 							<div class="wrn-msg text-highlight" ng-messages="contactusForm.name.$error" ng-if="contactusForm.name.$touched || contactusForm.$submitted">
 								<p ng-message="minlength">name is too short.</p>
 								<p ng-message="required">name is required.</p>
@@ -20,7 +20,7 @@
 						<div class="input-field align-left">
 							<input type="email" id="email" name="email" ng-model="contactUs.user.email" ng-disabled="contactUs.isDisabled" required focus-if="contactUs.user.email" >
 							<span class="form-icon"><i class="fa fa-envelope"></i></span>
-							<label class="active" for="email">Email *</label>
+							<label ng-class="{'active': contactUs.user.email.length > 0}" for="email">Email *</label>
 							<div class="wrn-msg text-highlight" ng-messages="contactusForm.email.$error" ng-if="contactusForm.email.$touched || contactusForm.$submitted">
 								<p ng-message="email">Please enter valid email address.</p>
 								<p ng-message="required">Email is required.</p>
