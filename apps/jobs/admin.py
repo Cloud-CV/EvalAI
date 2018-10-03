@@ -28,7 +28,7 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
             challenge_id = submission.challenge_phase.challenge.id
             challenge_phase_id = submission.challenge_phase.id
             submission_id = submission.id
-            logger.info("[x] Received submission message with challenge id {}, challenge phase id {} and submission id {}"
+            logger.info("[x] Received submission message with challenge id {}, challenge phase id {}, submission id {}"
                         .format(challenge_id, challenge_phase_id, submission_id))
             publish_submission_message(challenge_id, challenge_phase_id, submission.id)
             queryset.update(status=Submission.SUBMITTED)
