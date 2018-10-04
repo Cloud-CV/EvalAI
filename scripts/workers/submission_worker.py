@@ -212,6 +212,8 @@ def extract_challenge_data(challenge, phases):
         download_and_extract_file(annotation_file_url, annotation_file_path)
 
     try:
+        # TODO: Add a better approach instead of adding to sys.path
+        sys.path.append(os.path.join(COMPUTE_DIRECTORY_PATH, 'challenge_data', 'challenge_{}'.format(challenge.id)))
         # import the challenge after everything is finished
         challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
