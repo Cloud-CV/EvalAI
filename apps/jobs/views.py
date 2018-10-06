@@ -255,8 +255,12 @@ def leaderboard(request, challenge_phase_split_id):
             team_list.append(data['submission__participant_team__team_name'])
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
-    for item in distinct_sorted_leaderboard_data:
-        item['result'] = [item['result'][index] for index in leaderboard_labels]
+    try:
+        for item in distinct_sorted_leaderboard_data:
+            item['result'] = [item['result'][index] for index in leaderboard_labels]
+    except KeyError:
+        response_data = {'error': "Sorry, entry missing in leaderboard schema for label {}!".format(index)}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     paginator, result_page = paginated_queryset(
                                                 distinct_sorted_leaderboard_data,
