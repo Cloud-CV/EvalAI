@@ -42,6 +42,7 @@ class Profile(TimeStampedModel):
     affiliation = models.CharField(max_length=512)
     receive_participated_challenge_updates = models.BooleanField(default=False)
     recieve_newsletter = models.BooleanField(default=False)
+    avatar = models.ImageField(upload_to='profile_avatar/', blank=True)
 
     def __unicode__(self):
         return '{}'.format(self.user)
