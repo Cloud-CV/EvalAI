@@ -1,4 +1,4 @@
-FROM python:2.7
+FROM python:3.6.5
 
 ENV PYTHONUNBUFFERED 1
 
@@ -13,4 +13,4 @@ RUN pip install -r worker.txt
 
 ADD . /code
 
-CMD ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.submission_worker"]
+CMD ["python", "-m", "scripts.workers.submission_worker"]

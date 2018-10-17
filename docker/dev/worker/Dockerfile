@@ -1,5 +1,4 @@
-FROM python:3.4
-MAINTAINER CloudCV
+FROM python:3.6.5
 
 ENV PYTHONUNBUFFERED 1
 
