@@ -10,8 +10,6 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    replaces = [(b'jobs', '0001_initial'), (b'jobs', '0002_execution_time_limit'), (b'jobs', '0003_submitting_status_option'), (b'jobs', '0004_submission_output'), (b'jobs', '0005_upload_unique_random_filename')]
-
     initial = True
 
     dependencies = [
