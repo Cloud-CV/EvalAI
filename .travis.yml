@@ -1,43 +1,39 @@
 language: python
 sudo: false
+services:
+- docker
 python:
-  - "2.7"
-  - "3.6"
-
+- '2.7'
+- '3.6'
 matrix:
-    allow_failures:
-        - python: "3.6"
-
+  allow_failures:
+  - python: '3.6'
 addons:
-  postgresql: "9.4"
-
+  postgresql: '9.4'
+  apt:
+    packages:
+    - oracle-java8-set-default
 cache:
   directories:
-    - $HOME/.cache/pip
-
+  - "$HOME/.cache/pip"
 before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log
-
+- rm -f $HOME/.cache/pip/log/debug.log
 before_script:
-  - psql -c "CREATE DATABASE evalai" -U postgres
-
+- psql -c "CREATE DATABASE evalai" -U postgres
+- wget https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar
+- java -jar elasticmq-server-0.14.2.jar &
+before_install:
+- sudo rm -f /etc/boto.cfg
 install:
-  - pip install -r requirements/dev.txt
-  - pip install coveralls
-
-services:
-  - rabbitmq
-
+- pip install -r requirements/dev.txt
+- pip install coveralls
 script:
-  - flake8 ./
-  - py.test --cov . --cov-config .coveragerc
-
+- flake8 ./
+- py.test --cov . --cov-config .coveragerc
 after_success:
-  - coveralls --rcfile=.coveragerc
-
-
+- coveralls --rcfile=.coveragerc
 notifications:
   email:
-    on_success: change  # [always|never|change]
-    on_failure: always  # [always|never|change]
+    on_success: change
+    on_failure: always
     slack: cloudcv:gy3CGQGNXLwXOqVyzXGZfdea

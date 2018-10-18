@@ -128,6 +128,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": False,
+                "forum_url": self.challenge.forum_url,
             }
         ]
 
@@ -219,6 +220,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": False,
+            "forum_url": self.challenge.forum_url,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -271,6 +273,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": False,
+            "forum_url": self.challenge.forum_url,
         }
         response = self.client.put(self.url, {'title': new_title, 'description': new_description})
         self.assertEqual(response.data, expected)
@@ -345,6 +348,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": False,
+            "forum_url": self.challenge.forum_url,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -377,6 +381,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": False,
+            "forum_url": self.challenge.forum_url,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -779,6 +784,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
+                "forum_url": self.challenge3.forum_url,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -814,6 +820,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
+                "forum_url": self.challenge2.forum_url,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -849,6 +856,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
+                "forum_url": self.challenge4.forum_url,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -884,6 +892,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
+                "forum_url": self.challenge4.forum_url,
             },
             {
                 "id": self.challenge3.pk,
@@ -909,6 +918,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
+                "forum_url": self.challenge3.forum_url,
             },
             {
                 "id": self.challenge2.pk,
@@ -934,6 +944,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
+                "forum_url": self.challenge2.forum_url,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -1015,6 +1026,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
                 "approved_by_admin": True,
+                "forum_url": self.challenge3.forum_url,
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -1160,6 +1172,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": True,
+            "forum_url": self.challenge2.forum_url,
         }]
 
         response = self.client.get(self.url, {'host_team': self.challenge_host_team2.pk})
@@ -1193,6 +1206,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": True,
+            "forum_url": self.challenge2.forum_url,
         }]
 
         response = self.client.get(self.url, {'participant_team': self.participant_team2.pk})
@@ -1226,6 +1240,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": True,
+            "forum_url": self.challenge2.forum_url,
         }]
 
         response = self.client.get(self.url, {'mode': 'participant'})
@@ -1260,6 +1275,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
+                "forum_url": self.challenge.forum_url,
             },
             {
                 "id": self.challenge2.pk,
@@ -1285,6 +1301,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
+                "forum_url": self.challenge2.forum_url,
             }
         ]
 
@@ -1712,6 +1729,26 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
         except OSError:
             pass
 
+        self.participant_user = User.objects.create(
+            username='someuser1',
+            email="participant@test.com",
+            password='secret_password1')
+
+        EmailAddress.objects.create(
+            user=self.participant_user,
+            email='participant@test.com',
+            primary=True,
+            verified=True)
+
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name='Participant Team for get challenge phase split tests',
+            created_by=self.participant_user)
+
+        self.participant = Participant.objects.create(
+            user=self.participant_user,
+            status=Participant.SELF,
+            team=self.participant_team)
+
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge_phase = ChallengePhase.objects.create(
                 name='Challenge Phase',
@@ -1726,6 +1763,8 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             )
 
         self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
+        self.dataset_split_host = DatasetSplit.objects.create(name="Test Dataset Split host",
+                                                              codename="test-split-host")
 
         self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
 
@@ -1734,6 +1773,13 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC
+            )
+
+        self.challenge_phase_split_host = ChallengePhaseSplit.objects.create(
+            dataset_split=self.dataset_split_host,
+            challenge_phase=self.challenge_phase,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.HOST
             )
 
     def tearDown(self):
@@ -1758,12 +1804,12 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "visibility": self.challenge_phase_split.visibility,
             }
         ]
-
+        self.client.force_authenticate(user=self.participant_user)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_challenge_phase_split_when_challenge_phase_does_not_exist(self):
+    def test_get_challenge_phase_split_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('challenges:challenge_phase_split_list',
                                 kwargs={'challenge_pk': self.challenge.pk})
 
@@ -1775,6 +1821,32 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_get_challenge_phase_split_when_user_is_challenge_host(self):
+        self.url = reverse_lazy('challenges:challenge_phase_split_list',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        expected = [
+            {
+                "id": self.challenge_phase_split.id,
+                "challenge_phase": self.challenge_phase.id,
+                "challenge_phase_name": self.challenge_phase.name,
+                "dataset_split": self.dataset_split.id,
+                "dataset_split_name": self.dataset_split.name,
+                "visibility": self.challenge_phase_split.visibility,
+            },
+            {
+                "id": self.challenge_phase_split_host.id,
+                "challenge_phase": self.challenge_phase.id,
+                "challenge_phase_name": self.challenge_phase.name,
+                "dataset_split": self.dataset_split_host.id,
+                "dataset_split_name": self.dataset_split_host.name,
+                "visibility": self.challenge_phase_split_host.visibility,
+            },
+        ]
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class CreateChallengeUsingZipFile(APITestCase):

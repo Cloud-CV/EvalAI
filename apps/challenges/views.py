@@ -452,6 +452,13 @@ def challenge_phase_split_list(request, challenge_pk):
 
     challenge_phase_split = ChallengePhaseSplit.objects.filter(
         challenge_phase__challenge=challenge)
+
+    # Check if user is a challenge host or participant
+    challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
+
+    if not challenge_host:
+        challenge_phase_split = challenge_phase_split.filter(visibility=ChallengePhaseSplit.PUBLIC)
+
     serializer = ChallengePhaseSplitSerializer(
         challenge_phase_split, many=True)
     response_data = serializer.data
@@ -488,7 +495,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             BASE_LOCATION, '{}.zip'.format(unique_folder_name))
         try:
             if response and response.status_code == 200:
-                with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, 'w') as zip_file:
+                with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, 'wb') as zip_file:
                     zip_file.write(response.content)
         except IOError:
             message = ('Unable to process the uploaded zip file. '
