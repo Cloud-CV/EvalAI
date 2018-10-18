@@ -30,7 +30,7 @@ class BaseAPITestClass(APITestCase):
 class TestStringMethods(BaseAPITestClass):
     def test_host_urls(self):
         url = reverse_lazy('hosts:get_challenge_host_team_list')
-        self.assertEqual(url, '/api/hosts/challenge_host_team/')
+        self.assertEqual(url, '/api/hosts/challenge_host_team')
 
         url = reverse_lazy('hosts:get_challenge_host_team_details', kwargs={'pk': self.challenge_host.pk})
         self.assertEqual(url, '/api/hosts/challenge_host_team/' + str(self.challenge_host.pk))
