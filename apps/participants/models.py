@@ -26,7 +26,7 @@ class Participant(TimeStampedModel):
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
     team = models.ForeignKey('ParticipantTeam', related_name='participants', null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}'.format(self.user)
 
     class Meta:
@@ -40,7 +40,7 @@ class ParticipantTeam(TimeStampedModel):
     created_by = models.ForeignKey(User, null=True)
     team_url = models.CharField(max_length=1000, default="", blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}'.format(self.team_name)
 
     def get_all_participants_email(self):

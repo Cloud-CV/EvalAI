@@ -84,7 +84,7 @@ class Submission(TimeStampedModel):
     publication_url = models.CharField(max_length=1000, default="", blank=True)
     project_url = models.CharField(max_length=1000, default="", blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}'.format(self.id)
 
     class Meta:

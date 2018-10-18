@@ -57,7 +57,7 @@ class Challenge(TimeStampedModel):
         app_label = 'challenges'
         db_table = 'challenge'
 
-    def __unicode__(self):
+    def __str__(self):
         """Returns the title of Challenge"""
         return self.title
 
@@ -97,7 +97,7 @@ class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -134,7 +134,7 @@ class ChallengePhase(TimeStampedModel):
         db_table = 'challenge_phase'
         unique_together = (('codename', 'challenge'),)
 
-    def __unicode__(self):
+    def __str__(self):
         """Returns the name of Phase"""
         return self.name
 
@@ -171,7 +171,7 @@ class Leaderboard(TimeStampedModel):
 
     schema = JSONField()
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}'.format(self.id)
 
     class Meta:
@@ -200,7 +200,7 @@ class ChallengePhaseSplit(TimeStampedModel):
         default=PUBLIC
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} : {1}'.format(self.challenge_phase.name, self.dataset_split.name)
 
     class Meta:
@@ -215,7 +215,7 @@ class LeaderboardData(TimeStampedModel):
     leaderboard = models.ForeignKey('Leaderboard')
     result = JSONField()
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} : {1}'.format(self.challenge_phase_split, self.submission)
 
     class Meta:

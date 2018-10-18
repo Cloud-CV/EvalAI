@@ -9,6 +9,7 @@ import botocore
 import contextlib
 import django
 import importlib
+import json
 import logging
 import os
 import requests
@@ -403,6 +404,7 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
 
         # Save submission_result_file
         submission_result = submission_output.get('submission_result', '')
+        submission_result = json.dumps(submission_output)
         submission.submission_result_file.save('submission_result.json', ContentFile(submission_result))
 
         # Save submission_metadata_file
