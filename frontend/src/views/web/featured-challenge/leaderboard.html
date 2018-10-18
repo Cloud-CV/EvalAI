@@ -27,31 +27,33 @@
                 </div>
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
-                        <div class="col s12">
-                            <div ng-if="!featured_challenge.isResult" class="result-wrn">No phase selected.</div>
-                            <table ng-if="featured_challenge.isResult && featured_challenge.leaderboard.length" class="highlight">
-                                <thead>
-                                    <tr>
-                                        <td class="align-left" data-field="rank">Rank</td>
-                                        <td class="align-left" data-field="team">Participant Team</td>
-                                        <td class="align-right" ng-repeat="key in featured_challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
-                                        <td class="align-right" data-field="submission_time">Last Submission at</td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr ng-repeat="key in featured_challenge.leaderboard">
-                                        <td class="align-left">{{$index+1}}</td>
-                                        <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
-                                        <td class="align-right" ng-repeat="score in key.result track by $index">{{score | number : 2}}</td>
-                                        <td class="align-right"> {{key.submission__submitted_at | number: 0}}&nbsp; {{key.timeSpan}} ago</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div ng-if="featured_challenge.isResult && featured_challenge.leaderboard.error">
-                                <p>{{featured_challenge.leaderboard.error.error}}</p>
-                            </div>
-                            <div ng-if="featured_challenge.isResult && !featured_challenge.leaderboard.length && !featured_challenge.leaderboard.error">
-                                <p>No results to show!</p>
+                        <div class="horizontal-scroll">
+                            <div class="col s12">
+                                <div ng-if="!featured_challenge.isResult" class="result-wrn">No phase selected.</div>
+                                <table ng-if="featured_challenge.isResult && featured_challenge.leaderboard.length" class="highlight">
+                                    <thead>
+                                        <tr>
+                                            <td class="align-left" data-field="rank">Rank</td>
+                                            <td class="align-left" data-field="team">Participant Team</td>
+                                            <td class="align-right" ng-repeat="key in featured_challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
+                                            <td class="align-right" data-field="submission_time">Last Submission at</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="key in featured_challenge.leaderboard">
+                                            <td class="align-left">{{$index+1}}</td>
+                                            <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
+                                            <td class="align-right" ng-repeat="score in key.result track by $index">{{score | number : 2}}</td>
+                                            <td class="align-right"> {{key.submission__submitted_at | number: 0}}&nbsp; {{key.timeSpan}} ago</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div ng-if="featured_challenge.isResult && featured_challenge.leaderboard.error">
+                                    <p>{{featured_challenge.leaderboard.error.error}}</p>
+                                </div>
+                                <div ng-if="featured_challenge.isResult && !featured_challenge.leaderboard.length && !featured_challenge.leaderboard.error">
+                                    <p>No results to show!</p>
+                                </div>
                             </div>
                         </div>
                     </div>
