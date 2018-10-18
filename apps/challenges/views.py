@@ -495,7 +495,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             BASE_LOCATION, '{}.zip'.format(unique_folder_name))
         try:
             if response and response.status_code == 200:
-                with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, 'w') as zip_file:
+                with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, 'wb') as zip_file:
                     zip_file.write(response.content)
         except IOError:
             message = ('Unable to process the uploaded zip file. '
