@@ -26,7 +26,7 @@ class UserStatus(TimeStampedModel):
     name = models.CharField(max_length=30)
     status = models.CharField(max_length=30, unique=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -43,7 +43,7 @@ class Profile(TimeStampedModel):
     receive_participated_challenge_updates = models.BooleanField(default=False)
     recieve_newsletter = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}'.format(self.user)
 
     class Meta:
