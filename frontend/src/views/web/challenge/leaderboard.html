@@ -32,63 +32,65 @@
                 </div>
                 <div class="ev-card-body exist-team-card">
                     <div class="row">
-                        <div class="col s12">
-                            <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                            <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight">
-                                <thead>
-                                <tr>
-                                    <td class="align-left" data-field="rank">
-                                        <a href="#" ng-click="challenge.sortColumn = 'rank'; challenge.reverseSort = !challenge.reverseSort">
-                                            Rank
-                                            <span class="fa-stack fa-1x">
-                                                <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                            </span>
-                                        </a>
-                                    </td>
-                                    <td class="align-left" data-field="team">
-                                        <a href="#" ng-click="challenge.sortColumn = 'string'; challenge.reverseSort = !challenge.reverseSort">
-                                            Participant Team
-                                            <span class="fa-stack fa-1x">
-                                                <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                            </span>
-                                        </a>
-                                    </td>
-                                    <td class="align-right" ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">
-                                        <a href="#" ng-click="$parent.challenge.sortColumn = 'number'; $parent.challenge.columnIndexSort = $index; $parent.challenge.reverseSort = !$parent.challenge.reverseSort">
-                                            {{key}}
-                                            <span class="fa-stack fa-1x">
-                                                <i class="fa fa-sort-asc fa-stack-1x" ng-class="$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                <i class="fa fa-sort-desc fa-stack-1x" ng-class="!$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                            </span>
-                                        </a>
-                                    </td>
-                                    <td class="align-right" data-field="submission_time">
-                                        <a href="#" ng-click="challenge.sortColumn = 'date'; challenge.reverseSort = !challenge.reverseSort">
-                                            Last Submission at
-                                            <span class="fa-stack fa-1x">
-                                                <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                                <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
-                                            </span>
-                                        </a>
-                                    </td>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort">
-                                    <td class="align-left">{{challenge.initial_ranking[key.submission__participant_team__team_name]}}</td>
-                                    <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
-                                    <td class="align-center" ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
-                                    <td class="align-center">{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                            <div ng-if="challenge.isResult && challenge.leaderboard.error">
-                                <p>{{challenge.leaderboard.error.error}}</p>
-                            </div>
-                            <div ng-if="challenge.isResult && !challenge.leaderboard.length && !challenge.leaderboard.error">
-                                <p>No results to show!</p>
+                        <div class="horizontal-scroll">
+                            <div class="col s12">
+                                <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
+                                <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight">
+                                    <thead>
+                                    <tr>
+                                        <td class="align-left" data-field="rank">
+                                            <a href="#" ng-click="challenge.sortColumn = 'rank'; challenge.reverseSort = !challenge.reverseSort">
+                                                Rank
+                                                <span class="fa-stack fa-1x">
+                                                    <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                    <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                </span>
+                                            </a>
+                                        </td>
+                                        <td class="align-left" data-field="team">
+                                            <a href="#" ng-click="challenge.sortColumn = 'string'; challenge.reverseSort = !challenge.reverseSort">
+                                                Participant Team
+                                                <span class="fa-stack fa-1x">
+                                                    <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                    <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                </span>
+                                            </a>
+                                        </td>
+                                        <td class="align-right" ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">
+                                            <a href="#" ng-click="$parent.challenge.sortColumn = 'number'; $parent.challenge.columnIndexSort = $index; $parent.challenge.reverseSort = !$parent.challenge.reverseSort">
+                                                {{key}}
+                                                <span class="fa-stack fa-1x">
+                                                    <i class="fa fa-sort-asc fa-stack-1x" ng-class="$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                    <i class="fa fa-sort-desc fa-stack-1x" ng-class="!$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                </span>
+                                            </a>
+                                        </td>
+                                        <td class="align-right" data-field="submission_time">
+                                            <a href="#" ng-click="challenge.sortColumn = 'date'; challenge.reverseSort = !challenge.reverseSort">
+                                                Last Submission at
+                                                <span class="fa-stack fa-1x">
+                                                    <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                    <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                </span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort">
+                                        <td class="align-left">{{challenge.initial_ranking[key.submission__participant_team__team_name]}}</td>
+                                        <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
+                                        <td class="align-center" ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
+                                        <td class="align-center">{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div ng-if="challenge.isResult && challenge.leaderboard.error">
+                                    <p>{{challenge.leaderboard.error.error}}</p>
+                                </div>
+                                <div ng-if="challenge.isResult && !challenge.leaderboard.length && !challenge.leaderboard.error">
+                                    <p>No results to show!</p>
+                                </div>
                             </div>
                         </div>
                     </div>
