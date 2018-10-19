@@ -50,7 +50,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```shell
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
     ```
-    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file.
+    Use your postgres username and password for fields `USER` and `PASSWORD` in `settings/dev.py` file.
 
 2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
 
