@@ -9,6 +9,7 @@ import botocore
 import contextlib
 import django
 import importlib
+import json
 import logging
 import os
 import requests
@@ -212,8 +213,6 @@ def extract_challenge_data(challenge, phases):
         download_and_extract_file(annotation_file_url, annotation_file_path)
 
     try:
-        # TODO: Add a better approach instead of adding to sys.path
-        sys.path.append(os.path.join(COMPUTE_DIRECTORY_PATH, 'challenge_data', 'challenge_{}'.format(challenge.id)))
         # import the challenge after everything is finished
         challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
@@ -403,6 +402,7 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
 
         # Save submission_result_file
         submission_result = submission_output.get('submission_result', '')
+        submission_result = json.dumps(submission_output)
         submission.submission_result_file.save('submission_result.json', ContentFile(submission_result))
 
         # Save submission_metadata_file
