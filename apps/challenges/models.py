@@ -36,6 +36,7 @@ class Challenge(TimeStampedModel):
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True)
     enable_forum = models.BooleanField(default=True)
+    forum_url = models.URLField(max_length=100, blank=True, null=True)
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False, db_index=True)
@@ -56,7 +57,7 @@ class Challenge(TimeStampedModel):
         app_label = 'challenges'
         db_table = 'challenge'
 
-    def __unicode__(self):
+    def __str__(self):
         """Returns the title of Challenge"""
         return self.title
 
@@ -96,7 +97,7 @@ class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -133,7 +134,7 @@ class ChallengePhase(TimeStampedModel):
         db_table = 'challenge_phase'
         unique_together = (('codename', 'challenge'),)
 
-    def __unicode__(self):
+    def __str__(self):
         """Returns the name of Phase"""
         return self.name
 
@@ -170,7 +171,7 @@ class Leaderboard(TimeStampedModel):
 
     schema = JSONField()
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}'.format(self.id)
 
     class Meta:
@@ -199,7 +200,7 @@ class ChallengePhaseSplit(TimeStampedModel):
         default=PUBLIC
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} : {1}'.format(self.challenge_phase.name, self.dataset_split.name)
 
     class Meta:
@@ -214,7 +215,7 @@ class LeaderboardData(TimeStampedModel):
     leaderboard = models.ForeignKey('Leaderboard')
     result = JSONField()
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} : {1}'.format(self.challenge_phase_split, self.submission)
 
     class Meta:

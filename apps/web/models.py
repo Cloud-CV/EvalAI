@@ -11,7 +11,7 @@ class Contact(TimeStampedModel):
     email = models.EmailField(max_length=70,)
     message = models.CharField(max_length=500,)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}: {1}: {2}'.format(self.name, self.email, self.message)
 
     class Meta:
@@ -42,7 +42,7 @@ class Team(models.Model):
     background_image = models.ImageField(upload_to="bg-images", null=True, blank=True)
     team_type = models.CharField(choices=TEAM_TYPE_OPTIONS, max_length=50)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
