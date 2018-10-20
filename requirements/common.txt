@@ -11,6 +11,7 @@ django-rest-auth[with_social]==0.9.2
 django-ses==0.8.5
 docker-compose==1.21.0
 drfdocs==0.0.11
+drf-yasg==1.11.0
 pika==0.10.0
 pickleshare==0.7.4
 Pillow==3.4.2

@@ -14,6 +14,8 @@ from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset, StandardResultSetPagination
@@ -34,6 +36,41 @@ from .sender import publish_submission_message
 from .serializers import SubmissionSerializer
 
 
+
+@swagger_auto_schema(methods=['post'],
+    manual_parameters=[
+        openapi.Parameter(
+            name='challenge_id', in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Id of challenge to which a submission is to be made",
+            required=True
+        ),
+        openapi.Parameter(
+            name='challenge_phase_id', in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Id of challenge phase to which a submission is to be made",
+            required=True
+        )],
+    responses={
+        status.HTTP_201_CREATED: openapi.Response(''),
+})
+@swagger_auto_schema(methods=['get'],
+    manual_parameters=[
+        openapi.Parameter(
+            name='challenge_id', in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Id of challenge to which a submission is to be made",
+            required=True
+        ),
+        openapi.Parameter(
+            name='challenge_phase_id', in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Id of challenge phase to which a submission is to be made",
+            required=True
+        )],
+    responses={
+        status.HTTP_201_CREATED: openapi.Response(''),
+})
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
