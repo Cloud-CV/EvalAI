@@ -1,13 +1,18 @@
 swagger: '2.0'
+schemes:
+  - https
+host: evalapi.cloudcv.org
+basePath: /api
 info:
   title: EvalAI API
-  description: <br><h3>Hello World</h3>
+  description: <br><h3>EvalAI Documentation</h3>
   contact:
     email: team@cloudcv.org
   license:
     name: BSD License
   version: v1
-basePath: /api
+  x-logo:
+    url: 'https://evalai.cloudcv.org/dist/images/evalai-logo.png'
 consumes:
   - application/json
 produces:
