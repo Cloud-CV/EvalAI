@@ -35,8 +35,7 @@
                         <div class="horizontal-scroll">
                             <div class="col s12">
                                 <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                                <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight"
-                                       style="display: block; overflow-x: auto; white-space: nowrap;">
+                                <table ng-if="challenge.isResult && challenge.leaderboard.length" class="highlight inner-scroll">
                                     <thead>
                                     <tr>
                                         <td class="align-left" data-field="rank">

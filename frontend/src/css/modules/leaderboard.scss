@@ -3,3 +3,9 @@
 .horizontal-scroll {
 	overflow-x: auto;
 }
+
+.inner-scroll {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
