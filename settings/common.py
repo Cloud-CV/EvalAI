@@ -300,3 +300,7 @@ SWAGGER_SETTINGS = {
         },
     }
 }
+
+REDOC_SETTINGS = {
+    'SPEC_URL': ('https://raw.githubusercontent.com/Cloud-CV/EvalAI/0e9f5756fcf96d2a4fdd9a91e5df27ddcf72ab19/apps/accounts/templates/drf-yasg/swagger.yaml', {'format': '.yaml'}),
+}

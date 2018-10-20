@@ -34,7 +34,6 @@ handler500 = 'web.views.internal_server_error'
 swagger_api_info = openapi.Info(
       title="EvalAI API",
       default_version='v1',
-      description="<br><h3>EvalAI API Documentation</h3>",
       contact=openapi.Contact(email="team@cloudcv.org"),
       license=openapi.License(name="BSD License"),
 )
@@ -89,7 +88,7 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                    include('web.urls',
                            namespace='web')),
                url(r'^email_reporting/', include('django_ses.urls')),
-               url(r'^api-docs/$', schema_view.with_ui('redoc', cache_timeout=0), name='api-docs-ui'),
+               url(r'^api-docs/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
                ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
