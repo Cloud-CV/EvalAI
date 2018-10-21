@@ -13,7 +13,7 @@ from django.dispatch import receiver
 
 from base.models import (TimeStampedModel, )
 from base.utils import RandomFileName
-from challenges.models import ChallengePhase
+from challenges.models import ChallengePhase,Challenge
 from participants.models import ParticipantTeam
 
 logger = logging.getLogger(__name__)
@@ -60,6 +60,7 @@ class Submission(TimeStampedModel):
         ParticipantTeam, related_name='submissions')
     challenge_phase = models.ForeignKey(
         ChallengePhase, related_name='submissions')
+    challenge_name=models.ForeignKey(Challenge, related_name='submissions')
     created_by = models.ForeignKey(User)
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS, db_index=True)
     is_public = models.BooleanField(default=False)
