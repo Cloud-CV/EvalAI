@@ -61,6 +61,8 @@ from .serializers import (ChallengeConfigSerializer,
                           ZipChallengeSerializer,
                           ZipChallengePhaseSplitSerializer,)
 from .utils import get_file_content
+from .sender import publish_add_challenge_message
+
 
 logger = logging.getLogger(__name__)
 
@@ -925,6 +927,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'success': 'Challenge {} has been created successfully and'
                 ' sent for review to EvalAI Admin.'.format(challenge.title)}
+            publish_add_challenge_message(challenge.id)
             return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:

@@ -454,6 +454,10 @@ def process_submission_message(message):
     run_submission(challenge_id, challenge_phase, submission_instance, user_annotation_file_path,)
 
 
+def is_add_challenge_message(body):
+    return body.get('challenge_id') and not body.get('submission_id') and not body.get('phase_id')
+
+
 def process_add_challenge_message(message):
     challenge_id = message.get('challenge_id')
 
@@ -471,7 +475,10 @@ def process_submission_callback(body):
         logger.info("[x] Received submission message %s" % body)
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
-        process_submission_message(body)
+        if is_add_challenge_message(body):
+            process_add_challenge_message(body)
+        else:
+            process_submission_message(body)
     except Exception as e:
         logger.exception('Exception while receiving message from submission queue with error {}'.format(e))
 
