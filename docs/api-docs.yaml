@@ -27,8 +27,8 @@ security:
 paths:
   /accounts/user/disable:
     post:
-      operationId: accounts user disable create
-      description: ''
+      operationId: Disable User Accounts
+      description: 'API to disable to user account'
       parameters: []
       responses:
         '201':
@@ -38,8 +38,8 @@ paths:
     parameters: []
   /accounts/user/get_auth_token:
     get:
-      operationId: accounts_user_get_auth_token_list
-      description: ''
+      operationId: Get Authentication Token
+      description: 'API to get the user auth token'
       parameters: []
       responses:
         '200':
@@ -992,8 +992,8 @@ paths:
         type: string
   /jobs/challenge/{challenge_id}/challenge_phase/{challenge_phase_id}/submission/:
     get:
-      operationId: jobs_challenge_challenge_phase_submission_list
-      description: API Endpoint for making a submission to a challenge
+      operationId: Get submissions list of a challenge
+      description: API Endpoint for getting a submissions list of a challenge
       parameters:
         - name: challenge_id
           in: path
@@ -1011,7 +1011,7 @@ paths:
       tags:
         - jobs
     post:
-      operationId: jobs_challenge_challenge_phase_submission_create
+      operationId: Make a submission to a challenge
       description: API Endpoint for making a submission to a challenge
       parameters:
         - name: challenge_id
@@ -1040,7 +1040,7 @@ paths:
         type: string
   /jobs/challenge/{challenge_pk}/challenge_phase/{challenge_phase_pk}/submission/{submission_pk}:
     patch:
-      operationId: jobs_challenge_challenge_phase_submission_partial_update
+      operationId: Update Submission Data
       description: "API Endpoint for updating the submission meta data\nand changing\
         \ submission visibility."
       parameters: []
@@ -1052,14 +1052,17 @@ paths:
     parameters:
       - name: challenge_phase_pk
         in: path
+        description: Id of challenge phase for which a submission is to be updated
         required: true
         type: string
       - name: challenge_pk
         in: path
+        description: Id of challenge for which a submission is to be updated
         required: true
         type: string
       - name: submission_pk
         in: path
+        description: Id of submission for which a submission is to be updated
         required: true
         type: string
   /jobs/challenge_phase_split/{challenge_phase_split_id}/leaderboard/:
