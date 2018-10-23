@@ -291,7 +291,7 @@ ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
 SWAGGER_SETTINGS = {
-   'DEFAULT_INFO': 'evalai.urls.swagger_api_info',
+    'DEFAULT_INFO': 'evalai.urls.swagger_api_info',
     'SECURITY_DEFINITIONS': {
         'Token Authentication': {
             'type': 'apiKey',

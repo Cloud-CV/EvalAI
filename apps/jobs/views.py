@@ -36,38 +36,35 @@ from .sender import publish_submission_message
 from .serializers import SubmissionSerializer
 
 
-
-@swagger_auto_schema(methods=['post'],
-    manual_parameters=[
-        openapi.Parameter(
+@swagger_auto_schema(methods=['post'], manual_parameters=[
+    openapi.Parameter(
             name='challenge_id', in_=openapi.IN_PATH,
             type=openapi.TYPE_STRING,
             description="Id of challenge to which a submission is to be made",
             required=True
-        ),
-        openapi.Parameter(
+    ),
+    openapi.Parameter(
             name='challenge_phase_id', in_=openapi.IN_PATH,
             type=openapi.TYPE_STRING,
             description="Id of challenge phase to which a submission is to be made",
             required=True
-        )],
+    )],
     responses={
         status.HTTP_201_CREATED: openapi.Response(''),
 })
-@swagger_auto_schema(methods=['get'],
-    manual_parameters=[
-        openapi.Parameter(
-            name='challenge_id', in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
-            description="Id of challenge to which a submission is to be made",
-            required=True
-        ),
-        openapi.Parameter(
-            name='challenge_phase_id', in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
-            description="Id of challenge phase to which a submission is to be made",
-            required=True
-        )],
+@swagger_auto_schema(methods=['get'], manual_parameters=[
+    openapi.Parameter(
+        name='challenge_id', in_=openapi.IN_PATH,
+        type=openapi.TYPE_STRING,
+        description="Id of challenge to which a submission is to be made",
+        required=True
+    ),
+    openapi.Parameter(
+        name='challenge_phase_id', in_=openapi.IN_PATH,
+        type=openapi.TYPE_STRING,
+        description="Id of challenge phase to which a submission is to be made",
+        required=True
+    )],
     responses={
         status.HTTP_201_CREATED: openapi.Response(''),
 })
@@ -238,14 +235,13 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(methods=['get'],
-    manual_parameters=[
-        openapi.Parameter(
-            name='challenge_phase_split_id', in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
-            description="Id of challenge phase split for which leaderboard is to be displayed",
-            required=True
-        )],
+@swagger_auto_schema(methods=['get'], manual_parameters=[
+    openapi.Parameter(
+        name='challenge_phase_split_id', in_=openapi.IN_PATH,
+        type=openapi.TYPE_STRING,
+        description="Id of challenge phase split for which leaderboard is to be displayed",
+        required=True
+    )],
     responses={
         status.HTTP_200_OK: openapi.Response(''),
 })

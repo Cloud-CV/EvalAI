@@ -88,8 +88,12 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                    include('web.urls',
                            namespace='web')),
                url(r'^email_reporting/', include('django_ses.urls')),
-               url(r'^api-docs/docs(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
-               url(r'^api-docs/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+               url(r'^api-docs/docs(?P<format>\.json|\.yaml)$',
+                   schema_view.without_ui(cache_timeout=0),
+                   name='schema-yaml'),
+               url(r'^api-docs/$',
+                   schema_view.with_ui('redoc', cache_timeout=0),
+                   name='schema-redoc'),
                ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.
