@@ -34,7 +34,7 @@ handler500 = 'web.views.internal_server_error'
 swagger_api_info = openapi.Info(
       title="EvalAI API",
       default_version='v1',
-      description='Something Something',
+      description='EvalAI Documentation',
       contact=openapi.Contact(email="team@cloudcv.org"),
       license=openapi.License(name="BSD License"),
 )
