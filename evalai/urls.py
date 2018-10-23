@@ -34,12 +34,12 @@ handler500 = 'web.views.internal_server_error'
 swagger_api_info = openapi.Info(
       title="EvalAI API",
       default_version='v1',
+      description='Something Something',
       contact=openapi.Contact(email="team@cloudcv.org"),
       license=openapi.License(name="BSD License"),
 )
 
 schema_view = get_schema_view(
-  url="https://evalapi.cloudcv.org/",
   public=True,
   permission_classes=(permissions.AllowAny,),
 )
@@ -88,6 +88,7 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                    include('web.urls',
                            namespace='web')),
                url(r'^email_reporting/', include('django_ses.urls')),
+               url(r'^api-docs/docs(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
                url(r'^api-docs/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
                ]
 

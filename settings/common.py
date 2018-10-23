@@ -302,5 +302,5 @@ SWAGGER_SETTINGS = {
 }
 
 REDOC_SETTINGS = {
-    'SPEC_URL': ('https://raw.githubusercontent.com/Cloud-CV/EvalAI/9d12af28b2ba279c6ed0a9938aa592d058c3f01c/docs/api-docs.yaml', {'format': '.yaml'}),
+    'SPEC_URL': ('docs.yaml', {'format': '.yaml'}),
 }

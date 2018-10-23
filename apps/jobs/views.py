@@ -238,6 +238,17 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(methods=['get'],
+    manual_parameters=[
+        openapi.Parameter(
+            name='challenge_phase_split_id', in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Id of challenge phase split for which leaderboard is to be displayed",
+            required=True
+        )],
+    responses={
+        status.HTTP_200_OK: openapi.Response(''),
+})
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
 def leaderboard(request, challenge_phase_split_id):
