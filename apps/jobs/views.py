@@ -14,6 +14,8 @@ from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,)
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset, StandardResultSetPagination
@@ -34,6 +36,38 @@ from .sender import publish_submission_message
 from .serializers import SubmissionSerializer
 
 
+@swagger_auto_schema(methods=['post'], manual_parameters=[
+    openapi.Parameter(
+            name='challenge_id', in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True
+    ),
+    openapi.Parameter(
+            name='challenge_phase_id', in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge Phase ID",
+            required=True
+    )],
+    responses={
+        status.HTTP_201_CREATED: openapi.Response(''),
+})
+@swagger_auto_schema(methods=['get'], manual_parameters=[
+    openapi.Parameter(
+        name='challenge_id', in_=openapi.IN_PATH,
+        type=openapi.TYPE_STRING,
+        description="Challenge ID",
+        required=True
+    ),
+    openapi.Parameter(
+        name='challenge_phase_id', in_=openapi.IN_PATH,
+        type=openapi.TYPE_STRING,
+        description="Challenge Phase ID",
+        required=True
+    )],
+    responses={
+        status.HTTP_201_CREATED: openapi.Response(''),
+})
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -201,6 +235,16 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(methods=['get'], manual_parameters=[
+    openapi.Parameter(
+        name='challenge_phase_split_id', in_=openapi.IN_PATH,
+        type=openapi.TYPE_STRING,
+        description="Challenge Phase Split ID",
+        required=True
+    )],
+    responses={
+        status.HTTP_200_OK: openapi.Response(''),
+})
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
 def leaderboard(request, challenge_phase_split_id):

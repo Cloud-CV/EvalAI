@@ -22,11 +22,27 @@ from django.conf.urls.static import static
 
 from allauth.account.views import ConfirmEmailView
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
 from web import views
 
 handler404 = 'web.views.page_not_found'
 handler500 = 'web.views.internal_server_error'
+
+swagger_api_info = openapi.Info(
+      title="EvalAI API",
+      default_version='v1',
+      description='EvalAI Documentation',
+      contact=openapi.Contact(email="team@cloudcv.org"),
+      license=openapi.License(name="BSD License"),
+)
+
+schema_view = get_schema_view(
+  public=True,
+  permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [url(r'^$', views.home, name='home'),
                url(r'^accounts/',
@@ -72,6 +88,12 @@ urlpatterns = [url(r'^$', views.home, name='home'),
                    include('web.urls',
                            namespace='web')),
                url(r'^email_reporting/', include('django_ses.urls')),
+               url(r'^api-docs/docs(?P<format>\.json|\.yaml)$',
+                   schema_view.without_ui(cache_timeout=0),
+                   name='schema-yaml'),
+               url(r'^api-docs/$',
+                   schema_view.with_ui('redoc', cache_timeout=0),
+                   name='schema-redoc'),
                ]
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS URLs available during development only.

@@ -67,6 +67,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_docs',
     'rest_framework_expiring_authtoken',
+    'drf_yasg',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -288,3 +289,18 @@ REST_AUTH_SERIALIZERS = {
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
+
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'evalai.urls.swagger_api_info',
+    'SECURITY_DEFINITIONS': {
+        'Token Authentication': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        },
+    }
+}
+
+REDOC_SETTINGS = {
+    'SPEC_URL': ('docs.yaml', {'format': '.yaml'}),
+}
