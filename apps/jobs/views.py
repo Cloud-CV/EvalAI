@@ -40,13 +40,13 @@ from .serializers import SubmissionSerializer
     openapi.Parameter(
             name='challenge_id', in_=openapi.IN_PATH,
             type=openapi.TYPE_STRING,
-            description="Id of challenge to which a submission is to be made",
+            description="Challenge ID",
             required=True
     ),
     openapi.Parameter(
             name='challenge_phase_id', in_=openapi.IN_PATH,
             type=openapi.TYPE_STRING,
-            description="Id of challenge phase to which a submission is to be made",
+            description="Challenge Phase ID",
             required=True
     )],
     responses={
@@ -56,13 +56,13 @@ from .serializers import SubmissionSerializer
     openapi.Parameter(
         name='challenge_id', in_=openapi.IN_PATH,
         type=openapi.TYPE_STRING,
-        description="Id of challenge to which a submission is to be made",
+        description="Challenge ID",
         required=True
     ),
     openapi.Parameter(
         name='challenge_phase_id', in_=openapi.IN_PATH,
         type=openapi.TYPE_STRING,
-        description="Id of challenge phase to which a submission is to be made",
+        description="Challenge Phase ID",
         required=True
     )],
     responses={
@@ -239,7 +239,7 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
     openapi.Parameter(
         name='challenge_phase_split_id', in_=openapi.IN_PATH,
         type=openapi.TYPE_STRING,
-        description="Id of challenge phase split for which leaderboard is to be displayed",
+        description="Challenge Phase Split ID",
         required=True
     )],
     responses={
