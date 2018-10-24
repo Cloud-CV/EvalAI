@@ -38,7 +38,7 @@ def get_or_create_sqs_queue():
         if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
             queue = sqs.create_queue(QueueName=AWS_SQS_QUEUE_NAME)
         else:
-            logger.exception("Cannot get or create Queue")
+            logger.exception('Cannot get or create Queue')
     return queue
 
 
