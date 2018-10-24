@@ -52,7 +52,7 @@ class BaseAPITestClass(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain'),
+                                                   b'Dummy file content', content_type='text/plain'),
                 max_submissions_per_day=100000,
                 max_submissions=100000,
             )

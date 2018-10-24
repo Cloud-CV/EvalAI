@@ -24,6 +24,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - sqs
     volumes:
       - .:/code
 
@@ -35,7 +36,6 @@ services:
       context: ./
       dockerfile: docker/dev/worker/Dockerfile
     depends_on:
-      - sqs
       - django
     volumes:
       - .:/code

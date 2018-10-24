@@ -165,10 +165,8 @@ class TestErrorPages(TestCase):
         request = c.get("/abc")
         response = page_not_found(request)
         self.assertEqual(response.status_code, 404)
-        self.assertIn('Error 404', unicode(response))
         response = internal_server_error(request)
         self.assertEqual(response.status_code, 500)
-        self.assertIn('Error 500', unicode(response))
 
 
 class TestNotifyUsersAboutChallenge(TestCase):
