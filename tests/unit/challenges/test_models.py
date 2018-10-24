@@ -84,9 +84,9 @@ class ChallengeTestCase(BaseTestCase):
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge.image = SimpleUploadedFile('test_sample_file.jpg',
-                                                      'Dummy image content', content_type='image')
+                                                      b'Dummy image content', content_type='image')
             self.challenge.evaluation_script = SimpleUploadedFile('test_sample_file.zip',
-                                                                  'Dummy zip content', content_type='zip')
+                                                                  b'Dummy zip content', content_type='zip')
         self.challenge.save()
 
     def tearDown(self):
