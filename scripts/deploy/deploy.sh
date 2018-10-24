@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-export AWS_ACCOUNT_ID=937891341272
 export COMMIT_ID=$(git rev-parse HEAD)
 
 build_and_push() {
@@ -10,10 +9,10 @@ build_and_push() {
         docker-compose -f docker-compose-$1.yml build
         docker-compose -f docker-compose-$1.yml push
 
-        # Get the build docker images
+        # Get already built docker images
         images=$(cat docker-compose-$1.yml | grep 'image: ' | cut -d':' -f 2 | tr -d '"')
 
-        # It is used to tag & push the images with latest tag
+        # Tag & push images with latest tag
         for image in $images
         do
             eval image=${image}
