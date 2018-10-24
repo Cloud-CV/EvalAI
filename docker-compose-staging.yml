@@ -14,7 +14,6 @@ services:
 
   worker:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${COMMIT_ID}
-    container_name: worker
     build:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
