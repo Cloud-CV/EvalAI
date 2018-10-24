@@ -1,4 +1,7 @@
-node_modules
 bower_components
 env
+elasticmq-server-0.14.2.jar
+examples
 media
+node_modules
+static
