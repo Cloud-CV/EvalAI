@@ -18,7 +18,7 @@ def get_or_create_sqs_queue():
     Returns:
         Returns the SQS Queue object
     """
-    if settings.DEBUG:
+    if settings.DEBUG or settings.TEST:
         sqs = boto3.resource('sqs',
                              endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
                              region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
