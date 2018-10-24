@@ -18,30 +18,27 @@ def get_or_create_sqs_queue():
     Returns:
         Returns the SQS Queue object
     """
-    sqs = boto3.resource('sqs',
-                         endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
-                         region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'))
+    if settings.DEBUG or settings.TEST:
+        sqs = boto3.resource('sqs',
+                             endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
+    else:
+        sqs = boto3.resource('sqs',
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
 
     AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME', 'evalai_submission_queue')
-    # Check if the FIFO queue exists. If no, then create one
+    # Check if the queue exists. If no, then create one
     try:
         queue = sqs.get_queue_by_name(QueueName=AWS_SQS_QUEUE_NAME)
     except botocore.exceptions.ClientError as ex:
         if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-            if settings.DEBUG:
-                queue = sqs.create_queue(QueueName=AWS_SQS_QUEUE_NAME)
-            else:
-                # create a FIFO queue in the production environment
-                name = AWS_SQS_QUEUE_NAME + '.fifo'
-                queue = sqs.create_queue(
-                    QueueName=name,
-                    Attributes={
-                        'FifoQueue': 'true',
-                        'ContentBasedDeduplication': 'true'
-                    }
-                )
+            queue = sqs.create_queue(QueueName=AWS_SQS_QUEUE_NAME)
         else:
-            logger.info("Cannot get or create Queue")
+            logger.exception('Cannot get or create Queue')
     return queue
 
 
@@ -62,9 +59,5 @@ def publish_submission_message(challenge_id, phase_id, submission_id):
     }
 
     queue = get_or_create_sqs_queue()
-    AWS_SQS_MESSAGE_GROUP_ID = os.environ.get('AWS_SQS_MESSAGE_GROUP_ID', 'evalai_msg_group')
-    response = queue.send_message(
-        MessageBody=json.dumps(message),
-        MessageGroupId=AWS_SQS_MESSAGE_GROUP_ID,
-    )
+    response = queue.send_message(MessageBody=json.dumps(message))
     return response

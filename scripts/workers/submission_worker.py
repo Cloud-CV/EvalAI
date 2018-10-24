@@ -217,8 +217,8 @@ def extract_challenge_data(challenge, phases):
         challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
     except:
-        logger.error('Error while creating Python module for challenge_id: %s' % (challenge.id))
-        traceback.print_exc()
+        logger.exception('Exception raised while creating Python module for challenge_id: %s' % (challenge.id))
+        raise
 
 
 def load_active_challenges():
@@ -446,9 +446,8 @@ def process_submission_message(message):
     try:
         challenge_phase = ChallengePhase.objects.get(id=phase_id)
     except ChallengePhase.DoesNotExist:
-        logger.critical('Challenge Phase {} does not exist'.format(phase_id))
-        traceback.print_exc()
-        return
+        logger.exception('Challenge Phase {} does not exist'.format(phase_id))
+        raise
 
     user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
                                      os.path.basename(submission_instance.input_file.name))
@@ -461,8 +460,7 @@ def process_add_challenge_message(message):
     try:
         challenge = Challenge.objects.get(id=challenge_id)
     except Challenge.DoesNotExist:
-        logger.critical('Challenge {} does not exist'.format(challenge_id))
-        traceback.print_exc()
+        logger.exception('Challenge {} does not exist'.format(challenge_id))
 
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
@@ -475,8 +473,7 @@ def process_submission_callback(body):
         body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
     except Exception as e:
-        logger.error('Error in receiving message from submission queue with error {}'.format(e))
-        traceback.print_exc()
+        logger.exception('Exception while receiving message from submission queue with error {}'.format(e))
 
 
 def get_or_create_sqs_queue():
@@ -484,32 +481,27 @@ def get_or_create_sqs_queue():
     Returns:
         Returns the SQS Queue object
     """
-    sqs = boto3.resource('sqs',
-                         endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
-                         region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
-                         aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-                         aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
+    if settings.DEBUG or settings.TEST:
+        sqs = boto3.resource('sqs',
+                             endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
+    else:
+        sqs = boto3.resource('sqs',
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
 
     AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME', 'evalai_submission_queue')
-    # Check if the FIFO queue exists. If no, then create one
+    # Check if the queue exists. If no, then create one
     try:
         queue = sqs.get_queue_by_name(QueueName=AWS_SQS_QUEUE_NAME)
     except botocore.exceptions.ClientError as ex:
         if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-            if settings.DEBUG:
-                queue = sqs.create_queue(QueueName=AWS_SQS_QUEUE_NAME)
-            else:
-                # create a FIFO queue in the production environment
-                name = AWS_SQS_QUEUE_NAME + '.fifo'
-                queue = sqs.create_queue(
-                    QueueName=name,
-                    Attributes={
-                        'FifoQueue': 'true',
-                        'ContentBasedDeduplication': 'true'
-                    }
-                )
+            queue = sqs.create_queue(QueueName=AWS_SQS_QUEUE_NAME)
         else:
-            logger.error('Cannot get or create queue!')
+            logger.exception('Cannot get or create Queue')
     return queue
 
 
