@@ -34,5 +34,5 @@ class TestEvalAiUrls(BaseAPITestClass):
                            kwargs={'uidb64': urlsafe_base64_encode(force_bytes(self.user.pk)),
                                    'token': default_token_generator.make_token(self.user)})
         self.assertEqual(url, '/auth/api/password/reset/confirm/' +
-                         str(urlsafe_base64_encode(force_bytes(self.user.pk))) + '/' +
+                         urlsafe_base64_encode(force_bytes(self.user.pk)).decode() + '/' +
                          str(default_token_generator.make_token(self.user)))
