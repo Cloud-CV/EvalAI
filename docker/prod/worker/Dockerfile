@@ -2,6 +2,10 @@ FROM python:3.6.5
 
 ENV PYTHONUNBUFFERED 1
 
+RUN apt-get update && \
+  apt-get upgrade -y && \
+  apt-get install -q -y openjdk-8-jdk
+
 RUN mkdir /code
 WORKDIR /code
 
