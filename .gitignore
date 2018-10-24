@@ -53,3 +53,4 @@ media/
 docker/prod/docker_staging.env
 docker/prod/docker_prod.env
 secrets.tar
+scripts/docker_pull.sh
