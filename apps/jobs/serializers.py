@@ -124,3 +124,23 @@ class LastSubmissionDateTime(object):
 
 class LastSubmissionDateTimeSerializer(serializers.Serializer):
     last_submission_datetime = serializers.DateTimeField()
+
+
+class CreateLeaderboardDataSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        context = kwargs.get('context')
+        if context and context.get('request').method == 'PUT':
+            challenge_phase_split = context.get('challenge_phase_split')
+            kwargs['data']['challenge_phase_split'] = challenge_phase_split.pk
+
+            submission = context.get('submission').pk
+            kwargs['data']['submission'] = submission
+
+            kwargs['data']['leaderboard'] = challenge_phase_split.leaderboard.pk
+
+        super(CreateLeaderboardDataSerializer, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = LeaderboardData
+        fields = ('challenge_phase_split', 'submission', 'result', 'leaderboard')
