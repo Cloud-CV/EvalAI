@@ -453,9 +453,9 @@ def get_submission_by_pk(request, submission_id):
 @api_view(['PUT',])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator,))
 @authentication_classes((ExpiringTokenAuthentication,))
-def submit_leaderboard_data(request, challenge_pk):
+def update_submission(request, challenge_pk):
     """
-    API endpoint to submit data for leaderboard
+    API endpoint to update submission realted attributes
     """
     challenge_phase_split_pk = request.data['challenge_phase_split']
     submission_pk = request.data['submission']
