@@ -1351,7 +1351,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain'),
+                                                   b'Dummy file content', content_type='text/plain'),
                 max_submissions_per_day=100000,
                 max_submissions=100000,
             )
@@ -1759,7 +1759,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   b'Dummy file content', content_type='text/plain')
             )
 
         self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
@@ -2108,7 +2108,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge5,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content 1', content_type='text/plain')
+                                                   b'Dummy file content 1', content_type='text/plain')
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2122,7 +2122,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge5,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content 2', content_type='text/plain')
+                                                   b'Dummy file content 2', content_type='text/plain')
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2135,7 +2135,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge5,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   b'Dummy file content', content_type='text/plain')
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2346,7 +2346,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   b'Dummy file content', content_type='text/plain')
             )
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.submission = Submission.objects.create(
