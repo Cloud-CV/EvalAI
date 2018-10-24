@@ -653,7 +653,7 @@ class DisableChallengeTest(BaseAPITestClass):
             'error': 'Sorry, you are not allowed to perform this operation!'
         }
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_disable_challenge_when_user_is_not_creator(self):
@@ -670,7 +670,7 @@ class DisableChallengeTest(BaseAPITestClass):
             'error': 'Sorry, you are not allowed to perform this operation!'
         }
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_disable_a_challenge_when_user_is_not_authenticated(self):
@@ -681,7 +681,7 @@ class DisableChallengeTest(BaseAPITestClass):
         }
 
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -1351,7 +1351,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain'),
+                                                   b'Dummy file content', content_type='text/plain'),
                 max_submissions_per_day=100000,
                 max_submissions=100000,
             )
@@ -1449,7 +1449,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
     @override_settings(MEDIA_ROOT='/tmp/evalai')
     def test_create_challenge_phase_with_all_data(self):
         self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
-                                                          'Another Dummy file content',
+                                                          b'Another Dummy file content',
                                                           content_type='text/plain')
         self.data['codename'] = "Test Code Name"
         response = self.client.post(self.url, self.data, format='multipart')
@@ -1458,7 +1458,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
     @override_settings(MEDIA_ROOT='/tmp/evalai')
     def test_create_challenge_phase_with_same_codename(self):
         self.data['test_annotation'] = SimpleUploadedFile('another_test_file.txt',
-                                                          'Another Dummy file content',
+                                                          b'Another Dummy file content',
                                                           content_type='text/plain')
 
         expected = {
@@ -1481,7 +1481,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         }
 
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_challenge_phase_when_user_is_not_creator(self):
@@ -1524,7 +1524,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             'error': 'Sorry, you are not allowed to perform this operation!'
         }
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
@@ -1626,7 +1626,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         }
 
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -1672,7 +1672,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
     def test_particular_challenge_phase_update(self):
 
         self.update_test_annotation = SimpleUploadedFile('update_test_sample_file.txt',
-                                                         'Dummy update file content', content_type='text/plain')
+                                                         b'Dummy update file content', content_type='text/plain')
         self.data['test_annotation'] = self.update_test_annotation
         response = self.client.put(self.url, self.data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1692,7 +1692,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
         }
 
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -1716,7 +1716,7 @@ class DeleteParticularChallengePhase(BaseChallengePhaseClass):
         }
 
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -1759,7 +1759,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   b'Dummy file content', content_type='text/plain')
             )
 
         self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
@@ -1931,7 +1931,7 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         self.input_zip_file = SimpleUploadedFile('test_sample.zip',
-                                                 'Dummy File Content',
+                                                 b'Dummy File Content',
                                                  content_type='application/zip')
 
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded(self):
@@ -1985,7 +1985,7 @@ class CreateChallengeUsingZipFile(APITestCase):
         }
 
         response = self.client.post(self.url, {})
-        self.assertEqual(response.data.values()[0], expected['error'])
+        self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_challenge_using_zip_file_success(self):
@@ -2108,7 +2108,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge5,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content 1', content_type='text/plain')
+                                                   b'Dummy file content 1', content_type='text/plain')
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2122,7 +2122,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge5,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content 2', content_type='text/plain')
+                                                   b'Dummy file content 2', content_type='text/plain')
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2135,7 +2135,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge5,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   b'Dummy file content', content_type='text/plain')
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2145,7 +2145,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 created_by=self.challenge_host_team5.created_by,
                 status='submitted',
                 input_file=SimpleUploadedFile('test_sample_file.txt',
-                                              'Dummy file content', content_type='text/plain'),
+                                              b'Dummy file content', content_type='text/plain'),
                 method_name="Test Method 1",
                 method_description="Test Description 1",
                 project_url="http://testserver1/",
@@ -2160,7 +2160,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 created_by=self.challenge_host_team5.created_by,
                 status='submitted',
                 input_file=SimpleUploadedFile('test_sample_file.txt',
-                                              'Dummy file content', content_type='text/plain'),
+                                              b'Dummy file content', content_type='text/plain'),
                 method_name="Test Method 2",
                 method_description="Test Description 2",
                 project_url="http://testserver2/",
@@ -2175,7 +2175,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 created_by=self.challenge_host_team5.created_by,
                 status='submitted',
                 input_file=SimpleUploadedFile('test_sample_file.txt',
-                                              'Dummy file content', content_type='text/plain'),
+                                              b'Dummy file content', content_type='text/plain'),
                 method_name="Test Method 3",
                 method_description="Test Description 3",
                 project_url="http://testserver3/",
@@ -2346,7 +2346,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   b'Dummy file content', content_type='text/plain')
             )
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.submission = Submission.objects.create(
@@ -2355,7 +2355,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 created_by=self.participant_team1.created_by,
                 status='submitted',
                 input_file=SimpleUploadedFile('test_sample_file.txt',
-                                              'Dummy file content', content_type='text/plain'),
+                                              b'Dummy file content', content_type='text/plain'),
                 method_name="Test Method",
                 method_description="Test Description",
                 project_url="http://testserver/",

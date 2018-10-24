@@ -46,7 +46,7 @@ class TestUpdateUser(BaseAPITestClass):
             'username': 'anotheruser',
             'affiliation': 'some_affiliation',
         }
-        response = self.client.put(os.path.join('api', 'auth', self.url), self.data)
+        response = self.client.put(os.path.join('api', 'auth', str(self.url)), self.data)
         self.assertNotContains(response, 'anotheruser')
         self.assertContains(response, 'someuser')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
