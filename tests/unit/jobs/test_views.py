@@ -87,7 +87,7 @@ class BaseAPITestClass(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain')
+                                                   b'Dummy file content', content_type='text/plain')
             )
 
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -97,7 +97,7 @@ class BaseAPITestClass(APITestCase):
         self.client.force_authenticate(user=self.user1)
 
         self.input_file = SimpleUploadedFile(
-            "dummy_input.txt", "file_content", content_type="text/plain")
+            "dummy_input.txt", b"file_content", content_type="text/plain")
 
     def tearDown(self):
         shutil.rmtree('/tmp/evalai')

@@ -141,7 +141,7 @@ class BaseAPITestClass(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain'),
+                                                   b'Dummy file content', content_type='text/plain'),
                 codename='Phase Code Name'
             )
 
@@ -155,7 +155,7 @@ class BaseAPITestClass(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge1,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain'),
+                                                   b'Dummy file content', content_type='text/plain'),
                 codename='Phase Code Name1'
             )
 
@@ -169,7 +169,7 @@ class BaseAPITestClass(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge1,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain'),
+                                                   b'Dummy file content', content_type='text/plain'),
                 codename='Phase Code Name2'
             )
 
@@ -183,7 +183,7 @@ class BaseAPITestClass(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge2,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   'Dummy file content', content_type='text/plain'),
+                                                   b'Dummy file content', content_type='text/plain'),
                 codename='Phase Code Name2'
             )
         self.client.force_authenticate(user=self.user)
