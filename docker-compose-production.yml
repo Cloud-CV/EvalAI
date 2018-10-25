@@ -18,8 +18,6 @@ services:
     build:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
-    depends_on:
-      - django
     env_file:
       - docker/prod/docker_prod.env
 
@@ -33,6 +31,8 @@ services:
       NODE_ENV: production
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - /code/node_modules
       - /code/bower_components
+      - /etc/nginx/ssl/:/etc/nginx/ssl/

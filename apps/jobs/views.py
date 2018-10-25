@@ -171,8 +171,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             response_data = serializer.data
             submission = serializer.instance
             # publish message in the queue
-            return Response(response_data, status=status.HTTP_201_CREATED)
             publish_submission_message(challenge_id, challenge_phase_id, submission.id)
+            return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
