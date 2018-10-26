@@ -91,7 +91,7 @@
         utilities.sendRequest(parameters);
 
         //check for host teams.
-        parameters.url = 'hosts/challenge_host_team';
+        parameters.url = 'hosts/challenge_host_team/';
         parameters.method = 'GET';
         parameters.token = userKey;
         parameters.callback = {
