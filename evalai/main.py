@@ -15,22 +15,13 @@ def main(ctx):
     Welcome to the EvalAI CLI.
     """
     if ctx.invoked_subcommand is None:
-        welcome_text = ("""
-                                      d888888b
-                                 d88888888888888b
-                         d88888888b+++++++++++++8b
-                    d8888+++++++++++++++++++++++++8b
-                  d88++++++++++++*$$$$$$$*++++++++8888b
-                  d8+++++++++++$$$"  0  "$$$+++++++++++8b
-                   d8++++++++++++*$$$$$$$*+++++++++++++8b
-                    d8888880+++++++++++++++++++++++++88b
-                            d88888888888888888888888b
-            .o88b. db       .d88b.  db    db d8888b.  .o88b. db    db
-           d8P  Y8 88      .8P  Y8. 88    88 88  `8D d8P  Y8 88    88
-           8P      88      88    88 88    88 88   88 8P      Y8    8P
-           8b      88      88    88 88    88 88   88 8b      `8b  d8'
-           Y8b  d8 88booo. `8b  d8' 88b  d88 88  .8D Y8b  d8  `8bd8'
-            `Y88P' Y88888P  `Y88P'  ~Y8888P' Y8888D'  `Y88P'    YP\n\n"""
+        welcome_text = ("""]]]]]]]                  lll      /+\    (0)
+                           ]]      db   db   d880b  lll     +++++
+                           ]]]]]    db db   d.  0b  lll    ++   ++  /#\
+                           ]]        dvb   d8.  0b  lllll  +++++++  |#|
+                           ]]]]]]]    V     d8o o8b lllll  ++   ++  \#/
+                                                           ### ###
+                                                            #   #\n\n"""
                         
                         "Welcome to the EvalAI CLI. Use evalai --help for viewing all the options\n"
                         "CHALLENGE and PHASE placeholders used throughout the CLI are"
