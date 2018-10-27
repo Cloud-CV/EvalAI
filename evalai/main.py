@@ -30,8 +30,9 @@ def main(ctx):
            8P      88      88    88 88    88 88   88 8P      Y8    8P
            8b      88      88    88 88    88 88   88 8b      `8b  d8'
            Y8b  d8 88booo. `8b  d8' 88b  d88 88  .8D Y8b  d8  `8bd8'
-            `Y88P' Y88888P  `Y88P'  ~Y8888P' Y8888D'  `Y88P'    YP"""
-        "Welcome to the EvalAI CLI. Use evalai --help for viewing all the options\n"
+            `Y88P' Y88888P  `Y88P'  ~Y8888P' Y8888D'  `Y88P'    YP\n\n"""
+                        
+                        "Welcome to the EvalAI CLI. Use evalai --help for viewing all the options\n"
                         "CHALLENGE and PHASE placeholders used throughout the CLI are"
                         " for challenge_id\nand phase_id of the challenges and phases.")
         echo(welcome_text)
