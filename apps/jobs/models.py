@@ -9,6 +9,7 @@ from django.db.models import Max
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 
 from base.models import (TimeStampedModel, )
@@ -146,6 +147,22 @@ class Submission(TimeStampedModel):
                     status=Submission.FAILED,
                     submitted_at__gte=datetime.date.today()).count()
 
+                submissions_in_month_count = Submission.objects.filter(
+                    challenge_phase__challenge=self.challenge_phase.challenge,
+                    participant_team=self.participant_team,
+                    challenge_phase=self.challenge_phase,
+                    submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)).count()
+
+                failed_count_in_month = Submission.objects.filter(
+                    challenge_phase=self.challenge_phase,
+                    participant_team=self.participant_team,
+                    status=Submission.FAILED,
+                    submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)).count()
+                if ((submissions_in_month_count + 1 - failed_count_in_month > self.challenge_phase.max_submissions_per_month) or
+                        (self.challenge_phase.max_submissions_per_month == 0)):
+                    logger.info("Permission Denied: The maximum number of submission for this Month has been reached")
+                    raise PermissionDenied({'error': 'The maximum number of submission for this Month has been reached'})
+                
                 if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
                         (self.challenge_phase.max_submissions_per_day == 0)):
                     logger.info("Permission Denied: The maximum number of submission for today has been reached")
