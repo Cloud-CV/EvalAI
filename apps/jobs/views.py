@@ -421,6 +421,8 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
     max_submissions_count = challenge_phase.max_submissions
 
+    max_submissions_per_month_count = challenge_phase.max_submissions_per_month
+
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
@@ -435,10 +437,18 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     failed_submissions_done_today = submissions_done_today.filter(
         status=Submission.FAILED)
 
+    submissions_done_this_month = submissions_done.filter(
+        submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
+
+    failed_submissions_this_month = submissions_done_today.filter(
+        status=Submission.FAILED)
+
     submissions_done_count = submissions_done.count()
     failed_submissions_count = failed_submissions.count()
     submissions_done_today_count = submissions_done_today.count()
     failed_submissions_done_today_count = failed_submissions_done_today.count()
+    submissions_done_this_month_count = submissions_done_this_month.count()
+    failed_submissions_done_this_month_count = failed_submissions_this_month.count()
 
     # Checks if #today's successful submission is greater than or equal to max submission per day
     if ((submissions_done_today_count - failed_submissions_done_today_count) >= max_submissions_per_day_count
