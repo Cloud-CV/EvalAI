@@ -1038,9 +1038,10 @@
                         }
                     }
                 },
-                onError: function() {
+                onError: function(response) {
+                    var details = response.data;
                     vm.stopLoader();
-                    $rootScope.notify("error", "Some error occured. Please try again.");
+                    $rootScope.notify("error", details.error);
                 }
             };
             utilities.sendRequest(parameters);

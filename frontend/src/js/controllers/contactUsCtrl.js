@@ -87,7 +87,7 @@
                                 }
 
                             } catch (error) {
-                                $rootScope.notify("error", "Some error occured. Please try again!");
+                                $rootScope.notify("error", error);
                             }
                         }
 
