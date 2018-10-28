@@ -129,6 +129,7 @@ class ChallengePhase(TimeStampedModel):
     test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"), default=False)
     max_submissions_per_day = models.PositiveIntegerField(default=100000, db_index=True)
     max_submissions = models.PositiveIntegerField(default=100000, db_index=True)
+    max_submissions_per_month = models.PositiveIntegerField(default=100000, db_index=True)
     max_concurrent_submissions_allowed = models.PositiveIntegerField(default=3)
     codename = models.CharField(max_length=100, default="Phase Code Name")
     dataset_split = models.ManyToManyField(DatasetSplit, blank=True, through='ChallengePhaseSplit')
