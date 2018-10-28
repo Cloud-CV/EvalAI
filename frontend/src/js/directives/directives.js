@@ -134,13 +134,19 @@
         };
         return directive;
 
-        function controller() {
-           var js = document.createElement("script");
+            var year = angular.module('year', []);
+            year.controller('Year',['$scope', function($scope) {            
+            }]);
+
+        function controller($scope) {
+            $scope.date = new Date().getFullYear();
+            var js = document.createElement("script");
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
             document.getElementsByTagName("head")[0].appendChild(js);
        }
     }
 })();
+
 //Dashboard Footer directive
 (function() {
     'use strict';
