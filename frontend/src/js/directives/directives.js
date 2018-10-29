@@ -133,11 +133,7 @@
             controller: controller
         };
         return directive;
-
-            var year = angular.module('year', []);
-            year.controller('Year',['$scope', function($scope) {            
-            }]);
-
+        
         function controller($scope) {
             $scope.date = new Date().getFullYear();
             var js = document.createElement("script");
