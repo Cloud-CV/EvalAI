@@ -251,9 +251,58 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         description="Challenge Phase Split ID",
         required=True
     )],
+    operation_id='Get_Leaderboard_Data',
     responses={
-        status.HTTP_200_OK: openapi.Response(''),
-})
+        status.HTTP_200_OK: openapi.Response(description='', schema=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'count': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='Count of values on the leaderboard'
+                ),
+            'next': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='URL of next page of results'
+                ),
+            'previous': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='URL of previous page of results'
+                ),
+            'results': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                description='Array of results object',
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                    'submission__participant_team__team_name': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='Participant Team Name'
+                        ),
+                    'challenge_phase_split': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='Challenge Phase Split ID'
+                        ),
+                    'filtering_score': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='Default filtering score for results'
+                        ),
+                    'leaderboard__schema': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='Leaderboard Schema of the corresponding challenge'
+                        ),
+                    'result': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        description='Leaderboard Metrics values according to leaderboard schema'
+                        ),
+                    'submission__submitted_at': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='Time stamp when submission was submitted at')
+                    })
+                ),
+            }
+        )),
+    }
+)
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
 def leaderboard(request, challenge_phase_split_id):
@@ -448,7 +497,45 @@ def get_submission_by_pk(request, submission_id):
     response_data = {'error': 'Sorry, you are not authorized to access this submission.'}
     return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-
+@swagger_auto_schema(methods=['put'], manual_parameters=[
+    openapi.Parameter(
+        name='challenge_pk', in_=openapi.IN_PATH,
+        type=openapi.TYPE_STRING,
+        description='Challenge ID',
+        required=True
+    )],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'challenge_phase_split': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='Challenge Phase Split ID'
+                ),
+            'submission': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='Submission ID'
+                ),
+            'submission_status': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='Status of submission among FAILED, CANCELLED, FINISHED'
+                ),
+            'stdout': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='Submission output file content'
+            ),
+            'stderr': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='Submission error file content'
+            ),
+            'result': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='Submission results'
+            )
+        }),
+    operation_id='Update_Submission_Record',
+    responses={
+        status.HTTP_200_OK: openapi.Response("{'succes': 'Submission result has been successfully updated'}"),
+})
 @throttle_classes([UserRateThrottle,])
 @api_view(['PUT',])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator,))

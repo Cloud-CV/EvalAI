@@ -61,8 +61,9 @@
 
                 }
             },
-            onError: function() {
-                $rootScope.notify("error", "Some error have occured , please try again !");
+            onError: function(response) {
+                var details = response.data;
+                $rootScope.notify("error", details.error);
             }
         };
 
@@ -76,8 +77,9 @@
                 vm.jsonResponse = response.data;
                 vm.token = response.data['token'];
             },
-            onError: function() {
-                $rootScope.notify("error", "Some error have occured , please try again !");
+            onError: function(response) {
+                var details = response.data;
+                $rootScope.notify("error", details.error);
             }
         };
 
