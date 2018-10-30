@@ -142,7 +142,6 @@
        }
     }
 })();
-
 //Dashboard Footer directive
 (function() {
     'use strict';
