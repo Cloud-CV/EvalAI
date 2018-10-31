@@ -135,7 +135,7 @@
         return directive;
         
         function controller($scope) {
-            $scope.date = new Date().getFullYear();
+            $scope.year = new Date().getFullYear();
             var js = document.createElement("script");
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
             document.getElementsByTagName("head")[0].appendChild(js);
