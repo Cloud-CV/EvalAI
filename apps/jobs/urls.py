@@ -17,4 +17,6 @@ urlpatterns = [
         views.leaderboard, name='leaderboard'),
     url(r'^submission/(?P<submission_id>[0-9]+)$',
         views.get_submission_by_pk, name='get_submission_by_pk'),
+    url(r'^challenge/(?P<challenge_pk>[0-9]+)/update_submission/$',
+        views.update_submission, name='update_submission'),
 ]
