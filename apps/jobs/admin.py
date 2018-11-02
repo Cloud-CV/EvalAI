@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 @admin.register(Submission)
 class SubmissionAdmin(ImportExportTimeStampedAdmin):
-    list_display = ('participant_team', 'challenge_phase', 'challenge', 'created_by', 'status', 'is_public',
+    list_display = ('participant_team', 'challenge', 'challenge_phase', 'created_by', 'status', 'is_public',
                     'submission_number', 'submitted_at', 'execution_time', 'input_file', 'stdout_file', 'stderr_file',
                     'submission_result_file', 'submission_metadata_file', )
     list_filter = ('participant_team', 'challenge_phase',
