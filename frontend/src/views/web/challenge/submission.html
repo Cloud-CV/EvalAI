@@ -110,6 +110,17 @@
                     <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
                         <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
                             <div class="row">
+                                <span class="color-black">
+                                    <strong>
+                                        {{ challenge.currentMonth }}'s Remaining Submissions:
+                                    </strong> 
+                                <span class="color-black">
+                                    <strong>
+                                        {{challenge.remainingSubmissions.remaining_submissions_this_month_count}}
+                                    </strong>
+                                </span>
+                                </div>
+                            <div class="row">
                             <span class="color-black">
                                 <strong>
                                     Today's Remaining Submissions:
@@ -145,7 +156,7 @@
                                 Next set of submissions will be available after:
                             </div>
                             <div>
-                                {{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
+                                <span ng-if="challenge.days!=0">{{challenge.days}} Days, </span>{{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
                             </div>
                         </div>
                     </div>
