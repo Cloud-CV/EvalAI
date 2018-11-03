@@ -1011,6 +1011,9 @@
                         if (details.remaining_submissions_today_count > 0) {
                             vm.remainingSubmissions = details;
                             vm.showSubmissionNumbers = true;
+                            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                            var date = new Date;
+                            vm.currentMonth = months[date.getMonth()];
                         } else {
                             vm.message = details;
                             vm.showClock = true;
