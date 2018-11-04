@@ -133,9 +133,10 @@
             controller: controller
         };
         return directive;
-
-        function controller() {
-           var js = document.createElement("script");
+        
+        function controller($scope) {
+            $scope.year = new Date().getFullYear();
+            var js = document.createElement("script");
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
             document.getElementsByTagName("head")[0].appendChild(js);
        }
