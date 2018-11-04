@@ -34,8 +34,9 @@
                         vm.name = result.username;
                     }
                 },
-                onError: function() {
-                    $rootScope.notify("error", "Some error occurred. Please try again later!");
+                onError: function(response) {
+                    var details = response.data;
+                    $rootScope.notify("error", details.error);
                 }
             };
 
