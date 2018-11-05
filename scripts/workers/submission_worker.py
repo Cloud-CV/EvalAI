@@ -288,24 +288,34 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(challenge_id=challenge_id, phase_id=phase_id,
                                                              annotation_file=annotation_file_name)
     submission_data_dir = SUBMISSION_DATA_DIR.format(submission_id=submission.id)
+
+    submission.status = Submission.RUNNING
+    submission.started_at = timezone.now()
+    submission.save()
+
+    remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
+
+    if remote_evaluation:
+        logger.info("Sending submission {} for remote evaluation".format(submission.id))
+        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+            annotation_file_path,
+            user_annotation_file_path,
+            challenge_phase.codename,
+            submission_metadata=submission_serializer.data)
+        return
+
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, 'run')
     create_dir(temp_run_dir)
 
-    stdout_file_name = 'temp_stdout.txt'
-    stderr_file_name = 'temp_stderr.txt'
-
-    stdout_file = join(temp_run_dir, stdout_file_name)
-    stderr_file = join(temp_run_dir, stderr_file_name)
+    stdout_file = join(temp_run_dir, 'temp_stdout.txt')
+    stderr_file = join(temp_run_dir, 'temp_stderr.txt')
 
     stdout = open(stdout_file, 'a+')
     stderr = open(stderr_file, 'a+')
 
     # call `main` from globals and set `status` to running and hence `started_at`
-    submission.status = Submission.RUNNING
-    submission.started_at = timezone.now()
-    submission.save()
     try:
         successful_submission_flag = True
         with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
@@ -519,7 +529,6 @@ def main():
 
     while True:
         for message in queue.receive_messages():
-            # Print out the body of the message
             logger.info('Processing message body: {0}'.format(message.body))
             process_submission_callback(message.body)
             # Let the queue know that the message is processed
