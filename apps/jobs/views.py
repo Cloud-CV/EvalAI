@@ -532,8 +532,18 @@ def get_submission_by_pk(request, submission_id):
                 description='Submission error file content'
             ),
             'result': openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description='Submission results'
+                type=openapi.TYPE_OBJECT,
+                description='Submission results (The keys in this string must correspond to the leaderboard schema format. There can be n number of keys.)',
+                properties={
+                    'key 1': openapi.Schema(
+                        type=openapi.TYPE_NUMBER,
+                        description='Numeric value corresponding to a key in leaderboard schema'
+                        ),
+                    'key 2': openapi.Schema(
+                        type=openapi.TYPE_NUMBER,
+                        description='Numberic value corresponding to second key in leaderboard schema',
+                        )
+                }
             )
         }),
     operation_id='Update_Submission_Record',
