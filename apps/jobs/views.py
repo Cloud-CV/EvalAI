@@ -528,20 +528,45 @@ def get_submission_by_pk(request, submission_id):
                 description='Submission error file content'
             ),
             'result': openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                description='Submission results (The keys in this string must correspond to the leaderboard schema format. There can be n number of keys.)',
-                properties={
-                    'key 1': openapi.Schema(
-                        type=openapi.TYPE_NUMBER,
-                        description='Numeric value corresponding to a key in leaderboard schema'
+                type=openapi.TYPE_ARRAY,
+                description='Submission results in array format'
+                ' (Keys in this dict must correspond to the challenge phase split.'
+                ' API will throw an error if any metric is missing)',
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                    'Challenge Phase Split 1': openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        description='Results for challenge phase split 1',
+                        properties={
+                            'metric 1': openapi.Schema(
+                                type=openapi.TYPE_NUMBER,
+                                description='Numeric value for metric 1'
+                                ),
+                            'metric 2': openapi.Schema(
+                                type=openapi.TYPE_NUMBER,
+                                description='Numeric value for metric 2'
+                                ),
+                            }
                         ),
-                    'key 2': openapi.Schema(
-                        type=openapi.TYPE_NUMBER,
-                        description='Numberic value corresponding to second key in leaderboard schema',
-                        )
-                }
-            )
-        }),
+                    'Challenge Phase Split 2': openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        description='Result for Challenge Phase Split 2',
+                        properties={
+                            'metric 1': openapi.Schema(
+                                type=openapi.TYPE_NUMBER,
+                                description='Numeric value for metric 1'
+                                ),
+                            'metric 2': openapi.Schema(
+                                type=openapi.TYPE_NUMBER,
+                                description='Numeric value for metric 2'
+                                ),
+                            }
+                        ),
+                    })
+                )
+            }
+        ),
     operation_id='Update_Submission_Record',
     responses={
         status.HTTP_200_OK: openapi.Response("{'succes': 'Submission result has been successfully updated'}"),
