@@ -15,7 +15,7 @@ Django is the heart of the application, which powers our backend. We use Django 
 
 We use Django Rest Framework for writing and providing REST APIs. It's permission and serializers have helped write a maintainable codebase.
 
-##### SQS
+##### AWS Simple Queue Service (SQS)
 
 We currently use AWS SQS for queueing submission messages which are then later on processed by a Python worker.
 
