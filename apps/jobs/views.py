@@ -531,7 +531,7 @@ def get_submission_by_pk(request, submission_id):
                 type=openapi.TYPE_ARRAY,
                 description='Submission results in array format'
                 ' (Keys in this dict must correspond to the challenge phase split.'
-                ' API will throw an error if any metric is missing)',
+                ' API will throw an error if any split and results metric is missing)',
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
