@@ -539,29 +539,29 @@ def get_submission_by_pk(request, submission_id):
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                    'Challenge Phase Split 1': openapi.Schema(
+                    'Split1': openapi.Schema(
                         type=openapi.TYPE_OBJECT,
                         description='Results for challenge phase split 1',
                         properties={
-                            'metric 1': openapi.Schema(
+                            'metric1': openapi.Schema(
                                 type=openapi.TYPE_NUMBER,
                                 description='Numeric value for metric 1'
                                 ),
-                            'metric 2': openapi.Schema(
+                            'metric2': openapi.Schema(
                                 type=openapi.TYPE_NUMBER,
                                 description='Numeric value for metric 2'
                                 ),
                             }
                         ),
-                    'Challenge Phase Split 2': openapi.Schema(
+                    'Split2': openapi.Schema(
                         type=openapi.TYPE_OBJECT,
                         description='Result for Challenge Phase Split 2',
                         properties={
-                            'metric 1': openapi.Schema(
+                            'metric1': openapi.Schema(
                                 type=openapi.TYPE_NUMBER,
                                 description='Numeric value for metric 1'
                                 ),
-                            'metric 2': openapi.Schema(
+                            'metric2': openapi.Schema(
                                 type=openapi.TYPE_NUMBER,
                                 description='Numeric value for metric 2'
                                 ),
