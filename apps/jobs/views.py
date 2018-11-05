@@ -9,6 +9,7 @@ from rest_framework.decorators import (api_view,
                                        throttle_classes,)
 
 from django.core.files.base import ContentFile
+from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
 from django.db.models import FloatField
 from django.utils import timezone
@@ -497,6 +498,7 @@ def get_submission_by_pk(request, submission_id):
     response_data = {'error': 'Sorry, you are not authorized to access this submission.'}
     return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
+
 @swagger_auto_schema(methods=['put'], manual_parameters=[
     openapi.Parameter(
         name='challenge_pk', in_=openapi.IN_PATH,
@@ -507,9 +509,9 @@ def get_submission_by_pk(request, submission_id):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'challenge_phase_split': openapi.Schema(
+            'challenge_phase': openapi.Schema(
                 type=openapi.TYPE_STRING,
-                description='Challenge Phase Split ID'
+                description='Challenge Phase ID'
                 ),
             'submission': openapi.Schema(
                 type=openapi.TYPE_STRING,
@@ -538,60 +540,87 @@ def get_submission_by_pk(request, submission_id):
 })
 @throttle_classes([UserRateThrottle,])
 @api_view(['PUT',])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail,))
 @authentication_classes((ExpiringTokenAuthentication,))
 def update_submission(request, challenge_pk):
     """
     API endpoint to update submission realted attributes
     """
-    challenge_phase_split_pk = request.data['challenge_phase_split']
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {'error': 'Sorry, you are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge_phase_pk = request.data['challenge_phase']
     submission_pk = request.data['submission']
     submission_status = request.data['submission_status'].lower()
     stdout_content = request.data['stdout']
     stderr_content = request.data['stderr']
     submission_result = request.data['result']
-    challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
     submission = get_submission_model(submission_pk)
 
     successful_submission = True if submission_status == Submission.FINISHED else False
-
     if submission_status not in [Submission.FAILED, Submission.CANCELLED, Submission.FINISHED]:
-            response_data = {'Sorry, submission status is invalid'}
+            response_data = {'error': 'Sorry, submission status is invalid'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if successful_submission:
-        leaderboard_metrics = challenge_phase_split.leaderboard.schema.get('labels')
-        predictions = ast.literal_eval(request.data['result'])
-        missing_metrics = []
-        malformed_metrics = []
-        for metric, value in predictions.items():
-            if metric not in leaderboard_metrics:
-                missing_metrics.append(metric)
-
-            if not (isinstance(value, float) or isinstance(value, int)):
-                malformed_metrics.append((metric, type(value)))
-
-        if len(missing_metrics):
-            response_data = {'Following metrics are missing in the leaderboard data: {}'.format(missing_metrics)}
+        try:
+            results = ast.literal_eval(submission_result)
+        except (SyntaxError, ValueError, TypeError) as e:
+            response_data = {'error': '`results` key contains invalid data. Please try again with correct format!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(malformed_metrics):
-            response_data = {'Values for following metrics are not of float/int: {}'.format(malformed_metrics)}
+        leaderboar_data_list = []
+        for phase_result in results:
+            split = phase_result.get('split')
+            accuracies = phase_result.get('accuracies')
+            try:
+                challenge_phase_split = ChallengePhaseSplit.objects.get(
+                    challenge_phase__pk=challenge_phase_pk,
+                    dataset_split__codename=split)
+            except ChallengePhaseSplit.DoesNotExist:
+                response_data = {'error': 'Challenge Phase Split does not exist with phase_id: {} and split codename: {}'.format(challenge_phase_pk, split)}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            leaderboard_metrics = challenge_phase_split.leaderboard.schema.get('labels')
+            missing_metrics = []
+            malformed_metrics = []
+            for metric, value in accuracies.items():
+                if metric not in leaderboard_metrics:
+                    missing_metrics.append(metric)
+
+                if not (isinstance(value, float) or isinstance(value, int)):
+                    malformed_metrics.append((metric, type(value)))
+
+            if len(missing_metrics):
+                response_data = {'error': 'Following metrics are missing in the leaderboard data: {}'.format(missing_metrics)}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            if len(malformed_metrics):
+                response_data = {'error': 'Values for following metrics are not of float/int: {}'.format(malformed_metrics)}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = CreateLeaderboardDataSerializer(
+                data=request.data.copy(),
+                context={
+                    'challenge_phase_split': challenge_phase_split,
+                    'submission': submission,
+                    'request': request,
+                }
+            )
+            if serializer.is_valid():
+                leaderboar_data_list.append(serializer)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                for serializer in leaderboar_data_list:
+                        serializer.save()
+        except IntegrityError:
+            logger.exception('Failed to update submission_id {} related metadata'.format(submission_pk))
+            response_data = {'error': 'Failed to update submission_id {} related metadata'.format(submission_pk)}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = CreateLeaderboardDataSerializer(
-            data=request.data.copy(),
-            context={
-                'challenge_phase_split': challenge_phase_split,
-                'submission': submission,
-                'request': request,
-            }
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-        else:
-            return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     submission.status = submission_status
     submission.completed_at = timezone.now()
@@ -599,5 +628,5 @@ def update_submission(request, challenge_pk):
     submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
     submission.submission_result_file.save('submission_result.json', ContentFile(submission_result))
     submission.save()
-    response_data = {'succes': 'Submission result has been successfully updated'}
+    response_data = {'success': 'Submission result has been successfully updated'}
     return Response(response_data, status=status.HTTP_200_OK)
