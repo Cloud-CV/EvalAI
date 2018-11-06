@@ -556,34 +556,43 @@ def update_submission(request, challenge_pk):
      - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
      - ``submission_status``: Status of submission after evaluation
                 (can take one of the following values: FINISHED/CANCELLED/FAILED), e.g. FINISHED (**required**)
-     - ``result``: contains accuracies for each metric, e.g. 
+     - ``result``: contains accuracies for each metric, (**required**) e.g.
                 [
                     {
                         "split": "split1",
+                        "show_to_participant": True
                         "accuracies": {
                         "score": 90
                         }
                     },
                     {
                         "split": "split2",
+                        "show_to_participant": False
                         "accuracies": {
                         "score": 50
                         }
                     }
                 ]
+     - ``metadata``: Contains the metadata related to submission (only visible to challenge hosts) e.g:
+                {
+                    "average-evaluation-time": "5 secs",
+                    "foo": "bar"
+                }
     """
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {'error': 'Sorry, you are not authorized to make this request!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge_phase_pk = request.data['challenge_phase']
-    submission_pk = request.data['submission']
-    submission_status = request.data['submission_status'].lower()
-    stdout_content = request.data['stdout']
-    stderr_content = request.data['stderr']
-    submission_result = request.data['result']
+    challenge_phase_pk = request.data.get('challenge_phase')
+    submission_pk = request.data.get('submission')
+    submission_status = request.data.get('submission_status').lower()
+    stdout_content = request.data.get('stdout', '')
+    stderr_content = request.data.get('stderr', '')
+    submission_result = request.data.get('result', '')
+    metadata = request.data.get('metadata', '')
     submission = get_submission_model(submission_pk)
 
+    public_results = []
     successful_submission = True if submission_status == Submission.FINISHED else False
     if submission_status not in [Submission.FAILED, Submission.CANCELLED, Submission.FINISHED]:
         response_data = {'error': 'Sorry, submission status is invalid'}
@@ -600,6 +609,7 @@ def update_submission(request, challenge_pk):
         for phase_result in results:
             split = phase_result.get('split')
             accuracies = phase_result.get('accuracies')
+            show_to_participant = phase_result.get('show_to_participant', False)
             try:
                 challenge_phase_split = ChallengePhaseSplit.objects.get(
                     challenge_phase__pk=challenge_phase_pk,
@@ -639,6 +649,10 @@ def update_submission(request, challenge_pk):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+            # Only after checking if the serializer is valid, append the public split results to results file
+            if show_to_participant:
+                public_results.append(accuracies)
+
         try:
             with transaction.atomic():
                 for serializer in leaderboard_data_list:
@@ -652,7 +666,8 @@ def update_submission(request, challenge_pk):
     submission.completed_at = timezone.now()
     submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
     submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
-    submission.submission_result_file.save('submission_result.json', ContentFile(submission_result))
+    submission.submission_result_file.save('submission_result.json', ContentFile(str(public_results)))
+    submission.submission_metadata_file.save('submission_metadata_file.json', ContentFile(str(metadata)))
     submission.save()
     response_data = {'success': 'Submission result has been successfully updated'}
     return Response(response_data, status=status.HTTP_200_OK)
