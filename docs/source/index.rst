@@ -14,6 +14,7 @@ Contents:
    setup
    challenge_creation
    evaluation_scripts
+   approve_challenge
    submission
    architecture
    architecture_decisions
