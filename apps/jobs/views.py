@@ -1,5 +1,5 @@
-import ast
 import datetime
+import json
 import logging
 
 from rest_framework import permissions, status
@@ -601,8 +601,8 @@ def update_submission(request, challenge_pk):
 
     if successful_submission:
         try:
-            results = ast.literal_eval(submission_result)
-        except (SyntaxError, ValueError, TypeError):
+            results = json.loads(submission_result)
+        except ValueError:
             response_data = {'error': '`result` key contains invalid data. Please try again with correct format!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
