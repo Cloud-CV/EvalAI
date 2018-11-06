@@ -27,8 +27,6 @@ Run the following command:
 
     docker-compose reload worker 
 
-If you are using virtual environment, then please go through the following instructions:
-
 **Submission worker has been successfully reloaded!**
 
 Now, the challenge is ready for accepting submissions by participants.
