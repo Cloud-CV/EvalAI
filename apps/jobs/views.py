@@ -602,7 +602,7 @@ def update_submission(request, challenge_pk):
         try:
             results = ast.literal_eval(submission_result)
         except (SyntaxError, ValueError, TypeError):
-            response_data = {'error': '`results` key contains invalid data. Please try again with correct format!'}
+            response_data = {'error': '`result` key contains invalid data. Please try again with correct format!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
         leaderboard_data_list = []
