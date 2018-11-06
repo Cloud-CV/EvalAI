@@ -123,7 +123,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
         fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
                   'submission_guidelines', 'start_date', 'end_date', 'creator', 'evaluation_details',
                   'published', 'enable_forum', 'anonymous_leaderboard', 'image', 'is_active', 'evaluation_script',
-                  'allowed_email_domains', 'blocked_email_domains', 'forum_url',)
+                  'allowed_email_domains', 'blocked_email_domains', 'forum_url', 'remote_evaluation',)
 
 
 class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
