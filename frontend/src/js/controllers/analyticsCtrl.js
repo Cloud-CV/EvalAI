@@ -131,6 +131,7 @@
                                         var error = response.data;
                                         if (status == 403) {
                                             vm.error = error;
+
                                             // navigate to permissions denied page
                                             $state.go('web.permission-denied');
                                         } else if (status == 401) {
@@ -191,6 +192,7 @@
                         var error = response.data;
                         if (status == 403) {
                             vm.error = error;
+
                             // navigate to permissions denied page
                             $state.go('web.permission-denied');
                         } else if (status == 401) {
@@ -213,7 +215,6 @@
                 }
             } else {
                 vm.isTeamSelected = false;
-                alert("Unfortunately, there are no challenges to analyze.");
             }
         };
     }
