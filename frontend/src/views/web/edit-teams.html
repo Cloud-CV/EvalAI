@@ -14,7 +14,7 @@
                     </div>
                     <ul class="inline-list pointer">
                         <li><a class="dark-link" type="button" ng-click="teams.updateParticipantTeamData(false)"><strong>Cancel </strong></a></li>
-                        <li><button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit </button></li>
+                        <li><button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-disabled="updateParticipantTeamDataForm.$pristine" type="submit" value="Submit">Submit </button></li>
                     </ul>
                 </form>
             </div>
