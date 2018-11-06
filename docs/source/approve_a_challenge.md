@@ -4,7 +4,7 @@ Once a challenge config has been uploaded, the challenge has to be approved by t
 
 Let's take a sample challenge with name `Random Number Generator Challenge`.
 
-##### Step 1: Approve challenge using Django Admin
+#### Step 1: Approve challenge using Django Admin
 
 1. Login to EvalAI's django admin using http://localhost:8000/admin/challenges/challenge/, and you will see the list of challenges
     ![](https://i.imgur.com/FRi5ofa.png)
@@ -19,7 +19,7 @@ Let's take a sample challenge with name `Random Number Generator Challenge`.
 
 **Challenge has been successfully approved by the administrator and is also visible to users.**
 
-##### Step 2: Reload Submission Worker
+#### Step 2: Reload Submission Worker
 
 Submission worker is a key component of EvalAI. Since you have recently approved the challenge, the submission worker has to be reloaded so that it can fetch the evaluation script and other related files for your challenge. Now reload the submission worker using the following command:
 
