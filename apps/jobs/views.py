@@ -508,6 +508,7 @@ def get_submission_by_pk(request, submission_id):
         description='Challenge ID',
         required=True
     )],
+    operation_id='Update_Submission_Record',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -519,10 +520,6 @@ def get_submission_by_pk(request, submission_id):
                 type=openapi.TYPE_STRING,
                 description='Submission ID'
                 ),
-            'submission_status': openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description='Status of submission among FAILED, CANCELLED, FINISHED'
-                ),
             'stdout': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Submission output file content'
@@ -531,50 +528,59 @@ def get_submission_by_pk(request, submission_id):
                 type=openapi.TYPE_STRING,
                 description='Submission error file content'
             ),
+            'submission_status': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description='Status of submission among FAILED, CANCELLED, FINISHED'
+                ),
             'result': openapi.Schema(
                 type=openapi.TYPE_ARRAY,
-                description='Submission results in array format'
-                ' (Keys in this dict must correspond to the challenge phase split.'
+                description='Submission results in array format.'
+                ' There can be n number of splits in this array.'
                 ' API will throw an error if any split and results metric is missing)',
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                    'Split1': openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        description='Results for challenge phase split 1',
-                        properties={
-                            'metric1': openapi.Schema(
-                                type=openapi.TYPE_NUMBER,
-                                description='Numeric value for metric 1'
-                                ),
-                            'metric2': openapi.Schema(
-                                type=openapi.TYPE_NUMBER,
-                                description='Numeric value for metric 2'
-                                ),
-                            }
+                        'split1': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description='dataset split 1 codename',
                         ),
-                    'Split2': openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        description='Result for Challenge Phase Split 2',
-                        properties={
-                            'metric1': openapi.Schema(
-                                type=openapi.TYPE_NUMBER,
-                                description='Numeric value for metric 1'
-                                ),
-                            'metric2': openapi.Schema(
-                                type=openapi.TYPE_NUMBER,
-                                description='Numeric value for metric 2'
-                                ),
-                            }
+                        'show_to_participant': openapi.Schema(
+                            type=openapi.TYPE_BOOLEAN,
+                            description='Boolean to decide if the results are shown to participant or not'
                         ),
-                    })
+                        'accuracies': openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            description='Accuracies on different metrics',
+                            properties={
+                                'metric1': openapi.Schema(
+                                    type=openapi.TYPE_NUMBER,
+                                    description='Numeric accuracy on metric 1'
+                                ),
+                                'metric2': openapi.Schema(
+                                    type=openapi.TYPE_NUMBER,
+                                    description='Numeric accuracy on metric 2'
+                                )
+                            }
+                        )
+                    }
                 )
-            }
-        ),
-    operation_id='Update_Submission_Record',
+            ),
+            'metadata' : openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                description='It contains the metadata related to submission (only visible to challenge hosts)',
+                properties={
+                    'foo': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='Some data relevant to key'
+                    ) 
+                }
+            )
+        }
+    ),
     responses={
-        status.HTTP_200_OK: openapi.Response("{'succes': 'Submission result has been successfully updated'}"),
-})
+        status.HTTP_200_OK: openapi.Response("{'success': 'Submission result has been successfully updated'}"),
+    }
+)
 @throttle_classes([UserRateThrottle,])
 @api_view(['PUT',])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail,))
