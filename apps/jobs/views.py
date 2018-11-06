@@ -1,6 +1,6 @@
 import ast
 import datetime
-import json
+import logging
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -44,6 +44,8 @@ from .sender import publish_submission_message
 from .serializers import (SubmissionSerializer,
                           CreateLeaderboardDataSerializer)
 from .utils import get_submission_model
+
+logger = logging.getLogger(__name__)
 
 
 @swagger_auto_schema(methods=['post'], manual_parameters=[
@@ -545,6 +547,30 @@ def get_submission_by_pk(request, submission_id):
 def update_submission(request, challenge_pk):
     """
     API endpoint to update submission realted attributes
+
+    Query Parameters:
+
+     - ``challenge_phase``: challenge phase id, e.g. 123 (**required**)
+     - ``submission``: submission id, e.g. 123 (**required**)
+     - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
+     - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
+     - ``submission_status``: Status of submission after evaluation
+                (can take one of the following values: FINISHED/CANCELLED/FAILED), e.g. FINISHED (**required**)
+     - ``result``: contains accuracies for each metric, e.g. 
+                [
+                    {
+                        "split": "split1",
+                        "accuracies": {
+                        "score": 90
+                        }
+                    },
+                    {
+                        "split": "split2",
+                        "accuracies": {
+                        "score": 50
+                        }
+                    }
+                ]
     """
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {'error': 'Sorry, you are not authorized to make this request!'}
@@ -560,17 +586,17 @@ def update_submission(request, challenge_pk):
 
     successful_submission = True if submission_status == Submission.FINISHED else False
     if submission_status not in [Submission.FAILED, Submission.CANCELLED, Submission.FINISHED]:
-            response_data = {'error': 'Sorry, submission status is invalid'}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {'error': 'Sorry, submission status is invalid'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if successful_submission:
         try:
             results = ast.literal_eval(submission_result)
-        except (SyntaxError, ValueError, TypeError) as e:
+        except (SyntaxError, ValueError, TypeError):
             response_data = {'error': '`results` key contains invalid data. Please try again with correct format!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        leaderboar_data_list = []
+        leaderboard_data_list = []
         for phase_result in results:
             split = phase_result.get('split')
             accuracies = phase_result.get('accuracies')
@@ -609,14 +635,14 @@ def update_submission(request, challenge_pk):
                 }
             )
             if serializer.is_valid():
-                leaderboar_data_list.append(serializer)
+                leaderboard_data_list.append(serializer)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             with transaction.atomic():
-                for serializer in leaderboar_data_list:
-                        serializer.save()
+                for serializer in leaderboard_data_list:
+                    serializer.save()
         except IntegrityError:
             logger.exception('Failed to update submission_id {} related metadata'.format(submission_pk))
             response_data = {'error': 'Failed to update submission_id {} related metadata'.format(submission_pk)}
