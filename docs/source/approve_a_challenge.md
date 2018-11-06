@@ -23,35 +23,11 @@ Let's take a sample challenge with name `Random Number Generator Challenge`.
 
 Submission worker is a key component of EvalAI. Since you have recently approved the challenge, the submission worker has to be reloaded so that it can fetch the evaluation script and other related files for your challenge. Now reload the submission worker using the following command:
 
-Run the following command if you are using docker-compose setup:
+Run the following command:
 
     docker-compose reload worker 
 
 If you are using virtual environment, then please go through the following instructions:
-
-Kill the previous submission worker process and spawn a new one.
-
-1. Find the submission worker process id's by using the below command
-
-    `ps aux | grep scripts/workers/submission_worker.py`
-
-    ![](https://i.imgur.com/Iv34zEM.png)
-
-    Since there are three processes running (Shown in red     box). Also notice the process id's of all the three       workers (Shown in yellow box).
-
-2. Kill all the existing workers by using the below commads.
-
-    `kill <processid>`
-    
-    OR
-    
-     `kill $(ps aux | grep '[p]ython scripts/workers/submission_worker.py' | awk '{print $2}')`
-    
-    ![](https://i.imgur.com/m95X6WR.png)
-     
-3. Now restart all the workers again by using the command
-
-    `python scripts/workers/submission_worker.py`
 
 **Submission worker has been successfully reloaded!**
 
