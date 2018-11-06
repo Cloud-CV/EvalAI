@@ -559,17 +559,18 @@ def update_submission(request, challenge_pk):
      - ``result``: contains accuracies for each metric, (**required**) e.g.
                 [
                     {
-                        "split": "split1",
+                        "split": "split1-codename",
                         "show_to_participant": True
                         "accuracies": {
-                        "score": 90
+                        "metric1": 90
                         }
                     },
                     {
-                        "split": "split2",
+                        "split": "split2-codename",
                         "show_to_participant": False
                         "accuracies": {
-                        "score": 50
+                        "metric1": 50,
+                        "metric2": 40
                         }
                     }
                 ]
