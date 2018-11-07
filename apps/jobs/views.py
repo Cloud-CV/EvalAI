@@ -600,14 +600,14 @@ def update_submission(request, challenge_pk):
             [
                 {
                     "split": "split1-codename",
-                    "show_to_participant": True
+                    "show_to_participant": True,
                     "accuracies": {
                     "metric1": 90
                     }
                 },
                 {
                     "split": "split2-codename",
-                    "show_to_participant": False
+                    "show_to_participant": False,
                     "accuracies": {
                     "metric1": 50,
                     "metric2": 40
