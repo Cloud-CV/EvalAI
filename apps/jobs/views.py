@@ -508,6 +508,7 @@ def get_submission_by_pk(request, submission_id):
         description='Challenge ID',
         required=True
     )],
+    operation_id='update_submission',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -519,10 +520,6 @@ def get_submission_by_pk(request, submission_id):
                 type=openapi.TYPE_STRING,
                 description='Submission ID'
                 ),
-            'submission_status': openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description='Status of submission among FAILED, CANCELLED, FINISHED'
-                ),
             'stdout': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Submission output file content'
@@ -531,22 +528,66 @@ def get_submission_by_pk(request, submission_id):
                 type=openapi.TYPE_STRING,
                 description='Submission error file content'
             ),
-            'result': openapi.Schema(
+            'submission_status': openapi.Schema(
                 type=openapi.TYPE_STRING,
-                description='Submission results'
+                description='Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED'
+                ),
+            'result': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                description='Submission results in array format.'
+                ' API will throw an error if any split and/or metric is missing)',
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'split1': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description='dataset split 1 codename',
+                        ),
+                        'show_to_participant': openapi.Schema(
+                            type=openapi.TYPE_BOOLEAN,
+                            description='Boolean to decide if the results are shown to participant or not'
+                        ),
+                        'accuracies': openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            description='Accuracies on different metrics',
+                            properties={
+                                'metric1': openapi.Schema(
+                                    type=openapi.TYPE_NUMBER,
+                                    description='Numeric accuracy on metric 1'
+                                ),
+                                'metric2': openapi.Schema(
+                                    type=openapi.TYPE_NUMBER,
+                                    description='Numeric accuracy on metric 2'
+                                )
+                            }
+                        )
+                    }
+                )
+            ),
+            'metadata' : openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                description='It contains the metadata related to submission (only visible to challenge hosts)',
+                properties={
+                    'foo': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='Some data relevant to key'
+                    ) 
+                }
             )
-        }),
-    operation_id='Update_Submission_Record',
+        }
+    ),
     responses={
-        status.HTTP_200_OK: openapi.Response("{'succes': 'Submission result has been successfully updated'}"),
-})
+        status.HTTP_200_OK: openapi.Response("{'success': 'Submission result has been successfully updated'}"),
+        status.HTTP_400_BAD_REQUEST: openapi.Response("{'error': 'Error message goes here'}"),
+    }
+)
 @throttle_classes([UserRateThrottle,])
 @api_view(['PUT',])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail,))
 @authentication_classes((ExpiringTokenAuthentication,))
 def update_submission(request, challenge_pk):
     """
-    API endpoint to update submission realted attributes
+    API endpoint to update submission related attributes
 
     Query Parameters:
 
@@ -554,31 +595,30 @@ def update_submission(request, challenge_pk):
      - ``submission``: submission id, e.g. 123 (**required**)
      - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
      - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
-     - ``submission_status``: Status of submission after evaluation
-                (can take one of the following values: FINISHED/CANCELLED/FAILED), e.g. FINISHED (**required**)
+     - ``submission_status``: Status of submission after evaluation (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`), e.g. FINISHED (**required**)
      - ``result``: contains accuracies for each metric, (**required**) e.g.
-                [
-                    {
-                        "split": "split1-codename",
-                        "show_to_participant": True
-                        "accuracies": {
-                        "metric1": 90
-                        }
-                    },
-                    {
-                        "split": "split2-codename",
-                        "show_to_participant": False
-                        "accuracies": {
-                        "metric1": 50,
-                        "metric2": 40
-                        }
-                    }
-                ]
-     - ``metadata``: Contains the metadata related to submission (only visible to challenge hosts) e.g:
+            [
                 {
-                    "average-evaluation-time": "5 secs",
-                    "foo": "bar"
+                    "split": "split1-codename",
+                    "show_to_participant": True
+                    "accuracies": {
+                    "metric1": 90
+                    }
+                },
+                {
+                    "split": "split2-codename",
+                    "show_to_participant": False
+                    "accuracies": {
+                    "metric1": 50,
+                    "metric2": 40
+                    }
                 }
+            ]
+     - ``metadata``: Contains the metadata related to submission (only visible to challenge hosts) e.g:
+            {
+                "average-evaluation-time": "5 sec",
+                "foo": "bar"
+            }
     """
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {'error': 'Sorry, you are not authorized to make this request!'}
