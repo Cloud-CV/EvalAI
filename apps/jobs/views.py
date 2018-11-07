@@ -508,7 +508,7 @@ def get_submission_by_pk(request, submission_id):
         description='Challenge ID',
         required=True
     )],
-    operation_id='Update_Submission_Record',
+    operation_id='update_submission',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
