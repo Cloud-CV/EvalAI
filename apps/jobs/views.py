@@ -587,7 +587,7 @@ def get_submission_by_pk(request, submission_id):
 @authentication_classes((ExpiringTokenAuthentication,))
 def update_submission(request, challenge_pk):
     """
-    API endpoint to update submission realted attributes
+    API endpoint to update submission related attributes
 
     Query Parameters:
 
