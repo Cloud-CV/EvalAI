@@ -269,15 +269,6 @@ CACHES = {
     }
 }
 
-RABBITMQ_PARAMETERS = {
-    'HOST': os.environ.get("RABBITMQ_HOST", 'localhost'),
-    'EVALAI_EXCHANGE': {
-        'NAME': 'evalai_submissions',
-        'TYPE': 'topic',
-    },
-    'SUBMISSION_QUEUE': 'submission_task_queue',
-}
-
 # The maximum size in bytes for request body
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
 FILE_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB

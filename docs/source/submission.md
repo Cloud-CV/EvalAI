@@ -4,8 +4,8 @@
 
 We are using REST APIs along with Queue based architecture to process submissions. When a participant makes a submission for a challenge, a REST API with url pattern `jobs:challenge_submission` is called. This API does the task of creating a new entry for submission model and then publishes a message to exchange `evalai_submissions` with a routing key of `submission.*.*`.
 
-     User makes   --> API  --> Publish  --> RabbitMQ  --> Queue  --> Submission
-    a submission               message      Exchange                  worker(s)
+    User Submission  --> API  --> Publish  --> SQS Queue  --> Submission
+                                  message                      worker(s)
 
 
 Exchange receives the message and then routes it to the queue `submission_task_queue`. At the end of `submission_task_queue` are workers (scripts/workers/submission_worker.py) which processes the submission message.
@@ -38,7 +38,7 @@ Before a worker fully starts, it does the following actions:
     }
     ```
 
-* Creates a connection with RabbitMQ by using the connection parameters specified in `settings.RABBITMQ_PARAMETERS`.
+* Creates a connection with SQS queue by using the AWS supplied credentials as environment variables.
 
 * After the connection is successfully created, creates an exchange with the name `evalai_submissions`
 and two queues, one for processing submission message namely `submission_task_queue`, and other for getting add challenge message.
@@ -73,7 +73,7 @@ EVALUATION_SCRIPTS = {
 }
 ```
 
-After the challenges are successfully loaded, it creates a connection with the RabbitMQ Exchange `evalai_submissions` and then listens on the queue `submission_task_queue` with a binding key of `submission.*.*`.
+After the challenges are successfully loaded, it creates a connection with the SQS queue `evalai_submission_queue` and listens to it for new submissions.
 
 
 ### How is submission made?
