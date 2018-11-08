@@ -1382,6 +1382,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             }
         ]
 
@@ -1404,6 +1405,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -1550,6 +1552,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
+            'max_submissions_per_month': self.challenge_phase.max_submissions_per_month,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -1591,6 +1594,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
+            'max_submissions_per_month': self.challenge_phase.max_submissions_per_month,
         }
         response = self.client.put(self.url, {'name': new_name, 'description': new_description})
         self.assertEqual(response.data, expected)
@@ -1663,6 +1667,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "codename": "Phase Code Name",
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
+            'max_submissions_per_month': self.challenge_phase.max_submissions_per_month,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)

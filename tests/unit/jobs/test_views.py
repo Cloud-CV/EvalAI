@@ -81,6 +81,7 @@ class BaseAPITestClass(APITestCase):
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 max_submissions_per_day=10,
+                max_submissions_per_month=20,
                 max_submissions=100,
                 is_public=True,
                 start_date=timezone.now() - timedelta(days=2),
@@ -455,6 +456,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                         'challenge_pk': self.challenge.pk})
         expected = {
             'remaining_submissions_today_count': 9,
+            'remaining_submissions_this_month_count': 18,
             'remaining_submissions': 98
         }
 
@@ -472,6 +474,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                         'challenge_pk': self.challenge.pk})
         expected = {
             'remaining_submissions_today_count': 8,
+            'remaining_submissions_this_month_count': 18,
             'remaining_submissions': 98
         }
 
@@ -504,9 +507,9 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
         expected = {
             'remaining_submissions_today_count': submission_count,
+            'remaining_submissions_this_month_count': submission_count,
             'remaining_submissions': submission_count
         }
-
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
