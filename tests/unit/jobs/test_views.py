@@ -467,6 +467,24 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_get_remaining_submission_when_submission_made_one_month_back(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk,
+                                        'challenge_pk': self.challenge.pk})
+        expected = {
+            'remaining_submissions_today_count': 9,
+            'remaining_submissions_this_month_count': 19,
+            'remaining_submissions': 98
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        self.submission1.submitted_at = timezone.now() - timedelta(days=32)
+        self.submission1.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_remaining_submission_when__submission_made_today(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
