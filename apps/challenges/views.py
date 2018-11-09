@@ -416,13 +416,13 @@ def challenge_phase_detail(request, challenge_pk, pk):
     elif request.method in ['PUT', 'PATCH']:
         if request.method == 'PATCH':
             serializer = ChallengePhaseCreateSerializer(challenge_phase,
-                                                        data=request.data,
+                                                        data=request.data.copy(),
                                                         context={
                                                             'challenge': challenge},
                                                         partial=True)
         else:
             serializer = ChallengePhaseCreateSerializer(challenge_phase,
-                                                        data=request.data,
+                                                        data=request.data.copy(),
                                                         context={'challenge': challenge})
         if serializer.is_valid():
             serializer.save()

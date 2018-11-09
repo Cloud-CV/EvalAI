@@ -1521,6 +1521,27 @@
             });
         };
 
+        vm.cancelChallengePhase = function() {
+            parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    vm.phases = details;
+                    utilities.hideLoader();
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    utilities.storeData('emailError', error.detail);
+                    $state.go('web.permission-denied');
+                    utilities.hideLoader();
+                }
+            };
+            utilities.sendRequest(parameters);
+            $mdDialog.hide();
+        }
+
         vm.editChallengePhase = function(editChallengePhaseForm) {
             if (editChallengePhaseForm) {
                 vm.challengePhaseId = vm.page.challenge_phase.id;
@@ -1555,25 +1576,6 @@
                 };
                 utilities.showLoader();
                 utilities.sendRequest(parameters, 'header', 'upload');
-            } else {
-                parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
-                parameters.method = 'GET';
-                parameters.data = {};
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
-                        vm.phases = details;
-                        utilities.hideLoader();
-                    },
-                    onError: function(response) {
-                        var error = response.data;
-                        utilities.storeData('emailError', error.detail);
-                        $state.go('web.permission-denied');
-                        utilities.hideLoader();
-                    }
-                };
-                utilities.sendRequest(parameters);
-                $mdDialog.hide();
             }
         };
 

@@ -39,7 +39,7 @@
                     </span>
                     <div class="input-field align-left">
                         <span class="text-light-black w-500">Challenge Phase start date and time.</span>
-                        <input type="date" id="start_date" name="start_date" ng-model="challenge.phaseStartDate" value="{{challenge.phaseStartDate}}" required/>
+                        <input type="date" id="start_date" name="start_date"  ng-model="challenge.phaseStartDate" value="{{challenge.phaseStartDate}}" required/>
                         <input type="time" id="start_date" name="start_date" ng-model="challenge.phaseStartDate" value="{{challenge.phaseStartDate | date:'h:mma'}}" required/>
                         <span class="form-icon"><i class="fa fa-text"></i></span>
                     </div>
@@ -98,7 +98,7 @@
                     <br>
                     <ul class="inline-list hide-on-med-and-down">
                         <li>
-                            <a ng-click="challenge.editChallengePhase(false)" class="dark-link pointer"><strong>Cancel</strong></a>
+                            <a ng-click="challenge.cancelChallengePhase(false)" class="dark-link pointer"><strong>Cancel</strong></a>
                         </li>
                         <li>
                             <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="submit" ng-disabled="!challenge.sanityCheckPass">Submit</button>
