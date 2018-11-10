@@ -415,9 +415,6 @@ a.view-more {
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {
-    .rocket-container {
-        display:none;
-    }
     .dyn-header {
         nav {
             a.org-link {
@@ -439,7 +436,6 @@ a.view-more {
     .sim-header {
         width: 100%;
     }
-
     
 }
 
@@ -459,12 +455,8 @@ a.view-more {
 }
 
 #draper-logo {
-    height: auto;
-    padding-top: 10%;
-}
-
-#adelaide-logo {
-    padding-top:10%;
+    height: 110px;
+    padding-bottom:5%;
 }
 
 #ebay-logo{
@@ -472,7 +464,6 @@ a.view-more {
 }
 
 #iitm-logo{
-    height:120px;
-    width:150px;
-    padding-right:10%;
+    height:100px;
+    width:100px;
 }
