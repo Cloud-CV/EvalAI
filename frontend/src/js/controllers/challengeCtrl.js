@@ -262,6 +262,8 @@
 
                 if (fileVal === null || fileVal === "") {
                     vm.subErrors.msg = "Please upload file!";
+                } else if (fileVal.length >= 100) {
+                    vm.subErrors.msg = "File name length is greater than 100 characters";
                 } else {
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
