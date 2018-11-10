@@ -415,6 +415,11 @@ a.view-more {
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {
+
+    .rocket-container {	
+        display:none;	
+    }
+
     .dyn-header {
         nav {
             a.org-link {
