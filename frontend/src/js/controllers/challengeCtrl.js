@@ -1115,7 +1115,14 @@
                 }
                 else {
                     parameters.method = "POST";
-                    parameters.data = vm.fieldsToGet;
+                    var fieldsExport = []
+                    for(var i = 0 ; i < vm.fields.length ; i++) {
+                        if (vm.fieldsToGet.includes(vm.fields[i].id)) {
+                            fieldsExport.push(vm.fields[i].id)
+                        }
+                    }
+                    console.log(fieldsExport)
+                    parameters.data = fieldsExport;
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
