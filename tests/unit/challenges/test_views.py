@@ -1,6 +1,8 @@
 import json
 import os
 import shutil
+import csv
+import io
 
 from datetime import timedelta
 from os.path import join
@@ -11,6 +13,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
+from django.http import HttpResponse
 import mock
 
 from allauth.account.models import EmailAddress
@@ -2409,6 +2412,20 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                                         'challenge_phase_pk': self.challenge_phase.pk,
                                         'file_type': self.file_type_csv})
         response = self.client.get(self.url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_download_all_submissions_for_host_custom_fields(self):
+        self.url = reverse_lazy('challenges:download_all_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.challenge_phase.pk,
+                                        'file_type': self.file_type_csv})
+        expected = io.StringIO()
+        submissions = csv.writer(expected)
+        submissions.writerow(['id','Team Members','Team Members Email Id','Challenge Phase'])
+        submissions.writerow(['16','otheruser1','user1@test.com','Challenge Phase'])
+        self.data = ["participant_team_members","participant_team_members_email","challenge_phase"]
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.content.decode('utf-8'), expected.getvalue())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_download_all_submissions_when_user_is_challenge_participant(self):
