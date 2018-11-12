@@ -50,14 +50,20 @@ def get_auth_token(request):
 @throttle_classes([UserRateThrottle])
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
+@authentication_classes((ExpiringTokenAuthentication, ))
 def new_auth_token(request):
     try:
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
-        Response(response_data, status.HTTP_404_NOT_FOUND)
+        return Response(response_data, status.HTTP_404_NOT_FOUND)
+    oldtoken = Token.objects.get(user=user)
+    if oldtoken:
+        Token.objects.filter(user=user).delete()
     token = Token.objects.create(user=user)
     token.save()
-    response_data = {"token": "{}".format(token)}
+    response_data = {
+        "oldtoken": "{}".format(oldtoken),
+        "token": "{}".format(token)
+    }
     return Response(response_data, status=status.HTTP_200_OK)
