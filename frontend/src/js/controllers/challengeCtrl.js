@@ -1121,7 +1121,6 @@
                             fieldsExport.push(vm.fields[i].id)
                         }
                     }
-                    console.log(fieldsExport)
                     parameters.data = fieldsExport;
                     parameters.callback = {
                         onSuccess: function(response) {
