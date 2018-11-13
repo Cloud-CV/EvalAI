@@ -312,7 +312,6 @@
                         onError: function(response) {
                             var status = response.status;
                             var error = response.data;
-                            console.log(response);
 
                             vm.phaseId = null;
                             vm.methodName = null;
