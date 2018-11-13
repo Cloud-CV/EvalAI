@@ -51,19 +51,21 @@ def get_auth_token(request):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication, ))
-def new_auth_token(request):
+def generate_auth_token(request):
     try:
         user = User.objects.get(email=request.user.email)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
         return Response(response_data, status.HTTP_404_NOT_FOUND)
-    oldtoken = Token.objects.get(user=user)
-    if oldtoken:
-        Token.objects.filter(user=user).delete()
-    token = Token.objects.create(user=user)
-    token.save()
+    try:
+        old_auth_token = Token.objects.get(user_id=request.user.pk)
+    except Token.DoesNotExist:
+        response_data = {"error": "This Token account doesn't exist."}
+        return Response(response_data, status.HTTP_404_NOT_FOUND)
+    Token.delete(old_auth_token)
+    new_token = Token.objects.create(user=user)
+    new_token.save()
     response_data = {
-        "oldtoken": "{}".format(oldtoken),
-        "token": "{}".format(token)
+        "message": "The new generated auth token for {} is {}".format(request.user.username, new_token),
     }
     return Response(response_data, status=status.HTTP_200_OK)
