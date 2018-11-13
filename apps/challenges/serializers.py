@@ -141,7 +141,6 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super(ChallengePhaseCreateSerializer, self).__init__(*args, **kwargs)
-        self.fields['max_submissions_per_month'].required = False
         context = kwargs.get('context')
         if context:
             challenge = context.get('challenge')
