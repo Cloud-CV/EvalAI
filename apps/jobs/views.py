@@ -434,7 +434,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     submissions_done_this_month = submissions_done.filter(
         submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
 
-    failed_submissions_this_month = submissions_done_today.filter(
+    failed_submissions_this_month = submissions_done_this_month.filter(
         status=Submission.FAILED)
 
     submissions_done_count = submissions_done.count()
