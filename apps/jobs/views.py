@@ -274,30 +274,31 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
                     items=openapi.Schema(
                         type=openapi.TYPE_OBJECT,
                         properties={
-                        'submission__participant_team__team_name': openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description='Participant Team Name'
-                            ),
-                        'challenge_phase_split': openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description='Challenge Phase Split ID'
-                            ),
-                        'filtering_score': openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description='Default filtering score for results'
-                            ),
-                        'leaderboard__schema': openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description='Leaderboard Schema of the corresponding challenge'
-                            ),
-                        'result': openapi.Schema(
-                            type=openapi.TYPE_ARRAY,
-                            description='Leaderboard Metrics values according to leaderboard schema'
-                            ),
-                        'submission__submitted_at': openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description='Time stamp when submission was submitted at')
-                        })
+                            'submission__participant_team__team_name': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Participant Team Name'
+                                ),
+                            'challenge_phase_split': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Challenge Phase Split ID'
+                                ),
+                            'filtering_score': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Default filtering score for results'
+                                ),
+                            'leaderboard__schema': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Leaderboard Schema of the corresponding challenge'
+                                ),
+                            'result': openapi.Schema(
+                                type=openapi.TYPE_ARRAY,
+                                description='Leaderboard Metrics values according to leaderboard schema'
+                                ),
+                            'submission__submitted_at': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Time stamp when submission was submitted at')
+                            }
+                        )
                     ),
                 }
             )
