@@ -1,5 +1,6 @@
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -53,7 +54,7 @@ def get_auth_token(request):
 @authentication_classes((ExpiringTokenAuthentication, ))
 def generate_auth_token(request):
     try:
-        user = User.objects.get(email=request.user.email)
+        user = User.objects.get(id=request.user.pk)
     except User.DoesNotExist:
         response_data = {"error": "This User account doesn't exist."}
         return Response(response_data, status.HTTP_404_NOT_FOUND)
@@ -63,7 +64,11 @@ def generate_auth_token(request):
         response_data = {"error": "This Token account doesn't exist."}
         return Response(response_data, status.HTTP_404_NOT_FOUND)
     Token.delete(old_auth_token)
-    new_token = Token.objects.create(user=user)
+    try:
+        new_token = Token.objects.create(user=user)
+    except IntegrityError:
+        response_data = {"error": "Token was not able to be created"}
+        return Response(response_data, status.HTTP_404_NOT_FOUND)
     new_token.save()
     response_data = {
         "message": "The new generated auth token for {} is {}".format(request.user.username, new_token),

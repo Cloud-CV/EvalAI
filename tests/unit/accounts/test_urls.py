@@ -38,13 +38,4 @@ class TestStringMethods(BaseAPITestClass):
         url = reverse_lazy('accounts:generate_auth_token')
         self.assertEqual(str(url), '/api/accounts/user/generate_auth_token')
 
-    def test_token_generate(self):
-        get_url = reverse_lazy('accounts:get_auth_token')
-        token = Token.objects.create(user=self.user)
-        token.save()
-        get_response = self.client.get(get_url, {"token": token})
-        self.assertEqual(str(token), get_response.json()['token'])
-        generate_url = reverse_lazy('accounts:generate_auth_token')
-        generate_response = self.client.get(generate_url)
-        self.assertFalse(str(token) in generate_response.json()['message'])
 
