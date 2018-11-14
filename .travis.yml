@@ -8,7 +8,12 @@ addons:
   postgresql: '10.4'
   apt:
     packages:
+    - postgresql-10
+    - postgresql-client-10
     - oracle-java8-set-default
+env:
+  global:
+  - PGPORT=5432
 cache:
   directories:
   - "$HOME/.cache/pip"
