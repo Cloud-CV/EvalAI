@@ -4,11 +4,8 @@ services:
 - docker
 python:
 - '3.6'
-matrix:
-  allow_failures:
-  - python: '3.6'
 addons:
-  postgresql: '9.4'
+  postgresql: '10.4'
   apt:
     packages:
     - oracle-java8-set-default
