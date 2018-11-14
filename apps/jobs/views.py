@@ -463,8 +463,8 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
             next_month = 1
             year = date_time_now.year + 1
         # Get Next Month's First Date
-        date_next_month = timezone.now().replace(year=year, month=next_month, day=1, hour=0, minute=0, second=0, microsecond=0)
-        remaining_time = date_next_month - date_time_now
+        next_month_date = timezone.now().replace(year=year, month=next_month, day=1, hour=0, minute=0, second=0, microsecond=0)
+        remaining_time = next_month_date - date_time_now
         response_data = {   'message': 'You have exhausted {0}\'s submission limit'.format(date_time_now.strftime("%B")),
                             'remaining_time': remaining_time
                         }
