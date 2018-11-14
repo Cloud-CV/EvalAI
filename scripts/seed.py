@@ -31,7 +31,7 @@ except NameError:
 def check_database():
     if len(EmailAddress.objects.all()) > 0:
         print("Are you sure you want to wipe the existing development database and reseed it? (Y/N)")
-        if settings.TEST or raw_input().lower() == "y":
+        if settings.TEST or input().lower() == "y":
             destroy_database()
             return True
         else:
