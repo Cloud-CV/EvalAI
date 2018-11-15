@@ -365,8 +365,8 @@ def leaderboard(request, challenge_phase_split_id):
             try:
                 result.append(item['result'][index])
             except:
-                response_data = {'error': 'Sorry, label {} not found in leaderboard schema!'.format(index)}
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                response_data = {'error': 'Sorry, label {} is not found in leaderboard schema'.format(index)}
+                return Response(response_data, status=status.HTTP_404_NOT_FOUND)
         item['result'] = result
 
     paginator, result_page = paginated_queryset(
