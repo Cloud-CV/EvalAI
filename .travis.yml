@@ -4,20 +4,25 @@ services:
 - docker
 python:
 - '3.6'
-matrix:
-  allow_failures:
-  - python: '3.6'
 addons:
-  postgresql: '9.4'
+  postgresql: '10'
   apt:
     packages:
+    - postgresql-10
+    - postgresql-client-10
     - oracle-java8-set-default
+env:
+  global:
+  - PGPORT=5432
 cache:
   directories:
   - "$HOME/.cache/pip"
 before_cache:
 - rm -f $HOME/.cache/pip/log/debug.log
 before_script:
+- sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/10/main/postgresql.conf
+- sudo cp /etc/postgresql/{9.4,10}/main/pg_hba.conf
+- sudo service postgresql restart
 - psql -c "CREATE DATABASE evalai" -U postgres
 - wget https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar
 - java -jar elasticmq-server-0.14.2.jar &
