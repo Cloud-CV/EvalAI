@@ -12,7 +12,8 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import Challenge, ChallengePhase, ChallengePhaseSplit
+from challenges.models import DatasetSplit, Leaderboard, LeaderboardData
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
@@ -70,6 +71,14 @@ class BaseAPITestClass(APITestCase):
             enable_forum=True,
             anonymous_leaderboard=False)
 
+        self.leaderboard_schema = {
+            'labels': ['score', 'test-score'],
+            'default_order_by': 'score'
+        }
+        self.leaderboard = Leaderboard.objects.create(
+            schema=self.leaderboard_schema
+        )
+
         try:
             os.makedirs('/tmp/evalai')
         except OSError:
@@ -88,6 +97,18 @@ class BaseAPITestClass(APITestCase):
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
                                                    b'Dummy file content', content_type='text/plain')
+            )
+
+            self.dataset_split = DatasetSplit.objects.create(
+                name="Split 1",
+                codename="split1"
+            )
+
+            self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+                challenge_phase=self.challenge_phase,
+                dataset_split=self.dataset_split,
+                leaderboard=self.leaderboard,
+                visibility=ChallengePhaseSplit.PUBLIC
             )
 
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -841,3 +862,47 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class ChallengeLeaderboardTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(ChallengeLeaderboardTest, self).setUp()
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status="finished",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+        )
+
+        self.submission.is_public = True
+        self.submission.status = Submission.FINISHED
+        self.submission.save()
+
+        # NOTE: result schema has one key missing for test_leaderboard_schema_key_missing
+        self.result_json = {
+            'score': 0
+        }
+
+        self.leaderboard_data = LeaderboardData.objects.create(
+            challenge_phase_split=self.challenge_phase_split,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result=self.result_json
+        )
+
+    def test_leaderboard_schema_key_missing(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
+
+        expected = {'error': 'Sorry, label test-score is not found in leaderboard schema'}
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
