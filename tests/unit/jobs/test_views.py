@@ -1,5 +1,6 @@
 import os
 import shutil
+import collections
 
 from datetime import timedelta
 
@@ -878,7 +879,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             method_name="Test Method",
             method_description="Test Description",
             project_url="http://testserver/",
-            publication_url="http://testserver/",
+            publication_url="http://testserver/"
         )
 
         self.submission.is_public = True
@@ -887,7 +888,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
 
         # NOTE: result schema has one key missing for test_leaderboard_schema_key_missing
         self.result_json = {
-            'score': 0
+            'score': 0,
+            'test-score': 0
         }
 
         self.leaderboard_data = LeaderboardData.objects.create(
@@ -897,7 +899,45 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             result=self.result_json
         )
 
+    def test_get_leaderboard(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
+
+        expected = collections.OrderedDict({
+            'count': 1,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'submission__submitted_at': self.submission.submitted_at,
+                    'submission__participant_team__team_name': self.submission.participant_team.team_name,
+                    'challenge_phase_split': self.challenge_phase_split.id,
+                    'result': [0, 0],
+                    'leaderboard__schema': {
+                        'default_order_by': 'score',
+                        'labels': ['score', 'test-score']
+                    },
+                    'filtering_score': 0.0,
+                    'id': self.leaderboard_data.id
+                }
+            ]
+        })
+
+        response = self.client.get(self.url, {})
+
+        self.assertEqual(response.data['count'], expected['count'])
+        self.assertEqual(response.data['next'], expected['next'])
+        self.assertEqual(response.data['previous'], expected['previous'])
+        self.assertEqual(response.data['results'], expected['results'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_leaderboard_schema_key_missing(self):
+        self.result_json = {
+            'score': 0
+        }
+        self.leaderboard_data.result = self.result_json
+        self.leaderboard_data.save()
+
         self.url = reverse_lazy('jobs:leaderboard',
                                 kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
 
