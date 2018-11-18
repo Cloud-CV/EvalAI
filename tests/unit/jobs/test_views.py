@@ -100,18 +100,6 @@ class BaseAPITestClass(APITestCase):
                                                    b'Dummy file content', content_type='text/plain')
             )
 
-            self.dataset_split = DatasetSplit.objects.create(
-                name="Split 1",
-                codename="split1"
-            )
-
-            self.challenge_phase_split = ChallengePhaseSplit.objects.create(
-                challenge_phase=self.challenge_phase,
-                dataset_split=self.dataset_split,
-                leaderboard=self.leaderboard,
-                visibility=ChallengePhaseSplit.PUBLIC
-            )
-
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk})
@@ -870,7 +858,19 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
     def setUp(self):
         super(ChallengeLeaderboardTest, self).setUp()
 
-        self.test_submission = Submission.objects.create(
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Split 1",
+            codename="split1"
+        )
+
+        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+            challenge_phase=self.challenge_phase,
+            dataset_split=self.dataset_split,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC
+        )
+
+        self.submission = Submission.objects.create(
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
             created_by=self.user1,
@@ -882,9 +882,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             publication_url="http://testserver/"
         )
 
-        self.test_submission.is_public = True
-        self.test_submission.status = Submission.FINISHED
-        self.test_submission.save()
+        self.submission.is_public = True
+        self.submission.status = Submission.FINISHED
+        self.submission.save()
 
         self.result_json = {
             'score': 0,
@@ -893,7 +893,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
 
         self.leaderboard_data = LeaderboardData.objects.create(
             challenge_phase_split=self.challenge_phase_split,
-            submission=self.test_submission,
+            submission=self.submission,
             leaderboard=self.leaderboard,
             result=self.result_json
         )
@@ -902,25 +902,26 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.url = reverse_lazy('jobs:leaderboard',
                                 kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
 
-        expected = collections.OrderedDict({
+        expected = {
             'count': 1,
             'next': None,
             'previous': None,
             'results': [
                 {
-                    'submission__submitted_at': self.test_submission.submitted_at,
-                    'submission__participant_team__team_name': self.test_submission.participant_team.team_name,
+                    'id': self.submission.id,
+                    'submission__participant_team__team_name': self.submission.participant_team.team_name,
                     'challenge_phase_split': self.challenge_phase_split.id,
                     'result': [0, 0],
+                    'filtering_score': 0.0,
                     'leaderboard__schema': {
                         'default_order_by': 'score',
                         'labels': ['score', 'test-score']
                     },
-                    'filtering_score': 0.0,
-                    'id': 1
+                    'submission__submitted_at': self.submission.submitted_at,
                 }
             ]
-        })
+        }
+        expected = collections.OrderedDict(expected)
 
         response = self.client.get(self.url, {})
 
