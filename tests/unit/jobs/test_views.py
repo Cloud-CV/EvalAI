@@ -870,7 +870,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
     def setUp(self):
         super(ChallengeLeaderboardTest, self).setUp()
 
-        self.submission = Submission.objects.create(
+        self.test_submission = Submission.objects.create(
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
             created_by=self.user1,
@@ -882,11 +882,10 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             publication_url="http://testserver/"
         )
 
-        self.submission.is_public = True
-        self.submission.status = Submission.FINISHED
-        self.submission.save()
+        self.test_submission.is_public = True
+        self.test_submission.status = Submission.FINISHED
+        self.test_submission.save()
 
-        # NOTE: result schema has one key missing for test_leaderboard_schema_key_missing
         self.result_json = {
             'score': 0,
             'test-score': 0
@@ -894,7 +893,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
 
         self.leaderboard_data = LeaderboardData.objects.create(
             challenge_phase_split=self.challenge_phase_split,
-            submission=self.submission,
+            submission=self.test_submission,
             leaderboard=self.leaderboard,
             result=self.result_json
         )
@@ -909,8 +908,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             'previous': None,
             'results': [
                 {
-                    'submission__submitted_at': self.submission.submitted_at,
-                    'submission__participant_team__team_name': self.submission.participant_team.team_name,
+                    'submission__submitted_at': self.test_submission.submitted_at,
+                    'submission__participant_team__team_name': self.test_submission.participant_team.team_name,
                     'challenge_phase_split': self.challenge_phase_split.id,
                     'result': [0, 0],
                     'leaderboard__schema': {
@@ -918,7 +917,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                         'labels': ['score', 'test-score']
                     },
                     'filtering_score': 0.0,
-                    'id': self.leaderboard_data.id
+                    'id': 1
                 }
             ]
         })
@@ -931,7 +930,17 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.assertEqual(response.data['results'], expected['results'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_leaderboard_schema_key_missing(self):
+    def test_get_leaderboard_with_invalid_challenge_phase_split_id(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': 203})
+
+        expected = {'error': 'Challenge Phase Split does not exist'}
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_leaderboard_schema_with_missing_key(self):
         self.result_json = {
             'score': 0
         }
