@@ -908,7 +908,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             'previous': None,
             'results': [
                 {
-                    'id': self.submission.id,
+                    'id': self.leaderboard_data.id,
                     'submission__participant_team__team_name': self.submission.participant_team.team_name,
                     'challenge_phase_split': self.challenge_phase_split.id,
                     'result': [0, 0],
