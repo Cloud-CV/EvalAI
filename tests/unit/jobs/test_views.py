@@ -1,6 +1,6 @@
+import collections
 import os
 import shutil
-import collections
 
 from datetime import timedelta
 
@@ -13,8 +13,12 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge, ChallengePhase, ChallengePhaseSplit
-from challenges.models import DatasetSplit, Leaderboard, LeaderboardData
+from challenges.models import (Challenge,
+                               ChallengePhase,
+                               ChallengePhaseSplit,
+                               DatasetSplit,
+                               Leaderboard,
+                               LeaderboardData)
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
@@ -874,7 +878,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
             created_by=self.user1,
-            status="finished",
+            status="submitted",
             input_file=self.challenge_phase.test_annotation,
             method_name="Test Method",
             method_description="Test Description",
@@ -933,7 +937,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
 
     def test_get_leaderboard_with_invalid_challenge_phase_split_id(self):
         self.url = reverse_lazy('jobs:leaderboard',
-                                kwargs={'challenge_phase_split_id': 203})
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id + 1})
 
         expected = {'error': 'Challenge Phase Split does not exist'}
 
