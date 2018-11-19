@@ -52,6 +52,8 @@ class Challenge(TimeStampedModel):
     blocked_email_domains = ArrayField(
         models.CharField(max_length=50, blank=True),
         default=[], blank=True)
+    remote_evaluation = models.BooleanField(
+        default=False, verbose_name="Remote Evaluation", db_index=True)
 
     class Meta:
         app_label = 'challenges'
