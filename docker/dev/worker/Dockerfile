@@ -17,4 +17,4 @@ RUN pip install -r worker.txt
 
 ADD . /code
 
-CMD ["python", "-m", "scripts.workers.submission_worker"]
+CMD ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.submission_worker"]
