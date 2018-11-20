@@ -4,7 +4,12 @@ set -e
 opt=${1}
 env=${2}
 
-requirements() {
+aws_login() {
+    aws configure set default.region us-east-1
+    eval $(aws ecr get-login --no-include-email)
+}
+
+setup() {
     export LC_ALL="en_US.UTF-8"
     export LC_CTYPE="en_US.UTF-8"
     sudo add-apt-repository ppa:deadsnakes/ppa
@@ -19,17 +24,14 @@ requirements() {
     pip3 install docker-compose
 }
 
-if python3 -c "import awscli" &> /dev/null; then
-    aws configure set default.region us-east-1
-    eval $(aws ecr get-login --no-include-email)
-else
-    echo "Updating and Installing dependencies..."
-    requirements;
+if ! python3 -c "import awscli" &> /dev/null; then
+    echo "Installing packages and dependencies..."
+    setup;
 fi
 
 if [ -z ${AWS_ACCOUNT_ID} ]; then
     echo "AWS_ACCOUNT_ID not set."
-    exit 1
+    exit 0
 fi
 
 if [ -z ${COMMIT_ID} ]; then
@@ -38,6 +40,7 @@ fi
 
 case $opt in
         pull)
+            aws_login
             echo "Pulling environment variables file..."
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
             echo "Environment varibles file successfully downloaded."
