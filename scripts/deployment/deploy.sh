@@ -5,6 +5,8 @@ opt=${1}
 env=${2}
 
 requirements() {
+    export LC_ALL="en_US.UTF-8"
+    export LC_CTYPE="en_US.UTF-8"
     sudo add-apt-repository ppa:deadsnakes/ppa
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
@@ -25,9 +27,16 @@ else
     requirements;
 fi
 
+if [ -z ${AWS_ACCOUNT_ID} ]; then
+    echo "AWS_ACCOUNT_ID not set."
+fi
+
+if [ -z ${COMMIT_ID} ]; then
+    COMMIT_ID="latest"
+fi
+
 case $opt in
         pull)
-            source ~/.bashrc
             echo "Pulling environment variables file..."
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
             echo "Environment varibles file successfully downloaded."
@@ -59,47 +68,16 @@ case $opt in
             }
             docker rmi $(docker images -a -q)
             ;;
-        install)
-            echo "Updating and Installing dependencies..."
-            requirements;
-            ;;
-        locale)
-            export LC_ALL="en_US.UTF-8"
-            export LC_CTYPE="en_US.UTF-8"
-            sudo apt-get update
-            ;;
-        aws_config)
-            echo "Configuring AWS Account ID and Commit Id..."
-            export COMMIT_ID=${3}
-            export AWS_ACCOUNT_ID=${4}
-            echo COMMIT_ID=${3} >> ~/.bashrc
-            if [ ${AWS_ACCOUNT_ID} ]; then
-                echo "AWS Account ID is already configured."
-            else
-                if [ -z "$4" ]; then
-                        echo "Add AWS Account Id as an argument"
-                        exit 1
-                else
-                        echo AWS_ACCOUNT_ID=${4} >> ~/.bashrc
-                fi
-            fi
-            if [ -z "$3" ]; then
-                echo "Add commit id as an argument or you can use 'latest'"
-                exit 1
-            fi
-            source ~/.bashrc
-            echo "AWS Account Id and Commit ID successfully configured."
-            ;;
         *)
         echo "EvalAI deployment utility script"
         echo " Usage: $0 {pull|deploy|scale|clean|copy}"
         echo
-        echo "	pull  : Pull docker images from ECR."
-        echo "		Eg. ./scripts/deployment/deploy.sh pull production"
-        echo "	deploy : Deploy containers in the respective environment."
-        echo "		Eg. ./scripts/deployment/deploy.sh deploy production"
-        echo "	scale  : Scale particular docker service in an environment."
-        echo "		Eg. ./scripts/deployment/deploy.sh scale production django 5"
-        echo "	clean  : Remove all docker containers and images."
-        echo "		Eg. ./scripts/deployment/deploy.sh clean production"
+        echo "    pull  : Pull docker images from ECR."
+        echo "        Eg. ./scripts/deployment/deploy.sh pull production"
+        echo "    deploy : Deploy containers in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy production"
+        echo "    scale  : Scale particular docker service in an environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh scale production django 5"
+        echo "    clean  : Remove all docker containers and images."
+        echo "        Eg. ./scripts/deployment/deploy.sh clean production"
 esac
