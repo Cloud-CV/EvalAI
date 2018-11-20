@@ -29,10 +29,11 @@ fi
 
 if [ -z ${AWS_ACCOUNT_ID} ]; then
     echo "AWS_ACCOUNT_ID not set."
+    exit 1
 fi
 
 if [ -z ${COMMIT_ID} ]; then
-    COMMIT_ID="latest"
+    export COMMIT_ID="latest"
 fi
 
 case $opt in
