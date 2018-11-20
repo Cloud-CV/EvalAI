@@ -51,6 +51,6 @@ media/
 
 # Encrypted files
 docker/prod/docker_staging.env
-docker/prod/docker_prod.env
+docker/prod/docker_production.env
 secrets.tar
 scripts/docker_pull.sh
