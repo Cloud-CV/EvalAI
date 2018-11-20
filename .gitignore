@@ -51,8 +51,7 @@ media/
 
 # Docker Environment Files
 docker/prod/docker_staging.env
-# TODO: Add docker_production.env file
-docker/prod/docker_prod.env
+docker/prod/docker_production.env
 
 # SSL files
 ssl/
