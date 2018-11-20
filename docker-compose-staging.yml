@@ -26,9 +26,9 @@ services:
     container_name: nodejs
     build:
       context: ./
-      dockerfile: docker/prod/nodejs/Dockerfile_staging
+      dockerfile: docker/prod/nodejs/Dockerfile
     environment:
-      NODE_ENV: production
+      NODE_ENV: staging
     ports:
       - "80:80"
     volumes:

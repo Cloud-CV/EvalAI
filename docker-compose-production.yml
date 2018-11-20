@@ -5,7 +5,7 @@ services:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-backend:${COMMIT_ID}
     container_name: django
     env_file:
-      - docker/prod/docker_prod.env
+      - docker/prod/docker_production.env
     build:
       context: ./
       dockerfile: docker/prod/django/Dockerfile
@@ -19,7 +19,7 @@ services:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
     env_file:
-      - docker/prod/docker_prod.env
+      - docker/prod/docker_production.env
 
   nodejs:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-frontend:${COMMIT_ID}
@@ -35,4 +35,3 @@ services:
     volumes:
       - /code/node_modules
       - /code/bower_components
-      - /etc/nginx/ssl/:/etc/nginx/ssl/
