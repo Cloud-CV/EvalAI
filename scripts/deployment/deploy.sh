@@ -27,16 +27,8 @@ fi
 
 case $opt in
         pull)
-            export COMMIT_ID=${3}
-            export AWS_ACCOUNT_ID=${4}
-            if [ -z "$3" ]; then
-                echo "Add commit id as an argument or you can use 'latest'"
-                exit 1
-            elif [ -z "$4" ]; then
-                echo "Add AWS Account Id as an argument"
-                exit 1
-            fi
-            echo "Pulling environment varibles file..."
+            source ~/.bashrc
+            echo "Pulling environment variables file..."
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
             echo "Environment varibles file successfully downloaded."
             if [ ${env} == "production" ]; then
@@ -75,6 +67,28 @@ case $opt in
             export LC_ALL="en_US.UTF-8"
             export LC_CTYPE="en_US.UTF-8"
             sudo apt-get update
+            ;;
+        aws_config)
+            echo "Configuring AWS Account ID and Commit Id..."
+            export COMMIT_ID=${3}
+            export AWS_ACCOUNT_ID=${4}
+            echo COMMIT_ID=${3} >> ~/.bashrc
+            if [ ${AWS_ACCOUNT_ID} ]; then
+                echo "AWS Account ID is already configured."
+            else
+                if [ -z "$4" ]; then
+                        echo "Add AWS Account Id as an argument"
+                        exit 1
+                else
+                        echo AWS_ACCOUNT_ID=${4} >> ~/.bashrc
+                fi
+            fi
+            if [ -z "$3" ]; then
+                echo "Add commit id as an argument or you can use 'latest'"
+                exit 1
+            fi
+            source ~/.bashrc
+            echo "AWS Account Id and Commit ID successfully configured."
             ;;
         *)
         echo "EvalAI deployment utility script"
