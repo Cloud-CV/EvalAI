@@ -1,5 +1,6 @@
 FROM node:8.11.2 as node
 
+ARG NODE_ENV
 WORKDIR /code
 
 # Add dependencies

@@ -27,8 +27,8 @@ services:
     build:
       context: ./
       dockerfile: docker/prod/nodejs/Dockerfile
-    environment:
-      NODE_ENV: staging
+      args:
+        NODE_ENV: staging
     ports:
       - "80:80"
     volumes:

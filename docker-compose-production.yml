@@ -27,8 +27,8 @@ services:
     build:
       context: ./
       dockerfile: docker/prod/nodejs/Dockerfile
-    environment:
-      NODE_ENV: production
+      args:
+        NODE_ENV: production
     ports:
       - "80:80"
       - "443:443"
