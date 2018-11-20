@@ -14,6 +14,7 @@ case $opt in
                 aws s3 cp s3://cloudcv-secrets/evalai/${env}/ssl/ ./ssl/
                 aws s3 cp s3://cloudcv-secrets/evalai/${env}/nginx_${env}.conf ./docker/prod/nodejs/nginx_${env}.conf
             fi
+            export COMMIT_ID=${3}
             docker-compose -f docker-compose-${env}.yml pull
             echo "Completed Pull operation."
             ;;
@@ -35,6 +36,25 @@ case $opt in
                 echo "Delete operation skipped since no container or image found!"
             }
             docker rmi $(docker images -a -q)
+            ;;
+        install)
+            echo "Updating and Installing dependencies"
+            sudo add-apt-repository ppa:deadsnakes/ppa
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+            sudo apt-get update
+            apt-cache policy docker-ce
+            sudo apt-get install -y docker-ce
+            sudo apt-get install python3.6
+            sudo apt-get install python3-pip
+            pip3 install awscli
+            pip3 install docker-compose
+            ;;
+        locale)
+            export LC_ALL="en_US.UTF-8"
+            export LC_CTYPE="en_US.UTF-8"
+            sudo dpkg-reconfigure locales
+            sudo apt-get update
             ;;
         *)
         echo "EvalAI deployment utility script"
