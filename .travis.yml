@@ -36,6 +36,7 @@ script:
 - py.test --cov . --cov-config .coveragerc
 after_success:
 - coveralls --rcfile=.coveragerc
+- ./scripts/deployment/push.sh
 notifications:
   email:
     on_success: change

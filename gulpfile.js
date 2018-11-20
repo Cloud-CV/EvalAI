@@ -304,7 +304,7 @@ function watch() {
 
 var parallelTasks = gulp.parallel(vendorcss, vendorjs, css, js, html, images, fonts);
 
-gulp.task('prod', gulp.series(clean, function(done) {
+gulp.task('production', gulp.series(clean, function(done) {
     production = true;
     done();
 }, parallelTasks, configProd, injectpaths, lint));
