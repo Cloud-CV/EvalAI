@@ -28,8 +28,12 @@ fi
 case $opt in
         pull)
             export COMMIT_ID=${3}
+            export AWS_ACCOUNT_ID=${4}
             if [ -z "$3" ]; then
                 echo "Add commit id as an argument or you can use 'latest'"
+                exit 1
+            elif [ -z "$4" ]; then
+                echo "Add AWS Account Id as an argument"
                 exit 1
             fi
             echo "Pulling environment varibles file..."
