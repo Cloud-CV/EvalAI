@@ -40,7 +40,7 @@ fi
 
 case $opt in
         pull)
-            aws_login
+            aws_login;
             echo "Pulling environment variables file..."
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
             echo "Environment varibles file successfully downloaded."
@@ -71,10 +71,11 @@ case $opt in
                 echo "Delete operation skipped since no container or image found!"
             }
             docker rmi $(docker images -a -q)
+            echo "Sucessfully cleaned all the images."
             ;;
         *)
         echo "EvalAI deployment utility script"
-        echo " Usage: $0 {pull|deploy|scale|clean|copy}"
+        echo " Usage: $0 {pull|deploy|scale|clean}"
         echo
         echo "    pull  : Pull docker images from ECR."
         echo "        Eg. ./scripts/deployment/deploy.sh pull production"
