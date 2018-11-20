@@ -3,18 +3,44 @@ set -e
 
 opt=${1}
 env=${2}
-aws configure set default.region us-east-1
-eval $(aws ecr get-login --no-include-email)
+
+requirements() {
+    sudo add-apt-repository ppa:deadsnakes/ppa
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    sudo apt-get update
+    apt-cache policy docker-ce
+    sudo apt-get install -y docker-ce
+    sudo apt-get install python3.6
+    sudo apt-get install python3-pip
+    pip3 install awscli
+    pip3 install docker-compose
+}
+
+if python3 -c "import awscli" &> /dev/null; then
+    aws configure set default.region us-east-1
+    eval $(aws ecr get-login --no-include-email)
+else
+    echo "Updating and Installing dependencies..."
+    requirements;
+fi
 
 case $opt in
         pull)
-            echo "Pulling docker images from ECR..."
+            export COMMIT_ID=${3}
+            if [ -z "$3" ]; then
+                echo "Add commit id as an argument or you can use 'latest'"
+                exit 1
+            fi
+            echo "Pulling environment varibles file..."
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
+            echo "Environment varibles file successfully downloaded."
             if [ ${env} == "production" ]; then
+                echo "Pulling ssl certificates and nginx configuration..."
                 aws s3 cp s3://cloudcv-secrets/evalai/${env}/ssl/ ./ssl/
                 aws s3 cp s3://cloudcv-secrets/evalai/${env}/nginx_${env}.conf ./docker/prod/nodejs/nginx_${env}.conf
             fi
-            export COMMIT_ID=${3}
+            echo "Pulling docker images from ECR..."
             docker-compose -f docker-compose-${env}.yml pull
             echo "Completed Pull operation."
             ;;
@@ -38,22 +64,12 @@ case $opt in
             docker rmi $(docker images -a -q)
             ;;
         install)
-            echo "Updating and Installing dependencies"
-            sudo add-apt-repository ppa:deadsnakes/ppa
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-            sudo apt-get update
-            apt-cache policy docker-ce
-            sudo apt-get install -y docker-ce
-            sudo apt-get install python3.6
-            sudo apt-get install python3-pip
-            pip3 install awscli
-            pip3 install docker-compose
+            echo "Updating and Installing dependencies..."
+            requirements;
             ;;
         locale)
             export LC_ALL="en_US.UTF-8"
             export LC_CTYPE="en_US.UTF-8"
-            sudo dpkg-reconfigure locales
             sudo apt-get update
             ;;
         *)
