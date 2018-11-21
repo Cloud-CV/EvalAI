@@ -129,33 +129,11 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
 
         data = self.challenge_phase_create_serializer.data
 
-        self.assertEqual(sorted(list(data.keys())), sorted(['id', 'name', 'description', 'leaderboard_public', 'start_date',
-                                            'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
-                                            'max_submissions_per_month', 'is_public', 'is_active', 'codename', 'test_annotation',
-                                            'is_submission_public']))
-        self.assertEqual(data['id'], self.serializer_data['id'])
-        self.assertEqual(data['name'], self.serializer_data['name'])
-        self.assertEqual(data['description'], self.serializer_data['description'])
-        self.assertEqual(data['leaderboard_public'], self.serializer_data['leaderboard_public'])
-        self.assertEqual(data['start_date'], self.serializer_data['start_date'])
-        self.assertEqual(data['end_date'], self.serializer_data['end_date'])
-        self.assertEqual(data['challenge'], self.serializer_data['challenge'])
-        self.assertEqual(data['max_submissions_per_day'], self.serializer_data['max_submissions_per_day'])
-        self.assertEqual(data['max_submissions_per_month'], self.serializer_data['max_submissions_per_month'])
-        self.assertEqual(data['max_submissions'], self.serializer_data['max_submissions'])
-        self.assertEqual(data['is_public'], self.serializer_data['is_public'])
-        self.assertEqual(data['codename'], self.serializer_data['codename'])
-        self.assertEqual(data['test_annotation'], self.serializer_data['test_annotation'])
-        self.assertEqual(data['is_active'], self.serializer_data['is_active'])
-    
-    def test_challenge_phase_create_serializer_wihout_max_submissions_per_month(self):
-
-        data = self.challenge_phase_create_serializer_wihout_max_submissions_per_month.data
-
-        self.assertEqual(sorted(list(data.keys())), sorted(['id', 'name', 'description', 'leaderboard_public', 'start_date',
-                                            'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
-                                            'max_submissions_per_month', 'is_public', 'is_active', 'codename', 'test_annotation',
-                                            'is_submission_public']))
+        self.assertEqual(sorted(list(data.keys())), sorted(['id', 'name', 'description', 'leaderboard_public',
+                                                            'start_date', 'end_date', 'challenge',
+                                                            'max_submissions_per_day', 'max_submissions',
+                                                            'is_public', 'is_active', 'codename',
+                                                            'test_annotation', 'is_submission_public']))
         self.assertEqual(data['id'], self.serializer_data['id'])
         self.assertEqual(data['name'], self.serializer_data['name'])
         self.assertEqual(data['description'], self.serializer_data['description'])
