@@ -1,5 +1,6 @@
 FROM node:8.11.2 as node
 
+ARG NODE_ENV
 WORKDIR /code
 
 # Add dependencies
@@ -18,10 +19,8 @@ RUN npm install
 RUN bower install --allow-root
 ADD frontend /code/frontend
 
-# TODO: Change `gulp dev` to `gulp prod`
-RUN gulp prod
-EXPOSE 8888
+RUN gulp ${NODE_ENV}
 
 FROM nginx:1.13-alpine
-COPY docker/prod/nodejs/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/prod/nodejs/nginx_${NODE_ENV}.conf /etc/nginx/conf.d/default.conf
 COPY --from=node /code /code
