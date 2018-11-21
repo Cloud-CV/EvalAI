@@ -24,7 +24,7 @@
                     </label>
                 </li>
             </ul>
-            <div class="mt-30 btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14 show-analytics-btn" ng-click="analytics.showChallengeAnalysis()">Show Analysis &nbsp;<i class="fa fa-chevron-right"></i> </div>
+            <div class="mt-30 btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14 show-analytics-btn" ng-disabled="analytics.challengeListCount === 0" ng-click="analytics.showChallengeAnalysis()">Show Analysis &nbsp;<i class="fa fa-chevron-right"></i> </div>
         </div>
         <div class="col s12 m7">
             <h4 class="fs-18">Challenge Analysis</h4>

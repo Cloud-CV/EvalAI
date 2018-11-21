@@ -1,6 +1,6 @@
-import ast
 import datetime
 import json
+import logging
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -9,6 +9,7 @@ from rest_framework.decorators import (api_view,
                                        throttle_classes,)
 
 from django.core.files.base import ContentFile
+from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
 from django.db.models import FloatField
 from django.utils import timezone
@@ -27,11 +28,8 @@ from challenges.models import (
     Challenge,
     ChallengePhaseSplit,
     LeaderboardData,)
-from challenges.models import Leaderboard
-from challenges.permissions import IsChallengeCreator
 from challenges.utils import (get_challenge_model,
-                              get_challenge_phase_model,
-                              get_challenge_phase_split_model)
+                              get_challenge_phase_model)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
 from participants.models import (ParticipantTeam,)
@@ -43,6 +41,8 @@ from .sender import publish_submission_message
 from .serializers import (SubmissionSerializer,
                           CreateLeaderboardDataSerializer)
 from .utils import get_submission_model
+
+logger = logging.getLogger(__name__)
 
 
 @swagger_auto_schema(methods=['post'], manual_parameters=[
@@ -254,53 +254,55 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
     operation_id='Get_Leaderboard_Data',
     responses={
         status.HTTP_200_OK: openapi.Response(description='', schema=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'count': openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description='Count of values on the leaderboard'
-                ),
-            'next': openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description='URL of next page of results'
-                ),
-            'previous': openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description='URL of previous page of results'
-                ),
-            'results': openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                description='Array of results object',
-                items=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                    'submission__participant_team__team_name': openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description='Participant Team Name'
-                        ),
-                    'challenge_phase_split': openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description='Challenge Phase Split ID'
-                        ),
-                    'filtering_score': openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description='Default filtering score for results'
-                        ),
-                    'leaderboard__schema': openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description='Leaderboard Schema of the corresponding challenge'
-                        ),
-                    'result': openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        description='Leaderboard Metrics values according to leaderboard schema'
-                        ),
-                    'submission__submitted_at': openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description='Time stamp when submission was submitted at')
-                    })
-                ),
-            }
-        )),
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'count': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Count of values on the leaderboard'
+                    ),
+                'next': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='URL of next page of results'
+                    ),
+                'previous': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='URL of previous page of results'
+                    ),
+                'results': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    description='Array of results object',
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'submission__participant_team__team_name': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Participant Team Name'
+                                ),
+                            'challenge_phase_split': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Challenge Phase Split ID'
+                                ),
+                            'filtering_score': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Default filtering score for results'
+                                ),
+                            'leaderboard__schema': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Leaderboard Schema of the corresponding challenge'
+                                ),
+                            'result': openapi.Schema(
+                                type=openapi.TYPE_ARRAY,
+                                description='Leaderboard Metrics values according to leaderboard schema'
+                                ),
+                            'submission__submitted_at': openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description='Time stamp when submission was submitted at')
+                            }
+                        )
+                    ),
+                }
+            )
+        ),
     }
 )
 @throttle_classes([AnonRateThrottle])
@@ -497,6 +499,7 @@ def get_submission_by_pk(request, submission_id):
     response_data = {'error': 'Sorry, you are not authorized to access this submission.'}
     return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
+
 @swagger_auto_schema(methods=['put'], manual_parameters=[
     openapi.Parameter(
         name='challenge_pk', in_=openapi.IN_PATH,
@@ -504,20 +507,17 @@ def get_submission_by_pk(request, submission_id):
         description='Challenge ID',
         required=True
     )],
+    operation_id='update_submission',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'challenge_phase_split': openapi.Schema(
+            'challenge_phase': openapi.Schema(
                 type=openapi.TYPE_STRING,
-                description='Challenge Phase Split ID'
+                description='Challenge Phase ID'
                 ),
             'submission': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Submission ID'
-                ),
-            'submission_status': openapi.Schema(
-                type=openapi.TYPE_STRING,
-                description='Status of submission among FAILED, CANCELLED, FINISHED'
                 ),
             'stdout': openapi.Schema(
                 type=openapi.TYPE_STRING,
@@ -527,77 +527,191 @@ def get_submission_by_pk(request, submission_id):
                 type=openapi.TYPE_STRING,
                 description='Submission error file content'
             ),
-            'result': openapi.Schema(
+            'submission_status': openapi.Schema(
                 type=openapi.TYPE_STRING,
-                description='Submission results'
+                description='Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED'
+                ),
+            'result': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                description='Submission results in array format.'
+                ' API will throw an error if any split and/or metric is missing)',
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'split1': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description='dataset split 1 codename',
+                        ),
+                        'show_to_participant': openapi.Schema(
+                            type=openapi.TYPE_BOOLEAN,
+                            description='Boolean to decide if the results are shown to participant or not'
+                        ),
+                        'accuracies': openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            description='Accuracies on different metrics',
+                            properties={
+                                'metric1': openapi.Schema(
+                                    type=openapi.TYPE_NUMBER,
+                                    description='Numeric accuracy on metric 1'
+                                ),
+                                'metric2': openapi.Schema(
+                                    type=openapi.TYPE_NUMBER,
+                                    description='Numeric accuracy on metric 2'
+                                )
+                            }
+                        )
+                    }
+                )
+            ),
+            'metadata': openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                description='It contains the metadata related to submission (only visible to challenge hosts)',
+                properties={
+                    'foo': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='Some data relevant to key'
+                    )
+                }
             )
-        }),
-    operation_id='Update_Submission_Record',
+        }
+    ),
     responses={
-        status.HTTP_200_OK: openapi.Response("{'succes': 'Submission result has been successfully updated'}"),
-})
-@throttle_classes([UserRateThrottle,])
-@api_view(['PUT',])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator,))
+        status.HTTP_200_OK: openapi.Response("{'success': 'Submission result has been successfully updated'}"),
+        status.HTTP_400_BAD_REQUEST: openapi.Response("{'error': 'Error message goes here'}"),
+    }
+)
+@throttle_classes([UserRateThrottle, ])
+@api_view(['PUT', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail,))
 @authentication_classes((ExpiringTokenAuthentication,))
 def update_submission(request, challenge_pk):
     """
-    API endpoint to update submission realted attributes
+    API endpoint to update submission related attributes
+
+    Query Parameters:
+
+     - ``challenge_phase``: challenge phase id, e.g. 123 (**required**)
+     - ``submission``: submission id, e.g. 123 (**required**)
+     - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
+     - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
+     - ``submission_status``: Status of submission after evaluation
+        (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`), e.g. FINISHED (**required**)
+     - ``result``: contains accuracies for each metric, (**required**) e.g.
+            [
+                {
+                    "split": "split1-codename",
+                    "show_to_participant": True,
+                    "accuracies": {
+                    "metric1": 90
+                    }
+                },
+                {
+                    "split": "split2-codename",
+                    "show_to_participant": False,
+                    "accuracies": {
+                    "metric1": 50,
+                    "metric2": 40
+                    }
+                }
+            ]
+     - ``metadata``: Contains the metadata related to submission (only visible to challenge hosts) e.g:
+            {
+                "average-evaluation-time": "5 sec",
+                "foo": "bar"
+            }
     """
-    challenge_phase_split_pk = request.data['challenge_phase_split']
-    submission_pk = request.data['submission']
-    submission_status = request.data['submission_status'].lower()
-    stdout_content = request.data['stdout']
-    stderr_content = request.data['stderr']
-    submission_result = request.data['result']
-    challenge_phase_split = get_challenge_phase_split_model(challenge_phase_split_pk)
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {'error': 'Sorry, you are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge_phase_pk = request.data.get('challenge_phase')
+    submission_pk = request.data.get('submission')
+    submission_status = request.data.get('submission_status').lower()
+    stdout_content = request.data.get('stdout', '')
+    stderr_content = request.data.get('stderr', '')
+    submission_result = request.data.get('result', '')
+    metadata = request.data.get('metadata', '')
     submission = get_submission_model(submission_pk)
 
+    public_results = []
     successful_submission = True if submission_status == Submission.FINISHED else False
-
     if submission_status not in [Submission.FAILED, Submission.CANCELLED, Submission.FINISHED]:
-            response_data = {'Sorry, submission status is invalid'}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        response_data = {'error': 'Sorry, submission status is invalid'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if successful_submission:
-        leaderboard_metrics = challenge_phase_split.leaderboard.schema.get('labels')
-        predictions = ast.literal_eval(request.data['result'])
-        missing_metrics = []
-        malformed_metrics = []
-        for metric, value in predictions.items():
-            if metric not in leaderboard_metrics:
-                missing_metrics.append(metric)
-
-            if not (isinstance(value, float) or isinstance(value, int)):
-                malformed_metrics.append((metric, type(value)))
-
-        if len(missing_metrics):
-            response_data = {'Following metrics are missing in the leaderboard data: {}'.format(missing_metrics)}
+        try:
+            results = json.loads(submission_result)
+        except ValueError:
+            response_data = {'error': '`result` key contains invalid data. Please try again with correct format!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(malformed_metrics):
-            response_data = {'Values for following metrics are not of float/int: {}'.format(malformed_metrics)}
+        leaderboard_data_list = []
+        for phase_result in results:
+            split = phase_result.get('split')
+            accuracies = phase_result.get('accuracies')
+            show_to_participant = phase_result.get('show_to_participant', False)
+            try:
+                challenge_phase_split = ChallengePhaseSplit.objects.get(
+                    challenge_phase__pk=challenge_phase_pk,
+                    dataset_split__codename=split)
+            except ChallengePhaseSplit.DoesNotExist:
+                response_data = {'error': 'Challenge Phase Split does not exist with phase_id: {} and'
+                                 'split codename: {}'.format(challenge_phase_pk, split)}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            leaderboard_metrics = challenge_phase_split.leaderboard.schema.get('labels')
+            missing_metrics = []
+            malformed_metrics = []
+            for metric, value in accuracies.items():
+                if metric not in leaderboard_metrics:
+                    missing_metrics.append(metric)
+
+                if not (isinstance(value, float) or isinstance(value, int)):
+                    malformed_metrics.append((metric, type(value)))
+
+            if len(missing_metrics):
+                response_data = {'error': 'Following metrics are missing in the'
+                                 'leaderboard data: {}'.format(missing_metrics)}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            if len(malformed_metrics):
+                response_data = {'error': 'Values for following metrics are not of'
+                                 'float/int: {}'.format(malformed_metrics)}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = CreateLeaderboardDataSerializer(
+                data=request.data.copy(),
+                context={
+                    'challenge_phase_split': challenge_phase_split,
+                    'submission': submission,
+                    'request': request,
+                }
+            )
+            if serializer.is_valid():
+                leaderboard_data_list.append(serializer)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            # Only after checking if the serializer is valid, append the public split results to results file
+            if show_to_participant:
+                public_results.append(accuracies)
+
+        try:
+            with transaction.atomic():
+                for serializer in leaderboard_data_list:
+                    serializer.save()
+        except IntegrityError:
+            logger.exception('Failed to update submission_id {} related metadata'.format(submission_pk))
+            response_data = {'error': 'Failed to update submission_id {} related metadata'.format(submission_pk)}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = CreateLeaderboardDataSerializer(
-            data=request.data.copy(),
-            context={
-                'challenge_phase_split': challenge_phase_split,
-                'submission': submission,
-                'request': request,
-            }
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-        else:
-            return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     submission.status = submission_status
     submission.completed_at = timezone.now()
     submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
     submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
-    submission.submission_result_file.save('submission_result.json', ContentFile(submission_result))
+    submission.submission_result_file.save('submission_result.json', ContentFile(str(public_results)))
+    submission.submission_metadata_file.save('submission_metadata_file.json', ContentFile(str(metadata)))
     submission.save()
-    response_data = {'succes': 'Submission result has been successfully updated'}
+    response_data = {'success': 'Submission result has been successfully updated'}
     return Response(response_data, status=status.HTTP_200_OK)
