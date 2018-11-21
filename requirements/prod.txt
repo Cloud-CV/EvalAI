@@ -1,7 +1,7 @@
 -r common.txt
 
 boto==2.43.0
-django-storages==1.5.1
+django-storages==1.7.1
 python-memcached==1.58
 raven==5.32.0
 uWSGI==2.0.15
