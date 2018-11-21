@@ -2422,7 +2422,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         expected = io.StringIO()
         submissions = csv.writer(expected)
         submissions.writerow(['id','Team Members','Team Members Email Id','Challenge Phase'])
-        submissions.writerow(['16','otheruser1','user1@test.com','Challenge Phase'])
+        submissions.writerow(['77','otheruser1','user1@test.com','Challenge Phase'])
         self.data = ["participant_team_members","participant_team_members_email","challenge_phase"]
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.content.decode('utf-8'), expected.getvalue())
