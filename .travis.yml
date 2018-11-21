@@ -30,7 +30,7 @@ before_install:
 - sudo rm -f /etc/boto.cfg
 install:
 - pip install -r requirements/dev.txt
-- pip install coveralls
+- pip install awscli==1.16.57 coveralls
 script:
 - flake8 ./
 - py.test --cov . --cov-config .coveragerc
