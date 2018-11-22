@@ -680,8 +680,9 @@ def update_submission(request, challenge_pk):
                                  'float/int: {}'.format(malformed_metrics)}
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+            data = {'result': accuracies}
             serializer = CreateLeaderboardDataSerializer(
-                data=request.data.copy(),
+                data=data,
                 context={
                     'challenge_phase_split': challenge_phase_split,
                     'submission': submission,
