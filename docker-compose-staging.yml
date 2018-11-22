@@ -3,7 +3,6 @@ services:
 
   django:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${COMMIT_ID}
-    container_name: django
     env_file:
       - docker/prod/docker_staging.env
     build:
@@ -14,7 +13,6 @@ services:
 
   worker:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${COMMIT_ID}
-    container_name: worker
     build:
       context: ./
       dockerfile: docker/prod/worker/Dockerfile
@@ -23,12 +21,11 @@ services:
 
   nodejs:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-frontend:${COMMIT_ID}
-    container_name: nodejs
     build:
       context: ./
-      dockerfile: docker/prod/nodejs/Dockerfile_staging
-    environment:
-      NODE_ENV: production
+      dockerfile: docker/prod/nodejs/Dockerfile
+      args:
+        NODE_ENV: staging
     ports:
       - "80:80"
     volumes:
