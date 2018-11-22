@@ -332,8 +332,10 @@ def leaderboard(request, challenge_phase_split_id):
     # while populating leaderboard
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     challenge_hosts_emails = challenge_obj.creator.get_all_challenge_host_email()
-    leaderboard_data = LeaderboardData.objects.exclude(
-        submission__created_by__email__in=challenge_hosts_emails)
+
+    if challenge_phase_split.challenge_phase.is_public:
+        leaderboard_data = LeaderboardData.objects.exclude(
+            submission__created_by__email__in=challenge_hosts_emails)
 
     # Get all the successful submissions related to the challenge phase split
     leaderboard_data = leaderboard_data.filter(
