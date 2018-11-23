@@ -945,18 +945,4 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_leaderboard_schema_with_missing_key(self):
-        self.result_json = {
-            'score': 0
-        }
-        self.leaderboard_data.result = self.result_json
-        self.leaderboard_data.save()
 
-        self.url = reverse_lazy('jobs:leaderboard',
-                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
-
-        expected = {'error': 'Sorry, label test-score is not found in leaderboard schema'}
-
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
