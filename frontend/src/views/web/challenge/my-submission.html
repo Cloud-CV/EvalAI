@@ -92,7 +92,7 @@
                                             <td ng-if="key.publication_url == ''"> None </td>
 
                                             <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
-                                            <td class="align-center">{{key.execution_time}}</td>
+                                            <td class="align-center">{{key.execution_time > 0 ? key.execution_time : "None"}}</td>
 
                                             <td><a href="{{key.input_file}}" target="_blank" class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
 
