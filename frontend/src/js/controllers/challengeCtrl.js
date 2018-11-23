@@ -358,15 +358,7 @@
                             vm.countDownTime = timeDiff;
                             vm.phases.results[i].showCountdownTimer=true;
                         }
-
-                        // The below code can used to make a coundown timer that will start one day before a challenge deadline
-
-                        // var dateNow = Date.now();
-                        // var diffInSeconds = (challengePhaseEndDate - dateNow)/1000;
-                        // if (diffInSeconds > 0 && diffInSeconds < 86400) { // 86400 are the total number seconds in a day
-                        //     vm.countDownTime = parseInt(diffInSeconds);
-                        //     vm.phases.results[i].showCountdownTimer=true;
-                        }
+                    }
                 }
                 utilities.hideLoader();
             },
