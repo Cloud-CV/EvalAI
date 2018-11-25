@@ -298,7 +298,8 @@ REDOC_SETTINGS = {
     'SPEC_URL': ('docs.yaml', {'format': '.yaml'}),
 }
 
-# Celery Broker Url
-CELERY_BROKER_URL = 'amqp://localhost'
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
-SLACK_WEBHOOK_URL = os.environ.get('SLACK_WEBHOOK_URL')
+# Celery Broker Url
+CELERY_BROKER_URL = 'sqs://%s:%s@' % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)

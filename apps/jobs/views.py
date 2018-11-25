@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import requests
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -40,7 +41,8 @@ from .models import Submission
 from .sender import publish_submission_message
 from .serializers import (SubmissionSerializer,
                           CreateLeaderboardDataSerializer)
-from .utils import get_submission_model
+from .tasks import download_file_and_publish_submission_message
+from .utils import get_submission_model, url_is_valid
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +162,20 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                        Please wait for them to finish and then try again.'
             response_data = {'error': message.format(submissions_in_progress)}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if not request.FILES:
+            url_exists = url_is_valid(request.data['input_file'])
+            if not url_exists:
+                response_data = {'error': 'The file URL does not exists!'}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            download_file_and_publish_submission_message.delay(request.data,
+                                                               participant_team,
+                                                               challenge_phase,
+                                                               request.method,
+                                                               request.user)
+            logger.info('[x] Message sent for downloading and saving file!')
+            response_data = {'success': 'Your file will be downloaded and evaluated soon!'}
+            return Response(response_data, status=status.HTTP_201_CREATED)
 
         serializer = SubmissionSerializer(data=request.data,
                                           context={'participant_team': participant_team,
