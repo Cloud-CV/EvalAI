@@ -134,11 +134,13 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 'error': 'Sorry, cannot accept submissions since challenge phase is not active'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        # check if challenge phase is public and accepting solutions
-        if not challenge_phase.is_public:
-            response_data = {
-                'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        # check if user is a challenge host or a participant
+        if not is_user_a_host_of_challenge(request.user, challenge_id):
+            # check if challenge phase is public and accepting solutions
+            if not challenge_phase.is_public:
+                response_data = {
+                    'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
+                return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id)
@@ -197,10 +199,11 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check if challenge phase is public and accepting solutions
-    if not challenge_phase.is_public:
-        response_data = {
-            'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        if not challenge_phase.is_public:
+            response_data = {
+                'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge_pk)
@@ -341,17 +344,11 @@ def leaderboard(request, challenge_phase_split_id):
         submission__created_by__email__in=challenge_hosts_emails)
 
     # Get all the successful submissions related to the challenge phase split
-    if not is_challenge_phase_public:
-        leaderboard_data = leaderboard_data.filter(
-            challenge_phase_split=challenge_phase_split,
-            submission__is_flagged=False,
-            submission__status=Submission.FINISHED).order_by('created_at')
-    else:
-        leaderboard_data = leaderboard_data.filter(
-            challenge_phase_split=challenge_phase_split,
-            submission__is_public=True,
-            submission__is_flagged=False,
-            submission__status=Submission.FINISHED).order_by('created_at')
+    leaderboard_data = leaderboard_data.filter(
+        challenge_phase_split=challenge_phase_split,
+        submission__is_public=True,
+        submission__is_flagged=False,
+        submission__status=Submission.FINISHED).order_by('created_at')
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',

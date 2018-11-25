@@ -1411,31 +1411,6 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_phase_when_user_is_host(self):
-        self.challenge_phase.is_public = False
-        self.challenge_phase.save()
-
-        expected = [
-            {
-                "id": self.challenge_phase.id,
-                "name": self.challenge_phase.name,
-                "description": self.challenge_phase.description,
-                "leaderboard_public": self.challenge_phase.leaderboard_public,
-                "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
-                "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
-                "challenge": self.challenge_phase.challenge.pk,
-                "is_public": self.challenge_phase.is_public,
-                "is_active": True,
-                "codename": "Phase Code Name",
-                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-                "max_submissions": self.challenge_phase.max_submissions,
-            }
-        ]
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data['results'], expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
     def test_particular_challenge_for_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_challenge_phase_list',
                                 kwargs={'challenge_pk': self.challenge.pk + 1})

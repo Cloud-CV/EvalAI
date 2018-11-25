@@ -345,6 +345,11 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
+                for (var i=0; i<details.count; i++) {
+                    if (details.results[i].is_public == false) {
+                        vm.phases.results[i].showPrivate = true;
+                    }
+                }
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
