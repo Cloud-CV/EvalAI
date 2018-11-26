@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 services:
 
   db:
@@ -13,7 +13,6 @@ services:
       - 9324:9324
 
   django:
-    container_name: django
     hostname: django
     env_file:
       - docker/dev/docker.env
@@ -29,7 +28,6 @@ services:
       - .:/code
 
   worker:
-    container_name: worker
     env_file:
       - docker/dev/docker.env
     build:
@@ -41,7 +39,6 @@ services:
       - .:/code
 
   nodejs:
-    container_name: nodejs
     hostname: nodejs
     build:
       context: ./
