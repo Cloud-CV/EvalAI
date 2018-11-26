@@ -197,7 +197,7 @@
                                                         // condition for pagination
                                                         if (vm.existTeam.next === null) {
                                                             vm.isNext = 'disabled';
-                                                            vm.currentPage = vm.existTeam.count / 10;
+                                                            vm.currentPage = vm.existTeam.count / 100;
                                                         } else {
                                                             vm.isNext = '';
                                                             vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
@@ -476,7 +476,7 @@
                         else if (duration._data.days !=0) {
                             var days = duration.asDays();
                             vm.leaderboard[i].submission__submitted_at = days;
-                            if (days.toFixed(0)==1) {
+                            if (days.tfoFixed(0)==1) {
                                 vm.leaderboard[i].timeSpan = 'day';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'days';
@@ -530,6 +530,7 @@
                     parameters.data = {};
                     parameters.callback = {
                         onSuccess: function(response) {
+                            console.log("SDFSDFSFD")
                             var details = response.data;
                             if (vm.leaderboard.count !== details.results.count) {
                                 vm.showLeaderboardUpdate = true;
@@ -563,6 +564,7 @@
             vm.phaseId = phaseId;
 
             var all_phases = vm.phases.results;
+            console.log(vm.phases.results.length)
             for (var i = 0; i < vm.phases.results.length; i++) {
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
@@ -657,11 +659,11 @@
                                 // reinitialized data
                                 var details = response.data;
                                 vm.submissionResult = details;
-
+                                 console.log(vm.submissionResult.count)
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 10;
+                                    vm.currentPage = vm.submissionResult.count / 100;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
@@ -736,13 +738,11 @@
             // get submissions of a particular challenge phase
 
             if (!vm.isResult) {
-
                 vm.isNext = '';
                 vm.isPrev = '';
                 vm.currentPage = '';
                 vm.showPagination = false;
             }
-
             vm.startLoader("Loading Submissions");
             vm.submissionResult = {};
 
@@ -792,6 +792,8 @@
                     vm.stopLoader();
                 },
                 onError: function() {
+                      var error = response.data;
+                    vm.leaderboard.error = error;
                     vm.stopLoader();
                 }
             };
@@ -799,14 +801,15 @@
             utilities.sendRequest(parameters);
         };
         vm.refreshLeaderboard = function() {
-            vm.startLoader("Loading Leaderboard Items");	
-            vm.submissionResult = {};
+            console.log("nINDISF")
+            vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
                 onSuccess: function(response) {
+                     vm.startLoader("Loading Submissions");
                     var details = response.data;
                     vm.leaderboard = details.results;
                     vm.startLeaderboard();
@@ -820,7 +823,7 @@
             };
 
             utilities.sendRequest(parameters);
-        };	
+        };
 
         // function to create new team for participating in challenge
         vm.createNewTeam = function() {
@@ -966,7 +969,7 @@
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 10;
+                                    vm.currentPage = vm.submissionResult.count / 100;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
