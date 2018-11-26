@@ -788,6 +788,7 @@
 
                     vm.submissionResult = details;
                     vm.showUpdate = false;
+                    vm.showPagination = true;
                     vm.stopLoader();
                 },
                 onError: function() {
@@ -798,7 +799,7 @@
             utilities.sendRequest(parameters);
         };
         vm.refreshLeaderboard = function() {
-            vm.startLoader("Loading Leaderboard Items");
+            vm.startLoader("Loading Leaderboard Items");	
             vm.submissionResult = {};
             vm.leaderboard = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
@@ -807,7 +808,7 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.leaderboard = details;
+                    vm.leaderboard = details.results;
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
@@ -819,7 +820,7 @@
             };
 
             utilities.sendRequest(parameters);
-        };
+        };	
 
         // function to create new team for participating in challenge
         vm.createNewTeam = function() {
