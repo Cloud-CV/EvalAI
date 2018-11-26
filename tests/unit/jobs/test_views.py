@@ -182,6 +182,25 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_challenge_submission_when_challenge_phase_is_private_and_user_is_host(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.challenge_phase.is_public = False
+        self.challenge_phase.save()
+
+        expected = {
+            'error': 'Sorry, cannot accept submissions since challenge phase is not public'
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(self.url, {
+                                    'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
