@@ -1,3 +1,4 @@
+import collections
 import os
 import shutil
 
@@ -12,7 +13,12 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import (Challenge,
+                               ChallengePhase,
+                               ChallengePhaseSplit,
+                               DatasetSplit,
+                               Leaderboard,
+                               LeaderboardData)
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
@@ -69,6 +75,14 @@ class BaseAPITestClass(APITestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False)
+
+        self.leaderboard_schema = {
+            'labels': ['score', 'test-score'],
+            'default_order_by': 'score'
+        }
+        self.leaderboard = Leaderboard.objects.create(
+            schema=self.leaderboard_schema
+        )
 
         try:
             os.makedirs('/tmp/evalai')
@@ -841,3 +855,111 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class ChallengeLeaderboardTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(ChallengeLeaderboardTest, self).setUp()
+
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Split 1",
+            codename="split1"
+        )
+
+        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+            challenge_phase=self.challenge_phase,
+            dataset_split=self.dataset_split,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC
+        )
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/"
+        )
+
+        self.submission.is_public = True
+        self.submission.status = Submission.FINISHED
+        self.submission.save()
+
+        self.result_json = {
+            'score': 50.0,
+            'test-score': 75.0
+        }
+
+        self.expected_results = [self.result_json['score'], self.result_json['test-score']]
+        self.filtering_score = self.result_json[self.leaderboard.schema['default_order_by']]
+
+        self.leaderboard_data = LeaderboardData.objects.create(
+            challenge_phase_split=self.challenge_phase_split,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result=self.result_json
+        )
+
+    def test_get_leaderboard(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
+
+        expected = {
+            'count': 1,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'id': self.leaderboard_data.id,
+                    'submission__participant_team__team_name': self.submission.participant_team.team_name,
+                    'challenge_phase_split': self.challenge_phase_split.id,
+                    'result': self.expected_results,
+                    'filtering_score': self.filtering_score,
+                    'leaderboard__schema': {
+                        'default_order_by': 'score',
+                        'labels': ['score', 'test-score']
+                    },
+                    'submission__submitted_at': self.submission.submitted_at,
+                }
+            ]
+        }
+        expected = collections.OrderedDict(expected)
+
+        response = self.client.get(self.url, {})
+
+        self.assertEqual(response.data['count'], expected['count'])
+        self.assertEqual(response.data['next'], expected['next'])
+        self.assertEqual(response.data['previous'], expected['previous'])
+        self.assertEqual(response.data['results'], expected['results'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_leaderboard_with_invalid_challenge_phase_split_id(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id + 1})
+
+        expected = {'error': 'Challenge Phase Split does not exist'}
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_leaderboard_with_default_order_by_key_missing(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
+
+        expected = {'error': 'Sorry, Default filtering key not found in leaderboard schema!'}
+
+        leaderboard_schema = {
+            'labels': ['score', 'test-score'],
+        }
+        self.leaderboard.schema = leaderboard_schema
+        self.leaderboard.save()
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
