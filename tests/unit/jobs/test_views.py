@@ -891,9 +891,12 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.submission.save()
 
         self.result_json = {
-            'score': 0,
-            'test-score': 0
+            'score': 50,
+            'test-score': 50
         }
+
+        self.expected_results = [self.result_json['score'], self.result_json['test-score']]
+        self.filtering_score = 5.0
 
         self.leaderboard_data = LeaderboardData.objects.create(
             challenge_phase_split=self.challenge_phase_split,
@@ -915,8 +918,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     'id': self.leaderboard_data.id,
                     'submission__participant_team__team_name': self.submission.participant_team.team_name,
                     'challenge_phase_split': self.challenge_phase_split.id,
-                    'result': [0, 0],
-                    'filtering_score': 0.0,
+                    'result': self.expected_results,
+                    'filtering_score': self.filtering_score,
                     'leaderboard__schema': {
                         'default_order_by': 'score',
                         'labels': ['score', 'test-score']
@@ -940,6 +943,22 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                                 kwargs={'challenge_phase_split_id': self.challenge_phase_split.id + 1})
 
         expected = {'error': 'Challenge Phase Split does not exist'}
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_leaderboard_with_default_order_by_key_missing(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
+
+        expected = {'error': 'Sorry, Default filtering key not found in leaderboard schema!'}
+
+        leaderboard_schema = {
+            'labels': ['score', 'test-score'],
+        }
+        self.leaderboard.schema = leaderboard_schema
+        self.leaderboard.save()
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
