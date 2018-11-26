@@ -799,6 +799,7 @@
         };
         vm.refreshLeaderboard = function() {
             vm.startLoader("Loading Leaderboard Items");
+            vm.submissionResult = {};
             vm.leaderboard = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
             parameters.method = 'GET';
@@ -806,7 +807,7 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    vm.leaderboard = details.results;
+                    vm.leaderboard = details;
                     vm.startLeaderboard();
                     vm.stopLoader();
                 },
