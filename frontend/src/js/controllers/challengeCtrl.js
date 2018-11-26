@@ -1645,7 +1645,7 @@
 
         $rootScope.$on('$stateChangeStart', function() {
             vm.phase = {};
-            vm.isResult = false;
+            vm.isResult = true;
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
         });
