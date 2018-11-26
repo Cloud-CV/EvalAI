@@ -197,7 +197,7 @@
                                                         // condition for pagination
                                                         if (vm.existTeam.next === null) {
                                                             vm.isNext = 'disabled';
-                                                            vm.currentPage = vm.existTeam.count / 100;
+                                                            vm.currentPage = vm.existTeam.count / 10;
                                                         } else {
                                                             vm.isNext = '';
                                                             vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
@@ -476,7 +476,7 @@
                         else if (duration._data.days !=0) {
                             var days = duration.asDays();
                             vm.leaderboard[i].submission__submitted_at = days;
-                            if (days.tfoFixed(0)==1) {
+                            if (days.tFixed(0)==1) {
                                 vm.leaderboard[i].timeSpan = 'day';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'days';
@@ -663,7 +663,7 @@
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentPage = vm.submissionResult.count / 10;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
@@ -969,7 +969,7 @@
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 100;
+                                    vm.currentPage = vm.submissionResult.count / 10;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
