@@ -180,7 +180,7 @@ class BaseAPITestClass(APITestCase):
         response = self.client.post(self.url, {
                                     'status': 'submitting', 'input_file': self.input_file}, format="multipart")
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -633,7 +633,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_change_submission_data_and_visibility_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
