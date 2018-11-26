@@ -896,7 +896,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         }
 
         self.expected_results = [self.result_json['score'], self.result_json['test-score']]
-        self.filtering_score = 5.0
+        self.filtering_score = 50.0
 
         self.leaderboard_data = LeaderboardData.objects.create(
             challenge_phase_split=self.challenge_phase_split,
