@@ -891,12 +891,12 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.submission.save()
 
         self.result_json = {
-            'score': 50,
-            'test-score': 50
+            'score': 50.0,
+            'test-score': 75.0
         }
 
         self.expected_results = [self.result_json['score'], self.result_json['test-score']]
-        self.filtering_score = 50.0
+        self.filtering_score = self.result_json[self.leaderboard.schema['default_order_by']]
 
         self.leaderboard_data = LeaderboardData.objects.create(
             challenge_phase_split=self.challenge_phase_split,
