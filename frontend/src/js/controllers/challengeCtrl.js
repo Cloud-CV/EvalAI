@@ -476,7 +476,7 @@
                         else if (duration._data.days !=0) {
                             var days = duration.asDays();
                             vm.leaderboard[i].submission__submitted_at = days;
-                            if (days.tFixed(0)==1) {
+                            if (days.toFixed(0)==1) {
                                 vm.leaderboard[i].timeSpan = 'day';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'days';
@@ -530,7 +530,6 @@
                     parameters.data = {};
                     parameters.callback = {
                         onSuccess: function(response) {
-                            console.log("SDFSDFSFD")
                             var details = response.data;
                             if (vm.leaderboard.count !== details.results.count) {
                                 vm.showLeaderboardUpdate = true;
@@ -564,7 +563,6 @@
             vm.phaseId = phaseId;
 
             var all_phases = vm.phases.results;
-            console.log(vm.phases.results.length)
             for (var i = 0; i < vm.phases.results.length; i++) {
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
@@ -659,7 +657,6 @@
                                 // reinitialized data
                                 var details = response.data;
                                 vm.submissionResult = details;
-                                 console.log(vm.submissionResult.count)
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
@@ -801,7 +798,6 @@
             utilities.sendRequest(parameters);
         };
         vm.refreshLeaderboard = function() {
-            console.log("nINDISF")
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
             parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
