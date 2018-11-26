@@ -1417,8 +1417,6 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
             }
         ]
 
-        expected = [collections.OrderedDict(expected_result) for expected_result in expected]
-
         response = self.client.get(self.url, {})
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1476,8 +1474,10 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
                 "leaderboard_public": self.private_challenge_phase.leaderboard_public,
-                "start_date": "{0}{1}".format(self.private_challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
-                "end_date": "{0}{1}".format(self.private_challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "start_date": "{0}{1}".format(
+                    self.private_challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(
+                    self.private_challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
                 "challenge": self.private_challenge_phase.challenge.pk,
                 "is_public": self.private_challenge_phase.is_public,
                 "is_active": True,
@@ -1486,8 +1486,6 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions": self.private_challenge_phase.max_submissions,
             }
         ]
-
-        expected = [collections.OrderedDict(expected_result) for expected_result in expected]
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
