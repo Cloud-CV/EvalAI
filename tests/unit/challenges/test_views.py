@@ -1,3 +1,4 @@
+import collections
 import json
 import os
 import shutil
@@ -1356,6 +1357,21 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions=100000,
             )
 
+            self.private_challenge_phase = ChallengePhase.objects.create(
+                name='Private Challenge Phase',
+                description='Description for Private Challenge Phase',
+                leaderboard_public=False,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   b'Dummy file content', content_type='text/plain'),
+                max_submissions_per_day=100000,
+                max_submissions=100000,
+                codename='Private Phase Code Name'
+            )
+
     def tearDown(self):
         shutil.rmtree('/tmp/evalai')
 
@@ -1382,8 +1398,26 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
+            },
+            {
+                "id": self.private_challenge_phase.id,
+                "name": self.private_challenge_phase.name,
+                "description": self.private_challenge_phase.description,
+                "leaderboard_public": self.private_challenge_phase.leaderboard_public,
+                "start_date": "{0}{1}".format(self.private_challenge_phase.start_date.isoformat(), 'Z').replace(
+                    "+00:00", ""),
+                "end_date": "{0}{1}".format(self.private_challenge_phase.end_date.isoformat(), 'Z').replace("+00:00",
+                                                                                                            ""),
+                "challenge": self.private_challenge_phase.challenge.pk,
+                "is_public": self.private_challenge_phase.is_public,
+                "is_active": True,
+                "codename": self.private_challenge_phase.codename,
+                "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
+                "max_submissions": self.private_challenge_phase.max_submissions,
             }
         ]
+
+        expected = [collections.OrderedDict(expected_result) for expected_result in expected]
 
         response = self.client.get(self.url, {})
         self.assertEqual(response.data['results'], expected)
@@ -1420,6 +1454,45 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_get_challenge_phase_when_user_is_host(self):
+        expected = [
+            {
+                "id": self.challenge_phase.id,
+                "name": self.challenge_phase.name,
+                "description": self.challenge_phase.description,
+                "leaderboard_public": self.challenge_phase.leaderboard_public,
+                "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "challenge": self.challenge_phase.challenge.pk,
+                "is_public": self.challenge_phase.is_public,
+                "is_active": True,
+                "codename": "Phase Code Name",
+                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+                "max_submissions": self.challenge_phase.max_submissions,
+            },
+            {
+                "id": self.private_challenge_phase.id,
+                "name": self.private_challenge_phase.name,
+                "description": self.private_challenge_phase.description,
+                "leaderboard_public": self.private_challenge_phase.leaderboard_public,
+                "start_date": "{0}{1}".format(self.private_challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                "end_date": "{0}{1}".format(self.private_challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+                "challenge": self.private_challenge_phase.challenge.pk,
+                "is_public": self.private_challenge_phase.is_public,
+                "is_active": True,
+                "codename": self.private_challenge_phase.codename,
+                "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
+                "max_submissions": self.private_challenge_phase.max_submissions,
+            }
+        ]
+
+        expected = [collections.OrderedDict(expected_result) for expected_result in expected]
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['results'], expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phase_when_a_phase_is_not_public(self):
         self.challenge_phase.is_public = False
