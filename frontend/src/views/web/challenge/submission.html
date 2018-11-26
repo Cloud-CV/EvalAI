@@ -8,8 +8,7 @@
                     </span>
                     <div ng-if="challenge.isChallengeHost">
                         <strong>
-                            <p>Your submissions won't be visible on leaderboard for <strong class="red-text"> Public Challenge Phases </strong> since you are a Challenge Host.<br>
-                            This feature is only for your testing purposes.</p>
+                            <p><strong>Note: </strong>Your submissions won't be visible on leaderboard for <strong class="blue-text"> Public Challenge Phases </strong> since you are a challenge host for this challenge.<br> This feature is only for your testing purposes.</p>
                         </strong>
                     </div>
                     <div ng-bind-html="challenge.page.submission_guidelines"></div>
@@ -45,10 +44,10 @@
                                         <div class="show-member-title pointer" ng-if="!item.showPrivate"><strong class="text-med-black">Phase: </strong>{{item.name}}
                                             <br>
                                             <strong class="text-med-black">End Date: </strong>{{item.end_date | date:'medium'}}</div>
-                                        <div class="show-member-title pointer" ng-if="item.showPrivate"><strong class="text-med-red">Phase: </strong> <span class="text-med-red">
+                                        <div class="show-member-title pointer" ng-if="item.showPrivate"><strong class="text-highlight">Phase: </strong> <span class="text-highlight">
                                             {{item.name}}</span>
                                             <br>
-                                            <strong class="text-med-red">End Date: </strong><span class="text-med-red">{{item.end_date | date:'medium'}}</span></div>
+                                            <strong class="text-highlight">End Date: </strong><span class="text-highlight">{{item.end_date | date:'medium'}}</span></div>
                                         <div class="clearfix"></div>
                                     </li>
                                     <div class="row">
