@@ -700,7 +700,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_change_submission_data_and_visibility_when_challenge_is_not_public(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',

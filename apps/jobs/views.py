@@ -196,7 +196,7 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
 
     if not challenge.is_active:
         response_data = {'error': 'Challenge is not active'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     # check if challenge phase is public and accepting solutions
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
@@ -336,7 +336,7 @@ def leaderboard(request, challenge_phase_split_id):
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     challenge_hosts_emails = challenge_obj.creator.get_all_challenge_host_email()
     is_challenge_phase_public = challenge_phase_split.challenge_phase.is_public
-
+    # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
     challenge_hosts_emails = [] if not is_challenge_phase_public else challenge_hosts_emails
 
     leaderboard_data = LeaderboardData.objects.exclude(
