@@ -1,4 +1,5 @@
 import collections
+import json
 import os
 import shutil
 
@@ -103,6 +104,10 @@ class BaseAPITestClass(APITestCase):
             schema=self.leaderboard_schema
         )
 
+        self.private_leaderboard = Leaderboard.objects.create(
+            schema=self.leaderboard_schema
+        )
+
         self.challenge.participant_teams.add(self.host_participant_team)
 
         try:
@@ -122,7 +127,23 @@ class BaseAPITestClass(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   b'Dummy file content', content_type='text/plain')
+                                                   b'Dummy file content', content_type='text/plain'),
+                codename='Phase Code name'
+            )
+
+            self.private_challenge_phase = ChallengePhase.objects.create(
+                name='Private Challenge Phase',
+                description='Description for Private Challenge Phase',
+                leaderboard_public=False,
+                max_submissions_per_day=10,
+                max_submissions=100,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   b'Dummy file content', content_type='text/plain'),
+                codename='Private Phase Code name'
             )
 
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -474,11 +495,11 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_phase_pk': self.challenge_phase.pk+1,
+                                kwargs={'challenge_phase_pk': self.challenge_phase.pk + 2,
                                         'challenge_pk': self.challenge.pk})
 
         expected = {
-            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+1)
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk + 2)
         }
 
         response = self.client.get(self.url, {})
@@ -909,6 +930,13 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             visibility=ChallengePhaseSplit.PUBLIC
         )
 
+        self.private_challenge_phase_split = ChallengePhaseSplit.objects.create(
+            challenge_phase=self.private_challenge_phase,
+            dataset_split=self.dataset_split,
+            leaderboard=self.private_leaderboard,
+            visibility=ChallengePhaseSplit.HOST
+        )
+
         self.submission = Submission.objects.create(
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
@@ -921,9 +949,25 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             publication_url="http://testserver/"
         )
 
+        self.private_submission = Submission.objects.create(
+            participant_team=self.host_participant_team,
+            challenge_phase=self.private_challenge_phase,
+            created_by=self.user,
+            status="submitted",
+            input_file=self.private_challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/"
+        )
+
         self.submission.is_public = True
         self.submission.status = Submission.FINISHED
         self.submission.save()
+
+        self.private_submission.is_public = True
+        self.private_submission.status = Submission.FINISHED
+        self.private_submission.save()
 
         self.result_json = {
             'score': 50.0,
@@ -936,6 +980,13 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.leaderboard_data = LeaderboardData.objects.create(
             challenge_phase_split=self.challenge_phase_split,
             submission=self.submission,
+            leaderboard=self.leaderboard,
+            result=self.result_json
+        )
+
+        self.private_leaderboard_data = LeaderboardData.objects.create(
+            challenge_phase_split=self.private_challenge_phase_split,
+            submission=self.private_submission,
             leaderboard=self.leaderboard,
             result=self.result_json
         )
@@ -975,7 +1026,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
 
     def test_get_leaderboard_with_invalid_challenge_phase_split_id(self):
         self.url = reverse_lazy('jobs:leaderboard',
-                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id + 1})
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id + 2})
 
         expected = {'error': 'Challenge Phase Split does not exist'}
 
@@ -998,3 +1049,36 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_leaderboard_for_host_submissions_on_private_challenge_phase(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.private_challenge_phase_split.id})
+
+        expected = {
+            'count': 1,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'id': self.private_leaderboard_data.id,
+                    'submission__participant_team__team_name': self.private_submission.participant_team.team_name,
+                    'challenge_phase_split': self.private_challenge_phase_split.id,
+                    'result': self.expected_results,
+                    'filtering_score': self.filtering_score,
+                    'leaderboard__schema': {
+                        'default_order_by': 'score',
+                        'labels': ['score', 'test-score']
+                    },
+                    'submission__submitted_at': self.private_submission.submitted_at,
+                }
+            ]
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['count'], expected['count'])
+        self.assertEqual(response.data['next'], expected['next'])
+        self.assertEqual(response.data['previous'], expected['previous'])
+        self.assertEqual(response.data['results'], expected['results'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
