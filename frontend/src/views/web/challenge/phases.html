@@ -3,8 +3,9 @@
         <div class="row">
             <div class="col s11 m11">
                 <div class="row">
-                    <div class="col s12">
+                    <div class="col s12 width-auto">
                         <span class="fs-18 text-med-black"><strong>{{item.name}}</strong></span>
+                        <span class="new badge orange-background margin-tb-4 f-16" data-badge-caption="Private Phase" ng-if="item.showPrivate"></span>
                     </div>
                 </div>
                 <div class="row">

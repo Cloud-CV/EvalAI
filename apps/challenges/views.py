@@ -372,8 +372,12 @@ def challenge_phase_list(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge_phase = ChallengePhase.objects.filter(
-            challenge=challenge, is_public=True).order_by('pk')
+        if is_user_a_host_of_challenge(request.user, challenge_pk):
+            challenge_phase = ChallengePhase.objects.filter(
+                challenge=challenge).order_by('pk')
+        else:
+            challenge_phase = ChallengePhase.objects.filter(
+                challenge=challenge, is_public=True).order_by('pk')
         paginator, result_page = paginated_queryset(challenge_phase, request)
         serializer = ChallengePhaseSerializer(result_page, many=True)
         response_data = serializer.data
