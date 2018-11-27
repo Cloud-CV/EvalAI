@@ -1,4 +1,3 @@
-import collections
 import json
 import os
 import shutil
@@ -62,7 +61,7 @@ class BaseAPITestClass(APITestCase):
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
-            approved_by_admin=False,
+            approved_by_admin=False
         )
 
         self.challenge_host = ChallengeHost.objects.create(

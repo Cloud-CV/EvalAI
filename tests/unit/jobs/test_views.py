@@ -19,7 +19,7 @@ from challenges.models import (Challenge,
                                DatasetSplit,
                                Leaderboard,
                                LeaderboardData)
-from hosts.models import ChallengeHostTeam
+from hosts.models import ChallengeHostTeam, ChallengeHost
 from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
 
@@ -55,6 +55,24 @@ class BaseAPITestClass(APITestCase):
             team_name='Test Challenge Host Team',
             created_by=self.user)
 
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN
+        )
+
+        self.host_participant_team = ParticipantTeam.objects.create(
+            team_name='Host Participant Team for Challenge',
+            created_by=self.user
+        )
+
+        self.host_participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.SELF,
+            team=self.host_participant_team
+        )
+
         self.participant_team = ParticipantTeam.objects.create(
             team_name='Participant Team for Challenge',
             created_by=self.user1)
@@ -80,9 +98,12 @@ class BaseAPITestClass(APITestCase):
             'labels': ['score', 'test-score'],
             'default_order_by': 'score'
         }
+
         self.leaderboard = Leaderboard.objects.create(
             schema=self.leaderboard_schema
         )
+
+        self.challenge.participant_teams.add(self.host_participant_team)
 
         try:
             os.makedirs('/tmp/evalai')
@@ -190,16 +211,11 @@ class BaseAPITestClass(APITestCase):
         self.challenge_phase.is_public = False
         self.challenge_phase.save()
 
-        expected = {
-            'error': 'Sorry, cannot accept submissions since challenge phase is not public'
-        }
-
         self.client.force_authenticate(user=self.user)
 
         response = self.client.post(self.url, {
                                     'status': 'submitting', 'input_file': self.input_file}, format="multipart")
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:challenge_submission',
