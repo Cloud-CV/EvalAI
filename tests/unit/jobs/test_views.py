@@ -1,4 +1,5 @@
 import collections
+import json
 import os
 import shutil
 
@@ -1152,3 +1153,158 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.assertEqual(response.data['previous'], expected['previous'])
         self.assertEqual(response.data['results'], expected['results'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class UpdateSubmissionTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(UpdateSubmissionTest, self).setUp()
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+            when_made_public=timezone.now()
+        )
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN
+        )
+        self.datasetSplit = DatasetSplit.objects.create(
+            name="Test",
+            codename="Test"
+
+        )
+        self.leaderboard = Leaderboard.objects.create(
+            schema={'xyz': 1}
+        )
+        self.challengephasesplit = ChallengePhaseSplit.objects.create(
+            challenge_phase=self.challenge_phase,
+            dataset_split=self.datasetSplit,
+            leaderboard=self.leaderboard,
+            visibility=3
+        )
+
+    def test_update_submission_data_when_user_is_not_a_host(self):
+        self.url = reverse_lazy('jobs:update_submission',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        })
+
+        expected = {
+            'error': 'Sorry, you are not authorized to make this request!'}
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.put(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_submission_for_invalid_submission_status(self):
+        self.url = reverse_lazy('jobs:update_submission',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        })
+        self.data = {
+            'challenge_phase': self.challenge_phase.id,
+            'submission': self.submission.id,
+            'submission_status': 'XYZ',
+            'stdout': "qwerty",
+            'stderr': "qwerty",
+            'result': "qwerty"
+
+        }
+
+        expected = {
+            'error': 'Sorry, submission status is invalid'}
+        self.client.force_authenticate(
+            user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_submission_for_successful_submission(self):
+        self.url = reverse_lazy('jobs:update_submission',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        })
+        self.data = {
+            'challenge_phase': self.challenge_phase.id,
+            'submission': self.submission.id,
+            'submission_status': 'FINISHED',
+            'stdout': "qwerty",
+            'stderr': "qwerty",
+            'result': json.dumps([
+                {
+                    "split": self.datasetSplit.codename,
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "metric1": 60,
+                        "metric2": 30
+                    }
+                }
+            ])
+            }
+        expected = {
+            'success': 'Submission result has been successfully updated'}
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_submission_for_invalid_data(self):
+        self.url = reverse_lazy('jobs:update_submission',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        })
+        self.data = {
+            'challenge_phase': self.challenge_phase.id,
+            'submission': self.submission.id,
+            'submission_status': 'FINISHED',
+            'stdout': "qwerty",
+            'stderr': "qwerty",
+            'result': "qwerty"
+
+        }
+
+        expected = {
+            'error': '`result` key contains invalid data. Please try again with correct format!'}
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_submission_when_challenge_phase_split_not_exists(self):
+        self.url = reverse_lazy('jobs:update_submission',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        })
+        self.data = {
+            'challenge_phase': self.challenge_phase.id,
+            'submission': self.submission.id,
+            'submission_status': 'FINISHED',
+            'stdout': "qwerty",
+            'stderr': "qwerty",
+            'result': json.dumps([
+                {
+                    "split": "split1-codename",
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "metric1": 60,
+                        "metric2": 30
+                    }
+                }
+
+
+            ])
+
+        }
+        expected = {
+            'error': 'Challenge Phase Split does not exist with phase_id: {} and'
+            'split codename: split1-codename'.format(self.challenge_phase.pk)}
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
