@@ -415,9 +415,11 @@ a.view-more {
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {
-    .rocket-container {
-        display:none;
+
+    .rocket-container {	
+        display:none;	
     }
+
     .dyn-header {
         nav {
             a.org-link {
@@ -439,7 +441,6 @@ a.view-more {
     .sim-header {
         width: 100%;
     }
-
     
 }
 
@@ -455,24 +456,43 @@ a.view-more {
 }
 
 #fb-logo{
-    height: 100px;
+    height: 175px;
+    width: 160px;
+    padding-bottom:30%;
+}
+
+#mapillary-logo{
+    height:70px;
+    width:210px;
+}
+
+#umbc-logo{
+    height:70px;
+    width:180px;
 }
 
 #draper-logo {
-    height: auto;
-    padding-top: 10%;
-}
-
-#adelaide-logo {
-    padding-top:10%;
+    height: 110px;
+    padding-bottom:5%;
 }
 
 #ebay-logo{
-    height: 100px;
+    padding-top:5%;
+    height: 80px;
+    width:160px;
 }
 
 #iitm-logo{
-    height:120px;
-    width:150px;
-    padding-right:10%;
+    height:100px;
+    width:100px;
+}
+
+#adelaide-logo{
+    height:80px;
+    width:180px;
+}
+
+#pitt-logo{
+    height:80px;
+    width:180px;
 }
