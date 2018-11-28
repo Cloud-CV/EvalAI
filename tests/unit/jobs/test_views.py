@@ -1296,10 +1296,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
                         "metric2": 30
                     }
                 }
-
-
             ])
-
         }
         expected = {
             'error': 'Challenge Phase Split does not exist with phase_id: {} and'
