@@ -1185,7 +1185,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
 
         )
         self.leaderboard = Leaderboard.objects.create(
-            schema={'xyz': 1}
+            schema={'labels': ['metric1', 'metric2']}
         )
         self.challengephasesplit = ChallengePhaseSplit.objects.create(
             challenge_phase=self.challenge_phase,
@@ -1248,7 +1248,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
                     }
                 }
             ])
-            }
+        }
         expected = {
             'success': 'Submission result has been successfully updated'}
         self.client.force_authenticate(user=self.challenge_host.user)
@@ -1301,6 +1301,66 @@ class UpdateSubmissionTest(BaseAPITestClass):
         expected = {
             'error': 'Challenge Phase Split does not exist with phase_id: {} and'
             'split codename: split1-codename'.format(self.challenge_phase.pk)}
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_submission_for_missing_metrics(self):
+        self.url = reverse_lazy('jobs:update_submission',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        })
+        self.data = {
+            'challenge_phase': self.challenge_phase.id,
+            'submission': self.submission.id,
+            'submission_status': 'FINISHED',
+            'stdout': "qwerty",
+            'stderr': "qwerty",
+            'result': json.dumps([
+                {
+                    "split": self.datasetSplit.codename,
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "metric": 60,
+                        "metric1": 30
+                    }
+                }
+            ])
+        }
+        expected = {'error': 'Following metrics are missing in the'
+                    "leaderboard data: ['metric']"
+                    }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_submission_for_malformed_metrics(self):
+        self.url = reverse_lazy('jobs:update_submission',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        })
+        self.data = {
+            'challenge_phase': self.challenge_phase.id,
+            'submission': self.submission.id,
+            'submission_status': 'FINISHED',
+            'stdout': "qwerty",
+            'stderr': "qwerty",
+            'result': json.dumps([
+                {
+                    "split": self.datasetSplit.codename,
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "metric1": "60",
+                        "metric2": 30
+                    }
+                }
+            ])
+        }
+        malformed_metrics = []
+        malformed_metrics.append(("metric1", type("60")))
+        expected = {'error': 'Values for following metrics are not of'
+                    'float/int: {}'.format(malformed_metrics)
+                    }
         self.client.force_authenticate(user=self.challenge_host.user)
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
