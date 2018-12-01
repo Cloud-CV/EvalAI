@@ -309,7 +309,7 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     if remote_evaluation:
         try:
             logger.info("Sending submission {} for remote evaluation".format(submission.id))
-            with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:  
+            with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:
                 submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
                     annotation_file_path,
                     user_annotation_file_path,
