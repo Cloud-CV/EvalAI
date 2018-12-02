@@ -633,7 +633,12 @@ def update_submission(request, challenge_pk):
 
     challenge_phase_pk = request.data.get('challenge_phase')
     submission_pk = request.data.get('submission')
-    submission_status = request.data.get('submission_status').lower()
+    try:
+        submission_status = request.data.get('submission_status').lower()
+    except Exception as error:
+        response_data = {'error': '`submission_status` key is missing from request body.'
+                        'Please try again after adding the key!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     stdout_content = request.data.get('stdout', '')
     stderr_content = request.data.get('stderr', '')
     submission_result = request.data.get('result', '')
