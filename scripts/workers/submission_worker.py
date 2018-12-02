@@ -293,17 +293,6 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     submission.started_at = timezone.now()
     submission.save()
 
-    remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
-
-    if remote_evaluation:
-        logger.info("Sending submission {} for remote evaluation".format(submission.id))
-        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
-            annotation_file_path,
-            user_annotation_file_path,
-            challenge_phase.codename,
-            submission_metadata=submission_serializer.data)
-        return
-
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, 'run')
@@ -314,6 +303,36 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
 
     stdout = open(stdout_file, 'a+')
     stderr = open(stderr_file, 'a+')
+
+    remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
+
+    if remote_evaluation:
+        try:
+            logger.info("Sending submission {} for remote evaluation".format(submission.id))
+            with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:
+                submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+                    annotation_file_path,
+                    user_annotation_file_path,
+                    challenge_phase.codename,
+                    submission_metadata=submission_serializer.data)
+                return
+        except:
+            stderr.write(traceback.format_exc())
+            stderr.close()
+            stdout.close()
+            submission.status = Submission.FAILED
+            submission.completed_at = timezone.now()
+            submission.save()
+            with open(stdout_file, 'r') as stdout:
+                stdout_content = stdout.read()
+                submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
+            with open(stderr_file, 'r') as stderr:
+                stderr_content = stderr.read()
+                submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
+
+            # delete the complete temp run directory
+            shutil.rmtree(temp_run_dir)
+            return
 
     # call `main` from globals and set `status` to running and hence `started_at`
     try:
