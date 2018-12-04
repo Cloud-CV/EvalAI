@@ -46,7 +46,7 @@ case $opt in
             echo "Environment varibles file successfully downloaded."
             if [ ${env} == "production" ]; then
                 echo "Pulling ssl certificates and nginx configuration..."
-                aws s3 cp s3://cloudcv-secrets/evalai/${env}/ssl/ ./ssl/
+                aws s3 cp s3://cloudcv-secrets/evalai/${env}/ssl/ ./ssl/ --recursive
                 aws s3 cp s3://cloudcv-secrets/evalai/${env}/nginx_${env}.conf ./docker/prod/nodejs/nginx_${env}.conf
             fi
             echo "Pulling docker images from ECR..."
