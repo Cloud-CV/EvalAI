@@ -319,17 +319,17 @@
                             vm.projectUrl = null;
                             vm.publicationUrl = null;
                             if (status == 404) {
-
                                 vm.subErrors.msg = "Please select phase!";
-                            } else if (status == 400 || status == 406) {
-                                vm.subErrors.msg = error.input_file[0];
                             } else {
-                                vm.subErrors.msg = error.error;
+                                if (error.error){
+                                    vm.subErrors.msg = error.error;
+                                } else {
+                                    vm.subErrors.msg = error.input_file[0];
+                                }
                             }
                             vm.stopLoader();
                         }
                     };
-
                     utilities.sendRequest(parameters, 'header', 'upload');
                 }
             }
