@@ -1216,7 +1216,46 @@ class UpdateSubmissionTest(BaseAPITestClass):
             'submission_status': 'XYZ',
             'stdout': "qwerty",
             'stderr': "qwerty",
-            'result': "qwerty"
+            'result': json.dumps([
+                {
+                    "split": self.datasetSplit.codename,
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "metric1": 60,
+                        "metric2": 30
+                    }
+                }
+            ])
+
+        }
+
+        expected = {
+            'error': 'Sorry, submission status is invalid'}
+        self.client.force_authenticate(
+            user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_submission_for_submission_status_not_provided(self):
+        self.url = reverse_lazy('jobs:update_submission',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        })
+        self.data = {
+            'challenge_phase': self.challenge_phase.id,
+            'submission': self.submission.id,
+            'stdout': "qwerty",
+            'stderr': "qwerty",
+            'result': json.dumps([
+                {
+                    "split": self.datasetSplit.codename,
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "metric1": 60,
+                        "metric2": 30
+                    }
+                }
+            ])
 
         }
 
