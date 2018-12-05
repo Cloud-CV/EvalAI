@@ -1,4 +1,5 @@
 import csv
+import json
 import logging
 import random
 import requests
@@ -13,7 +14,7 @@ from os.path import basename, isfile, join
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 
 from rest_framework import permissions, status
@@ -63,6 +64,8 @@ from .serializers import (ChallengeConfigSerializer,
 from .utils import get_file_content
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+logging.warning('This will get logged to a file')
 
 try:
     xrange          # Python 2
@@ -1034,6 +1037,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
         response_data = {
             'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    print("File type : ", file_type)
 
     if file_type == 'csv':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
@@ -1116,6 +1120,70 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                  submission['stderr_file'],
                                  submission['created_at'],
                                  ])
+            return response
+        else:
+            response_data = {
+                'error': 'You are neither host nor participant of the challenge!'}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    elif file_type == 'json':
+        if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
+            submissions = Submission.objects.filter(
+                challenge_phase__challenge=challenge).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(
+                submissions, many=True, context={'request': request})
+            submission_data = { }
+            submission_index = 0
+            for submission in submissions.data:
+                submission_data[submission_index] = {
+                                'id': submission['id'],
+                                'Team Name': submission['participant_team'],
+                                'Team Members': ",".join(
+                                     username['username'] for username in submission['participant_team_members']),
+                                'Team Members Email Id': ",".join(
+                                     email['email'] for email in submission['participant_team_members']),
+                                'Challenge Phase': submission['challenge_phase'],
+                                'Status': submission['status'],
+                                'Created By': submission['created_by'],
+                                'Execution Time(sec.)': submission['execution_time'],
+                                'Submission Number': submission['submission_number'],
+                                'Submitted File': submission['input_file'],
+                                'Stdout File': submission['stdout_file'],
+                                'Stderr File': submission['stderr_file'],
+                                'Submitted at': submission['created_at'],
+                                'Submission Result File': submission['submission_result_file'],
+                                'Submission Metadata File': submission['submission_metadata_file'],               
+                }
+                submission_index += 1
+            response = JsonResponse(submission_data)
+            return response
+
+        elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
+
+            # get participant team object for the user for a particular challenge.
+            participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+                request.user, challenge_pk)
+
+            # Filter submissions on the basis of challenge phase for a participant.
+            submissions = Submission.objects.filter(participant_team=participant_team_pk,
+                                                    challenge_phase=challenge_phase).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(
+                submissions, many=True, context={'request': request})
+            submission_data = { }
+            submission_index = 0
+            for submission in submissions.data:
+                submission_data[submission_index] = {
+                                'Team Name': submission['participant_team'],
+                                'Method Name': submission['method_name'],
+                                'Status': submission['status'],
+                                'Execution Time(sec.)': submission['execution_time'],
+                                'Submission Number': submission['submission_number'],
+                                'Submitted File': submission['input_file'],
+                                'Stdout File': submission['stdout_file'],
+                                'Stderr File': submission['stderr_file'],
+                                'Submitted at': submission['created_at'],             
+                }
+                submission_index += 1
+            response = JsonResponse(submission_data)
             return response
         else:
             response_data = {

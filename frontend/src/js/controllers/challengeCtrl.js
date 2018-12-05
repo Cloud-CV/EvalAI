@@ -1063,20 +1063,32 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.fileTypes = [{ 'name': 'csv' }];
+        vm.fileTypes = [{ 'name': 'csv' }, 
+                        { 'name': 'json'}];
 
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 parameters.method = "GET";
+                console.log(vm.fileSelected);
                 parameters.callback = {
                     onSuccess: function(response) {
+                        console.log(response);
+
                         var details = response.data;
                         var anchor = angular.element('<a/>');
-                        anchor.attr({
-                            href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                            download: 'all_submissions.csv'
-                        })[0].click();
+                        if (vm.fileSelected == 'csv') {
+                            anchor.attr({
+                                href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                                download: 'all_submissions.csv'
+                            })[0].click();
+                        }
+                        else if (vm.fileSelected == 'json') {
+                            anchor.attr({
+                                href: 'data:attachment/json;charset=utf-8,' + encodeURI(JSON.stringify(details, null, 2)),
+                                download: 'all_submissions.json'
+                            })[0].click();
+                        }
                     },
                     onError: function(response) {
                         var details = response.data;
