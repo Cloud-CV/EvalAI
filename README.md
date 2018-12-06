@@ -61,7 +61,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
 ### Using Virtual Environment
 
 1. Install [python] 2.7.10 or above, [git], [postgresql] version >= 10.1, have ElasticMQ installed (Amazon SQS is used in production) and [virtualenv], in your computer, if you don't have it already.
-*If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
+*If you are having trouble with postgresql on Windows check this link [postgresqlhelp](https://www.guru99.com/download-install-postgresql.html).*
 
 2. Get the source code on your machine via git.
 
