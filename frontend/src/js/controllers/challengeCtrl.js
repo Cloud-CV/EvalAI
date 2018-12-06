@@ -1064,7 +1064,8 @@
         };
 
         vm.fileTypes = [{ 'name': 'csv' }, 
-                        { 'name': 'json'}];
+                        { 'name': 'json'},
+                        { 'name': 'html'}];
 
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
@@ -1087,6 +1088,12 @@
                             anchor.attr({
                                 href: 'data:attachment/json;charset=utf-8,' + encodeURI(JSON.stringify(details, null, 2)),
                                 download: 'all_submissions.json'
+                            })[0].click();
+                        }
+                        else if (vm.fileSelected == 'html') {
+                            anchor.attr({
+                                href: 'data:attachment/html;charset=utf-8,' + encodeURI(details),
+                                download: 'all_submissions.html'
                             })[0].click();
                         }
                     },

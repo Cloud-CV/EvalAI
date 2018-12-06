@@ -1,5 +1,4 @@
 import csv
-import json
 import logging
 import random
 import requests
@@ -64,8 +63,6 @@ from .serializers import (ChallengeConfigSerializer,
 from .utils import get_file_content
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
-logging.warning('This will get logged to a file')
 
 try:
     xrange          # Python 2
@@ -1037,7 +1034,6 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
         response_data = {
             'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-    print("File type : ", file_type)
 
     if file_type == 'csv':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
@@ -1185,6 +1181,114 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 submission_index += 1
             response = JsonResponse(submission_data)
             return response
+        else:
+            response_data = {
+                'error': 'You are neither host nor participant of the challenge!'}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    elif file_type == 'html':
+        if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
+            submissions = Submission.objects.filter(
+                challenge_phase__challenge=challenge).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(
+                submissions, many=True, context={'request': request})
+            html = """<table>
+                        <thead>
+                            <tr>
+                                <th>id</th>
+                                <th>Team Name</th>
+                                <th>Team Members</th>
+                                <th>Team Members Email ID</th>
+                                <th>Challenge Phase</th>
+                                <th>Status</th>
+                                <th>Created By</th>
+                                <th>Execution Time (sec.)</th>
+                                <th>Submission Number</th>
+                                <th>Submitted File</th>
+                                <th>Stdout File</th>
+                                <th>Stderr File</th>
+                                <th>Submitted At</th>
+                                <th>Submission Result File</th>
+                                <th>Submission Metadata File</th>
+                            </tr>
+                        </thead>
+                    """
+            html += """<tbody>"""
+            for submission in submissions.data:
+                html += """ 
+                        <tr>
+                        <td> """ + str(submission['id']) + """ </td>
+                        <td> """ + str(submission['participant_team']) + """ </td>
+                        <td> """ + ",".join(
+                                     username['username'] for username in submission['participant_team_members']) + """</td>
+                        <td> """ + ",".join(
+                                     str(email['email']) for email in submission['participant_team_members']) + """ </td>
+                        <td> """ + str(submission['challenge_phase']) + """</td>
+                        <td> """ + str(submission['status']) + """</td>
+                        <td> """ + str(submission['created_by']) + """</td>
+                        <td> """ + str(submission['execution_time']) + """</td>
+                        <td> """ + str(submission['submission_number']) + """</td>
+                        <td> """ + str(submission['input_file']) + """</td>
+                        <td> """ + str(submission['stdout_file']) + """</td>
+                        <td> """ + str(submission['stderr_file']) + """</td>
+                        <td> """ + str(submission['created_at']) + """</td>
+                        <td> """ + str(submission['submission_result_file']) + """</td>
+                        <td> """ + str(submission['submission_metadata_file']) + """</td>
+                        </tr>
+                        """
+            html += """
+                    </tbody>
+                    </table>
+                    """
+            print(html)
+            return HttpResponse(html)
+
+        elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
+
+            # get participant team object for the user for a particular challenge.
+            participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+                request.user, challenge_pk)
+
+            # Filter submissions on the basis of challenge phase for a participant.
+            submissions = Submission.objects.filter(participant_team=participant_team_pk,
+                                                    challenge_phase=challenge_phase).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(
+                submissions, many=True, context={'request': request})
+            html = """<table>
+                        <thead>
+                            <tr>
+                                <th>Team Name</th>
+                                <th>Method Name</th>
+                                <th>Status</th>
+                                <th>Execution Time (sec.)</th>
+                                <th>Submission Number</th>
+                                <th>Submitted File</th>
+                                <th>Stdout File</th>
+                                <th>Stderr File</th>
+                                <th>Submitted At</th>
+                            </tr>
+                        </thead>
+                    """
+            html += """<tbody>"""
+            for submission in submissions.data:
+                html += """ 
+                        <tr>
+                        <td> """ + str(submission['participant_team']) + """ </td>
+                        <td> """ + str(submission['method_name']) + """</td>
+                        <td> """ + str(submission['status']) + """</td>
+                        <td> """ + str(submission['execution_time']) + """</td>
+                        <td> """ + str(submission['submission_number']) + """</td>
+                        <td> """ + str(submission['input_file']) + """</td>
+                        <td> """ + str(submission['stdout_file']) + """</td>
+                        <td> """ + str(submission['stderr_file']) + """</td>
+                        <td> """ + str(submission['created_at']) + """</td>
+                        </tr>
+                        """
+            html += """
+                    </tbody>
+                    </table>
+                    """
+            print(html)
+            return HttpResponse(html)
         else:
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
