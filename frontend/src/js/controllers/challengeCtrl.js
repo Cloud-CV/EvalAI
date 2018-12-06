@@ -246,8 +246,8 @@
             },
             onError: function(response) {
                 var error = response.data;
-                utilities.storeData('emailError', error.detail);
-                $state.go('web.permission-denied');
+                $rootScope.notify("error", error.error);
+                $state.go('web.dashboard');
                 utilities.hideLoader();
             }
         };
