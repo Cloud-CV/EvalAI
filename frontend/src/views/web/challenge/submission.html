@@ -7,8 +7,8 @@
                         <strong>Submission Guidelines</strong>
                     </span>
                     <div ng-if="challenge.isChallengeHost">
-                        <strong class="red-text">
-                            <p>Your submissions won't be visible on leaderboard since you are a Challenge Host. This feature is only for your testing purposes.</p>
+                        <strong>
+                            <p><strong>Note: </strong>Your submissions won't be visible on leaderboard for <strong class="blue-text"> Public Challenge Phases </strong> since you are a challenge host for this challenge.<br> This feature is only for your testing purposes.</p>
                         </strong>
                     </div>
                     <div ng-bind-html="challenge.page.submission_guidelines"></div>
@@ -41,9 +41,13 @@
                                         <input ng-if="challenge.currentDate < item.end_date" type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}" value="{{item.id}}" ng-model="challenge.phaseId" ng-click="challenge.showRemainingSubmissions(item.id)">
                                         <input ng-if="challenge.currentDate >= item.end_date" type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}" value="{{item.id}}" ng-model="challenge.phaseId" ng-click="challenge.showRemainingSubmissions(item.id)" disabled="true">
                                         <label for="{{item.id}}"></label>
-                                        <div class="show-member-title pointer"><strong class="text-med-black">Phase: </strong>{{item.name}}
+                                        <div class="show-member-title pointer" ng-if="!item.showPrivate"><strong class="text-med-black">Phase: </strong>{{item.name}}
                                             <br>
                                             <strong class="text-med-black">End Date: </strong>{{item.end_date | date:'medium'}}</div>
+                                        <div class="show-member-title pointer" ng-if="item.showPrivate"><strong class="text-highlight">Phase: </strong> <span class="text-highlight">
+                                            {{item.name}}</span>
+                                            <br>
+                                            <strong class="text-highlight">End Date: </strong><span class="text-highlight">{{item.end_date | date:'medium'}}</span></div>
                                         <div class="clearfix"></div>
                                     </li>
                                     <div class="row">
