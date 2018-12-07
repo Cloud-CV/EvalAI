@@ -1396,8 +1396,8 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_active": True,
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-                "max_submissions": self.challenge_phase.max_submissions,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+                "max_submissions": self.challenge_phase.max_submissions
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1413,6 +1413,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_active": True,
                 "codename": self.private_challenge_phase.codename,
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
+                "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
             }
         ]
@@ -1468,6 +1469,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_active": True,
                 "codename": "Phase Code Name",
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.challenge_phase.max_submissions,
             },
             {
@@ -1484,6 +1486,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "is_active": True,
                 "codename": self.private_challenge_phase.codename,
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
             }
         ]
