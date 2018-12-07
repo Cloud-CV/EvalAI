@@ -122,8 +122,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 'codename': self.challenge_phase.codename,
                 'is_active': self.challenge_phase.is_active,
             }
-            self.challenge_phase_create_serializer_wihout_max_submissions_per_month = ChallengePhaseCreateSerializer(instance=self.challenge_phase)
-
+            self.challenge_phase_create_serializer_wihout_max_submissions_per_month = ChallengePhaseCreateSerializer(
+                                                                                        instance=self.challenge_phase)
 
     def test_challenge_phase_create_serializer(self):
 
@@ -132,8 +132,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         self.assertEqual(sorted(list(data.keys())), sorted(['id', 'name', 'description', 'leaderboard_public',
                                                             'start_date', 'end_date', 'challenge',
                                                             'max_submissions_per_day', 'max_submissions',
-                                                            'max_submissions_per_month', 'is_public', 
-                                                            'is_active', 'codename', 'test_annotation', 
+                                                            'max_submissions_per_month', 'is_public',
+                                                            'is_active', 'codename', 'test_annotation',
                                                             'is_submission_public']))
         self.assertEqual(data['id'], self.serializer_data['id'])
         self.assertEqual(data['name'], self.serializer_data['name'])
@@ -143,7 +143,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         self.assertEqual(data['end_date'], self.serializer_data['end_date'])
         self.assertEqual(data['challenge'], self.serializer_data['challenge'])
         self.assertEqual(data['max_submissions_per_day'], self.serializer_data['max_submissions_per_day'])
-        self.assertEqual(data['max_submissions_per_month'], self.serializer_data['max_submissions'])  #Default value of max_submissions_per_month
+        self.assertEqual(data['max_submissions_per_month'], self.serializer_data['max_submissions_per_month'])
         self.assertEqual(data['max_submissions'], self.serializer_data['max_submissions'])
         self.assertEqual(data['is_public'], self.serializer_data['is_public'])
         self.assertEqual(data['codename'], self.serializer_data['codename'])
