@@ -157,6 +157,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                                             'end_date', 'challenge', 'max_submissions_per_day', 'max_submissions',
                                             'max_submissions_per_month', 'is_public', 'is_active', 'codename', 'test_annotation',
                                             'is_submission_public']))
+
         self.assertEqual(data['id'], self.serializer_data['id'])
         self.assertEqual(data['name'], self.serializer_data['name'])
         self.assertEqual(data['description'], self.serializer_data['description'])
