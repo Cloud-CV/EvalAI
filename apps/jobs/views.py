@@ -469,29 +469,30 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
                          }
         return Response(response_data, status=status.HTTP_200_OK)
     # Checks for Monthy Submission Limit
-    elif ((submissions_done_this_month_count - failed_submissions_done_this_month_count) >= max_submissions_per_month_count
+    elif ((submissions_done_this_month_count - failed_submissions_done_this_month_count) >=
+            max_submissions_per_month_count
             or (max_submissions_per_month_count == 0)):
         date_time_now = timezone.now()
         # Get Next Month
         year = date_time_now.year
         next_month = date_time_now.month + 1
         # Handling next_month for December
-        if next_month == 13 :
+        if next_month == 13:
             next_month = 1
             year = date_time_now.year + 1
         # Get Next Month's First Date
-        next_month_date = timezone.now().replace(year=year, month=next_month, day=1, hour=0, minute=0, second=0, microsecond=0)
+        next_month_date = timezone.now().replace(year=year, month=next_month, day=1,
+                                                 hour=0, minute=0, second=0, microsecond=0)
         remaining_time = next_month_date - date_time_now
-        response_data = {   'message': 'You have exhausted {0}\'s submission limit'.format(date_time_now.strftime("%B")),
-                            'remaining_time': remaining_time
-                        }
+        response_data = {'message': 'You have exhausted {0}\'s submission limit'.format(date_time_now.strftime("%B")),
+                         'remaining_time': remaining_time}
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         # Calculate the remaining submissions for current Month.
         remaining_submissions_this_month_count = (max_submissions_per_month_count -
-                                             (submissions_done_this_month_count -
-                                              failed_submissions_done_this_month_count)
-                                             )
+                                                  (submissions_done_this_month_count -
+                                                   failed_submissions_done_this_month_count)
+                                                  )
 
         # Calculate the remaining submissions for today.
         remaining_submissions_today_count = (max_submissions_per_day_count -
