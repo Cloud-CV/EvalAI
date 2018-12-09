@@ -202,13 +202,34 @@ img.auth-logo{
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {
-    .graphic-cont{
+    .graphic-cont {
         position: absolute;
         width: 100%;
         opacity: 0.4;
     }
-    .auth-cont{
+    
+    .auth-cont {
         width: 100%;
-        background-color: rgba(255,255,255,0.9);
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .show-on-mobile {
+        width: 91% !important;
+    }
+}
+
+@media only screen and (max-width: $small-screen) {
+    .show-on-mobile {
+        width: 70% !important;
+    }
+    
+    .mobile-spacing {
+        margin-top: 10px !important;
+    }
+}
+
+@media only screen and (max-width: $tiny-screen) {
+    .show-on-mobile {
+        width: 45% !important;
     }
 }

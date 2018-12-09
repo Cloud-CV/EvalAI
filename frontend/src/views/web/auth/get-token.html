@@ -4,14 +4,14 @@
             <div class="ev-card-body">
                 <form name="getTokenForm" ng-submit="profile.getAuthToken(getTokenForm.$valid)">
                     <div class="pass-title">API Authentication Token</div>
-                    <div class="token-width inline-list hide-on-med-and-down">
-                        <input class="col s11 md-display-3" type="{{profile.inputType}}" readonly="true" value="{{profile.token}}"/>
+                    <div class="token-width inline-list">
+                        <input class="col s11 md-display-3 show-on-mobile" type="{{profile.inputType}}" readonly="true" value="{{profile.token}}"/>
                         <button class="col s1 btn ev-btn-dark waves-effect waves-dark grad-btn" ng-click="profile.showConfirmation()" ngclipboard data-clipboard-text="{{profile.token}}">
                             <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                         </button>
                     </div>
                     <br>
-                    <ul class="inline-list hide-on-med-and-down">
+                    <ul class="inline-list">
                         <li>
                             <a ng-click="profile.getAuthToken(false)" class="dark-link pointer"><strong>Cancel</strong></a>
                         </li>
@@ -19,10 +19,13 @@
                             <a ng-click="profile.downloadToken()" class="dark-link pointer"><strong>Download JSON</strong></a>
                         </li>
                         <li>
-                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn-dark fs-14 grad-btn" ng-click="profile.hideShowPassword()" type="submit" value="submit">{{profile.status}} Token</button>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn-dark fs-14 grad-btn mobile-spacing" ng-click="profile.hideShowPassword()" type="submit" value="submit">{{profile.status}} Token</button>
                         </li>
                     </ul>
                 </form>
+                <p>
+                    
+                </p>
             </div>
         </div>
     </div>
