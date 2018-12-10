@@ -1121,14 +1121,14 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    elif file_type == 'json':
+    elif file_type == 'json' or file_type == 'yaml':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(
                 challenge_phase__challenge=challenge).order_by('-submitted_at')
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
             submission_data = { }
-            submission_index = 0
+            submission_index = 1
             for submission in submissions.data:
                 submission_data[submission_index] = {
                                 'id': submission['id'],
@@ -1150,7 +1150,13 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                 'Submission Metadata File': submission['submission_metadata_file'],               
                 }
                 submission_index += 1
-            response = JsonResponse(submission_data)
+            if file_type == 'json':
+                response = JsonResponse(submission_data)
+            else :
+                yaml_data = yaml.dump(submission_data, default_flow_style=False)
+                print(yaml_data)
+                response = HttpResponse(yaml_data)
+                #print(str(submission_data))
             return response
 
         elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
@@ -1165,7 +1171,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
             submission_data = { }
-            submission_index = 0
+            submission_index = 1
             for submission in submissions.data:
                 submission_data[submission_index] = {
                                 'Team Name': submission['participant_team'],
