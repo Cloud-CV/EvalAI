@@ -633,7 +633,7 @@ def update_submission(request, challenge_pk):
 
     challenge_phase_pk = request.data.get('challenge_phase')
     submission_pk = request.data.get('submission')
-    submission_status = request.data.get('submission_status').lower()
+    submission_status = request.data.get('submission_status', '').lower()
     stdout_content = request.data.get('stdout', '')
     stderr_content = request.data.get('stderr', '')
     submission_result = request.data.get('result', '')
