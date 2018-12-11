@@ -19,3 +19,4 @@ psycopg2==2.7.3.2
 PyYaml==3.12
 proc==0.10.1
 rstr==2.2.5
+xlsxwriter==1.1.2

@@ -7,6 +7,8 @@ import string
 import tempfile
 import yaml
 import zipfile
+import xlsxwriter
+import StringIO
 
 from os.path import basename, isfile, join
 
@@ -1121,6 +1123,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     elif file_type == 'json' or file_type == 'yaml':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(
@@ -1155,8 +1158,8 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             else :
                 yaml_data = yaml.dump(submission_data, default_flow_style=False)
                 print(yaml_data)
-                response = HttpResponse(yaml_data)
-                #print(str(submission_data))
+                response = HttpResponse(yaml_data, content_type='text/yaml')
+                response['Content-Disposition'] = 'attachment; filename=all_submissions.yaml'
             return response
 
         elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
@@ -1185,7 +1188,13 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                 'Submitted at': submission['created_at'],             
                 }
                 submission_index += 1
-            response = JsonResponse(submission_data)
+            if file_type == 'json':
+                response = JsonResponse(submission_data)
+            else :
+                yaml_data = yaml.dump(submission_data, default_flow_style=False)
+                print(yaml_data)
+                response = HttpResponse(yaml_data, content_type='text/yaml')
+                response['Content-Disposition'] = 'attachment; filename=all_submissions.yaml'
             return response
         else:
             response_data = {
@@ -1299,6 +1308,111 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    elif file_type == 'xls' or file_type == 'xlsx':
+        response = HttpResponse(content_type='application/vnd.ms-excel')
+            response['Content-Disposition'] = 'attachment; filename=all_submissions.xlsx'
+            output = StringIO.StringIO()
+            workbook = xlsxwriter.Workbook(output)
+            worksheet = workbook.add_worksheet("Summary")
+            header = workbook.add_format({
+                'bg_color' : '#F7F7F7',
+                'color' : 'black',
+                'align' : 'center',
+                'valign' : 'top', 
+                'border' : 1
+            })
+        if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
+            submissions = Submission.objects.filter(
+                challenge_phase__challenge=challenge).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(
+                submissions, many=True, context={'request': request})
+            
+            worksheet.write(0, 0, ugettext("id"), header)
+            worksheet.write(0, 1, ugettext('Team Name'), header)
+            '''
+            writer.writerow(['id',
+                             'Team Name',
+                             'Team Members',
+                             'Team Members Email Id',
+                             'Challenge Phase',
+                             'Status',
+                             'Created By',
+                             'Execution Time(sec.)',
+                             'Submission Number',
+                             'Submitted File',
+                             'Stdout File',
+                             'Stderr File',
+                             'Submitted At',
+                             'Submission Result File',
+                             'Submission Metadata File',
+                             ])
+            for submission in submissions.data:
+                writer.writerow([submission['id'],
+                                 submission['participant_team'],
+                                 ",".join(
+                                     username['username'] for username in submission['participant_team_members']),
+                                 ",".join(
+                                     email['email'] for email in submission['participant_team_members']),
+                                 submission['challenge_phase'],
+                                 submission['status'],
+                                 submission['created_by'],
+                                 submission['execution_time'],
+                                 submission['submission_number'],
+                                 submission['input_file'],
+                                 submission['stdout_file'],
+                                 submission['stderr_file'],
+                                 submission['created_at'],
+                                 submission['submission_result_file'],
+                                 submission['submission_metadata_file'],
+                                 ])
+        '''
+
+        elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
+
+            # get participant team object for the user for a particular challenge.
+            participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+                request.user, challenge_pk)
+
+            # Filter submissions on the basis of challenge phase for a participant.
+            submissions = Submission.objects.filter(participant_team=participant_team_pk,
+                                                    challenge_phase=challenge_phase).order_by('-submitted_at')
+            submissions = ChallengeSubmissionManagementSerializer(
+                submissions, many=True, context={'request': request})
+            worksheet.write(0, 0, ugettext("id"), header)
+            worksheet.write(0, 1, ugettext('Team Name'), header)
+            '''
+            writer.writerow(['Team Name',
+                             'Method Name',
+                             'Status',
+                             'Execution Time(sec.)',
+                             'Submitted File',
+                             'Result File',
+                             'Stdout File',
+                             'Stderr File',
+                             'Submitted At',
+                             ])
+            for submission in submissions.data:
+                writer.writerow([submission['participant_team'],
+                                 submission['method_name'],
+                                 submission['status'],
+                                 submission['execution_time'],
+                                 submission['input_file'],
+                                 submission['submission_result_file'],
+                                 submission['stdout_file'],
+                                 submission['stderr_file'],
+                                 submission['created_at'],
+                                 ])
+            '''
+        workbook.close()
+        xlsx_data = output.getvalue()
+        response.write(xlsx_data)
+        return response
+        else:
+            response_data = {
+                'error': 'You are neither host nor participant of the challenge!'}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)      
+    
+    
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
