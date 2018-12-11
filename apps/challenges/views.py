@@ -8,7 +8,11 @@ import tempfile
 import yaml
 import zipfile
 import xlsxwriter
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 
 from os.path import basename, isfile, join
 
@@ -1310,17 +1314,17 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     elif file_type == 'xls' or file_type == 'xlsx':
         response = HttpResponse(content_type='application/vnd.ms-excel')
-            response['Content-Disposition'] = 'attachment; filename=all_submissions.xlsx'
-            output = StringIO.StringIO()
-            workbook = xlsxwriter.Workbook(output)
-            worksheet = workbook.add_worksheet("Summary")
-            header = workbook.add_format({
-                'bg_color' : '#F7F7F7',
-                'color' : 'black',
-                'align' : 'center',
-                'valign' : 'top', 
-                'border' : 1
-            })
+        response['Content-Disposition'] = 'attachment; filename=all_submissions.xlsx'
+        output = StringIO.StringIO()
+        workbook = xlsxwriter.Workbook(output)
+        worksheet = workbook.add_worksheet("Summary")
+        header = workbook.add_format({
+            'bg_color' : '#F7F7F7',
+            'color' : 'black',
+            'align' : 'center',
+            'valign' : 'top', 
+            'border' : 1
+        })
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(
                 challenge_phase__challenge=challenge).order_by('-submitted_at')
@@ -1403,16 +1407,14 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                  submission['created_at'],
                                  ])
             '''
-        workbook.close()
-        xlsx_data = output.getvalue()
-        response.write(xlsx_data)
-        return response
         else:
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)      
-    
-    
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST) 
+        workbook.close()
+        xlsx_data = output.getvalue()
+        response.write(xlsx_data)
+        return response  
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
