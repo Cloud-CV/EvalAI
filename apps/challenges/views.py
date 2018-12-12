@@ -11,7 +11,6 @@ import xlsxwriter
 from io import BytesIO
 
 
-
 from os.path import basename, isfile, join
 
 from django.contrib.auth.models import User
@@ -87,7 +86,8 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge = Challenge.objects.filter(creator=challenge_host_team, is_disabled=False)
+        challenge = Challenge.objects.filter(
+            creator=challenge_host_team, is_disabled=False)
         paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
             result_page, many=True, context={'request': request})
@@ -175,7 +175,8 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if challenge.end_date < timezone.now() or challenge.start_date > timezone.now():
-        response_data = {'error': 'Sorry, cannot accept participant team since challenge is not active.'}
+        response_data = {
+            'error': 'Sorry, cannot accept participant team since challenge is not active.'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -299,7 +300,8 @@ def get_featured_challenges(request):
         approved_by_admin=True,
         is_disabled=False)
     paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
+    serializer = ChallengeSerializer(
+        result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
@@ -314,7 +316,8 @@ def get_challenge_by_pk(request, pk):
         if is_user_a_host_of_challenge(request.user, pk):
             challenge = Challenge.objects.get(pk=pk)
         else:
-            challenge = Challenge.objects.get(pk=pk, approved_by_admin=True, published=True)
+            challenge = Challenge.objects.get(
+                pk=pk, approved_by_admin=True, published=True)
         if (challenge.is_disabled):
             response_data = {'error': 'Sorry, the challenge was removed!'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -468,7 +471,8 @@ def challenge_phase_split_list(request, challenge_pk):
     challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
 
     if not challenge_host:
-        challenge_phase_split = challenge_phase_split.filter(visibility=ChallengePhaseSplit.PUBLIC)
+        challenge_phase_split = challenge_phase_split.filter(
+            visibility=ChallengePhaseSplit.PUBLIC)
 
     serializer = ChallengePhaseSplitSerializer(
         challenge_phase_split, many=True)
@@ -924,10 +928,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             for email in emails:
                 user = User.objects.get(email=email)
                 host = Participant(
-                            user=user,
-                            status=Participant.ACCEPTED,
-                            team=participant_host_team,
-                    )
+                    user=user,
+                    status=Participant.ACCEPTED,
+                    team=participant_host_team,
+                )
                 host.save()
             challenge.participant_teams.add(participant_host_team)
 
@@ -1136,34 +1140,35 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
 
-            submission_data = { }
+            submission_data = {}
             submission_index = 1
             for submission in submissions.data:
                 submission_data[submission_index] = {
-                                'id': submission['id'],
-                                'Team Name': submission['participant_team'],
-                                'Team Members': ",".join(
-                                     username['username'] for username in submission['participant_team_members']),
-                                'Team Members Email Id': ",".join(
-                                     email['email'] for email in submission['participant_team_members']),
-                                'Challenge Phase': submission['challenge_phase'],
-                                'Status': submission['status'],
-                                'Created By': submission['created_by'],
-                                'Execution Time(sec.)': submission['execution_time'],
-                                'Submission Number': submission['submission_number'],
-                                'Submitted File': submission['input_file'],
-                                'Stdout File': submission['stdout_file'],
-                                'Stderr File': submission['stderr_file'],
-                                'Submitted at': submission['created_at'],
-                                'Submission Result File': submission['submission_result_file'],
-                                'Submission Metadata File': submission['submission_metadata_file'],               
+                    'id': submission['id'],
+                    'Team Name': submission['participant_team'],
+                    'Team Members': ",".join(
+                                    username['username'] for username in submission['participant_team_members']),
+                    'Team Members Email Id': ",".join(
+                        email['email'] for email in submission['participant_team_members']),
+                    'Challenge Phase': submission['challenge_phase'],
+                    'Status': submission['status'],
+                    'Created By': submission['created_by'],
+                    'Execution Time(sec.)': submission['execution_time'],
+                    'Submission Number': submission['submission_number'],
+                    'Submitted File': submission['input_file'],
+                    'Stdout File': submission['stdout_file'],
+                    'Stderr File': submission['stderr_file'],
+                    'Submitted at': submission['created_at'],
+                    'Submission Result File': submission['submission_result_file'],
+                    'Submission Metadata File': submission['submission_metadata_file'],
                 }
                 submission_index += 1
 
             if file_type == 'json':
                 response = JsonResponse(submission_data)
-            else :
-                yaml_data = yaml.dump(submission_data, default_flow_style=False)
+            else:
+                yaml_data = yaml.dump(
+                    submission_data, default_flow_style=False)
                 response = HttpResponse(yaml_data, content_type='text/yaml')
                 response['Content-Disposition'] = 'attachment; filename=all_submissions.yaml'
             return response
@@ -1179,26 +1184,27 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
 
-            submission_data = { }
+            submission_data = {}
             submission_index = 1
             for submission in submissions.data:
                 submission_data[submission_index] = {
-                                'Team Name': submission['participant_team'],
-                                'Method Name': submission['method_name'],
-                                'Status': submission['status'],
-                                'Execution Time(sec.)': submission['execution_time'],
-                                'Submission Number': submission['submission_number'],
-                                'Submitted File': submission['input_file'],
-                                'Stdout File': submission['stdout_file'],
-                                'Stderr File': submission['stderr_file'],
-                                'Submitted at': submission['created_at'],             
+                    'Team Name': submission['participant_team'],
+                    'Method Name': submission['method_name'],
+                    'Status': submission['status'],
+                    'Execution Time(sec.)': submission['execution_time'],
+                    'Submission Number': submission['submission_number'],
+                    'Submitted File': submission['input_file'],
+                    'Stdout File': submission['stdout_file'],
+                    'Stderr File': submission['stderr_file'],
+                    'Submitted at': submission['created_at'],
                 }
                 submission_index += 1
 
             if file_type == 'json':
                 response = JsonResponse(submission_data)
-            else :
-                yaml_data = yaml.dump(submission_data, default_flow_style=False)
+            else:
+                yaml_data = yaml.dump(
+                    submission_data, default_flow_style=False)
                 response = HttpResponse(yaml_data, content_type='text/yaml')
                 response['Content-Disposition'] = 'attachment; filename=all_submissions.yaml'
             return response
@@ -1243,9 +1249,9 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                         <td> """ + str(submission['id']) + """ </td>
                         <td> """ + str(submission['participant_team']) + """ </td>
                         <td> """ + ",".join(
-                                     username['username'] for username in submission['participant_team_members']) + """</td>
+                    username['username'] for username in submission['participant_team_members']) + """</td>
                         <td> """ + ",".join(
-                                     str(email['email']) for email in submission['participant_team_members']) + """ </td>
+                    str(email['email']) for email in submission['participant_team_members']) + """ </td>
                         <td> """ + str(submission['challenge_phase']) + """</td>
                         <td> """ + str(submission['status']) + """</td>
                         <td> """ + str(submission['created_by']) + """</td>
@@ -1322,12 +1328,12 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
         workbook = xlsxwriter.Workbook(output)
         worksheet = workbook.add_worksheet("Summary")
         header = workbook.add_format({
-            'bg_color' : '#F7F7F7',
-            'color' : 'black',
+            'bg_color': '#F7F7F7',
+            'color': 'black',
             'bold': True,
-            'align' : 'center',
-            'valign' : 'top', 
-            'border' : 1
+            'align': 'center',
+            'valign': 'top',
+            'border': 1
         })
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(
@@ -1356,9 +1362,9 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 worksheet.write(row, 0, str(submission['id']))
                 worksheet.write(row, 1, str(submission['participant_team']))
                 worksheet.write(row, 2, str(",".join(
-                                     username['username'] for username in submission['participant_team_members'])))
+                    username['username'] for username in submission['participant_team_members'])))
                 worksheet.write(row, 3, str(",".join(
-                                     email['email'] for email in submission['participant_team_members'])))
+                    email['email'] for email in submission['participant_team_members'])))
                 worksheet.write(row, 4, str(submission['challenge_phase']))
                 worksheet.write(row, 5, str(submission['status']))
                 worksheet.write(row, 6, str(submission['created_by']))
@@ -1368,8 +1374,10 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 worksheet.write(row, 10, str(submission['stdout_file']))
                 worksheet.write(row, 11, str(submission['stderr_file']))
                 worksheet.write(row, 12, str(submission['created_at']))
-                worksheet.write(row, 13, str(submission['submission_result_file']))
-                worksheet.write(row, 14, str(submission['submission_metadata_file']))
+                worksheet.write(row, 13, str(
+                    submission['submission_result_file']))
+                worksheet.write(row, 14, str(
+                    submission['submission_metadata_file']))
                 row += 1
 
         elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
@@ -1391,7 +1399,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             worksheet.write(0, 6, 'Stdout File', header)
             worksheet.write(0, 7, 'Stderr File', header)
             worksheet.write(0, 8, 'Submitted At', header)
-            
+
             row = 1
             for submission in submissions.data:
                 worksheet.write(row, 0, str(submission['participant_team']))
@@ -1399,24 +1407,26 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 worksheet.write(row, 2, str(submission['status']))
                 worksheet.write(row, 3, str(submission['execution_time']))
                 worksheet.write(row, 4, str(submission['input_file']))
-                worksheet.write(row, 5, str(submission['submission_result_file']))
+                worksheet.write(row, 5, str(
+                    submission['submission_result_file']))
                 worksheet.write(row, 6, str(submission['stdout_file']))
                 worksheet.write(row, 7, str(submission['stderr_file']))
                 worksheet.write(row, 8, str(submission['created_at']))
                 row += 1
-                
+
         else:
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST) 
-         
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
         workbook.close()
         output.seek(0)
         xlsx_data = output.read()
-        response = HttpResponse(content_type='application/vnd.ms-excel;charset=UTF-8')
+        response = HttpResponse(
+            content_type='application/vnd.ms-excel;charset=UTF-8')
         response['Content-Disposition'] = 'attachment; filename=all_submissions.xlsx'
         response.write(xlsx_data)
-        return response 
+        return response
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
@@ -1619,7 +1629,8 @@ def get_broker_urls(request):
         Broker URL of approved challenges
     """
     if not request.user.is_superuser:
-        response_data = {'error': 'You are not authorized to make this request!'}
+        response_data = {
+            'error': 'You are not authorized to make this request!'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     else:
         challenges = Challenge.objects.filter(approved_by_admin=True)
