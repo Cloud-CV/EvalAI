@@ -61,9 +61,9 @@ def publish_submission_message(challenge_id, phase_id, submission_id):
     }
 
     try:
-        challenge = Challenge.objects.get(challenge_id)
-    except:
-        logger.exception('No Challenge found for the given ID!')
+        challenge = Challenge.objects.get(pk=challenge_id)
+    except Challenge.DoesNotExist:
+        logger.exception('Challenge does not exist for the given id {}'.format(challenge_id))
         return
 
     queue_name = challenge.broker_url
