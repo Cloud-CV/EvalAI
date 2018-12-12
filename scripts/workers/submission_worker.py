@@ -505,7 +505,7 @@ def process_submission_callback(body):
         logger.exception('Exception while receiving message from submission queue with error {}'.format(e))
 
 
-def get_or_create_sqs_queue():
+def get_or_create_sqs_queue(queue_name):
     """
     Returns:
         Returns the SQS Queue object
@@ -521,14 +521,14 @@ def get_or_create_sqs_queue():
                              region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
                              aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
                              aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
-
-    AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME', 'evalai_submission_queue')
+    if queue_name == '':
+        queue_name = 'evalai_submission_queue'
     # Check if the queue exists. If no, then create one
     try:
-        queue = sqs.get_queue_by_name(QueueName=AWS_SQS_QUEUE_NAME)
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
         if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-            queue = sqs.create_queue(QueueName=AWS_SQS_QUEUE_NAME)
+            queue = sqs.create_queue(QueueName=queue_name)
         else:
             logger.exception('Cannot get or create Queue')
     return queue
@@ -544,7 +544,8 @@ def main():
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
-    queue = get_or_create_sqs_queue()
+    queue_name = os.environ.get('CHALLENGE_QUEUE', 'evalai_submission_queue')
+    queue = get_or_create_sqs_queue(queue_name)
 
     while True:
         for message in queue.receive_messages():
