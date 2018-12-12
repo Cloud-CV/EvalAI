@@ -1039,6 +1039,17 @@ class GetChallengeByPk(BaseAPITestClass):
     def setUp(self):
         super(GetChallengeByPk, self).setUp()
 
+        self.user1 = User.objects.create(
+            username='user1',
+            email="user1@test.com",
+            password='secret_password')
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email='user1@test.com',
+            primary=True,
+            verified=True)
+
         self.challenge3 = Challenge.objects.create(
             title='Test Challenge 3',
             short_description='Short description for test challenge 3',
@@ -1046,11 +1057,12 @@ class GetChallengeByPk(BaseAPITestClass):
             terms_and_conditions='Terms and conditions for test challenge 3',
             submission_guidelines='Submission guidelines for test challenge 3',
             creator=self.challenge_host_team,
-            published=True,
+            published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
         )
 
         self.challenge4 = Challenge.objects.create(
@@ -1065,7 +1077,23 @@ class GetChallengeByPk(BaseAPITestClass):
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
-            is_disabled=True
+            is_disabled=False,
+            approved_by_admin=True,
+        )
+
+        self.challenge5 = Challenge.objects.create(
+            title='Test Challenge 5',
+            short_description='Short description for test challenge 5',
+            description='Description for test challenge 5',
+            terms_and_conditions='Terms and conditions for test challenge 5',
+            submission_guidelines='Submission guidelines for test challenge 5',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            is_disabled=True,
         )
 
     def test_get_challenge_by_pk_when_challenge_does_not_exists(self):
@@ -1078,9 +1106,92 @@ class GetChallengeByPk(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_get_challenge_by_pk_when_challenge_is_disabled(self):
+    def test_get_challenge_by_pk_when_user_is_challenge_host(self):
+        self.url = reverse_lazy('challenges:get_challenge_by_pk',
+                                kwargs={'pk': self.challenge3.pk})
+        expected = {
+            "id": self.challenge3.pk,
+            "title": self.challenge3.title,
+            "short_description": self.challenge3.short_description,
+            "description": self.challenge3.description,
+            "terms_and_conditions": self.challenge3.terms_and_conditions,
+            "submission_guidelines": self.challenge3.submission_guidelines,
+            "evaluation_details": self.challenge3.evaluation_details,
+            "image": None,
+            "start_date": "{0}{1}".format(self.challenge3.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge3.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "creator": {
+                "id": self.challenge3.creator.pk,
+                "team_name": self.challenge3.creator.team_name,
+                "created_by": self.challenge3.creator.created_by.username,
+                "team_url": self.challenge3.creator.team_url
+            },
+            "published": self.challenge3.published,
+            "enable_forum": self.challenge3.enable_forum,
+            "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
+            "approved_by_admin": self.challenge3.approved_by_admin,
+            "forum_url": self.challenge3.forum_url,
+        }
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_by_pk_when_user_is_not_challenge_host(self):
+        """
+        This is a corner case in which a user is not a challenge host
+        but tries but access the challenge created by challenge host.
+        """
+        self.url = reverse_lazy('challenges:get_challenge_by_pk',
+                                kwargs={'pk': self.challenge3.pk})
+        self.client.force_authenticate(user=self.user1)
+        expected = {'error': 'Challenge does not exist!'}
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_get_challenge_by_pk_when_user_is_participant(self):
         self.url = reverse_lazy('challenges:get_challenge_by_pk',
                                 kwargs={'pk': self.challenge4.pk})
+        expected = {
+            "id": self.challenge4.pk,
+            "title": self.challenge4.title,
+            "short_description": self.challenge4.short_description,
+            "description": self.challenge4.description,
+            "terms_and_conditions": self.challenge4.terms_and_conditions,
+            "submission_guidelines": self.challenge4.submission_guidelines,
+            "evaluation_details": self.challenge4.evaluation_details,
+            "image": None,
+            "start_date": "{0}{1}".format(self.challenge4.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge4.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "creator": {
+                "id": self.challenge4.creator.pk,
+                "team_name": self.challenge4.creator.team_name,
+                "created_by": self.challenge4.creator.created_by.username,
+                "team_url": self.challenge4.creator.team_url
+            },
+            "published": self.challenge4.published,
+            "enable_forum": self.challenge4.enable_forum,
+            "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
+            "is_active": True,
+            "allowed_email_domains": [],
+            "blocked_email_domains": [],
+            "approved_by_admin": self.challenge4.approved_by_admin,
+            "forum_url": self.challenge4.forum_url,
+        }
+
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_by_pk_when_challenge_is_disabled(self):
+        self.url = reverse_lazy('challenges:get_challenge_by_pk',
+                                kwargs={'pk': self.challenge5.pk})
         expected = {
             'error': 'Sorry, the challenge was removed!'
         }

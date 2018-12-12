@@ -307,7 +307,10 @@ def get_challenge_by_pk(request, pk):
     Returns a particular challenge by id
     """
     try:
-        challenge = Challenge.objects.get(pk=pk)
+        if is_user_a_host_of_challenge(request.user, pk):
+            challenge = Challenge.objects.get(pk=pk)
+        else:
+            challenge = Challenge.objects.get(pk=pk, approved_by_admin=True, published=True)
         if (challenge.is_disabled):
             response_data = {'error': 'Sorry, the challenge was removed!'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
