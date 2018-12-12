@@ -66,7 +66,7 @@ def publish_submission_message(challenge_id, phase_id, submission_id):
         logger.exception('Challenge does not exist for the given id {}'.format(challenge_id))
         return
 
-    queue_name = challenge.broker_url
+    queue_name = challenge.queue
     queue = get_or_create_sqs_queue(queue_name)
     response = queue.send_message(MessageBody=json.dumps(message))
     return response
