@@ -5,6 +5,7 @@ import requests
 import shutil
 import string
 import tempfile
+import uuid
 import yaml
 import zipfile
 
@@ -800,6 +801,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
+                challenge_title = challenge.title.split(' ')
+                challenge_title = '-'.join(challenge_title).lower()
+                random_challenge_id = uuid.uuid4()
+                challenge_queue_name = "{}-{}".format(challenge_title, random_challenge_id)
+                challenge.queue = challenge_queue_name
+                challenge.save()
             else:
                 response_data = serializer.errors
                 # transaction.set_rollback(True)
@@ -1330,5 +1337,5 @@ def get_broker_urls(request):
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     else:
         challenges = Challenge.objects.filter(approved_by_admin=True)
-        response_data = challenges.values_list('broker_url', flat=True)
+        response_data = challenges.values_list('queue', flat=True)
         return Response(response_data, status=status.HTTP_200_OK)
