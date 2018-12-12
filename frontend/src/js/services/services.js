@@ -62,11 +62,11 @@
                     req.headers = headers;
                 }
             }
-            
+
             if (filetype == 'xlsx') {   //Specific to xlsx since response type is blob
                 req.responseType = 'arraybuffer';
-            }            
-        
+            }    
+                    
             $http(req)
                 .then(successCallback, errorCallback);
         };

@@ -1078,6 +1078,7 @@
                     onSuccess: function(response) {
                         var details = response.data;
                         var anchor = angular.element('<a/>');
+
                         if (vm.fileSelected == 'csv') {
                             anchor.attr({
                                 href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
@@ -1110,6 +1111,7 @@
                                 download: 'all_submissions.html'
                             })[0].click();
                         }
+                        
                     },
                     onError: function(response) {
                         var details = response.data;

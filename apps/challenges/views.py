@@ -1086,7 +1086,6 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             return response
 
         elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
-
             # get participant team object for the user for a particular challenge.
             participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
                 request.user, challenge_pk)
@@ -1121,6 +1120,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                  submission['created_at'],
                                  ])
             return response
+
         else:
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
@@ -1132,6 +1132,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 challenge_phase__challenge=challenge).order_by('-submitted_at')
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
+
             submission_data = { }
             submission_index = 1
             for submission in submissions.data:
@@ -1155,6 +1156,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                 'Submission Metadata File': submission['submission_metadata_file'],               
                 }
                 submission_index += 1
+
             if file_type == 'json':
                 response = JsonResponse(submission_data)
             else :
@@ -1164,7 +1166,6 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             return response
 
         elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
-
             # get participant team object for the user for a particular challenge.
             participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
                 request.user, challenge_pk)
@@ -1174,6 +1175,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                                     challenge_phase=challenge_phase).order_by('-submitted_at')
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
+
             submission_data = { }
             submission_index = 1
             for submission in submissions.data:
@@ -1189,6 +1191,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                 'Submitted at': submission['created_at'],             
                 }
                 submission_index += 1
+
             if file_type == 'json':
                 response = JsonResponse(submission_data)
             else :
@@ -1196,16 +1199,19 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 response = HttpResponse(yaml_data, content_type='text/yaml')
                 response['Content-Disposition'] = 'attachment; filename=all_submissions.yaml'
             return response
+
         else:
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     elif file_type == 'html':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
             submissions = Submission.objects.filter(
                 challenge_phase__challenge=challenge).order_by('-submitted_at')
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
+
             html = """<table>
                         <thead>
                             <tr>
@@ -1302,10 +1308,12 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                     </table>
                     """
             return HttpResponse(html)
+
         else:
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     elif file_type == 'xls' or file_type == 'xlsx':
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output)
@@ -1381,7 +1389,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             worksheet.write(0, 7, 'Stderr File', header)
             worksheet.write(0, 8, 'Submitted At', header)
             
-            row = 2
+            row = 1
             for submission in submissions.data:
                 worksheet.write(row, 0, str(submission['participant_team']))
                 worksheet.write(row, 1, str(submission['method_name']))
@@ -1393,7 +1401,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 worksheet.write(row, 7, str(submission['stderr_file']))
                 worksheet.write(row, 8, str(submission['created_at']))
                 row += 1
-
+                
         else:
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
