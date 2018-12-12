@@ -20,7 +20,6 @@
             var token = parameters.token;
             var method = parameters.method;
             var filetype = parameters.filetype;
-            console.log(filetype);
             var successCallback = parameters.callback.onSuccess;
             var errorCallback = parameters.callback.onError;
 
