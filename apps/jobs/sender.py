@@ -1,19 +1,19 @@
 from __future__ import absolute_import
 
-from django.conf import settings
-
+import boto3
+import botocore
 import json
 import logging
 import os
 
-import botocore
-import boto3
+from django.conf import settings
 
+from challenges.models import Challenge
 
 logger = logging.getLogger(__name__)
 
 
-def get_or_create_sqs_queue():
+def get_or_create_sqs_queue(queue_name):
     """
     Returns:
         Returns the SQS Queue object
@@ -30,13 +30,15 @@ def get_or_create_sqs_queue():
                              aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
                              aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
 
-    AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME', 'evalai_submission_queue')
+    if queue_name == '':
+        queue_name = 'evalai_submission_queue'
+
     # Check if the queue exists. If no, then create one
     try:
-        queue = sqs.get_queue_by_name(QueueName=AWS_SQS_QUEUE_NAME)
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
         if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-            queue = sqs.create_queue(QueueName=AWS_SQS_QUEUE_NAME)
+            queue = sqs.create_queue(QueueName=queue_name)
         else:
             logger.exception('Cannot get or create Queue')
     return queue
@@ -58,6 +60,13 @@ def publish_submission_message(challenge_id, phase_id, submission_id):
         'submission_id': submission_id,
     }
 
-    queue = get_or_create_sqs_queue()
+    try:
+        challenge = Challenge.objects.get(pk=challenge_id)
+    except Challenge.DoesNotExist:
+        logger.exception('Challenge does not exist for the given id {}'.format(challenge_id))
+        return
+
+    queue_name = challenge.queue
+    queue = get_or_create_sqs_queue(queue_name)
     response = queue.send_message(MessageBody=json.dumps(message))
     return response
