@@ -8,10 +8,8 @@ import tempfile
 import yaml
 import zipfile
 import xlsxwriter
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import BytesIO
+
 
 
 from os.path import basename, isfile, join
@@ -1313,9 +1311,8 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 'error': 'You are neither host nor participant of the challenge!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     elif file_type == 'xls' or file_type == 'xlsx':
-        response = HttpResponse(content_type='application/vnd.ms-excel')
-        response['Content-Disposition'] = 'attachment; filename=all_submissions.xlsx'
-        output = StringIO.StringIO()
+        print("XLSX chosen\n")
+        output = BytesIO()
         workbook = xlsxwriter.Workbook(output)
         worksheet = workbook.add_worksheet("Summary")
         header = workbook.add_format({
@@ -1326,13 +1323,13 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             'border' : 1
         })
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
+            print("Option 1")
             submissions = Submission.objects.filter(
                 challenge_phase__challenge=challenge).order_by('-submitted_at')
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
-            
-            worksheet.write(0, 0, ugettext("id"), header)
-            worksheet.write(0, 1, ugettext('Team Name'), header)
+            worksheet.write(0, 0, "id", header)
+            worksheet.write(0, 1, "Team Name", header)
             '''
             writer.writerow(['id',
                              'Team Name',
@@ -1369,10 +1366,9 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                  submission['submission_result_file'],
                                  submission['submission_metadata_file'],
                                  ])
-        '''
-
+            '''
         elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
-
+            print("Option 2")
             # get participant team object for the user for a particular challenge.
             participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
                 request.user, challenge_pk)
@@ -1382,8 +1378,8 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                                     challenge_phase=challenge_phase).order_by('-submitted_at')
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
-            worksheet.write(0, 0, ugettext("id"), header)
-            worksheet.write(0, 1, ugettext('Team Name'), header)
+            worksheet.write(0, 0, "id", header)
+            worksheet.write(0, 1, "Team Name", header)
             '''
             writer.writerow(['Team Name',
                              'Method Name',
@@ -1408,13 +1404,18 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                  ])
             '''
         else:
+            print("Option 3")
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST) 
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)  
         workbook.close()
-        xlsx_data = output.getvalue()
+        output.seek(0)
+        xlsx_data = output.read()
+        response = HttpResponse(content_type='application/vnd.ms-excel;charset=UTF-8')
+        response['Content-Disposition'] = 'attachment; filename=all_submissions.xlsx'
+        print("XLS DATA : ", str(xlsx_data))
         response.write(xlsx_data)
-        return response  
+        return response 
     else:
         response_data = {'error': 'The file type requested is not valid!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

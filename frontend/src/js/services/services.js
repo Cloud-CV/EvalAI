@@ -19,6 +19,8 @@
             var data = parameters.data;
             var token = parameters.token;
             var method = parameters.method;
+            var filetype = parameters.filetype;
+            console.log(filetype);
             var successCallback = parameters.callback.onSuccess;
             var errorCallback = parameters.callback.onError;
 
@@ -61,7 +63,11 @@
                     req.headers = headers;
                 }
             }
-
+            
+            if (filetype == 'xlsx') {   //Specific to xlsx since response type is blob
+                req.responseType = 'arraybuffer';
+            }            
+        
             $http(req)
                 .then(successCallback, errorCallback);
         };

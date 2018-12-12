@@ -1073,7 +1073,7 @@
             if (vm.phaseId) {
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
                 parameters.method = "GET";
-                console.log(vm.fileSelected);
+                parameters.filetype = vm.fileSelected;
                 parameters.callback = {
                     onSuccess: function(response) {
                         console.log(response);
@@ -1084,6 +1084,16 @@
                             anchor.attr({
                                 href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
                                 download: 'all_submissions.csv'
+                            })[0].click();
+                        }
+                        else if (vm.fileSelected == 'xlsx') {
+                            var contentType = 'application/vnd.ms-excel;charset=UTF-8';
+                            var blob = new Blob([details], { type: contentType });
+                            console.log(details);
+                            console.log(blob);
+                            anchor.attr({
+                                href: URL.createObjectURL(blob),
+                                download: 'all_subm.xlsx'
                             })[0].click();
                         }
                         else if (vm.fileSelected == 'json') {
