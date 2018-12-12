@@ -544,7 +544,7 @@ def main():
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
-    queue_name = os.environ.get('QUEUE', 'evalai_submission_queue')
+    queue_name = os.environ.get('CHALLENGE_QUEUE', 'evalai_submission_queue')
     queue = get_or_create_sqs_queue(queue_name)
 
     while True:
