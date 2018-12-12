@@ -14,7 +14,7 @@ try:
         challenge_title = '-'.join(challenge_title).lower()
         random_challenge_id = uuid.uuid4()
         challenge_queue_name = "{}-{}".format(challenge_title, random_challenge_id)
-        challenge.broker_url = challenge_queue_name
+        challenge.queue = challenge_queue_name
         challenge.save()
 except Exception as e:
     print(e)
