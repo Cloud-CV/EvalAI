@@ -1311,3 +1311,21 @@ def star_challenge(request, challenge_pk):
             response_data = {'is_starred': False,
                              'count': serializer.data[0]['count']}
             return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_broker_urls(request):
+    """
+    API endpoint for fetching all the Broker URLS 
+    """
+    if not request.user.is_superuser:
+        response_data = {'error': 'You are not authorized for this request!'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
+        challenges = Challenge.objects.filter(approved_by_admin=True, published=True)
+        broker_urls = challenges.values_list('broker_url', flat=True)
+        response_data = broker_urls
+        return Response(response_data, status=status.HTTP_200_OK)
