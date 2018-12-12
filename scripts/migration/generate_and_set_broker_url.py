@@ -1,4 +1,5 @@
 # Command to run: python manage.py shell < scripts/migration/generate_and_set_broker_url.py
+# TODO: Run the code using a function based approach
 
 import traceback
 import uuid
