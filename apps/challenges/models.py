@@ -54,7 +54,7 @@ class Challenge(TimeStampedModel):
         default=[], blank=True)
     remote_evaluation = models.BooleanField(
         default=False, verbose_name="Remote Evaluation", db_index=True)
-    broker_url = models.CharField(
+    queue = models.CharField(
         max_length=200, default='', verbose_name="SQS queue name", db_index=True)
 
     class Meta:
