@@ -1159,7 +1159,6 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 response = JsonResponse(submission_data)
             else :
                 yaml_data = yaml.dump(submission_data, default_flow_style=False)
-                print(yaml_data)
                 response = HttpResponse(yaml_data, content_type='text/yaml')
                 response['Content-Disposition'] = 'attachment; filename=all_submissions.yaml'
             return response
@@ -1194,7 +1193,6 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 response = JsonResponse(submission_data)
             else :
                 yaml_data = yaml.dump(submission_data, default_flow_style=False)
-                print(yaml_data)
                 response = HttpResponse(yaml_data, content_type='text/yaml')
                 response['Content-Disposition'] = 'attachment; filename=all_submissions.yaml'
             return response
@@ -1256,7 +1254,6 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                     </tbody>
                     </table>
                     """
-            print(html)
             return HttpResponse(html)
 
         elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
@@ -1304,71 +1301,67 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                     </tbody>
                     </table>
                     """
-            print(html)
             return HttpResponse(html)
         else:
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     elif file_type == 'xls' or file_type == 'xlsx':
-        print("XLSX chosen\n")
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output)
         worksheet = workbook.add_worksheet("Summary")
         header = workbook.add_format({
             'bg_color' : '#F7F7F7',
             'color' : 'black',
+            'bold': True,
             'align' : 'center',
             'valign' : 'top', 
             'border' : 1
         })
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
-            print("Option 1")
             submissions = Submission.objects.filter(
                 challenge_phase__challenge=challenge).order_by('-submitted_at')
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
-            worksheet.write(0, 0, "id", header)
-            worksheet.write(0, 1, "Team Name", header)
-            '''
-            writer.writerow(['id',
-                             'Team Name',
-                             'Team Members',
-                             'Team Members Email Id',
-                             'Challenge Phase',
-                             'Status',
-                             'Created By',
-                             'Execution Time(sec.)',
-                             'Submission Number',
-                             'Submitted File',
-                             'Stdout File',
-                             'Stderr File',
-                             'Submitted At',
-                             'Submission Result File',
-                             'Submission Metadata File',
-                             ])
+
+            worksheet.write(0, 0, 'id', header)
+            worksheet.write(0, 1, 'Team Name', header)
+            worksheet.write(0, 2, 'Team Members', header)
+            worksheet.write(0, 3, 'Team Members Email Id', header)
+            worksheet.write(0, 4, 'Challenge Phase', header)
+            worksheet.write(0, 5, 'Status', header)
+            worksheet.write(0, 6, 'Created By', header)
+            worksheet.write(0, 7, 'Execution Time(sec.)', header)
+            worksheet.write(0, 8, 'Submission Number', header)
+            worksheet.write(0, 9, 'Submitted File', header)
+            worksheet.write(0, 10, 'Stdout File', header)
+            worksheet.write(0, 11, 'Stderr File', header)
+            worksheet.write(0, 12, 'Submitted At', header)
+            worksheet.write(0, 13, 'Submission Result File', header)
+            worksheet.write(0, 14, 'Submission Metadata File', header)
+
+            row = 1
             for submission in submissions.data:
-                writer.writerow([submission['id'],
-                                 submission['participant_team'],
-                                 ",".join(
-                                     username['username'] for username in submission['participant_team_members']),
-                                 ",".join(
-                                     email['email'] for email in submission['participant_team_members']),
-                                 submission['challenge_phase'],
-                                 submission['status'],
-                                 submission['created_by'],
-                                 submission['execution_time'],
-                                 submission['submission_number'],
-                                 submission['input_file'],
-                                 submission['stdout_file'],
-                                 submission['stderr_file'],
-                                 submission['created_at'],
-                                 submission['submission_result_file'],
-                                 submission['submission_metadata_file'],
-                                 ])
-            '''
+                worksheet.write(row, 0, str(submission['id']))
+                worksheet.write(row, 1, str(submission['participant_team']))
+                worksheet.write(row, 2, str(",".join(
+                                     username['username'] for username in submission['participant_team_members'])))
+                worksheet.write(row, 3, str(",".join(
+                                     email['email'] for email in submission['participant_team_members'])))
+                worksheet.write(row, 4, str(submission['challenge_phase']))
+                worksheet.write(row, 5, str(submission['status']))
+                worksheet.write(row, 6, str(submission['created_by']))
+                worksheet.write(row, 7, str(submission['execution_time']))
+                worksheet.write(row, 8, str(submission['submission_number']))
+                worksheet.write(row, 9, str(submission['input_file']))
+                worksheet.write(row, 10, str(submission['stdout_file']))
+                worksheet.write(row, 11, str(submission['stderr_file']))
+                worksheet.write(row, 12, str(submission['created_at']))
+                worksheet.write(row, 13, str(submission['submission_result_file']))
+                worksheet.write(row, 14, str(submission['submission_metadata_file']))
+                row += 1
+
         elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
-            print("Option 2")
             # get participant team object for the user for a particular challenge.
             participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
                 request.user, challenge_pk)
@@ -1378,42 +1371,39 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                                     challenge_phase=challenge_phase).order_by('-submitted_at')
             submissions = ChallengeSubmissionManagementSerializer(
                 submissions, many=True, context={'request': request})
-            worksheet.write(0, 0, "id", header)
-            worksheet.write(0, 1, "Team Name", header)
-            '''
-            writer.writerow(['Team Name',
-                             'Method Name',
-                             'Status',
-                             'Execution Time(sec.)',
-                             'Submitted File',
-                             'Result File',
-                             'Stdout File',
-                             'Stderr File',
-                             'Submitted At',
-                             ])
+            worksheet.write(0, 0, 'Team Name', header)
+            worksheet.write(0, 1, 'Method Name', header)
+            worksheet.write(0, 2, 'Status', header)
+            worksheet.write(0, 3, 'Execution Time(sec.)', header)
+            worksheet.write(0, 4, 'Submitted File', header)
+            worksheet.write(0, 5, 'Result File', header)
+            worksheet.write(0, 6, 'Stdout File', header)
+            worksheet.write(0, 7, 'Stderr File', header)
+            worksheet.write(0, 8, 'Submitted At', header)
+            
+            row = 2
             for submission in submissions.data:
-                writer.writerow([submission['participant_team'],
-                                 submission['method_name'],
-                                 submission['status'],
-                                 submission['execution_time'],
-                                 submission['input_file'],
-                                 submission['submission_result_file'],
-                                 submission['stdout_file'],
-                                 submission['stderr_file'],
-                                 submission['created_at'],
-                                 ])
-            '''
+                worksheet.write(row, 0, str(submission['participant_team']))
+                worksheet.write(row, 1, str(submission['method_name']))
+                worksheet.write(row, 2, str(submission['status']))
+                worksheet.write(row, 3, str(submission['execution_time']))
+                worksheet.write(row, 4, str(submission['input_file']))
+                worksheet.write(row, 5, str(submission['submission_result_file']))
+                worksheet.write(row, 6, str(submission['stdout_file']))
+                worksheet.write(row, 7, str(submission['stderr_file']))
+                worksheet.write(row, 8, str(submission['created_at']))
+                row += 1
+
         else:
-            print("Option 3")
             response_data = {
                 'error': 'You are neither host nor participant of the challenge!'}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)  
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST) 
+         
         workbook.close()
         output.seek(0)
         xlsx_data = output.read()
         response = HttpResponse(content_type='application/vnd.ms-excel;charset=UTF-8')
         response['Content-Disposition'] = 'attachment; filename=all_submissions.xlsx'
-        print("XLS DATA : ", str(xlsx_data))
         response.write(xlsx_data)
         return response 
     else:

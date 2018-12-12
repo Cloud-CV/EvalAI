@@ -1076,8 +1076,6 @@
                 parameters.filetype = vm.fileSelected;
                 parameters.callback = {
                     onSuccess: function(response) {
-                        console.log(response);
-
                         var details = response.data;
                         var anchor = angular.element('<a/>');
                         if (vm.fileSelected == 'csv') {
@@ -1089,11 +1087,9 @@
                         else if (vm.fileSelected == 'xlsx') {
                             var contentType = 'application/vnd.ms-excel;charset=UTF-8';
                             var blob = new Blob([details], { type: contentType });
-                            console.log(details);
-                            console.log(blob);
                             anchor.attr({
                                 href: URL.createObjectURL(blob),
-                                download: 'all_subm.xlsx'
+                                download: 'all_submissions.xlsx'
                             })[0].click();
                         }
                         else if (vm.fileSelected == 'json') {
