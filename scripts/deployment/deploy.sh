@@ -47,16 +47,44 @@ case $opt in
             if [ ${env} == "production" ]; then
                 echo "Pulling ssl certificates and nginx configuration..."
                 aws s3 cp s3://cloudcv-secrets/evalai/${env}/ssl/ ./ssl/ --recursive
-                aws s3 cp s3://cloudcv-secrets/evalai/${env}/nginx_${env}.conf ./docker/prod/nodejs/nginx_${env}.conf
+                aws s3 cp s3://cloudcv-secrets/evalai/${env}/nginx_${env}.conf ./docker/prod/nodejs/nginx_${env}.conf --recursive
             fi
             echo "Pulling docker images from ECR..."
             docker-compose -f docker-compose-${env}.yml pull
             echo "Completed Pull operation."
             ;;
-        deploy)
-            echo "Deploying docker container..."
-            docker-compose -f docker-compose-${env}.yml up -d
-            echo "Completed Pull operation."
+        deploy_django)
+            echo "Deploying django docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d django
+            echo "Completed deploy operation."
+            ;;
+        deploy_nodejs)
+            echo "Deploying nodejs docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d nodejs
+            echo "Completed deploy operation."
+            ;;
+        deploy_worker)
+            token=${3}
+            if [ ${env} == "staging" ]; then
+                echo "Pulling queue names for staging server challenges..."
+                queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://staging.evalai.cloudcv.org/api/challenges/get_broker_urls) | tr -d '[],'
+                echo "Completed pulling Queue list"
+                for queue_name in $queue_names; do
+                    echo "Deploying worker for queue...", $queue_name
+                    CHALLENGE_QUEUE=$queue_name docker-compose -f docker-compose-${env}.yml up -d worker
+                    echo "Deployed worker docker container"
+                    done
+            fi
+            if [ ${env} == "production" ]; then
+                echo "Pulling queue names for production server challenges..."
+                queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://evalai.cloudcv.org/api/challenges/get_broker_urls)| tr -d '[],'
+                echo "Completed pulling Queue list"
+                for queue_name in $queue_names; do
+                    echo "Deploying worker for queue...", $queue_name
+                    CHALLENGE_QUEUE=$queue_name docker-compose -f docker-compose-${env}.yml up -d worker
+                    echo "Deployed worker docker container"
+                    done
+            fi
             ;;
         scale)
             service=${3}
@@ -73,6 +101,7 @@ case $opt in
             docker rmi $(docker images -a -q)
             echo "Sucessfully cleaned all the images."
             ;;
+
         *)
         echo "EvalAI deployment utility script"
         echo " Usage: $0 {pull|deploy|scale|clean}"
