@@ -12,7 +12,7 @@ try:
     for challenge in challenges:
         challenge_title = challenge.title.split(' ')
         challenge_title = '-'.join(challenge_title).lower()
-        random_challenge_id = uuid.uuid4() 
+        random_challenge_id = uuid.uuid4()
         challenge_queue_name = "{}-{}".format(challenge_title, random_challenge_id)
         challenge.broker_url = challenge_queue_name
         challenge.save()
