@@ -1320,7 +1320,7 @@ def star_challenge(request, challenge_pk):
 def get_broker_urls(request):
     """
     Returns:
-      Broker URL of approved challenges
+        Broker URL of approved challenges
     """
     if not request.user.is_superuser:
         response_data = {'error': 'You are not authorized to make this request!'}
