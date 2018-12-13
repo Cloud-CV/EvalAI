@@ -69,22 +69,17 @@ case $opt in
                 echo "Pulling queue names for staging server challenges..."
                 queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://staging.evalai.cloudcv.org/api/challenges/get_broker_urls) | tr -d '[],'
                 echo "Completed pulling Queue list"
-                for queue_name in $queue_names; do
-                    echo "Deploying worker for queue...", $queue_name
-                    CHALLENGE_QUEUE=$queue_name docker-compose -f docker-compose-${env}.yml up -d worker
-                    echo "Deployed worker docker container"
-                    done
             fi
             if [ ${env} == "production" ]; then
                 echo "Pulling queue names for production server challenges..."
                 queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://evalai.cloudcv.org/api/challenges/get_broker_urls)| tr -d '[],'
                 echo "Completed pulling Queue list"
-                for queue_name in $queue_names; do
-                    echo "Deploying worker for queue...", $queue_name
-                    CHALLENGE_QUEUE=$queue_name docker-compose -f docker-compose-${env}.yml up -d worker
-                    echo "Deployed worker docker container"
-                    done
             fi
+            for queue_name in $queue_names; do
+                echo "Deploying worker for queue...", $queue_name
+                CHALLENGE_QUEUE=$queue_name docker-compose -f docker-compose-${env}.yml up -d worker
+                echo "Deployed worker docker container"
+            done
             ;;
         scale)
             service=${3}
