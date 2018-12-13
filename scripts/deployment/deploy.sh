@@ -47,7 +47,7 @@ case $opt in
             if [ ${env} == "production" ]; then
                 echo "Pulling ssl certificates and nginx configuration..."
                 aws s3 cp s3://cloudcv-secrets/evalai/${env}/ssl/ ./ssl/ --recursive
-                aws s3 cp s3://cloudcv-secrets/evalai/${env}/nginx_${env}.conf ./docker/prod/nodejs/nginx_${env}.conf --recursive
+                aws s3 cp s3://cloudcv-secrets/evalai/${env}/nginx_${env}.conf ./docker/prod/nodejs/nginx_${env}.conf
             fi
             echo "Pulling docker images from ECR..."
             docker-compose -f docker-compose-${env}.yml pull
