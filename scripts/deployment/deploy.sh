@@ -96,7 +96,6 @@ case $opt in
             docker rmi $(docker images -a -q)
             echo "Sucessfully cleaned all the images."
             ;;
-
         *)
         echo "EvalAI deployment utility script"
         echo " Usage: $0 {pull|deploy|scale|clean}"
