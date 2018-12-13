@@ -5,6 +5,7 @@ import requests
 import shutil
 import string
 import tempfile
+import uuid
 import yaml
 import zipfile
 
@@ -307,7 +308,10 @@ def get_challenge_by_pk(request, pk):
     Returns a particular challenge by id
     """
     try:
-        challenge = Challenge.objects.get(pk=pk)
+        if is_user_a_host_of_challenge(request.user, pk):
+            challenge = Challenge.objects.get(pk=pk)
+        else:
+            challenge = Challenge.objects.get(pk=pk, approved_by_admin=True, published=True)
         if (challenge.is_disabled):
             response_data = {'error': 'Sorry, the challenge was removed!'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -797,6 +801,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
+                challenge_title = challenge.title.split(' ')
+                challenge_title = '-'.join(challenge_title).lower()
+                random_challenge_id = uuid.uuid4()
+                challenge_queue_name = "{}-{}".format(challenge_title, random_challenge_id)
+                challenge.queue = challenge_queue_name
+                challenge.save()
             else:
                 response_data = serializer.errors
                 # transaction.set_rollback(True)
@@ -1311,3 +1321,21 @@ def star_challenge(request, challenge_pk):
             response_data = {'is_starred': False,
                              'count': serializer.data[0]['count']}
             return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_broker_urls(request):
+    """
+    Returns:
+        Broker URL of approved challenges
+    """
+    if not request.user.is_superuser:
+        response_data = {'error': 'You are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
+        challenges = Challenge.objects.filter(approved_by_admin=True)
+        response_data = challenges.values_list('queue', flat=True)
+        return Response(response_data, status=status.HTTP_200_OK)
