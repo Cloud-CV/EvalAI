@@ -67,16 +67,20 @@ case $opt in
             token=${3}
             echo "Pulling queue names for $env server challenges..."
             if [ ${env} == "staging" ]; then
-                queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://staging.evalai.cloudcv.org/api/challenges/get_broker_urls) | tr -d '[],'
+                queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://staging.evalai.cloudcv.org:8000/api/challenges/get_broker_urls/)
             elif [ ${env} == "production" ]; then
-                queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://evalai.cloudcv.org/api/challenges/get_broker_urls)| tr -d '[],'
+                queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://evalapi.cloudcv.org/api/challenges/get_broker_urls/)
             fi
             echo "Completed pulling Queue list"
-            for queue_name in $queue_names; do
-                echo "Deploying worker for queue...", $queue_name
-                CHALLENGE_QUEUE=$queue_name docker-compose -f docker-compose-${env}.yml up -d worker
-                echo "Deployed worker docker container"
-            done
+            # preprocess the python list to bash array
+            queue_names=($(echo ${queue_names//,/ } | tr -d '[]'))
+            for queue_name in "${queue_names[@]}"
+            do
+                queue=$(echo $queue_name | tr -d '"')
+                echo "Deploying worker for queue: " $queue
+                docker-compose -f docker-compose-${env}.yml run -e CHALLENGE_QUEUE=$queue -d worker
+                echo "Deployed worker docker container for queue: " $queue
+             done
             ;;
         scale)
             service=${3}
