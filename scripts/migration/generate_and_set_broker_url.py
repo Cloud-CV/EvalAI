@@ -6,7 +6,7 @@ import uuid
 
 from challenges.models import Challenge
 
-challenges = Challenge.objects.filter(approved_by_admin=True)
+challenges = Challenge.objects.all()
 
 try:
     for challenge in challenges:
