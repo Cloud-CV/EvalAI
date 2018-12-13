@@ -1251,8 +1251,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                     """
             html += """<tbody>"""
             for submission in submissions.data:
-                html += """ 
-                        <tr>
+                html += """ <tr>
                         <td> """ + str(submission['id']) + """ </td>
                         <td> """ + str(submission['participant_team']) + """ </td>
                         <td> """ + ",".join(
@@ -1272,8 +1271,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                         <td> """ + str(submission['submission_metadata_file']) + """</td>
                         </tr>
                         """
-            html += """
-                    </tbody>
+            html += """</tbody>
                     </table>
                     """
             return HttpResponse(html)
@@ -1306,8 +1304,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                     """
             html += """<tbody>"""
             for submission in submissions.data:
-                html += """ 
-                        <tr>
+                html += """<tr>
                         <td> """ + str(submission['participant_team']) + """ </td>
                         <td> """ + str(submission['method_name']) + """</td>
                         <td> """ + str(submission['status']) + """</td>
@@ -1319,8 +1316,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                         <td> """ + str(submission['created_at']) + """</td>
                         </tr>
                         """
-            html += """
-                    </tbody>
+            html += """</tbody>
                     </table>
                     """
             return HttpResponse(html)
