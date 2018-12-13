@@ -68,8 +68,7 @@ case $opt in
             echo "Pulling queue names for $env server challenges..."
             if [ ${env} == "staging" ]; then
                 queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://staging.evalai.cloudcv.org/api/challenges/get_broker_urls) | tr -d '[],'
-            fi
-            if [ ${env} == "production" ]; then
+            elif [ ${env} == "production" ]; then
                 queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://evalai.cloudcv.org/api/challenges/get_broker_urls)| tr -d '[],'
             fi
             echo "Completed pulling Queue list"
