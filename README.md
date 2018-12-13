@@ -57,6 +57,11 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```
     docker-compose up --build
     ```
+3. That's it. Open web browser and hit the url [http://127.0.0.1:8888].
+    
+    **SUPERUSER-** username: `admin` password: `password`  
+    **HOST USER-** username: `host` password: `password`  
+    **PARTICIPANT USER-** username: `participant` password: `password`   
 
 ### Using Virtual Environment
 
