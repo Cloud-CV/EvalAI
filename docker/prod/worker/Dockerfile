@@ -6,7 +6,7 @@ RUN apt-get update && \
   apt-get upgrade -y && \
   apt-get install -q -y openjdk-8-jdk
 
-RUN apt-get install git cmake python3-dev python3.5-venv \
+RUN yes Y | apt-get install git cmake python3-dev python3.5-venv \
 	libeigen3-dev libboost-python-dev libopencv-dev python-opencv \
 	libgmp-dev libcgal-qt5-dev swig
 
