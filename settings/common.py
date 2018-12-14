@@ -271,8 +271,8 @@ CACHES = {
 
 # The maximum size in bytes for request body
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
-FILE_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 21474836480  # 20 GB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 21474836480  # 20 GB
 
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
