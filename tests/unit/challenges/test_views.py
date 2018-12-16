@@ -34,10 +34,21 @@ class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
+        self.superuser = User.objects.create_superuser(
+            'superuser',
+            "superuser@test.com",
+            'secret_password')
+
         self.user = User.objects.create(
             username='someuser',
             email="user@test.com",
             password='secret_password')
+        
+        EmailAddress.objects.create(
+            user=self.superuser,
+            email="superuser@test.com",
+            primary=True,
+            verified=True)
 
         EmailAddress.objects.create(
             user=self.user,
@@ -2956,3 +2967,74 @@ class StarChallengesTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+class GetBrokerUrlTest(BaseAPITestClass):
+    def setUp(self):
+        super(GetBrokerUrlTest, self).setUp()
+        
+        self.url = reverse_lazy('challenges:get_broker_urls')
+
+        self.challenge1 = Challenge.objects.create(
+            title='Test Challenge1',
+            short_description='Short description for test challenge1',
+            description='Description for test challenge1',
+            terms_and_conditions='Terms and conditions for test challenge1',
+            submission_guidelines='Submission guidelines for test challenge1',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=False,
+            queue="queue-name-1",
+        )
+        self.challenge2 = Challenge.objects.create(
+            title='Test Challenge2',
+            short_description='Short description for test challenge2',
+            description='Description for test challenge2',
+            terms_and_conditions='Terms and conditions for test challenge2',
+            submission_guidelines='Submission guidelines for test challenge2',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=True,
+            queue="queue-name-2",
+        )
+        self.challenge3 = Challenge.objects.create(
+            title='Test Challenge3',
+            short_description='Short description for test challenge3',
+            description='Description for test challenge3',
+            terms_and_conditions='Terms and conditions for test challenge3',
+            submission_guidelines='Submission guidelines for test challenge3',
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=True,
+            queue="queue-name-3",
+        )
+
+    def test_get_broker_urls_when_user_is_not_superuser(self):
+        expected = {
+            "error": "You are not authorized to make this request!"
+            }
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_broker_urls_when_challenge_is_approved(self):
+        expected = [
+            "queue-name-2",
+            "queue-name-3"
+        ]
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
