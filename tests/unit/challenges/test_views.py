@@ -43,7 +43,7 @@ class BaseAPITestClass(APITestCase):
             username='someuser',
             email="user@test.com",
             password='secret_password')
-        
+
         EmailAddress.objects.create(
             user=self.superuser,
             email="superuser@test.com",
@@ -2968,10 +2968,11 @@ class StarChallengesTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+
 class GetBrokerUrlTest(BaseAPITestClass):
     def setUp(self):
         super(GetBrokerUrlTest, self).setUp()
-        
+
         self.url = reverse_lazy('challenges:get_broker_urls')
 
         self.challenge1 = Challenge.objects.create(
@@ -3036,12 +3037,12 @@ class GetBrokerUrlTest(BaseAPITestClass):
         ]
         self.client.force_authenticate(user=self.superuser)
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(list(response.data), expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    
+
     def test_get_broker_url_by_challenge_pk_when_user_is_not_superuser(self):
         self.url = reverse_lazy('challenges:get_broker_url_by_challenge_pk',
-                                    kwargs={'challenge_pk': self.challenge2.pk})
+                                kwargs={'challenge_pk': self.challenge2.pk})
         expected = {
             "error": "You are not authorized to make this request!"
             }
@@ -3052,7 +3053,7 @@ class GetBrokerUrlTest(BaseAPITestClass):
 
     def test_get_broker_url_by_challenge_pk_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_broker_url_by_challenge_pk',
-                                    kwargs={'challenge_pk': self.challenge2.pk + 10})
+                                kwargs={'challenge_pk': self.challenge2.pk + 10})
         expected = {
             'error': 'Challenge {} does not exist'.format(self.challenge2.pk+10)
         }
@@ -3063,7 +3064,7 @@ class GetBrokerUrlTest(BaseAPITestClass):
 
     def test_get_broker_url_by_challenge_pk_when_challenge_is_approved(self):
         self.url = reverse_lazy('challenges:get_broker_url_by_challenge_pk',
-                                    kwargs={'challenge_pk': self.challenge2.pk})
+                                kwargs={'challenge_pk': self.challenge2.pk})
         expected = [
             "queue-name-2"
         ]
