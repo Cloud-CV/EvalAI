@@ -369,6 +369,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
+            submitted_at=timezone.now()
         )
 
     def test_challenge_submission_when_challenge_does_not_exist(self):
@@ -634,7 +635,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
-            when_made_public=timezone.now()
+            when_made_public=timezone.now(),
+            submitted_at=timezone.now()
         )
 
         self.private_submission = Submission.objects.create(
@@ -648,7 +650,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
-            when_made_public=timezone.now()
+            when_made_public=timezone.now(),
+            submitted_at=timezone.now()
         )
 
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
@@ -1016,7 +1019,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             method_name="Test Method",
             method_description="Test Description",
             project_url="http://testserver/",
-            publication_url="http://testserver/"
+            publication_url="http://testserver/",
+            submitted_at=timezone.now()
         )
 
         self.private_submission = Submission.objects.create(
@@ -1028,7 +1032,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             method_name="Test Method",
             method_description="Test Description",
             project_url="http://testserver/",
-            publication_url="http://testserver/"
+            publication_url="http://testserver/",
+            submitted_at=timezone.now()
         )
 
         self.submission.is_public = True

@@ -2332,6 +2332,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver1/",
                 publication_url="http://testserver1/",
                 is_public=True,
+                submitted_at=timezone.now(),
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2347,6 +2348,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver2/",
                 publication_url="http://testserver2/",
                 is_public=True,
+                submitted_at=timezone.now(),
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2362,6 +2364,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver3/",
                 publication_url="http://testserver3/",
                 is_public=True,
+                submitted_at=timezone.now(),
             )
 
         self.client.force_authenticate(user=self.user6)
@@ -2542,6 +2545,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 project_url="http://testserver/",
                 publication_url="http://testserver/",
                 is_public=True,
+                submitted_at=timezone.now(),
             )
 
         self.file_type_csv = 'csv'
