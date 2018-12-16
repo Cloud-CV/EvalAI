@@ -3038,3 +3038,36 @@ class GetBrokerUrlTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_get_broker_url_by_challenge_pk_when_user_is_not_superuser(self):
+        self.url = reverse_lazy('challenges:get_broker_url_by_challenge_pk',
+                                    kwargs={'challenge_pk': self.challenge2.pk})
+        expected = {
+            "error": "You are not authorized to make this request!"
+            }
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_broker_url_by_challenge_pk_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_broker_url_by_challenge_pk',
+                                    kwargs={'challenge_pk': self.challenge2.pk + 10})
+        expected = {
+            'error': 'Challenge {} does not exist'.format(self.challenge2.pk+10)
+        }
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_broker_url_by_challenge_pk_when_challenge_is_approved(self):
+        self.url = reverse_lazy('challenges:get_broker_url_by_challenge_pk',
+                                    kwargs={'challenge_pk': self.challenge2.pk})
+        expected = [
+            "queue-name-2"
+        ]
+        self.client.force_authenticate(user=self.superuser)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
