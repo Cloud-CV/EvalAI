@@ -61,7 +61,6 @@ case $opt in
         deploy-worker)
             token=${3}
             challenge=${4}
-            challenge=${4}
             if [ -z "$4" ]; then
                echo "Please input Challenge ID"
                exit 0

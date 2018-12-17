@@ -233,14 +233,13 @@ def load_active_challenges(challenge_pk):
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
 
     try:
-        challenge = Challenge.objects.get(**q_params)
+        active_challenge = Challenge.objects.get(**q_params)
     except Challenge.DoesNotExist:
         logger.error('Challenge {} does not exists'.format(challenge_pk))
         traceback.print_exc()
 
-    for challenge in active_challenges:
-        phases = challenge.challengephase_set.all()
-        extract_challenge_data(challenge, phases)
+    phases = active_challenge.challengephase_set.all()
+    extract_challenge_data(active_challenge, phases)
 
 
 def extract_submission_data(submission_id):

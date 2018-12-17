@@ -24,6 +24,7 @@ def get_or_create_sqs_queue(queue_name):
                              region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
                              aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY', 'x'),
                              aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID', 'x'),)
+        queue_name = 'evalai_submission_queue'
     else:
         sqs = boto3.resource('sqs',
                              region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
