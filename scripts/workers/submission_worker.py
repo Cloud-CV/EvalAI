@@ -221,18 +221,22 @@ def extract_challenge_data(challenge, phases):
         raise
 
 
-def load_active_challenges():
+def load_active_challenges(challenge_pk):
     '''
          * Fetches active challenges and corresponding active phases for it.
     '''
-    q_params = {'approved_by_admin': True}
+    q_params = {'approved_by_admin': True, 'pk': challenge_pk}
     q_params['start_date__lt'] = timezone.now()
     q_params['end_date__gt'] = timezone.now()
 
     # make sure that the challenge base directory exists
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
 
-    active_challenges = Challenge.objects.filter(**q_params)
+    try:
+        challenge = Challenge.objects.get(**q_params)
+    except Challenge.DoesNotExist:
+        logger.error('Challenge {} does not exists'.format(challenge_pk))
+        traceback.print_exc()
 
     for challenge in active_challenges:
         phases = challenge.challengephase_set.all()
@@ -540,7 +544,8 @@ def main():
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
-    load_active_challenges()
+    challenge_pk = os.environ.get('CHALLENGE_PK', 'challenge_pk')
+    load_active_challenges(challenge_pk)
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
