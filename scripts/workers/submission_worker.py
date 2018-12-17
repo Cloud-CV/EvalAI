@@ -544,7 +544,10 @@ def main():
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
-    challenge_pk = os.environ.get('CHALLENGE_PK', 'challenge_pk')
+    challenge_pk = os.environ.get('CHALLENGE_PK')
+    if not challenge_pk:
+        logger.exception("Please add challenge pk in the environment variable!")
+        return
     load_active_challenge(challenge_pk)
 
     # create submission base data directory
