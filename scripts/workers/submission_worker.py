@@ -222,7 +222,7 @@ def extract_challenge_data(challenge, phases):
 
 def load_challenge(challenge):
     '''
-        Creates python package for a challenge and extracts relevant data 
+        Creates python package for a challenge and extracts relevant data
     '''
     # make sure that the challenge base directory exists
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
