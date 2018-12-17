@@ -1354,7 +1354,7 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
         response_data = {'error': 'You are not authorized to make this request!'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     else:
-        try:        
+        try:
             challenge = Challenge.objects.get(pk=challenge_pk, approved_by_admin=True)
         except Challenge.DoesNotExist:
             response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
