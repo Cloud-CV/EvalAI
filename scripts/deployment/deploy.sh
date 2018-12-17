@@ -44,11 +44,6 @@ case $opt in
             echo "Pulling environment variables file..."
             aws s3 cp s3://cloudcv-secrets/evalai/${env}/docker_${env}.env ./docker/prod/docker_${env}.env
             echo "Environment varibles file successfully downloaded."
-            if [ ${env} == "production" ]; then
-                echo "Pulling ssl certificates and nginx configuration..."
-                aws s3 cp s3://cloudcv-secrets/evalai/${env}/ssl/ ./ssl/ --recursive
-                aws s3 cp s3://cloudcv-secrets/evalai/${env}/nginx_${env}.conf ./docker/prod/nodejs/nginx_${env}.conf
-            fi
             echo "Pulling docker images from ECR..."
             docker-compose -f docker-compose-${env}.yml pull
             echo "Completed Pull operation."
@@ -66,11 +61,16 @@ case $opt in
         deploy-worker)
             token=${3}
             challenge=${4}
+            challenge=${4}
+            if [ -z "$4" ]; then
+               echo "Please input Challenge ID"
+               exit 0
+            fi
             echo "Pulling queue name for $env server challenge..."
             if [ ${env} == "staging" ]; then
                 queue_name=$(curl -L -X GET -H "Authorization: Token $token" http://staging.evalai.cloudcv.org:8000/api/challenges/get_broker_url/$challenge/)
             elif [ ${env} == "production" ]; then
-                queue_name=$(curl -L -X GET -H "Authorization: Token $token" http://evalapi.cloudcv.org/api/challenges/get_broker_url/$challenge/)
+                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://evalapi.cloudcv.org/api/challenges/get_broker_url/$challenge/)
             fi
             echo "Completed pulling Queue name"
             # preprocess the python list to bash array
@@ -86,7 +86,7 @@ case $opt in
             if [ ${env} == "staging" ]; then
                 queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://staging.evalai.cloudcv.org:8000/api/challenges/get_broker_urls/)
             elif [ ${env} == "production" ]; then
-                queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://evalapi.cloudcv.org/api/challenges/get_broker_urls/)
+                queue_names=$(curl -k -L -X GET -H "Authorization: Token $token" https://evalapi.cloudcv.org/api/challenges/get_broker_urls/)
             fi
             echo "Completed pulling Queue list"
             # preprocess the python list to bash array
