@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 def get_or_create_sqs_queue(queue_name):
     """
+    Args:
+        queue_name: Name of the SQS Queue
     Returns:
         Returns the SQS Queue object
     """
@@ -24,6 +26,8 @@ def get_or_create_sqs_queue(queue_name):
                              region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
                              aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY', 'x'),
                              aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID', 'x'),)
+        # Use default queue name in dev and test environment
+        queue_name = 'evalai_submission_queue'
     else:
         sqs = boto3.resource('sqs',
                              region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
@@ -33,7 +37,7 @@ def get_or_create_sqs_queue(queue_name):
     if queue_name == '':
         queue_name = 'evalai_submission_queue'
 
-    # Check if the queue exists. If no, then create one
+    # Check if the queue exists. If not, then create one.
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:

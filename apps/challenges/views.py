@@ -1332,11 +1332,18 @@ def get_broker_urls(request):
     Returns:
         Queue name of approved challenges
     """
+    is_active = request.data.get('is_active', False)
+
+    q_params = {'approved_by_admin': True}
+    if is_active:
+        q_params['start_date__lt'] = timezone.now()
+        q_params['end_date__gt'] = timezone.now()
+
     if not request.user.is_superuser:
         response_data = {'error': 'You are not authorized to make this request!'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     else:
-        challenges = Challenge.objects.filter(approved_by_admin=True)
+        challenges = Challenge.objects.filter(**q_params)
         response_data = challenges.values_list('queue', flat=True)
         return Response(response_data, status=status.HTTP_200_OK)
 
