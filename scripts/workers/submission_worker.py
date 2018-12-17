@@ -221,7 +221,7 @@ def extract_challenge_data(challenge, phases):
         raise
 
 
-def load_active_challenges(challenge_pk):
+def load_active_challenge(challenge_pk):
     '''
          * Fetches active challenges and corresponding active phases for it.
     '''
@@ -237,6 +237,7 @@ def load_active_challenges(challenge_pk):
     except Challenge.DoesNotExist:
         logger.error('Challenge {} does not exists'.format(challenge_pk))
         traceback.print_exc()
+        return
 
     phases = active_challenge.challengephase_set.all()
     extract_challenge_data(active_challenge, phases)
@@ -544,7 +545,7 @@ def main():
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     challenge_pk = os.environ.get('CHALLENGE_PK', 'challenge_pk')
-    load_active_challenges(challenge_pk)
+    load_active_challenge(challenge_pk)
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
