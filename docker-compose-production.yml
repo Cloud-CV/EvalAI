@@ -32,4 +32,3 @@ services:
     volumes:
       - /code/node_modules
       - /code/bower_components
-      - ./ssl:/code/ssl
