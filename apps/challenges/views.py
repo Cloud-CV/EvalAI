@@ -1330,7 +1330,7 @@ def star_challenge(request, challenge_pk):
 def get_broker_urls(request):
     """
     Returns:
-        Broker URL of approved challenges
+        Queue name of approved challenges
     """
     if not request.user.is_superuser:
         response_data = {'error': 'You are not authorized to make this request!'}
@@ -1338,4 +1338,27 @@ def get_broker_urls(request):
     else:
         challenges = Challenge.objects.filter(approved_by_admin=True)
         response_data = challenges.values_list('queue', flat=True)
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_broker_url_by_challenge_pk(request, challenge_pk):
+    """
+    Returns:
+        Queue name of challenge with challenge pk
+    """
+    if not request.user.is_superuser:
+        response_data = {'error': 'You are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
+        try:
+            challenge = Challenge.objects.get(pk=challenge_pk, approved_by_admin=True)
+        except Challenge.DoesNotExist:
+            response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        response_data = [challenge.queue]
         return Response(response_data, status=status.HTTP_200_OK)
