@@ -3031,10 +3031,9 @@ class GetBrokerUrlTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_broker_urls_when_challenge_is_approved(self):
-        expected = [
-            "queue-name-2",
-            "queue-name-3"
-        ]
+        expected = {
+            'result': ["queue-name-2", "queue-name-3"]
+        }
         self.client.force_authenticate(user=self.superuser)
         response = self.client.get(self.url, {})
         self.assertEqual(list(response.data), expected)
@@ -3065,10 +3064,10 @@ class GetBrokerUrlTest(BaseAPITestClass):
     def test_get_broker_url_by_challenge_pk_when_challenge_is_approved(self):
         self.url = reverse_lazy('challenges:get_broker_url_by_challenge_pk',
                                 kwargs={'challenge_pk': self.challenge2.pk})
-        expected = [
-            "queue-name-2"
-        ]
+        expected = {
+            'result': ["queue-name-2"]
+        }
         self.client.force_authenticate(user=self.superuser)
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(list(response.data), expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
