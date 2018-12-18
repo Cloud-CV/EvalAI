@@ -1345,6 +1345,9 @@ def get_broker_urls(request):
     else:
         challenges = Challenge.objects.filter(**q_params)
         response_data = challenges.values_list('queue', flat=True)
+        response_data = {
+                'results': response_data
+            }
         return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -1366,6 +1369,7 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
         except Challenge.DoesNotExist:
             response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        response_data = [challenge.queue]
+        response_data = {
+                'results': challenge.queue
+            }
         return Response(response_data, status=status.HTTP_200_OK)
