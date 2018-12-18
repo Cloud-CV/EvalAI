@@ -5,4 +5,3 @@ pycocotools==2.0.0
 scipy==1.1.0
 sklearn==0.0
 tqdm==4.25.0
-git+git://github.com/RishabhJain2018/sumo-challenge@master

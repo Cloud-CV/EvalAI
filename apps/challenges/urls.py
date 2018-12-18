@@ -52,6 +52,8 @@ urlpatterns = [
     url(r'^(?P<challenge_pk>[0-9]+)/$',
         views.star_challenge,
         name='star_challenge'),
+    url(r'^get_broker_url/(?P<challenge_pk>[0-9]+)/$',
+        views.get_broker_url_by_challenge_pk, name='get_broker_url_by_challenge_pk'),
     url(r'^get_broker_urls/$',
         views.get_broker_urls, name='get_broker_urls'),
 ]
