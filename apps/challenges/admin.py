@@ -33,7 +33,7 @@ class ChallengePhaseAdmin(ImportExportTimeStampedAdmin):
     list_display = ('id', 'name', 'get_challenge_name_and_id', 'start_date',
                     'end_date', 'test_annotation', 'is_public', 'leaderboard_public',)
     list_filter = ('leaderboard_public', 'start_date', 'end_date',)
-    search_fields = ('name', 'challenge_title',)
+    search_fields = ('name', 'challenge__title',)
 
     def get_challenge_name_and_id(self, obj):
         """Return challenge name corresponding to phase"""
@@ -66,7 +66,7 @@ class DatasetSplitAdmin(ImportExportTimeStampedAdmin):
 @admin.register(Leaderboard)
 class LeaderboardAdmin(ImportExportTimeStampedAdmin):
     list_display = ('id', 'schema',)
-    search_fields = ('id',)
+    search_fields = ('schema',)
 
 
 @admin.register(LeaderboardData)
