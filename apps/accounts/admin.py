@@ -2,8 +2,6 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
-from base.admin import ImportExportTimeStampedAdmin
-
 from import_export import resources
 from import_export.admin import ExportMixin
 from rest_framework.authtoken.admin import TokenAdmin
