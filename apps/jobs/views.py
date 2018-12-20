@@ -511,6 +511,10 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         if remaining_submissions_this_month_count > remaining_submission_count:
             remaining_submissions_this_month_count = remaining_submission_count
 
+        # Edge Case to Handle remaining_submissions_today_count is greater than remaining_submissions_this_month_count
+        if remaining_submissions_today_count > remaining_submissions_this_month_count:
+            remaining_submissions_today_count = remaining_submissions_this_month_count
+
         # Return the above calculated data.
         response_data = {
                           'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
