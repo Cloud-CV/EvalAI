@@ -450,8 +450,15 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     submissions_done_this_month_count = submissions_done_this_month.count()
     failed_submissions_done_this_month_count = failed_submissions_this_month.count()
 
+    # Checks for Maximum Submission Limit
+    if (submissions_done_count - failed_submissions_count) >= max_submissions_count:
+        response_data = {
+                        'message': 'You have exhausted Maximum submission Limit'
+                        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
     # Checks if #today's successful submission is greater than or equal to max submission per day
-    if ((submissions_done_today_count - failed_submissions_done_today_count) >= max_submissions_per_day_count
+    elif ((submissions_done_today_count - failed_submissions_done_today_count) >= max_submissions_per_day_count
             or (max_submissions_per_day_count == 0)):
         # Get the UTC time of the instant when the above condition is true.
         date_time_now = timezone.now()
