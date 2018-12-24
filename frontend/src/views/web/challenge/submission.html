@@ -110,17 +110,6 @@
                     <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
                         <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
                             <div class="row">
-                                <span class="color-black">
-                                    <strong>
-                                        {{ challenge.currentMonth }}'s Remaining Submissions:
-                                    </strong> 
-                                <span class="color-black">
-                                    <strong>
-                                        {{challenge.remainingSubmissions.remaining_submissions_this_month_count}}
-                                    </strong>
-                                </span>
-                                </div>
-                            <div class="row">
                             <span class="color-black">
                                 <strong>
                                     Today's Remaining Submissions:
@@ -130,6 +119,17 @@
                                     {{challenge.remainingSubmissions.remaining_submissions_today_count}}
                                 </strong>
                             </span>
+                            </div>
+                            <div class="row">
+                                <span class="color-black">
+                                    <strong>
+                                        {{ challenge.currentMonth }}'s Remaining Submissions:
+                                    </strong> 
+                                <span class="color-black">
+                                    <strong>
+                                        {{challenge.remainingSubmissions.remaining_submissions_this_month_count}}
+                                    </strong>
+                                </span>
                             </div>
                             <div class="row">
                             <span class="color-black">
