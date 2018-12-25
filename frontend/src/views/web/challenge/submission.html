@@ -107,6 +107,17 @@
                             </form>
                         </div>
                     </div>
+                    <div ng-if="challenge.maxExceeded" class="col s12 m5">
+                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                            <div class="row">
+                            <span class="color-black">
+                                <strong>
+                                    {{challenge.maxExceededMessage}}
+                                </strong> 
+                            </span>
+                            </div>
+                        </div>
+                    </div>
                     <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
                         <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
                             <div class="row">
@@ -121,6 +132,7 @@
                             </span>
                             </div>
                             <div class="row">
+                            <div class="row">
                                 <span class="color-black">
                                     <strong>
                                         {{ challenge.currentMonth }}'s Remaining Submissions:
@@ -131,7 +143,6 @@
                                     </strong>
                                 </span>
                             </div>
-                            <div class="row">
                             <span class="color-black">
                                 <strong>
                                     Total Remaining Submissions:
