@@ -450,6 +450,12 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     submissions_done_this_month_count = submissions_done_this_month.count()
     failed_submissions_done_this_month_count = failed_submissions_this_month.count()
 
+    exceeded_daily_limit = ((submissions_done_today_count - failed_submissions_done_today_count) >=
+                            max_submissions_per_day_count
+                            or (max_submissions_per_day_count == 0))
+    exceeded_monthly_limit = ((submissions_done_this_month_count - failed_submissions_done_this_month_count) >=
+                              max_submissions_per_month_count or (max_submissions_per_month_count == 0))
+
     # Checks for Maximum Submission Limit
     if (submissions_done_count - failed_submissions_count) >= max_submissions_count:
         response_data = {
@@ -459,8 +465,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
     # Checks if #today's successful submission is greater than or equal to max submission per day
-    elif ((submissions_done_today_count - failed_submissions_done_today_count) >= max_submissions_per_day_count
-            or (max_submissions_per_day_count == 0)):
+    elif exceeded_daily_limit and (not exceeded_monthly_limit):
         # Get the UTC time of the instant when the above condition is true.
         date_time_now = timezone.now()
         # Calculate the next day's date.
@@ -477,9 +482,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
                          }
         return Response(response_data, status=status.HTTP_200_OK)
     # Checks for Monthy Submission Limit
-    elif ((submissions_done_this_month_count - failed_submissions_done_this_month_count) >=
-            max_submissions_per_month_count
-            or (max_submissions_per_month_count == 0)):
+    elif exceeded_monthly_limit:
         date_time_now = timezone.now()
         # Get Next Month
         year = date_time_now.year
@@ -492,8 +495,13 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         next_month_date = timezone.now().replace(year=year, month=next_month, day=1,
                                                  hour=0, minute=0, second=0, microsecond=0)
         remaining_time = next_month_date - date_time_now
-        response_data = {'message': 'You have exhausted {0}\'s submission limit'.format(date_time_now.strftime("%B")),
-                         'remaining_time': remaining_time}
+        if exceeded_daily_limit:
+            response_data = {'message': 'Both Daily and {0}\'s submission limits are exhausted'.format(
+                              date_time_now.strftime("%B")),
+                             'remaining_time': remaining_time}
+        else:
+            response_data = {'message': 'You have exhausted {0}\'s submission limit'.format(date_time_now.strftime("%B")),
+                             'remaining_time': remaining_time}
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         # Calculate the remaining submissions for current Month.
