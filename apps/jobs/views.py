@@ -500,7 +500,8 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
                               date_time_now.strftime("%B")),
                              'remaining_time': remaining_time}
         else:
-            response_data = {'message': 'You have exhausted {0}\'s submission limit'.format(date_time_now.strftime("%B")),
+            response_data = {'message': 'You have exhausted {0}\'s submission limit'.format(
+                             date_time_now.strftime("%B")),
                              'remaining_time': remaining_time}
         return Response(response_data, status=status.HTTP_200_OK)
     else:
