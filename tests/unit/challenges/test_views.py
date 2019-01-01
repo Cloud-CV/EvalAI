@@ -3032,7 +3032,7 @@ class GetBrokerUrlTest(BaseAPITestClass):
 
     def test_get_broker_urls_when_challenge_is_approved(self):
         expected = {
-            'result': ["queue-name-2", "queue-name-3"]
+            'results': ["queue-name-2", "queue-name-3"]
         }
         self.client.force_authenticate(user=self.superuser)
         response = self.client.get(self.url, {})
@@ -3065,7 +3065,7 @@ class GetBrokerUrlTest(BaseAPITestClass):
         self.url = reverse_lazy('challenges:get_broker_url_by_challenge_pk',
                                 kwargs={'challenge_pk': self.challenge2.pk})
         expected = {
-            'result': ["queue-name-2"]
+            'results': ["queue-name-2"]
         }
         self.client.force_authenticate(user=self.superuser)
         response = self.client.get(self.url, {})
