@@ -59,13 +59,7 @@ ssl/
 # Code editors
 .vscode
 .idea/
-
-# File-based project format
 *.iws
-
-# PyCharm
 out/
-
-# mpeltonen/sbt-idea plugin
 .idea_modules/
 
