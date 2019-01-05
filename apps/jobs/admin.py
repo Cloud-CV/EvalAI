@@ -18,10 +18,9 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
                     'created_by', 'status', 'is_public', 'submission_number', 'submitted_at',
                     'execution_time', 'input_file', 'stdout_file', 'stderr_file',
                     'submission_result_file', 'submission_metadata_file',)
-    list_filter = ('participant_team', 'challenge_phase',
-                   'status', 'is_public',)
+    list_filter = ('challenge_phase__challenge', 'challenge_phase', 'status', 'is_public',)
     search_fields = ('participant_team__team_name', 'challenge_phase__name',
-                     'created_by__username', 'status',)
+                     'challenge_phase__challenge__title', 'created_by__username', 'status',)
 
     def get_challenge_name_and_id(self, obj):
         """Return challenge name corresponding to phase"""
