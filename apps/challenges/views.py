@@ -1056,40 +1056,40 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
                 writer = csv.writer(response)
                 writer.writerow(['id',
-                                'Team Name',
-                                'Team Members',
-                                'Team Members Email Id',
-                                'Challenge Phase',
-                                'Status',
-                                'Created By',
-                                'Execution Time(sec.)',
-                                'Submission Number',
-                                'Submitted File',
-                                'Stdout File',
-                                'Stderr File',
-                                'Submitted At',
-                                'Submission Result File',
-                                'Submission Metadata File',
-                                ])
+                                 'Team Name',
+                                 'Team Members',
+                                 'Team Members Email Id',
+                                 'Challenge Phase',
+                                 'Status',
+                                 'Created By',
+                                 'Execution Time(sec.)',
+                                 'Submission Number',
+                                 'Submitted File',
+                                 'Stdout File',
+                                 'Stderr File',
+                                 'Submitted At',
+                                 'Submission Result File',
+                                 'Submission Metadata File',
+                                 ])
                 for submission in submissions.data:
                     writer.writerow([submission['id'],
                                     submission['participant_team'],
                                     ",".join(
                                         username['username'] for username in submission['participant_team_members']),
-                                    ",".join(
+                                     ",".join(
                                         email['email'] for email in submission['participant_team_members']),
-                                    submission['challenge_phase'],
-                                    submission['status'],
-                                    submission['created_by'],
-                                    submission['execution_time'],
-                                    submission['submission_number'],
-                                    submission['input_file'],
-                                    submission['stdout_file'],
-                                    submission['stderr_file'],
-                                    submission['created_at'],
-                                    submission['submission_result_file'],
-                                    submission['submission_metadata_file'],
-                                    ])
+                                     submission['challenge_phase'],
+                                     submission['status'],
+                                     submission['created_by'],
+                                     submission['execution_time'],
+                                     submission['submission_number'],
+                                     submission['input_file'],
+                                     submission['stdout_file'],
+                                     submission['stderr_file'],
+                                     submission['created_at'],
+                                     submission['submission_result_file'],
+                                     submission['submission_metadata_file'],
+                                     ])
                 return response
 
             elif has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
@@ -1107,15 +1107,15 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
                 writer = csv.writer(response)
                 writer.writerow(['Team Name',
-                                'Method Name',
-                                'Status',
-                                'Execution Time(sec.)',
-                                'Submitted File',
-                                'Result File',
-                                'Stdout File',
-                                'Stderr File',
-                                'Submitted At',
-                                ])
+                                 'Method Name',
+                                 'Status',
+                                 'Execution Time(sec.)',
+                                 'Submitted File',
+                                 'Result File',
+                                 'Stdout File',
+                                 'Stderr File',
+                                 'Submitted At',
+                                 ])
                 for submission in submissions.data:
                     writer.writerow([submission['participant_team'],
                                     submission['method_name'],
@@ -1126,7 +1126,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                     submission['stdout_file'],
                                     submission['stderr_file'],
                                     submission['created_at'],
-                                    ])
+                                     ])
                 return response
             else:
                 response_data = {
@@ -1183,6 +1183,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             response_data = {
                 'error': 'Sorry, you do not belong to this Host Team!'}
             return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
 
 @throttle_classes([UserRateThrottle])
 @api_view(['POST'])
