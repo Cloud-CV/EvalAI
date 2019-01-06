@@ -1131,10 +1131,10 @@
                 }
                 else {
                     parameters.method = "POST";
-                    var fieldsExport = []
+                    var fieldsExport = [];
                     for(var i = 0 ; i < vm.fields.length ; i++) {
                         if (vm.fieldsToGet.includes(vm.fields[i].id)) {
-                            fieldsExport.push(vm.fields[i].id)
+                            fieldsExport.push(vm.fields[i].id);
                         }
                     }
                     parameters.data = fieldsExport;
