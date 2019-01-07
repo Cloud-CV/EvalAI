@@ -6,12 +6,11 @@ import shutil
 import string
 import tempfile
 import uuid
+import xlsxwriter
 import yaml
 import zipfile
-import xlsxwriter
+
 from io import BytesIO
-
-
 from os.path import basename, isfile, join
 
 from django.contrib.auth.models import User
@@ -87,8 +86,7 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge = Challenge.objects.filter(
-            creator=challenge_host_team, is_disabled=False)
+        challenge = Challenge.objects.filter(creator=challenge_host_team, is_disabled=False)
         paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
             result_page, many=True, context={'request': request})
@@ -176,8 +174,7 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if challenge.end_date < timezone.now() or challenge.start_date > timezone.now():
-        response_data = {
-            'error': 'Sorry, cannot accept participant team since challenge is not active.'}
+        response_data = {'error': 'Sorry, cannot accept participant team since challenge is not active.'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -301,8 +298,7 @@ def get_featured_challenges(request):
         approved_by_admin=True,
         is_disabled=False)
     paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(
-        result_page, many=True, context={'request': request})
+    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
@@ -317,8 +313,7 @@ def get_challenge_by_pk(request, pk):
         if is_user_a_host_of_challenge(request.user, pk):
             challenge = Challenge.objects.get(pk=pk)
         else:
-            challenge = Challenge.objects.get(
-                pk=pk, approved_by_admin=True, published=True)
+            challenge = Challenge.objects.get(pk=pk, approved_by_admin=True, published=True)
         if (challenge.is_disabled):
             response_data = {'error': 'Sorry, the challenge was removed!'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -472,8 +467,7 @@ def challenge_phase_split_list(request, challenge_pk):
     challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
 
     if not challenge_host:
-        challenge_phase_split = challenge_phase_split.filter(
-            visibility=ChallengePhaseSplit.PUBLIC)
+        challenge_phase_split = challenge_phase_split.filter(visibility=ChallengePhaseSplit.PUBLIC)
 
     serializer = ChallengePhaseSplitSerializer(
         challenge_phase_split, many=True)
@@ -1632,8 +1626,7 @@ def get_broker_urls(request):
         Broker URL of approved challenges
     """
     if not request.user.is_superuser:
-        response_data = {
-            'error': 'You are not authorized to make this request!'}
+        response_data = {'error': 'You are not authorized to make this request!'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
     else:
         challenges = Challenge.objects.filter(approved_by_admin=True)
