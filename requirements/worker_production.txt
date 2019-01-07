@@ -1,0 +1,2 @@
+-r worker.txt
+git+git://github.com/RishabhJain2018/sumo-challenge@master
