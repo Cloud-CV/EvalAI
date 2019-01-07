@@ -16,6 +16,6 @@ pika==0.10.0
 pickleshare==0.7.4
 Pillow==3.4.2
 psycopg2==2.7.3.2
-PyYaml==3.12
+PyYaml==4.2b1
 proc==0.10.1
 rstr==2.2.5
