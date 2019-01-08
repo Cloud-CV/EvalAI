@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import datetime
 import os
 import sys
+import warnings
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -297,3 +298,9 @@ SWAGGER_SETTINGS = {
 REDOC_SETTINGS = {
     'SPEC_URL': ('docs.yaml', {'format': '.yaml'}),
 }
+
+#Prevents Datetime warning by showing errors 
+warnings.filterwarnings(
+    'error', r"DateTimeField .* received a naive datetime",
+    RuntimeWarning, r'django\.db\.models\.fields',
+)
