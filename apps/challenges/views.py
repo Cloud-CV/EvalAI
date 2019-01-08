@@ -555,7 +555,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if yaml_file_count > 1:
-        message = 'There are {0} YAML Files instead of One in zip File!'.format(yaml_file_count)
+        message = 'There are {0} YAML files instead of one in zip folder!'.format(yaml_file_count)
         response_data = {
             'error': message
         }
