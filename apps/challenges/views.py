@@ -563,7 +563,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
     try:
         with open(join(BASE_LOCATION, unique_folder_name, yaml_file), "r") as stream:
-            yaml_file_data = yaml.load(stream)
+            yaml_file_data = yaml.safe_load(stream)
     except (yaml.YAMLError, ScannerError) as exc:
         message = 'Error in creating challenge. Please check the yaml configuration!'
         response_data = {
