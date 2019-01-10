@@ -8,7 +8,6 @@ import tempfile
 import uuid
 import yaml
 import zipfile
-from datetime import datetime
 
 from os.path import basename, isfile, join
 
