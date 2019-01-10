@@ -145,8 +145,8 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    vm.team.name = response.data.team_name;
-                    vm.team.url = response.data.team_url;
+                    vm.team.name_modal = response.data.team_name;
+                    vm.team.url_modal = response.data.team_url;
                 },
                 onError: function(response) {
                     var error = response.data['error'];
@@ -171,8 +171,8 @@
             parameters.url = 'hosts/challenge_host_team/' + vm.hostTeamId;
             parameters.method = 'PATCH';
             parameters.data = {
-                "team_name": vm.team.name,
-                "team_url": vm.team.url
+                "team_name": vm.team.name_modal,
+                "team_url": vm.team.url_modal
             };
             parameters.token = userKey;
             parameters.callback = {
