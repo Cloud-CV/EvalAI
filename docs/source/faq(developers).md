@@ -198,7 +198,7 @@ karma@>=0.9.0 but none was installed.
 
 Uninstall and then install karma again and also don't forget to clean the global as well as project npm cache. Then try again the step 8.
 
-#### While running the unit tests, I am getting the error similar to as shown below:
+#### Q. While running the unit tests, I am getting the error similar to as shown below:
 
 ```
 ________________ ERROR collecting tests/unit/web/test_views.py _________________
@@ -213,3 +213,55 @@ HINT: remove __pycache__ / .pyc files and/or use a unique basename for your test
 It appears that you are trying to run `pytest` in a docker container. To fix this, delete the `__pycache__` and all `*.pyc` files using the following command:
 
 `find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf`
+
+#### Q. Getting the following error :
+
+```
+ERROR: for db Cannot start service db: driver failed programming external connectivity on endpoint evalai_db_1 (2163096de9aac6561b4f699bb1049acd0ce881fbaa0da28e47cfa9ca0ee1199f): Error starting userland proxy: listen tcp 0.0.0.0:5432: bind: address already in use
+```
+
+The following solution only works on Linux.
+
+Execute :
+```sudo netstat -lpn |grep :5432```
+
+The output of the above would be in the following form:
+```
+tcp 0 0 127.0.0.1:5432 0.0.0.0:* LISTEN 25273/postgres
+```
+Execute the following command:
+```
+sudo kill 25273 ## This would vary and you can change with the output in the first step
+```
+
+#### Q. Getting the following error :
+```
+ERROR : Version in "./docker-compose.yml" is unsupported. You might be seeing this error becasue you are using wrong Compose file version.
+```
+
+Since, the version of compose file is 3. You might be using a docker version which is not compatible. You can upgrade your docker engine and try again.
+
+#### Q. Getting the following error while runnig `python manage.py runserver --settings=settings.dev`
+```
+Starting the database seeder. Hang on...
+Are you sure you want to wipe the existing development database and reseed it? (Y/N)
+Exception while running run() in 'scripts.seed'
+```
+
+Try clearing the postgres database manually and try again.
+
+#### Q. Getting the following error while executing `gulp dev:runserver`:
+```
+/usr/lib//nodejs/gulp//bin/gulp.js:132
+	gulpInst.start.apply(gulpInst, toRun)l
+				   ^	
+TypeError: Cannot read properly 'apply of undefined'
+```
+
+Execute the following command:
+```
+rm -rf node_modules/
+rm -rf bower_components
+npm install
+bower install
+```

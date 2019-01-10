@@ -147,6 +147,9 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     python scripts/workers/submission_worker.py
     ```
 
+
+If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
+
 ## The Team
 
 EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io), [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](http://taranjeet.github.io/), [Shiv Baran Singh](http://www.shivbaran.in/) and [Rishabh Jain](https://rishabhjain2018.github.io/). A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
