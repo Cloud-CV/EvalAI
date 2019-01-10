@@ -534,7 +534,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Search for yaml file
