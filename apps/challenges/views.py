@@ -8,6 +8,7 @@ import tempfile
 import uuid
 import yaml
 import zipfile
+from datetime import datetime
 
 from os.path import basename, isfile, join
 
@@ -1067,7 +1068,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                  'Submitted File',
                                  'Stdout File',
                                  'Stderr File',
-                                 'Submitted At',
+                                 'Submitted At (mm/dd/yyyy hh:mm:ss)',
                                  'Submission Result File',
                                  'Submission Metadata File',
                                  ])
@@ -1114,7 +1115,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                                  'Result File',
                                  'Stdout File',
                                  'Stderr File',
-                                 'Submitted At',
+                                 'Submitted At (mm/dd/yyyy hh:mm:ss)',
                                  ])
                 for submission in submissions.data:
                     writer.writerow([submission['participant_team'],
@@ -1149,7 +1150,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                 'input_file': 'Submitted File',
                 'stdout_file': 'Stdout File',
                 'stderr_file': 'Stderr File',
-                'created_at': 'Submitted At',
+                'created_at': 'Submitted At (mm/dd/yyyy hh:mm:ss)',
                 'submission_result_file': 'Submission Result File',
                 'submission_metadata_file': 'Submission Metadata File',
             }
@@ -1173,6 +1174,10 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
                     elif field == 'participant_team_members_email':
                         row.append(
                             ",".join(email['email'] for email in submission['participant_team_members'])
+                        )
+                    elif field == 'created_at':
+                        row.append(
+                            submission['created_at'].strftime('%m/%d/%Y %H:%M:%S')
                         )
                     else:
                         row.append(submission[field])
