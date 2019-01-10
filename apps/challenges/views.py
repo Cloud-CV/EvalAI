@@ -534,13 +534,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Search for yaml file
     yaml_file_count = 0
     for name in zip_ref.namelist():
-        if name.endswith('.yaml') or name.endswith('.yml'):
+        if (name.endswith('.yaml') or name.endswith('.yml')) and (
+                not name.startswith('__MACOSX')):  # Ignore YAML File in __MACOSX Directory
             yaml_file = name
             extracted_folder_name = yaml_file.split(basename(yaml_file))[0]
             yaml_file_count += 1
@@ -554,7 +554,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if yaml_file_count > 1:
-        message = 'There are more than one YAML files in zip folder!'
+        message = 'There are {0} YAML files instead of one in zip folder!'.format(yaml_file_count)
         response_data = {
             'error': message
         }
@@ -563,7 +563,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
     try:
         with open(join(BASE_LOCATION, unique_folder_name, yaml_file), "r") as stream:
-            yaml_file_data = yaml.load(stream)
+            yaml_file_data = yaml.safe_load(stream)
     except (yaml.YAMLError, ScannerError) as exc:
         message = 'Error in creating challenge. Please check the yaml configuration!'
         response_data = {
