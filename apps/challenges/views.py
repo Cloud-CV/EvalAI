@@ -1274,7 +1274,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def star_challenge(request, challenge_pk):
     """
