@@ -57,11 +57,16 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```
     docker-compose up --build
     ```
+3. That's it. Open web browser and hit the url [http://127.0.0.1:8888].
+    
+    **SUPERUSER-** username: `admin` password: `password`  
+    **HOST USER-** username: `host` password: `password`  
+    **PARTICIPANT USER-** username: `participant` password: `password`   
 
 ### Using Virtual Environment
 
 1. Install [python] 2.7.10 or above, [git], [postgresql] version >= 10.1, have ElasticMQ installed (Amazon SQS is used in production) and [virtualenv], in your computer, if you don't have it already.
-*If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
+*If you are having trouble with postgresql on Windows check this link [postgresqlhelp](http://www.postgresqltutorial.com/install-postgresql/).*
 
 2. Get the source code on your machine via git.
 
@@ -141,6 +146,9 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```
     python scripts/workers/submission_worker.py
     ```
+
+
+If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
 
 ## The Team
 

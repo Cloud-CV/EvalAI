@@ -148,3 +148,34 @@ i.star {
     margin-top: 10px;
     margin-bottom: 25px;
 }
+
+.margin-tb-4 {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.margin-tb-10 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.width-auto {
+    width: auto !important;
+}
+
+.f-16 {
+    font-size: 16px !important;
+}
+
+.text-med-red {
+    color: red;
+}
+
+md-select.md-default-theme .md-select-value span:first-child:after, md-select .md-select-value span:first-child:after {
+    color: white;
+}
+
+.orange-background {
+    background-color: #ffaf4b !important;
+}
+

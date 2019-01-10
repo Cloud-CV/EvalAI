@@ -5,6 +5,7 @@ import requests
 import shutil
 import string
 import tempfile
+import uuid
 import yaml
 import zipfile
 
@@ -307,7 +308,10 @@ def get_challenge_by_pk(request, pk):
     Returns a particular challenge by id
     """
     try:
-        challenge = Challenge.objects.get(pk=pk)
+        if is_user_a_host_of_challenge(request.user, pk):
+            challenge = Challenge.objects.get(pk=pk)
+        else:
+            challenge = Challenge.objects.get(pk=pk, approved_by_admin=True, published=True)
         if (challenge.is_disabled):
             response_data = {'error': 'Sorry, the challenge was removed!'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -372,8 +376,12 @@ def challenge_phase_list(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge_phase = ChallengePhase.objects.filter(
-            challenge=challenge, is_public=True).order_by('pk')
+        if is_user_a_host_of_challenge(request.user, challenge_pk):
+            challenge_phase = ChallengePhase.objects.filter(
+                challenge=challenge).order_by('pk')
+        else:
+            challenge_phase = ChallengePhase.objects.filter(
+                challenge=challenge, is_public=True).order_by('pk')
         paginator, result_page = paginated_queryset(challenge_phase, request)
         serializer = ChallengePhaseSerializer(result_page, many=True)
         response_data = serializer.data
@@ -526,13 +534,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Search for yaml file
     yaml_file_count = 0
     for name in zip_ref.namelist():
-        if name.endswith('.yaml') or name.endswith('.yml'):
+        if (name.endswith('.yaml') or name.endswith('.yml')) and (
+                not name.startswith('__MACOSX')):  # Ignore YAML File in __MACOSX Directory
             yaml_file = name
             extracted_folder_name = yaml_file.split(basename(yaml_file))[0]
             yaml_file_count += 1
@@ -546,7 +554,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if yaml_file_count > 1:
-        message = 'There are more than one YAML files in zip folder!'
+        message = 'There are {0} YAML files instead of one in zip folder!'.format(yaml_file_count)
         response_data = {
             'error': message
         }
@@ -555,7 +563,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
     try:
         with open(join(BASE_LOCATION, unique_folder_name, yaml_file), "r") as stream:
-            yaml_file_data = yaml.load(stream)
+            yaml_file_data = yaml.safe_load(stream)
     except (yaml.YAMLError, ScannerError) as exc:
         message = 'Error in creating challenge. Please check the yaml configuration!'
         response_data = {
@@ -793,6 +801,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
+                challenge_title = challenge.title.split(' ')
+                challenge_title = '-'.join(challenge_title).lower()
+                random_challenge_id = uuid.uuid4()
+                challenge_queue_name = "{}-{}".format(challenge_title, random_challenge_id)
+                challenge.queue = challenge_queue_name
+                challenge.save()
             else:
                 response_data = serializer.errors
                 # transaction.set_rollback(True)
@@ -1260,7 +1274,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def star_challenge(request, challenge_pk):
     """
@@ -1307,3 +1321,51 @@ def star_challenge(request, challenge_pk):
             response_data = {'is_starred': False,
                              'count': serializer.data[0]['count']}
             return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_broker_urls(request):
+    """
+    Returns:
+        Queue name of approved challenges
+    """
+    is_active = request.data.get('is_active', False)
+
+    q_params = {'approved_by_admin': True}
+    if is_active:
+        q_params['start_date__lt'] = timezone.now()
+        q_params['end_date__gt'] = timezone.now()
+
+    if not request.user.is_superuser:
+        response_data = {'error': 'You are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
+        challenges = Challenge.objects.filter(**q_params)
+        response_data = challenges.values_list('queue', flat=True)
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_broker_url_by_challenge_pk(request, challenge_pk):
+    """
+    Returns:
+        Queue name of challenge with challenge pk
+    """
+    if not request.user.is_superuser:
+        response_data = {'error': 'You are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
+        try:
+            challenge = Challenge.objects.get(pk=challenge_pk, approved_by_admin=True)
+        except Challenge.DoesNotExist:
+            response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        response_data = [challenge.queue]
+        return Response(response_data, status=status.HTTP_200_OK)

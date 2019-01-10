@@ -1,4 +1,3 @@
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -221,22 +220,14 @@ def extract_challenge_data(challenge, phases):
         raise
 
 
-def load_active_challenges():
+def load_challenge(challenge):
     '''
-         * Fetches active challenges and corresponding active phases for it.
+        Creates python package for a challenge and extracts relevant data
     '''
-    q_params = {'approved_by_admin': True}
-    q_params['start_date__lt'] = timezone.now()
-    q_params['end_date__gt'] = timezone.now()
-
     # make sure that the challenge base directory exists
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
-
-    active_challenges = Challenge.objects.filter(**q_params)
-
-    for challenge in active_challenges:
-        phases = challenge.challengephase_set.all()
-        extract_challenge_data(challenge, phases)
+    phases = challenge.challengephase_set.all()
+    extract_challenge_data(challenge, phases)
 
 
 def extract_submission_data(submission_id):
@@ -293,17 +284,6 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     submission.started_at = timezone.now()
     submission.save()
 
-    remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
-
-    if remote_evaluation:
-        logger.info("Sending submission {} for remote evaluation".format(submission.id))
-        submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
-            annotation_file_path,
-            user_annotation_file_path,
-            challenge_phase.codename,
-            submission_metadata=submission_serializer.data)
-        return
-
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, 'run')
@@ -314,6 +294,36 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
 
     stdout = open(stdout_file, 'a+')
     stderr = open(stderr_file, 'a+')
+
+    remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
+
+    if remote_evaluation:
+        try:
+            logger.info("Sending submission {} for remote evaluation".format(submission.id))
+            with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:
+                submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+                    annotation_file_path,
+                    user_annotation_file_path,
+                    challenge_phase.codename,
+                    submission_metadata=submission_serializer.data)
+                return
+        except:
+            stderr.write(traceback.format_exc())
+            stderr.close()
+            stdout.close()
+            submission.status = Submission.FAILED
+            submission.completed_at = timezone.now()
+            submission.save()
+            with open(stdout_file, 'r') as stdout:
+                stdout_content = stdout.read()
+                submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
+            with open(stderr_file, 'r') as stderr:
+                stderr_content = stderr.read()
+                submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
+
+            # delete the complete temp run directory
+            shutil.rmtree(temp_run_dir)
+            return
 
     # call `main` from globals and set `status` to running and hence `started_at`
     try:
@@ -486,7 +496,7 @@ def process_submission_callback(body):
         logger.exception('Exception while receiving message from submission queue with error {}'.format(e))
 
 
-def get_or_create_sqs_queue():
+def get_or_create_sqs_queue(queue_name):
     """
     Returns:
         Returns the SQS Queue object
@@ -502,14 +512,14 @@ def get_or_create_sqs_queue():
                              region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
                              aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
                              aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
-
-    AWS_SQS_QUEUE_NAME = os.environ.get('AWS_SQS_QUEUE_NAME', 'evalai_submission_queue')
+    if queue_name == '':
+        queue_name = 'evalai_submission_queue'
     # Check if the queue exists. If no, then create one
     try:
-        queue = sqs.get_queue_by_name(QueueName=AWS_SQS_QUEUE_NAME)
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
         if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-            queue = sqs.create_queue(QueueName=AWS_SQS_QUEUE_NAME)
+            queue = sqs.create_queue(QueueName=queue_name)
         else:
             logger.exception('Cannot get or create Queue')
     return queue
@@ -521,11 +531,22 @@ def main():
     create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
-    load_active_challenges()
+    q_params = {'approved_by_admin': True}
+    q_params['start_date__lt'] = timezone.now()
+    q_params['end_date__gt'] = timezone.now()
+
+    challenge_pk = os.environ.get('CHALLENGE_PK')
+    if challenge_pk:
+        q_params['pk'] = challenge_pk
+
+    challenges = Challenge.objects.filter(**q_params)
+    for challenge in challenges:
+        load_challenge(challenge)
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
-    queue = get_or_create_sqs_queue()
+    queue_name = os.environ.get('CHALLENGE_QUEUE', 'evalai_submission_queue')
+    queue = get_or_create_sqs_queue(queue_name)
 
     while True:
         for message in queue.receive_messages():
