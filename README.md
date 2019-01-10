@@ -148,7 +148,7 @@ You can also use Docker Compose to run all the components of EvalAI together. Th
     ```
 
 
-If you are facing any issue during installation, you can visit [Common Errors during Installation](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation). There are some common issues which are encountered during installation of the project with their fix.
+If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
 
 ## The Team
 
