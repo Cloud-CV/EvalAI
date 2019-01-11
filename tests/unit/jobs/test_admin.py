@@ -3,11 +3,11 @@ import shutil
 
 from datetime import timedelta
 
+from django.contrib.admin.sites import AdminSite
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
 from django.utils import timezone
-from jobs.admin import SubmissionAdmin
-from django.contrib.admin.sites import AdminSite
 
 from allauth.account.models import EmailAddress
 from rest_framework.test import APITestCase, APIClient
@@ -17,6 +17,7 @@ from challenges.models import (Challenge,
                                )
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
+from jobs.admin import SubmissionAdmin
 from participants.models import ParticipantTeam, Participant
 
 
@@ -94,7 +95,7 @@ class BaseAPITestClass(APITestCase):
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
             created_by=self.challenge_host_team.created_by,
-            status='submitted',
+            status='Finished',
             input_file=self.challenge_phase.test_annotation,
             method_name="Test Method",
             method_description="Test Description",
@@ -115,20 +116,13 @@ class MockRequest(object):
 request = MockRequest()
 
 
-class AppAdminTest(BaseAPITestClass):
+class  SubmissionAdminTest(BaseAPITestClass):
     """
-    Test Case for submit job to worker
+    Test case for re-running submissions from admin
     """
 
     def setUp(self):
-        super(AppAdminTest, self).setUp()
-
-        self.user4 = User.objects.create_superuser(
-            username='test',
-            email='abc@xyz.com',
-            password='test',
-        )
-
+        super(SubmissionAdminTest, self).setUp()
         self.app_admin = SubmissionAdmin(Submission, AdminSite())
 
     def test_submit_job_to_worker(self):
