@@ -299,7 +299,7 @@ REDOC_SETTINGS = {
     'SPEC_URL': ('docs.yaml', {'format': '.yaml'}),
 }
 
-#Prevents Datetime warning by showing errors 
+# Prevents Datetime warning by showing errors
 warnings.filterwarnings(
     'error', r"DateTimeField .* received a naive datetime",
     RuntimeWarning, r'django\.db\.models\.fields',
