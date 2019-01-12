@@ -350,6 +350,22 @@ class BaseAPITestClass(APITestCase):
                                     'status': 'submitting', 'input_file': self.input_file}, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_challenge_submission_when_maximum_limit_exceeded(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+        actual_maxinmum_submissions = self.challenge_phase.max_submissions
+        self.challenge_phase.max_submissions = 0
+        self.challenge_phase.save()
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(self.url, {
+                                    'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.challenge_phase.max_submissions = actual_maxinmum_submissions
+        self.challenge_phase.save()
+
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
 
