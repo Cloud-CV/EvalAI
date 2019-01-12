@@ -5,7 +5,6 @@ from datetime import timedelta
 
 from django.contrib.admin.sites import AdminSite
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -116,7 +115,7 @@ class MockRequest(object):
 request = MockRequest()
 
 
-class  SubmissionAdminTest(BaseAPITestClass):
+class SubmissionAdminTest(BaseAPITestClass):
     """
     Test case for re-running submissions from admin
     """
