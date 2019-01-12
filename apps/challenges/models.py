@@ -164,9 +164,6 @@ class ChallengePhase(TimeStampedModel):
         if self.max_submissions_per_day < self.max_concurrent_submissions_allowed:
             self.max_concurrent_submissions_allowed = self.max_submissions_per_day
 
-        if not self.max_submissions_per_month:
-            self.max_submissions_per_month = self.max_submissions
-
         challenge_phase_instance = super(ChallengePhase, self).save(*args, **kwargs)
         return challenge_phase_instance
 
