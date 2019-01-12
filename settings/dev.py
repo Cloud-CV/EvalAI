@@ -1,3 +1,4 @@
+import warnings
 from .common import *  # noqa: ignore=F405
 
 # Database
@@ -26,7 +27,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
-INSTALLED_APPS += [ # noqa: ignore=F405
+INSTALLED_APPS += [  # noqa: ignore=F405
     'django_spaghetti',
     'autofixture',
     'debug_toolbar',
@@ -47,9 +48,15 @@ CACHES = {
 
 MEDIA_URL = "/media/"
 
-MIDDLEWARE += [ # noqa: ignore=F405
+MIDDLEWARE += [  # noqa: ignore=F405
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'silk.middleware.SilkyMiddleware',
 ]
 
 SILKY_PYTHON_PROFILER = True
+
+# Prevents Datetime warning by showing errors
+warnings.filterwarnings(
+    'error', r"DateTimeField .* received a naive datetime",
+    RuntimeWarning, r'django\.db\.models\.fields',
+)
