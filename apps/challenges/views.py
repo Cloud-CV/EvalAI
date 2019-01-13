@@ -84,7 +84,7 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge = Challenge.objects.filter(creator=challenge_host_team, is_disabled=False)
+        challenge = Challenge.objects.filter(creator=challenge_host_team, is_disabled=False).order_by('-id')
         paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
             result_page, many=True, context={'request': request})
@@ -294,7 +294,7 @@ def get_featured_challenges(request):
         featured=True,
         published=True,
         approved_by_admin=True,
-        is_disabled=False)
+        is_disabled=False).order_by('-id')
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
@@ -356,7 +356,7 @@ def get_challenges_based_on_teams(request):
         host_team_ids = get_challenge_host_teams_for_user(request.user)
         q_params['creator__id__in'] = host_team_ids
 
-    challenge = Challenge.objects.filter(**q_params)
+    challenge = Challenge.objects.filter(**q_params).order_by('id')
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={'request': request})
