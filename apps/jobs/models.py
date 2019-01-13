@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import datetime
 import logging
 
 from django.contrib.auth.models import User
@@ -9,6 +8,7 @@ from django.db.models import Max
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 
 from base.models import (TimeStampedModel, )
@@ -138,13 +138,15 @@ class Submission(TimeStampedModel):
                     challenge_phase__challenge=self.challenge_phase.challenge,
                     participant_team=self.participant_team,
                     challenge_phase=self.challenge_phase,
-                    submitted_at__gte=datetime.date.today()).count()
+                    # Get the midnight time of the day
+                    submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)).count()
 
                 failed_count = Submission.objects.filter(
                     challenge_phase=self.challenge_phase,
                     participant_team=self.participant_team,
                     status=Submission.FAILED,
-                    submitted_at__gte=datetime.date.today()).count()
+                    # Get the midnight time of the day
+                    submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)).count()
 
                 if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
                         (self.challenge_phase.max_submissions_per_day == 0)):
