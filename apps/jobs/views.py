@@ -440,7 +440,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
     # Get the submissions_done_today by midnight time of the day
     submissions_done_today = submissions_done.filter(
-        submitted_at__gte=timezone.now().date())
+        submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0))
 
     failed_submissions_done_today = submissions_done_today.filter(
         status=Submission.FAILED)
