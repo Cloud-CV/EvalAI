@@ -1,8 +1,8 @@
+import csv
+import io
 import json
 import os
 import shutil
-import csv
-import io
 
 from datetime import timedelta
 from os.path import join
