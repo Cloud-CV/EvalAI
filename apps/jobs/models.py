@@ -133,7 +133,9 @@ class Submission(TimeStampedModel):
                 logger.info("Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
                     self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk))
 
-            if hasattr(self.challenge_phase, 'max_submissions_per_day'):
+            if (hasattr(self.challenge_phase, 'max_submissions_per_day') and
+                hasattr(self.challenge_phase, 'max_submissions_per_month')):
+
                 submissions_done_today_count = Submission.objects.filter(
                     challenge_phase__challenge=self.challenge_phase.challenge,
                     participant_team=self.participant_team,
