@@ -1137,7 +1137,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'POST':
         if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
-            fieldsTable = {
+            fields_to_export = {
                 'participant_team': 'Team Name',
                 'participant_team_members': 'Team Members',
                 'participant_team_members_email': 'Team Members Email Id',
@@ -1160,7 +1160,7 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
             writer = csv.writer(response)
-            fields = [fieldsTable[field] for field in request.data]
+            fields = [fields_to_export[field] for field in request.data]
             fields.insert(0, 'id')
             writer.writerow(fields)
             for submission in submissions.data:
