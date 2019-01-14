@@ -2594,7 +2594,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_download_all_submissions_for_host_custom_fields(self):
+    def test_download_all_submissions_for_host_with_custom_fields(self):
         self.url = reverse_lazy('challenges:download_all_submissions',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk,
