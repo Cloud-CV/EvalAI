@@ -29,6 +29,7 @@ from challenges.models import (Challenge,
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
+from jobs.serializers import ChallengeSubmissionManagementSerializer
 
 
 class BaseAPITestClass(APITestCase):
@@ -2599,11 +2600,30 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk,
                                         'file_type': self.file_type_csv})
+        submissions = Submission.objects.filter(challenge_phase__challenge=self.challenge).order_by('-submitted_at')
+        submissions = ChallengeSubmissionManagementSerializer(submissions, many=True)
         expected = io.StringIO()
-        submissions = csv.writer(expected)
-        submissions.writerow(['id', 'Team Members', 'Team Members Email Id', 'Challenge Phase'])
-        submissions.writerow(['77', 'otheruser1', 'user1@test.com', 'Challenge Phase'])
+        expected_submissions = csv.writer(expected)
+        expected_submissions.writerow(['id', 'Team Members', 'Team Members Email Id', 'Challenge Phase'])
         self.data = ["participant_team_members", "participant_team_members_email", "challenge_phase"]
+        for submission in submissions.data:
+                row = [submission['id']]
+                for field in self.data:
+                    if field == 'participant_team_members':
+                        row.append(
+                            ",".join(username['username'] for username in submission['participant_team_members'])
+                        )
+                    elif field == 'participant_team_members_email':
+                        row.append(
+                            ",".join(email['email'] for email in submission['participant_team_members'])
+                        )
+                    elif field == 'created_at':
+                        row.append(
+                            submission['created_at'].strftime('%m/%d/%Y %H:%M:%S')
+                        )
+                    else:
+                        row.append(submission[field])
+                expected_submissions.writerow(row)
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.content.decode('utf-8'), expected.getvalue())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
