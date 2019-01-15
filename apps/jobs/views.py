@@ -339,15 +339,20 @@ def leaderboard(request, challenge_phase_split_id):
     # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
     challenge_hosts_emails = [] if not is_challenge_phase_public else challenge_hosts_emails
 
+    challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
+
     leaderboard_data = LeaderboardData.objects.exclude(
         submission__created_by__email__in=challenge_hosts_emails)
 
     # Get all the successful submissions related to the challenge phase split
     leaderboard_data = leaderboard_data.filter(
         challenge_phase_split=challenge_phase_split,
-        submission__is_public=True,
         submission__is_flagged=False,
         submission__status=Submission.FINISHED).order_by('created_at')
+
+    if not challenge_host_user:
+        leaderboard_data = leaderboard_data.filter(submission__is_public=True)
+
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',
@@ -373,8 +378,6 @@ def leaderboard(request, challenge_phase_split_id):
                                                 distinct_sorted_leaderboard_data,
                                                 request,
                                                 pagination_class=StandardResultSetPagination())
-
-    challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
 
     # Show the Private leaderboard only if the user is a challenge host
     if challenge_host_user:
