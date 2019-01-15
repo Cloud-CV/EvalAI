@@ -37,6 +37,7 @@
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
+        vm.submissionExhausted = true;
         // save initial ranking
         vm.initial_ranking = {};
 
@@ -1027,9 +1028,11 @@
                         if (details.remaining_submissions_today_count > 0) {
                             vm.remainingSubmissions = details;
                             vm.showSubmissionNumbers = true;
+                            vm.submissionExhausted = false;
                         } else {
                             vm.message = details;
                             vm.showClock = true;
+                            vm.submissionExhausted = true;
                             vm.countDownTimer = function() {
                                 vm.remainingTime = vm.message.remaining_time;
                                 vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
