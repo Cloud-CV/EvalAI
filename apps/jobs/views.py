@@ -379,16 +379,10 @@ def leaderboard(request, challenge_phase_split_id):
                                                 request,
                                                 pagination_class=StandardResultSetPagination())
 
-    # Show the Private leaderboard only if the user is a challenge host
-    if challenge_host_user:
-        response_data = result_page
-        return paginator.get_paginated_response(response_data)
-
     # Check if challenge phase leaderboard is public for participant user or not
-    elif challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC:
+    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
         response_data = {'error': 'Sorry, the leaderboard is not public!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     else:
         response_data = result_page
         return paginator.get_paginated_response(response_data)
