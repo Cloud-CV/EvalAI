@@ -140,12 +140,10 @@ class Submission(TimeStampedModel):
             )
 
             submissions_done_today_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
-                                           hour=0, minute=0, second=0, microsecond=0)).exclude(
-                                           status=Submission.FAILED).count()
+                hour=0, minute=0, second=0, microsecond=0)).exclude(status=Submission.FAILED).count()
 
             submissions_done_in_month_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
-                                              day=1, hour=0, minute=0, second=0, microsecond=0)).exclude(
-                                              status=Submission.FAILED).count()
+                day=1, hour=0, minute=0, second=0, microsecond=0)).exclude(status=Submission.FAILED).count()
 
             if self.challenge_phase.max_submissions_per_month - submissions_done_in_month_count == 0:
                 logger.info('Permission Denied: The maximum number of submission for this month has been reached')
