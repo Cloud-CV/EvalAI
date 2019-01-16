@@ -468,8 +468,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         remaining_time = midnight - date_time_now
 
         response_data = {'message': 'You have exhausted today\'s submission limit!',
-                         'remaining_time': remaining_time
-                         }
+                         'remaining_time': remaining_time}
         return Response(response_data, status=status.HTTP_200_OK)
 
     else:
