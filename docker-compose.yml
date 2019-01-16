@@ -47,6 +47,7 @@ services:
       NODE_ENV: development
     ports:
       - "8888:8888"
+      - "35729:35729"
     volumes:
       - .:/code
       - /code/node_modules

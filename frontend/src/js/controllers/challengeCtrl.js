@@ -246,8 +246,8 @@
             },
             onError: function(response) {
                 var error = response.data;
-                utilities.storeData('emailError', error.detail);
-                $state.go('web.permission-denied');
+                $rootScope.notify("error", error.error);
+                $state.go('web.dashboard');
                 utilities.hideLoader();
             }
         };
@@ -319,17 +319,17 @@
                             vm.projectUrl = null;
                             vm.publicationUrl = null;
                             if (status == 404) {
-
                                 vm.subErrors.msg = "Please select phase!";
-                            } else if (status == 400 || status == 406) {
-                                vm.subErrors.msg = error.input_file[0];
                             } else {
-                                vm.subErrors.msg = error.error;
+                                if (error.error){
+                                    vm.subErrors.msg = error.error;
+                                } else {
+                                    vm.subErrors.msg = error.input_file[0];
+                                }
                             }
                             vm.stopLoader();
                         }
                     };
-
                     utilities.sendRequest(parameters, 'header', 'upload');
                 }
             }
@@ -345,6 +345,11 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
+                for (var i=0; i<details.count; i++) {
+                    if (details.results[i].is_public == false) {
+                        vm.phases.results[i].showPrivate = true;
+                    }
+                }
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
@@ -1012,6 +1017,7 @@
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
+            vm.maxExceeded = false;
             parameters.url = "jobs/" + vm.challengeId + "/phases/" + phaseId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
@@ -1019,7 +1025,11 @@
                     var status = response.status;
                     var details = response.data;
                     if (status === 200) {
-                        if (details.remaining_submissions_today_count > 0) {
+                        if (details.max_submission_exceeded === true) {
+                            vm.maxExceeded = true;
+                            vm.maxExceededMessage = details.message;
+                        }
+                        else if (details.remaining_submissions_today_count > 0) {
                             vm.remainingSubmissions = details;
                             vm.showSubmissionNumbers = true;
                         } else {

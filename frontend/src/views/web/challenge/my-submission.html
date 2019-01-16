@@ -23,7 +23,7 @@
                     <div class="row">
                         <div class="col xs12 s6">
                             <span><md-select ng-model="challenge.phase.name" placeholder="Phase" class="rm-margin">
-                            <md-option ng-click="challenge.getResults(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}}</md-option>
+                            <md-option ng-click="challenge.getResults(key.id)" value="{{key.name}}" ng-repeat="key in challenge.phases.results">{{key.name}} <span class="new badge orange-background" data-badge-caption="Private" ng-if="key.showPrivate"></span></md-option>
                         </md-select></span>
                         </div>
                     </div>
