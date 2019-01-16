@@ -37,6 +37,7 @@
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
+        vm.unsuccessfulSubmission = true;
         // save initial ranking
         vm.initial_ranking = {};
 
@@ -305,6 +306,7 @@
                             vm.methodDesc = "";
                             vm.projectUrl = "";
                             vm.publicationUrl = "";
+                            vm.unsuccessfulSubmission = false;
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
 
                             vm.stopLoader();
@@ -318,6 +320,7 @@
                             vm.methodDesc = null;
                             vm.projectUrl = null;
                             vm.publicationUrl = null;
+                            vm.unsuccessfulSubmission = true;
                             if (status == 404) {
                                 vm.subErrors.msg = "Please select phase!";
                             } else {

@@ -89,7 +89,7 @@
                                             <label for="publicationUrl">Publication URL (Optional)</label>
                                         </div>
                                     </div>
-                                    <div class="text-highlight red-text"><strong>
+                                    <div ng-if="challenge.unsuccessfulSubmission"class="text-highlight red-text"><strong>
                                         {{challenge.subErrors.msg}}</strong></div>
                                     <section class="pagination">
                                         <div class="row rm-gut">
