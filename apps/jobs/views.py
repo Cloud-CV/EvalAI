@@ -437,20 +437,19 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     submissions_done_this_month_count = submissions_done_this_month.count()
     submissions_done_today_count = submissions_done_today.count()
 
-    # Checks for maximum submission limit
+    # Check for maximum submission limit
     if submissions_done_count >= max_submissions_count:
-        response_data = {
-                        'message': 'You have exhausted maximum submission limit!',
-                        'max_submission_exceeded': True
-                        }
+        response_data = {'message': 'You have exhausted maximum submission limit!',
+                         'max_submission_exceeded': True}
         return Response(response_data, status=status.HTTP_200_OK)
 
-    # Checks for monthy submission limit
+    # Check for monthy submission limit
     elif submissions_done_this_month_count >= max_submissions_per_month_count:
         date_time_now = timezone.now()
-        next_month_date_time = date_time_now + datetime.timedelta(days=+30)
-        next_month_start_date = next_month_date_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        remaining_time = next_month_start_date - date_time_now
+        next_month_start_date_time = date_time_now + datetime.timedelta(days=+30)
+        next_month_start_date_time = next_month_start_date_time.replace(
+                                     day=1, hour=0, minute=0, second=0, microsecond=0)
+        remaining_time = next_month_start_date_time - date_time_now
 
         if submissions_done_today_count >= max_submissions_per_day_count:
             response_data = {'message': 'Both daily and monthly submission limits are exhausted!',
@@ -482,11 +481,9 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         # Calculate the remaining submissions for today.
         remaining_submissions_today_count = (max_submissions_per_day_count -
                                              submissions_done_today_count)
-        response_data = {
-                          'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
-                          'remaining_submissions_today_count': remaining_submissions_today_count,
-                          'remaining_submissions': remaining_submission_count
-                        }
+        response_data = {'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
+                         'remaining_submissions_today_count': remaining_submissions_today_count,
+                         'remaining_submissions': remaining_submission_count}
         return Response(response_data, status=status.HTTP_200_OK)
 
 

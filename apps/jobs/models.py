@@ -133,29 +133,25 @@ class Submission(TimeStampedModel):
                 logger.info("Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
                     self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk))
 
-            submissions_done_today = Submission.objects.filter(
+            total_submissions_done = Submission.objects.filter(
                 challenge_phase__challenge=self.challenge_phase.challenge,
                 participant_team=self.participant_team,
                 challenge_phase=self.challenge_phase,
-                submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0))
+            )
 
-            submissions_done_today = submissions_done_today.exclude(status=Submission.FAILED)
-            submissions_done_today_count = submissions_done_today.count()
+            submissions_done_today_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
+                                           hour=0, minute=0, second=0, microsecond=0)).exclude(
+                                           status=Submission.FAILED).count()
 
-            submissions_done_in_month = Submission.objects.filter(
-                challenge_phase__challenge=self.challenge_phase.challenge,
-                participant_team=self.participant_team,
-                challenge_phase=self.challenge_phase,
-                submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
-
-            submissions_done_in_month = submissions_done_in_month.exclude(status=Submission.FAILED)
-            submissions_done_in_month_count = submissions_done_in_month.count()
+            submissions_done_in_month_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
+                                              day=1, hour=0, minute=0, second=0, microsecond=0)).exclude(
+                                              status=Submission.FAILED).count()
 
             if self.challenge_phase.max_submissions_per_month - submissions_done_in_month_count == 0:
-                logger.info("Permission Denied: The maximum number of submission for this month has been reached")
+                logger.info('Permission Denied: The maximum number of submission for this month has been reached')
                 raise PermissionDenied({'error': 'The maximum number of submission for this month has been reached'})
             if self.challenge_phase.max_submissions_per_day - submissions_done_today_count == 0:
-                logger.info("Permission Denied: The maximum number of submission for today has been reached")
+                logger.info('Permission Denied: The maximum number of submission for today has been reached')
                 raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
 
             self.is_public = (True if self.challenge_phase.is_submission_public else False)
