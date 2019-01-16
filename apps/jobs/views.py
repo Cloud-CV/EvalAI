@@ -448,7 +448,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         date_time_now = timezone.now()
         next_month_start_date_time = date_time_now + datetime.timedelta(days=+30)
         next_month_start_date_time = next_month_start_date_time.replace(
-                                     day=1, hour=0, minute=0, second=0, microsecond=0)
+            day=1, hour=0, minute=0, second=0, microsecond=0)
         remaining_time = next_month_start_date_time - date_time_now
 
         if submissions_done_today_count >= max_submissions_per_day_count:
