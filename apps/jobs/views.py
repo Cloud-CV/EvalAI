@@ -2,7 +2,6 @@ import datetime
 import json
 import logging
 
-from dateutil.relativedelta import relativedelta
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
                                        authentication_classes,
@@ -419,70 +418,42 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     max_submissions_count = challenge_phase.max_submissions
-
     max_submissions_per_month_count = challenge_phase.max_submissions_per_month
-
     max_submissions_per_day_count = challenge_phase.max_submissions_per_day
 
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk)
-
-    failed_submissions = submissions_done.filter(
-        status=Submission.FAILED)
+        participant_team=participant_team_pk).exclude(status=Submission.FAILED)
 
     submissions_done_this_month = submissions_done.filter(
         submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
-
-    failed_submissions_this_month = submissions_done_this_month.filter(
-        status=Submission.FAILED)
 
     # Get the submissions_done_today by midnight time of the day
     submissions_done_today = submissions_done.filter(
         submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0))
 
-    failed_submissions_done_today = submissions_done_today.filter(
-        status=Submission.FAILED)
-
     submissions_done_count = submissions_done.count()
-    failed_submissions_count = failed_submissions.count()
     submissions_done_this_month_count = submissions_done_this_month.count()
-    failed_submissions_done_this_month_count = failed_submissions_this_month.count()
     submissions_done_today_count = submissions_done_today.count()
-    failed_submissions_done_today_count = failed_submissions_done_today.count()
 
-    exceeded_daily_limit = ((submissions_done_today_count - failed_submissions_done_today_count) >=
-                            max_submissions_per_day_count
-                            or (max_submissions_per_day_count == 0))
-    exceeded_monthly_limit = ((submissions_done_this_month_count - failed_submissions_done_this_month_count) >=
-                              max_submissions_per_month_count or (max_submissions_per_month_count == 0))
-
-    # Checks for Maximum Submission Limit
-    if (submissions_done_count - failed_submissions_count) >= max_submissions_count:
+    # Checks for maximum submission limit
+    if submissions_done_count >= max_submissions_count:
         response_data = {
                         'message': 'You have exhausted maximum submission limit!',
                         'max_submission_exceeded': True
                         }
         return Response(response_data, status=status.HTTP_200_OK)
 
-    # Checks for Monthy Submission Limit
-    elif exceeded_monthly_limit:
+    # Checks for monthy submission limit
+    elif submissions_done_this_month_count >= max_submissions_per_month_count:
         date_time_now = timezone.now()
-        # Get current Year
-        year = date_time_now.year
-        # If the current month is December
-        if date_time_now.month == 12:
-            year = year + 1
-        # Get Next Month
-        next_month = date_time_now + relativedelta(months=+1)
-        next_month = next_month.month
-        # Get Next Month's First Date
-        next_month_date = timezone.now().replace(year=year, month=next_month, day=1,
-                                                 hour=0, minute=0, second=0, microsecond=0)
-        remaining_time = next_month_date - date_time_now
-        if exceeded_daily_limit:
-            response_data = {'message': 'Both Daily and Monthly submission limits are exhausted!',
+        next_month_date_time = date_time_now + datetime.timedelta(days=+30)
+        next_month_start_date = next_month_date_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        remaining_time = next_month_start_date - date_time_now
+
+        if submissions_done_today_count >= max_submissions_per_day_count:
+            response_data = {'message': 'Both daily and monthly submission limits are exhausted!',
                              'remaining_time': remaining_time}
         else:
             response_data = {'message': 'You have exhausted this month\'s submission limit!',
@@ -490,51 +461,27 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
     # Checks if #today's successful submission is greater than or equal to max submission per day
-    elif exceeded_daily_limit and (not exceeded_monthly_limit):
-        # Get the UTC time of the instant when the above condition is true.
+    elif submissions_done_today_count >= max_submissions_per_day_count:
         date_time_now = timezone.now()
-        # Calculate the next day's date.
-        date_time_tomorrow = date_time_now.date() + datetime.timedelta(1)
-        utc = timezone.utc
+        date_time_tomorrow = date_time_now + datetime.timedelta(1)
         # Get the midnight time of the day i.e. 12:00 AM of next day.
-        midnight = utc.localize(datetime.datetime.combine(
-            date_time_tomorrow, datetime.time()))
-        # Subtract the current time from the midnight time to get the remaining time for the next day's submissions.
+        midnight = date_time_tomorrow.replace(hour=0, minute=0, second=0)
         remaining_time = midnight - date_time_now
-        # Return the remaining time with a message.
-        response_data = {'message': 'You have exhausted today\'s submission limit',
+
+        response_data = {'message': 'You have exhausted today\'s submission limit!',
                          'remaining_time': remaining_time
                          }
         return Response(response_data, status=status.HTTP_200_OK)
-    else:
-        # Calculate the remaining submissions for current Month.
-        remaining_submissions_this_month_count = (max_submissions_per_month_count -
-                                                  (submissions_done_this_month_count -
-                                                   failed_submissions_done_this_month_count)
-                                                  )
 
+    else:
+        # calculate the remaining submissions from total submissions.
+        remaining_submission_count = max_submissions_count - submissions_done_count
+        # Calculate the remaining submissions for current month.
+        remaining_submissions_this_month_count = (max_submissions_per_month_count -
+                                                  submissions_done_this_month_count)
         # Calculate the remaining submissions for today.
         remaining_submissions_today_count = (max_submissions_per_day_count -
-                                             (submissions_done_today_count -
-                                              failed_submissions_done_today_count)
-                                             )
-
-        # calculate the remaining submissions from total submissions.
-        remaining_submission_count = max_submissions_count - \
-            (submissions_done_count - failed_submissions_count)
-
-        if remaining_submissions_today_count > remaining_submission_count:
-            remaining_submissions_today_count = remaining_submission_count
-
-        # Edge Case to Handle if remaining_submissions_this_month_count is greater than remaining_submission_count
-        if remaining_submissions_this_month_count > remaining_submission_count:
-            remaining_submissions_this_month_count = remaining_submission_count
-
-        # Edge Case to Handle remaining_submissions_today_count is greater than remaining_submissions_this_month_count
-        if remaining_submissions_today_count > remaining_submissions_this_month_count:
-            remaining_submissions_today_count = remaining_submissions_this_month_count
-
-        # Return the above calculated data.
+                                             submissions_done_today_count)
         response_data = {
                           'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
                           'remaining_submissions_today_count': remaining_submissions_today_count,
