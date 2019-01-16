@@ -414,7 +414,9 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
     # Conditional check for the existence of participant team of the user.
     if not participant_team_pk:
-        response_data = {'error': 'You haven\'t participated in the challenge'}
+        response_data = {
+            'error': 'You haven\'t participated in the challenge'
+        }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     max_submissions_count = challenge_phase.max_submissions
@@ -439,8 +441,10 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
     # Check for maximum submission limit
     if submissions_done_count >= max_submissions_count:
-        response_data = {'message': 'You have exhausted maximum submission limit!',
-                         'max_submission_exceeded': True}
+        response_data = {
+            'message': 'You have exhausted maximum submission limit!',
+            'max_submission_exceeded': True
+        }
         return Response(response_data, status=status.HTTP_200_OK)
 
     # Check for monthy submission limit
@@ -452,11 +456,15 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         remaining_time = next_month_start_date_time - date_time_now
 
         if submissions_done_today_count >= max_submissions_per_day_count:
-            response_data = {'message': 'Both daily and monthly submission limits are exhausted!',
-                             'remaining_time': remaining_time}
+            response_data = {
+                'message': 'Both daily and monthly submission limits are exhausted!',
+                'remaining_time': remaining_time
+            }
         else:
-            response_data = {'message': 'You have exhausted this month\'s submission limit!',
-                             'remaining_time': remaining_time}
+            response_data = {
+                'message': 'You have exhausted this month\'s submission limit!',
+                'remaining_time': remaining_time
+            }
         return Response(response_data, status=status.HTTP_200_OK)
 
     # Checks if #today's successful submission is greater than or equal to max submission per day
@@ -467,8 +475,10 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         midnight = date_time_tomorrow.replace(hour=0, minute=0, second=0)
         remaining_time = midnight - date_time_now
 
-        response_data = {'message': 'You have exhausted today\'s submission limit!',
-                         'remaining_time': remaining_time}
+        response_data = {
+            'message': 'You have exhausted today\'s submission limit!',
+            'remaining_time': remaining_time
+        }
         return Response(response_data, status=status.HTTP_200_OK)
 
     else:
@@ -480,9 +490,11 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         # Calculate the remaining submissions for today.
         remaining_submissions_today_count = (max_submissions_per_day_count -
                                              submissions_done_today_count)
-        response_data = {'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
-                         'remaining_submissions_today_count': remaining_submissions_today_count,
-                         'remaining_submissions': remaining_submission_count}
+        response_data = {
+            'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
+            'remaining_submissions_today_count': remaining_submissions_today_count,
+            'remaining_submissions': remaining_submission_count
+        }
         return Response(response_data, status=status.HTTP_200_OK)
 
 
