@@ -127,7 +127,7 @@
             anchor.attr({
                 href: 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(vm.jsonResponse)),
                 download: 'token.json'
-            })
+            });
 
             // Create Event
             var ev = document.createEvent("MouseEvents");
