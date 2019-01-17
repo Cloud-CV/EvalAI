@@ -1184,7 +1184,7 @@
                 },
                 onError: function(response) {
                     var error = response.data;
-                    $rootScope.notify("error", error);
+                    $rootScope.notify("error", "Login Required !");
                 }
             };
             utilities.sendRequest(parameters);
