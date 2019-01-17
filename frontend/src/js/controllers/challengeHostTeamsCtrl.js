@@ -34,9 +34,6 @@
          // show loader
         vm.startLoader = loaderService.startLoader;
 
-        // stop loader
-        vm.stopLoader = loaderService.stopLoader;
-
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
         };
@@ -145,8 +142,8 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    vm.team.name_modal = response.data.team_name;
-                    vm.team.url_modal = response.data.team_url;
+                    vm.team.TeamName = response.data.team_name;
+                    vm.team.TeamURL = response.data.team_url;
                 },
                 onError: function(response) {
                     var error = response.data['error'];
@@ -165,14 +162,14 @@
         };
 
 
-        vm.updateHostTeamData = function(updateHostTeamDataForm) {
-            if (updateHostTeamDataForm) {
+        vm.updateChallengeHostTeamData = function(updateChallengeHostTeamDataForm) {
+            if (updateChallengeHostTeamDataForm) {
             var parameters = {};
             parameters.url = 'hosts/challenge_host_team/' + vm.hostTeamId;
             parameters.method = 'PATCH';
             parameters.data = {
-                "team_name": vm.team.name_modal,
-                "team_url": vm.team.url_modal
+                "team_name": vm.team.TeamName,
+                "team_url": vm.team.TeamURL
             };
             parameters.token = userKey;
             parameters.callback = {
