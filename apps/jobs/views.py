@@ -339,15 +339,20 @@ def leaderboard(request, challenge_phase_split_id):
     # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
     challenge_hosts_emails = [] if not is_challenge_phase_public else challenge_hosts_emails
 
+    challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
+
     leaderboard_data = LeaderboardData.objects.exclude(
         submission__created_by__email__in=challenge_hosts_emails)
 
     # Get all the successful submissions related to the challenge phase split
     leaderboard_data = leaderboard_data.filter(
         challenge_phase_split=challenge_phase_split,
-        submission__is_public=True,
         submission__is_flagged=False,
         submission__status=Submission.FINISHED).order_by('created_at')
+
+    if not challenge_host_user:
+        leaderboard_data = leaderboard_data.filter(submission__is_public=True)
+
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',
@@ -374,18 +379,10 @@ def leaderboard(request, challenge_phase_split_id):
                                                 request,
                                                 pagination_class=StandardResultSetPagination())
 
-    challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
-
-    # Show the Private leaderboard only if the user is a challenge host
-    if challenge_host_user:
-        response_data = result_page
-        return paginator.get_paginated_response(response_data)
-
     # Check if challenge phase leaderboard is public for participant user or not
-    elif challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC:
+    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
         response_data = {'error': 'Sorry, the leaderboard is not public!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     else:
         response_data = result_page
         return paginator.get_paginated_response(response_data)
@@ -399,7 +396,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
     '''
     Returns the number of remaining submissions that a participant can
-    do per day and in total to a particular challenge phase of a
+    do daily, monthly and in total to a particular challenge phase of a
     challenge.
     '''
 
@@ -414,68 +411,87 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 
     # Conditional check for the existence of participant team of the user.
     if not participant_team_pk:
-        response_data = {'error': 'You haven\'t participated in the challenge'}
+        response_data = {
+            'error': 'You haven\'t participated in the challenge'
+        }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-    max_submissions_per_day_count = challenge_phase.max_submissions_per_day
-
     max_submissions_count = challenge_phase.max_submissions
+    max_submissions_per_month_count = challenge_phase.max_submissions_per_month
+    max_submissions_per_day_count = challenge_phase.max_submissions_per_day
 
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk)
+        participant_team=participant_team_pk).exclude(status=Submission.FAILED)
 
-    failed_submissions = submissions_done.filter(
-        status=Submission.FAILED)
+    submissions_done_this_month = submissions_done.filter(
+        submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
 
+    # Get the submissions_done_today by midnight time of the day
     submissions_done_today = submissions_done.filter(
-        submitted_at__gte=timezone.now().date())
-
-    failed_submissions_done_today = submissions_done_today.filter(
-        status=Submission.FAILED)
+        submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0))
 
     submissions_done_count = submissions_done.count()
-    failed_submissions_count = failed_submissions.count()
+    submissions_done_this_month_count = submissions_done_this_month.count()
     submissions_done_today_count = submissions_done_today.count()
-    failed_submissions_done_today_count = failed_submissions_done_today.count()
+
+    # Check for maximum submission limit
+    if submissions_done_count >= max_submissions_count:
+        response_data = {
+            'message': 'You have exhausted maximum submission limit!',
+            'max_submission_exceeded': True
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    # Check for monthy submission limit
+    elif submissions_done_this_month_count >= max_submissions_per_month_count:
+        date_time_now = timezone.now()
+        next_month_start_date_time = date_time_now + datetime.timedelta(days=+30)
+        next_month_start_date_time = next_month_start_date_time.replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0)
+        remaining_time = next_month_start_date_time - date_time_now
+
+        if submissions_done_today_count >= max_submissions_per_day_count:
+            response_data = {
+                'message': 'Both daily and monthly submission limits are exhausted!',
+                'remaining_time': remaining_time
+            }
+        else:
+            response_data = {
+                'message': 'You have exhausted this month\'s submission limit!',
+                'remaining_time': remaining_time
+            }
+        return Response(response_data, status=status.HTTP_200_OK)
 
     # Checks if #today's successful submission is greater than or equal to max submission per day
-    if ((submissions_done_today_count - failed_submissions_done_today_count) >= max_submissions_per_day_count
-            or (max_submissions_per_day_count == 0)):
-        # Get the UTC time of the instant when the above condition is true.
+    elif submissions_done_today_count >= max_submissions_per_day_count:
         date_time_now = timezone.now()
-        # Calculate the next day's date.
-        date_time_tomorrow = date_time_now.date() + datetime.timedelta(1)
-        utc = timezone.utc
+        date_time_tomorrow = date_time_now + datetime.timedelta(1)
         # Get the midnight time of the day i.e. 12:00 AM of next day.
-        midnight = utc.localize(datetime.datetime.combine(
-            date_time_tomorrow, datetime.time()))
-        # Subtract the current time from the midnight time to get the remaining time for the next day's submissions.
+        midnight = date_time_tomorrow.replace(hour=0, minute=0, second=0)
         remaining_time = midnight - date_time_now
-        # Return the remaining time with a message.
-        response_data = {'message': 'You have exhausted today\'s submission limit',
-                         'remaining_time': remaining_time
-                         }
+
+        response_data = {
+            'message': 'You have exhausted today\'s submission limit!',
+            'remaining_time': remaining_time
+        }
         return Response(response_data, status=status.HTTP_200_OK)
+
     else:
+        # calculate the remaining submissions from total submissions.
+        remaining_submission_count = max_submissions_count - submissions_done_count
+        # Calculate the remaining submissions for current month.
+        remaining_submissions_this_month_count = (max_submissions_per_month_count -
+                                                  submissions_done_this_month_count)
         # Calculate the remaining submissions for today.
         remaining_submissions_today_count = (max_submissions_per_day_count -
-                                             (submissions_done_today_count -
-                                              failed_submissions_done_today_count)
-                                             )
-
-        # calculate the remaining submissions from total submissions.
-        remaining_submission_count = max_submissions_count - \
-            (submissions_done_count - failed_submissions_count)
-
-        if remaining_submissions_today_count > remaining_submission_count:
-            remaining_submissions_today_count = remaining_submission_count
-
-        # Return the above calculated data.
-        response_data = {'remaining_submissions_today_count': remaining_submissions_today_count,
-                         'remaining_submissions': remaining_submission_count
-                         }
+                                             submissions_done_today_count)
+        response_data = {
+            'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
+            'remaining_submissions_today_count': remaining_submissions_today_count,
+            'remaining_submissions': remaining_submission_count
+        }
         return Response(response_data, status=status.HTTP_200_OK)
 
 

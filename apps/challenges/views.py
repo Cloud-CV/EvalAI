@@ -84,7 +84,7 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        challenge = Challenge.objects.filter(creator=challenge_host_team, is_disabled=False)
+        challenge = Challenge.objects.filter(creator=challenge_host_team, is_disabled=False).order_by('-id')
         paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
             result_page, many=True, context={'request': request})
@@ -294,7 +294,7 @@ def get_featured_challenges(request):
         featured=True,
         published=True,
         approved_by_admin=True,
-        is_disabled=False)
+        is_disabled=False).order_by('-id')
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
@@ -356,7 +356,7 @@ def get_challenges_based_on_teams(request):
         host_team_ids = get_challenge_host_teams_for_user(request.user)
         q_params['creator__id__in'] = host_team_ids
 
-    challenge = Challenge.objects.filter(**q_params)
+    challenge = Challenge.objects.filter(**q_params).order_by('id')
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={'request': request})
@@ -534,13 +534,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Search for yaml file
     yaml_file_count = 0
     for name in zip_ref.namelist():
-        if name.endswith('.yaml') or name.endswith('.yml'):
+        if (name.endswith('.yaml') or name.endswith('.yml')) and (
+                not name.startswith('__MACOSX')):  # Ignore YAML File in __MACOSX Directory
             yaml_file = name
             extracted_folder_name = yaml_file.split(basename(yaml_file))[0]
             yaml_file_count += 1
@@ -554,7 +554,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if yaml_file_count > 1:
-        message = 'There are more than one YAML files in zip folder!'
+        message = 'There are {0} YAML files instead of one in zip folder!'.format(yaml_file_count)
         response_data = {
             'error': message
         }
@@ -1274,7 +1274,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def star_challenge(request, challenge_pk):
     """
