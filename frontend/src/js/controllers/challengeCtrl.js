@@ -1018,6 +1018,7 @@
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
+            vm.maxExceeded = false;
             parameters.url = "jobs/" + vm.challengeId + "/phases/" + phaseId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
@@ -1025,7 +1026,11 @@
                     var status = response.status;
                     var details = response.data;
                     if (status === 200) {
-                        if (details.remaining_submissions_today_count > 0) {
+                        if (details.max_submission_exceeded === true) {
+                            vm.maxExceeded = true;
+                            vm.maxExceededMessage = details.message;
+                        }
+                        else if (details.remaining_submissions_today_count > 0) {
                             vm.remainingSubmissions = details;
                             vm.showSubmissionNumbers = true;
                             vm.submissionsExhausted = false;
