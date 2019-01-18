@@ -34,6 +34,9 @@
          // show loader
         vm.startLoader = loaderService.startLoader;
 
+        // stop loader
+        vm.stopLoader = loaderService.stopLoader;
+
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
         };
