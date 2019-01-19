@@ -6,11 +6,10 @@ export COMMIT_ID=$(git rev-parse HEAD)
 build_and_push() {
         aws configure set default.region us-east-1
         eval $(aws ecr get-login --no-include-email)
-        if [ "${TRAVIS_BRANCH}" == "production" ]; then
-            echo "Pulling ssl certificates and nginx configuration..."
-            aws s3 cp s3://cloudcv-secrets/evalai/${TRAVIS_BRANCH}/ssl/ ./ssl/ --recursive
-            aws s3 cp s3://cloudcv-secrets/evalai/${TRAVIS_BRANCH}/nginx_${TRAVIS_BRANCH}.conf ./docker/prod/nodejs/nginx_${TRAVIS_BRANCH}.conf
-        fi
+        echo "Pulling ssl certificates and nginx configuration..."
+        aws s3 cp s3://cloudcv-secrets/evalai/${TRAVIS_BRANCH}/ssl/ ./ssl/ --recursive
+        aws s3 cp s3://cloudcv-secrets/evalai/${TRAVIS_BRANCH}/nginx_${TRAVIS_BRANCH}.conf ./docker/prod/nodejs/nginx_${TRAVIS_BRANCH}.conf
+        echo "Pulled ssl certificates and nginx configuration successfully"
         docker-compose -f docker-compose-$1.yml build
         docker-compose -f docker-compose-$1.yml push
 
