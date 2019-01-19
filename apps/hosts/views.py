@@ -28,7 +28,7 @@ def challenge_host_team_list(request):
 
     if request.method == 'GET':
         challenge_host_team_ids = ChallengeHost.objects.filter(user=request.user).values_list('team_name', flat=True)
-        challenge_host_teams = ChallengeHostTeam.objects.filter(id__in=challenge_host_team_ids)
+        challenge_host_teams = ChallengeHostTeam.objects.filter(id__in=challenge_host_team_ids).order_by('-id')
         paginator, result_page = paginated_queryset(challenge_host_teams, request)
         serializer = HostTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
@@ -105,7 +105,7 @@ def challenge_host_list(request, challenge_host_team_pk):
             challenge_host_status = challenge_host_status.split(',')
             filter_condition.update({'status__in': challenge_host_status})
 
-        challenge_host = ChallengeHost.objects.filter(**filter_condition)
+        challenge_host = ChallengeHost.objects.filter(**filter_condition).order_by('-id')
         paginator, result_page = paginated_queryset(challenge_host, request)
         serializer = ChallengeHostSerializer(result_page, many=True)
         response_data = serializer.data
