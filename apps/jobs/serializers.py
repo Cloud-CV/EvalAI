@@ -51,7 +51,6 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LeaderboardData
-        fields = "__all__"
         fields = ('id', 'participant_team_name', 'challenge_phase_split', 'leaderboard_schema', 'result')
 
     def get_participant_team_name(self, obj):
