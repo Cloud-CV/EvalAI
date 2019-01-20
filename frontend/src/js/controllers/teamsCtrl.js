@@ -179,13 +179,13 @@
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_name": vm.team.name,
-                "team_url": vm.team.url
+                "team_name": vm.new.team.name,
+                "team_url": vm.new.team.url
             };
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function() {
-                    $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
+                    $rootScope.notify("success", "Team " + vm.new.team.name + " has been created successfully!");
                     vm.team.error = false;
                     vm.stopLoader();
                     // reset the team attributes
