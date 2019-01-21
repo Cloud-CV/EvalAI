@@ -35,7 +35,7 @@ Our ultimate goal is to build a centralized platform to host, participate and co
 
 ## Performance comparison
 
-Some background: The [Visual Question Answering Challenge (VQA) 2016](http://www.visualqa.org/vqa_v1_challenge.html) hosted on some other platform in 2016, and on average evaluation would take **~10 minutes**. EvalAI hosted [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview) and [VQA Challenge 2018](https://evalai.cloudcv.org/web/challenges/challenge-page/80/overview) and the dataset for the [VQA Challenge 2017, 2018](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
+Some background: The [Visual Question Answering Challenge (VQA) 2016](http://www.visualqa.org/vqa_v1_challenge.html) hosted on some other platform in 2016, took **~10 minutes** for evaluation of a submission. EvalAI hosted [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview) and [VQA Challenge 2018](https://evalai.cloudcv.org/web/challenges/challenge-page/80/overview) and the dataset for the [VQA Challenge 2017, 2018](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
 
 ## Installation Instructions
 
