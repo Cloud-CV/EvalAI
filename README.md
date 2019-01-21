@@ -37,7 +37,7 @@ Our ultimate goal is to build a centralized platform to host, participate and co
 
 Some background: The [Visual Question Answering Challenge (VQA) 2016](http://www.visualqa.org/vqa_v1_challenge.html) hosted on some other platform in 2016, took **~10 minutes** for evaluation of a submission. EvalAI hosted [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview) and [VQA Challenge 2018](https://evalai.cloudcv.org/web/challenges/challenge-page/80/overview) and the dataset for the [VQA Challenge 2017, 2018](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
 
-## Installation Instructions
+## Installation instructions
 
 Setting up EvalAI on your local machine is really easy. You can setup EvalAI using docker:
 The steps are:
@@ -49,7 +49,6 @@ The steps are:
     ```shell
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
     ```
-    Use your postgres username and password for fields `USER` and `PASSWORD` in `settings/dev.py` file.
 
 3. Build and run the Docker containers. This might take a while.
 
@@ -57,7 +56,8 @@ The steps are:
     docker-compose up --build
     ```
 
-4. That's it. Open web browser and hit the url [http://127.0.0.1:8888].
+4. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888).
+    Three users will be created by default which are listed below -
     
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
@@ -65,12 +65,10 @@ The steps are:
 
 If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
 
-## The Team
+## Team
 
 EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io), [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](http://taranjeet.github.io/), [Shiv Baran Singh](http://www.shivbaran.in/) and [Rishabh Jain](https://rishabhjain2018.github.io/). A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
 
 ## Contribution guidelines
 
 If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
-
-[http://127.0.0.1:8888]: http://127.0.0.1:8888
