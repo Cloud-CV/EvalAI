@@ -136,6 +136,7 @@ def create_challenge(title, start_date, end_date, host_team):
     """
     evaluation_script = open(
         os.path.join(settings.BASE_DIR, 'examples', 'example1', 'sample_evaluation_script.zip'), 'rb')
+    random_string = ''.join(random.choice(string.ascii_letters) for _ in xrange(75))
     Challenge.objects.create(
         title=title,
         short_description=fake.paragraph(),
@@ -151,6 +152,7 @@ def create_challenge(title, start_date, end_date, host_team):
         anonymous_leaderboard=False,
         start_date=start_date,
         end_date=end_date,
+        queue=random_string,
     )
     print("Challenge created with title: {} creator: {} start_date: {} end_date: {}".format(title,
                                                                                             host_team.team_name,
