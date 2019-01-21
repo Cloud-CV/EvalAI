@@ -2,7 +2,7 @@
 
 EvalAI can run on Linux, Cloud, Windows, and macOS platforms. Please install [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and [docker-compose](https://docs.docker.com/compose/install/) before getting started with the installation of EvalAI.
 
-Once you have installed docker and docker-compose, please follow these steps to setup EvalAI on your local machine
+Once you have installed docker and docker-compose, please follow these steps to setup EvalAI on your local machine.
 
 1. Get the source code on to your machine via git
 
@@ -15,8 +15,7 @@ Once you have installed docker and docker-compose, please follow these steps to 
     docker-compose up --build
     ```
 
-3. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888).
-    Three users will be created by default which are listed below -
+3. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
     
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  

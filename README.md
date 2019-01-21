@@ -56,8 +56,7 @@ The steps are:
     docker-compose up --build
     ```
 
-4. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888).
-    Three users will be created by default which are listed below -
+4. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
     
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
