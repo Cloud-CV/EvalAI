@@ -39,6 +39,9 @@ Refer to [MarkDown Guide](https://guides.github.com/features/mastering-markdown/
 
 Coverage decreases when the existing test cases don't test the new code you wrote. If you click coverage, you can see exactly which all parts aren't covered and you can write new tests to test the parts.
 
+#### Q. How to setup EvalAI using virtualenv?
+We have removed the documentation for setting up using virtual environment since the project has grown and different developers face different dependency issues. We recommend to setup EvalAI using docker based environment.
+
 ### Common Errors during installation
 
 #### Q. While using `pip install -r dev/requirement.txt`
