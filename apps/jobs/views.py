@@ -488,14 +488,10 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         remaining_submissions_today_count = (max_submissions_per_day_count -
                                              submissions_done_today_count)
 
-        if remaining_submission_count < remaining_submissions_this_month_count:
-            remaining_submissions_this_month_count = remaining_submission_count
-
-            if remaining_submissions_this_month_count < remaining_submissions_today_count:
-                remaining_submissions_today_count = remaining_submissions_this_month_count
-
-        elif remaining_submissions_this_month_count < remaining_submissions_today_count:
-            remaining_submissions_today_count = remaining_submissions_this_month_count
+        remaining_submissions_this_month_count = min(remaining_submission_count,
+                                                     remaining_submissions_this_month_count)
+        remaining_submissions_today_count = min(remaining_submissions_this_month_count,
+                                                remaining_submissions_today_count)
 
         response_data = {
             'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
