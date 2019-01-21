@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
+from rest_framework.exceptions import PermissionDenied
 
 from .aws_utils import restart_workers_signal_callback, create_eks_cluster
 
@@ -157,6 +158,14 @@ class Challenge(TimeStampedModel):
         """Returns the end date of Challenge"""
         return self.end_date
 
+    def save(self, *args, **kwargs):
+
+        # If challenge start datetime is greater than challenge end datetime.
+        if self.start_date > self.end_date:
+            raise PermissionDenied({'error': 'Start datetime is greater than end datetime'})
+        challenge_instance = super(Challenge, self).save(*args, **kwargs)
+        return challenge_instance
+
     @property
     def is_active(self):
         """Returns if the challenge is active or not"""
@@ -276,17 +285,30 @@ class ChallengePhase(TimeStampedModel):
     def save(self, *args, **kwargs):
 
         # If the max_submissions_per_day is less than the max_concurrent_submissions_allowed.
-        if (
-            self.max_submissions_per_day
-            < self.max_concurrent_submissions_allowed
-        ):
-            self.max_concurrent_submissions_allowed = (
-                self.max_submissions_per_day
-            )
+        if self.max_submissions_per_day < self.max_concurrent_submissions_allowed:
+            self.max_concurrent_submissions_allowed = self.max_submissions_per_day
 
-        challenge_phase_instance = super(ChallengePhase, self).save(
-            *args, **kwargs
-        )
+        # If challengephase start datetime is less than challenge start datetime.
+        if self.start_date < self.challenge.start_date:
+            raise PermissionDenied({'error': 'challengephase start datetime is less than challenge start datetime'})
+
+        # If challengephase start datetime is greater than challenge end datetime.
+        if self.start_date > self.challenge.end_date:
+            raise PermissionDenied({'error': 'challengephase start datetime is greater than challenge end datetime'})
+
+        # If challengephase end datetime is less than challenge start datetime.
+        if self.end_date < self.challenge.start_date:
+            raise PermissionDenied({'error': 'challengephase end datetime is less than challenge start datetime'})
+
+        # challengephase end datetime is greater than challenge end datetime.
+        if self.end_date > self.challenge.end_date:
+            raise PermissionDenied({'error': 'challengephase end datetime is greater than challenge end datetime'})
+
+        # If challenge start datetime is greater than challenge end datetime.
+        if self.start_date > self.end_date:
+            raise PermissionDenied({'error': 'Start datetime is greater than end datetime'})
+
+        challenge_phase_instance = super(ChallengePhase, self).save(*args, **kwargs)
         return challenge_phase_instance
 
 
