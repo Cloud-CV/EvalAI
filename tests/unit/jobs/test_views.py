@@ -696,6 +696,120 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data['message'], expected['message'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_remaining_submissions_when_todays_is_greater_than_monthly_and_total(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 20)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 10)
+        setattr(self.challenge_phase, 'max_submissions', 15)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 8,
+            'remaining_submissions_this_month_count': 8,
+            'remaining_submissions': 13
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submissions_when_total_less_than_monthly(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 5)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 20)
+        setattr(self.challenge_phase, 'max_submissions', 15)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 3,
+            'remaining_submissions_this_month_count': 13,
+            'remaining_submissions': 13
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submission_when_total_less_than_monthly_and_monthly_equal_daily(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 20)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 20)
+        setattr(self.challenge_phase, 'max_submissions', 15)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 13,
+            'remaining_submissions_this_month_count': 13,
+            'remaining_submissions': 13
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submission_when_total_less_than_monthly_and_monthly_less_than_daily(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 30)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 20)
+        setattr(self.challenge_phase, 'max_submissions', 15)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 13,
+            'remaining_submissions_this_month_count': 13,
+            'remaining_submissions': 13
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submissions_when_monthly_remaining_less_than_todays(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 15)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 13)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 11,
+            'remaining_submissions_this_month_count': 11,
+            'remaining_submissions': 98
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
