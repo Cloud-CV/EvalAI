@@ -1,5 +1,7 @@
 # Command to run : python manage.py shell  < scripts/seed.py
 import os
+import random
+import string 
 
 from datetime import timedelta
 
