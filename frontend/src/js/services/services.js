@@ -70,7 +70,7 @@
             localStorage.setItem(key, JSON.stringify(value));
         };
 
-        this.getData = function(key) {\
+        this.getData = function(key) {
             if (localStorage.getItem(key) === null) {
                 return false;
             } else {
