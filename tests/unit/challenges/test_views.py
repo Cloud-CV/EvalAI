@@ -77,8 +77,8 @@ class BaseAPITestClass(APITestCase):
             is_registration_open=True,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
             approved_by_admin=False,
         )
         self.challenge.slug = "{}-{}".format(
@@ -119,8 +119,8 @@ class GetChallengeTest(BaseAPITestClass):
             is_disabled=True,
             leaderboard_description=None,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
             approved_by_admin=False,
         )
 
@@ -208,8 +208,9 @@ class CreateChallengeTest(BaseAPITestClass):
             "enable_forum": True,
             "leaderboard_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             "anonymous_leaderboard": False,
-            "start_date": timezone.now() - timedelta(days=2),
-            "end_date": timezone.now() + timedelta(days=1),
+            'start_date': timezone.now() - timedelta(days=5),
+            'end_date': timezone.now() + timedelta(days=5),
+            'published': False,
         }
 
     def test_create_challenge_with_all_data(self):
@@ -581,8 +582,8 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             enable_forum=True,
             leaderboard_description="Pellentesque at dictum odio, sit amet fringilla sem",
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=4),
+            end_date=timezone.now() + timedelta(days=5),
             allowed_email_domains=[],
             blocked_email_domains=[],
             approved_by_admin=False,
@@ -811,8 +812,8 @@ class DisableChallengeTest(BaseAPITestClass):
             is_registration_open=True,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
 
         self.url = reverse_lazy(
@@ -893,8 +894,8 @@ class GetAllChallengesTest(BaseAPITestClass):
             enable_forum=True,
             approved_by_admin=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
 
         # Past Challenge challenge
@@ -911,8 +912,8 @@ class GetAllChallengesTest(BaseAPITestClass):
             approved_by_admin=True,
             leaderboard_description="Donec sollicitudin, nisi vel tempor semper, nulla odio dapibus felis",
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() - timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=10),
+            end_date=timezone.now() - timedelta(days=5),
         )
 
         # Future challenge
@@ -928,8 +929,8 @@ class GetAllChallengesTest(BaseAPITestClass):
             enable_forum=True,
             approved_by_admin=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() + timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() + timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=10),
         )
 
         # Disabled challenge
@@ -946,9 +947,9 @@ class GetAllChallengesTest(BaseAPITestClass):
             approved_by_admin=True,
             leaderboard_description=None,
             anonymous_leaderboard=False,
-            start_date=timezone.now() + timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
-            is_disabled=True,
+            start_date=timezone.now() + timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
+            is_disabled=True
         )
 
     def test_get_past_challenges(self):
@@ -1246,8 +1247,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             enable_forum=True,
             approved_by_admin=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
 
         # Featured challenge
@@ -1264,9 +1265,9 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             approved_by_admin=True,
             leaderboard_description=None,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() - timedelta(days=1),
-            featured=True,
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() - timedelta(days=5),
+            featured=True
         )
 
     def test_get_featured_challenges(self):
@@ -1359,8 +1360,8 @@ class GetChallengeByPk(BaseAPITestClass):
             enable_forum=True,
             leaderboard_description="Curabitur nec placerat libero.",
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
             is_disabled=False,
             approved_by_admin=True,
         )
@@ -1377,8 +1378,8 @@ class GetChallengeByPk(BaseAPITestClass):
             enable_forum=True,
             leaderboard_description=None,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
             is_disabled=True,
         )
 
@@ -1537,8 +1538,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             enable_forum=True,
             leaderboard_description=None,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
             approved_by_admin=True,
         )
 
@@ -1553,8 +1554,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             is_registration_open=True,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
             approved_by_admin=True,
         )
 
@@ -1839,8 +1840,8 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -1865,8 +1866,8 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 description="Description for Private Challenge Phase",
                 leaderboard_public=False,
                 is_public=False,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -2261,8 +2262,8 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
         data = {
             "name": "Challenge Phase 2",
@@ -2657,8 +2658,8 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
                 is_public=False,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -2816,8 +2817,8 @@ class CreateChallengeUsingZipFile(APITestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
         self.challenge.slug = "{}-{}".format(
             self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
@@ -2834,8 +2835,8 @@ class CreateChallengeUsingZipFile(APITestCase):
                 .decode("utf-8"),
                 leaderboard_public=False,
                 is_public=False,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     open(join(self.path, "test_annotation.txt"), "rb").name,
@@ -3118,8 +3119,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
 
         try:
@@ -3134,8 +3135,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 leaderboard_public=False,
                 codename="Phase Code Name 1",
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge5,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -3151,8 +3152,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 leaderboard_public=False,
                 codename="Phase Code Name 2",
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge5,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -3167,8 +3168,8 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge5,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -3442,8 +3443,8 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
                 is_public=True,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
@@ -3930,8 +3931,8 @@ class StarChallengesTest(BaseAPITestClass):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
             approved_by_admin=False,
         )
 

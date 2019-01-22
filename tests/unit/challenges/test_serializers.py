@@ -43,8 +43,8 @@ class BaseTestCase(APITestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=5),
+            end_date=timezone.now() + timedelta(days=5),
         )
 
         self.challenge_host = ChallengeHost.objects.create(
@@ -76,8 +76,8 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
                 is_public=False,
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
+                start_date=timezone.now() - timedelta(days=3),
+                end_date=timezone.now() + timedelta(days=3),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile(
                     "test_sample_file.txt",
