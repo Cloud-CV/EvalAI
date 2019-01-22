@@ -606,12 +606,6 @@
                 onSuccess: function() {},
                 onError: function(response) {
                     var status = response.status;
-                    if (status == 401) {
-                        alert("Timeout, Please login again to continue!");
-                        utilities.resetStorage();
-                        $state.go("auth.login");
-                        $rootScope.isAuth = false;
-                    }
                 }
             };
 

@@ -67,11 +67,6 @@
                     },
                     onError: function(response) {
                         var status = response.status;
-                        if (status == 401) {
-                            utilities.resetStorage();
-                            $state.go("auth.login");
-                            $rootScope.isAuth = false;
-                        }
                     }
                 };
                 utilities.sendRequest(parameters);

@@ -49,12 +49,6 @@
 
                     // navigate to permissions denied page
                     $state.go('web.permission-denied');
-                } else if (status == 401) {
-                    alert("Timeout, Please login again to continue!");
-                    utilities.resetStorage();
-                    $state.go("auth.login");
-                    $rootScope.isAuth = false;
-
                 }
             }
         };
@@ -81,12 +75,6 @@
 
                     // navigate to permissions denied page
                     $state.go('web.permission-denied');
-                } else if (status == 401) {
-                    alert("Timeout, Please login again to continue!");
-                    utilities.resetStorage();
-                    $state.go("auth.login");
-                    $rootScope.isAuth = false;
-
                 }
             }
         };
@@ -134,13 +122,7 @@
 
                                             // navigate to permissions denied page
                                             $state.go('web.permission-denied');
-                                        } else if (status == 401) {
-                                            alert("Timeout, Please login again to continue!");
-                                            utilities.resetStorage();
-                                            $state.go("auth.login");
-                                            $rootScope.isAuth = false;
-
-                                        }
+                                        } 
                                     }
                                 };
                                 utilities.sendRequest(parameters);
@@ -173,12 +155,6 @@
 
                                             // navigate to permissions denied page
                                             $state.go('web.permission-denied');
-                                        } else if (status == 401) {
-                                            alert("Timeout, Please login again to continue!");
-                                            utilities.resetStorage();
-                                            $state.go("auth.login");
-                                            $rootScope.isAuth = false;
-
                                         }
                                     }
                                 };
@@ -195,13 +171,7 @@
 
                             // navigate to permissions denied page
                             $state.go('web.permission-denied');
-                        } else if (status == 401) {
-                            alert("Timeout, Please login again to continue!");
-                            utilities.resetStorage();
-                            $state.go("auth.login");
-                            $rootScope.isAuth = false;
-
-                        }
+                        } 
                     }
                 };
 

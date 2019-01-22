@@ -71,6 +71,8 @@
         };
 
         this.getData = function(key) {
+            console.log("LOCAL STORAGE DATA: \n");
+            console.log(localStorage);
             if (localStorage.getItem(key) === null) {
                 return false;
             } else {
@@ -158,11 +160,11 @@
     .module('evalai')
     .service('utilities', utilities)
     .factory('authHttpResponseInterceptor',['$q','$location',function($q, $location){
-        console.log("authHttpResponseInterceptor RUN SUCCESSFUL YASH");
+       // console.log("authHttpResponseInterceptor RUN SUCCESSFUL YASH");
         return {
             responseError: function(rejection) {
                 if (rejection.status === 401) {
-                    console.log("Caught 401 error Yash");
+                   // console.log("Caught 401 error Yash");
                     localStorage.clear();
                     $location.path('/auth/login');
                 }
@@ -172,7 +174,7 @@
     }])
     .config(['$httpProvider',function($httpProvider) {
         //Http Intercpetor to check auth failures for xhr requests
-        console.log("httpProvider YASH LOOK HERE");
+        //console.log("httpProvider YASH LOOK HERE");
         $httpProvider.interceptors.push('authHttpResponseInterceptor');
     }]);
 

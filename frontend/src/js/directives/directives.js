@@ -74,11 +74,7 @@
                         }
                     },
                     onError: function(response) {
-
                         var status = response.status;
-                        if (status == 401) {
-                            utilities.resetStorage();
-                        }
                     }
                 };
 
