@@ -70,9 +70,7 @@
             localStorage.setItem(key, JSON.stringify(value));
         };
 
-        this.getData = function(key) {
-            console.log("LOCAL STORAGE DATA: \n");
-            console.log(localStorage);
+        this.getData = function(key) {\
             if (localStorage.getItem(key) === null) {
                 return false;
             } else {
@@ -159,12 +157,10 @@
     angular
     .module('evalai')
     .service('utilities', utilities)
-    .factory('authHttpResponseInterceptor',['$q','$location',function($q, $location){
-       // console.log("authHttpResponseInterceptor RUN SUCCESSFUL YASH");
+    .factory('authHttpResponseInterceptor',['$q','$location',function($q, $location){\
         return {
             responseError: function(rejection) {
                 if (rejection.status === 401) {
-                   // console.log("Caught 401 error Yash");
                     localStorage.clear();
                     $location.path('/auth/login');
                 }
@@ -174,7 +170,6 @@
     }])
     .config(['$httpProvider',function($httpProvider) {
         //Http Intercpetor to check auth failures for xhr requests
-        //console.log("httpProvider YASH LOOK HERE");
         $httpProvider.interceptors.push('authHttpResponseInterceptor');
     }]);
 
