@@ -147,6 +147,9 @@
                                                 vm.loaderTitle = '';
                                                 vm.loaderContainer = angular.element('.exist-team-card');
 
+                                                // show loader
+                                                vm.startLoader("Loading Teams");
+                                                // loader end
 
                                                 parameters.url = 'challenges/challenge/' + vm.challengeId + '/participant_team/' + vm.teamId;
                                                 parameters.method = 'POST';
@@ -154,7 +157,7 @@
                                                     onSuccess: function() {
                                                         vm.isParticipated = true;
                                                         $state.go('web.challenge-main.challenge-page.submission');
-                                                        vm.isExistLoader = false;
+                                                        vm.stopLoader();
                                                     },
                                                     onError: function(response) {
                                                         if (response.status == 404) {
@@ -163,7 +166,7 @@
                                                             error = response.data["error"];
                                                         }
                                                         $rootScope.notify("error", error);
-                                                        vm.isExistLoader = false;
+                                                        vm.stopLoader();
                                                     }
                                                 };
                                                 utilities.sendRequest(parameters);
@@ -177,6 +180,7 @@
                                                 vm.loaderContainer = angular.element('.exist-team-card');
 
 
+                                                vm.startLoader("Loading Teams");
                                                 if (url !== null) {
 
                                                     //store the header data in a variable
@@ -204,7 +208,7 @@
                                                         } else {
                                                             vm.isPrev = '';
                                                         }
-                                                        vm.isExistLoader = false;
+                                                        vm.stopLoader();
                                                     });
                                                 }
                                             };
@@ -827,20 +831,6 @@
             vm.loaderTitle = '';
             vm.newContainer = angular.element('.new-team-card');
 
-            // show loader
-            vm.startLoader = function(msg) {
-                vm.isLoader = true;
-                vm.loaderTitle = msg;
-                vm.newContainer.addClass('low-screen');
-            };
-
-            // stop loader
-            vm.stopLoader = function() {
-                vm.isLoader = false;
-                vm.loaderTitle = '';
-                vm.newContainer.removeClass('low-screen');
-            };
-
             vm.startLoader("Loading Teams");
 
             parameters.url = 'participants/participant_team';
@@ -1027,6 +1017,7 @@
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
+            vm.maxExceeded = false;
             parameters.url = "jobs/" + vm.challengeId + "/phases/" + phaseId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
@@ -1034,7 +1025,11 @@
                     var status = response.status;
                     var details = response.data;
                     if (status === 200) {
-                        if (details.remaining_submissions_today_count > 0) {
+                        if (details.max_submission_exceeded === true) {
+                            vm.maxExceeded = true;
+                            vm.maxExceededMessage = details.message;
+                        }
+                        else if (details.remaining_submissions_today_count > 0) {
                             vm.remainingSubmissions = details;
                             vm.showSubmissionNumbers = true;
                         } else {
