@@ -14,7 +14,7 @@
                             <a ng-click="challenge.editChallengeTitle(false)" class="dark-link pointer"><strong>Cancel</strong></a>
                         </li>
                         <li>
-                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="submit">Submit</button>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-disabled="editChallengeTitleForm.$pristine" type="submit" value="submit">Submit</button>
                         </li>
                     </ul>
                 </form>
