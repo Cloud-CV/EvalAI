@@ -526,17 +526,19 @@
 
         $rootScope.isAuth = false;
         // check for valid user
-        $rootScope.$on("$stateChangeStart", function(event, toState) {
+        $rootScope.$on("$stateChangeStart", function(event, to, toParams) {
             if (utilities.isAuthenticated()) {
                 $rootScope.isAuth = true;
-                if (toState.authpage) {
+                if (to.authpage) {
                     event.preventDefault();
                     $state.go("home");
                 }
             } else {
                 $rootScope.isAuth = false;
-                if (toState.authenticate) {
+                if (to.authenticate) {
                     event.preventDefault();
+                    $rootScope.previousState = to;
+                    $rootScope.previousStateParams = toParams;
                     $state.go("auth.login");
                 }
             }
