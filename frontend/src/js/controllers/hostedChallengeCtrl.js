@@ -15,6 +15,8 @@
         utilities.showLoader();
 
         vm.challengeList = [];
+        vm.challengeCreator = {};
+        vm.currentList = {};
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
@@ -32,6 +34,22 @@
                             for (var j=0; j<data.results.length; j++){
                                 vm.challengeList.push(data.results[j]);
                             }
+                            
+                            vm.currentList = data.results;
+                            for (var i in vm.currentList) {
+
+                                var descLength = vm.currentList[i].description.length;
+                                if (descLength >= 50) {
+                                    vm.currentList[i].isLarge = "...";
+                                } else {
+                                    vm.currentList[i].isLarge = "";
+                                }
+            
+                                var id = vm.currentList[i].id;
+                                vm.challengeCreator[id] = vm.currentList[i].creator.id;
+                                utilities.storeData("challengeCreator", vm.challengeCreator);
+                            }
+
                         },
                         onError: function() {
                             utilities.hideLoader();
