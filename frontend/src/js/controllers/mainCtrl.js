@@ -65,9 +65,7 @@
                             vm.user.name = details.username;
                         }
                     },
-                    onError: function(response) {
-                        var status = response.status;
-                    }
+                    onError: function() {}
                 };
                 utilities.sendRequest(parameters);
             }
