@@ -8,16 +8,6 @@
                 <div class="col s12 m6">
                     <div class=" ev-card-panel ev-z-depth-5">
                         <div class="ev-md-container ev-panel-title"><strong>My Existing Participating Teams</strong></div>
-                        <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
-                            <!-- <div class="text-dark-gray center w-300 loader-title">{{challenge.loaderTitle}}</div> -->
-                            <div class="loader">
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                            </div>
-                        </div>
                         <div class="ev-md-container ev-card-body exist-team-card">
                             <form>
                                 <ul>
@@ -59,18 +49,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
+                    <!-- <div class="text-dark-gray center w-300 loader-title">{{challenge.loaderTitle}}</div> -->
+                    <div class="loader">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
                 <div class="col s12 m6">
                     <div class=" ev-card-panel ev-z-depth-5">
                         <div class="ev-md-container ev-panel-title"><strong>Create a New Team</strong></div>
-                        <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
-                            <div class="loader">
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                            </div>
-                        </div>
                         <div class="ev-md-container ev-card-body new-team-card">
                             <form ng-submit="challenge.createNewTeam()">
                                 <div class="input-field align-left">
