@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 
@@ -49,8 +50,17 @@ media/
 # .DS_Store for OSX
 .DS_Store
 
-# Encrypted files
+# Docker Environment Files
 docker/prod/docker_staging.env
-docker/prod/docker_prod.env
-secrets.tar
-scripts/docker_pull.sh
+docker/prod/docker_production.env
+
+# SSL files
+ssl/
+
+# Code editors
+.vscode
+.idea/
+*.iws
+out/
+.idea_modules/
+

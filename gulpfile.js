@@ -4,8 +4,6 @@ var gulp = require('gulp'),
     fs = require('fs'),
     path = require('path'),
     concat = require('gulp-concat'),
-    // imagemin = require('gulp-imagemin'),
-    // htmlmin = require('gulp-htmlmin'),
     sass = require('gulp-sass'),
     postcss = require('gulp-postcss'),
     cleanCSS = require('gulp-clean-css'),
@@ -19,8 +17,7 @@ var gulp = require('gulp'),
     connectModRewrite = require('connect-modrewrite'),
     connect = require('gulp-connect'),
     gulp_if = require('gulp-if'),
-    replace = require('gulp-replace'),
-    karmaServer = require('karma').Server;
+    replace = require('gulp-replace');
 
 // development task
 var production = false;
@@ -304,7 +301,7 @@ function watch() {
 
 var parallelTasks = gulp.parallel(vendorcss, vendorjs, css, js, html, images, fonts);
 
-gulp.task('prod', gulp.series(clean, function(done) {
+gulp.task('production', gulp.series(clean, function(done) {
     production = true;
     done();
 }, parallelTasks, configProd, injectpaths, lint));
