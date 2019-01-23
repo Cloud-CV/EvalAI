@@ -24,6 +24,7 @@
                                     <span ng-if="value.team_url != ''"><b class="text-med-black">Team: </b><a class="orange-text" href="{{value.team_url}}" target="_blank">{{value.team_name}}</a></span>
                                     <span ng-if="value.team_url == ''"><b class="text-med-black">Team: </b>{{value.team_name}}</span>
                                     <a ng-click="challengeHostTeams.confirmDelete($event, value.id)"><i class="fa fa-trash list-icon text-highlight w-300 right grey-text"></i></a>
+                                    <a ng-click="challengeHostTeams.showMdDialog($event, value.id)"><i class="fa fa fa-pencil list-icon text-highlight w-300 right grey-text"></i></a>
                                     <a ng-click="challengeHostTeams.inviteOthers($event, value.id)"><i class="fa fa-user-plus list-icon text-highlight w-300 right"></i></a>
                                     <br>
                                     <span><b class="text-med-black">Created by: </b>{{value.created_by}}</span>

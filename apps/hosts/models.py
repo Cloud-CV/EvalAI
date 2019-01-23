@@ -13,7 +13,7 @@ class ChallengeHostTeam(TimeStampedModel):
     """
     team_name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(User, related_name='challenge_host_team_creator')
-    team_url = models.CharField(max_length=1000, default="", null=True)
+    team_url = models.CharField(max_length=1000, default="", blank=True)
 
     def __str__(self):
         return '{0}: {1}'.format(self.team_name, self.created_by)

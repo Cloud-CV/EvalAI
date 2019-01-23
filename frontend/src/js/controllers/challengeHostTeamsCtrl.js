@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeHostTeamsCtrl', ChallengeHostTeamsCtrl);
 
-    ChallengeHostTeamsCtrl.$inject = ['utilities', 'loaderService', '$state', '$http', '$rootScope', '$mdDialog'];
+    ChallengeHostTeamsCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function ChallengeHostTeamsCtrl(utilities, loaderService, $state, $http, $rootScope, $mdDialog) {
+    function ChallengeHostTeamsCtrl(utilities, loaderService, $scope, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -36,7 +36,6 @@
 
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
-
 
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
@@ -137,6 +136,86 @@
         };
 
         utilities.sendRequest(parameters);
+
+
+        vm.showMdDialog = function(ev, hostTeamId) {
+            vm.hostTeamId = hostTeamId;
+            parameters.url = 'hosts/challenge_host_team/' + hostTeamId;
+            parameters.method = 'GET';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    vm.team.TeamName = response.data.team_name;
+                    vm.team.TeamURL = response.data.team_url;
+                },
+                onError: function(response) {
+                    var error = response.data['error'];
+                    vm.stopLoader();
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
+
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/edit-host-teams.html'
+            });
+        };
+
+
+        vm.updateChallengeHostTeamData = function(updateChallengeHostTeamDataForm) {
+            if (updateChallengeHostTeamDataForm) {
+            var parameters = {};
+            parameters.url = 'hosts/challenge_host_team/' + vm.hostTeamId;
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "team_name": vm.team.TeamName,
+                "team_url": vm.team.TeamURL
+            };
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function() {
+                    $mdDialog.hide();
+                    vm.team = {};
+                    $rootScope.notify("success", "Host Team updated!");
+                    var parameters = {};
+                    // Retrives the updated lists and displays it.
+                    parameters.url = 'hosts/challenge_host_team';
+                    parameters.method = 'GET';
+                    parameters.token = userKey;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            vm.existTeam.results = response.data.results;
+                        },
+                        onError: function(response) {
+                            var error = response.data['error'];
+                            vm.stopLoader();
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                },
+                onError: function(response) {
+                    var error;
+                    if ('team_name' in response.data) {
+                        error = response.data['team_name'];
+                    }
+                    else {
+                        error = response.data['error'];
+                    }
+                    $rootScope.notify("error", error[0]);
+                }
+            };
+
+            utilities.sendRequest(parameters);
+            }
+            else {
+                $mdDialog.hide();
+            }
+        };
+
 
         // function to create new team
         vm.createNewTeam = function() {
