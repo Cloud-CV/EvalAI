@@ -35,134 +35,39 @@ Our ultimate goal is to build a centralized platform to host, participate and co
 
 ## Performance comparison
 
-Some background: Last year, the [Visual Question Answering Challenge (VQA) 2016](http://www.visualqa.org/vqa_v1_challenge.html) was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview). This year, the dataset for the [VQA Challenge 2017](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
+Some background: The [Visual Question Answering Challenge (VQA) 2016](http://www.visualqa.org/vqa_v1_challenge.html) hosted on some other platform in 2016, took **~10 minutes** for evaluation of a submission. EvalAI hosted [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview) and [VQA Challenge 2018](https://evalai.cloudcv.org/web/challenges/challenge-page/80/overview) and the dataset for the [VQA Challenge 2017, 2018](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
 
-## Installation Instructions
+## Installation instructions
 
-Setting up EvalAI on your local machine is really easy. You can setup EvalAI using two methods:
+Setting up EvalAI on your local machine is really easy. You can setup EvalAI using docker:
+The steps are:
 
-### Using Docker
+1. Install [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and [docker-compose](https://docs.docker.com/compose/install/) on your machine.
 
-You can also use Docker Compose to run all the components of EvalAI together. The steps are:
-
-1. Get the source code on to your machine via git.
+2. Get the source code on to your machine via git.
 
     ```shell
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
     ```
-    Use your postgres username and password for fields `USER` and `PASSWORD` in `settings/dev.py` file.
 
-2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+3. Build and run the Docker containers. This might take a while.
 
     ```
     docker-compose up --build
     ```
-3. That's it. Open web browser and hit the url [http://127.0.0.1:8888].
+
+4. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
     
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
-    **PARTICIPANT USER-** username: `participant` password: `password`   
-
-### Using Virtual Environment
-
-1. Install [python] 2.7.10 or above, [git], [postgresql] version >= 10.1, have ElasticMQ installed (Amazon SQS is used in production) and [virtualenv], in your computer, if you don't have it already.
-*If you are having trouble with postgresql on Windows check this link [postgresqlhelp](http://www.postgresqltutorial.com/install-postgresql/).*
-
-2. Get the source code on your machine via git.
-
-    ```shell
-    git clone https://github.com/Cloud-CV/EvalAI.git evalai
-    ```
-
-3. Create a python virtual environment and install python dependencies.
-
-    ```shell
-    cd evalai
-    virtualenv venv
-    source venv/bin/activate  # run this command everytime before working on project
-    pip install -r requirements/dev.txt
-    ```
-
-4. Create an empty postgres database.
-
-    ```
-    sudo -i -u (username)
-    createdb evalai
-    ```
-
-5. Change Postgresql credentials in `settings/dev.py` and run migrations
-
-
-    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file. After changing credentials, run migrations using the following command:
-
-    ```
-    python manage.py migrate --settings=settings.dev
-    ```
-
-
-6. Seed the database with some fake data to work with.
-
-    ```
-    python manage.py seed --settings=settings.dev
-    ```
-    This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
-
-    **SUPERUSER-** username: `admin` password: `password`  
-    **HOST USER-** username: `host` password: `password`  
-    **PARTICIPANT USER-** username: `participant` password: `password`    
-
-7. That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
-
-    ```
-    python manage.py runserver --settings=settings.dev
-    ```
-
-
-8. Please make sure that node(`>=7.x.x`), npm(`>=5.x.x`) and bower(`>=1.8.x`) are installed globally on your machine.
-
-    Install npm and bower dependencies by running
-
-    ```
-    npm install
-    bower install
-    ```
-
-    If you running npm install behind a proxy server, use
-
-    ```
-    npm config set proxy http://proxy:port
-    ```
-
-9. Now to connect to dev server at [http://127.0.0.1:8888] (for serving frontend)
-
-    ```
-    gulp dev:runserver
-    ```
-
-10. That's it, Open web browser and hit the url [http://127.0.0.1:8888].
-
-11. (Optional) If you want to see the whole game into play, then install the ElasticMQ Queue service and start the worker in a new terminal window using the following command that consumes the submissions done for every challenge:
-
-    ```
-    python scripts/workers/submission_worker.py
-    ```
-
+    **PARTICIPANT USER-** username: `participant` password: `password`
 
 If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
 
-## The Team
+## Team
 
 EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io), [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](http://taranjeet.github.io/), [Shiv Baran Singh](http://www.shivbaran.in/) and [Rishabh Jain](https://rishabhjain2018.github.io/). A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
 
 ## Contribution guidelines
 
 If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
-
-[python]: https://www.python.org/download/releases/2.7/
-[git]: https://git-scm.com/downloads
-[virtualenv]: https://virtualenv.pypa.io/
-[postgresql]: http://www.postgresql.org/download/
-[postgresqlhelp]: http://bobbyong.com/blog/installing-postgresql-on-windoes/
-[amazon SQS]: https://aws.amazon.com/sqs/
-[http://127.0.0.1:8888]: http://127.0.0.1:8888
-[http://127.0.0.1:8000]: http://127.0.0.1:8000
