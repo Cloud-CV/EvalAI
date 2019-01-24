@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('AuthCtrl', AuthCtrl);
 
-    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout'];
+    AuthCtrl.$inject = ['utilities', '$state', '$rootScope', '$timeout','$location'];
 
-    function AuthCtrl(utilities, $state, $rootScope) {
+    function AuthCtrl(utilities, $state, $rootScope, timeout, $location) {
         var vm = this;
 
         vm.isRem = false;
@@ -146,6 +146,10 @@
                     onSuccess: function(response) {
                         if (response.status == 200) {
                             utilities.storeData('userKey', response.data.token);
+                            if ($rootScope.previousurl) {
+                                $location.url($rootScope.previousurl);
+                                vm.stopLoader();
+                            } 
                             if ($rootScope.previousState) {
                                 $state.go($rootScope.previousState);
                                 vm.stopLoader();
