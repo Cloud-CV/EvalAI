@@ -94,7 +94,7 @@ class BaseAPITestClass(APITestCase):
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
             created_by=self.challenge_host_team.created_by,
-            status='Finished',
+            status='submitted',
             input_file=self.challenge_phase.test_annotation,
             method_name="Test Method",
             method_description="Test Description",
@@ -125,7 +125,9 @@ class SubmissionAdminTest(BaseAPITestClass):
         self.app_admin = SubmissionAdmin(Submission, AdminSite())
 
     def test_submit_job_to_worker(self):
-        queryset = Submission.objects.filter(status='Finished')
+
+        Submission.objects.filter(status=self.submission.status).update(status="finished")
+        queryset = Submission.objects.filter(status="finished")
         self.app_admin.submit_job_to_worker(request, queryset)
         self.assertEqual(
             Submission.objects.filter(status="submitted").count(), 1
