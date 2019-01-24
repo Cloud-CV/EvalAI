@@ -157,10 +157,11 @@
     angular
     .module('evalai')
     .service('utilities', utilities)
-    .factory('authHttpResponseInterceptor',['$q','$location',function($q, $location){\
+    .factory('authHttpResponseInterceptor',['$q','$location',function($q, $location){
         return {
             responseError: function(rejection) {
                 if (rejection.status === 401) {
+                    alert("Timeout, Please login again to continue!");
                     localStorage.clear();
                     $location.path('/auth/login');
                 }
