@@ -29,7 +29,14 @@ class TestStringMethods(BaseAPITestClass):
 
     def test_disable_user(self):
         url = reverse_lazy('accounts:disable_user')
+<<<<<<< HEAD
         self.assertEqual(unicode(url), '/api/accounts/user/disable')
 
         url = reverse_lazy('accounts:get_auth_token')
         self.assertEqual(unicode(url), '/api/accounts/user/get_auth_token')
+=======
+        self.assertEqual(str(url), '/api/accounts/user/disable')
+
+        url = reverse_lazy('accounts:get_auth_token')
+        self.assertEqual(str(url), '/api/accounts/user/get_auth_token')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe

@@ -14,6 +14,10 @@ Contents:
    setup
    challenge_creation
    evaluation_scripts
+<<<<<<< HEAD
+=======
+   approve_challenge
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
    submission
    architecture
    architecture_decisions

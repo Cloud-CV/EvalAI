@@ -89,6 +89,7 @@ def get_submission_count(request, challenge_pk, duration):
     q_params = {'challenge_phase__id__in': challenge_phase_ids}
     since_date = None
     if duration.lower() == 'daily':
+<<<<<<< HEAD
         since_date = timezone.now().date()
 
     elif duration.lower() == 'weekly':
@@ -96,6 +97,16 @@ def get_submission_count(request, challenge_pk, duration):
 
     elif duration.lower() == 'monthly':
         since_date = (timezone.now() - timedelta(days=30)).date()
+=======
+        # Get the midnight time of the day
+        since_date = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    elif duration.lower() == 'weekly':
+        since_date = (timezone.now() - timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    elif duration.lower() == 'monthly':
+        since_date = (timezone.now() - timedelta(days=30)).replace(hour=0, minute=0, second=0, microsecond=0)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     # for `all` we dont need any condition in `q_params`
     if since_date:
         q_params['submitted_at__gte'] = since_date

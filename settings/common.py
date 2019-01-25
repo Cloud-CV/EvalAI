@@ -29,6 +29,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'random_secret_key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+TEST = False
+
 ALLOWED_HOSTS = []
 
 
@@ -68,6 +70,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_docs',
     'rest_framework_expiring_authtoken',
+    'drf_yasg',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -267,6 +270,7 @@ CACHES = {
     }
 }
 
+<<<<<<< HEAD
 RABBITMQ_PARAMETERS = {
     'HOST': os.environ.get("RABBITMQ_HOST", 'localhost'),
     'EVALAI_EXCHANGE': {
@@ -276,6 +280,8 @@ RABBITMQ_PARAMETERS = {
     'SUBMISSION_QUEUE': 'submission_task_queue',
 }
 
+=======
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 # The maximum size in bytes for request body
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
 FILE_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500 MB
@@ -290,4 +296,21 @@ REST_AUTH_SERIALIZERS = {
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
+<<<<<<< HEAD
 LOGIN_REDIRECT_URL = "/<profile>"
+=======
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'evalai.urls.swagger_api_info',
+    'SECURITY_DEFINITIONS': {
+        'Token Authentication': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        },
+    }
+}
+
+REDOC_SETTINGS = {
+    'SPEC_URL': ('docs.yaml', {'format': '.yaml'}),
+}
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe

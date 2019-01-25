@@ -3,8 +3,14 @@
         <div class="row">
             <div class="col s11 m11">
                 <div class="row">
+<<<<<<< HEAD
                     <div class="col s12">
                         <span class="fs-18 text-med-black"><strong>{{item.name}}</strong></span>
+=======
+                    <div class="col s12 width-auto">
+                        <span class="fs-18 text-med-black"><strong>{{item.name}}</strong></span>
+                        <span class="new badge orange-background margin-tb-4 f-16" data-badge-caption="Private Phase" ng-if="item.showPrivate"></span>
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                     </div>
                 </div>
                 <div class="row">
@@ -16,6 +22,11 @@
                         <div ng-bind-html="item.description"></div>
                         <p><strong class="text-light-black fs-12">Max number of submissions/day</strong>
                             <br> <strong>{{item.max_submissions_per_day}}</strong></p>
+<<<<<<< HEAD
+=======
+                        <p><strong class="text-light-black fs-12">Max number of submissions/month</strong>
+                            <br> <strong>{{item.max_submissions_per_month}}</strong></p>
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                         <p><strong class="text-light-black fs-12">Max total submissions</strong>
                             <br> <strong>{{item.max_submissions}}</strong></p>
                     </div>

@@ -1,6 +1,9 @@
 from __future__ import unicode_literals
 
+<<<<<<< HEAD
 import datetime
+=======
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 import logging
 
 from django.contrib.auth.models import User
@@ -9,6 +12,10 @@ from django.db.models import Max
 from rest_framework.exceptions import PermissionDenied
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+<<<<<<< HEAD
+=======
+from django.utils import timezone
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 
 from base.models import (TimeStampedModel, )
@@ -62,7 +69,11 @@ class Submission(TimeStampedModel):
         ChallengePhase, related_name='submissions')
     created_by = models.ForeignKey(User)
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS, db_index=True)
+<<<<<<< HEAD
     is_public = models.BooleanField(default=False)
+=======
+    is_public = models.BooleanField(default=True)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     is_flagged = models.BooleanField(default=False)
     submission_number = models.PositiveIntegerField(default=0)
     download_count = models.IntegerField(default=0)
@@ -84,7 +95,7 @@ class Submission(TimeStampedModel):
     publication_url = models.CharField(max_length=1000, default="", blank=True)
     project_url = models.CharField(max_length=1000, default="", blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{}'.format(self.id)
 
     class Meta:
@@ -133,6 +144,7 @@ class Submission(TimeStampedModel):
                 logger.info("Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
                     self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk))
 
+<<<<<<< HEAD
             if hasattr(self.challenge_phase, 'max_submissions_per_day'):
                 submissions_done_today_count = Submission.objects.filter(
                     challenge_phase__challenge=self.challenge_phase.challenge,
@@ -150,6 +162,26 @@ class Submission(TimeStampedModel):
                         (self.challenge_phase.max_submissions_per_day == 0)):
                     logger.info("Permission Denied: The maximum number of submission for today has been reached")
                     raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
+=======
+            total_submissions_done = Submission.objects.filter(
+                challenge_phase__challenge=self.challenge_phase.challenge,
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+            )
+
+            submissions_done_today_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
+                hour=0, minute=0, second=0, microsecond=0)).exclude(status=Submission.FAILED).count()
+
+            submissions_done_in_month_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
+                day=1, hour=0, minute=0, second=0, microsecond=0)).exclude(status=Submission.FAILED).count()
+
+            if self.challenge_phase.max_submissions_per_month - submissions_done_in_month_count == 0:
+                logger.info('Permission Denied: The maximum number of submission for this month has been reached')
+                raise PermissionDenied({'error': 'The maximum number of submission for this month has been reached'})
+            if self.challenge_phase.max_submissions_per_day - submissions_done_today_count == 0:
+                logger.info('Permission Denied: The maximum number of submission for today has been reached')
+                raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
             self.is_public = (True if self.challenge_phase.is_submission_public else False)
 

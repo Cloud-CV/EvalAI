@@ -36,6 +36,7 @@ class Challenge(TimeStampedModel):
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True)
     enable_forum = models.BooleanField(default=True)
+    forum_url = models.URLField(max_length=100, blank=True, null=True)
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False, db_index=True)
@@ -51,12 +52,23 @@ class Challenge(TimeStampedModel):
     blocked_email_domains = ArrayField(
         models.CharField(max_length=50, blank=True),
         default=[], blank=True)
+<<<<<<< HEAD
+=======
+    remote_evaluation = models.BooleanField(
+        default=False, verbose_name="Remote Evaluation", db_index=True)
+    queue = models.CharField(
+        max_length=200, default='', verbose_name="SQS queue name", db_index=True)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
     class Meta:
         app_label = 'challenges'
         db_table = 'challenge'
 
+<<<<<<< HEAD
     def __unicode__(self):
+=======
+    def __str__(self):
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         """Returns the title of Challenge"""
         return self.title
 
@@ -96,7 +108,11 @@ class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)
 
+<<<<<<< HEAD
     def __unicode__(self):
+=======
+    def __str__(self):
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         return self.name
 
     class Meta:
@@ -123,6 +139,10 @@ class ChallengePhase(TimeStampedModel):
     is_submission_public = models.BooleanField(default=False)
     test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"), default=False)
     max_submissions_per_day = models.PositiveIntegerField(default=100000, db_index=True)
+<<<<<<< HEAD
+=======
+    max_submissions_per_month = models.PositiveIntegerField(default=100000, db_index=True)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     max_submissions = models.PositiveIntegerField(default=100000, db_index=True)
     max_concurrent_submissions_allowed = models.PositiveIntegerField(default=3)
     codename = models.CharField(max_length=100, default="Phase Code Name")
@@ -133,7 +153,11 @@ class ChallengePhase(TimeStampedModel):
         db_table = 'challenge_phase'
         unique_together = (('codename', 'challenge'),)
 
+<<<<<<< HEAD
     def __unicode__(self):
+=======
+    def __str__(self):
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         """Returns the name of Phase"""
         return self.name
 
@@ -170,7 +194,11 @@ class Leaderboard(TimeStampedModel):
 
     schema = JSONField()
 
+<<<<<<< HEAD
     def __unicode__(self):
+=======
+    def __str__(self):
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         return '{}'.format(self.id)
 
     class Meta:
@@ -199,7 +227,11 @@ class ChallengePhaseSplit(TimeStampedModel):
         default=PUBLIC
     )
 
+<<<<<<< HEAD
     def __unicode__(self):
+=======
+    def __str__(self):
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         return '{0} : {1}'.format(self.challenge_phase.name, self.dataset_split.name)
 
     class Meta:
@@ -214,7 +246,11 @@ class LeaderboardData(TimeStampedModel):
     leaderboard = models.ForeignKey('Leaderboard')
     result = JSONField()
 
+<<<<<<< HEAD
     def __unicode__(self):
+=======
+    def __str__(self):
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         return '{0} : {1}'.format(self.challenge_phase_split, self.submission)
 
     class Meta:

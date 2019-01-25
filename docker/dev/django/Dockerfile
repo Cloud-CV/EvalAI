@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 FROM python:2.7
+=======
+FROM python:3.6.5
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 ENV PYTHONUNBUFFERED 1
 

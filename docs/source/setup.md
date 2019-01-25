@@ -1,10 +1,16 @@
 # How to setup
 
+<<<<<<< HEAD
 EvalAI can run on Linux, Cloud, Windows, and macOS platforms. Use the following list to choose the best installation path for you. The links under *Platform* take you straight to the installation instructions for that platform.
 
 ## Installation using Docker
 
 We recommend setting up EvalAI using Docker since there are only two steps involved. If you are not comfortable with docker, feel free to skip this section and move to the manual installation sections given below for different operating systems. Please follow the below steps for setting up using docker:
+=======
+EvalAI can run on Linux, Cloud, Windows, and macOS platforms. Please install [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and [docker-compose](https://docs.docker.com/compose/install/) before getting started with the installation of EvalAI.
+
+Once you have installed docker and docker-compose, please follow these steps to setup EvalAI on your local machine.
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 1. Get the source code on to your machine via git
 
@@ -12,12 +18,17 @@ We recommend setting up EvalAI using Docker since there are only two steps invol
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
     ```
 
+<<<<<<< HEAD
 2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
 
+=======
+2. Build and run the Docker containers. This might take a while.
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     ```
     docker-compose up --build
     ```
 
+<<<<<<< HEAD
 ## Ubuntu Installation Instructions
 
 ### Step 1: Install prerequisites
@@ -311,10 +322,15 @@ Follow this guide to setup your development machine.
     ```
     This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
 
+=======
+3. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
+    
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
     **PARTICIPANT USER-** username: `participant` password: `password`
 
+<<<<<<< HEAD
     By default the seed commands seeds the database with only one challenge. Which can be changed by passing the argument
     `-nc` along with the number of challenges you want to seed the database with.
 
@@ -372,3 +388,6 @@ Follow this guide to setup your development machine.
 [frontend]: http://127.0.0.1:8888
 [http://127.0.0.1:8000]: http://127.0.0.1:8000
 [http://127.0.0.1:8888]: http://127.0.0.1:8888
+=======
+If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe

@@ -61,8 +61,14 @@
 
                 }
             },
+<<<<<<< HEAD
             onError: function() {
                 $rootScope.notify("error", "Some error have occured , please try again !");
+=======
+            onError: function(response) {
+                var details = response.data;
+                $rootScope.notify("error", details.error);
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             }
         };
 
@@ -76,8 +82,14 @@
                 vm.jsonResponse = response.data;
                 vm.token = response.data['token'];
             },
+<<<<<<< HEAD
             onError: function() {
                 $rootScope.notify("error", "Some error have occured , please try again !");
+=======
+            onError: function(response) {
+                var details = response.data;
+                $rootScope.notify("error", details.error);
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             }
         };
 

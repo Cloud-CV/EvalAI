@@ -13,5 +13,10 @@ class BaseTestCase(unittest.TestCase):
 
     def test_get_file_content(self):
         test_file_content = get_file_content(self.test_file_path, 'rb')
+<<<<<<< HEAD
         expected = '1\n2\n3\n4\n5\n6\n7\n8\n9\n10'
         self.assertEqual(test_file_content, expected)
+=======
+        expected = '1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n'
+        self.assertEqual(test_file_content.decode(), expected)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe

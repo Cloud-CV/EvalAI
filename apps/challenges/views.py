@@ -5,6 +5,10 @@ import requests
 import shutil
 import string
 import tempfile
+<<<<<<< HEAD
+=======
+import uuid
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 import yaml
 import zipfile
 
@@ -83,7 +87,11 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
+<<<<<<< HEAD
         challenge = Challenge.objects.filter(creator=challenge_host_team, is_disabled=False)
+=======
+        challenge = Challenge.objects.filter(creator=challenge_host_team, is_disabled=False).order_by('-id')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
             result_page, many=True, context={'request': request})
@@ -181,6 +189,7 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is in allowed list.
+<<<<<<< HEAD
 
     user_email = request.user.email
 
@@ -199,6 +208,26 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
             response_data = {'error': message.format(domains)}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+=======
+
+    user_email = request.user.email
+
+    if len(challenge.allowed_email_domains) > 0:
+        present = False
+        for domain in challenge.allowed_email_domains:
+            if domain.lower() in user_email.lower():
+                present = True
+                break
+        if not present:
+            message = 'Sorry, users with {} email domain(s) are only allowed to participate in this challenge.'
+            domains = ""
+            for domain in challenge.allowed_email_domains:
+                domains = "{}{}{}".format(domains, "/", domain)
+            domains = domains[1:]
+            response_data = {'error': message.format(domains)}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     # Check if user is in blocked list.
 
     for domain in challenge.blocked_email_domains:
@@ -293,7 +322,11 @@ def get_featured_challenges(request):
         featured=True,
         published=True,
         approved_by_admin=True,
+<<<<<<< HEAD
         is_disabled=False)
+=======
+        is_disabled=False).order_by('-id')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
@@ -307,7 +340,14 @@ def get_challenge_by_pk(request, pk):
     Returns a particular challenge by id
     """
     try:
+<<<<<<< HEAD
         challenge = Challenge.objects.get(pk=pk)
+=======
+        if is_user_a_host_of_challenge(request.user, pk):
+            challenge = Challenge.objects.get(pk=pk)
+        else:
+            challenge = Challenge.objects.get(pk=pk, approved_by_admin=True, published=True)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         if (challenge.is_disabled):
             response_data = {'error': 'Sorry, the challenge was removed!'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -352,7 +392,11 @@ def get_challenges_based_on_teams(request):
         host_team_ids = get_challenge_host_teams_for_user(request.user)
         q_params['creator__id__in'] = host_team_ids
 
+<<<<<<< HEAD
     challenge = Challenge.objects.filter(**q_params)
+=======
+    challenge = Challenge.objects.filter(**q_params).order_by('id')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     paginator, result_page = paginated_queryset(challenge, request)
     serializer = ChallengeSerializer(
         result_page, many=True, context={'request': request})
@@ -372,8 +416,17 @@ def challenge_phase_list(request, challenge_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
+<<<<<<< HEAD
         challenge_phase = ChallengePhase.objects.filter(
             challenge=challenge, is_public=True).order_by('pk')
+=======
+        if is_user_a_host_of_challenge(request.user, challenge_pk):
+            challenge_phase = ChallengePhase.objects.filter(
+                challenge=challenge).order_by('pk')
+        else:
+            challenge_phase = ChallengePhase.objects.filter(
+                challenge=challenge, is_public=True).order_by('pk')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         paginator, result_page = paginated_queryset(challenge_phase, request)
         serializer = ChallengePhaseSerializer(result_page, many=True)
         response_data = serializer.data
@@ -452,6 +505,16 @@ def challenge_phase_split_list(request, challenge_pk):
 
     challenge_phase_split = ChallengePhaseSplit.objects.filter(
         challenge_phase__challenge=challenge)
+<<<<<<< HEAD
+=======
+
+    # Check if user is a challenge host or participant
+    challenge_host = is_user_a_host_of_challenge(request.user, challenge_pk)
+
+    if not challenge_host:
+        challenge_phase_split = challenge_phase_split.filter(visibility=ChallengePhaseSplit.PUBLIC)
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     serializer = ChallengePhaseSplitSerializer(
         challenge_phase_split, many=True)
     response_data = serializer.data
@@ -488,7 +551,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             BASE_LOCATION, '{}.zip'.format(unique_folder_name))
         try:
             if response and response.status_code == 200:
+<<<<<<< HEAD
                 with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, 'w') as zip_file:
+=======
+                with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, 'wb') as zip_file:
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                     zip_file.write(response.content)
         except IOError:
             message = ('Unable to process the uploaded zip file. '
@@ -519,13 +586,21 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
+<<<<<<< HEAD
         logger.exception(message)
+=======
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Search for yaml file
     yaml_file_count = 0
     for name in zip_ref.namelist():
+<<<<<<< HEAD
         if name.endswith('.yaml') or name.endswith('.yml'):
+=======
+        if (name.endswith('.yaml') or name.endswith('.yml')) and (
+                not name.startswith('__MACOSX')):  # Ignore YAML File in __MACOSX Directory
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             yaml_file = name
             extracted_folder_name = yaml_file.split(basename(yaml_file))[0]
             yaml_file_count += 1
@@ -539,7 +614,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if yaml_file_count > 1:
+<<<<<<< HEAD
         message = 'There are more than one YAML files in zip folder!'
+=======
+        message = 'There are {0} YAML files instead of one in zip folder!'.format(yaml_file_count)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         response_data = {
             'error': message
         }
@@ -548,7 +627,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
     try:
         with open(join(BASE_LOCATION, unique_folder_name, yaml_file), "r") as stream:
+<<<<<<< HEAD
             yaml_file_data = yaml.load(stream)
+=======
+            yaml_file_data = yaml.safe_load(stream)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     except (yaml.YAMLError, ScannerError) as exc:
         message = 'Error in creating challenge. Please check the yaml configuration!'
         response_data = {
@@ -786,6 +869,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
+<<<<<<< HEAD
+=======
+                challenge_title = challenge.title.split(' ')
+                challenge_title = '-'.join(challenge_title).lower()
+                random_challenge_id = uuid.uuid4()
+                challenge_queue_name = "{}-{}".format(challenge_title, random_challenge_id)
+                challenge.queue = challenge_queue_name
+                challenge.save()
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             else:
                 response_data = serializer.errors
                 # transaction.set_rollback(True)
@@ -1253,7 +1345,11 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+<<<<<<< HEAD
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+=======
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 @authentication_classes((ExpiringTokenAuthentication,))
 def star_challenge(request, challenge_pk):
     """
@@ -1300,3 +1396,54 @@ def star_challenge(request, challenge_pk):
             response_data = {'is_starred': False,
                              'count': serializer.data[0]['count']}
             return Response(response_data, status=status.HTTP_200_OK)
+<<<<<<< HEAD
+=======
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_broker_urls(request):
+    """
+    Returns:
+        Queue name of approved challenges
+    """
+    is_active = request.data.get('is_active', False)
+
+    q_params = {'approved_by_admin': True}
+    if is_active:
+        q_params['start_date__lt'] = timezone.now()
+        q_params['end_date__gt'] = timezone.now()
+
+    if not request.user.is_superuser:
+        response_data = {'error': 'You are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
+        challenges = Challenge.objects.filter(**q_params)
+        response_data = challenges.values_list('queue', flat=True)
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_broker_url_by_challenge_pk(request, challenge_pk):
+    """
+    Returns:
+        Queue name of challenge with challenge pk
+    """
+    if not request.user.is_superuser:
+        response_data = {'error': 'You are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
+        try:
+            challenge = Challenge.objects.get(pk=challenge_pk, approved_by_admin=True)
+        except Challenge.DoesNotExist:
+            response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        response_data = [challenge.queue]
+        return Response(response_data, status=status.HTTP_200_OK)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe

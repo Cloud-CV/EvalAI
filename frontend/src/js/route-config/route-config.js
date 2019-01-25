@@ -526,17 +526,31 @@
 
         $rootScope.isAuth = false;
         // check for valid user
+<<<<<<< HEAD
         $rootScope.$on("$stateChangeStart", function(event, toState) {
             if (utilities.isAuthenticated()) {
                 $rootScope.isAuth = true;
                 if (toState.authpage) {
+=======
+        $rootScope.$on("$stateChangeStart", function(event, to, toParams) {
+            if (utilities.isAuthenticated()) {
+                $rootScope.isAuth = true;
+                if (to.authpage) {
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                     event.preventDefault();
                     $state.go("home");
                 }
             } else {
                 $rootScope.isAuth = false;
+<<<<<<< HEAD
                 if (toState.authenticate) {
                     event.preventDefault();
+=======
+                if (to.authenticate) {
+                    event.preventDefault();
+                    $rootScope.previousState = to;
+                    $rootScope.previousStateParams = toParams;
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                     $state.go("auth.login");
                 }
             }
@@ -546,7 +560,11 @@
         $rootScope.$on('$stateChangeStart', function(event, to, params) {
             if (to.redirectTo) {
                 event.preventDefault();
+<<<<<<< HEAD
                 $state.go(to.redirectTo, params, { location: 'replace' });
+=======
+                $state.go(to.redirectTo, params, { location: $location.path() });
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             }
         });
 

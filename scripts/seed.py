@@ -31,8 +31,14 @@ except NameError:
 def check_database():
     if len(EmailAddress.objects.all()) > 0:
         print("Are you sure you want to wipe the existing development database and reseed it? (Y/N)")
+<<<<<<< HEAD
         if settings.TEST or raw_input().lower() == "y":
             destroy_database()
+=======
+        if settings.TEST or input().lower() == "y":
+            destroy_database()
+            return True
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         else:
             return False
     else:
@@ -131,7 +137,12 @@ def create_challenge(title, start_date, end_date, host_team):
     """
     Creates a challenge.
     """
+<<<<<<< HEAD
     evaluation_script = open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'string_matching.zip'), 'rb')
+=======
+    evaluation_script = open(
+        os.path.join(settings.BASE_DIR, 'examples', 'example1', 'sample_evaluation_script.zip'), 'rb')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     Challenge.objects.create(
         title=title,
         short_description=fake.paragraph(),

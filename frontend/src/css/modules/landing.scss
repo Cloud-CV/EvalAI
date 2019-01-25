@@ -415,6 +415,14 @@ a.view-more {
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {
+<<<<<<< HEAD
+=======
+
+    .rocket-container {	
+        display:none;	
+    }
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     .dyn-header {
         nav {
             a.org-link {
@@ -436,7 +444,10 @@ a.view-more {
     .sim-header {
         width: 100%;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     
 }
 
@@ -452,10 +463,52 @@ a.view-more {
 }
 
 #fb-logo{
+<<<<<<< HEAD
     height: 100px;
 }
 
 #draper-logo {
     height: auto;
     padding-top: 10%;
+=======
+    height: 175px;
+    width: 160px;
+    padding-bottom:30%;
+}
+
+#mapillary-logo{
+    height:70px;
+    width:210px;
+}
+
+#umbc-logo{
+    height:70px;
+    width:180px;
+}
+
+#draper-logo {
+    height: 110px;
+    padding-bottom:5%;
+}
+
+#ebay-logo{
+    padding-top:5%;
+    height: 80px;
+    width:160px;
+}
+
+#iitm-logo{
+    height:100px;
+    width:100px;
+}
+
+#adelaide-logo{
+    height:80px;
+    width:180px;
+}
+
+#pitt-logo{
+    height:80px;
+    width:180px;
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 }

@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+<<<<<<< HEAD
 import contextlib
 import django
 import importlib
@@ -10,15 +11,40 @@ import shutil
 import socket
 import sys
 import tempfile
+=======
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import boto3
+import botocore
+import contextlib
+import django
+import importlib
+import json
+import logging
+import os
+import requests
+import signal
+import shutil
+import sys
+import tempfile
+import time
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 import traceback
 import yaml
 import zipfile
 
+<<<<<<< HEAD
 from os.path import dirname, join
+=======
+from os.path import join
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from django.conf import settings
+<<<<<<< HEAD
 # need to add django project path in sys path
 # root directory : where manage.py lives
 # worker is present in root-directory/scripts/workers
@@ -43,6 +69,17 @@ sys.path.insert(0, DJANGO_PROJECT_PATH)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', DJANGO_SETTINGS_MODULE)
 django.setup()
 
+=======
+
+# all challenge and submission will be stored in temp directory
+BASE_TEMP_DIR = tempfile.mkdtemp()
+COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, 'compute')
+
+logger = logging.getLogger(__name__)
+django.setup()
+
+DJANGO_SETTINGS_MODULE = os.environ.get('DJANGO_SETTINGS_MODULE', 'settings.dev')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 DJANGO_SERVER = os.environ.get('DJANGO_SERVER', "localhost")
 
 from challenges.models import (Challenge,
@@ -73,6 +110,20 @@ PHASE_ANNOTATION_FILE_NAME_MAP = {}
 django.db.close_old_connections()
 
 
+<<<<<<< HEAD
+=======
+class GracefulKiller:
+    kill_now = False
+
+    def __init__(self):
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
+
+    def exit_gracefully(self, signum, frame):
+        self.kill_now = True
+
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 class ExecutionTimeLimitExceeded(Exception):
     pass
 
@@ -112,7 +163,11 @@ def download_and_extract_file(url, download_location):
         response = None
 
     if response and response.status_code == 200:
+<<<<<<< HEAD
         with open(download_location, 'w') as f:
+=======
+        with open(download_location, 'wb') as f:
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             f.write(response.content)
 
 
@@ -128,7 +183,11 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         response = None
 
     if response and response.status_code == 200:
+<<<<<<< HEAD
         with open(download_location, 'w') as f:
+=======
+        with open(download_location, 'wb') as f:
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             f.write(response.content)
         # extract zip file
         zip_ref = zipfile.ZipFile(download_location, 'r')
@@ -186,6 +245,10 @@ def extract_challenge_data(challenge, phases):
     evaluation_script_url = return_file_url_per_environment(evaluation_script_url)
     # create challenge directory as package
     create_dir_as_python_package(challenge_data_directory)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id] = {}
 
@@ -207,6 +270,7 @@ def extract_challenge_data(challenge, phases):
                                                                  annotation_file=annotation_file_name)
         download_and_extract_file(annotation_file_url, annotation_file_path)
 
+<<<<<<< HEAD
     # import the challenge after everything is finished
     challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
     EVALUATION_SCRIPTS[challenge.id] = challenge_module
@@ -228,6 +292,25 @@ def load_active_challenges():
     for challenge in active_challenges:
         phases = challenge.challengephase_set.all()
         extract_challenge_data(challenge, phases)
+=======
+    try:
+        # import the challenge after everything is finished
+        challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
+        EVALUATION_SCRIPTS[challenge.id] = challenge_module
+    except:
+        logger.exception('Exception raised while creating Python module for challenge_id: %s' % (challenge.id))
+        raise
+
+
+def load_challenge(challenge):
+    '''
+        Creates python package for a challenge and extracts relevant data
+    '''
+    # make sure that the challenge base directory exists
+    create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
+    phases = challenge.challengephase_set.all()
+    extract_challenge_data(challenge, phases)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 
 def extract_submission_data(submission_id):
@@ -279,24 +362,71 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
     annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(challenge_id=challenge_id, phase_id=phase_id,
                                                              annotation_file=annotation_file_name)
     submission_data_dir = SUBMISSION_DATA_DIR.format(submission_id=submission.id)
+<<<<<<< HEAD
+=======
+
+    submission.status = Submission.RUNNING
+    submission.started_at = timezone.now()
+    submission.save()
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, 'run')
     create_dir(temp_run_dir)
 
+<<<<<<< HEAD
     stdout_file_name = 'temp_stdout.txt'
     stderr_file_name = 'temp_stderr.txt'
 
     stdout_file = join(temp_run_dir, stdout_file_name)
     stderr_file = join(temp_run_dir, stderr_file_name)
+=======
+    stdout_file = join(temp_run_dir, 'temp_stdout.txt')
+    stderr_file = join(temp_run_dir, 'temp_stderr.txt')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
     stdout = open(stdout_file, 'a+')
     stderr = open(stderr_file, 'a+')
 
+<<<<<<< HEAD
     # call `main` from globals and set `status` to running and hence `started_at`
     submission.status = Submission.RUNNING
     submission.started_at = timezone.now()
     submission.save()
+=======
+    remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
+
+    if remote_evaluation:
+        try:
+            logger.info("Sending submission {} for remote evaluation".format(submission.id))
+            with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:
+                submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
+                    annotation_file_path,
+                    user_annotation_file_path,
+                    challenge_phase.codename,
+                    submission_metadata=submission_serializer.data)
+                return
+        except:
+            stderr.write(traceback.format_exc())
+            stderr.close()
+            stdout.close()
+            submission.status = Submission.FAILED
+            submission.completed_at = timezone.now()
+            submission.save()
+            with open(stdout_file, 'r') as stdout:
+                stdout_content = stdout.read()
+                submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
+            with open(stderr_file, 'r') as stderr:
+                stderr_content = stderr.read()
+                submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
+
+            # delete the complete temp run directory
+            shutil.rmtree(temp_run_dir)
+            return
+
+    # call `main` from globals and set `status` to running and hence `started_at`
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     try:
         successful_submission_flag = True
         with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:      # noqa
@@ -337,9 +467,14 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
 
             leaderboard_data_list = []
             for split_result in submission_output['result']:
+<<<<<<< HEAD
 
                 # get split_code_name that is the key of the result
                 split_code_name = split_result.items()[0][0]
+=======
+                # get split_code_name that is the key of the result
+                split_code_name = list(split_result.keys())[0]
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
                 # Check if the challenge_phase_split exists for the challenge_phaseand dataset_split
                 try:
@@ -394,6 +529,10 @@ def run_submission(challenge_id, challenge_phase, submission, user_annotation_fi
 
         # Save submission_result_file
         submission_result = submission_output.get('submission_result', '')
+<<<<<<< HEAD
+=======
+        submission_result = json.dumps(submission_result)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         submission.submission_result_file.save('submission_result.json', ContentFile(submission_result))
 
         # Save submission_metadata_file
@@ -437,9 +576,14 @@ def process_submission_message(message):
     try:
         challenge_phase = ChallengePhase.objects.get(id=phase_id)
     except ChallengePhase.DoesNotExist:
+<<<<<<< HEAD
         logger.critical('Challenge Phase {} does not exist'.format(phase_id))
         traceback.print_exc()
         return
+=======
+        logger.exception('Challenge Phase {} does not exist'.format(phase_id))
+        raise
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
     user_annotation_file_path = join(SUBMISSION_DATA_DIR.format(submission_id=submission_id),
                                      os.path.basename(submission_instance.input_file.name))
@@ -452,13 +596,18 @@ def process_add_challenge_message(message):
     try:
         challenge = Challenge.objects.get(id=challenge_id)
     except Challenge.DoesNotExist:
+<<<<<<< HEAD
         logger.critical('Challenge {} does not exist'.format(challenge_id))
         traceback.print_exc()
+=======
+        logger.exception('Challenge {} does not exist'.format(challenge_id))
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
 
 
+<<<<<<< HEAD
 def process_submission_callback(ch, method, properties, body):
     try:
         logger.info("[x] Received submission message %s" % body)
@@ -531,7 +680,84 @@ def main():
     channel.basic_consume(add_challenge_callback, queue=add_challenge_queue_name)
 
     channel.start_consuming()
+=======
+def process_submission_callback(body):
+    try:
+        logger.info("[x] Received submission message %s" % body)
+        body = yaml.safe_load(body)
+        body = dict((k, int(v)) for k, v in body.items())
+        process_submission_message(body)
+    except Exception as e:
+        logger.exception('Exception while receiving message from submission queue with error {}'.format(e))
+
+
+def get_or_create_sqs_queue(queue_name):
+    """
+    Returns:
+        Returns the SQS Queue object
+    """
+    if settings.DEBUG or settings.TEST:
+        sqs = boto3.resource('sqs',
+                             endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
+    else:
+        sqs = boto3.resource('sqs',
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
+    if queue_name == '':
+        queue_name = 'evalai_submission_queue'
+    # Check if the queue exists. If no, then create one
+    try:
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
+    except botocore.exceptions.ClientError as ex:
+        if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
+            queue = sqs.create_queue(QueueName=queue_name)
+        else:
+            logger.exception('Cannot get or create Queue')
+    return queue
+
+
+def main():
+    killer = GracefulKiller()
+    logger.info('Using {0} as temp directory to store data'.format(BASE_TEMP_DIR))
+    create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
+    sys.path.append(COMPUTE_DIRECTORY_PATH)
+
+    q_params = {'approved_by_admin': True}
+    q_params['start_date__lt'] = timezone.now()
+    q_params['end_date__gt'] = timezone.now()
+
+    challenge_pk = os.environ.get('CHALLENGE_PK')
+    if challenge_pk:
+        q_params['pk'] = challenge_pk
+
+    challenges = Challenge.objects.filter(**q_params)
+    for challenge in challenges:
+        load_challenge(challenge)
+
+    # create submission base data directory
+    create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
+    queue_name = os.environ.get('CHALLENGE_QUEUE', 'evalai_submission_queue')
+    queue = get_or_create_sqs_queue(queue_name)
+
+    while True:
+        for message in queue.receive_messages():
+            logger.info('Processing message body: {0}'.format(message.body))
+            process_submission_callback(message.body)
+            # Let the queue know that the message is processed
+            message.delete()
+        if killer.kill_now:
+            break
+        time.sleep(0.1)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 
 if __name__ == '__main__':
     main()
+<<<<<<< HEAD
+=======
+    logger.info("Quitting Submission Worker.")
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe

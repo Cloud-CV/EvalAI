@@ -71,6 +71,11 @@
                 vm.page = details;
                 vm.isActive = details.is_active;
                 vm.isPublished = vm.page.published;
+<<<<<<< HEAD
+=======
+                vm.isForumEnabled = details.enable_forum;
+                vm.forumURL = details.forum_url;
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -244,8 +249,13 @@
             },
             onError: function(response) {
                 var error = response.data;
+<<<<<<< HEAD
                 utilities.storeData('emailError', error.detail);
                 $state.go('web.permission-denied');
+=======
+                $rootScope.notify("error", error.error);
+                $state.go('web.dashboard');
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                 utilities.hideLoader();
             }
         };
@@ -317,17 +327,30 @@
                             vm.projectUrl = null;
                             vm.publicationUrl = null;
                             if (status == 404) {
+<<<<<<< HEAD
 
                                 vm.subErrors.msg = "Please select phase!";
                             } else if (status == 400) {
                                 vm.subErrors.msg = error.input_file[0];
                             } else {
                                 vm.subErrors.msg = error.error;
+=======
+                                vm.subErrors.msg = "Please select phase!";
+                            } else {
+                                if (error.error){
+                                    vm.subErrors.msg = error.error;
+                                } else {
+                                    vm.subErrors.msg = error.input_file[0];
+                                }
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                             }
                             vm.stopLoader();
                         }
                     };
+<<<<<<< HEAD
 
+=======
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                     utilities.sendRequest(parameters, 'header', 'upload');
                 }
             }
@@ -343,6 +366,14 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
+<<<<<<< HEAD
+=======
+                for (var i=0; i<details.count; i++) {
+                    if (details.results[i].is_public == false) {
+                        vm.phases.results[i].showPrivate = true;
+                    }
+                }
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
@@ -357,6 +388,14 @@
 
         utilities.sendRequest(parameters);
 
+<<<<<<< HEAD
+=======
+        var challengePhaseVisibility = {
+            owner_and_host: 1,
+            host: 2,
+            public: 3,
+        };
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         // get details of the particular challenge phase split
         parameters.url = 'challenges/' + vm.challengeId + '/challenge_phase_split';
         parameters.method = 'GET';
@@ -365,6 +404,14 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phaseSplits = details;
+<<<<<<< HEAD
+=======
+                for(var i=0; i<details.length; i++) {
+                    if (details[i].visibility !== challengePhaseVisibility.public) {
+                        vm.phaseSplits[i].showPrivate = true;
+                    }
+                }
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                 utilities.hideLoader();
             },
             onError: function(response) {
@@ -383,7 +430,11 @@
             // check which column is selected
             // so that the values can be parsed properly
             if (vm.sortColumn === 'date') {
+<<<<<<< HEAD
                 return Date.parse(key.submission__submitted_at);
+=======
+                return Date.parse(key.submission__submitted_at_formatted);
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             }
             else if (vm.sortColumn === 'rank') {
                 return vm.initial_ranking[key.submission__participant_team__team_name];
@@ -393,12 +444,29 @@
             }
             else if (vm.sortColumn === 'string'){
                 // sort teams alphabetically
+<<<<<<< HEAD
                 return key.submission__participant_team__team_name.value;
+=======
+                return key.submission__participant_team__team_name;
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             }
 
             return 0;
         };
 
+<<<<<<< HEAD
+=======
+        vm.sortLeaderboard = function(scope, column, index) {
+            if (index == null || index == undefined) {
+                scope.reverseSort = scope.sortColumn != column ? false : !scope.reverseSort;
+            } else {
+                scope.reverseSort = scope.sortColumn == column && scope.columnIndexSort == index ? !scope.reverseSort : false;
+                scope.columnIndexSort = index;
+            }
+            scope.sortColumn = column;
+        };
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         // my submissions
         vm.isResult = false;
 
@@ -428,6 +496,10 @@
                     var details = response.data;
                     vm.leaderboard = details.results;
                     for (var i=0; i<vm.leaderboard.length; i++) {
+<<<<<<< HEAD
+=======
+                        vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                         vm.initial_ranking[vm.leaderboard[i].submission__participant_team__team_name] = i+1;
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
@@ -989,6 +1061,10 @@
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
+<<<<<<< HEAD
+=======
+            vm.maxExceeded = false;
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             parameters.url = "jobs/" + vm.challengeId + "/phases/" + phaseId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
@@ -996,7 +1072,15 @@
                     var status = response.status;
                     var details = response.data;
                     if (status === 200) {
+<<<<<<< HEAD
                         if (details.remaining_submissions_today_count > 0) {
+=======
+                        if (details.max_submission_exceeded === true) {
+                            vm.maxExceeded = true;
+                            vm.maxExceededMessage = details.message;
+                        }
+                        else if (details.remaining_submissions_today_count > 0) {
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                             vm.remainingSubmissions = details;
                             vm.showSubmissionNumbers = true;
                         } else {
@@ -1026,9 +1110,16 @@
                         }
                     }
                 },
+<<<<<<< HEAD
                 onError: function() {
                     vm.stopLoader();
                     $rootScope.notify("error", "Some error occured. Please try again.");
+=======
+                onError: function(response) {
+                    var details = response.data;
+                    vm.stopLoader();
+                    $rootScope.notify("error", details.error);
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                 }
             };
             utilities.sendRequest(parameters);

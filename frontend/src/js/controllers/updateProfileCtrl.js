@@ -101,7 +101,11 @@
                                 }
 
                             } catch (error) {
+<<<<<<< HEAD
                                 $rootScope.notify("error", "Some error have occured . Please try again !");
+=======
+                                $rootScope.notify("error", error);
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                             }
                         }
 

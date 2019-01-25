@@ -124,6 +124,7 @@
 (function() {
     'use strict';
     angular.module('evalai').directive('landingFooter', landingFooter);
+<<<<<<< HEAD
 
     function landingFooter() {
         var directive = {
@@ -136,6 +137,21 @@
 
         function controller() {
            var js = document.createElement("script");
+=======
+
+    function landingFooter() {
+        var directive = {
+            templateUrl: 'dist/views/web/partials/footer.html',
+            transclude: true,
+            restrict: 'EA',
+            controller: controller
+        };
+        return directive;
+        
+        function controller($scope) {
+            $scope.year = new Date().getFullYear();
+            var js = document.createElement("script");
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
             document.getElementsByTagName("head")[0].appendChild(js);
        }
@@ -156,7 +172,12 @@
         };
         return directive;
 
+<<<<<<< HEAD
         function controller() {
+=======
+        function controller($scope) {
+            $scope.year = new Date().getFullYear();
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
            var js = document.createElement("script");
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
             document.getElementsByTagName("head")[0].appendChild(js);

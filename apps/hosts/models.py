@@ -13,9 +13,15 @@ class ChallengeHostTeam(TimeStampedModel):
     """
     team_name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(User, related_name='challenge_host_team_creator')
+<<<<<<< HEAD
     team_url = models.CharField(max_length=1000, default="", null=True)
 
     def __unicode__(self):
+=======
+    team_url = models.CharField(max_length=1000, default="", blank=True)
+
+    def __str__(self):
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         return '{0}: {1}'.format(self.team_name, self.created_by)
 
     def get_all_challenge_host_email(self):
@@ -62,7 +68,11 @@ class ChallengeHost(TimeStampedModel):
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS)
     permissions = models.CharField(max_length=30, choices=PERMISSION_OPTIONS)
 
+<<<<<<< HEAD
     def __unicode__(self):
+=======
+    def __str__(self):
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         return '{0}:{1}:{2}'.format(self.team_name, self.user, self.permissions)
 
     class Meta:

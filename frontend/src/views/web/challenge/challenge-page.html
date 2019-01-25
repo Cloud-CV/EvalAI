@@ -46,7 +46,11 @@
                 </div>
             </div>
             <div class="col m3 l3 align-right">
+<<<<<<< HEAD
                 <button ng-if="isAuth" class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.starChallenge()" ng-init="challenge.isStarred()"><i class="fa fa-star star"></i> {{challenge.data}}&nbsp;&nbsp;{{challenge.count}}</button>
+=======
+                <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.starChallenge()" ng-init="challenge.isStarred()"><i class="fa fa-star star"></i> {{challenge.data}}&nbsp;&nbsp;{{challenge.count}}</button>
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             </div>
         </div>
         <div class="row rm-row-bot">
@@ -60,6 +64,10 @@
                     <li ng-if="challenge.isParticipated"><a ui-sref=".my-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i> My Submissions</a></li>
                     <li ng-if="challenge.isChallengeHost"><a ui-sref=".my-challenge-all-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i>View All Submissions</a></li>
                     <li><a ui-sref=".leaderboard" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-th-list"></i> Leaderboard</a></li>
+<<<<<<< HEAD
+=======
+                    <li ng-if="challenge.isForumEnabled && challenge.forumURL"><a href="{{challenge.forumURL}}" target="_blank" class="text-light-black w-500"><i class="fa fa-comments"></i> Discussions</a></li>
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                 </ul>
             </div>
         </div>

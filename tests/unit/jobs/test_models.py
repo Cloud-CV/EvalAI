@@ -54,7 +54,11 @@ class BaseTestCase(TestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
+<<<<<<< HEAD
                                                    'Dummy file content', content_type='text/plain')
+=======
+                                                   b'Dummy file content', content_type='text/plain')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             )
 
     def tearDown(self):

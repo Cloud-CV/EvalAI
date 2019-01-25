@@ -6,7 +6,11 @@
     },
     "staging": {
         "EnvironmentConfig": {
+<<<<<<< HEAD
             "API": "http://api.evalai.cloudcv.org/api/"
+=======
+            "API": "https://staging-evalai.cloudcv.org/api/"
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         }
     },
     "production": {

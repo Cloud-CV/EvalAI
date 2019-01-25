@@ -55,7 +55,11 @@ class BaseTestCase(TestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
+<<<<<<< HEAD
                                                    'Dummy file content', content_type='text/plain'),
+=======
+                                                   b'Dummy file content', content_type='text/plain'),
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                 max_submissions_per_day=100000,
                 max_submissions=100000,
             )
@@ -84,9 +88,15 @@ class ChallengeTestCase(BaseTestCase):
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge.image = SimpleUploadedFile('test_sample_file.jpg',
+<<<<<<< HEAD
                                                       'Dummy image content', content_type='image')
             self.challenge.evaluation_script = SimpleUploadedFile('test_sample_file.zip',
                                                                   'Dummy zip content', content_type='zip')
+=======
+                                                      b'Dummy image content', content_type='image')
+            self.challenge.evaluation_script = SimpleUploadedFile('test_sample_file.zip',
+                                                                  b'Dummy zip content', content_type='zip')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         self.challenge.save()
 
     def tearDown(self):

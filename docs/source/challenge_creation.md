@@ -25,6 +25,11 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
 
 * **evaluation_script**: The evaluation script using which the submissions will be evaluated (path of the evaluation script file or folder relative to this YAML file.)
 
+<<<<<<< HEAD
+=======
+* **remote_evaluation**: True/False (specify whether evaluation will happen on private machine or not. Default is `False`)
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 * **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` timezone
 
 * **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` timezone

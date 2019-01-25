@@ -14,4 +14,10 @@ angular
 		'angularTrix',
 		'angularMoment',
 		'ngclipboard'
+<<<<<<< HEAD
 	]);
+=======
+	]).config(['$compileProvider', function($compileProvider) {
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|tel|javascript):/);
+}]);
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe

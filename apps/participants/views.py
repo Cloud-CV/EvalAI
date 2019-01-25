@@ -37,7 +37,11 @@ def participant_team_list(request):
     if request.method == 'GET':
         participant_teams_id = Participant.objects.filter(user_id=request.user).values_list('team_id', flat=True)
         participant_teams = ParticipantTeam.objects.filter(
+<<<<<<< HEAD
             id__in=participant_teams_id)
+=======
+            id__in=participant_teams_id).order_by('-id')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         paginator, result_page = paginated_queryset(participant_teams, request)
         serializer = ParticipantTeamDetailSerializer(result_page, many=True)
         response_data = serializer.data
@@ -74,7 +78,11 @@ def get_participant_team_challenge_list(request, participant_team_pk):
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
+<<<<<<< HEAD
         challenge = Challenge.objects.filter(participant_teams=participant_team)
+=======
+        challenge = Challenge.objects.filter(participant_teams=participant_team).order_by('-id')
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         paginator, result_page = paginated_queryset(challenge, request)
         serializer = ChallengeSerializer(
             result_page, many=True, context={'request': request})

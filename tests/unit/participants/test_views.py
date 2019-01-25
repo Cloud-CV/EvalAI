@@ -607,6 +607,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "allowed_email_domains": [],
                         "blocked_email_domains": [],
                         "approved_by_admin": False,
+<<<<<<< HEAD
+=======
+                        "forum_url": self.challenge1.forum_url,
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -655,6 +659,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": False,
+<<<<<<< HEAD
+=======
+                "forum_url": self.challenge1.forum_url,
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             }
         ]
 

@@ -10,7 +10,11 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<< HEAD
         ('jobs', '0004_submission_output'),
+=======
+        ('jobs', '0001_squashed_0005_upload_unique_random_filename'),
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         ('challenges', '0018_added_challenge_phase_split_table'),
     ]
 

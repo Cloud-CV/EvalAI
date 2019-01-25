@@ -4,8 +4,11 @@ var gulp = require('gulp'),
     fs = require('fs'),
     path = require('path'),
     concat = require('gulp-concat'),
+<<<<<<< HEAD
     // imagemin = require('gulp-imagemin'),
     // htmlmin = require('gulp-htmlmin'),
+=======
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     sass = require('gulp-sass'),
     postcss = require('gulp-postcss'),
     cleanCSS = require('gulp-clean-css'),
@@ -19,8 +22,12 @@ var gulp = require('gulp'),
     connectModRewrite = require('connect-modrewrite'),
     connect = require('gulp-connect'),
     gulp_if = require('gulp-if'),
+<<<<<<< HEAD
     replace = require('gulp-replace'),
     karmaServer = require('karma').Server;
+=======
+    replace = require('gulp-replace');
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 // development task
 var production = false;
@@ -30,7 +37,11 @@ var styles = JSON.parse(fs.readFileSync('frontend/app.styles.json'));
 var configJson = JSON.parse(fs.readFileSync('frontend/src/js/config.json'));
 
 function clean() {
+<<<<<<< HEAD
     return del(['frontend/dist/']);
+=======
+    return del(['frontend/dist/*']);
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 };
 
 /*
@@ -290,6 +301,7 @@ function startServer() {
         }
     });
 }
+<<<<<<< HEAD
 
 function watch() {
     gulp.watch('frontend/src/js/**/*.js', js);
@@ -325,3 +337,43 @@ gulp.task('dev:runserver', gulp.series(function(done) {
 }, parallelTasks, configDev, injectpaths, lint, gulp.parallel(watch, startServer)));
 
 
+=======
+
+function watch() {
+    gulp.watch('frontend/src/js/**/*.js', js);
+    gulp.watch('frontend/src/css/**/*.scss', css);
+    gulp.watch('frontend/src/views/web/**/*.html', html);
+    gulp.watch('frontend/src/images/**/*', images);
+    gulp.watch('bower_components/materialize/fonts/**/*', fonts);
+    gulp.watch('bower_components/materialize/fonts/**/*', fonts);
+}
+
+
+
+var parallelTasks = gulp.parallel(vendorcss, vendorjs, css, js, html, images, fonts);
+
+gulp.task('production', gulp.series(clean, function(done) {
+    production = true;
+    done();
+}, parallelTasks, configProd, injectpaths, lint));
+
+gulp.task('staging', gulp.series(clean, function(done) {
+    production = true;
+    done();
+}, parallelTasks, configStaging, injectpaths, lint));
+
+gulp.task('dev', gulp.series(clean, function(done) {
+    production = false;
+    done();
+}, parallelTasks, configDev, injectpaths, lint));
+
+gulp.task('dev:runserver', gulp.series(clean ,function(done) {
+    production = false;
+    done();
+}, parallelTasks, configDev, injectpaths, lint, gulp.parallel(watch, startServer)));
+
+gulp.task('runserver', gulp.series(function(done) {
+    production = false;
+    done();
+}, gulp.parallel(watch, startServer)));
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe

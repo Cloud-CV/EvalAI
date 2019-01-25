@@ -10,7 +10,11 @@ ADD ./.eslintrc /code
 ADD ./karma.conf.js /code
 
 # Install Prerequisites
+<<<<<<< HEAD
 RUN npm install -g bower gulp@next
+=======
+RUN npm install -g bower gulp
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 RUN npm link gulp
 

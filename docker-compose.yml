@@ -1,7 +1,8 @@
-version: "2"
+version: "3"
 services:
 
   db:
+<<<<<<< HEAD
     image: postgres
     ports:
       - "5432:5432"
@@ -16,12 +17,26 @@ services:
       - "15672:15672"  # here, we can access rabbitmq management plugin
     networks:
       - evalai
+=======
+    image: postgres:10.4
+    ports:
+      - "5432:5432"
+
+  sqs:
+    image: pakohan/elasticmq
+    hostname: sqs
+    ports:
+      - 9324:9324
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
   django:
-    container_name: django
     hostname: django
     env_file:
+<<<<<<< HEAD
       - docker/dev.env
+=======
+      - docker/dev/docker.env
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     build:
       context: ./
       dockerfile: docker/dev/django/Dockerfile
@@ -29,6 +44,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
+<<<<<<< HEAD
       - rabbitmq
     volumes:
       - .:/code
@@ -38,6 +54,15 @@ services:
   worker:
     env_file:
       - docker/dev.env
+=======
+      - sqs
+    volumes:
+      - .:/code
+
+  worker:
+    env_file:
+      - docker/dev/docker.env
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     build:
       context: ./
       dockerfile: docker/dev/worker/Dockerfile
@@ -46,11 +71,16 @@ services:
       - django
     volumes:
       - .:/code
+<<<<<<< HEAD
     networks:
       - evalai
 
   nodejs:
     container_name: nodejs
+=======
+
+  nodejs:
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     hostname: nodejs
     build:
       context: ./
@@ -59,12 +89,19 @@ services:
       NODE_ENV: development
     ports:
       - "8888:8888"
+<<<<<<< HEAD
+=======
+      - "35729:35729"
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     volumes:
       - .:/code
       - /code/node_modules
       - /code/bower_components
+<<<<<<< HEAD
     networks:
       - evalai
 
 networks:
   evalai:
+=======
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe

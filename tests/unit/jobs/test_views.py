@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+import collections
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 import os
 import shutil
 
@@ -12,8 +16,18 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
+<<<<<<< HEAD
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
+=======
+from challenges.models import (Challenge,
+                               ChallengePhase,
+                               ChallengePhaseSplit,
+                               DatasetSplit,
+                               Leaderboard,
+                               LeaderboardData)
+from hosts.models import ChallengeHostTeam, ChallengeHost
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
 
@@ -49,6 +63,27 @@ class BaseAPITestClass(APITestCase):
             team_name='Test Challenge Host Team',
             created_by=self.user)
 
+<<<<<<< HEAD
+=======
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN
+        )
+
+        self.host_participant_team = ParticipantTeam.objects.create(
+            team_name='Host Participant Team for Challenge',
+            created_by=self.user
+        )
+
+        self.host_participant = Participant.objects.create(
+            user=self.user,
+            status=Participant.SELF,
+            team=self.host_participant_team
+        )
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         self.participant_team = ParticipantTeam.objects.create(
             team_name='Participant Team for Challenge',
             created_by=self.user1)
@@ -70,6 +105,23 @@ class BaseAPITestClass(APITestCase):
             enable_forum=True,
             anonymous_leaderboard=False)
 
+<<<<<<< HEAD
+=======
+        self.leaderboard_schema = {
+            'labels': ['score', 'test-score'],
+            'default_order_by': 'score'
+        }
+        self.leaderboard = Leaderboard.objects.create(
+            schema=self.leaderboard_schema
+        )
+
+        self.private_leaderboard = Leaderboard.objects.create(
+            schema=self.leaderboard_schema
+        )
+
+        self.challenge.participant_teams.add(self.host_participant_team)
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         try:
             os.makedirs('/tmp/evalai')
         except OSError:
@@ -81,13 +133,37 @@ class BaseAPITestClass(APITestCase):
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 max_submissions_per_day=10,
+<<<<<<< HEAD
+=======
+                max_submissions_per_month=20,
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
                 max_submissions=100,
                 is_public=True,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
+<<<<<<< HEAD
                                                    'Dummy file content', content_type='text/plain')
+=======
+                                                   b'Dummy file content', content_type='text/plain'),
+                codename='Phase Code name'
+            )
+
+            self.private_challenge_phase = ChallengePhase.objects.create(
+                name='Private Challenge Phase',
+                description='Description for Private Challenge Phase',
+                leaderboard_public=False,
+                max_submissions_per_day=10,
+                max_submissions=100,
+                is_public=False,
+                start_date=timezone.now() - timedelta(days=2),
+                end_date=timezone.now() + timedelta(days=1),
+                challenge=self.challenge,
+                test_annotation=SimpleUploadedFile('test_sample_file.txt',
+                                                   b'Dummy file content', content_type='text/plain'),
+                codename='Private Phase Code name'
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             )
 
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -97,7 +173,11 @@ class BaseAPITestClass(APITestCase):
         self.client.force_authenticate(user=self.user1)
 
         self.input_file = SimpleUploadedFile(
+<<<<<<< HEAD
             "dummy_input.txt", "file_content", content_type="text/plain")
+=======
+            "dummy_input.txt", b"file_content", content_type="text/plain")
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
     def tearDown(self):
         shutil.rmtree('/tmp/evalai')
@@ -166,7 +246,44 @@ class BaseAPITestClass(APITestCase):
         response = self.client.post(self.url, {
                                     'status': 'submitting', 'input_file': self.input_file}, format="multipart")
         self.assertEqual(response.data, expected)
+<<<<<<< HEAD
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+=======
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_challenge_submission_when_challenge_phase_is_private_and_user_is_host(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.challenge_phase.is_public = False
+        self.challenge_phase.save()
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(self.url, {
+                                    'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_challenge_submission_when_challenge_phase_is_private_and_user_is_not_host(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.challenge_phase.is_public = False
+        self.challenge_phase.save()
+
+        expected = {
+            'error': 'Sorry, cannot accept submissions since challenge phase is not public'
+        }
+
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.post(self.url, {
+            'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
     def test_challenge_submission_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -262,6 +379,25 @@ class BaseAPITestClass(APITestCase):
                                     'status': 'submitting', 'input_file': self.input_file}, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+<<<<<<< HEAD
+=======
+    def test_challenge_submission_when_maximum_limit_exceeded(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+        actual_maxinmum_submissions = self.challenge_phase.max_submissions
+        self.challenge_phase.max_submissions = 0
+        self.challenge_phase.save()
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(self.url, {
+                                    'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.challenge_phase.max_submissions = actual_maxinmum_submissions
+        self.challenge_phase.save()
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
 
@@ -381,8 +517,15 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
     def setUp(self):
         super(GetRemainingSubmissionTest, self).setUp()
         self.url = reverse_lazy('jobs:get_remaining_submissions',
+<<<<<<< HEAD
                                 kwargs={'challenge_phase_id': self.challenge_phase.pk,
                                         'challenge_id': self.challenge.pk})
+=======
+                                kwargs={
+                                    'challenge_phase_id': self.challenge_phase.pk,
+                                    'challenge_id': self.challenge.pk
+                                })
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
         self.submission1 = Submission.objects.create(
             participant_team=self.participant_team,
@@ -412,9 +555,16 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_does_not_exist(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
+<<<<<<< HEAD
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk+1})
 
+=======
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk+1
+                                })
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         expected = {
             'detail': 'Challenge {} does not exist'.format(self.challenge.pk+1)
         }
@@ -425,11 +575,21 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_challenge_phase_does_not_exist(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
+<<<<<<< HEAD
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk+1,
                                         'challenge_pk': self.challenge.pk})
 
         expected = {
             'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk+1)
+=======
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk + 2,
+                                    'challenge_pk': self.challenge.pk
+                                })
+
+        expected = {
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk + 2)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         }
 
         response = self.client.get(self.url, {})
@@ -438,8 +598,15 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_participant_team_hasnt_participated_in_challenge(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
+<<<<<<< HEAD
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
+=======
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
         expected = {
             'error': 'You haven\'t participated in the challenge'
@@ -451,10 +618,20 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
     def test_get_remaining_submission_when_submission_made_three_days_back(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
+<<<<<<< HEAD
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
         expected = {
             'remaining_submissions_today_count': 9,
+=======
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        expected = {
+            'remaining_submissions_today_count': 9,
+            'remaining_submissions_this_month_count': 18,
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             'remaining_submissions': 98
         }
 
@@ -466,12 +643,44 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+<<<<<<< HEAD
     def test_get_remaining_submission_when__submission_made_today(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
         expected = {
             'remaining_submissions_today_count': 8,
+=======
+    def test_get_remaining_submission_when_submission_made_one_month_back(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        expected = {
+            'remaining_submissions_today_count': 9,
+            'remaining_submissions_this_month_count': 19,
+            'remaining_submissions': 98
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        self.submission1.submitted_at = timezone.now() - timedelta(days=32)
+        self.submission1.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submission_when_submission_is_done(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        expected = {
+            'remaining_submissions_today_count': 8,
+            'remaining_submissions_this_month_count': 18,
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
             'remaining_submissions': 98
         }
 
@@ -481,6 +690,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+<<<<<<< HEAD
     def test_get_remaining_submission_when_today_submissions_is_more_than_max_submissions(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
@@ -505,6 +715,19 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         expected = {
             'remaining_submissions_today_count': submission_count,
             'remaining_submissions': submission_count
+=======
+    def get_remaining_submission_time_when_max_limit_is_exhausted(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions', 1)
+        self.challenge_phase.save()
+
+        expected = {
+            'message': 'You have exhausted maximum submission limit!',
+            'max_submission_exceeded': True
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -513,15 +736,47 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def get_remaining_submission_time_when_monthly_limit_is_exhausted(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_month', 1)
+        self.challenge_phase.save()
+
+        expected = {
+            'message': 'You have exhausted this month\'s submission limit!'
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+<<<<<<< HEAD
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_get_remaining_submission_time_when_limit_is_exhausted(self):
         self.url = reverse_lazy('jobs:get_remaining_submissions',
                                 kwargs={'challenge_phase_pk': self.challenge_phase.pk,
                                         'challenge_pk': self.challenge.pk})
+=======
+        self.assertEqual(response.data['message'], expected['message'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def get_remaining_submission_time_when_both_monthly_and_daily_limit_is_exhausted(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_month', 1)
         setattr(self.challenge_phase, 'max_submissions_per_day', 1)
         self.challenge_phase.save()
 
         expected = {
-            'message': 'You have exhausted today\'s submission limit',
+            'message': 'Both daily and monthly submission limits are exhausted!'
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -530,6 +785,147 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data['message'], expected['message'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_remaining_submission_time_when_daily_limit_is_exhausted(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
+        setattr(self.challenge_phase, 'max_submissions_per_day', 1)
+        self.challenge_phase.save()
+
+        expected = {
+<<<<<<< HEAD
+            'message': 'You have exhausted today\'s submission limit',
+=======
+            'message': 'You have exhausted today\'s submission limit!',
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['message'], expected['message'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+<<<<<<< HEAD
+=======
+    def test_get_remaining_submissions_when_todays_is_greater_than_monthly_and_total(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 20)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 10)
+        setattr(self.challenge_phase, 'max_submissions', 15)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 8,
+            'remaining_submissions_this_month_count': 8,
+            'remaining_submissions': 13
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submissions_when_total_less_than_monthly(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 5)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 20)
+        setattr(self.challenge_phase, 'max_submissions', 15)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 3,
+            'remaining_submissions_this_month_count': 13,
+            'remaining_submissions': 13
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submission_when_total_less_than_monthly_and_monthly_equal_daily(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 20)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 20)
+        setattr(self.challenge_phase, 'max_submissions', 15)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 13,
+            'remaining_submissions_this_month_count': 13,
+            'remaining_submissions': 13
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submission_when_total_less_than_monthly_and_monthly_less_than_daily(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 30)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 20)
+        setattr(self.challenge_phase, 'max_submissions', 15)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 13,
+            'remaining_submissions_this_month_count': 13,
+            'remaining_submissions': 13
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_remaining_submissions_when_monthly_remaining_less_than_todays(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={
+                                    'challenge_phase_pk': self.challenge_phase.pk,
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 15)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 13)
+        self.challenge_phase.save()
+
+        expected = {
+            'remaining_submissions_today_count': 11,
+            'remaining_submissions_this_month_count': 11,
+            'remaining_submissions': 98
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
 class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
@@ -550,6 +946,23 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             when_made_public=timezone.now()
         )
 
+<<<<<<< HEAD
+=======
+        self.private_submission = Submission.objects.create(
+            participant_team=self.host_participant_team,
+            challenge_phase=self.private_challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+            when_made_public=timezone.now()
+        )
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         'challenge_phase_pk': self.challenge_phase.pk,
@@ -599,7 +1012,11 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
+<<<<<<< HEAD
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+=======
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
     def test_change_submission_data_and_visibility_when_challenge_is_not_public(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
@@ -619,7 +1036,11 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
+<<<<<<< HEAD
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+=======
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
     def test_change_submission_data_and_visibility_when_participant_team_is_none(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
@@ -692,6 +1113,48 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+<<<<<<< HEAD
+=======
+    def test_change_submission_data_and_visibility_when_challenge_phase_is_private_and_user_is_host(self):
+        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'challenge_phase_pk': self.private_challenge_phase.pk,
+                                        'submission_pk': self.private_submission.pk})
+        self.data = {
+            'method_name': 'Updated Method Name'
+        }
+
+        expected = {
+            'id': self.private_submission.id,
+            'participant_team': self.private_submission.participant_team.pk,
+            'participant_team_name': self.private_submission.participant_team.team_name,
+            'execution_time': self.private_submission.execution_time,
+            'challenge_phase': self.private_submission.challenge_phase.pk,
+            'created_by': self.private_submission.created_by.pk,
+            'status': self.private_submission.status,
+            'input_file': "http://testserver%s" % (self.private_submission.input_file.url),
+            'method_name': self.data['method_name'],
+            'method_description': self.private_submission.method_description,
+            'project_url': self.private_submission.project_url,
+            'publication_url': self.private_submission.publication_url,
+            'stdout_file': None,
+            'stderr_file': None,
+            'submission_result_file': None,
+            "submitted_at": "{0}{1}".format(self.private_submission.submitted_at.isoformat(),
+                                            'Z').replace("+00:00", ""),
+            "is_public": self.private_submission.is_public,
+            "when_made_public": "{0}{1}".format(self.private_submission.when_made_public.isoformat(),
+                                                'Z').replace("+00:00", ""),
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        self.challenge.participant_teams.add(self.host_participant_team)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
     def test_change_submission_data_and_visibility_when_is_public_is_true(self):
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
                                 kwargs={'challenge_pk': self.challenge.pk,
@@ -758,9 +1221,15 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
     def test_get_submission_by_pk_when_submission_doesnt_exist(self):
         self.url = reverse_lazy('jobs:get_submission_by_pk',
+<<<<<<< HEAD
                                 kwargs={'submission_id': self.submission.id + 1})
 
         expected = {'error': 'Submission {} does not exist'.format(self.submission.id + 1)}
+=======
+                                kwargs={'submission_id': self.submission.id + 2})
+
+        expected = {'error': 'Submission {} does not exist'.format(self.submission.id + 2)}
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
 
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.get(self.url)
@@ -841,3 +1310,177 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+<<<<<<< HEAD
+=======
+
+
+class ChallengeLeaderboardTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(ChallengeLeaderboardTest, self).setUp()
+
+        self.dataset_split = DatasetSplit.objects.create(
+            name="Split 1",
+            codename="split1"
+        )
+
+        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
+            challenge_phase=self.challenge_phase,
+            dataset_split=self.dataset_split,
+            leaderboard=self.leaderboard,
+            visibility=ChallengePhaseSplit.PUBLIC
+        )
+
+        self.private_challenge_phase_split = ChallengePhaseSplit.objects.create(
+            challenge_phase=self.private_challenge_phase,
+            dataset_split=self.dataset_split,
+            leaderboard=self.private_leaderboard,
+            visibility=ChallengePhaseSplit.HOST
+        )
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/"
+        )
+
+        self.private_submission = Submission.objects.create(
+            participant_team=self.host_participant_team,
+            challenge_phase=self.private_challenge_phase,
+            created_by=self.user,
+            status="submitted",
+            input_file=self.private_challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/"
+        )
+
+        self.submission.is_public = True
+        self.submission.status = Submission.FINISHED
+        self.submission.save()
+
+        self.private_submission.is_public = True
+        self.private_submission.status = Submission.FINISHED
+        self.private_submission.save()
+
+        self.result_json = {
+            'score': 50.0,
+            'test-score': 75.0
+        }
+
+        self.expected_results = [self.result_json['score'], self.result_json['test-score']]
+        self.filtering_score = self.result_json[self.leaderboard.schema['default_order_by']]
+
+        self.leaderboard_data = LeaderboardData.objects.create(
+            challenge_phase_split=self.challenge_phase_split,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result=self.result_json
+        )
+
+        self.private_leaderboard_data = LeaderboardData.objects.create(
+            challenge_phase_split=self.private_challenge_phase_split,
+            submission=self.private_submission,
+            leaderboard=self.leaderboard,
+            result=self.result_json
+        )
+
+    def test_get_leaderboard(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
+
+        expected = {
+            'count': 1,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'id': self.leaderboard_data.id,
+                    'submission__participant_team__team_name': self.submission.participant_team.team_name,
+                    'challenge_phase_split': self.challenge_phase_split.id,
+                    'result': self.expected_results,
+                    'filtering_score': self.filtering_score,
+                    'leaderboard__schema': {
+                        'default_order_by': 'score',
+                        'labels': ['score', 'test-score']
+                    },
+                    'submission__submitted_at': self.submission.submitted_at,
+                }
+            ]
+        }
+        expected = collections.OrderedDict(expected)
+
+        response = self.client.get(self.url, {})
+
+        self.assertEqual(response.data['count'], expected['count'])
+        self.assertEqual(response.data['next'], expected['next'])
+        self.assertEqual(response.data['previous'], expected['previous'])
+        self.assertEqual(response.data['results'], expected['results'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_leaderboard_with_invalid_challenge_phase_split_id(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id + 2})
+
+        expected = {'error': 'Challenge Phase Split does not exist'}
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_leaderboard_with_default_order_by_key_missing(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.id})
+
+        expected = {'error': 'Sorry, Default filtering key not found in leaderboard schema!'}
+
+        leaderboard_schema = {
+            'labels': ['score', 'test-score'],
+        }
+        self.leaderboard.schema = leaderboard_schema
+        self.leaderboard.save()
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_leaderboard_for_host_submissions_on_private_challenge_phase(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.private_challenge_phase_split.id})
+
+        expected = {
+            'count': 1,
+            'next': None,
+            'previous': None,
+            'results': [
+                {
+                    'id': self.private_leaderboard_data.id,
+                    'submission__participant_team__team_name': self.private_submission.participant_team.team_name,
+                    'challenge_phase_split': self.private_challenge_phase_split.id,
+                    'result': self.expected_results,
+                    'filtering_score': self.filtering_score,
+                    'leaderboard__schema': {
+                        'default_order_by': 'score',
+                        'labels': ['score', 'test-score']
+                    },
+                    'submission__submitted_at': self.private_submission.submitted_at,
+                }
+            ]
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data['count'], expected['count'])
+        self.assertEqual(response.data['next'], expected['next'])
+        self.assertEqual(response.data['previous'], expected['previous'])
+        self.assertEqual(response.data['results'], expected['results'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+>>>>>>> 98065e3257db0cd629bc64b959a29bae519b0bfe
