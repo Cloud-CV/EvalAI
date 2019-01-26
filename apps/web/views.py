@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.shortcuts import render
 
+from base.utils import send_slack_notification
 from smtplib import SMTPException
 
 from .models import Team
@@ -98,6 +99,7 @@ def contact_us(request):
         if serializer.is_valid():
             serializer.save()
             response_data = {'message': 'We have received your request and will contact you shortly.'}
+            send_slack_notification(message="A *new contact message* is received")
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -22,7 +22,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset, StandardResultSetPagination
+from base.utils import paginated_queryset, StandardResultSetPagination, send_slack_notification
 from challenges.models import (
     ChallengePhase,
     Challenge,
@@ -174,6 +174,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             submission = serializer.instance
             # publish message in the queue
             publish_submission_message(challenge_id, challenge_phase_id, submission.id)
+            send_slack_notification(message="A *new submission* has been uploaded")
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 

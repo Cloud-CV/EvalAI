@@ -30,7 +30,7 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from yaml.scanner import ScannerError
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import paginated_queryset, send_slack_notification
 from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model,
                               get_challenge_phase_split_model,
@@ -936,6 +936,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
             zip_config.challenge = challenge
             zip_config.save()
+
+            send_slack_notification(message="A *new challenge* has been uploaded to EvalAI")
             response_data = {
                 'success': 'Challenge {} has been created successfully and'
                 ' sent for review to EvalAI Admin.'.format(challenge.title)}

@@ -282,6 +282,9 @@ REST_AUTH_SERIALIZERS = {
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
+SLACK_WEBHOOKS = {
+    'default': ''
+}
 
 SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'evalai.urls.swagger_api_info',

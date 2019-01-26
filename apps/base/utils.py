@@ -1,5 +1,8 @@
 import base64
+import json
+import logging
 import os
+import requests
 import uuid
 
 from django.conf import settings
@@ -8,6 +11,7 @@ from django.utils.deconstruct import deconstructible
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 
+logger = logging.getLogger(__name__)
 
 class StandardResultSetPagination(PageNumberPagination):
     page_size = 100
@@ -69,3 +73,20 @@ def decode_data(data):
     for i in data:
         decoded.append(base64.decodestring(i+"=="))
     return decoded
+
+def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=""):
+    '''Send slack notification to any workspace
+    
+    Keyword Arguments:
+        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEBHOOKS['default']})
+        message {str} -- JSON/Text message to be sent to slack (default: {""})
+    '''
+
+    try:
+        response = requests.post(
+            webhook,
+            data=json.dumps({'text': str(message)}),
+            headers={'Content-Type': 'application/json'}
+        )
+    except Exception as e:
+        logger.info('Exception raised while sending slack notification. \n Exception message: {}'.format(e))
