@@ -278,7 +278,8 @@ def get_all_challenges(request, challenge_time):
 
     challenge = Challenge.objects.filter(**q_params).order_by('-pk')
     paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
+    serializer = ChallengeSerializer(
+        result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
@@ -295,8 +296,7 @@ def get_featured_challenges(request):
         approved_by_admin=True,
         is_disabled=False).order_by('-id')
     paginator, result_page = paginated_queryset(challenge, request)
-    serializer = ChallengeSerializer(
-        result_page, many=True, context={'request': request})
+    serializer = ChallengeSerializer(result_page, many=True, context={'request': request})
     response_data = serializer.data
     return paginator.get_paginated_response(response_data)
 
