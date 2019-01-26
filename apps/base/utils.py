@@ -52,8 +52,10 @@ def get_model_object(model_name):
             model_object = model_name.objects.get(pk=pk)
             return model_object
         except model_name.DoesNotExist:
-            raise NotFound('{} {} does not exist'.format(model_name.__name__, pk))
-    get_model_by_pk.__name__ = 'get_{}_object'.format(model_name.__name__.lower())
+            raise NotFound('{} {} does not exist'.format(
+                model_name.__name__, pk))
+    get_model_by_pk.__name__ = 'get_{}_object'.format(
+        model_name.__name__.lower())
     return get_model_by_pk
 
 
@@ -82,13 +84,14 @@ def send_data(webhook, message):
     Posts message to url
     """
     try:
-        response = requests.post(
+        requests.post(
             webhook,
             data=json.dumps({'text': str(message)}),
             headers={'Content-Type': 'application/json'}
         )
     except Exception as e:
-        logger.info('Exception raised while sending slack notification. \n Exception message: {}'.format(e))
+        logger.info(
+            'Exception raised while sending slack notification. \n Exception message: {}'.format(e))
 
 
 def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=""):
@@ -98,5 +101,6 @@ def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=
         webhook {string} -- slack webhook URL (default: {settings.SLACK_WEBHOOKS['default']})
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     '''
-    slack_notifications_thread = threading.Thread(target = send_data, name = 'Slack notifications thread', args = (webhook, message))
+    slack_notifications_thread = threading.Thread(
+        target=send_data, name='Slack notifications thread', args=(webhook, message))
     slack_notifications_thread.start()
