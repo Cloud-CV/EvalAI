@@ -87,11 +87,11 @@ def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=
     '''
 
     try:
-        requests.post(
+        response = requests.post(
             webhook,
             data=json.dumps({'text': str(message)}),
             headers={'Content-Type': 'application/json'}
         )
+        return response
     except Exception as e:
-        logger.info(
-            'Exception raised while sending slack notification. \n Exception message: {}'.format(e))
+        logger.info('Exception raised while sending slack notification. \n Exception message: {}'.format(e))

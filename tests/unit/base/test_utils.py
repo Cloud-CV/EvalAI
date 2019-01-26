@@ -8,9 +8,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
+from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName
+from base.utils import RandomFileName, send_slack_notification
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -96,7 +97,8 @@ class TestRandomFileName(BaseAPITestClass):
 
     def setUp(self):
         super(TestRandomFileName, self).setUp()
-        self.test_file_path = os.path.join(settings.BASE_DIR, 'examples', 'example1', 'test_annotation.txt')
+        self.test_file_path = os.path.join(
+            settings.BASE_DIR, 'examples', 'example1', 'test_annotation.txt')
 
     def test_random_file_name_without_id(self):
         obj = RandomFileName("evaluation_scripts")
@@ -107,8 +109,17 @@ class TestRandomFileName(BaseAPITestClass):
     def test_random_file_name_with_id(self):
         obj = RandomFileName("submission_files/submission_{id}")
         filepath = obj.__call__(self.submission, self.test_file_path)
-        expected = "submission_files/submission_{}/{}".format(self.submission.pk, filepath.split('/')[2])
+        expected = "submission_files/submission_{}/{}".format(
+            self.submission.pk, filepath.split('/')[2])
         self.assertEqual(filepath, expected)
+
+
+class TestSlackNotification(BaseAPITestClass):
+
+    def test_if_slack_notification_works(self):
+        response = send_slack_notification(
+            message="Testing Slack notification functionality")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestSeeding(BaseAPITestClass):
