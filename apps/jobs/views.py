@@ -394,7 +394,6 @@ def leaderboard(request, challenge_phase_split_id):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
-  
     '''
     Returns the number of remaining submissions that a participant can
     do daily, monthly and in total to a particular challenge phase of a
