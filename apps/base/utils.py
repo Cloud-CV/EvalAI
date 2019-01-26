@@ -13,6 +13,7 @@ from rest_framework.pagination import PageNumberPagination
 
 logger = logging.getLogger(__name__)
 
+
 class StandardResultSetPagination(PageNumberPagination):
     page_size = 100
     page_size_query_param = 'page_size'
@@ -50,8 +51,10 @@ def get_model_object(model_name):
             model_object = model_name.objects.get(pk=pk)
             return model_object
         except model_name.DoesNotExist:
-            raise NotFound('{} {} does not exist'.format(model_name.__name__, pk))
-    get_model_by_pk.__name__ = 'get_{}_object'.format(model_name.__name__.lower())
+            raise NotFound('{} {} does not exist'.format(
+                model_name.__name__, pk))
+    get_model_by_pk.__name__ = 'get_{}_object'.format(
+        model_name.__name__.lower())
     return get_model_by_pk
 
 
@@ -74,9 +77,10 @@ def decode_data(data):
         decoded.append(base64.decodestring(i+"=="))
     return decoded
 
+
 def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=""):
     '''Send slack notification to any workspace
-    
+
     Keyword Arguments:
         webhook {string} -- slack webhook URL (default: {settings.SLACK_WEBHOOKS['default']})
         message {str} -- JSON/Text message to be sent to slack (default: {""})
@@ -89,4 +93,5 @@ def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=
             headers={'Content-Type': 'application/json'}
         )
     except Exception as e:
-        logger.info('Exception raised while sending slack notification. \n Exception message: {}'.format(e))
+        logger.info(
+            'Exception raised while sending slack notification. \n Exception message: {}'.format(e))

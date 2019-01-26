@@ -47,16 +47,16 @@ logger = logging.getLogger(__name__)
 
 @swagger_auto_schema(methods=['post'], manual_parameters=[
     openapi.Parameter(
-            name='challenge_id', in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
-            description="Challenge ID",
-            required=True
+        name='challenge_id', in_=openapi.IN_PATH,
+        type=openapi.TYPE_STRING,
+        description="Challenge ID",
+        required=True
     ),
     openapi.Parameter(
-            name='challenge_phase_id', in_=openapi.IN_PATH,
-            type=openapi.TYPE_STRING,
-            description="Challenge Phase ID",
-            required=True
+        name='challenge_phase_id', in_=openapi.IN_PATH,
+        type=openapi.TYPE_STRING,
+        description="Challenge Phase ID",
+        required=True
     )],
     responses={
         status.HTTP_201_CREATED: openapi.Response(''),
@@ -108,14 +108,16 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         try:
             ParticipantTeam.objects.get(pk=participant_team_id)
         except ParticipantTeam.DoesNotExist:
-            response_data = {'error': 'You haven\'t participated in the challenge'}
+            response_data = {
+                'error': 'You haven\'t participated in the challenge'}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         submission = Submission.objects.filter(participant_team=participant_team_id,
                                                challenge_phase=challenge_phase).order_by('-submitted_at')
         paginator, result_page = paginated_queryset(submission, request)
         try:
-            serializer = SubmissionSerializer(result_page, many=True, context={'request': request})
+            serializer = SubmissionSerializer(
+                result_page, many=True, context={'request': request})
             response_data = serializer.data
             return paginator.get_paginated_response(response_data)
         except:
@@ -145,17 +147,20 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id)
         try:
-            participant_team = ParticipantTeam.objects.get(pk=participant_team_id)
+            participant_team = ParticipantTeam.objects.get(
+                pk=participant_team_id)
         except ParticipantTeam.DoesNotExist:
-            response_data = {'error': 'You haven\'t participated in the challenge'}
+            response_data = {
+                'error': 'You haven\'t participated in the challenge'}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         # Fetch the number of submissions under progress.
-        submissions_in_progress_status = [Submission.SUBMITTED, Submission.SUBMITTING, Submission.RUNNING]
+        submissions_in_progress_status = [
+            Submission.SUBMITTED, Submission.SUBMITTING, Submission.RUNNING]
         submissions_in_progress = Submission.objects.filter(
-                                                participant_team=participant_team_id,
-                                                challenge_phase=challenge_phase,
-                                                status__in=submissions_in_progress_status).count()
+            participant_team=participant_team_id,
+            challenge_phase=challenge_phase,
+            status__in=submissions_in_progress_status).count()
 
         if submissions_in_progress >= challenge_phase.max_concurrent_submissions_allowed:
             message = 'You have {} submissions that are being processed. \
@@ -173,8 +178,10 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             response_data = serializer.data
             submission = serializer.instance
             # publish message in the queue
-            publish_submission_message(challenge_id, challenge_phase_id, submission.id)
-            send_slack_notification(message="A *new submission* has been uploaded")
+            publish_submission_message(
+                challenge_id, challenge_phase_id, submission.id)
+            send_slack_notification(
+                message="A *new submission* has been uploaded")
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -234,9 +241,9 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
     serializer = SubmissionSerializer(submission,
                                       data=request.data,
                                       context={
-                                               'participant_team': participant_team,
-                                               'challenge_phase': challenge_phase,
-                                               'request': request
+                                          'participant_team': participant_team,
+                                          'challenge_phase': challenge_phase,
+                                          'request': request
                                       },
                                       partial=True)
 
@@ -263,15 +270,15 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
                 'count': openapi.Schema(
                     type=openapi.TYPE_STRING,
                     description='Count of values on the leaderboard'
-                    ),
+                ),
                 'next': openapi.Schema(
                     type=openapi.TYPE_STRING,
                     description='URL of next page of results'
-                    ),
+                ),
                 'previous': openapi.Schema(
                     type=openapi.TYPE_STRING,
                     description='URL of previous page of results'
-                    ),
+                ),
                 'results': openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     description='Array of results object',
@@ -281,33 +288,33 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
                             'submission__participant_team__team_name': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Participant Team Name'
-                                ),
+                            ),
                             'challenge_phase_split': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Challenge Phase Split ID'
-                                ),
+                            ),
                             'filtering_score': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Default filtering score for results'
-                                ),
+                            ),
                             'leaderboard__schema': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Leaderboard Schema of the corresponding challenge'
-                                ),
+                            ),
                             'result': openapi.Schema(
                                 type=openapi.TYPE_ARRAY,
                                 description='Leaderboard Metrics values according to leaderboard schema'
-                                ),
+                            ),
                             'submission__submitted_at': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Time stamp when submission was submitted at')
-                            }
-                        )
-                    ),
-                }
-            )
+                        }
+                    )
+                ),
+            }
+        )
         ),
-    }
+}
 )
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
@@ -329,7 +336,8 @@ def leaderboard(request, challenge_phase_split_id):
     try:
         default_order_by = leaderboard.schema['default_order_by']
     except:
-        response_data = {'error': 'Sorry, Default filtering key not found in leaderboard schema!'}
+        response_data = {
+            'error': 'Sorry, Default filtering key not found in leaderboard schema!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Exclude the submissions done by members of the host team
@@ -340,7 +348,8 @@ def leaderboard(request, challenge_phase_split_id):
     # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
     challenge_hosts_emails = [] if not is_challenge_phase_public else challenge_hosts_emails
 
-    challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
+    challenge_host_user = is_user_a_host_of_challenge(
+        request.user, challenge_obj.pk)
 
     leaderboard_data = LeaderboardData.objects.exclude(
         submission__created_by__email__in=challenge_hosts_emails)
@@ -359,7 +368,8 @@ def leaderboard(request, challenge_phase_split_id):
             'id', 'submission__participant_team__team_name',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
 
-    sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
+    sorted_leaderboard_data = sorted(
+        leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
 
     distinct_sorted_leaderboard_data = []
     team_list = []
@@ -373,12 +383,13 @@ def leaderboard(request, challenge_phase_split_id):
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
     for item in distinct_sorted_leaderboard_data:
-        item['result'] = [item['result'][index] for index in leaderboard_labels]
+        item['result'] = [item['result'][index]
+                          for index in leaderboard_labels]
 
     paginator, result_page = paginated_queryset(
-                                                distinct_sorted_leaderboard_data,
-                                                request,
-                                                pagination_class=StandardResultSetPagination())
+        distinct_sorted_leaderboard_data,
+        request,
+        pagination_class=StandardResultSetPagination())
 
     # Check if challenge phase leaderboard is public for participant user or not
     if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
@@ -394,7 +405,6 @@ def leaderboard(request, challenge_phase_split_id):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
-
     '''
     Returns the number of remaining submissions that a participant can
     do daily, monthly and in total to a particular challenge phase of a
@@ -448,7 +458,8 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     # Check for monthy submission limit
     elif submissions_done_this_month_count >= max_submissions_per_month_count:
         date_time_now = timezone.now()
-        next_month_start_date_time = date_time_now + datetime.timedelta(days=+30)
+        next_month_start_date_time = date_time_now + \
+            datetime.timedelta(days=+30)
         next_month_start_date_time = next_month_start_date_time.replace(
             day=1, hour=0, minute=0, second=0, microsecond=0)
         remaining_time = next_month_start_date_time - date_time_now
@@ -514,7 +525,8 @@ def get_submission_by_pk(request, submission_id):
     try:
         submission = Submission.objects.get(pk=submission_id)
     except Submission.DoesNotExist:
-        response_data = {'error': 'Submission {} does not exist'.format(submission_id)}
+        response_data = {
+            'error': 'Submission {} does not exist'.format(submission_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     host_team = submission.challenge_phase.challenge.creator
@@ -526,7 +538,8 @@ def get_submission_by_pk(request, submission_id):
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
 
-    response_data = {'error': 'Sorry, you are not authorized to access this submission.'}
+    response_data = {
+        'error': 'Sorry, you are not authorized to access this submission.'}
     return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -544,11 +557,11 @@ def get_submission_by_pk(request, submission_id):
             'challenge_phase': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Challenge Phase ID'
-                ),
+            ),
             'submission': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Submission ID'
-                ),
+            ),
             'stdout': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Submission output file content'
@@ -560,7 +573,7 @@ def get_submission_by_pk(request, submission_id):
             'submission_status': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED'
-                ),
+            ),
             'result': openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 description='Submission results in array format.'
@@ -604,11 +617,11 @@ def get_submission_by_pk(request, submission_id):
                 }
             )
         }
-    ),
+),
     responses={
         status.HTTP_200_OK: openapi.Response("{'success': 'Submission result has been successfully updated'}"),
         status.HTTP_400_BAD_REQUEST: openapi.Response("{'error': 'Error message goes here'}"),
-    }
+}
 )
 @throttle_classes([UserRateThrottle, ])
 @api_view(['PUT', ])
@@ -651,7 +664,8 @@ def update_submission(request, challenge_pk):
             }
     """
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
-        response_data = {'error': 'Sorry, you are not authorized to make this request!'}
+        response_data = {
+            'error': 'Sorry, you are not authorized to make this request!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge_phase_pk = request.data.get('challenge_phase')
@@ -673,14 +687,16 @@ def update_submission(request, challenge_pk):
         try:
             results = json.loads(submission_result)
         except ValueError:
-            response_data = {'error': '`result` key contains invalid data. Please try again with correct format!'}
+            response_data = {
+                'error': '`result` key contains invalid data. Please try again with correct format!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
         leaderboard_data_list = []
         for phase_result in results:
             split = phase_result.get('split')
             accuracies = phase_result.get('accuracies')
-            show_to_participant = phase_result.get('show_to_participant', False)
+            show_to_participant = phase_result.get(
+                'show_to_participant', False)
             try:
                 challenge_phase_split = ChallengePhaseSplit.objects.get(
                     challenge_phase__pk=challenge_phase_pk,
@@ -690,7 +706,8 @@ def update_submission(request, challenge_pk):
                                  'split codename: {}'.format(challenge_phase_pk, split)}
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-            leaderboard_metrics = challenge_phase_split.leaderboard.schema.get('labels')
+            leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
+                'labels')
             missing_metrics = []
             malformed_metrics = []
             for metric, value in accuracies.items():
@@ -733,16 +750,21 @@ def update_submission(request, challenge_pk):
                 for serializer in leaderboard_data_list:
                     serializer.save()
         except IntegrityError:
-            logger.exception('Failed to update submission_id {} related metadata'.format(submission_pk))
-            response_data = {'error': 'Failed to update submission_id {} related metadata'.format(submission_pk)}
+            logger.exception(
+                'Failed to update submission_id {} related metadata'.format(submission_pk))
+            response_data = {
+                'error': 'Failed to update submission_id {} related metadata'.format(submission_pk)}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     submission.status = submission_status
     submission.completed_at = timezone.now()
     submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
     submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
-    submission.submission_result_file.save('submission_result.json', ContentFile(str(public_results)))
-    submission.submission_metadata_file.save('submission_metadata_file.json', ContentFile(str(metadata)))
+    submission.submission_result_file.save(
+        'submission_result.json', ContentFile(str(public_results)))
+    submission.submission_metadata_file.save(
+        'submission_metadata_file.json', ContentFile(str(metadata)))
     submission.save()
-    response_data = {'success': 'Submission result has been successfully updated'}
+    response_data = {
+        'success': 'Submission result has been successfully updated'}
     return Response(response_data, status=status.HTTP_200_OK)
