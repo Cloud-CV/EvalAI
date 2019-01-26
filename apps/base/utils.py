@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import requests
+import threading
 import uuid
 
 from django.conf import settings
@@ -76,6 +77,20 @@ def decode_data(data):
     return decoded
 
 
+def send_data(webhook, message):
+    """
+    Posts message to url
+    """
+    try:
+        response = requests.post(
+            webhook,
+            data=json.dumps({'text': str(message)}),
+            headers={'Content-Type': 'application/json'}
+        )
+    except Exception as e:
+        logger.info('Exception raised while sending slack notification. \n Exception message: {}'.format(e))
+
+
 def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=""):
     '''Send slack notification to any workspace
 
@@ -83,13 +98,5 @@ def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=
         webhook {string} -- slack webhook URL (default: {settings.SLACK_WEBHOOKS['default']})
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     '''
-
-    try:
-        response = requests.post(
-            webhook,
-            data=json.dumps({'text': str(message)}),
-            headers={'Content-Type': 'application/json'}
-        )
-        return response
-    except Exception as e:
-        logger.info('Exception raised while sending slack notification. \n Exception message: {}'.format(e))
+    slack_notifications_thread = threading.Thread(target = send_data, name = 'Slack notifications thread', args = (webhook, message))
+    slack_notifications_thread.start()
