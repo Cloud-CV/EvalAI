@@ -87,7 +87,7 @@ def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=
     '''
 
     try:
-        response = requests.post(
+        requests.post(
             webhook,
             data=json.dumps({'text': str(message)}),
             headers={'Content-Type': 'application/json'}
