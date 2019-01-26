@@ -53,15 +53,13 @@ def notify_users_about_challenge(request):
             return render(request, template_name)
 
         elif request.method == 'POST':
-            users = User.objects.exclude(
-                email__exact='').values_list('email', flat=True)
+            users = User.objects.exclude(email__exact='').values_list('email', flat=True)
             subject = request.POST.get('subject')
             body_html = request.POST.get('body')
 
             sender = settings.CLOUDCV_TEAM_EMAIL
 
-            email = EmailMessage(subject, body_html, sender, [
-                                 settings.CLOUDCV_TEAM_EMAIL], bcc=users)
+            email = EmailMessage(subject, body_html, sender, [settings.CLOUDCV_TEAM_EMAIL], bcc=users)
             email.content_subtype = 'html'
 
             try:
@@ -100,10 +98,8 @@ def contact_us(request):
         serializer = ContactSerializer(data=request_data)
         if serializer.is_valid():
             serializer.save()
-            response_data = {
-                'message': 'We have received your request and will contact you shortly.'}
-            send_slack_notification(
-                message="A *new contact message* is received")
+            response_data = {'message': 'We have received your request and will contact you shortly.'}
+            send_slack_notification(message="A *new contact message* is received")
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -118,14 +114,12 @@ def contact_us(request):
 def our_team(request):
     if request.method == 'GET':
         teams = Team.objects.all()
-        serializer = TeamSerializer(
-            teams, many=True, context={'request': request})
+        serializer = TeamSerializer(teams, many=True, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
         # team_type is set to Team.CONTRIBUTOR by default and can be overridden by the requester
-        request.data['team_type'] = request.data.get(
-            'team_type', Team.CONTRIBUTOR)
+        request.data['team_type'] = request.data.get('team_type', Team.CONTRIBUTOR)
         serializer = TeamSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
