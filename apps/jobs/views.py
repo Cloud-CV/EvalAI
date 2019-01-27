@@ -47,16 +47,16 @@ logger = logging.getLogger(__name__)
 
 @swagger_auto_schema(methods=['post'], manual_parameters=[
     openapi.Parameter(
-        name='challenge_id', in_=openapi.IN_PATH,
-        type=openapi.TYPE_STRING,
-        description="Challenge ID",
-        required=True
+            name='challenge_id', in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True
     ),
     openapi.Parameter(
-        name='challenge_phase_id', in_=openapi.IN_PATH,
-        type=openapi.TYPE_STRING,
-        description="Challenge Phase ID",
-        required=True
+            name='challenge_phase_id', in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge Phase ID",
+            required=True
     )],
     responses={
         status.HTTP_201_CREATED: openapi.Response(''),
@@ -153,9 +153,9 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         # Fetch the number of submissions under progress.
         submissions_in_progress_status = [Submission.SUBMITTED, Submission.SUBMITTING, Submission.RUNNING]
         submissions_in_progress = Submission.objects.filter(
-            participant_team=participant_team_id,
-            challenge_phase=challenge_phase,
-            status__in=submissions_in_progress_status).count()
+                                                participant_team=participant_team_id,
+                                                challenge_phase=challenge_phase,
+                                                status__in=submissions_in_progress_status).count()
 
         if submissions_in_progress >= challenge_phase.max_concurrent_submissions_allowed:
             message = 'You have {} submissions that are being processed. \
@@ -234,9 +234,9 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
     serializer = SubmissionSerializer(submission,
                                       data=request.data,
                                       context={
-                                          'participant_team': participant_team,
-                                          'challenge_phase': challenge_phase,
-                                          'request': request
+                                               'participant_team': participant_team,
+                                               'challenge_phase': challenge_phase,
+                                               'request': request
                                       },
                                       partial=True)
 
@@ -263,15 +263,15 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
                 'count': openapi.Schema(
                     type=openapi.TYPE_STRING,
                     description='Count of values on the leaderboard'
-                ),
+                    ),
                 'next': openapi.Schema(
                     type=openapi.TYPE_STRING,
                     description='URL of next page of results'
-                ),
+                    ),
                 'previous': openapi.Schema(
                     type=openapi.TYPE_STRING,
                     description='URL of previous page of results'
-                ),
+                    ),
                 'results': openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     description='Array of results object',
@@ -281,33 +281,33 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
                             'submission__participant_team__team_name': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Participant Team Name'
-                            ),
+                                ),
                             'challenge_phase_split': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Challenge Phase Split ID'
-                            ),
+                                ),
                             'filtering_score': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Default filtering score for results'
-                            ),
+                                ),
                             'leaderboard__schema': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Leaderboard Schema of the corresponding challenge'
-                            ),
+                                ),
                             'result': openapi.Schema(
                                 type=openapi.TYPE_ARRAY,
                                 description='Leaderboard Metrics values according to leaderboard schema'
-                            ),
+                                ),
                             'submission__submitted_at': openapi.Schema(
                                 type=openapi.TYPE_STRING,
                                 description='Time stamp when submission was submitted at')
-                        }
-                    )
-                ),
-            }
-        )
+                            }
+                        )
+                    ),
+                }
+            )
         ),
-}
+    }
 )
 @throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
@@ -376,9 +376,9 @@ def leaderboard(request, challenge_phase_split_id):
         item['result'] = [item['result'][index] for index in leaderboard_labels]
 
     paginator, result_page = paginated_queryset(
-        distinct_sorted_leaderboard_data,
-        request,
-        pagination_class=StandardResultSetPagination())
+                                                distinct_sorted_leaderboard_data,
+                                                request,
+                                                pagination_class=StandardResultSetPagination())
 
     # Check if challenge phase leaderboard is public for participant user or not
     if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
@@ -543,11 +543,11 @@ def get_submission_by_pk(request, submission_id):
             'challenge_phase': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Challenge Phase ID'
-            ),
+                ),
             'submission': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Submission ID'
-            ),
+                ),
             'stdout': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Submission output file content'
@@ -559,7 +559,7 @@ def get_submission_by_pk(request, submission_id):
             'submission_status': openapi.Schema(
                 type=openapi.TYPE_STRING,
                 description='Final status of submission (can take one of these values): CANCELLED/FAILED/FINISHED'
-            ),
+                ),
             'result': openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 description='Submission results in array format.'
@@ -603,11 +603,11 @@ def get_submission_by_pk(request, submission_id):
                 }
             )
         }
-),
+    ),
     responses={
         status.HTTP_200_OK: openapi.Response("{'success': 'Submission result has been successfully updated'}"),
         status.HTTP_400_BAD_REQUEST: openapi.Response("{'error': 'Error message goes here'}"),
-}
+    }
 )
 @throttle_classes([UserRateThrottle, ])
 @api_view(['PUT', ])
