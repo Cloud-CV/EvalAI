@@ -1,4 +1,5 @@
 import os
+import requests
 
 from datetime import timedelta
 
@@ -115,12 +116,11 @@ class TestRandomFileName(BaseAPITestClass):
 class TestSlackNotification(BaseAPITestClass):
 
     def test_if_slack_notification_works(self):
-        response = send_slack_notification(
-            message="Testing Slack notification functionality")
-        try:
+        if (settings.DEBUG is False):
+            response = send_slack_notification(
+                message="Testing Slack notification functionality")
+            self.assertEqual(type(response), requests.models.Response)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-        except Exception as e:
-            pass
 
 
 class TestSeeding(BaseAPITestClass):
