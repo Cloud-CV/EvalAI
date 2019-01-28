@@ -518,10 +518,9 @@ def get_or_create_sqs_queue(queue_name):
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except botocore.exceptions.ClientError as ex:
-        if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-            queue = sqs.create_queue(QueueName=queue_name)
-        else:
-            logger.exception('Cannot get or create Queue')
+        if ex.response['Error']['Code'] != 'AWS.SimpleQueueService.NonExistentQueue':
+            logger.exception('Cannot get queue: {}'.format(queue_name))
+        queue = sqs.create_queue(QueueName=queue_name)
     return queue
 
 
