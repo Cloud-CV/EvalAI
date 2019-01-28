@@ -1009,12 +1009,12 @@
                     var status = response.status;
                     if(status === 200) {
                       var detail = response.data;
-                      $rootScope.notify("success", detail);   
+                      $rootScope.notify("success", details.success);   
                     }
                 },
                 onError: function(response) {
                     var error = response.data;
-                    $rootScope.notify("error", error);
+                    $rootScope.notify("error", error.error);
                 }
             };
 
