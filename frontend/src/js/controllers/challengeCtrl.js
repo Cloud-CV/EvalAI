@@ -1008,11 +1008,13 @@
                 onSuccess: function(response) {
                     var status = response.status;
                     if(status === 200) {
-                      $rootScope.notify("success", "The data is successfully updated!");   
+                      var detail = response.data;
+                      $rootScope.notify("success", detail);   
                     }
                 },
                 onError: function(response) {
-                    $rootScope.notify("error", "The data could not be updated!");
+                    var error = response.data;
+                    $rootScope.notify("error", error);
                 }
             };
 
