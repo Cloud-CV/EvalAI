@@ -191,7 +191,7 @@ AUTHENTICATION_BACKENDS = (
 CORS_ORIGIN_ALLOW_ALL = True
 
 # REST Framework Expiring Tokens Configuration
-EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=7)
+EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=365)
 
 # Logging
 LOGGING = {
