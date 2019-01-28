@@ -283,7 +283,7 @@ REST_AUTH_SERIALIZERS = {
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 SLACK_WEBHOOKS = {
-    'default': ''
+    'default': 'http://testslackwebhook.com/webhook'
 }
 
 SWAGGER_SETTINGS = {
