@@ -1009,18 +1009,23 @@
                     var status = response.status;
                     if(status === 200) {
                       var detail = response.data;
-                      $rootScope.notify("success", details.success);   
+                      if (detail['is_public'] == true) {
+                        var message = "This Submission is Public."
+                      }
+                      else{
+                        var message = "This Submission is Private."
+                      }
+                      $rootScope.notify("success", message);
                     }
                 },
                 onError: function(response) {
                     var error = response.data;
                     var status = response.status;
-                    if(status === 400) {
+                    if(status === 400 || status === 403 ) {
                        $rootScope.notify("error", error.error);
                     }
                 }
             };
-
             utilities.sendRequest(parameters);
         };
 
