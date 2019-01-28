@@ -998,20 +998,26 @@
             utilities.sendRequest(parameters);
         };
 
-       vm.changeSubmissionVisibility = function(submission_id) {
+        vm.changeSubmissionVisibility = function(submission_id) {
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
             parameters.method = 'PATCH';
             parameters.data = {
                 "is_public": vm.submissionVisibility[submission_id]
             };
             parameters.callback = {
-                onSuccess: function() {},
-                onError: function() {}
+                onSuccess: function(response) {
+                    var status = response.status;
+                    if(status === 200) {
+                      $rootScope.notify("success", "The data is successfully updated!");   
+                    }
+                },
+                onError: function(response) {
+                    $rootScope.notify("error", "The data could not be updated!");
+                }
             };
 
             utilities.sendRequest(parameters);
         };
-
 
         vm.showRemainingSubmissions = function(phaseId) {
             vm.remainingSubmissions = {};
