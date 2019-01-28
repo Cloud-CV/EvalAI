@@ -23,7 +23,7 @@
         vm.getChallenge = function() {
             // get featured challenge (unauthorized)
             var parameters = {};
-            parameters.url = 'challenges/challenge/present';
+            parameters.url = 'challenges/featured/';
             parameters.method = 'GET';
             parameters.token = null;
             parameters.callback = {
