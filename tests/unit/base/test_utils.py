@@ -1,5 +1,6 @@
 import os
 import requests
+import responses
 
 from datetime import timedelta
 
@@ -115,12 +116,14 @@ class TestRandomFileName(BaseAPITestClass):
 
 class TestSlackNotification(BaseAPITestClass):
 
+    @responses.activate
     def test_if_slack_notification_works(self):
-        if (settings.DEBUG is False):
-            response = send_slack_notification(
-                message="Testing Slack notification functionality")
-            self.assertEqual(type(response), requests.models.Response)
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+
+        response = send_slack_notification(
+            message="Testing Slack notification functionality")
+        self.assertEqual(type(response), requests.models.Response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestSeeding(BaseAPITestClass):
