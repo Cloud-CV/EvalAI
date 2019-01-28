@@ -9,7 +9,7 @@ Alternatively, if you come across a new bug on the site, please file a new issue
 
 ##### Django
 
-Django is the heart of the application, which powers our backend. We use Django version 1.10.
+Django is the heart of the application, which powers our backend. We use Django version 1.11.18.
 
 ##### Django Rest Framework
 
