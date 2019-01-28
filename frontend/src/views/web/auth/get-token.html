@@ -4,14 +4,14 @@
             <div class="ev-card-body">
                 <form name="getTokenForm" ng-submit="profile.getAuthToken(getTokenForm.$valid)">
                     <div class="pass-title">API Authentication Token</div>
-                    <div class="token-width inline-list hide-on-med-and-down">
+                    <div class="token-width inline-list">
                         <input class="col s11 md-display-3" type="{{profile.inputType}}" readonly="true" value="{{profile.token}}"/>
                         <button class="col s1 btn ev-btn-dark waves-effect waves-dark grad-btn" ng-click="profile.showConfirmation()" ngclipboard data-clipboard-text="{{profile.token}}">
                             <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                         </button>
                     </div>
                     <br>
-                    <ul class="inline-list hide-on-med-and-down">
+                    <ul class="inline-list">
                         <li>
                             <a ng-click="profile.getAuthToken(false)" class="dark-link pointer"><strong>Cancel</strong></a>
                         </li>
