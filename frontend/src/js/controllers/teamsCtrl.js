@@ -164,7 +164,8 @@
         };
 
         utilities.sendRequest(parameters);
-
+        
+        vm.createTeam = {};
         // function to create new team
         vm.createNewTeam = function() {
             vm.isExistLoader = true;
@@ -172,25 +173,25 @@
             vm.loaderContainer = angular.element('.new-team-card');
 
             // show loader
-
+            
             vm.startLoader("Loading Teams");
-
+           
             var parameters = {};
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_name": vm.team.name,
-                "team_url": vm.team.url
+                "team_name": vm.createTeam.name,
+                "team_url": vm.createTeam.url
             };
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function() {
-                    $rootScope.notify("success", "Team " + vm.team.name + " has been created successfully!");
-                    vm.team.error = false;
+                    $rootScope.notify("success", "Team " + vm.createTeam.name + " has been created successfully!");
+                    vm.createTeam.error = false;
                     vm.stopLoader();
                     // reset the team attributes
-                    vm.team = {};
-
+                    vm.createTeam = {};
+                    
                     vm.startLoader("Loading Teams");
                     var parameters = {};
                     parameters.url = 'participants/participant_team';
@@ -234,7 +235,7 @@
                 onError: function(response) {
                     var error = response.data;
 
-                    vm.team.error = error.team_name[0];
+                    vm.createTeam.error = error.team_name[0];
                     vm.stopLoader();
                     $rootScope.notify("error", error.team_name[0]);
                 }
