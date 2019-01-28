@@ -1014,7 +1014,10 @@
                 },
                 onError: function(response) {
                     var error = response.data;
-                    $rootScope.notify("error", error.error);
+                    var status = response.status;
+                    if(status === 400) {
+                       $rootScope.notify("error", error.error);
+                    }
                 }
             };
 
