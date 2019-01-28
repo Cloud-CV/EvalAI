@@ -998,7 +998,7 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.changeSubmissionVisibility = function(submission_id) {
+       vm.changeSubmissionVisibility = function(submission_id) {
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
             parameters.method = 'PATCH';
             parameters.data = {
@@ -1011,6 +1011,7 @@
 
             utilities.sendRequest(parameters);
         };
+
 
         vm.showRemainingSubmissions = function(phaseId) {
             vm.remainingSubmissions = {};
