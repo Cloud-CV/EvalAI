@@ -83,13 +83,10 @@ def notify_users_about_challenge(request):
 @permission_classes((permissions.AllowAny,))
 def contact_us(request):
     user_does_not_exist = False
-    slack_contact_details = {}
     try:
         user = User.objects.get(username=request.user)
         name = user.username
-        slack_contact_details['name'] = name
         email = user.email
-        slack_contact_details['email'] = email
         request_data = {'name': name, 'email': email}
     except:
         request_data = request.data
@@ -98,14 +95,11 @@ def contact_us(request):
     if request.method == 'POST' or user_does_not_exist:
         if request.POST.get('message'):
             request_data['message'] = request.POST.get('message')
-            slack_contact_details['message'] = request_data['message']
         serializer = ContactSerializer(data=request_data)
         if serializer.is_valid():
             serializer.save()
             response_data = {'message': 'We have received your request and will contact you shortly.'}
-            send_slack_notification(
-                message="A *new contact message* is received. \n *Contact details*: {}"
-                .format(slack_contact_details))
+            send_slack_notification(message="A *new contact message* is received")
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
