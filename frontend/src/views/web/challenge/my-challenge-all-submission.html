@@ -47,11 +47,12 @@
                             <table ng-if="challenge.isResult" class="highlight all-submission-table responsive-table">
                                 <thead>
                                     <tr>
+                                        <th class="align-center" data-field="team">Submission ID</th>
                                         <th class="align-center" data-field="team">Team</th>
                                         <th data-field="created-by">Created By</th>
                                         <th data-field="status">Status</th>
                                         <th class="align-center" data-field="status">Execution Time (sec)</th>
-                                        <th data-field="file">Submission No.</th>
+                                        <th class="align-center" data-field="file">Submission No.</th>
                                         <th data-field="file">Submitted at</th>
                                         <th data-field="file">Submitted File</th>
                                         <th data-field="file">Stdout File</th>
@@ -61,6 +62,8 @@
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
+                                        <td class="align-center">{{key.id}}</td>
+
                                         <td class="align-center">{{key.participant_team}}</td>
 
                                         <td>{{key.created_by}}</td>

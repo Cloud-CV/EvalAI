@@ -60,6 +60,7 @@
                                 <table ng-if="challenge.isResult" class="highlight all-submission-table">
                                     <thead>
                                         <tr>
+                                            <th data-field="submission-id">Submission ID</th>
                                             <th data-field="team">Team Name</th>
                                             <th data-field="method-name">Method Name</th>
                                             <th data-field="method-description">Method Description</th>
@@ -78,6 +79,7 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
+                                            <td>{{key.id}}</td>
                                             <td>{{key.participant_team_name}}</td>
                                             <td ng-if="key.method_name != ''">{{key.method_name}}</td>
                                             <td ng-if="key.method_name == ''"> None </td>
