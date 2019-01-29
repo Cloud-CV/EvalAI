@@ -18,5 +18,4 @@ Pillow==3.4.2
 psycopg2==2.7.3.2
 PyYaml==4.2b1
 proc==0.10.1
-responses==0.5.1
 rstr==2.2.5
