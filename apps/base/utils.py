@@ -91,8 +91,6 @@ def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=
         data=json.dumps({'text': str(message)}),
         headers={'Content-Type': 'application/json'}
     )
-    logger.info(
-        'Exception not raised while sending slack notification "{}".'.format(message))
     if response.status_code is not status.HTTP_200_OK:
         logger.info(
             'Exception raised while sending slack notification "{}".'.format(message))
