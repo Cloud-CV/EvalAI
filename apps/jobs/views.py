@@ -184,7 +184,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             '''
             send_slack_notification(
                 message="A *new submission* has been uploaded.\n")
-                
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 

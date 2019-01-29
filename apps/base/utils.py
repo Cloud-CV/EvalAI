@@ -8,7 +8,6 @@ import uuid
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
 
-from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 
@@ -52,8 +51,10 @@ def get_model_object(model_name):
             model_object = model_name.objects.get(pk=pk)
             return model_object
         except model_name.DoesNotExist:
-            raise NotFound('{} {} does not exist'.format(model_name.__name__, pk))
-    get_model_by_pk.__name__ = 'get_{}_object'.format(model_name.__name__.lower())
+            raise NotFound('{} {} does not exist'.format(
+                model_name.__name__, pk))
+    get_model_by_pk.__name__ = 'get_{}_object'.format(
+        model_name.__name__.lower())
     return get_model_by_pk
 
 
@@ -84,13 +85,14 @@ def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=
         webhook {string} -- slack webhook URL (default: {settings.SLACK_WEBHOOKS['default']})
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     '''
-    response = requests.post(
-        webhook,
-        data=json.dumps({'text': str(message)}),
-        headers={'Content-Type': 'application/json'}
-    )
-    if response.status_code is not status.HTTP_200_OK:
-        logger.info(
-            'Exception raised while sending slack notification "{}".'.format(message))
-    else:
+    try:
+        response = requests.post(
+            webhook,
+            data=json.dumps({'text': str(message)}),
+            headers={'Content-Type': 'application/json'}
+        )
         return response
+    except Exception as e:
+        logger.info(
+                'Exception raised while sending slack notification "{}". \n Exception message: {}'
+                .format(message, e))
