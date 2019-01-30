@@ -12,7 +12,7 @@ with io.open('README.md', encoding='utf-8') as f:
 
 setup(
     name=PROJECT,
-    version='1.0.16',
+    version='1.0.17',
 
     description='Use EvalAI through the CLI!',
     long_description=long_description,
