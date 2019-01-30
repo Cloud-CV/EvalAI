@@ -1,5 +1,6 @@
 import os
 import json
+import responses
 import shutil
 
 from datetime import timedelta
@@ -132,7 +133,10 @@ class TestJobsUrls(BaseAPITestClass):
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:change_submission_data_and_visibility')
 
+    @responses.activate
     def test_challenge_submisson_url(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
                                         'challenge_phase_id': self.challenge_phase.pk})
