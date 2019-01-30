@@ -27,11 +27,9 @@ class ChallengeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
         fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
-                  'submission_guidelines', 'evaluation_details',
-                  'image', 'start_date', 'end_date', 'creator',
-                  'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',
-                  'allowed_email_domains', 'blocked_email_domains',
-                  'approved_by_admin', 'forum_url',)
+                  'submission_guidelines', 'evaluation_details', 'image', 'start_date', 'end_date', 'creator',
+                  'published', 'enable_forum', 'leaderboard_description', 'anonymous_leaderboard', 'is_active',
+                  'allowed_email_domains', 'blocked_email_domains', 'approved_by_admin', 'forum_url',)
 
 
 class ChallengePhaseSerializer(serializers.ModelSerializer):
@@ -120,9 +118,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
 
     class Meta:
         model = Challenge
-        fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
-                  'submission_guidelines', 'start_date', 'end_date', 'creator', 'evaluation_details',
-                  'published', 'enable_forum', 'anonymous_leaderboard', 'image', 'is_active', 'evaluation_script',
+        fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions', 'submission_guidelines',
+                  'start_date', 'end_date', 'creator', 'evaluation_details', 'published', 'enable_forum',
+                  'leaderboard_description', 'anonymous_leaderboard', 'image', 'is_active', 'evaluation_script',
                   'allowed_email_domains', 'blocked_email_domains', 'forum_url', 'remote_evaluation',)
 
 
