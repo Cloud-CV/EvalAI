@@ -52,8 +52,10 @@ def get_model_object(model_name):
             model_object = model_name.objects.get(pk=pk)
             return model_object
         except model_name.DoesNotExist:
-            raise NotFound('{} {} does not exist'.format(model_name.__name__, pk))
-    get_model_by_pk.__name__ = 'get_{}_object'.format(model_name.__name__.lower())
+            raise NotFound('{} {} does not exist'.format(
+                model_name.__name__, pk))
+    get_model_by_pk.__name__ = 'get_{}_object'.format(
+        model_name.__name__.lower())
     return get_model_by_pk
 
 
@@ -89,9 +91,9 @@ def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=
         data=json.dumps({'text': str(message)}),
         headers={'Content-Type': 'application/json'}
     )
-    if type(response) == requests.models.Response and response.status_code == status.HTTP_200_OK :
+    if type(response) == requests.models.Response and response.status_code == status.HTTP_200_OK:
         return response
     else:
         logger.info(
-                'Exception raised while sending slack notification "{}".'
-                .format(message))
+            'Exception raised while sending slack notification "{}".'
+            .format(message))
