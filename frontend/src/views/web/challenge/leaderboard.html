@@ -19,6 +19,9 @@
                         <div class="col xs12 s6">
                             <strong>Please select from following phases</strong>
                         </div>
+                        <div class="col xs12 s6" ng-if="challenge.isChallengeHost && challenge.phaseSplitId!==undefined">
+                            <strong>Toggle Phase Split Visibility Status</strong>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col xs12 s6">
@@ -26,6 +29,21 @@
                                 <md-select ng-model="challenge.phaseName" placeholder="Challenge Phase" class="rm-margin">
                                     <md-option ui-sref="web.challenge-main.challenge-page.phase-leaderboard({phaseSplitId:key.id})" value="{{key.id}}" ng-repeat="key in challenge.phaseSplits" ng-show="{{key.visibility}}"><span class="font-weight-b">Phase: </span>{{key.challenge_phase_name}}, <span class="font-weight-b">Split: </span> {{key.dataset_split_name}} &nbsp; <span class="new badge orange-background" data-badge-caption="Private" ng-if="key.showPrivate"></span></md-option>
                                 </md-select>
+                            </span>
+                        </div>
+                        <div class="col xs12 s6" ng-if="challenge.isChallengeHost">
+                            <span ng-if="challenge.phaseSplitVisibility && challenge.phaseSplitId!==undefined" ng-init="challenge.isPhaseSplitVisible()">
+                                <a class="pointer" ng-click="challenge.togglePhaseSplitVisibility($event)">
+                                    <strong class="text-light-black">Public</strong>
+
+                                    <i class="fa fa-eye green-text" aria-hidden="true"></i>
+                                </a>
+                            </span>
+                            <span ng-if="!challenge.phaseSplitVisibility && challenge.phaseSplitId!==undefined" ng-init="challenge.isPhaseSplitVisible()">
+                                <a class="pointer" ng-click="challenge.togglePhaseSplitVisibility($event)">
+                                    <strong class="text-light-black">Private</strong>
+                                    <i class="fa fa-eye red-text" aria-hidden="true"></i>
+                                </a>
                             </span>
                         </div>
                     </div>

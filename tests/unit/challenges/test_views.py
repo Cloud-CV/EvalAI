@@ -2817,6 +2817,23 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             'leaderboard': self.leaderboard1.pk,
             }
 
+        self.user_from_host_team = User.objects.create(
+            username='someuser5',
+            email="someuser5@test.com",
+            password='secret_password5')
+
+        EmailAddress.objects.create(
+            user=self.user_from_host_team,
+            email='userhostteam@test.com',
+            primary=True,
+            verified=True)
+
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user_from_host_team,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
     def test_get_or_update_dataset_split_when_dataset_split_doesnt_exist(self):
         self.url = reverse_lazy('challenges:get_or_update_challenge_phase_split',
                                 kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk+10})
@@ -2853,6 +2870,24 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         del self.data['leaderboard']
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_phase_split_when_user_is_from_host_team(self):
+        self.url = reverse_lazy('challenges:get_or_update_challenge_phase_split',
+                                kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk})
+        self.client.force_authenticate(user=self.user_from_host_team)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_challenge_phase_split_when_user_is_not_from_host_team(self):
+        self.url = reverse_lazy('challenges:get_or_update_challenge_phase_split',
+                                kwargs={'challenge_phase_split_pk': self.challenge_phase_split.pk})
+        expected = {
+            'error': 'Only hosts are allowed to change phase split visibility!'
+        }
+        self.client.force_authenticate(user=self.participant_user)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class StarChallengesTest(BaseAPITestClass):

@@ -37,7 +37,7 @@ from challenges.utils import (get_challenge_model,
                               get_dataset_split_model,
                               get_leaderboard_model)
 from hosts.models import ChallengeHost, ChallengeHostTeam
-from hosts.utils import get_challenge_host_teams_for_user, is_user_a_host_of_challenge, get_challenge_host_team_model
+from hosts.utils import get_challenge_host_teams_for_user, is_user_a_host_of_challenge, get_challenge_host_team_model, is_user_part_of_host_team
 from jobs.models import Submission
 from jobs.serializers import SubmissionSerializer, ChallengeSubmissionManagementSerializer
 from participants.models import Participant, ParticipantTeam
@@ -1255,16 +1255,29 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     """
     challenge_phase_split = get_challenge_phase_split_model(
         challenge_phase_split_pk)
+    challenge_phase_id = ChallengePhaseSplit.objects.filter(pk=challenge_phase_split_pk).values_list('challenge_phase_id', flat=True)[0]
+    challenge_id = ChallengePhase.objects.filter(pk=challenge_phase_id).values_list('challenge_id', flat=True)[0]
+
+    # Check if user is a challenge host
+    is_user_host = is_user_a_host_of_challenge(request.user, challenge_id)
+
+    # Check if user is a member of challenge host team
+    host_team_ids = get_challenge_host_teams_for_user(request.user)
+    is_user_member_of_host_team = is_user_part_of_host_team(request.user, host_team_ids)
 
     if request.method == 'PATCH':
-        serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split,
-                                                      data=request.data,
-                                                      partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+        if is_user_host or is_user_member_of_host_team:
+            serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split,
+                                                          data=request.data,
+                                                          partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                response_data = serializer.data
+                return Response(response_data, status=status.HTTP_200_OK)
+            return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response_data = {'error': 'Only hosts are allowed to change phase split visibility!'}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'GET':
         serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split)
