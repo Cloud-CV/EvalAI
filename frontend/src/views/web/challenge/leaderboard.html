@@ -13,6 +13,16 @@
                 </div>
                 <div class="ev-md-container ev-panel-title">
                     <div class="row">
+                        <div class="col xs12 s12">
+                            <strong>Description</strong>
+                        </div>
+                        <div class="col s12">
+                            {{challenge.page.leaderboard_description}}
+                        </div>
+                    </div>
+                </div>
+                <div class="ev-md-container ev-panel-title">
+                    <div class="row">
                         <div ng-click="challenge.refreshSubmissionData()" class="pointer update-page" ng-if="challenge.showLeaderboardUpdate">
                             <span class="text-white">Page is Outdated, Click to update&nbsp; <i class="fa fa-refresh text-highlight"></i></span>
                         </div>
