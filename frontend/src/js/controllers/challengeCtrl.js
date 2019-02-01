@@ -621,7 +621,6 @@
                         vm.showPagination = false;
                         vm.paginationMsg = "No results found";
                     } else {
-
                         vm.showPagination = true;
                         vm.paginationMsg = "";
                     }
@@ -640,7 +639,7 @@
                     if (vm.submissionResult.next !== null) {
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
                     } else {
-                        vm.currentPage = 1;
+                        vm.currentPage = vm.submissionResult.count / 100;
                     }
 
                     vm.load = function(url) {
@@ -666,7 +665,7 @@
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 10;
+                                    vm.currentPage = vm.submissionResult.count / 100;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
@@ -780,9 +779,11 @@
                         vm.isPrev = '';
                     }
                     if (vm.submissionResult.next !== null) {
+                        vm.isNext = '';
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
                     } else {
-                        vm.currentPage = 1;
+                        vm.isNext = 'disabled';
+                        vm.currentPage = vm.submissionResult.count / 100;
                     }
 
 
@@ -946,7 +947,7 @@
                     if (vm.submissionResult.next !== null) {
                         vm.currentPage = vm.submissionResult.next.split('page=')[1] - 1;
                     } else {
-                        vm.currentPage = 1;
+                        vm.currentPage = vm.submissionResult.count / 100;
                     }
 
                     vm.load = function(url) {
@@ -969,7 +970,7 @@
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 10;
+                                    vm.currentPage = vm.submissionResult.count / 100;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
