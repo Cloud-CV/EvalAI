@@ -41,6 +41,7 @@ from hosts.utils import get_challenge_host_teams_for_user, is_user_a_host_of_cha
 from jobs.models import Submission
 from jobs.serializers import SubmissionSerializer, ChallengeSubmissionManagementSerializer
 from participants.models import Participant, ParticipantTeam
+from participants.serializers import ParticipantTeamDetailSerializer
 from participants.utils import (get_participant_teams_for_user,
                                 has_user_participated_in_challenge,
                                 get_participant_team_id_of_user_for_a_challenge,)
@@ -70,6 +71,21 @@ try:
 except NameError:
     xrange = range  # Python 3
 
+@throttle_classes([UserRateThrottle])
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def participation_team_name_from_challenge(request, challenge_id):
+    """
+    Returns the name of the participant team in the challenge for current user.
+    """
+    participant_teams = get_participant_teams_for_user(request.user)
+
+    for participant_team in participant_teams:
+        if Challenge.objects.filter(pk=challenge_id, participant_teams=participant_team).exists():
+            serializer = ParticipantTeamDetailSerializer(participant_team)
+            response_data = serializer.response_data.team_name
+            return Response(response_data, status=status.HTTP_200_OK)
 
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])

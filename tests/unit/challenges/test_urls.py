@@ -83,6 +83,10 @@ class BaseAPITestClass(APITestCase):
 class TestChallengeUrls(BaseAPITestClass):
 
     def test_challenges_urls(self):
+        url = reverse_lazy('challenges:get_participation_team_name_from_challenge',
+                           kwargs={'challenge_pk': self.challenge.pk})
+        self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + 'team_name/')
+
         url = reverse_lazy('challenges:get_challenge_list',
                            kwargs={'challenge_host_team_pk': self.challenge_host_team.pk})
         self.assertEqual(url, '/api/challenges/challenge_host_team/' + str(self.challenge_host_team.pk) + '/challenge')

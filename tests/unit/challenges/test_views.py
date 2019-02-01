@@ -77,6 +77,25 @@ class BaseAPITestClass(APITestCase):
         self.client.force_authenticate(user=self.user)
 
 
+class GetParticipantTeamNameTest(BaseAPITestClass):
+
+    def setUp(self):
+        super(GetParticipantTeamNameTest, self).setUp()
+
+        self.participant = Participant.objects.create(
+            user=self.user,
+            team=self.participant_team,
+            status=Participant.SELF,)
+
+    def test_participation_team_name_from_challenge(self):
+
+        self.url = reverse_lazy('challenges:get_participation_team_from_challenge',
+                                kwargs={'challenge_pk': self.challenge.pk})
+
+        expected = {"Participant Team for Challenge"}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+
 class GetChallengeTest(BaseAPITestClass):
     url = reverse_lazy('challenges:get_challenge_list')
 

@@ -56,4 +56,6 @@ urlpatterns = [
         views.get_broker_url_by_challenge_pk, name='get_broker_url_by_challenge_pk'),
     url(r'^get_broker_urls/$',
         views.get_broker_urls, name='get_broker_urls'),
+    url(r'^challenge/(?P<challenge_pk>[0-9]+)/team_name', views.participation_team_name_from_challenge,
+        name='get_participation_team_name_from_challenge')
 ]
