@@ -1258,19 +1258,17 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     """
     challenge_phase_split = get_challenge_phase_split_model(
         challenge_phase_split_pk)
-    challenge_phase_id = ChallengePhaseSplit.objects.filter(pk=challenge_phase_split_pk).values_list(
-        'challenge_phase_id', flat=True)[0]
-    challenge_id = ChallengePhase.objects.filter(pk=challenge_phase_id).values_list('challenge_id', flat=True)[0]
+    challenge_id = challenge_phase_split.challenge_phase.challenge.id
 
     # Check if user is a challenge host
-    is_user_host = is_user_a_host_of_challenge(request.user, challenge_id)
+    is_host_user = is_user_a_host_of_challenge(request.user, challenge_id)
 
     # Check if user is a member of challenge host team
-    host_team_ids = get_challenge_host_teams_for_user(request.user)
-    is_user_member_of_host_team = is_user_part_of_host_team(request.user, host_team_ids)
+    host_team_list = get_challenge_host_teams_for_user(request.user)
+    is_user_member_of_host_team = is_user_part_of_host_team(request.user, host_team_list)
 
     if request.method == 'PATCH':
-        if is_user_host or is_user_member_of_host_team:
+        if is_host_user or is_user_member_of_host_team:
             serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split,
                                                           data=request.data,
                                                           partial=True)

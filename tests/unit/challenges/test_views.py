@@ -2824,7 +2824,7 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
 
         EmailAddress.objects.create(
             user=self.user_from_host_team,
-            email='userhostteam@test.com',
+            email='someuser5@test.com',
             primary=True,
             verified=True)
 

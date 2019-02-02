@@ -1694,10 +1694,7 @@
                 };
 
                 utilities.sendRequest(parameters);
-            }, function() {
-            // Nope
             });
-
         };
 
 
