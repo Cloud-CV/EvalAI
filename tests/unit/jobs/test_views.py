@@ -571,7 +571,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.submission1.submitted_at = timezone.now() - timedelta(days=3)
         self.submission1.save()
         remaining_submissions_this_month_count = 18
-        if timezone.now().day in range(1, 4):
+        if 1 <= timezone.now().day <= 3:
             remaining_submissions_this_month_count = 19
         expected = {
             'remaining_submissions_today_count': 9,
