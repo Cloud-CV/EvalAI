@@ -566,16 +566,18 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                     'challenge_phase_pk': self.challenge_phase.pk,
                                     'challenge_pk': self.challenge.pk
                                 })
-        expected = {
-            'remaining_submissions_today_count': 9,
-            'remaining_submissions_this_month_count': 18,
-            'remaining_submissions': 98
-        }
-
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         self.submission1.submitted_at = timezone.now() - timedelta(days=3)
         self.submission1.save()
+        remaining_submissions_this_month_count = 18
+        if timezone.now().day in range(1, 4):
+            remaining_submissions_this_month_count = 19
+        expected = {
+            'remaining_submissions_today_count': 9,
+            'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
+            'remaining_submissions': 98
+        }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
