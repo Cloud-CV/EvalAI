@@ -1382,6 +1382,7 @@
 
         // Edit Evaluation Script
         vm.evaluationScriptDialog = function(ev) {
+        	vm.tempEvaluationCriteria = vm.page.evaluation_details;
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
