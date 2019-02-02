@@ -60,6 +60,7 @@
                                 <table ng-if="challenge.isResult" class="highlight all-submission-table">
                                     <thead>
                                         <tr>
+                                            <th data-field="isBaseline">Baseline</th>
                                             <th data-field="team">Team Name</th>
                                             <th data-field="method-name">Method Name</th>
                                             <th data-field="method-description">Method Description</th>
@@ -78,6 +79,11 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
+                                            <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
+                                                <input ng-checked="key.is_baseline" ng-if="key.status == 'finished'" ng-model="challenge.submissionVisibility[key.id]" type="checkbox" id="isPublic{{ key.id }}" ng-change="challenge.changeSubmissionVisibility(key.id)" />
+                                                <label for="isPublic{{ key.id }}"></label>
+                                                <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
+                                            </td>
                                             <td>{{key.participant_team_name}}</td>
                                             <td ng-if="key.method_name != ''">{{key.method_name}}</td>
                                             <td ng-if="key.method_name == ''"> None </td>

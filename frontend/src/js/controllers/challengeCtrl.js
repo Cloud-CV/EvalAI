@@ -26,6 +26,7 @@
         vm.phaseSplits = {};
         vm.isValid = {};
         vm.submissionVisibility = {};
+        vm.baselineStatus = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -613,6 +614,11 @@
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                     }
+                    
+                    for (var i = 0; i < details.results.length; i++) {
+                        vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
+                    }
+
                     vm.submissionResult = details;
 
                     vm.start();
@@ -712,6 +718,10 @@
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                             }
 
+                            for (var i = 0; i < details.results.length; i++) {
+                                vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
+                            }
+
                             if (vm.submissionResult.results.length !== details.results.length) {
                                 vm.showUpdate = true;
                             } else {
@@ -789,6 +799,11 @@
                     // Set the is_public flag corresponding to each submission
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                    }
+
+                    // Set the is_public flag corresponding to each submission
+                    for (var i = 0; i < details.results.length; i++) {
+                        vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
                     }
 
                     vm.submissionResult = details;
@@ -1003,6 +1018,20 @@
             parameters.method = 'PATCH';
             parameters.data = {
                 "is_public": vm.submissionVisibility[submission_id]
+            };
+            parameters.callback = {
+                onSuccess: function() {},
+                onError: function() {}
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
+        vm.changeBaselineStatus = function(submission_id) {
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "baseline_submission": vm.baselineStatus[submission_id]
             };
             parameters.callback = {
                 onSuccess: function() {},
