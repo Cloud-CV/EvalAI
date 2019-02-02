@@ -80,8 +80,8 @@
                                     <tbody>
                                         <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
                                             <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
-                                                <input ng-checked="key.is_baseline" ng-if="key.status == 'finished'" ng-model="challenge.baselineStatus[key.id]" type="checkbox" id="isPublic{{ key.id }}" ng-change="challenge.changeBaselineStatus(key.id)" />
-                                                <label for="isPublic{{ key.id }}"></label>
+                                                <input ng-checked="key.baseline_submission" ng-if="key.status == 'finished'" ng-model="challenge.changeBaselineStatus[key.id]" type="checkbox" id="baseline_submission{{ key.id }}" ng-change="challenge.changeBaselineStatus(key.id)" />
+                                                <label for="baseline_submission{{ key.id }}"></label>
                                                 <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                             </td>
                                             <td>{{key.participant_team_name}}</td>
