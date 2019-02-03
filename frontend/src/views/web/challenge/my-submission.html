@@ -60,7 +60,7 @@
                                 <table ng-if="challenge.isResult" class="highlight all-submission-table">
                                     <thead>
                                         <tr>
-                                            <th data-field="isBaseline">Baseline</th>
+                                            <th data-field="isBaseline" ng-if="challenge.enableBaselineToggle">Baseline</th>
                                             <th data-field="team">Team Name</th>
                                             <th data-field="method-name">Method Name</th>
                                             <th data-field="method-description">Method Description</th>
@@ -79,7 +79,7 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
-                                            <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
+                                            <td ng-if="challenge.currentPhaseLeaderboardPublic && challenge.enableBaselineToggle" class="center">
                                                 <input ng-checked="key.baseline_submission" ng-if="key.status == 'finished'" ng-model="challenge.baselineStatus[key.id]"
                                                     type="checkbox" id="baselineSubmission{{ key.id }}" ng-change="challenge.changeBaselineStatus(key.id)" />
                                                 <label for="baselineSubmission{{ key.id }}"></label>

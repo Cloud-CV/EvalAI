@@ -236,6 +236,7 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
                                       context={
                                                'participant_team': participant_team,
                                                'challenge_phase': challenge_phase,
+                                               'challenge_id': challenge_pk,
                                                'request': request
                                       },
                                       partial=True)

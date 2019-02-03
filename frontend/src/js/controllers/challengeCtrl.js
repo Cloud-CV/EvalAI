@@ -27,6 +27,7 @@
         vm.isValid = {};
         vm.submissionVisibility = {};
         vm.baselineStatus = {};
+        vm.enableBaselineToggle = true;
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -616,6 +617,10 @@
                     }
                     
                     for (var i = 0; i < details.results.length; i++) {
+                        if(details.results[i].baseline_submission === undefined) {
+                            vm.enableBaselineToggle = false
+                            break;
+                        }
                         vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
                     }
 
@@ -719,6 +724,10 @@
                             }
 
                             for (var i = 0; i < details.results.length; i++) {
+                                if(details.results[i].baseline_submission === undefined) {
+                                    vm.enableBaselineToggle = false;
+                                    break;
+                                }
                                 vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
                             }
 
@@ -801,8 +810,11 @@
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
                     }
 
-                    // Set the is_public flag corresponding to each submission
                     for (var i = 0; i < details.results.length; i++) {
+                        if(details.results[i].baseline_submission === undefined) {
+                            vm.enableBaselineToggle = false;
+                            break;
+                        }
                         vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
                     }
 
