@@ -29,6 +29,9 @@ class SubmissionSerializer(serializers.ModelSerializer):
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
     def to_representation(self, obj):
+        """
+            baseline_submission should only be for Hosts
+        """
         ret = super(SubmissionSerializer, self).to_representation(obj)
         if not is_user_a_host_of_challenge(self.context.get("request").user, self.context.get("challenge_id")):
             ret.pop('baseline_submission')

@@ -27,6 +27,7 @@
         vm.isValid = {};
         vm.submissionVisibility = {};
         vm.baselineStatus = {};
+        vm.enableBaselineToggle = true;
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -617,6 +618,7 @@
                     
                     for (var i = 0; i < details.results.length; i++) {
                         if(details.results[i].baseline_submission === undefined) {
+                            vm.enableBaselineToggle = false
                             break;
                         }
                         vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
@@ -722,7 +724,8 @@
                             }
 
                             for (var i = 0; i < details.results.length; i++) {
-                                if(details.results[i].baseline_submission === undfined) {
+                                if(details.results[i].baseline_submission === undefined) {
+                                    vm.enableBaselineToggle = false;
                                     break;
                                 }
                                 vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
@@ -809,6 +812,7 @@
 
                     for (var i = 0; i < details.results.length; i++) {
                         if(details.results[i].baseline_submission === undefined) {
+                            vm.enableBaselineToggle = false;
                             break;
                         }
                         vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
