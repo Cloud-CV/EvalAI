@@ -78,7 +78,7 @@
                                     </thead>
                                     <tbody>
                                     <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort">
-                                        <td class="align-left">{{challenge.initial_ranking[key.submission__participant_team__team_name]}}</td>
+                                        <td class="align-left"><span class="new badge orange baseline-badge" data-badge-caption="Baseline" ng-if="key.submission__baseline_submission"></span>&nbsp;&nbsp;{{challenge.initial_ranking[key.submission__participant_team__team_name]}}</td>
                                         <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
                                         <td class="align-center" ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
                                         <td class="align-center">{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago</td>
