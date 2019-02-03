@@ -355,7 +355,7 @@ def leaderboard(request, challenge_phase_split_id):
 
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
-            'id', 'submission__participant_team__team_name',
+            'id', 'submission__participant_team__team_name', 'submission__baseline_submission',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
