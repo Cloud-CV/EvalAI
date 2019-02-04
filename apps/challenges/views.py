@@ -486,7 +486,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     challenge_creation_error_message = """
     Hi,
 
-    We noticed that you tried to create a challenge on EvalAI recently and you could not create it due to some reason. Please let us know if you need help in creating the challenge configuration for your challenge. We would be more than happy to help in creating the challenge.
+    We noticed that you tried to create a challenge on EvalAI recently and you could not create it due to some reason.
+    Please let us know if you need help in creating the challenge configuration for your challenge.
+    We would be more than happy to help in creating the challenge.
 
     Thanks,
     EvalAI Team
