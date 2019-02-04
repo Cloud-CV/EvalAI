@@ -6,7 +6,7 @@ import uuid
 
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
-from sendgrid.helpers.mail import *
+from sendgrid.helpers.mail import Email, Content, Mail
 
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
@@ -86,7 +86,7 @@ def send_sendgrid_email(email="", message=""):
         subject = "Challenge creation failure"
         content = Content("text/plain", message)
         mail = Mail(from_email, subject, to_email, content)
-        response = sg.client.mail.send.post(request_body=mail.get())
+        sg.client.mail.send.post(request_body=mail.get())
     except Exception as e:
         logger.exception(
             'Exception raised while sending the email. Error details : {}'.format(e))
