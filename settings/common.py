@@ -284,7 +284,7 @@ ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
 slack_webhook = os.environ.get('SLACK_WEBHOOK')
-if slack_webhook == None:
+if slack_webhook is None:
     slack_webhook = 'http://testslackwebhook.com/webhook'
 
 SLACK_WEBHOOKS = {
