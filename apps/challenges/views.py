@@ -30,7 +30,7 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from yaml.scanner import ScannerError
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import paginated_queryset, send_sendgrid_email
 from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model,
                               get_challenge_phase_split_model,
@@ -481,6 +481,17 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     Creates a challenge using a zip file.
     """
+    user = User.objects.get(username=request.user)
+    email = user.email
+    challenge_creation_error_message = """
+    Hi,
+
+    We noticed that you tried to create a challenge on EvalAI recently and you could not create it due to some reason. Please let us know if you need help in creating the challenge configuration for your challenge. We would be more than happy to help in creating the challenge.
+
+    Thanks,
+    EvalAI Team
+    """
+
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
     serializer = ChallengeConfigSerializer(
@@ -490,6 +501,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         uploaded_zip_file_path = serializer.data['zip_configuration']
     else:
         response_data = serializer.errors
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # All files download and extract location.
@@ -512,6 +524,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 'error': message
             }
             logger.exception(message)
+            send_sendgrid_email(email=email, message=challenge_creation_error_message)
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     except requests.exceptions.RequestException:
@@ -521,6 +534,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Extract zip file
@@ -534,6 +548,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Search for yaml file
@@ -551,6 +566,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.info(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if yaml_file_count > 1:
@@ -559,6 +575,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.info(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -570,6 +587,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(exc)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script path in yaml file.
@@ -586,6 +604,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script file in extracted zip folder.
@@ -600,6 +619,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for test annotation file path in yaml file.
@@ -612,6 +632,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     for data in challenge_phases_data:
@@ -629,6 +650,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 'error': message
             }
             logger.exception(message)
+            send_sendgrid_email(email=email, message=challenge_creation_error_message)
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -640,6 +662,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 'error': message
             }
             logger.exception(message)
+            send_sendgrid_email(email=email, message=challenge_creation_error_message)
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -676,6 +699,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for evaluation details file
@@ -700,6 +724,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for terms and conditions file
@@ -722,6 +747,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for submission guidelines file
@@ -745,6 +771,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for leaderboard schema in YAML file
@@ -769,6 +796,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 'error': message
             }
             logger.exception(message)
+            send_sendgrid_email(email=email, message=challenge_creation_error_message)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         if 'labels' not in leaderboard_schema[0].get('schema'):
             message = ('There is no \'labels\' key in leaderboard '
@@ -777,6 +805,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 'error': message
             }
             logger.exception(message)
+            send_sendgrid_email(email=email, message=challenge_creation_error_message)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
     else:
         message = ('There is no key \'leaderboard\' '
@@ -785,6 +814,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             'error': message
         }
         logger.exception(message)
+        send_sendgrid_email(email=email, message=challenge_creation_error_message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -890,6 +920,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     'error': message
                 }
                 logger.exception(message)
+                send_sendgrid_email(email=email, message=challenge_creation_error_message)
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             for data in challenge_phase_splits_data:
@@ -945,10 +976,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         try:
             if response_data:
                 response_data = {'error': response_data.values()[0]}
+                send_sendgrid_email(email=email, message=challenge_creation_error_message)
                 return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         except:
             response_data = {
                 'error': 'Error in creating challenge. Please check the yaml configuration!'}
+            send_sendgrid_email(email=email, message=challenge_creation_error_message)
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         finally:
             try:

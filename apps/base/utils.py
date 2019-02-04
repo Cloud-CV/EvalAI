@@ -1,12 +1,17 @@
 import base64
+import logging
 import os
+import sendgrid
 import uuid
 
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
+from sendgrid.helpers.mail import *
 
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
+
+logger = logging.getLogger(__name__)
 
 
 class StandardResultSetPagination(PageNumberPagination):
@@ -46,8 +51,10 @@ def get_model_object(model_name):
             model_object = model_name.objects.get(pk=pk)
             return model_object
         except model_name.DoesNotExist:
-            raise NotFound('{} {} does not exist'.format(model_name.__name__, pk))
-    get_model_by_pk.__name__ = 'get_{}_object'.format(model_name.__name__.lower())
+            raise NotFound('{} {} does not exist'.format(
+                model_name.__name__, pk))
+    get_model_by_pk.__name__ = 'get_{}_object'.format(
+        model_name.__name__.lower())
     return get_model_by_pk
 
 
@@ -69,3 +76,17 @@ def decode_data(data):
     for i in data:
         decoded.append(base64.decodestring(i+"=="))
     return decoded
+
+
+def send_sendgrid_email(email="", message=""):
+    try:
+        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        from_email = Email(settings.ADMIN_EMAIL)
+        to_email = Email(email)
+        subject = "Challenge creation failure"
+        content = Content("text/plain", message)
+        mail = Mail(from_email, subject, to_email, content)
+        response = sg.client.mail.send.post(request_body=mail.get())
+    except Exception as e:
+        logger.exception(
+            'Exception raised while sending the email. Error details : {}'.format(e))
