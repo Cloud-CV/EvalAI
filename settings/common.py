@@ -282,8 +282,13 @@ REST_AUTH_SERIALIZERS = {
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
+
+try :
+    slack_webhook = os.environ.get('SLACK_WEBHOOK')
+except Exception as e:
+    slack_webhook = 'http://testslackwebhook.com/webhook'
 SLACK_WEBHOOKS = {
-    'default': os.environ.get('SLACK_WEBHOOK'),
+    'default': slack_webhook,
 }
 
 SWAGGER_SETTINGS = {
