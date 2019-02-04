@@ -283,10 +283,10 @@ REST_AUTH_SERIALIZERS = {
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
-try :
-    slack_webhook = os.environ.get('SLACK_WEBHOOK')
-except Exception as e:
+slack_webhook = os.environ.get('SLACK_WEBHOOK')
+if slack_webhook == None:
     slack_webhook = 'http://testslackwebhook.com/webhook'
+
 SLACK_WEBHOOKS = {
     'default': slack_webhook,
 }
