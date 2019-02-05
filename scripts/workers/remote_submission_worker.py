@@ -384,11 +384,11 @@ def run_submission(challenge_pk, challenge_phase, submission, user_annotation_fi
     """
     * It checks whether the corresponding evaluation script and the annotation file for the challenge exists or not
     * It calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
-    
+
     Arguments:
         challenge_pk  -- challenge ID in which the submission is created
         challenge_phase  -- challenge phase ID in which the submission is created
-        submission  -- JSON object for the submisson 
+        submission  -- JSON object for the submisson
         user_annotation_file_path  -- File submitted by user as a submission
         queue_name  -- The secret token that challenge host possess
         auth_token  -- The authentication token of the challenge host
