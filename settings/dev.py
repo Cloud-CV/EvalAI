@@ -1,5 +1,7 @@
 from .common import *  # noqa: ignore=F405
 
+import warnings
+
 # Database
 # https://docs.djangoproject.com/en/1.10.2/ref/settings/#databases
 
@@ -53,3 +55,9 @@ MIDDLEWARE += [ # noqa: ignore=F405
 ]
 
 SILKY_PYTHON_PROFILER = True
+
+# Prevents Datetime warning by showing errors
+warnings.filterwarnings(
+    'error', r"DateTimeField .* received a naive datetime",
+    RuntimeWarning, r'django\.db\.models\.fields',
+)
