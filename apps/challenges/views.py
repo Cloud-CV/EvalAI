@@ -493,6 +493,16 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     Thanks,
     EvalAI Team
     """
+    challenge_creation_success_message = """
+    Hi,
+
+    We noticed that you created a challenge on EvalAI recently and the challenge you created is in review.
+    Please contact us for details regarding the challenge hosting process.
+    We would be more than happy to help in hosting the challenge.
+
+    Thanks,
+    EvalAI Team
+    """
 
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
@@ -972,6 +982,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'success': 'Challenge {} has been created successfully and'
                 ' sent for review to EvalAI Admin.'.format(challenge.title)}
+            send_sendgrid_email(email=email, message=challenge_creation_success_message)
             return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:
