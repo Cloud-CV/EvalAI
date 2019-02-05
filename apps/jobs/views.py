@@ -888,7 +888,8 @@ def update_submission_by_queue_name(request, challenge_pk, queue_name):
         submission.submission_result_file.save('submission_result.json', ContentFile(str(public_results)))
         submission.submission_metadata_file.save('submission_metadata_file.json', ContentFile(str(metadata)))
         submission.save()
-        response_data = {'success': 'Submission result has been successfully updated'}
+        serializer = SubmissionSerializer(submission, context={'request': request})     
+        response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         response_data = {
@@ -976,7 +977,8 @@ def delete_submission_message_by_queue_name(request, queue_name, receipt_handle)
             'error': 'Challenge with queue name {} does not exists!'.format(queue_name)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    challenge_pk = challenge.id
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             'error': 'Sorry, you are not authorized to access this resource!'
@@ -1053,9 +1055,7 @@ def update_submission_status_by_queue_name(request, challenge_pk, submission_pk,
                                           partial=True)
         if serializer.is_valid():
             serializer.save()
-            response_data = {
-                'success': 'Submission result has been successfully updated'
-            }
+            response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
             response_data = serializer.errors
