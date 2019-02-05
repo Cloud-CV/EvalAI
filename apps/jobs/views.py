@@ -11,7 +11,7 @@ from rest_framework.decorators import (api_view,
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
-from django.db.models import FloatField
+from django.db.models import FloatField, Q
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -340,6 +340,7 @@ def leaderboard(request, challenge_phase_split_id):
     # while populating leaderboard
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     challenge_hosts_emails = challenge_obj.creator.get_all_challenge_host_email()
+    challenge_host = challenge_obj.creator.team_name
     is_challenge_phase_public = challenge_phase_split.challenge_phase.is_public
     # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
     challenge_hosts_emails = [] if not is_challenge_phase_public else challenge_hosts_emails
@@ -347,7 +348,7 @@ def leaderboard(request, challenge_phase_split_id):
     challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
 
     leaderboard_data = LeaderboardData.objects.exclude(
-        submission__created_by__email__in=challenge_hosts_emails)
+        Q(submission__created_by__email__in=challenge_hosts_emails) & Q(submission__baseline_submission=False))
 
     # Get all the successful submissions related to the challenge phase split
     leaderboard_data = leaderboard_data.filter(
@@ -364,16 +365,16 @@ def leaderboard(request, challenge_phase_split_id):
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
-
+    # challenge_host = challenge_phase_split__
     distinct_sorted_leaderboard_data = []
     team_list = set()
-
     for data in sorted_leaderboard_data:
-        if data['submission__participant_team__team_name'] in team_list and not data['submission__baseline_submission']:
+        if data['submission__participant_team__team_name'] in team_list:
             continue
         else:
             distinct_sorted_leaderboard_data.append(data)
-            team_list.add(data['submission__participant_team__team_name'])
+            if not data['submission__participant_team__team_name'] == challenge_host:
+                team_list.add(data['submission__participant_team__team_name'])
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
     for item in distinct_sorted_leaderboard_data:
