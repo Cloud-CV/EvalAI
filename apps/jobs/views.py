@@ -977,7 +977,7 @@ def delete_submission_message_by_queue_name(request, queue_name, receipt_handle)
             'error': 'Challenge with queue name {} does not exists!'.format(queue_name)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    
+
     challenge_pk = challenge.id
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
