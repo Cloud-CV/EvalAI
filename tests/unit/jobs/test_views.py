@@ -1016,6 +1016,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "is_public": self.private_submission.is_public,
             "when_made_public": "{0}{1}".format(self.private_submission.when_made_public.isoformat(),
                                                 'Z').replace("+00:00", ""),
+            "baseline_submission": False,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1274,6 +1275,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                         'labels': ['score', 'test-score']
                     },
                     'submission__submitted_at': self.submission.submitted_at,
+                    'submission__baseline_submission': False
                 }
             ]
         }
@@ -1333,6 +1335,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                         'labels': ['score', 'test-score']
                     },
                     'submission__submitted_at': self.private_submission.submitted_at,
+                    'submission__baseline_submission': False
                 }
             ]
         }
