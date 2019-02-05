@@ -79,6 +79,13 @@ def decode_data(data):
 
 
 def send_sendgrid_email(email="", message=""):
+    """
+    Send email to sendgrid with message
+
+    Keyword Arguments:
+        email {string} -- The email to which the message is to be sent
+        message {string} -- The message which is to be sent to the email
+    """
     try:
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(settings.ADMIN_EMAIL)
