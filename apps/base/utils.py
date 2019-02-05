@@ -78,7 +78,7 @@ def decode_data(data):
     return decoded
 
 
-def send_sendgrid_email(email="", message=""):
+def send_email(email="", message=""):
     """
     Send email to sendgrid with message
 
