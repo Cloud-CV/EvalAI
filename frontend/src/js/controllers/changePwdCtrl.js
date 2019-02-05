@@ -17,6 +17,14 @@
         vm.user = {};
         vm.isFormError = false;
 
+        // default parameters
+        $rootScope.oldpwdInputType = 'password';
+        $rootScope.newpwdInputType = 'password';
+        $rootScope.newpwdAgainInputType = 'password';
+        $rootScope.showEyeIconOldpwd = false;
+        $rootScope.showEyeIconNewpwd = false;
+        $rootScope.showEyeIconNewpwdAgain = false;
+
         vm.changepassContainer = angular.element('.change-passowrd-card');
 
         vm.startLoader = function(msg) {
@@ -31,6 +39,40 @@
             $rootScope.loaderTitle = '';
             vm.changepassContainer.removeClass('low-screen');
         };
+
+        // toggle old password visibility
+        vm.toggleOldpwdVisibility = function() {
+            $rootScope.showEyeIconOldpwd = !$rootScope.showEyeIconOldpwd;
+            if ($rootScope.oldpwdInputType == 'password'){
+                $rootScope.oldpwdInputType = 'text';
+            }
+            else{
+                $rootScope.oldpwdInputType = 'password';
+            }
+        };
+
+        // toggle new password visibility
+        vm.toggleNewpwdVisibility = function() {
+            $rootScope.showEyeIconNewpwd = !$rootScope.showEyeIconNewpwd;
+            if ($rootScope.newpwdInputType == 'password'){
+                $rootScope.newpwdInputType = 'text';
+            }
+            else{
+                $rootScope.newpwdInputType = 'password';
+            }
+        };
+
+        // toggle new password again visibility
+        vm.toggleNewpwdAgainVisibility = function() {
+            $rootScope.showEyeIconNewpwdAgain = !$rootScope.showEyeIconNewpwdAgain;
+            if ($rootScope.newpwdAgainInputType == 'password'){
+                $rootScope.newpwdAgainInputType = 'text';
+            }
+            else{
+                $rootScope.newpwdAgainInputType = 'password';
+            }
+        };
+
         // function to change password
         vm.changePassword = function(resetconfirmFormValid) {
           if(resetconfirmFormValid){

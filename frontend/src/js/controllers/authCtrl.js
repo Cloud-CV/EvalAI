@@ -37,7 +37,9 @@
         vm.confirmMsg = '';
         $rootScope.loaderTitle = '';
         $rootScope.passwordInputType = 'password';
+        $rootScope.confirmPasswordInputType = 'password';
         $rootScope.showEyeIcon = false;
+        $rootScope.showEyeIconConfirmpwd = false;
         vm.loginContainer = angular.element('.auth-container');
 
         // show loader
@@ -65,6 +67,17 @@
             }
         };
 
+        // toggle confirm password visibility
+        vm.toggleConfirmPasswordVisibility = function() {
+            $rootScope.showEyeIconConfirmpwd = !$rootScope.showEyeIconConfirmpwd;
+            if ($rootScope.confirmPasswordInputType == 'password'){
+                $rootScope.confirmPasswordInputType = 'text';
+            }
+            else{
+                $rootScope.confirmPasswordInputType = 'password';
+            }
+        };
+
         vm.resetForm = function() {
             // getUser for signup
             vm.regUser = {};
@@ -82,7 +95,9 @@
 
             // reset the eye icon and type to password 
             $rootScope.showEyeIcon = false;
+            $rootScope.showEyeIconConfirmpwd = false;
             $rootScope.passwordInputType = 'password';
+            $rootScope.confirmPasswordInputType = 'password';
         };
 
         // Function to signup
