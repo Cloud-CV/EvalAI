@@ -405,7 +405,7 @@
                 return Date.parse(key.submission__submitted_at_formatted);
             }
             else if (vm.sortColumn === 'rank') {
-                return vm.initial_ranking[key.submission__participant_team__team_name];
+                return vm.initial_ranking[key.id];
             }
             else if (vm.sortColumn === 'number') {
                 return parseFloat(key.result[vm.columnIndexSort]);
@@ -458,7 +458,7 @@
                     vm.leaderboard = details.results;
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
-                        vm.initial_ranking[vm.leaderboard[i].submission__participant_team__team_name] = i+1;
+                        vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
