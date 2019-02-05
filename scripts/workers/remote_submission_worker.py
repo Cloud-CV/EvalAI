@@ -16,13 +16,11 @@ import sys
 import tempfile
 import time
 import traceback
-import yaml
 import zipfile
 
 from os.path import join
 
 from django.utils import timezone
-from django.conf import settings
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -279,6 +277,7 @@ def extract_submission_data(submission_pk, queue_name, auth_token):
 
     return submission
 
+
 def get_request_headers(auth_token):
     headers = {'Authorization': 'Token {}'.format(auth_token)}
     return headers
@@ -382,13 +381,18 @@ def read_file_content(file_path):
 
 
 def run_submission(challenge_pk, challenge_phase, submission, user_annotation_file_path, queue_name, auth_token):
-    '''
-        * receives a challenge id, phase id and user annotation file path, challenge queue name and challenge host auth token
-        * checks whether the corresponding evaluation script for the challenge exists or not
-        * checks the above for annotation file
-        * calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
-    '''
-
+    """
+    * It checks whether the corresponding evaluation script and the annotation file for the challenge exists or not
+    * It calls evaluation script via subprocess passing annotation file and user_annotation_file_path as argument
+    
+    Arguments:
+        challenge_pk  -- challenge ID in which the submission is created
+        challenge_phase  -- challenge phase ID in which the submission is created
+        submission  -- JSON object for the submisson 
+        user_annotation_file_path  -- File submitted by user as a submission
+        queue_name  -- The secret token that challenge host possess
+        auth_token  -- The authentication token of the challenge host
+    """
     # Send the submission data to the evaluation script
     # so that challenge hosts can use data for webhooks or any other service.
 
@@ -419,7 +423,7 @@ def run_submission(challenge_pk, challenge_phase, submission, user_annotation_fi
 
     try:
         logger.info("Sending submission {} for evaluation".format(submission_pk))
-        with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr:
+        with stdout_redirect(stdout) as new_stdout, stderr_redirect(stderr) as new_stderr: # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_pk].evaluate(
                 annotation_file_path,
                 user_annotation_file_path,
@@ -496,7 +500,6 @@ def main():
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
 
-    challenge = get_challenge_by_pk(challenge_pk, queue_name, auth_token)
     load_challenge(challenge_pk, queue_name, auth_token)
 
     while True:
@@ -504,11 +507,11 @@ def main():
         message = get_message_from_sqs_queue(challenge_pk, queue_name, auth_token)
         message_body = message['message_body']
         if message_body is not None:
-            submission_pk = message_body.get('submission_pk')                    
+            submission_pk = message_body.get('submission_pk')
             submission = get_submission_by_pk(submission_pk, queue_name, auth_token)
             if submission is not None:
                 if submission['status'] == 'finished':
-                    message_receipt_handle = message['message_receipt_handle']                    
+                    message_receipt_handle = message['message_receipt_handle']
                     delete_message_from_sqs_queue(message_receipt_handle, queue_name, auth_token)
                 elif submission['status'] == 'running':
                     continue

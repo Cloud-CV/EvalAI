@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^submission/(?P<submission_id>[0-9]+)$',
         views.get_submission_by_pk, name='get_submission_by_pk'),
     url(r'^challenge/(?P<challenge_pk>[0-9]+)/submission/(?P<submission_pk>[0-9]+)/queue/(?P<queue_name>[\w-]+)/$',
-        views.update_submission_status_by_queue_name, name='update_submission_status_by_queue_name'),   
+        views.update_submission_status_by_queue_name, name='update_submission_status_by_queue_name'),
     url(r'^submission/(?P<submission_pk>[0-9]+)/queue/(?P<queue_name>[\w-]+)/$',
         views.get_submission_by_pk_using_queue_name, name='get_submission_by_pk_using_queue_name'),
     url(r'^v1/challenge/(?P<challenge_pk>[0-9]+)/update_submission/queue/(?P<queue_name>[\w-]+)/$',

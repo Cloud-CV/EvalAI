@@ -613,7 +613,7 @@ def get_submission_by_pk(request, submission_id):
         status.HTTP_400_BAD_REQUEST: openapi.Response("{'error': 'Error message goes here'}"),
     }
 )
-@api_view(['PUT',])
+@api_view(['PUT'])
 @throttle_classes([UserRateThrottle, ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -751,7 +751,7 @@ def update_submission(request, challenge_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(['PUT',])
+@api_view(['PUT'])
 @throttle_classes([UserRateThrottle, ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -888,7 +888,7 @@ def update_submission_by_queue_name(request, challenge_pk, queue_name):
         submission.submission_result_file.save('submission_result.json', ContentFile(str(public_results)))
         submission.submission_metadata_file.save('submission_metadata_file.json', ContentFile(str(metadata)))
         submission.save()
-        serializer = SubmissionSerializer(submission, context={'request': request})     
+        serializer = SubmissionSerializer(submission, context={'request': request})
         response_data = serializer.data
         return Response(response_data, status=status.HTTP_200_OK)
     else:
@@ -907,7 +907,7 @@ def get_submission_message_by_queue_name(request, challenge_pk, queue_name):
     API endpoint to fetch the submission message from AWS SQS Queue
     """
     try:
-        challenge = Challenge.objects.get(queue=queue_name)
+        challenge = Challenge.objects.get(queue=queue_name) # noqa
     except Challenge.DoesNotExist:
         response_data = {
             'error': 'Challenge with queue name {} does not exists!'.format(queue_name)
