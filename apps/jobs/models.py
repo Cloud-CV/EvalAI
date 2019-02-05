@@ -62,7 +62,7 @@ class Submission(TimeStampedModel):
         ChallengePhase, related_name='submissions')
     created_by = models.ForeignKey(User)
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS, db_index=True)
-    is_public = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True)
     is_flagged = models.BooleanField(default=False)
     submission_number = models.PositiveIntegerField(default=0)
     download_count = models.IntegerField(default=0)
