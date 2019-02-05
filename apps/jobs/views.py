@@ -223,6 +223,10 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         response_data = {'error': 'Submission does not exist'}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
+    if 'baseline_submission' in request.data and not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {'error': 'Sorry, you are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         is_public = request.data['is_public']
         if is_public is True:
