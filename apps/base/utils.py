@@ -90,7 +90,7 @@ def send_sendgrid_email(email="", message=""):
         sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
         from_email = Email(settings.ADMIN_EMAIL)
         to_email = Email(email)
-        subject = "Challenge creation failure"
+        subject = "Challenge creation"
         content = Content("text/plain", message)
         mail = Mail(from_email, subject, to_email, content)
         sg.client.mail.send.post(request_body=mail.get())
