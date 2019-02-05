@@ -1,6 +1,9 @@
+import boto3
+import botocore
 import datetime
 import json
 import logging
+import os
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -8,6 +11,7 @@ from rest_framework.decorators import (api_view,
                                        permission_classes,
                                        throttle_classes,)
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
@@ -609,9 +613,9 @@ def get_submission_by_pk(request, submission_id):
         status.HTTP_400_BAD_REQUEST: openapi.Response("{'error': 'Error message goes here'}"),
     }
 )
+@api_view(['PUT',])
 @throttle_classes([UserRateThrottle, ])
-@api_view(['PUT', ])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail,))
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def update_submission(request, challenge_pk):
     """
@@ -631,15 +635,15 @@ def update_submission(request, challenge_pk):
                     "split": "split1-codename",
                     "show_to_participant": True,
                     "accuracies": {
-                    "metric1": 90
+                        "metric1": 90
                     }
                 },
                 {
                     "split": "split2-codename",
                     "show_to_participant": False,
                     "accuracies": {
-                    "metric1": 50,
-                    "metric2": 40
+                        "metric1": 50,
+                        "metric2": 40
                     }
                 }
             ]
@@ -745,3 +749,354 @@ def update_submission(request, challenge_pk):
     submission.save()
     response_data = {'success': 'Submission result has been successfully updated'}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['PUT',])
+@throttle_classes([UserRateThrottle, ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def update_submission_by_queue_name(request, challenge_pk, queue_name):
+    """
+    API endpoint to update submission related attributes
+
+    Query Parameters:
+
+     - ``challenge_phase``: challenge phase id, e.g. 123 (**required**)
+     - ``submission``: submission id, e.g. 123 (**required**)
+     - ``stdout``: Stdout after evaluation, e.g. "Evaluation completed in 2 minutes" (**required**)
+     - ``stderr``: Stderr after evaluation, e.g. "Failed due to incorrect file format" (**required**)
+     - ``submission_status``: Status of submission after evaluation
+        (can take one of the following values: `FINISHED`/`CANCELLED`/`FAILED`), e.g. FINISHED (**required**)
+     - ``result``: contains accuracies for each metric, (**required**) e.g.
+            [
+                {
+                    "split": "split1-codename",
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "metric1": 90
+                    }
+                },
+                {
+                    "split": "split2-codename",
+                    "show_to_participant": False,
+                    "accuracies": {
+                        "metric1": 50,
+                        "metric2": 40
+                    }
+                }
+            ]
+     - ``metadata``: Contains the metadata related to submission (only visible to challenge hosts) e.g:
+            {
+                "average-evaluation-time": "5 sec",
+                "foo": "bar"
+            }
+    """
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {'error': 'Sorry, you are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge_phase_pk = request.data.get('challenge_phase')
+    submission_pk = request.data.get('submission')
+    submission_status = request.data.get('submission_status', '').lower()
+    stdout_content = request.data.get('stdout', '')
+    stderr_content = request.data.get('stderr', '')
+    submission_result = request.data.get('result', '')
+    metadata = request.data.get('metadata', '')
+    submission = get_submission_model(submission_pk)
+
+    challenge_queue_name = submission.challenge_phase.challenge.queue
+
+    if challenge_queue_name == queue_name:
+        public_results = []
+        successful_submission = True if submission_status == Submission.FINISHED else False
+        if submission_status not in [Submission.FAILED, Submission.CANCELLED, Submission.FINISHED]:
+            response_data = {'error': 'Sorry, submission status is invalid'}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        if successful_submission:
+            try:
+                results = json.loads(submission_result)
+            except ValueError:
+                response_data = {'error': '`result` key contains invalid data. Please try again with correct format!'}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            leaderboard_data_list = []
+            for phase_result in results:
+                split = phase_result.get('split')
+                accuracies = phase_result.get('accuracies')
+                show_to_participant = phase_result.get('show_to_participant', False)
+                try:
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(
+                        challenge_phase__pk=challenge_phase_pk,
+                        dataset_split__codename=split)
+                except ChallengePhaseSplit.DoesNotExist:
+                    response_data = {'error': 'Challenge Phase Split does not exist with phase_id: {} and'
+                                     'split codename: {}'.format(challenge_phase_pk, split)}
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get('labels')
+                missing_metrics = []
+                malformed_metrics = []
+                for metric, value in accuracies.items():
+                    if metric not in leaderboard_metrics:
+                        missing_metrics.append(metric)
+
+                    if not (isinstance(value, float) or isinstance(value, int)):
+                        malformed_metrics.append((metric, type(value)))
+
+                if len(missing_metrics):
+                    response_data = {'error': 'Following metrics are missing in the'
+                                     'leaderboard data: {}'.format(missing_metrics)}
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+                if len(malformed_metrics):
+                    response_data = {'error': 'Values for following metrics are not of'
+                                     'float/int: {}'.format(malformed_metrics)}
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+                data = {'result': accuracies}
+                serializer = CreateLeaderboardDataSerializer(
+                    data=data,
+                    context={
+                        'challenge_phase_split': challenge_phase_split,
+                        'submission': submission,
+                        'request': request,
+                    }
+                )
+                if serializer.is_valid():
+                    leaderboard_data_list.append(serializer)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+                # Only after checking if the serializer is valid, append the public split results to results file
+                if show_to_participant:
+                    public_results.append(accuracies)
+
+            try:
+                with transaction.atomic():
+                    for serializer in leaderboard_data_list:
+                        serializer.save()
+            except IntegrityError:
+                logger.exception('Failed to update submission_id {} related metadata'.format(submission_pk))
+                response_data = {'error': 'Failed to update submission_id {} related metadata'.format(submission_pk)}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        submission.status = submission_status
+        submission.completed_at = timezone.now()
+        submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
+        submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
+        submission.submission_result_file.save('submission_result.json', ContentFile(str(public_results)))
+        submission.submission_metadata_file.save('submission_metadata_file.json', ContentFile(str(metadata)))
+        submission.save()
+        response_data = {'success': 'Submission result has been successfully updated'}
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {
+            'error': 'Sorry, you are not allowed to perform this action'
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_submission_message_by_queue_name(request, challenge_pk, queue_name):
+    """
+    API endpoint to fetch the submission message from AWS SQS Queue
+    """
+    try:
+        challenge = Challenge.objects.get(queue=queue_name)
+    except Challenge.DoesNotExist:
+        response_data = {
+            'error': 'Challenge with queue name {} does not exists!'.format(queue_name)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            'error': 'Sorry, you are not authorized to access this resource!'
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    if settings.DEBUG or settings.TEST:
+        queue_name = 'evalai_submission_queue'
+        sqs = boto3.resource('sqs',
+                             endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY', 'x'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID', 'x'),)
+    else:
+        sqs = boto3.resource('sqs',
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
+    # Check if the queue exists. If no, then create one
+    try:
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
+    except botocore.exceptions.ClientError as ex:
+        if ex.response['Error']['Code'] != 'AWS.SimpleQueueService.NonExistentQueue':
+            logger.exception('Cannot get queue: {}'.format(queue_name))
+        queue = sqs.create_queue(QueueName=queue_name)
+
+    try:
+        message = queue.receive_messages()
+        if len(message) != 0:
+            message_receipt_handle = message[0].receipt_handle
+            message_body = eval(message[0].body)
+            logger.info("A submission is received with pk {}".format(message_body.get('submission_pk')))
+        else:
+            logger.info("No new submission is received!")
+            message_receipt_handle = None
+            message_body = None
+
+        response_data = {
+            'message_body': message_body,
+            'message_receipt_handle': message_receipt_handle
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+    except botocore.exceptions.ClientError as ex:
+        response_data = ex
+        logger.exception("The following exception is raised {}".format(ex))
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def delete_submission_message_by_queue_name(request, queue_name, receipt_handle):
+    """
+    API endpoint to delete the submission message from the AWS SQS Queue
+    """
+    try:
+        challenge = Challenge.objects.get(queue=queue_name)
+    except Challenge.DoesNotExist:
+        response_data = {
+            'error': 'Challenge with queue name {} does not exists!'.format(queue_name)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            'error': 'Sorry, you are not authorized to access this resource!'
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    if settings.DEBUG or settings.TEST:
+        queue_name = 'evalai_submission_queue'
+        sqs = boto3.resource('sqs',
+                             endpoint_url=os.environ.get('AWS_SQS_ENDPOINT', 'http://sqs:9324'),
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY', 'x'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID', 'x'),)
+    else:
+        sqs = boto3.resource('sqs',
+                             region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
+                             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),)
+    # Check if the queue exists. If no, then create one
+    try:
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
+    except botocore.exceptions.ClientError as ex:
+        if ex.response['Error']['Code'] != 'AWS.SimpleQueueService.NonExistentQueue':
+            logger.exception('Cannot get queue: {}'.format(queue_name))
+
+    try:
+        message = queue.Message(receipt_handle)
+        message.delete()
+        response_data = {
+            'success': 'The message is successfully deleted from the queue!'
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+    except botocore.exceptions.ClientError as ex:
+        response_data = ex
+        logger.exception("The SQS message is not deleted due to {}".format(ex))
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def update_submission_status_by_queue_name(request, challenge_pk, submission_pk, queue_name):
+    """
+    API to update the submission status by the challenge hosts
+
+    Arguments:
+        challenge_pk  -- The challenge ID whose submision is to be updated
+        submission_pk  -- The submission ID which is to be updated
+        queue_name  -- The unique authentication token provided by challenge hosts
+
+    """
+
+    try:
+        submission = Submission.objects.get(pk=submission_pk)
+    except Submission.DoesNotExist:
+        response_data = {
+            'error': 'Submission {} does not exists!'.format(submission_pk)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            'error': 'Sorry, you are not authorized to access this resource!'
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_queue_name = submission.challenge_phase.challenge.queue
+
+    if (challenge_queue_name == queue_name):
+        serializer = SubmissionSerializer(submission,
+                                          data=request.data,
+                                          context={'request': request},
+                                          partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            response_data = {
+                'success': 'Submission result has been successfully updated'
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            response_data = serializer.errors
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        response_data = {
+            'error': 'Sorry, you are not authorized to update this submission!'
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_submission_by_pk_using_queue_name(request, submission_pk, queue_name):
+    """
+    API endpoint to fetch the details of a submission.
+    Only the challenge hosts are allowed.
+    """
+    try:
+        submission = Submission.objects.get(pk=submission_pk)
+    except Submission.DoesNotExist:
+        response_data = {'error': 'Submission {} does not exist'.format(submission_pk)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    challenge_pk = submission.challenge_phase.challenge.id
+
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            'error': 'Sorry, you are not authorized to access this submission.'
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_queue_name = submission.challenge_phase.challenge.queue
+
+    if (challenge_queue_name == queue_name):
+        serializer = SubmissionSerializer(
+            submission, context={'request': request})
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    response_data = {'error': 'Sorry, you are not authorized to access this submission.'}
+    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)

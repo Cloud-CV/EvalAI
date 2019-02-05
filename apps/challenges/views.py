@@ -1473,7 +1473,7 @@ def get_challenge_phases_by_challenge_pk_using_queue_name(request, challenge_pk,
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-    
+
     if not is_user_a_host_of_challenge(request.user, challenge.id):
         response_data = {
             'error': 'Sorry, you are not authorized to access these challenge phases.'
