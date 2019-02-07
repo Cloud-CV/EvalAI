@@ -25,7 +25,7 @@ Our central development branch is development. Coding is done on feature branche
         git fetch upstream
         git checkout master
         git merge upstream/master
-        git checkout -b gauravajain98
+        git checkout -b your-branch-name
 
 2. Commit and push code to your branch:
 
