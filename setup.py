@@ -40,7 +40,7 @@ setup(
         'click==6.7',
         'lxml==4.2.1',
         'python-dateutil==2.7.3',
-        'requests==2.18.4',
+        'requests==2.20.0',
         'responses==0.9.0',
         'validators==0.12.2',
     ],
