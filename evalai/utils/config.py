@@ -4,6 +4,8 @@ import os
 from os.path import expanduser
 
 
+LEN_OF_TOKEN = 40
+
 AUTH_TOKEN_FILE_NAME = 'token.json'
 
 HOST_URL_FILE_NAME = 'host_url'
