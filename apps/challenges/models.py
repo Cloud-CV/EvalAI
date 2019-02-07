@@ -56,6 +56,10 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Remote Evaluation", db_index=True)
     queue = models.CharField(
         max_length=200, default='', verbose_name="SQS queue name", db_index=True)
+    is_docker_based = models.BooleanField(
+        default=False, verbose_name="Is Docker Based", db_index=True)
+    slug = models.CharField(
+        max_length=200, db_index=True, default='')
 
     class Meta:
         app_label = 'challenges'

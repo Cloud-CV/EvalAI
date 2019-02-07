@@ -129,6 +129,8 @@ class GetChallengeTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": False,
                 "forum_url": self.challenge.forum_url,
+                "is_docker_based": self.challenge.is_docker_based,
+                "slug": self.challenge.slug
             }
         ]
 
@@ -221,6 +223,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
+            "is_docker_based": self.challenge.is_docker_based,
+            "slug": self.challenge.slug
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -274,6 +278,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
+            "is_docker_based": self.challenge.is_docker_based,
+            "slug": self.challenge.slug
         }
         response = self.client.put(self.url, {'title': new_title, 'description': new_description})
         self.assertEqual(response.data, expected)
@@ -349,6 +355,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
+            "is_docker_based": self.challenge.is_docker_based,
+            "slug": self.challenge.slug
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -382,6 +390,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
+            "is_docker_based": self.challenge.is_docker_based,
+            "slug": self.challenge.slug
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -785,6 +795,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
+                "is_docker_based": self.challenge3.is_docker_based,
+                "slug": self.challenge3.slug
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -821,6 +833,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
+                "is_docker_based": self.challenge2.is_docker_based,
+                "slug": self.challenge2.slug
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -857,6 +871,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
+                "is_docker_based": self.challenge4.is_docker_based,
+                "slug": self.challenge4.slug
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -893,6 +909,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
+                "is_docker_based": self.challenge4.is_docker_based,
+                "slug": self.challenge4.slug
             },
             {
                 "id": self.challenge3.pk,
@@ -919,6 +937,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
+                "is_docker_based": self.challenge3.is_docker_based,
+                "slug": self.challenge3.slug
             },
             {
                 "id": self.challenge2.pk,
@@ -945,6 +965,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
+                "is_docker_based": self.challenge2.is_docker_based,
+                "slug": self.challenge2.slug
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -1027,6 +1049,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
+                "is_docker_based": self.challenge3.is_docker_based,
+                "slug": self.challenge3.slug
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -1134,6 +1158,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": self.challenge3.approved_by_admin,
             "forum_url": self.challenge3.forum_url,
+            "is_docker_based": self.challenge3.is_docker_based,
+            "slug": self.challenge3.slug
         }
 
         response = self.client.get(self.url, {})
@@ -1182,6 +1208,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": self.challenge4.approved_by_admin,
             "forum_url": self.challenge4.forum_url,
+            "is_docker_based": self.challenge4.is_docker_based,
+            "slug": self.challenge4.slug
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1284,6 +1312,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": True,
             "forum_url": self.challenge2.forum_url,
+            "is_docker_based": self.challenge2.is_docker_based,
+            "slug": self.challenge2.slug
         }]
 
         response = self.client.get(self.url, {'host_team': self.challenge_host_team2.pk})
@@ -1318,6 +1348,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": True,
             "forum_url": self.challenge2.forum_url,
+            "is_docker_based": self.challenge2.is_docker_based,
+            "slug": self.challenge2.slug
         }]
 
         response = self.client.get(self.url, {'participant_team': self.participant_team2.pk})
@@ -1352,6 +1384,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": True,
             "forum_url": self.challenge2.forum_url,
+            "is_docker_based": self.challenge2.is_docker_based,
+            "slug": self.challenge2.slug
         }]
 
         response = self.client.get(self.url, {'mode': 'participant'})
@@ -1387,6 +1421,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge.forum_url,
+                "is_docker_based": self.challenge.is_docker_based,
+                "slug": self.challenge.slug
             },
             {
                 "id": self.challenge2.pk,
@@ -1413,6 +1449,9 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
+                "is_docker_based": self.challenge2.is_docker_based,
+                "slug": self.challenge2.slug
+
             }
         ]
 

@@ -39,6 +39,7 @@ class ParticipantTeam(TimeStampedModel):
     team_name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(User, null=True)
     team_url = models.CharField(max_length=1000, default="", blank=True)
+    docker_repository_uri = models.CharField(max_length=1000, default="", blank=True)
 
     def __str__(self):
         return '{}'.format(self.team_name)
