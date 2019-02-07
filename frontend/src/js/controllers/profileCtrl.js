@@ -20,6 +20,7 @@
         vm.inputType = 'password';
         vm.status = 'Show';
         vm.token = '';
+        vm.visibleAuthButton = true;
 
         utilities.hideLoader();
 
@@ -44,6 +45,8 @@
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
+                //If next call finished first and returned false
+                vm.visibleAuthButton = true && vm.visibleAuthButton;
                 var status = response.status;
                 var result = response.data;
                 if (status == 200) {
@@ -62,6 +65,7 @@
                 }
             },
             onError: function(response) {
+                vm.visibleAuthButton = false;
                 var details = response.data;
                 $rootScope.notify("error", details.error);
             }
@@ -74,10 +78,13 @@
         parameters.token = userKey;
         parameters.callback = {
             onSuccess: function(response) {
+                //If previous call returned false
+                vm.visibleAuthButton = true && vm.visibleAuthButton;
                 vm.jsonResponse = response.data;
                 vm.token = response.data['token'];
             },
             onError: function(response) {
+                vm.visibleAuthButton = false;
                 var details = response.data;
                 $rootScope.notify("error", details.error);
             }
