@@ -28,6 +28,14 @@ def get_file_content(file_path, mode):
 
 
 def convert_to_aws_ecr_compatible_format(string):
+    '''Make string compatible with AWS ECR repository naming
+    
+    Arguments:
+        string {string} -- Desired ECR repository name
+    
+    Returns:
+        string -- Valid ECR repository name
+    '''
     return string.replace(" ", "-").lower()
 
 
@@ -52,7 +60,6 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
                 },
                 False
             )
-
     '''
     AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID')
     repository, created = None, False
