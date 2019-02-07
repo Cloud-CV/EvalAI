@@ -18,6 +18,8 @@ from rest_framework.decorators import (api_view,
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
+from allauth.account.models import EmailAddress
+
 logger = logging.getLogger(__name__)
 
 
@@ -52,13 +54,13 @@ def notify_users_about_challenge(request):
             return render(request, template_name)
 
         elif request.method == 'POST':
-            users = User.objects.exclude(email__exact='').values_list('email', flat=True)
+            emails = EmailAddress.objects.exclude(user__email__exact='').filter(verified=True).values_list('user__email', flat=True)
             subject = request.POST.get('subject')
             body_html = request.POST.get('body')
 
             sender = settings.CLOUDCV_TEAM_EMAIL
 
-            email = EmailMessage(subject, body_html, sender, [settings.CLOUDCV_TEAM_EMAIL], bcc=users)
+            email = EmailMessage(subject, body_html, sender, [settings.CLOUDCV_TEAM_EMAIL], bcc=emails)
             email.content_subtype = 'html'
 
             try:
