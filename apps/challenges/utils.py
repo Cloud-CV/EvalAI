@@ -36,7 +36,6 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
     
     Arguments:
         name {string} -- name of ECR repository
-        tag {dict} -- Dictionary to store some tags for repository identification 
     
     Keyword Arguments:
         region_name {str} -- AWS region name (default: {'us-east-1'})
