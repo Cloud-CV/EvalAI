@@ -29,10 +29,10 @@ def get_file_content(file_path, mode):
 
 def convert_to_aws_ecr_compatible_format(string):
     '''Make string compatible with AWS ECR repository naming
-    
+
     Arguments:
         string {string} -- Desired ECR repository name
-    
+
     Returns:
         string -- Valid ECR repository name
     '''
@@ -41,13 +41,13 @@ def convert_to_aws_ecr_compatible_format(string):
 
 def get_or_create_ecr_repository(name, region_name='us-east-1'):
     '''Get or create AWS ECR Repository
-    
+
     Arguments:
         name {string} -- name of ECR repository
-    
+
     Keyword Arguments:
         region_name {str} -- AWS region name (default: {'us-east-1'})
-    
+
     Returns:
         tuple -- Contains repository dict and boolean field to represent whether ECR repository was created
         Eg: (
@@ -82,14 +82,14 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
 
 def create_federated_user(name, repository):
     '''Create AWS federated user
-    
+
     Arguments:
         name {string} -- Name of participant team for which federated user is to be created
         repository {string} -- Name of the AWS ECR repository to which user should be granted permission
-    
+
     Returns:
         dict -- Dict containing user related credentials such as access_key_id, access_secret etc.
-        Eg: 
+        Eg:
         {
             'Credentials': {
                 'AccessKeyId': 'ABCDEFGHIJKLMNOPQRTUVWXYZ',
@@ -117,21 +117,21 @@ def create_federated_user(name, repository):
     '''
     AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID')
     policy = {
-      "Version":"2019-02-07",
-      "Statement":[
-          {
-            "Effect":"Allow",
-            "Action": "ecr:*",
-            "Resource": "arn:aws:ecr:us-east-1:{}:repository/{}".format(AWS_ACCOUNT_ID, repository),
-           },
+        "Version": "2019-02-07",
+        "Statement": [
             {
-              "Effect": "Allow",
-              "Action": [
-                "ecr:GetAuthorizationToken"
-              ],
-              "Resource": "*"
+                "Effect": "Allow",
+                "Action": "ecr:*",
+                "Resource": "arn:aws:ecr:us-east-1:{}:repository/{}".format(AWS_ACCOUNT_ID, repository),
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ecr:GetAuthorizationToken"
+                ],
+                "Resource": "*"
             }
-      ]
+        ]
     }
     client = boto3.client('sts')
     response = client.get_federation_token(
