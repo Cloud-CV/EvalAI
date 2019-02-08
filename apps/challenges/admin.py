@@ -16,9 +16,10 @@ from .models import (Challenge,
 class ChallengeAdmin(ImportExportTimeStampedAdmin):
     readonly_fields = ('created_at',)
     list_display = ('id', 'title', 'start_date', 'end_date', 'creator', 'published',
-                    'enable_forum', 'anonymous_leaderboard', 'featured', 'created_at',)
+                    'enable_forum', 'anonymous_leaderboard', 'featured', 'created_at',
+                    'is_docker_based', 'slug',)
     list_filter = ('published', 'enable_forum', 'anonymous_leaderboard', 'featured', 'start_date', 'end_date',)
-    search_fields = ('title', 'creator', 'creator__team_name',)
+    search_fields = ('title', 'creator', 'creator__team_name', 'slug',)
 
 
 @admin.register(ChallengeConfiguration)
