@@ -24,7 +24,7 @@ def host(set_host):
                     fw.write(set_host)
                 except (OSError, IOError) as e:
                     echo(e)
-                echo(style("{} is set as the host url!".format(set_host), bold=True))
+                echo(style("{} is set as the host url.".format(set_host), bold=True))
         else:
             echo(style("Sorry, please enter a valid url.\n"
                        "Example: https://evalapi.cloudcv.org", bold=True))

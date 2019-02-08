@@ -68,7 +68,7 @@ def display_teams(is_host):
     if len(teams) != 0:
         pretty_print_team_data(teams, is_host)
     else:
-        echo("Sorry, no teams found!")
+        echo("Sorry, no teams found.")
 
 
 def create_team(team_name, team_url, is_host):
@@ -158,5 +158,5 @@ def participate_in_a_challenge(challenge_id, participant_team_id):
         sys.exit(1)
 
     if response.status_code == 201:
-        echo(style("Your team id {} is now participating in this challenge!".format(participant_team_id),
+        echo(style("Your team id {} is now participating in this challenge.".format(participant_team_id),
                    fg="green", bold=True))

@@ -44,7 +44,7 @@ def validate_date_format(date):
             return datetime.strptime(date, date_format)
         except ValueError:
             pass
-    raise ValueError('Invalid date format. Please check again!')
+    raise ValueError('Invalid date format. Please check again.')
 
 
 def convert_UTC_date_to_local(date):

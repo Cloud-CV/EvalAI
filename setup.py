@@ -12,7 +12,7 @@ with io.open('README.md', encoding='utf-8') as f:
 
 setup(
     name=PROJECT,
-    version='1.0.17',
+    version='1.0.18',
 
     description='Use EvalAI through the CLI!',
     long_description=long_description,
@@ -35,8 +35,8 @@ setup(
 
     provides=[],
     install_requires=[
-        'beautifulsoup4==4.6.0',
-        'beautifultable==0.5.0',
+        'beautifulsoup4==4.7.1',
+        'beautifultable==0.7.0',
         'click==6.7',
         'lxml==4.2.1',
         'python-dateutil==2.7.3',

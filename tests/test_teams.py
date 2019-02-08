@@ -148,7 +148,7 @@ class TestTeams:
 
     @responses.activate
     def test_participate_in_a_challenge(self):
-        output = "Your team id {} is now participating in this challenge!\n".format("3")
+        output = "Your team id {} is now participating in this challenge.\n".format("3")
         runner = CliRunner()
         result = runner.invoke(challenge, ['2', 'participate', '3'])
         response = result.output
@@ -183,7 +183,7 @@ class TestDisplayTeamsListWithNoTeamsData:
 
     @responses.activate
     def test_teams_list_with_no_teams_data(self):
-        expected = "Sorry, no teams found!\n"
+        expected = "Sorry, no teams found.\n"
         runner = CliRunner()
         result = runner.invoke(teams, ["--participant"])
         response = result.output

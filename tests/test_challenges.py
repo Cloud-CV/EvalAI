@@ -128,7 +128,7 @@ class TestOngoingChallengesConditions(BaseTestClass):
                       json=challenge_data, status=200)
 
         runner = CliRunner()
-        expected = "Sorry, no challenges found!"
+        expected = "Sorry, no challenges found."
         result = runner.invoke(challenges, ['ongoing'])
         assert result.output.strip() == expected
 
@@ -145,7 +145,7 @@ class TestOngoingChallengesConditions(BaseTestClass):
                       json=challenge_data, status=200)
 
         runner = CliRunner()
-        expected = "Sorry, no challenges found!"
+        expected = "Sorry, no challenges found."
         result = runner.invoke(challenges, ['ongoing'])
         assert result.output.strip() == expected
 
@@ -162,7 +162,7 @@ class TestOngoingChallengesConditions(BaseTestClass):
                       json=challenge_data, status=200)
 
         runner = CliRunner()
-        expected = "Sorry, no challenges found!"
+        expected = "Sorry, no challenges found."
         result = runner.invoke(challenges, ['ongoing'])
         assert result.output.strip() == expected
 
@@ -200,7 +200,7 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
         responses.add(responses.GET, url.format(API_HOST_URL, URLS.leaderboard.value).format("1"),
                       json=empty_leaderboard, status=200)
 
-        self.output = "Sorry, no challenges found!\n"
+        self.output = "Sorry, no challenges found.\n"
 
     @responses.activate
     def test_display_all_challenge_lists_with_no_challenge_data(self):
@@ -268,7 +268,7 @@ class TestParticipantChallengesConditions(BaseTestClass):
                       json=challenge_data, status=200)
 
         runner = CliRunner()
-        expected = "Sorry, no challenges found!"
+        expected = "Sorry, no challenges found."
         result = runner.invoke(challenges, ['--participant'])
         assert result.output.strip() == expected
 
@@ -289,7 +289,7 @@ class TestParticipantChallengesConditions(BaseTestClass):
                       json=challenge_data, status=200)
 
         runner = CliRunner()
-        expected = "Sorry, no challenges found!"
+        expected = "Sorry, no challenges found."
         result = runner.invoke(challenges, ['--participant'])
         assert result.output.strip() == expected
 
@@ -310,7 +310,7 @@ class TestParticipantChallengesConditions(BaseTestClass):
                       json=challenge_data, status=200)
 
         runner = CliRunner()
-        expected = "Sorry, no challenges found!"
+        expected = "Sorry, no challenges found."
         result = runner.invoke(challenges, ['--participant'])
         assert result.output.strip() == expected
 

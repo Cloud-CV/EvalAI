@@ -124,7 +124,7 @@ class TestHostConfig(BaseTestClass):
         assert result.exit_code == 0
 
     def test_set_host_url(self):
-        expected = "{} is set as the host url!\n".format("https://evalapi.cloudcv.org")
+        expected = "{} is set as the host url.\n".format("https://evalapi.cloudcv.org")
         runner = CliRunner()
         result = runner.invoke(host, ['-sh', 'https://evalapi.cloudcv.org'])
         assert expected == result.output
