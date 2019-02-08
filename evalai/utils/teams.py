@@ -49,7 +49,7 @@ def display_teams(is_host):
         url = url.format(get_host_url(), URLS.participant_team_list.value)
 
     try:
-        response = requests.get(url, headers=headers, verify=False)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
@@ -91,12 +91,7 @@ def create_team(team_name, team_url, is_host):
         data["team_url"] = team_url
     data = json.dumps(data)
     try:
-        response = requests.post(
-                                url,
-                                headers=headers,
-                                data=data,
-                                verify=False,
-                                )
+        response = requests.post(url, headers=headers, data=data)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
@@ -135,11 +130,7 @@ def participate_in_a_challenge(challenge_id, participant_team_id):
     headers = get_request_header()
     headers['Content-Type'] = 'application/json'
     try:
-        response = requests.post(
-                                url,
-                                headers=headers,
-                                verify=False
-                                )
+        response = requests.post(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if (response.status_code in EVALAI_ERROR_CODES):
