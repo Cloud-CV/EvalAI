@@ -4,16 +4,17 @@ from click import style
 
 from evalai.utils.common import Date
 from evalai.utils.challenges import (
-                                    display_all_challenge_list,
-                                    display_future_challenge_list,
-                                    display_ongoing_challenge_list,
-                                    display_past_challenge_list,
-                                    display_participated_or_hosted_challenges,
-                                    display_challenge_details,
-                                    display_challenge_phase_list,
-                                    display_challenge_phase_detail,
-                                    display_challenge_phase_split_list,
-                                    display_leaderboard,)
+    display_all_challenge_list,
+    display_future_challenge_list,
+    display_ongoing_challenge_list,
+    display_past_challenge_list,
+    display_participated_or_hosted_challenges,
+    display_challenge_details,
+    display_challenge_phase_list,
+    display_challenge_phase_detail,
+    display_challenge_phase_split_list,
+    display_leaderboard,
+)
 from evalai.utils.submissions import display_my_submission_details
 from evalai.utils.teams import participate_in_a_challenge
 from evalai.utils.submissions import make_submission
@@ -23,6 +24,7 @@ class Challenge(object):
     """
     Stores user input ID's.
     """
+
     def __init__(self, challenge=None, phase=None, subcommand=None):
         self.challenge_id = challenge
         self.phase_id = phase
@@ -33,6 +35,7 @@ class PhaseGroup(click.Group):
     """
     Fetch the submcommand data in the phase group.
     """
+
     def invoke(self, ctx):
         if "--json" in tuple(ctx.protected_args):
             ctx.protected_args = []
@@ -44,10 +47,10 @@ class PhaseGroup(click.Group):
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-@click.option('--participant', is_flag=True,
-              help="List the challenges that you've participated")
-@click.option('--host', is_flag=True,
-              help="List the challenges that you've hosted")
+@click.option(
+    "--participant", is_flag=True, help="List the challenges that you've participated"
+)
+@click.option("--host", is_flag=True, help="List the challenges that you've hosted")
 def challenges(ctx, participant, host):
     """
     Lists challenges
@@ -63,7 +66,7 @@ def challenges(ctx, participant, host):
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-@click.argument('CHALLENGE', type=int)
+@click.argument("CHALLENGE", type=int)
 def challenge(ctx, challenge):
     """
     Display challenge specific details.
@@ -120,9 +123,8 @@ def phases(ctx):
 
 @click.group(invoke_without_command=True, cls=PhaseGroup)
 @click.pass_obj
-@click.option('--json', is_flag=True,
-              help="Get phase details in JSON format.")
-@click.argument('PHASE', type=int)
+@click.option("--json", is_flag=True, help="Get phase details in JSON format.")
+@click.argument("PHASE", type=int)
 def phase(ctx, json, phase):
     """
     List phase details of a phase
@@ -137,10 +139,18 @@ def phase(ctx, json, phase):
 
 @phase.command()
 @click.pass_obj
-@click.option('--start-date', '-s', type=Date(format='%m/%d/%y'),
-              help="Start date for submissions in `mm/dd/yyyy` format.")
-@click.option('--end-date', '-e', type=Date(format='%m/%d/%y'),
-              help="End date for submissions in `mm/dd/yyyy` format.")
+@click.option(
+    "--start-date",
+    "-s",
+    type=Date(format="%m/%d/%y"),
+    help="Start date for submissions in `mm/dd/yyyy` format.",
+)
+@click.option(
+    "--end-date",
+    "-e",
+    type=Date(format="%m/%d/%y"),
+    help="End date for submissions in `mm/dd/yyyy` format.",
+)
 def submissions(ctx, start_date, end_date):
     """
     Display submissions to a particular challenge.
@@ -165,7 +175,7 @@ def splits(ctx):
 
 @challenge.command()
 @click.pass_obj
-@click.argument('CPS', type=int)
+@click.argument("CPS", type=int)
 def leaderboard(ctx, cps):
     """
     Displays the Leaderboard to a Challenge Phase Split.
@@ -178,7 +188,7 @@ def leaderboard(ctx, cps):
 
 @challenge.command()
 @click.pass_obj
-@click.argument('TEAM', type=int)
+@click.argument("TEAM", type=int)
 def participate(ctx, team):
     """
     Participate in a challenge.
@@ -191,8 +201,7 @@ def participate(ctx, team):
 
 @phase.command()
 @click.pass_obj
-@click.option('--file', type=click.File('rb'),
-              help="File path to the submission file")
+@click.option("--file", type=click.File("rb"), help="File path to the submission file")
 def submit(ctx, file):
     """
     Make submission to a challenge.
@@ -201,13 +210,19 @@ def submit(ctx, file):
     Invoked by running `evalai challenge CHALLENGE phase PHASE submit FILE`
     """
     submission_metadata = {}
-    if click.confirm('Do you want to include the Submission Details?'):
-        submission_metadata["method_name"] = click.prompt(style('Method Name', fg="yellow"), type=str, default="")
-        submission_metadata["method_description"] = click.prompt(style('Method Description', fg="yellow"),
-                                                                 type=str, default="")
-        submission_metadata["project_url"] = click.prompt(style('Project URL', fg="yellow"), type=str, default="")
-        submission_metadata["publication_url"] = click.prompt(style('Publication URL', fg="yellow"),
-                                                              type=str, default="")
+    if click.confirm("Do you want to include the Submission Details?"):
+        submission_metadata["method_name"] = click.prompt(
+            style("Method Name", fg="yellow"), type=str, default=""
+        )
+        submission_metadata["method_description"] = click.prompt(
+            style("Method Description", fg="yellow"), type=str, default=""
+        )
+        submission_metadata["project_url"] = click.prompt(
+            style("Project URL", fg="yellow"), type=str, default=""
+        )
+        submission_metadata["publication_url"] = click.prompt(
+            style("Publication URL", fg="yellow"), type=str, default=""
+        )
     make_submission(ctx.challenge_id, ctx.phase_id, file, submission_metadata)
 
 

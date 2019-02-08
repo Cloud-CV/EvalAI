@@ -8,11 +8,12 @@ from click import echo, style
 from datetime import datetime
 
 from evalai.utils.auth import get_request_header, get_host_url
-from evalai.utils.common import (clean_data,
-                                 validate_token,
-                                 convert_UTC_date_to_local,
-                                 validate_date_format
-                                 )
+from evalai.utils.common import (
+    clean_data,
+    validate_token,
+    convert_UTC_date_to_local,
+    validate_date_format,
+)
 from evalai.utils.config import EVALAI_ERROR_CODES
 from evalai.utils.urls import URLS
 
@@ -26,7 +27,14 @@ def pretty_print_challenge_data(challenges):
     """
     table = BeautifulTable(max_width=200)
     attributes = ["id", "title", "short_description"]
-    columns_attributes = ["ID", "Title", "Short Description", "Creator", "Start Date", "End Date"]
+    columns_attributes = [
+        "ID",
+        "Title",
+        "Short Description",
+        "Creator",
+        "Start Date",
+        "End Date",
+    ]
     table.column_headers = columns_attributes
     for challenge in reversed(challenges):
         values = list(map(lambda item: challenge[item], attributes))
@@ -47,13 +55,19 @@ def display_challenges(url):
         response = requests.get(url, headers=header)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code == 401):
+        if response.status_code == 401:
             validate_token(response.json())
         echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
 
     response = response.json()
@@ -92,24 +106,34 @@ def display_ongoing_challenge_list():
         response = requests.get(url, headers=header)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code == 401):
+        if response.status_code == 401:
             validate_token(response.json())
         echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
 
     response = response.json()
     challenges = response["results"]
 
     # Filter out past/unapproved/unpublished challenges.
-    challenges = list(filter(lambda challenge:
-                             validate_date_format(challenge['end_date']) > datetime.now() and
-                             challenge["approved_by_admin"] and
-                             challenge["published"],
-                             challenges))
+    challenges = list(
+        filter(
+            lambda challenge: validate_date_format(challenge["end_date"])
+            > datetime.now()
+            and challenge["approved_by_admin"]
+            and challenge["published"],
+            challenges,
+        )
+    )
 
     if len(challenges) != 0:
         pretty_print_challenge_data(challenges)
@@ -135,18 +159,24 @@ def get_participant_or_host_teams(url):
         response = requests.get(url, headers=header)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code == 401):
+        if response.status_code == 401:
             validate_token(response.json())
         echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
 
     response = response.json()
 
-    return response['results']
+    return response["results"]
 
 
 def get_participant_or_host_team_challenges(url, teams):
@@ -157,19 +187,25 @@ def get_participant_or_host_team_challenges(url, teams):
     for team in teams:
         header = get_request_header()
         try:
-            response = requests.get(url.format(team['id']), headers=header)
+            response = requests.get(url.format(team["id"]), headers=header)
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            if (response.status_code == 401):
+            if response.status_code == 401:
                 validate_token(response.json())
             echo(err)
             sys.exit(1)
         except requests.exceptions.RequestException as err:
-            echo(style("\nCould not establish a connection to EvalAI."
-                       " Please check the Host URL.\n", bold=True, fg="red"))
+            echo(
+                style(
+                    "\nCould not establish a connection to EvalAI."
+                    " Please check the Host URL.\n",
+                    bold=True,
+                    fg="red",
+                )
+            )
             sys.exit(1)
         response = response.json()
-        challenges += response['results']
+        challenges += response["results"]
     return challenges
 
 
@@ -181,10 +217,8 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
     challenges = []
 
     if is_host:
-        team_url = "{}{}".format(get_host_url(),
-                                 URLS.host_teams.value)
-        challenge_url = "{}{}".format(get_host_url(),
-                                      URLS.host_challenges.value)
+        team_url = "{}{}".format(get_host_url(), URLS.host_teams.value)
+        challenge_url = "{}{}".format(get_host_url(), URLS.host_challenges.value)
 
         teams = get_participant_or_host_teams(team_url)
         challenges = get_participant_or_host_team_challenges(challenge_url, teams)
@@ -196,10 +230,8 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
             echo("Sorry, no challenges found.")
 
     if is_participant:
-        team_url = "{}{}".format(get_host_url(),
-                                 URLS.participant_teams.value)
-        challenge_url = "{}{}".format(get_host_url(),
-                                      URLS.participant_challenges.value)
+        team_url = "{}{}".format(get_host_url(), URLS.participant_teams.value)
+        challenge_url = "{}{}".format(get_host_url(), URLS.participant_challenges.value)
 
         teams = get_participant_or_host_teams(team_url)
         challenges = get_participant_or_host_team_challenges(challenge_url, teams)
@@ -207,11 +239,15 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
         if len(challenges) != 0:
 
             # Filter out past/unapproved/unpublished challenges.
-            challenges = list(filter(lambda challenge:
-                                     validate_date_format(challenge['end_date']) > datetime.now() and
-                                     challenge["approved_by_admin"] and
-                                     challenge["published"],
-                                     challenges))
+            challenges = list(
+                filter(
+                    lambda challenge: validate_date_format(challenge["end_date"])
+                    > datetime.now()
+                    and challenge["approved_by_admin"]
+                    and challenge["published"],
+                    challenges,
+                )
+            )
             if challenges:
                 echo(style("\nParticipated Challenges\n", bold=True))
                 pretty_print_challenge_data(challenges)
@@ -223,9 +259,20 @@ def display_participated_or_hosted_challenges(is_host=False, is_participant=Fals
 
 def pretty_print_challenge_details(challenge):
     table = BeautifulTable(max_width=200)
-    attributes = ["description", "submission_guidelines", "evaluation_details", "terms_and_conditions"]
-    table.column_headers = ["Start Date", "End Date", "Description", "Submission Guidelines",
-                            "Evaluation Details", "Terms and Conditions"]
+    attributes = [
+        "description",
+        "submission_guidelines",
+        "evaluation_details",
+        "terms_and_conditions",
+    ]
+    table.column_headers = [
+        "Start Date",
+        "End Date",
+        "Description",
+        "Submission Guidelines",
+        "Evaluation Details",
+        "Terms and Conditions",
+    ]
     values = []
     start_date = convert_UTC_date_to_local(challenge["start_date"]).split(" ")[0]
     end_date = convert_UTC_date_to_local(challenge["end_date"]).split(" ")[0]
@@ -248,16 +295,32 @@ def display_challenge_details(challenge):
         response = requests.get(url, headers=header)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code in EVALAI_ERROR_CODES):
+        if response.status_code in EVALAI_ERROR_CODES:
             validate_token(response.json())
-            echo(style("\nError: {}".format(response.json()["error"]), fg="red", bold=True))
-            echo(style("\nUse `evalai challenges` to fetch the active challenges.\n", fg="red", bold=True))
+            echo(
+                style(
+                    "\nError: {}".format(response.json()["error"]), fg="red", bold=True
+                )
+            )
+            echo(
+                style(
+                    "\nUse `evalai challenges` to fetch the active challenges.\n",
+                    fg="red",
+                    bold=True,
+                )
+            )
         else:
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
 
     response = response.json()
@@ -292,17 +355,39 @@ def display_challenge_phase_list(challenge_id):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code in EVALAI_ERROR_CODES):
+        if response.status_code in EVALAI_ERROR_CODES:
             validate_token(response.json())
-            echo(style("\nError: {}".format(response.json()["error"]), fg="red", bold=True))
-            echo(style("\nUse `evalai challenges` to fetch the active challenges.", fg="red", bold=True))
-            echo(style("\nUse `evalai challenge CHALLENGE phases` to fetch the active phases.\n", fg="red", bold=True))
+            echo(
+                style(
+                    "\nError: {}".format(response.json()["error"]), fg="red", bold=True
+                )
+            )
+            echo(
+                style(
+                    "\nUse `evalai challenges` to fetch the active challenges.",
+                    fg="red",
+                    bold=True,
+                )
+            )
+            echo(
+                style(
+                    "\nUse `evalai challenge CHALLENGE phases` to fetch the active phases.\n",
+                    fg="red",
+                    bold=True,
+                )
+            )
         else:
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
 
     response = response.json()
@@ -315,7 +400,9 @@ def pretty_print_challenge_phase_data(phase):
     Function to print the details of a challenge phase.
     """
     phase_title = "\n{}".format(style(phase["name"], bold=True, fg="green"))
-    challenge_id = "Challenge ID: {}".format(style(str(phase["challenge"]), bold=True, fg="blue"))
+    challenge_id = "Challenge ID: {}".format(
+        style(str(phase["challenge"]), bold=True, fg="blue")
+    )
     phase_id = "Phase ID: {}\n\n".format(style(str(phase["id"]), bold=True, fg="blue"))
 
     title = "{} {} {}".format(phase_title, challenge_id, phase_id)
@@ -323,28 +410,43 @@ def pretty_print_challenge_phase_data(phase):
     cleaned_desc = BeautifulSoup(phase["description"], "lxml").text
     description = "{}\n".format(cleaned_desc)
 
-    start_date = "Start Date : {}".format(style(phase["start_date"].split("T")[0], fg="green"))
+    start_date = "Start Date : {}".format(
+        style(phase["start_date"].split("T")[0], fg="green")
+    )
     start_date = "\n{}\n".format(style(start_date, bold=True))
 
     end_date = "End Date : {}".format(style(phase["end_date"].split("T")[0], fg="red"))
     end_date = "\n{}\n".format(style(end_date, bold=True))
-    max_submissions_per_day = style("\nMaximum Submissions per day : {}\n".format(
-                                    str(phase["max_submissions_per_day"])), bold=True)
+    max_submissions_per_day = style(
+        "\nMaximum Submissions per day : {}\n".format(
+            str(phase["max_submissions_per_day"])
+        ),
+        bold=True,
+    )
 
-    max_submissions = style("\nMaximum Submissions : {}\n".format(str(phase["max_submissions"])),
-                            bold=True)
+    max_submissions = style(
+        "\nMaximum Submissions : {}\n".format(str(phase["max_submissions"])), bold=True
+    )
 
     codename = style("\nCode Name : {}\n".format(phase["codename"]), bold=True)
-    leaderboard_public = style("\nLeaderboard Public : {}\n".format(phase["leaderboard_public"]), bold=True)
+    leaderboard_public = style(
+        "\nLeaderboard Public : {}\n".format(phase["leaderboard_public"]), bold=True
+    )
     is_active = style("\nActive : {}\n".format(phase["is_active"]), bold=True)
     is_public = style("\nPublic : {}\n".format(phase["is_public"]), bold=True)
 
-    challenge_phase = "{}{}{}{}{}{}{}{}{}{}".format(title, description, start_date,
-                                                    end_date,
-                                                    max_submissions_per_day,
-                                                    max_submissions,
-                                                    leaderboard_public,
-                                                    codename, is_active, is_public)
+    challenge_phase = "{}{}{}{}{}{}{}{}{}{}".format(
+        title,
+        description,
+        start_date,
+        end_date,
+        max_submissions_per_day,
+        max_submissions,
+        leaderboard_public,
+        codename,
+        is_active,
+        is_public,
+    )
     echo(challenge_phase)
 
 
@@ -361,19 +463,30 @@ def display_challenge_phase_detail(challenge_id, phase_id, is_json):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code in EVALAI_ERROR_CODES):
+        if response.status_code in EVALAI_ERROR_CODES:
             validate_token(response.json())
-            echo(style("\nError: {}\n"
-                       "\nUse `evalai challenges` to fetch the active challenges.\n"
-                       "\nUse `evalai challenge CHALLENGE phases` to fetch the "
-                       "active phases.\n".format(response.json()["error"]),
-                       fg="red", bold=True))
+            echo(
+                style(
+                    "\nError: {}\n"
+                    "\nUse `evalai challenges` to fetch the active challenges.\n"
+                    "\nUse `evalai challenge CHALLENGE phases` to fetch the "
+                    "active phases.\n".format(response.json()["error"]),
+                    fg="red",
+                    bold=True,
+                )
+            )
         else:
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
 
     response = response.json()
@@ -396,7 +509,7 @@ def pretty_print_challenge_phase_split_data(phase_splits):
     table.column_headers = columns_attributes
 
     for split in phase_splits:
-        if split['visibility'] == 3:
+        if split["visibility"] == 3:
             values = list(map(lambda item: split[item], attributes))
             table.append_row(values)
     echo(table)
@@ -414,19 +527,30 @@ def display_challenge_phase_split_list(challenge_id):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code in EVALAI_ERROR_CODES):
+        if response.status_code in EVALAI_ERROR_CODES:
             validate_token(response.json())
-            echo(style("\nError: {}\n"
-                       "\nUse `evalai challenges` to fetch the active challenges.\n"
-                       "\nUse `evalai challenge CHALLENGE phases` to fetch the "
-                       "active phases.\n".format(response.json()["error"]),
-                       fg="red", bold=True))
+            echo(
+                style(
+                    "\nError: {}\n"
+                    "\nUse `evalai challenges` to fetch the active challenges.\n"
+                    "\nUse `evalai challenge CHALLENGE phases` to fetch the "
+                    "active phases.\n".format(response.json()["error"]),
+                    fg="red",
+                    bold=True,
+                )
+            )
         else:
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
 
     phase_splits = response.json()
@@ -446,10 +570,10 @@ def pretty_print_leaderboard_data(attributes, results):
     leaderboard_table.column_headers = attributes
 
     for rank, result in enumerate(results, start=1):
-        name = result['submission__participant_team__team_name']
-        scores = result['result']
+        name = result["submission__participant_team__team_name"]
+        scores = result["result"]
 
-        last_submitted = convert_UTC_date_to_local(result['submission__submitted_at'])
+        last_submitted = convert_UTC_date_to_local(result["submission__submitted_at"])
 
         leaderboard_row = [rank, name] + scores + [last_submitted]
         leaderboard_table.append_row(leaderboard_row)
@@ -467,15 +591,23 @@ def display_leaderboard(challenge_id, phase_split_id):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code in EVALAI_ERROR_CODES):
+        if response.status_code in EVALAI_ERROR_CODES:
             validate_token(response.json())
-            echo(style("Error: {}".format(response.json()["error"]), fg="red", bold=True))
+            echo(
+                style("Error: {}".format(response.json()["error"]), fg="red", bold=True)
+            )
         else:
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
 
     response = response.json()

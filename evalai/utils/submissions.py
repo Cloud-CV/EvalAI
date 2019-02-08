@@ -8,9 +8,11 @@ from datetime import datetime
 from evalai.utils.auth import get_request_header, get_host_url
 from evalai.utils.config import EVALAI_ERROR_CODES
 from evalai.utils.urls import URLS
-from evalai.utils.common import (validate_token,
-                                 validate_date_format,
-                                 convert_UTC_date_to_local)
+from evalai.utils.common import (
+    validate_token,
+    validate_date_format,
+    convert_UTC_date_to_local,
+)
 
 
 requests.packages.urllib3.disable_warnings()
@@ -24,37 +26,59 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
     url = url.format(challenge_id, phase_id)
 
     headers = get_request_header()
-    input_file = {'input_file': file}
-    data = {
-            'status': 'submitting',
-           }
+    input_file = {"input_file": file}
+    data = {"status": "submitting"}
     data = dict(data, **submission_metadata)
 
     try:
         response = requests.post(url, headers=headers, files=input_file, data=data)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code in EVALAI_ERROR_CODES):
+        if response.status_code in EVALAI_ERROR_CODES:
             validate_token(response.json())
-            echo(style("\nError: {}\n"
-                       "\nUse `evalai challenges` to fetch the active challenges.\n"
-                       "\nUse `evalai challenge CHALLENGE phases` to fetch the "
-                       "active phases.\n".format(response.json()["error"]),
-                       fg="red", bold=True))
+            echo(
+                style(
+                    "\nError: {}\n"
+                    "\nUse `evalai challenges` to fetch the active challenges.\n"
+                    "\nUse `evalai challenge CHALLENGE phases` to fetch the "
+                    "active phases.\n".format(response.json()["error"]),
+                    fg="red",
+                    bold=True,
+                )
+            )
         else:
             echo(err)
         if "input_file" in response.json():
             echo(style(response.json()["input_file"][0], fg="red", bold=True))
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
     response = response.json()
-    echo(style("\nYour file {} with the ID {} is successfully submitted.\n".format(file.name, response["id"]),
-               fg="green", bold=True))
-    echo(style("You can use `evalai submission {}` to view this submission's status.\n".format(response["id"]),
-               bold=True))
+    echo(
+        style(
+            "\nYour file {} with the ID {} is successfully submitted.\n".format(
+                file.name, response["id"]
+            ),
+            fg="green",
+            bold=True,
+        )
+    )
+    echo(
+        style(
+            "You can use `evalai submission {}` to view this submission's status.\n".format(
+                response["id"]
+            ),
+            bold=True,
+        )
+    )
 
 
 def pretty_print_my_submissions_data(submissions, start_date, end_date):
@@ -63,10 +87,22 @@ def pretty_print_my_submissions_data(submissions, start_date, end_date):
     """
     table = BeautifulTable(max_width=100)
     attributes = ["id", "participant_team_name", "execution_time", "status"]
-    columns_attributes = ["ID", "Participant Team", "Execution Time(sec)", "Status", "Submitted At", "Method Name"]
+    columns_attributes = [
+        "ID",
+        "Participant Team",
+        "Execution Time(sec)",
+        "Status",
+        "Submitted At",
+        "Method Name",
+    ]
     table.column_headers = columns_attributes
     if len(submissions) == 0:
-        echo(style("\nSorry, you have not made any submissions to this challenge phase.\n", bold=True))
+        echo(
+            style(
+                "\nSorry, you have not made any submissions to this challenge phase.\n",
+                bold=True,
+            )
+        )
         sys.exit(1)
 
     if not start_date:
@@ -76,17 +112,24 @@ def pretty_print_my_submissions_data(submissions, start_date, end_date):
         end_date = datetime.max
 
     for submission in submissions:
-        date = validate_date_format(submission['submitted_at'])
-        if (date >= start_date and date <= end_date):
+        date = validate_date_format(submission["submitted_at"])
+        if date >= start_date and date <= end_date:
             # Check for empty method name
-            date = convert_UTC_date_to_local(submission['submitted_at'])
-            method_name = submission["method_name"] if submission["method_name"] else "None"
+            date = convert_UTC_date_to_local(submission["submitted_at"])
+            method_name = (
+                submission["method_name"] if submission["method_name"] else "None"
+            )
             values = list(map(lambda item: submission[item], attributes))
             values.append(date)
             values.append(method_name)
             table.append_row(values)
     if len(table) == 0:
-        echo(style("\nSorry, no submissions were made during this time period.\n", bold=True))
+        echo(
+            style(
+                "\nSorry, no submissions were made during this time period.\n",
+                bold=True,
+            )
+        )
         sys.exit(1)
     echo(table)
 
@@ -104,19 +147,30 @@ def display_my_submission_details(challenge_id, phase_id, start_date, end_date):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code in EVALAI_ERROR_CODES):
+        if response.status_code in EVALAI_ERROR_CODES:
             validate_token(response.json())
-            echo(style("\nError: {}\n"
-                       "\nUse `evalai challenges` to fetch the active challenges.\n"
-                       "\nUse `evalai challenge CHALLENGE phases` to fetch the "
-                       "active phases.\n".format(response.json()["error"]),
-                       fg="red", bold=True))
+            echo(
+                style(
+                    "\nError: {}\n"
+                    "\nUse `evalai challenges` to fetch the active challenges.\n"
+                    "\nUse `evalai challenge CHALLENGE phases` to fetch the "
+                    "active phases.\n".format(response.json()["error"]),
+                    fg="red",
+                    bold=True,
+                )
+            )
         else:
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
 
     response = response.json()
@@ -129,14 +183,20 @@ def pretty_print_submission_details(submission):
     """
     Function to print details of a submission
     """
-    team_name = "\n{}".format(style(submission['participant_team_name'], bold=True, fg="green"))
-    sid = "Submission ID: {}\n".format(style(str(submission['id']), bold=True, fg="blue"))
+    team_name = "\n{}".format(
+        style(submission["participant_team_name"], bold=True, fg="green")
+    )
+    sid = "Submission ID: {}\n".format(
+        style(str(submission["id"]), bold=True, fg="blue")
+    )
     team_name = "{} {}".format(team_name, sid)
 
-    status = style("\nSubmission Status : {}\n".format(submission['status']), bold=True)
-    execution_time = style("\nExecution Time (sec) : {}\n".format(submission['execution_time']), bold=True)
+    status = style("\nSubmission Status : {}\n".format(submission["status"]), bold=True)
+    execution_time = style(
+        "\nExecution Time (sec) : {}\n".format(submission["execution_time"]), bold=True
+    )
 
-    date = convert_UTC_date_to_local(submission['submitted_at'])
+    date = convert_UTC_date_to_local(submission["submitted_at"])
     submitted_at = style("\nSubmitted At : {}\n".format(date), bold=True)
     submission = "{}{}{}{}".format(team_name, status, execution_time, submitted_at)
     echo(submission)
@@ -154,18 +214,29 @@ def display_submission_details(submission_id):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        if (response.status_code in EVALAI_ERROR_CODES):
+        if response.status_code in EVALAI_ERROR_CODES:
             validate_token(response.json())
-            echo(style("\nError: {}\n"
-                       "\nUse `evalai challenge CHALLENGE phase PHASE submissions` "
-                       "to view your submission.\n".format(response.json()["error"]),
-                       fg="red", bold=True))
+            echo(
+                style(
+                    "\nError: {}\n"
+                    "\nUse `evalai challenge CHALLENGE phase PHASE submissions` "
+                    "to view your submission.\n".format(response.json()["error"]),
+                    fg="red",
+                    bold=True,
+                )
+            )
         else:
             echo(err)
         sys.exit(1)
     except requests.exceptions.RequestException as err:
-        echo(style("\nCould not establish a connection to EvalAI."
-                   " Please check the Host URL.\n", bold=True, fg="red"))
+        echo(
+            style(
+                "\nCould not establish a connection to EvalAI."
+                " Please check the Host URL.\n",
+                bold=True,
+                fg="red",
+            )
+        )
         sys.exit(1)
     response = response.json()
 
