@@ -7,6 +7,7 @@ from .set_host import host
 from .add_token import set_token
 from .submissions import submission
 from .teams import teams
+from .get_token import get_token
 
 
 @click.group(invoke_without_command=True)
@@ -36,3 +37,4 @@ main.add_command(host)
 main.add_command(set_token)
 main.add_command(submission)
 main.add_command(teams)
+main.add_command(get_token)
