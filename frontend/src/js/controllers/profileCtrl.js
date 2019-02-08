@@ -65,7 +65,10 @@
                 }
             },
             onError: function(response) {
-                vm.visibleAuthButton = false;
+                var status = response.status;
+                if (status == 403) {
+                    vm.visibleAuthButton = false;
+                }
                 var details = response.data;
                 $rootScope.notify("error", details.error);
             }
@@ -84,7 +87,10 @@
                 vm.token = response.data['token'];
             },
             onError: function(response) {
-                vm.visibleAuthButton = false;
+                var status = response.status;
+                if (status == 403) {
+                    vm.visibleAuthButton = false;
+                }
                 var details = response.data;
                 $rootScope.notify("error", details.error);
             }
