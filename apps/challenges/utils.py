@@ -2,6 +2,7 @@ import os
 
 import boto3
 import json
+import logging
 
 from botocore.exceptions import ClientError
 
@@ -9,6 +10,7 @@ from base.utils import get_model_object
 
 from .models import Challenge, ChallengePhase, Leaderboard, DatasetSplit, ChallengePhaseSplit
 
+logger = logging.getLogger(__name__)
 
 get_challenge_model = get_model_object(Challenge)
 
@@ -94,6 +96,8 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
             response = client.create_repository(repositoryName=name)
             repository = response['repository']
             created = True
+        else:
+            logger.exception(e)
     return (repository, created)
 
 
@@ -151,7 +155,6 @@ def create_federated_user(name, repository):
         ]
     }
     client = boto3.client('sts')
-    print(policy)
     response = client.get_federation_token(
         Name=convert_to_aws_federated_user_format(name),
         Policy=json.dumps(policy),
