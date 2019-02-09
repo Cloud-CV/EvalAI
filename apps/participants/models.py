@@ -48,6 +48,12 @@ class ParticipantTeam(TimeStampedModel):
         email_ids = Participant.objects.filter(team=self).values_list('user__email', flat=True)
         return list(email_ids)
 
+    def get_docker_repository_name(self):
+        if self.docker_repository_uri != "":
+            return self.docker_repository_uri.split("/")[-1]
+        else:
+            return None
+
     class Meta:
         app_label = 'participants'
         db_table = 'participant_team'

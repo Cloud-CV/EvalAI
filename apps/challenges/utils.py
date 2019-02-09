@@ -39,6 +39,23 @@ def convert_to_aws_ecr_compatible_format(string):
     return string.replace(" ", "-").lower()
 
 
+def convert_to_aws_federated_user_format(string):
+    '''Make string compatible with AWS ECR repository naming
+
+    Arguments:
+        string {string} -- Desired ECR repository name
+
+    Returns:
+        string -- Valid ECR repository name
+    '''
+    string = string.replace(" ", "-")
+    result = ""
+    for ch in string:
+        if ch.isalnum() or ch in ['=', ',', '.', '@', '-']:
+            result += ch
+    return result
+
+
 def get_or_create_ecr_repository(name, region_name='us-east-1'):
     '''Get or create AWS ECR Repository
 
@@ -117,7 +134,7 @@ def create_federated_user(name, repository):
     '''
     AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID')
     policy = {
-        "Version": "2019-02-07",
+        "Version": "2012-10-17",
         "Statement": [
             {
                 "Effect": "Allow",
@@ -134,9 +151,10 @@ def create_federated_user(name, repository):
         ]
     }
     client = boto3.client('sts')
+    print(policy)
     response = client.get_federation_token(
-        Name=name,
+        Name=convert_to_aws_federated_user_format(name),
         Policy=json.dumps(policy),
-        DurationSeconds=3600
+        DurationSeconds=43200,
     )
     return response
