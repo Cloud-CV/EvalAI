@@ -41,18 +41,50 @@
                                 <table ng-if="featured_challenge.isResult && featured_challenge.leaderboard.length" class="highlight">
                                     <thead>
                                         <tr>
-                                            <td class="align-left" data-field="rank">Rank</td>
-                                            <td class="align-left" data-field="team">Participant Team</td>
-                                            <td class="align-right" ng-repeat="key in featured_challenge.leaderboard[0].leaderboard__schema.labels">{{key}}</td>
-                                            <td class="align-right" data-field="submission_time">Last Submission at</td>
+                                            <td class="align-left" data-field="rank">
+                                                <a href="#" ng-click="challenge.sortFeaturedLeaderboard(challenge, 'rank');">
+                                                    Rank
+                                                    <span class="fa-stack fa-1x">
+                                                            <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                            <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'rank'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                    </span>
+                                                </a>
+                                            </td>
+                                            <td class="align-left" data-field="team">
+                                                <a href="#" ng-click="challenge.sortFeaturedLeaderboard(challenge, 'string');">
+                                                    Participant Team
+                                                    <span class="fa-stack fa-1x">
+                                                        <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                        <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                    </span>
+                                                </a>
+                                            </td>
+                                            <td class="align-right" ng-repeat="key in featured_challenge.leaderboard[0].leaderboard__schema.labels">
+                                                <a href="#" ng-click="$parent.challenge.sortFeaturedLeaderboard($parent.challenge, 'number', $index);">
+                                                    {{key}}
+                                                    <span class="fa-stack fa-1x">
+                                                        <i class="fa fa-sort-asc fa-stack-1x" ng-class="$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                        <i class="fa fa-sort-desc fa-stack-1x" ng-class="!$parent.challenge.reverseSort && $parent.challenge.sortColumn == 'number' && $parent.challenge.columnIndexSort == $index ? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                    </span>
+                                                </a>
+                                            </td>
+                                            <td class="align-right" data-field="submission_time">
+                                                <a href="#" ng-click="challenge.sortFeaturedLeaderboard(challenge, 'date');">
+                                                    Last Submission at
+                                                    <span class="fa-stack fa-1x">
+                                                        <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                        <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
+                                                    </span>
+                                                </a>
+                                            </td>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="key in featured_challenge.leaderboard">
-                                            <td class="align-left">{{$index+1}}</td>
+                                        <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort">
+                                            <td class="align-left">{{challenge.initial_ranking[key.submission__participant_team__team_name]}}</td>
                                             <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
-                                            <td class="align-right" ng-repeat="score in key.result track by $index">{{score | number : 2}}</td>
-                                            <td class="align-right"> {{key.submission__submitted_at | number: 0}}&nbsp; {{key.timeSpan}} ago</td>
+                                            <td class="align-center" ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
+                                            <td class="align-center">{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago</td>
                                         </tr>
                                     </tbody>
                                 </table>

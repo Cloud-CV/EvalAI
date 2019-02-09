@@ -23,6 +23,7 @@
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
         vm.stopLeaderboard = function() {};
+        vm.reverseSort = false;
 
         // loader for existing teams
         vm.isExistLoader = false;
@@ -115,8 +116,39 @@
             vm.isExistLoader = true;
             vm.loaderTitle = '';
             vm.loaderContainer = angular.element('.exist-team-card');
+            
+            // define a custom sorting function
+            vm.lastKey = null;
+            vm.sortFunction = function(key) {
+            // check which column is selected
+            // so that the values can be parsed properly
+              if (vm.sortColumn === 'date') {
+                  return Date.parse(key.submission__submitted_at_formatted);
+              }
+              else if (vm.sortColumn === 'rank') {
+                  return vm.initial_ranking[key.submission__participant_team__team_name];
+              }
+              else if (vm.sortColumn === 'number') {
+                  return parseFloat(key.result[vm.columnIndexSort]);
+              }
+              else if (vm.sortColumn === 'string'){
+                  // sort teams alphabetically
+                  return key.submission__participant_team__team_name;
+              }
 
-
+              return 0;
+            };
+            
+            vm.sortFeaturedLeaderboard = function(scope, column, index) {
+                if (index == null || index == undefined) {
+                    scope.reverseSort = scope.sortColumn != column ? false : !scope.reverseSort;
+                } else {
+                    scope.reverseSort = scope.sortColumn == column && scope.columnIndexSort == index ? !scope.reverseSort : false;
+                    scope.columnIndexSort = index;
+                }
+                scope.sortColumn = column;
+            };
+    
             vm.startLoader("Loading Leaderboard Items");
 
             // Show leaderboard
