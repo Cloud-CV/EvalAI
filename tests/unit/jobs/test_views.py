@@ -366,6 +366,21 @@ class BaseAPITestClass(APITestCase):
         self.challenge_phase.max_submissions = actual_maxinmum_submissions
         self.challenge_phase.save()
 
+        def test_challenge_submission_for_docker_based_challenges(self):
+            self.url = reverse_lazy('jobs:challenge_submission',
+                                    kwargs={'challenge_id': self.challenge.pk,
+                                            'challenge_phase_id': self.challenge_phase.pk})
+
+            self.challenge.participant_teams.add(self.participant_team)
+            self.challenge.is_docker_based = True
+            self.challenge.save()
+
+            response = self.client.post(self.url, {
+                                        'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+            self.challenge.is_docker_based = False
+            self.challenge.save()
+            self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
 
