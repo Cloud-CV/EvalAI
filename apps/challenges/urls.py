@@ -56,4 +56,7 @@ urlpatterns = [
         views.get_broker_url_by_challenge_pk, name='get_broker_url_by_challenge_pk'),
     url(r'^get_broker_urls/$',
         views.get_broker_urls, name='get_broker_urls'),
+    url(r'^phases/(?P<phase_pk>[0-9]+)/participant_team/aws/credentials/$',
+        views.get_aws_credentials_for_participant_team,
+        name='get_aws_credentials_for_participant_team'),
 ]

@@ -2,6 +2,7 @@ import os
 
 import boto3
 import json
+import logging
 
 from botocore.exceptions import ClientError
 
@@ -9,6 +10,7 @@ from base.utils import get_model_object
 
 from .models import Challenge, ChallengePhase, Leaderboard, DatasetSplit, ChallengePhaseSplit
 
+logger = logging.getLogger(__name__)
 
 get_challenge_model = get_model_object(Challenge)
 
@@ -37,6 +39,23 @@ def convert_to_aws_ecr_compatible_format(string):
         string -- Valid ECR repository name
     '''
     return string.replace(" ", "-").lower()
+
+
+def convert_to_aws_federated_user_format(string):
+    '''Make string compatible with AWS ECR repository naming
+
+    Arguments:
+        string {string} -- Desired ECR repository name
+
+    Returns:
+        string -- Valid ECR repository name
+    '''
+    string = string.replace(" ", "-")
+    result = ""
+    for ch in string:
+        if ch.isalnum() or ch in ['=', ',', '.', '@', '-']:
+            result += ch
+    return result
 
 
 def get_or_create_ecr_repository(name, region_name='us-east-1'):
@@ -77,6 +96,8 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
             response = client.create_repository(repositoryName=name)
             repository = response['repository']
             created = True
+        else:
+            logger.exception(e)
     return (repository, created)
 
 
@@ -117,7 +138,7 @@ def create_federated_user(name, repository):
     '''
     AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID')
     policy = {
-        "Version": "2019-02-07",
+        "Version": "2012-10-17",
         "Statement": [
             {
                 "Effect": "Allow",
@@ -135,8 +156,8 @@ def create_federated_user(name, repository):
     }
     client = boto3.client('sts')
     response = client.get_federation_token(
-        Name=name,
+        Name=convert_to_aws_federated_user_format(name),
         Policy=json.dumps(policy),
-        DurationSeconds=3600
+        DurationSeconds=43200,
     )
     return response
