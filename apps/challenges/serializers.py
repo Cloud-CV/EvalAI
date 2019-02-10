@@ -31,7 +31,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
                   'image', 'start_date', 'end_date', 'creator',
                   'published', 'enable_forum', 'anonymous_leaderboard', 'is_active',
                   'allowed_email_domains', 'blocked_email_domains',
-                  'approved_by_admin', 'forum_url',)
+                  'approved_by_admin', 'forum_url', 'is_docker_based', 'slug',)
 
 
 class ChallengePhaseSerializer(serializers.ModelSerializer):
@@ -123,7 +123,8 @@ class ZipChallengeSerializer(ChallengeSerializer):
         fields = ('id', 'title', 'short_description', 'description', 'terms_and_conditions',
                   'submission_guidelines', 'start_date', 'end_date', 'creator', 'evaluation_details',
                   'published', 'enable_forum', 'anonymous_leaderboard', 'image', 'is_active', 'evaluation_script',
-                  'allowed_email_domains', 'blocked_email_domains', 'forum_url', 'remote_evaluation',)
+                  'allowed_email_domains', 'blocked_email_domains', 'forum_url', 'remote_evaluation',
+                  'is_docker_based', 'slug',)
 
 
 class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
