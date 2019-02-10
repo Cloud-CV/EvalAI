@@ -13,6 +13,10 @@ urlpatterns = [
         r'phases/(?P<challenge_phase_pk>[0-9]+)/'
         r'remaining_submissions$',
         views.get_remaining_submissions, name='get_remaining_submissions'),
+    url(r'^(?P<challenge_pk>[0-9]+)/'
+        r'remaining_submissions$',
+        views.get_remaining_submissions_for_docker_based_challenge,
+        name='get_remaining_submissions_for_docker_based_challenge'),
     url(r'^challenge_phase_split/(?P<challenge_phase_split_id>[0-9]+)/leaderboard/$',
         views.leaderboard, name='leaderboard'),
     url(r'^submission/(?P<submission_id>[0-9]+)$',
