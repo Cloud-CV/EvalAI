@@ -1654,6 +1654,14 @@
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
         });
+
+        vm.showConfirmation = function(message){
+            $rootScope.notify("success", message);
+        };
+
+        vm.test = function(){
+            $rootScope.notify("success", "asjas");
+        };
     }
 
 })();

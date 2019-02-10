@@ -20,17 +20,34 @@
                     </a>
                 </div>
             </div>
+            <div ng-if="true" ng-init="challenge.test()"></div>
             <div class=" ev-card-panel ev-z-depth-5 ">
-                <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
-                    <div class="loader">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
+                <div class="ev-md-container ev-panel-title" ng-if="challenge.page.is_docker_based">
+                    <!-- <strong>The challenge {{challenge.page.title}} requires uploading code in the form of docker images. Please use EvalAI-CLI to make a submission</strong> -->
+                    <span class="fs-18">
+                            <strong>Instructions to Submit Docker Image using EvalAI-CLI</strong>
+                        </span>
+                    <ol>
+                        <li>Install EvalAI-CLI by using the command:<br>
+                            <code>$ pip install evalai
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="pip install evalai">
+                                    <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                </button>
+                            </code>
+                        </li>
+                        <li>Copy your auth token from the profile section</li>
+                        <li>Configure your CLI by using the commad:<br>
+                                <code>$ evalai get_token &lt;your_auth_token&gt;
+                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="evalai get_token">
+                                        <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                    </button>
+                                </code>
+                        </li>
+                        <li>
+                            For more details here are docs <a href="https://evalai-cli.cloudcv.org/" class="blue-text" target="_blank">EvalAI-CLI</a>
+                        </li>      
+                    </ol>
                 </div>
-                <div class="ev-md-container ev-panel-title" ng-if="challenge.page.is_docker_based"><strong>The challenge {{challenge.page.title}} requires uploading code in the form of docker images. Please use EvalAI-CLI to make a submission</strong></div>
                 <div class="ev-md-container ev-panel-title" ng-if="!challenge.page.is_docker_based"><strong>Please fill the following fields to submit</strong></div>
                 <div class="row" ng-if="!challenge.page.is_docker_based">
                     <div class="col s12 m7">
