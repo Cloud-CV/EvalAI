@@ -10,7 +10,7 @@ from django.utils import timezone
 from allauth.account.models import EmailAddress
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName
+from base.utils import RandomFileName, encode_data, decode_data
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -118,3 +118,13 @@ class TestSeeding(BaseAPITestClass):
         self.assertEqual(Challenge.objects.all().count(), 1)
         seed.run(2)
         self.assertEqual(Challenge.objects.all().count(), 2)
+
+
+class TestEncodeDecode(BaseAPITestClass):
+
+    def setUp(self):
+        super(TestEncodeDecode, self).setUp()
+
+    def test_encode_decode_data(self):
+        user_emails = [self.user.email.encode('utf-8')]
+        self.assertEqual(decode_data(encode_data(user_emails)), user_emails)

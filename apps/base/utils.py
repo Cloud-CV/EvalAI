@@ -52,18 +52,21 @@ def get_model_object(model_name):
 def encode_data(data):
     """
     Turn `data` into a hash and an encoded string, suitable for use with `decode_data`.
+    Assume `data` is an iterable consists of byte-like objects.
     """
     encoded = []
     for i in data:
-        encoded.append(base64.encodestring(i).split("=")[0])
+        encoded.append(base64.encodebytes(i).decode().split("=")[0])
     return encoded
 
 
 def decode_data(data):
     """
     The inverse of `encode_data`.
+    Assume `data` is an iterable consists of strings (from function `encode_data`).
     """
     decoded = []
     for i in data:
-        decoded.append(base64.decodestring(i+"=="))
+        s = i + "=="
+        decoded.append(base64.decodebytes(s.encode()))
     return decoded
