@@ -1388,13 +1388,8 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
     Returns:
         Dictionary containing AWS credentials for the participant team for a particular challenge
     """
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=phase_pk)
-    except ChallengePhase.DoesNotExist:
-        response_data = {
-            'error': 'Challenge Phase {} does not exist'.format(phase_pk)}
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    challenge_phase = get_challenge_phase_model(phase_pk)
 
     challenge = challenge_phase.challenge
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
