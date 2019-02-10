@@ -20,17 +20,128 @@
                     </a>
                 </div>
             </div>
-            <div class=" ev-card-panel ev-z-depth-5 ">
-                <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
-                    <div class="loader">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card" ng-if="challenge.page.is_docker_based">
+                <div class="col s11 m11" >
+                    <span class="fs-18">
+                        <strong>Instructions to Submit Docker Image using EvalAI-CLI</strong>
+                    </span>
+                    <ol>
+                        <li>Install EvalAI-CLI by using the command:<br>
+                            <code>$ pip install evalai
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="pip install evalai">
+                                    <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                </button>
+                            </code>
+                        </li>
+                        <li>Copy your auth token from the profile section</li>
+                        <li>Configure your CLI by using the commad:<br>
+                                <code>$ evalai get_token &lt;your_auth_token&gt;
+                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="evalai get_token">
+                                        <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                    </button>
+                                </code>
+                        </li>
+                        <li>
+                            For more details here are docs <a href="https://evalai-cli.cloudcv.org/" class="blue-text" target="_blank">EvalAI-CLI</a>
+                        </li>      
+                    </ol>
                 </div>
-                <div class="ev-md-container ev-panel-title" ng-if="challenge.page.is_docker_based"><strong>The challenge {{challenge.page.title}} requires uploading code in the form of docker images. Please use EvalAI-CLI to make a submission</strong></div>
+            </div>
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card" ng-if="challenge.page.is_docker_based">
+                <div class="col s11 m11">
+                    <span class="fs-18">
+                        <strong>Submission Limits</strong>
+                    </span>
+                </div>
+                <div class="col s12 m7">
+                    <ul>
+                        <b>Select Phase:</b>
+                        <li ng-repeat="item in challenge.phases.results">
+                            <input ng-disabled="challenge.currentDate < item.start_date || challenge.currentDate >= item.end_date" type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}" value="{{item.id}}" ng-model="challenge.phaseId" ng-click="challenge.showRemainingSubmissions(item.id)">
+                            <label for="{{item.id}}"></label>
+                            <div class="show-member-title pointer" ng-if="!item.showPrivate"><strong class="text-med-black">Phase: </strong>{{item.name}}
+                                <br>
+                                <strong class="text-med-black">Start Date: </strong>{{item.start_date | date:'medium'}}
+                                <br>
+                                <strong class="text-med-black">End Date: </strong>{{item.end_date | date:'medium'}}
+                            </div>
+                            <div class="show-member-title pointer" ng-if="item.showPrivate"><strong class="text-highlight">Phase: </strong> <span class="text-highlight">
+                                {{item.name}}</span>
+                                <br>
+                                <strong class="text-highlight">Start Date: </strong><span class="text-highlight">{{item.start_date | date:'medium'}}</span>
+                                <br>
+                                <strong class="text-highlight">End Date: </strong><span class="text-highlight">{{item.end_date | date:'medium'}}</span>
+                            </div>
+                            <div class="clearfix"></div>
+                        </li>
+                    </ul>
+                </div>
+                <div ng-if="challenge.maxExceeded" class="col s12 m5">
+                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                            <div class="row">
+                            <span class="color-black">
+                                <strong>
+                                    {{challenge.maxExceededMessage}}
+                                </strong> 
+                            </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
+                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                            <div class="row">
+                            <span class="color-black">
+                                <strong>
+                                    Today's Remaining Submissions:
+                                </strong> 
+                            <span class="color-black">
+                                <strong>
+                                    {{challenge.remainingSubmissions.remaining_submissions_today_count}}
+                                </strong>
+                            </span>
+                            </div>
+                            <div class="row">
+                            <div class="row">
+                                <span class="color-black">
+                                    <strong>
+                                        Monthly Remaining Submissions:
+                                    </strong> 
+                                <span class="color-black">
+                                    <strong>
+                                        {{challenge.remainingSubmissions.remaining_submissions_this_month_count}}
+                                    </strong>
+                                </span>
+                            </div>
+                            <span class="color-black">
+                                <strong>
+                                    Total Remaining Submissions:
+                                </strong>
+                            </span>
+                            <span class="color-black">
+                                <strong>
+                                {{challenge.remainingSubmissions.remaining_submissions}}
+                                </strong>
+                            </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if="challenge.showClock" class="col s12 m5">
+                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                            <div class="row">
+                                <strong class="text-med-black">
+                                    Message:
+                                </strong> {{challenge.message.message}}
+                            </div>
+                            <div>
+                                Next set of submissions will be available after:
+                            </div>
+                            <div>
+                                <span ng-if="challenge.days!=0">{{challenge.days}} Days, </span>{{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div class=" ev-card-panel ev-z-depth-5 ">
                 <div class="ev-md-container ev-panel-title" ng-if="!challenge.page.is_docker_based"><strong>Please fill the following fields to submit</strong></div>
                 <div class="row" ng-if="!challenge.page.is_docker_based">
                     <div class="col s12 m7">
