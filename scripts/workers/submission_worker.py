@@ -213,6 +213,7 @@ def extract_challenge_data(challenge, phases):
 
     try:
         # import the challenge after everything is finished
+        importlib.invalidate_caches()
         challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
     except:
