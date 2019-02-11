@@ -277,6 +277,7 @@
                                                 vm.countDownTimer();
                                             }
                                         }
+                                        utilities.hideLoader();
                                     },
                                     onError: function(response) {
                                         var error = response.data;
