@@ -1411,3 +1411,16 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
     }
     response_data = {'success': data}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_pk(request, pk):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    challenge_phase = get_challenge_phase_model(pk)
+    serializer = ChallengePhaseSerializer(
+        challenge_phase, context={'request': request})
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)

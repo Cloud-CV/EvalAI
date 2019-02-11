@@ -21,6 +21,8 @@ urlpatterns = [
         name='get_all_challenges'),
     url(r'^featured/$', views.get_featured_challenges,
         name='get_featured_challenges'),
+    url(r'^challenge/phase/(?P<pk>[0-9]+)/$',
+        views.get_challenge_phase_by_pk, name='get_challenge_phase_by_pk'),
     url(r'^challenge/(?P<pk>[0-9]+)/$',
         views.get_challenge_by_pk, name='get_challenge_by_pk'),
     url(r'^challenge$', views.get_challenges_based_on_teams,
