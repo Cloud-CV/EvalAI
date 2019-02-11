@@ -123,8 +123,13 @@
                                             utilities.deleteData('emailError');
 
                                             // condition for pagination
-                                            if (vm.existTeam.next === null) {
+                                            if (vm.existTeam.results.length === 0){
                                                 vm.isNext = 'disabled';
+                                                vm.currentPage = 0;
+                                            }
+                                            else if (vm.existTeam.next === null) {
+                                                vm.isNext = 'disabled';
+                                                vm.currentPage = 1;
                                             } else {
                                                 vm.isNext = '';
                                             }
