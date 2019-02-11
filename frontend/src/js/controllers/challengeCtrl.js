@@ -25,6 +25,8 @@
         vm.phases = {};
         vm.phaseSplits = {};
         vm.phaseRemainingSubmissions = {};
+        vm.phaseRemainingSubmissionsFlags = {};
+        vm.phaseRemainingSubmissionsCountdown = {};
         vm.isValid = {};
         vm.submissionVisibility = {};
         vm.showUpdate = false;
@@ -41,7 +43,8 @@
         vm.columnIndexSort = 0;
         // save initial ranking
         vm.initial_ranking = {};
-
+        vm.authCode = '<your_auth_token>';
+        vm.authCodeToggle = 'Show';
       // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
@@ -236,8 +239,46 @@
                                 parameters.data = {};
                                 parameters.callback = {
                                     onSuccess: function(response) {
-                                        var details = response.data;
-                                        vm.phaseRemainingSubmissions = details;
+                                        vm.phaseRemainingSubmissions = response.data;
+                                        var details = vm.phaseRemainingSubmissions.phases;
+                                        for(let i = 0; i < details.length; i++) {
+                                            if (details[i].message.max_submission_exceeded === true) {
+                                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "maxExceeded";
+                                            }else if (details[i].message.remaining_submissions_today_count > 0) {
+                                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
+                                            } else {
+                                                vm.eachPhase = details[i];
+                                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showClock";
+                                                vm.countDownTimer = function() {
+                                                    vm.remainingTime = vm.eachPhase.message.remaining_time;
+                                                    vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
+                                                    vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
+                                                    vm.hours = Math.floor(vm.hoursLeft / 3600);
+                                                    vm.minutesLeft = Math.floor((vm.hoursLeft) - (vm.hours * 3600));
+                                                    vm.minutes = Math.floor(vm.minutesLeft / 60);
+                                                    vm.remainingSeconds = Math.floor(vm.remainingTime % 60);
+                                                    if (vm.remainingSeconds < 10) {
+                                                        vm.remainingSeconds = "0" + vm.remainingSeconds;
+                                                    }
+                                                    vm.phaseRemainingSubmissionsCountdown[details[i].id] = {
+                                                        "days": vm.days,
+                                                        "hours": vm.hours,
+                                                        "minutes": vm.minutes,
+                                                        "seconds": vm.remainingSeconds
+                                                    };
+                                                    if (vm.remainingTime === 0) {
+                                                        vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
+                                                    } else {
+                                                        vm.remainingSeconds--;
+                                                    }
+                                                };
+                                                setInterval(function() {
+                                                    $rootScope.$apply(vm.countDownTimer);
+                                                }, 1000);
+                                                vm.countDownTimer();
+                                            }
+                                        }
+                                        utilities.hideLoader();
                                     },
                                     onError: function(response) {
                                         var error = response.data;
@@ -268,6 +309,16 @@
         };
 
         utilities.sendRequest(parameters);
+
+        vm.showAuthCode = () => {
+            if(vm.authCode === '<your_auth_token>') {
+                vm.authCode = utilities.getData('userKey');
+                vm.authCodeToggle = 'Hide';
+            }else {
+                vm.authCode = '<your_auth_token>';
+                vm.authCodeToggle = 'Show';
+            }
+        };
 
         vm.makeSubmission = function() {
             if (vm.isParticipated) {
