@@ -264,7 +264,7 @@
                                                         "hours": vm.hours,
                                                         "minutes": vm.minutes,
                                                         "seconds": vm.remainingSeconds
-                                                    }
+                                                    };
                                                     if (vm.remainingTime === 0) {
                                                         vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
                                                     } else {
