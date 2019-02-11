@@ -380,25 +380,6 @@
                 utilities.hideLoader();
             }
         };
-        console.log(vm.isDockerBased)
-        if(vm.isDockerBased) {
-            console.log("Executed!")
-            parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions';
-            parameters.method = 'GET';
-            parameters.data = {};
-            parameters.callback = {
-                onSuccess: function(response) {
-                    var details = response.data;
-                    vm.phaseRemainingSubmissions = details;
-                    console.log(vm.phaseRemainingSubmissions);
-                },
-                onError: function(response) {
-                    var error = response.data;
-                    utilities.storeData('emailError', error.detail);
-                    $state.go('web.permission-denied');
-                }
-            };
-        }
 
         utilities.sendRequest(parameters);
 
