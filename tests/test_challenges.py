@@ -6,35 +6,51 @@ from click.testing import CliRunner
 from datetime import datetime
 from dateutil import tz
 
-from evalai.challenges import (challenge,
-                               challenges)
+from evalai.challenges import challenge, challenges
 from evalai.utils.urls import URLS
 from evalai.utils.config import API_HOST_URL
-from evalai.utils.common import (convert_UTC_date_to_local,
-                                 validate_date_format,
-                                 clean_data)
+from evalai.utils.common import (
+    convert_UTC_date_to_local,
+    validate_date_format,
+    clean_data,
+)
 from tests.data import challenge_response, submission_response
 from .base import BaseTestClass
 
 
 class TestDisplayChallenges(BaseTestClass):
-
     def setup(self):
 
         challenge_data = json.loads(challenge_response.challenges)
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_list.value),
+            json=challenge_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.past_challenge_list.value),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.past_challenge_list.value),
+            json=challenge_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_list.value),
+            json=challenge_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.future_challenge_list.value),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.future_challenge_list.value),
+            json=challenge_data,
+            status=200,
+        )
 
         challenges_json = challenge_data["results"]
 
@@ -42,7 +58,14 @@ class TestDisplayChallenges(BaseTestClass):
 
         table = BeautifulTable(max_width=200)
         attributes = ["id", "title", "short_description"]
-        columns_attributes = ["ID", "Title", "Short Description", "Creator", "Start Date", "End Date"]
+        columns_attributes = [
+            "ID",
+            "Title",
+            "Short Description",
+            "Creator",
+            "Start Date",
+            "End Date",
+        ]
         table.column_headers = columns_attributes
         for challenge_data in reversed(challenges_json):
             values = list(map(lambda item: challenge_data[item], attributes))
@@ -63,47 +86,67 @@ class TestDisplayChallenges(BaseTestClass):
     @responses.activate
     def test_display_past_challenge_lists(self):
         runner = CliRunner()
-        result = runner.invoke(challenges, ['past'])
+        result = runner.invoke(challenges, ["past"])
         response = result.output.strip()
         assert response == self.output
 
     @responses.activate
     def test_display_ongoing_challenge_lists(self):
         runner = CliRunner()
-        result = runner.invoke(challenges, ['ongoing'])
+        result = runner.invoke(challenges, ["ongoing"])
         response = result.output.strip()
         assert response == self.output
 
     @responses.activate
     def test_display_future_challenge_lists(self):
         runner = CliRunner()
-        result = runner.invoke(challenges, ['future'])
+        result = runner.invoke(challenges, ["future"])
         response = result.output.strip()
         assert response == self.output
 
 
 class TestDisplayChallengeDetails(BaseTestClass):
-
     def setup(self):
 
         self.challenge_data = json.loads(challenge_response.challenge_details)
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_details.value.format("1")),
-                      json=self.challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_details.value.format("1")),
+            json=self.challenge_data,
+            status=200,
+        )
 
     @responses.activate
     def test_display_challenge_details(self):
         table = BeautifulTable(max_width=200)
-        attributes = ["description", "submission_guidelines", "evaluation_details", "terms_and_conditions"]
-        column_attributes = ["Start Date", "End Date", "Description", "Submission Guidelines",
-                             "Evaluation Details", "Terms and Conditions"]
+        attributes = [
+            "description",
+            "submission_guidelines",
+            "evaluation_details",
+            "terms_and_conditions",
+        ]
+        column_attributes = [
+            "Start Date",
+            "End Date",
+            "Description",
+            "Submission Guidelines",
+            "Evaluation Details",
+            "Terms and Conditions",
+        ]
         table.column_headers = column_attributes
         values = []
-        start_date = convert_UTC_date_to_local(self.challenge_data["start_date"]).split(" ")[0]
-        end_date = convert_UTC_date_to_local(self.challenge_data["end_date"]).split(" ")[0]
+        start_date = convert_UTC_date_to_local(self.challenge_data["start_date"]).split(
+            " "
+        )[0]
+        end_date = convert_UTC_date_to_local(self.challenge_data["end_date"]).split(
+            " "
+        )[0]
         values.extend([start_date, end_date])
-        values.extend(list(map(lambda item: clean_data(self.challenge_data[item]), attributes)))
+        values.extend(
+            list(map(lambda item: clean_data(self.challenge_data[item]), attributes))
+        )
         table.append_row(values)
         expected = str(table)
 
@@ -114,7 +157,6 @@ class TestDisplayChallengeDetails(BaseTestClass):
 
 
 class TestOngoingChallengesConditions(BaseTestClass):
-
     @responses.activate
     def test_display_ongoing_challenges_when_challenge_is_not_publicly_available(self):
 
@@ -124,12 +166,16 @@ class TestOngoingChallengesConditions(BaseTestClass):
             challenge_data["results"][i]["published"] = False
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_list.value),
+            json=challenge_data,
+            status=200,
+        )
 
         runner = CliRunner()
         expected = "Sorry, no challenges found."
-        result = runner.invoke(challenges, ['ongoing'])
+        result = runner.invoke(challenges, ["ongoing"])
         assert result.output.strip() == expected
 
     @responses.activate
@@ -141,12 +187,16 @@ class TestOngoingChallengesConditions(BaseTestClass):
             challenge_data["results"][i]["approved_by_admin"] = False
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_list.value),
+            json=challenge_data,
+            status=200,
+        )
 
         runner = CliRunner()
         expected = "Sorry, no challenges found."
-        result = runner.invoke(challenges, ['ongoing'])
+        result = runner.invoke(challenges, ["ongoing"])
         assert result.output.strip() == expected
 
     @responses.activate
@@ -158,20 +208,25 @@ class TestOngoingChallengesConditions(BaseTestClass):
             challenge_data["results"][i]["end_date"] = "2017-06-18T20:00:00Z"
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_list.value),
+            json=challenge_data,
+            status=200,
+        )
 
         runner = CliRunner()
         expected = "Sorry, no challenges found."
-        result = runner.invoke(challenges, ['ongoing'])
+        result = runner.invoke(challenges, ["ongoing"])
         assert result.output.strip() == expected
 
 
 class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
-
     def setup(self):
 
-        participant_team_data = json.loads(challenge_response.challenge_participant_teams)
+        participant_team_data = json.loads(
+            challenge_response.challenge_participant_teams
+        )
         host_team_data = json.loads(challenge_response.challenge_host_teams)
         empty_leaderboard = json.loads(challenge_response.empty_leaderboard)
 
@@ -179,26 +234,56 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
 
         challenges = '{"count": 2, "next": null, "previous": null,"results": []}'
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_list.value),
-                      json=json.loads(challenges), status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_list.value),
+            json=json.loads(challenges),
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value),
-                      json=participant_team_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_teams.value),
+            json=participant_team_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_teams.value),
-                      json=host_team_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.host_teams.value),
+            json=host_team_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
-                      json=json.loads(challenges), status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            json=json.loads(challenges),
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_challenges.value).format("2"),
-                      json=json.loads(challenges), status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.host_challenges.value).format("2"),
+            json=json.loads(challenges),
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format("1"),
-                      json=[], status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format(
+                "1"
+            ),
+            json=[],
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.leaderboard.value).format("1"),
-                      json=empty_leaderboard, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.leaderboard.value).format("1"),
+            json=empty_leaderboard,
+            status=200,
+        )
 
         self.output = "Sorry, no challenges found.\n"
 
@@ -214,14 +299,14 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
         runner = CliRunner()
         expected = "\nHosted Challenges\n\n"
         self.output = "{}{}".format(expected, self.output)
-        result = runner.invoke(challenges, ['--host'])
+        result = runner.invoke(challenges, ["--host"])
         response = result.output
         assert response == self.output
 
     @responses.activate
     def test_display_participant_challenge_lists_with_no_challenge_data(self):
         runner = CliRunner()
-        result = runner.invoke(challenges, ['--participant'])
+        result = runner.invoke(challenges, ["--participant"])
         response = result.output
         assert response == self.output
 
@@ -230,117 +315,174 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
         runner = CliRunner()
         host_string = "\nHosted Challenges\n\n"
         self.output = "{}{}{}".format(host_string, self.output, self.output)
-        result = runner.invoke(challenges, ['--participant', '--host'])
+        result = runner.invoke(challenges, ["--participant", "--host"])
         response = result.output
         assert response == self.output
 
     @responses.activate
     def test_display_challenge_phase_splits_with_no_challenge_data(self):
         runner = CliRunner()
-        result = runner.invoke(challenge, ['1', 'phase', '2', 'splits'])
+        result = runner.invoke(challenge, ["1", "phase", "2", "splits"])
         response = result.output
         assert response == "Sorry, no Challenge Phase Splits found.\n"
 
     @responses.activate
     def test_display_leaderboard_with_no_challenge_data(self):
         runner = CliRunner()
-        result = runner.invoke(challenge, ['2', 'leaderboard', '1'])
+        result = runner.invoke(challenge, ["2", "leaderboard", "1"])
         response = result.output.rstrip()
         assert response == "Sorry, no Leaderboard results found."
 
 
 class TestParticipantChallengesConditions(BaseTestClass):
-
     @responses.activate
-    def test_display_participant_challenges_when_challenge_is_not_publicly_available(self):
+    def test_display_participant_challenges_when_challenge_is_not_publicly_available(
+        self
+    ):
 
         challenge_data = json.loads(challenge_response.challenges)
-        participant_team_data = json.loads(challenge_response.challenge_participant_teams)
+        participant_team_data = json.loads(
+            challenge_response.challenge_participant_teams
+        )
 
         for i in range(len(challenge_data["results"])):
             challenge_data["results"][i]["published"] = False
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value),
-                      json=participant_team_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_teams.value),
+            json=participant_team_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            json=challenge_data,
+            status=200,
+        )
 
         runner = CliRunner()
         expected = "Sorry, no challenges found."
-        result = runner.invoke(challenges, ['--participant'])
+        result = runner.invoke(challenges, ["--participant"])
         assert result.output.strip() == expected
 
     @responses.activate
-    def test_display_participant_challenges_when_challenge_is_not_approved_by_admin(self):
+    def test_display_participant_challenges_when_challenge_is_not_approved_by_admin(
+        self
+    ):
 
         challenge_data = json.loads(challenge_response.challenges)
-        participant_team_data = json.loads(challenge_response.challenge_participant_teams)
+        participant_team_data = json.loads(
+            challenge_response.challenge_participant_teams
+        )
 
         for i in range(len(challenge_data["results"])):
             challenge_data["results"][i]["approved_by_admin"] = False
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value),
-                      json=participant_team_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_teams.value),
+            json=participant_team_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            json=challenge_data,
+            status=200,
+        )
 
         runner = CliRunner()
         expected = "Sorry, no challenges found."
-        result = runner.invoke(challenges, ['--participant'])
+        result = runner.invoke(challenges, ["--participant"])
         assert result.output.strip() == expected
 
     @responses.activate
     def test_display_participant_challenges_when_challenge_is_not_active(self):
 
         challenge_data = json.loads(challenge_response.challenges)
-        participant_team_data = json.loads(challenge_response.challenge_participant_teams)
+        participant_team_data = json.loads(
+            challenge_response.challenge_participant_teams
+        )
 
         for i in range(len(challenge_data["results"])):
             challenge_data["results"][i]["end_date"] = "2017-06-18T20:00:00Z"
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value),
-                      json=participant_team_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_teams.value),
+            json=participant_team_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            json=challenge_data,
+            status=200,
+        )
 
         runner = CliRunner()
         expected = "Sorry, no challenges found."
-        result = runner.invoke(challenges, ['--participant'])
+        result = runner.invoke(challenges, ["--participant"])
         assert result.output.strip() == expected
 
 
 class TestParticipantOrHostTeamChallenges(BaseTestClass):
-
     def setup(self):
 
         challenge_data = json.loads(challenge_response.challenges)
         host_team_data = json.loads(challenge_response.challenge_host_teams)
-        participant_team_data = json.loads(challenge_response.challenge_participant_teams)
+        participant_team_data = json.loads(
+            challenge_response.challenge_participant_teams
+        )
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_teams.value),
-                      json=participant_team_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_teams.value),
+            json=participant_team_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_teams.value),
-                      json=host_team_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.host_teams.value),
+            json=host_team_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            json=challenge_data,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.host_challenges.value).format("2"),
-                      json=challenge_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.host_challenges.value).format("2"),
+            json=challenge_data,
+            status=200,
+        )
 
         challenges_json = challenge_data["results"]
 
         table = BeautifulTable(max_width=200)
         attributes = ["id", "title", "short_description"]
-        columns_attributes = ["ID", "Title", "Short Description", "Creator", "Start Date", "End Date"]
+        columns_attributes = [
+            "ID",
+            "Title",
+            "Short Description",
+            "Creator",
+            "Start Date",
+            "End Date",
+        ]
         table.column_headers = columns_attributes
         for challenge_data in reversed(challenges_json):
             values = list(map(lambda item: challenge_data[item], attributes))
@@ -356,7 +498,7 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         runner = CliRunner()
         expected = "\nHosted Challenges\n\n"
         self.output = "{}{}".format(expected, self.output)
-        result = runner.invoke(challenges, ['--host'])
+        result = runner.invoke(challenges, ["--host"])
         response = result.output.rstrip()
         assert response == self.output
 
@@ -365,7 +507,7 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         runner = CliRunner()
         expected = "\nParticipated Challenges\n\n"
         self.output = "{}{}".format(expected, self.output)
-        result = runner.invoke(challenges, ['--participant'])
+        result = runner.invoke(challenges, ["--participant"])
         response = result.output.rstrip()
         assert response == self.output
 
@@ -374,25 +516,38 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         runner = CliRunner()
         participant_string = "\nParticipated Challenges\n\n"
         host_string = "\nHosted Challenges\n\n"
-        self.output = "{}{}\n{}{}".format(host_string, self.output, participant_string, self.output)
-        result = runner.invoke(challenges, ['--participant', '--host'])
+        self.output = "{}{}\n{}{}".format(
+            host_string, self.output, participant_string, self.output
+        )
+        result = runner.invoke(challenges, ["--participant", "--host"])
         response = result.output.rstrip()
         assert response == self.output
 
 
 class TestDisplayChallengePhases(BaseTestClass):
-
     def setup(self):
         challenge_phase_list_json = json.loads(challenge_response.challenge_phase_list)
-        challenge_phase_details_json = json.loads(challenge_response.challenge_phase_details)
+        challenge_phase_details_json = json.loads(
+            challenge_response.challenge_phase_details
+        )
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_list.value).format('10'),
-                      json=challenge_phase_list_json, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_phase_list.value).format("10"),
+            json=challenge_phase_list_json,
+            status=200,
+        )
 
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_detail.value).format('10', '20'),
-                      json=challenge_phase_details_json, status=200)
-        self.phases = challenge_phase_list_json['results']
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_phase_detail.value).format(
+                "10", "20"
+            ),
+            json=challenge_phase_details_json,
+            status=200,
+        )
+        self.phases = challenge_phase_list_json["results"]
         self.phase = challenge_phase_details_json
 
     @responses.activate
@@ -408,7 +563,7 @@ class TestDisplayChallengePhases(BaseTestClass):
             table.append_row(values)
         output = str(table)
         runner = CliRunner()
-        result = runner.invoke(challenge, ['10', 'phases'])
+        result = runner.invoke(challenge, ["10", "phases"])
         response = result.output.rstrip()
         assert response == output
 
@@ -431,27 +586,38 @@ class TestDisplayChallengePhases(BaseTestClass):
         end_date = "\n{}\n".format(end_date)
 
         max_submissions_per_day = "\nMaximum Submissions per day : {}\n".format(
-                                    str(phase["max_submissions_per_day"]))
+            str(phase["max_submissions_per_day"])
+        )
 
         max_submissions = "\nMaximum Submissions : {}\n".format(
-                                    str(phase["max_submissions"]))
+            str(phase["max_submissions"])
+        )
 
-        codename = "\nCode Name : {}\n".format(
-                                              phase["codename"])
+        codename = "\nCode Name : {}\n".format(phase["codename"])
 
         leaderboard_public = "\nLeaderboard Public : {}\n".format(
-                                              phase["leaderboard_public"])
+            phase["leaderboard_public"]
+        )
 
         is_active = "\nActive : {}\n".format(phase["is_active"])
 
         is_public = "\nPublic : {}\n".format(phase["is_public"])
 
-        phase = "{}{}{}{}{}{}{}{}{}{}\n".format(title, description, start_date, end_date,
-                                                max_submissions_per_day, max_submissions, leaderboard_public,
-                                                codename, is_active, is_public)
+        phase = "{}{}{}{}{}{}{}{}{}{}\n".format(
+            title,
+            description,
+            start_date,
+            end_date,
+            max_submissions_per_day,
+            max_submissions,
+            leaderboard_public,
+            codename,
+            is_active,
+            is_public,
+        )
 
         runner = CliRunner()
-        result = runner.invoke(challenge, ['10', 'phase', '20'])
+        result = runner.invoke(challenge, ["10", "phase", "20"])
         response = result.output
         assert response == phase
 
@@ -459,57 +625,73 @@ class TestDisplayChallengePhases(BaseTestClass):
     def test_display_challenge_phase_detail_with_json_flag(self):
         expected = json.dumps(self.phase, indent=4, sort_keys=True)
         runner = CliRunner()
-        result = runner.invoke(challenge, ['10', 'phase', '20', '--json'])
+        result = runner.invoke(challenge, ["10", "phase", "20", "--json"])
         response = result.output.strip()
         assert response == expected
 
 
 class TestDisplaySubmission(BaseTestClass):
-
     def setup(self):
         json_data = json.loads(submission_response.submission)
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
-                      json=json_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
+            json=json_data,
+            status=200,
+        )
         self.submissions = json_data["results"]
 
     @responses.activate
     def test_display_my_submission_details(self):
         table = BeautifulTable(max_width=100)
         attributes = ["id", "participant_team_name", "execution_time", "status"]
-        columns_attributes = ["ID", "Participant Team", "Execution Time(sec)", "Status", "Submitted At", "Method Name"]
+        columns_attributes = [
+            "ID",
+            "Participant Team",
+            "Execution Time(sec)",
+            "Status",
+            "Submitted At",
+            "Method Name",
+        ]
         table.column_headers = columns_attributes
 
         for submission in self.submissions:
             # Format date
-            date = datetime.strptime(submission['submitted_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
+            date = datetime.strptime(
+                submission["submitted_at"], "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
             from_zone = tz.tzutc()
             to_zone = tz.tzlocal()
 
             # Convert to local timezone from UTC.
             date = date.replace(tzinfo=from_zone)
             converted_date = date.astimezone(to_zone)
-            date = converted_date.strftime('%D %r')
+            date = converted_date.strftime("%D %r")
 
             # Check for empty method name
-            method_name = submission["method_name"] if submission["method_name"] else "None"
+            method_name = (
+                submission["method_name"] if submission["method_name"] else "None"
+            )
             values = list(map(lambda item: submission[item], attributes))
             values.append(date)
             values.append(method_name)
             table.append_row(values)
         output = str(table).rstrip()
         runner = CliRunner()
-        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions'])
+        result = runner.invoke(challenge, ["3", "phase", "7", "submissions"])
         response = result.output.rstrip()
         assert response == output
 
     @responses.activate
     def test_display_my_submission_details_with_single_argument(self):
-        output = ("Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
-                  "\nError: Invalid value for \"PHASE\": submissions is not a valid integer\n")
+        output = (
+            "Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
+            '\nError: Invalid value for "PHASE": submissions is not a valid integer\n'
+        )
         runner = CliRunner()
-        result = runner.invoke(challenge, ['2', 'phase', 'submissions'])
+        result = runner.invoke(challenge, ["2", "phase", "submissions"])
         response = result.output
         assert response == output
 
@@ -517,24 +699,35 @@ class TestDisplaySubmission(BaseTestClass):
     def test_display_my_submission_details_with_start_date(self):
         table = BeautifulTable(max_width=100)
         attributes = ["id", "participant_team_name", "execution_time", "status"]
-        columns_attributes = ["ID", "Participant Team", "Execution Time(sec)", "Status", "Submitted At", "Method Name"]
+        columns_attributes = [
+            "ID",
+            "Participant Team",
+            "Execution Time(sec)",
+            "Status",
+            "Submitted At",
+            "Method Name",
+        ]
         table.column_headers = columns_attributes
 
-        start_date = datetime.strptime('6/7/18', "%m/%d/%y")
+        start_date = datetime.strptime("6/7/18", "%m/%d/%y")
         end_date = datetime.max
         for submission in self.submissions:
-            date = validate_date_format(submission['submitted_at'])
-            if (date >= start_date and date <= end_date):
+            date = validate_date_format(submission["submitted_at"])
+            if date >= start_date and date <= end_date:
                 # Check for empty method name
-                date = convert_UTC_date_to_local(submission['submitted_at'])
-                method_name = submission["method_name"] if submission["method_name"] else "None"
+                date = convert_UTC_date_to_local(submission["submitted_at"])
+                method_name = (
+                    submission["method_name"] if submission["method_name"] else "None"
+                )
                 values = list(map(lambda item: submission[item], attributes))
                 values.append(date)
                 values.append(method_name)
                 table.append_row(values)
         output = str(table).rstrip()
         runner = CliRunner()
-        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions', '-s', '6/7/18'])
+        result = runner.invoke(
+            challenge, ["3", "phase", "7", "submissions", "-s", "6/7/18"]
+        )
         response = result.output.rstrip()
         assert response == output
 
@@ -542,24 +735,35 @@ class TestDisplaySubmission(BaseTestClass):
     def test_display_my_submission_details_with_end_date(self):
         table = BeautifulTable(max_width=100)
         attributes = ["id", "participant_team_name", "execution_time", "status"]
-        columns_attributes = ["ID", "Participant Team", "Execution Time(sec)", "Status", "Submitted At", "Method Name"]
+        columns_attributes = [
+            "ID",
+            "Participant Team",
+            "Execution Time(sec)",
+            "Status",
+            "Submitted At",
+            "Method Name",
+        ]
         table.column_headers = columns_attributes
 
         start_date = datetime.min
-        end_date = datetime.strptime('6/7/18', "%m/%d/%y")
+        end_date = datetime.strptime("6/7/18", "%m/%d/%y")
         for submission in self.submissions:
-            date = validate_date_format(submission['submitted_at'])
-            if (date >= start_date and date <= end_date):
+            date = validate_date_format(submission["submitted_at"])
+            if date >= start_date and date <= end_date:
                 # Check for empty method name
-                date = convert_UTC_date_to_local(submission['submitted_at'])
-                method_name = submission["method_name"] if submission["method_name"] else "None"
+                date = convert_UTC_date_to_local(submission["submitted_at"])
+                method_name = (
+                    submission["method_name"] if submission["method_name"] else "None"
+                )
                 values = list(map(lambda item: submission[item], attributes))
                 values.append(date)
                 values.append(method_name)
                 table.append_row(values)
         output = str(table).rstrip()
         runner = CliRunner()
-        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions', '-e', '6/7/18'])
+        result = runner.invoke(
+            challenge, ["3", "phase", "7", "submissions", "-e", "6/7/18"]
+        )
         response = result.output.rstrip()
         assert response == output
 
@@ -567,44 +771,64 @@ class TestDisplaySubmission(BaseTestClass):
     def test_display_my_submission_details_with_end_date_and_start_date(self):
         table = BeautifulTable(max_width=100)
         attributes = ["id", "participant_team_name", "execution_time", "status"]
-        columns_attributes = ["ID", "Participant Team", "Execution Time(sec)", "Status", "Submitted At", "Method Name"]
+        columns_attributes = [
+            "ID",
+            "Participant Team",
+            "Execution Time(sec)",
+            "Status",
+            "Submitted At",
+            "Method Name",
+        ]
         table.column_headers = columns_attributes
 
-        start_date = datetime.strptime('6/5/18', "%m/%d/%y")
-        end_date = datetime.strptime('6/9/18', "%m/%d/%y")
+        start_date = datetime.strptime("6/5/18", "%m/%d/%y")
+        end_date = datetime.strptime("6/9/18", "%m/%d/%y")
         for submission in self.submissions:
-            date = validate_date_format(submission['submitted_at'])
-            if (date >= start_date and date <= end_date):
+            date = validate_date_format(submission["submitted_at"])
+            if date >= start_date and date <= end_date:
                 # Check for empty method name
-                date = convert_UTC_date_to_local(submission['submitted_at'])
-                method_name = submission["method_name"] if submission["method_name"] else "None"
+                date = convert_UTC_date_to_local(submission["submitted_at"])
+                method_name = (
+                    submission["method_name"] if submission["method_name"] else "None"
+                )
                 values = list(map(lambda item: submission[item], attributes))
                 values.append(date)
                 values.append(method_name)
                 table.append_row(values)
         output = str(table).rstrip()
         runner = CliRunner()
-        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions', '-s', '6/5/18', '-e', '6/9/18'])
+        result = runner.invoke(
+            challenge,
+            ["3", "phase", "7", "submissions", "-s", "6/5/18", "-e", "6/9/18"],
+        )
         response = result.output.rstrip()
         assert response == output
 
     @responses.activate
-    def test_display_my_submission_details_with_end_date_and_start_date_without_submissions(self):
+    def test_display_my_submission_details_with_end_date_and_start_date_without_submissions(
+        self
+    ):
         output = "Sorry, no submissions were made during this time period."
         runner = CliRunner()
-        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions', '-s', '6/10/18', '-e', '6/15/18'])
+        result = runner.invoke(
+            challenge,
+            ["3", "phase", "7", "submissions", "-s", "6/10/18", "-e", "6/15/18"],
+        )
         response = result.output.strip()
         assert response == output
 
 
 class TestDisplayLeaderboard(BaseTestClass):
-
     def setup(self):
         json_data = json.loads(challenge_response.leaderboard)
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.leaderboard.value).format("1"),
-                      json=json_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.leaderboard.value).format("1"),
+            json=json_data,
+            status=200,
+        )
         self.leaderboard = json_data["results"]
 
     @responses.activate
@@ -617,9 +841,11 @@ class TestDisplayLeaderboard(BaseTestClass):
         table.column_headers = attributes
 
         for rank, result in enumerate(self.leaderboard, start=1):
-            name = result['submission__participant_team__team_name']
-            scores = result['result']
-            last_submitted = convert_UTC_date_to_local(result['submission__submitted_at'])
+            name = result["submission__participant_team__team_name"]
+            scores = result["result"]
+            last_submitted = convert_UTC_date_to_local(
+                result["submission__submitted_at"]
+            )
 
             value = [rank, name] + scores + [last_submitted]
             table.append_row(value)
@@ -627,37 +853,46 @@ class TestDisplayLeaderboard(BaseTestClass):
         output = str(table).rstrip()
 
         runner = CliRunner()
-        result = runner.invoke(challenge, ['2', 'leaderboard', '1'])
+        result = runner.invoke(challenge, ["2", "leaderboard", "1"])
         response = result.output.rstrip()
         assert response == output
 
     @responses.activate
     def test_test_display_leaderboard_with_string_argument(self):
-        output = ("Usage: challenge leaderboard [OPTIONS] CPS\n"
-                  "\nError: Invalid value for \"CPS\": two is not a valid integer\n")
+        output = (
+            "Usage: challenge leaderboard [OPTIONS] CPS\n"
+            '\nError: Invalid value for "CPS": two is not a valid integer\n'
+        )
         runner = CliRunner()
-        result = runner.invoke(challenge, ['2', 'leaderboard', 'two'])
+        result = runner.invoke(challenge, ["2", "leaderboard", "two"])
         response = result.output
         assert response == output
 
     @responses.activate
     def test_display_leaderboard_with_single_argument(self):
-        output = ("Usage: challenge leaderboard [OPTIONS] CPS\n"
-                  "\nError: Missing argument \"CPS\".\n")
+        output = (
+            "Usage: challenge leaderboard [OPTIONS] CPS\n"
+            '\nError: Missing argument "CPS".\n'
+        )
         runner = CliRunner()
-        result = runner.invoke(challenge, ['2', 'leaderboard'])
+        result = runner.invoke(challenge, ["2", "leaderboard"])
         response = result.output
         assert response == output
 
 
 class TestDisplayChallengePhaseSplit(BaseTestClass):
-
     def setup(self):
         json_data = json.loads(challenge_response.challenge_phase_splits)
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format("1"),
-                      json=json_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format(
+                "1"
+            ),
+            json=json_data,
+            status=200,
+        )
         self.splits = json_data
 
     @responses.activate
@@ -665,61 +900,74 @@ class TestDisplayChallengePhaseSplit(BaseTestClass):
         output = ""
         table = BeautifulTable(max_width=100)
         attributes = ["id", "dataset_split_name", "challenge_phase_name"]
-        columns_attributes = ["Challenge Phase ID", "Dataset Split", "Challenge Phase Name"]
+        columns_attributes = [
+            "Challenge Phase ID",
+            "Dataset Split",
+            "Challenge Phase Name",
+        ]
         table.column_headers = columns_attributes
 
         for split in self.splits:
-            if split['visibility'] == 3:
+            if split["visibility"] == 3:
                 values = list(map(lambda item: split[item], attributes))
                 table.append_row(values)
         output = str(table)
         runner = CliRunner()
-        result = runner.invoke(challenge, ['1', 'phase', '2', 'splits'])
+        result = runner.invoke(challenge, ["1", "phase", "2", "splits"])
         response = result.output.rstrip()
         assert response == output
 
     @responses.activate
     def test_display_challenge_phase_split_list_with_a_single_argument(self):
-        output = ("Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
-                  "\nError: Missing argument \"PHASE\".\n")
+        output = (
+            "Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
+            '\nError: Missing argument "PHASE".\n'
+        )
         runner = CliRunner()
-        result = runner.invoke(challenge, ['2', 'phase'])
+        result = runner.invoke(challenge, ["2", "phase"])
         response = result.output
         assert response == output
 
     @responses.activate
     def test_display_my_submission_details_with_string_argument(self):
-        output = ("Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
-                  "\nError: Invalid value for \"PHASE\": two is not a valid integer\n")
+        output = (
+            "Usage: challenge phase [OPTIONS] PHASE COMMAND [ARGS]...\n"
+            '\nError: Invalid value for "PHASE": two is not a valid integer\n'
+        )
         runner = CliRunner()
-        result = runner.invoke(challenge, ['2', 'phase', 'two'])
+        result = runner.invoke(challenge, ["2", "phase", "two"])
         response = result.output
         assert response == output
 
 
 class TestDisplaySubmissionWithoutSubmissionData(BaseTestClass):
-
     def setup(self):
         data = '{"count": 4, "next": null, "previous": null, "results": []}'
         json_data = json.loads(data)
 
         url = "{}{}"
-        responses.add(responses.GET, url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
-                      json=json_data, status=200)
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
+            json=json_data,
+            status=200,
+        )
 
     @responses.activate
     def test_display_my_submission_details_without_submissions(self):
         expected = "\nSorry, you have not made any submissions to this challenge phase."
         runner = CliRunner()
-        result = runner.invoke(challenge, ['3', 'phase', '7', 'submissions'])
+        result = runner.invoke(challenge, ["3", "phase", "7", "submissions"])
         response = result.output.rstrip()
         assert response == expected
 
     @responses.activate
     def test_display_challenge_phase_split_list_with_string_argument(self):
-        output = ("Usage: challenge [OPTIONS] CHALLENGE COMMAND [ARGS]...\n"
-                  "\nError: Invalid value for \"CHALLENGE\": two is not a valid integer\n")
+        output = (
+            "Usage: challenge [OPTIONS] CHALLENGE COMMAND [ARGS]...\n"
+            '\nError: Invalid value for "CHALLENGE": two is not a valid integer\n'
+        )
         runner = CliRunner()
-        result = runner.invoke(challenge, ['two', 'participate', '3'])
+        result = runner.invoke(challenge, ["two", "participate", "3"])
         response = result.output
         assert response == output

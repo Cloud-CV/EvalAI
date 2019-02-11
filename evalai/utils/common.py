@@ -84,3 +84,7 @@ def clean_data(data):
     data = BeautifulSoup(data, "lxml").text.strip()
     data = " ".join(data.split()).encode("utf-8")
     return data
+
+
+def notify_user(message, color="green", bold=False):
+    echo(style(message, fg=color, bold=bold))
