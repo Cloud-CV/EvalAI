@@ -34,7 +34,8 @@ from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
-    get_participant_team_id_of_user_for_a_challenge,)
+    get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_name_of_user_for_a_challenge,)
 
 from .models import Submission
 from .sender import publish_submission_message
@@ -409,7 +410,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions_for_docker_based_challenge(request, challenge_pk):
-    response_data = list()
+    phases_data = {}
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
@@ -421,19 +422,27 @@ def get_remaining_submissions_for_docker_based_challenge(request, challenge_pk):
     else:
         challenge_phase = ChallengePhase.objects.filter(
             challenge=challenge, is_public=True).order_by('pk')
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(
+            request.user, challenge_pk)
+    participant_team_name = get_participant_team_name_of_user_for_a_challenge(
+            request.user, challenge_pk)
+    phases_data['participant_team'] = participant_team_name
+    phases_data['participant_team_id'] = participant_team_id
+    phase_data_list = list()
     for phase in challenge_phase:
         remaining_submission_message, response_status = get_remaining_submission_for_phase(request.user,
                                                                                            phase.id,
                                                                                            challenge_pk)
         if response_status != status.HTTP_200_OK:
             return Response(remaining_submission_message, status=response_status)
-        response_data.append(dict({
+        phase_data_list.append(dict({
             'name': phase.name,
             'start_date': phase.start_date,
             'end_date': phase.end_date,
             'remaining_submission_message': remaining_submission_message
         }))
-    return Response(response_data)
+    phases_data["phases"] = phase_data_list
+    return Response(phases_data)
 
 
 @throttle_classes([UserRateThrottle])
