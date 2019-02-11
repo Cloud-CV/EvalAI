@@ -229,34 +229,30 @@
                                 utilities.sendRequest(parameters);
 
                             }
-                            // This condition means that the user is eligible to make submissions
-                            // else if (vm.isParticipated) {
-
-                            // }
+                            // get remaining submission for docker based challenge
+                            if(vm.page.is_docker_based) {
+                                parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions';
+                                parameters.method = 'GET';
+                                parameters.data = {};
+                                parameters.callback = {
+                                    onSuccess: function(response) {
+                                        var details = response.data;
+                                        vm.phaseRemainingSubmissions = details;
+                                    },
+                                    onError: function(response) {
+                                        var error = response.data;
+                                        utilities.storeData('emailError', error.detail);
+                                        $state.go('web.permission-denied');
+                                    }
+                                };
+                                utilities.sendRequest(parameters);
+                            }
                             utilities.hideLoader();
                         },
                         onError: function() {
                             utilities.hideLoader();
                         }
                     };
-
-                    // get remaining submission for docker based challenge
-                    if(vm.page.is_docker_based) {
-                        parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions';
-                        parameters.method = 'GET';
-                        parameters.data = {};
-                        parameters.callback = {
-                            onSuccess: function(response) {
-                                var details = response.data;
-                                vm.phaseRemainingSubmissions = details;
-                            },
-                            onError: function(response) {
-                                var error = response.data;
-                                utilities.storeData('emailError', error.detail);
-                                $state.go('web.permission-denied');
-                            }
-                        };
-                    }
                     utilities.sendRequest(parameters);
                 }
 
