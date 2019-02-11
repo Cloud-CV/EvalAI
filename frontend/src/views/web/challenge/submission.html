@@ -50,10 +50,44 @@
             <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card" ng-if="challenge.page.is_docker_based">
                 <div class="col s11 m11">
                     <span class="fs-18">
-                        <strong>Submission Limits</strong>
+                        <strong>Submission Limits for {{challenge.phaseRemainingSubmissions.participant_team}}</strong>
                     </span>
                 </div>
-                <div class="col s12 m7">
+                <!-- ---------------------------------------------------------------------------------------------------------------------------------------------- -->
+                <table class="centered responsive-table highlight">
+                    <thead>
+                        <tr>
+                            <th>Phase</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Remaining Submissions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Megan Phase</td>
+                            <td>Oct 28, 2018 7:52:53 PM </td>
+                            <td>Jun 19, 2020 7:52:53 PM </td>
+                            <td>
+                                    Today's Remaining Submissions: 99999<br>
+                                    Monthly Remaining Submissions: 99999<br>
+                                    Total Remaining Submissions: 99999<br>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Molly Phase</td>
+                            <td>Oct 28, 2018 7:52:53 PM </td>
+                            <td>Jun 19, 2020 7:52:53 PM </td>
+                            <td>
+                                    You have exhausted this month's submission limit!<br><br>
+                                    Next set of submissions will be available after:<br>
+                                    18 Days, 7 hours : 16 minutes : 25 seconds
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- ------------------------------------------------------------------------------------------------------------------------------------- -->
+                <!-- <div class="col s12 m7">
                     <ul>
                         <b>Select Phase:</b>
                         <li ng-repeat="item in challenge.phases.results">
@@ -139,8 +173,9 @@
                                 <span ng-if="challenge.days!=0">{{challenge.days}} Days, </span>{{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
                             </div>
                         </div>
-                    </div>
-            </div>
+                    </div> -->
+                <!-- ------------------------------------------------------------------------------------------------------------------------------------------- -->
+                </div>
             <div class=" ev-card-panel ev-z-depth-5 ">
                 <div class="ev-md-container ev-panel-title" ng-if="!challenge.page.is_docker_based"><strong>Please fill the following fields to submit</strong></div>
                 <div class="row" ng-if="!challenge.page.is_docker_based">
