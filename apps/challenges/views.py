@@ -1411,3 +1411,20 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
     }
     response_data = {'success': data}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_pk(request, pk):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    try:
+        challenge_phase = ChallengePhase.objects.get(pk=pk)
+    except:
+        response_data = {'error': 'Challenge Phase {} does not exist.'.format(pk)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    serializer = ChallengePhaseSerializer(
+        challenge_phase, context={'request': request})
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
