@@ -423,9 +423,10 @@ def get_remaining_submissions_for_docker_based_challenge(request, challenge_pk):
             challenge=challenge, is_public=True).order_by('pk')
     for phase in challenge_phase:
         remaining_submission_message, response_status = get_remaining_submission_for_phase(request.user,
-                                                                            phase.id,
-                                                                            challenge_pk)
-        # return Response(response_data, status=response_status)
+                                                                                           phase.id,
+                                                                                           challenge_pk)
+        if response_status != status.HTTP_200_OK:
+            return Response(remaining_submission_message, status=response_status)
         response_data.append(dict({
             'name': phase.name,
             'start_date': phase.start_date,
