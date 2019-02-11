@@ -19,6 +19,7 @@ def get_token():
                 "Please download the file from the Profile section of the EvalAI webapp and "
                 "place it at ~/.evalai/token.json or use evalai -t <token> to add it.\n\n",
                 bold=True,
+                fg="red",
             )
         )
     else:

@@ -26,7 +26,7 @@ def get_user_auth_token():
                 "Please download the file from the Profile section of the EvalAI webapp and "
                 "place it at ~/.evalai/token.json\n",
                 bold=True,
-                bg="red",
+                fg="red",
             )
         )
         sys.exit(1)

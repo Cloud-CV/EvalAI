@@ -40,7 +40,7 @@ def validate_token(response):
                     "\nThe authentication token you are using isn't valid."
                     " Please generate it again.\n",
                     bold=True,
-                    bg="red",
+                    fg="red",
                 )
             )
             sys.exit(1)
@@ -49,7 +49,7 @@ def validate_token(response):
                 style(
                     "\nSorry, the token has expired. Please generate it again.\n",
                     bold=True,
-                    bg="red",
+                    fg="red",
                 )
             )
             sys.exit(1)
