@@ -7,7 +7,7 @@ image : logo.png
 submission_guidelines: submission_guidelines.html
 evaluation_script: evaluation_script.zip
 start_date: 2017-06-09 20:00:00
-end_date: 2017-06-19 20:00:00
+end_date: 2025-06-19 20:00:00
 
 leaderboard:
   - id: 1
@@ -20,7 +20,7 @@ challenge_phases:
     leaderboard_public: True
     is_public: True
     start_date: 2017-06-09 20:00:00
-    end_date: 2017-06-19 20:00:00
+    end_date: 2025-06-19 20:00:00
     test_annotation_file: test_annotation.txt
     codename: Challenge phase codename
     max_submissions_per_day: 100
