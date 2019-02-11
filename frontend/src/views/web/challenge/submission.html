@@ -33,11 +33,14 @@
                                 </button>
                             </code>
                         </li>
-                        <li>Copy your auth token from the profile section</li>
                         <li>Configure your CLI by using the commad:<br>
-                                <code>$ evalai get_token &lt;your_auth_token&gt;
-                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="evalai get_token">
+                                <!-- <code>$ evalai get_token &lt;your_auth_token&gt; -->
+                                <code>$ evalai get_token {{challenge.authCode}}
+                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="evalai get_token {{challenge.authCode}}">
                                         <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                    </button>
+                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showAuthCode()">
+                                        {{challenge.authCodeToggle}} Auth Token
                                     </button>
                                 </code>
                         </li>

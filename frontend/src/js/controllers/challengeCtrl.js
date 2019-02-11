@@ -43,7 +43,8 @@
         vm.columnIndexSort = 0;
         // save initial ranking
         vm.initial_ranking = {};
-
+        vm.authCode = '<your_auth_token>';
+        vm.authCodeToggle = 'Show';
       // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
@@ -308,6 +309,16 @@
         };
 
         utilities.sendRequest(parameters);
+
+        vm.showAuthCode = () => {
+            if(vm.authCode === '<your_auth_token>') {
+                vm.authCode = utilities.getData('userKey');
+                vm.authCodeToggle = 'Hide';
+            }else {
+                vm.authCode = '<your_auth_token>';
+                vm.authCodeToggle = 'Show';
+            }
+        };
 
         vm.makeSubmission = function() {
             if (vm.isParticipated) {
