@@ -434,6 +434,7 @@ def get_remaining_submissions_for_docker_based_challenge(request, challenge_pk):
         if response_status != status.HTTP_200_OK:
             return Response(remaining_submission_message, status=response_status)
         phase_data_list.append(dict({
+            'id': phase.id,
             'name': phase.name,
             'start_date': phase.start_date,
             'end_date': phase.end_date,
