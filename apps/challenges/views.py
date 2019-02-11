@@ -1419,11 +1419,7 @@ def get_challenge_phase_by_pk(request, pk):
     """
     Returns a particular challenge phase details by pk
     """
-    try:
-        challenge_phase = ChallengePhase.objects.get(pk=pk)
-    except:
-        response_data = {'error': 'Challenge Phase {} does not exist.'.format(pk)}
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    challenge_phase = get_challenge_phase_model(pk)
     serializer = ChallengePhaseSerializer(
         challenge_phase, context={'request': request})
     response_data = serializer.data
