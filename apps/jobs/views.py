@@ -409,7 +409,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 @api_view(['GET'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_remaining_submissions_for_docker_based_challenge(request, challenge_pk):
+def get_remaining_submissions_for_all_phases(request, challenge_pk):
     phases_data = {}
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
