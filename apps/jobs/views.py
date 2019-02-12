@@ -132,9 +132,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         if not challenge_phase.is_active:
             response_data = {
                 'error': 'Sorry, cannot accept submissions since challenge phase is not active'}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-        
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)      
 
         # check if user is a challenge host or a participant
         if not is_user_a_host_of_challenge(request.user, challenge_id):
@@ -144,8 +142,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
                 return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-        
-
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id)
         try:
@@ -153,8 +149,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         except ParticipantTeam.DoesNotExist:
             response_data = {'error': 'You haven\'t participated in the challenge'}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-
 
         # Fetch the number of submissions under progress.
         submissions_in_progress_status = [Submission.SUBMITTED, Submission.SUBMITTING, Submission.RUNNING]
@@ -170,7 +164,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         if not challenge.approved_by_admin:
-            response_data = {'error': 'Sorry your submission cannot be processed since the challenge is not active or is not approved by EvalAI Admin'}
+            response_data = {'error': 'Sorry your submission cannot be processed since the challenge'
+                             'is not active or is not approved by EvalAI Admin'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         serializer = SubmissionSerializer(data=request.data,
@@ -186,9 +181,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             publish_submission_message(challenge_id, challenge_phase_id, submission.id)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-
-
 
 @throttle_classes([UserRateThrottle])
 @api_view(['PATCH'])
