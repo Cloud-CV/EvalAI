@@ -182,7 +182,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
- 
+
 @throttle_classes([UserRateThrottle])
 @api_view(['PATCH'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
