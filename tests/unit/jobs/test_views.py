@@ -92,7 +92,8 @@ class BaseAPITestClass(APITestCase):
             end_date=timezone.now() + timedelta(days=1),
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False)
+            anonymous_leaderboard=False,
+            approved_by_admin=True)
 
         self.leaderboard_schema = {
             'labels': ['score', 'test-score'],
