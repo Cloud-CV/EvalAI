@@ -3034,14 +3034,6 @@ class GetChallengePhaseByPk(BaseChallengePhaseClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_phase_by_pk_does_not_exist(self):
-        expected = {
-            'error': 'ChallengePhase does not exist'
-        }
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-
     def test_get_challenge_phase_by_pk_when_user_is_not_authenticated(self):
         self.client.force_authenticate(user=None)
 
@@ -3052,3 +3044,13 @@ class GetChallengePhaseByPk(BaseChallengePhaseClass):
         response = self.client.post(self.url, {})
         self.assertEqual(list(response.data.values())[0], expected['error'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_challenge_phase_by_pk_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_challenge_phase_by_pk',
+                                kwargs={'pk': self.challenge_phase.pk + 2})
+        expected = {
+            'error': 'ChallengePhase does not exist'
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
