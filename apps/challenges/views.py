@@ -1,3 +1,4 @@
+import os
 import csv
 import logging
 import random
@@ -61,7 +62,10 @@ from .serializers import (ChallengeConfigSerializer,
                           StarChallengeSerializer,
                           ZipChallengeSerializer,
                           ZipChallengePhaseSplitSerializer,)
-from .utils import get_file_content
+from .utils import (get_file_content,
+                    get_or_create_ecr_repository,
+                    convert_to_aws_ecr_compatible_format,
+                    create_federated_user,)
 
 logger = logging.getLogger(__name__)
 
@@ -182,9 +186,7 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is in allowed list.
-
     user_email = request.user.email
-
     if len(challenge.allowed_email_domains) > 0:
         present = False
         for domain in challenge.allowed_email_domains:
@@ -201,7 +203,6 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is in blocked list.
-
     for domain in challenge.blocked_email_domains:
         domain = "@" + domain
         if domain.lower() in user_email.lower():
@@ -214,7 +215,6 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check to disallow the user if he is a Challenge Host for this challenge
-
     participant_team_user_ids = set(Participant.objects.select_related('user').filter(
         team__id=participant_team_pk).values_list('user', flat=True))
 
@@ -230,6 +230,14 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
                          'participant_team_id': int(participant_team_pk)}
         return Response(response_data, status=status.HTTP_200_OK)
     else:
+        # Create ECR Repository for the participant team if challenge is docker based
+        if challenge.is_docker_based:
+            AWS_DEFAULT_REGION = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')
+            ecr_repository_name = '{}-{}'.format(challenge.slug, participant_team.team_name)
+            ecr_repository_name = convert_to_aws_ecr_compatible_format(ecr_repository_name)
+            repository, created = get_or_create_ecr_repository(ecr_repository_name, region_name=AWS_DEFAULT_REGION)
+            participant_team.docker_repository_uri = repository['repositoryUri']
+            participant_team.save()
         challenge.participant_teams.add(participant_team)
         return Response(status=status.HTTP_201_CREATED)
 
@@ -1369,3 +1377,50 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
 
         response_data = [challenge.queue]
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_aws_credentials_for_participant_team(request, phase_pk):
+    """
+    Returns:
+        Dictionary containing AWS credentials for the participant team for a particular challenge
+    """
+
+    challenge_phase = get_challenge_phase_model(phase_pk)
+
+    challenge = challenge_phase.challenge
+    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk)
+
+    if not challenge.is_docker_based:
+        response_data = {'error': 'Sorry, this is not a docker based challenge.'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if participant_team_pk is None:
+        response_data = {'error': 'You have not participated in this challenge.'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    participant_team = ParticipantTeam.objects.get(id=participant_team_pk)
+    federated_user = create_federated_user(participant_team.team_name, participant_team.get_docker_repository_name())
+    data = {
+        'federated_user': federated_user,
+        'docker_repository_uri': participant_team.docker_repository_uri
+    }
+    response_data = {'success': data}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_pk(request, pk):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    challenge_phase = get_challenge_phase_model(pk)
+    serializer = ChallengePhaseSerializer(
+        challenge_phase, context={'request': request})
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
