@@ -1,22 +1,26 @@
 language: python
 sudo: false
 python:
-  - "3.5"
-  - "3.6"
-
+- '3.5'
+- '3.6'
 install:
-  - pip install -r requirements.txt
-  - pip install coveralls
-
+- pip install -r requirements.txt
+- pip install coveralls
 script:
-  - flake8 ./
-  - py.test --cov . --cov-config .coveragerc
-
+- flake8 ./
+- py.test --cov . --cov-config .coveragerc
 after_success:
-  - coveralls --rcfile=.coveragerc
-
+- coveralls --rcfile=.coveragerc
 notifications:
   email:
-    on_success: change  # [always|never|change]
-    on_failure: always  # [always|never|change]
+    on_success: change
+    on_failure: always
     slack: cloudcv:gy3CGQGNXLwXOqVyzXGZfdea
+deploy:
+  provider: pypi
+  user: cloudcv
+  password:
+    secure: ja+v/ph5+ohH2TkMw8ieIB1cTVoS4G1HGAXbhgMualFtqymS3qTtC4jEcXy4P9t0g5u8/rZVUmwUkrWuIqpYzvuzA5iyO6e1wu3wJE800JTMyMdYu0KLswno1ovlq0tKzDwBaWAt4mTfZdGxVUAV9Ulc3o4jrw9vDnP3CkCAj9JJcs2AIFvaP9ThyoqtHwePHPkcr+WDFVyl5JB1JIWt6HZpWSlBX5UBMRuT0ikzdijeQVKqyMX0mGOewGjlciF+khLgOK6YaIHmdjaXntlF8G0RHxukvQJyksVWLdO8S0A+Ht6F6U7rAsaC1qS7VmT3HHF7UzKgS0LLbTCcPtEY00RBZVrTyNn61BSDyWloHl7jVh21Bk7rd8Q/16f/G2D8hVupquzSzNyKMVQHhx1eFc/GHqUyRQYW61Ps1cgUijx1q4ry0drwERle705L2XIAaMHlv/ZAg619yZuoCMhpKR9+Wb/a5yYf+IkLMvOmvymbfEX6EoLa91uV5mIFQQYN5YSbEaW1yuoMdAUmtK4NkTehkymeU1I1xTo7zKSuYYdNFtL1GOqNpB2H8w3UyYLGJzRJMI+Vr5UFF6KJpsTEdYIs/1UIhOFfwp5M2DCa+4jbYWD5n6PBYNKytG8S6EVdYsIAOUXPsnfi9858lZBG1dkS3A5c1iNW252rya9e16k=
+  on:
+    tags: true
+    branch: production
