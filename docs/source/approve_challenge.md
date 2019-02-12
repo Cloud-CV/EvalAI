@@ -23,7 +23,7 @@ Submission worker is a key component of EvalAI. Since you have recently approved
 
 Run the following command:
 
-    docker-compose reload worker 
+    docker-compose restart worker 
 
 **Submission worker has been successfully reloaded!**
 
