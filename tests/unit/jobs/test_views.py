@@ -825,6 +825,37 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_all_phases_remaining(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions_for_all_phases',
+                                kwargs={
+                                    'challenge_pk': self.challenge.pk
+                                })
+        setattr(self.challenge_phase, 'max_submissions_per_day', 15)
+        setattr(self.challenge_phase, 'max_submissions_per_month', 13)
+        self.challenge_phase.save()
+        expected = {
+            'participant_team': self.participant_team.team_name,
+            'participant_team_id': self.participant_team.id,
+            'phases': [{
+                'name': self.challenge_phase.name,
+                'id': self.challenge_phase.id,
+                'start_date': self.challenge_phase.start_date,
+                'end_date': self.challenge_phase.end_date,
+                'message': {
+                    'remaining_submissions_today_count': 11,
+                    'remaining_submissions_this_month_count': 11,
+                    'remaining_submissions': 98
+                }
+            }]
+        }
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.get(self.url, {})
+        print(response.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
 
