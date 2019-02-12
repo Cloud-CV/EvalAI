@@ -674,6 +674,20 @@ footer ul.primary-nav li:last-child a {
     width: calc(100% - 180px);
     padding: 15px 25px;
 }
+.command .copybtn {
+    background-color: #f7f7f7;
+    float: right;
+    height: 22px !important;
+    line-height: 15px !important;
+    border: 1px solid grey !important;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 0 3% !important;
+}
+
+.command .copybtn:hover {
+    background-color: darkgray !important;
+}
 .projects-tutorials {
     background-color: #f7f7f7;
     padding: 90px 0 20px;
