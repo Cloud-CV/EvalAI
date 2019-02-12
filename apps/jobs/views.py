@@ -134,7 +134,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         if not challenge.approved_by_admin:
-            response_data = {'error': 'Sorry your submission cannot be processed since the challenge is not active or is not approved by EvalAI Admin'}
+            response_data = {'error': 'Sorrry your submission cannot be processed since the challenge is not active or is not approved by EvalAI Admin'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # check if user is a challenge host or a participant
