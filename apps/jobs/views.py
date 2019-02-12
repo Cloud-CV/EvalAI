@@ -154,9 +154,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             response_data = {'error': 'You haven\'t participated in the challenge'}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-        if not challenge.approved_by_admin:
-            response_data = {'error': 'Sorry your submission cannot be processed since the challenge is not active or is not approved by EvalAI Admin'}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
 
         # Fetch the number of submissions under progress.
         submissions_in_progress_status = [Submission.SUBMITTED, Submission.SUBMITTING, Submission.RUNNING]
@@ -169,6 +167,10 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             message = 'You have {} submissions that are being processed. \
                        Please wait for them to finish and then try again.'
             response_data = {'error': message.format(submissions_in_progress)}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if not challenge.approved_by_admin:
+            response_data = {'error': 'Sorry your submission cannot be processed since the challenge is not active or is not approved by EvalAI Admin'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         serializer = SubmissionSerializer(data=request.data,
