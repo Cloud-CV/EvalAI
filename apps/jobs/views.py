@@ -169,10 +169,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             response_data = {'error': message.format(submissions_in_progress)}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        if not challenge.approved_by_admin:
-            response_data = {'error': 'Sorry your submission cannot be processed since the challenge is not active or is not approved by EvalAI Admin'}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
         serializer = SubmissionSerializer(data=request.data,
                                           context={'participant_team': participant_team,
                                                    'challenge_phase': challenge_phase,
@@ -186,6 +182,10 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             publish_submission_message(challenge_id, challenge_phase_id, submission.id)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if not challenge.approved_by_admin:
+            response_data = {'error': 'Sorry your submission cannot be processed since the challenge is not active or is not approved by EvalAI Admin'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @throttle_classes([UserRateThrottle])
