@@ -143,9 +143,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
                 return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-        if not challenge.approved_by_admin:
-            response_data = {'error': 'Sorry your submission cannot be processed since the challenge is not active or is not approved by EvalAI Admin'}
-            return Response(response_data, status=status.HTTP_403_NOT_ACCEPTABLE)
+        
 
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id)
