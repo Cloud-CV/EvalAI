@@ -122,7 +122,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'POST':
-
         # check if the challenge is active or not
         if not challenge.is_active:
             response_data = {'error': 'Challenge is not active'}
@@ -132,6 +131,10 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         if not challenge_phase.is_active:
             response_data = {
                 'error': 'Sorry, cannot accept submissions since challenge phase is not active'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if not challenge.approved_by_admin:
+            response_data = {'error': 'Sorry your submission cannot be processed since the challenge is not active or is not approved by EvalAI Admin'}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # check if user is a challenge host or a participant
