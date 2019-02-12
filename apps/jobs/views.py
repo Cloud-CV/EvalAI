@@ -132,7 +132,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         if not challenge_phase.is_active:
             response_data = {
                 'error': 'Sorry, cannot accept submissions since challenge phase is not active'}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)      
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # check if user is a challenge host or a participant
         if not is_user_a_host_of_challenge(request.user, challenge_id):
@@ -182,6 +182,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+ 
 @throttle_classes([UserRateThrottle])
 @api_view(['PATCH'])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
