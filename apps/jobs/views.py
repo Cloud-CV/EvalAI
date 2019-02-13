@@ -350,13 +350,13 @@ def leaderboard(request, challenge_phase_split_id):
         submission__is_flagged=False,
         submission__status=Submission.FINISHED).order_by('created_at')
 
-    if not challenge_host_user:
-        leaderboard_data = leaderboard_data.filter(submission__is_public=True)
-
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
+
+    if not challenge_host_user:
+        leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
 
