@@ -1274,7 +1274,8 @@
                 };
 
                 utilities.sendRequest(parameters);
-            } else {
+        	$state.go('web.dashboard');	    
+	    } else {
                 $mdDialog.hide();
             }
         };
