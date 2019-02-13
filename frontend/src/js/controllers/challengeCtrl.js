@@ -1274,7 +1274,8 @@
                 };
 
                 utilities.sendRequest(parameters);
-        	$state.go('web.dashboard');	    
+        	// changed to state
+		$state.go('web.dashboard');	    
 	    } else {
                 $mdDialog.hide();
             }
