@@ -60,6 +60,8 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Is Docker Based", db_index=True)
     slug = models.CharField(
         max_length=200, db_index=True, default='')
+    max_docker_image_size = models.PositiveIntegerField(
+        default=50, null=True, blank=True)
 
     class Meta:
         app_label = 'challenges'
