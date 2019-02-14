@@ -24,8 +24,10 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.progressPercentage = 0;
         vm.isValid = {};
         vm.submissionVisibility = {};
+        vm.submissionInProgress = false;
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -274,6 +276,7 @@
                     }
                     parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
+                    /*
                     var formData = new FormData();
                     formData.append("status", "submitting");
                     formData.append("input_file", vm.input_file);
@@ -282,13 +285,22 @@
                     formData.append("project_url", vm.projectUrl);
                     formData.append("publication_url", vm.publicationUrl);
 
-                    parameters.data = formData;
+                    parameters.data = formData;*/
+                    parameters.data = {
+                        'status': 'submitting',
+                        'input_file': vm.input_file,
+                        'method_name': vm.methodName,
+                        'method_description': vm.methodDesc,
+                        'project_url': vm.projectUrl,
+                        'publication_url': vm.publicationUrl
+                    };
 
                     parameters.token = userKey;
                     parameters.callback = {
-                        onSuccess: function() {
+                        onSuccess: function(response) {
                             // vm.input_file.name = '';
-
+                            vm.progressPercentage = 100;
+                            vm.submissionInProgress = false;
                             angular.forEach(
                                 angular.element("input[type='file']"),
                                 function(inputElem) {
@@ -310,6 +322,7 @@
                             vm.stopLoader();
                         },
                         onError: function(response) {
+                            vm.submissionInProgress = false;
                             var status = response.status;
                             var error = response.data;
 
@@ -328,8 +341,13 @@
                                 }
                             }
                             vm.stopLoader();
+                        },
+                        onProgress: function (event) {
+                            vm.progressPercentage = parseInt(100.0 * event.loaded / event.total);
                         }
                     };
+                    vm.progressPercentage = 0;
+                    vm.submissionInProgress = true;
                     utilities.sendRequest(parameters, 'header', 'upload');
                 }
             }
@@ -1393,8 +1411,10 @@
 
         vm.editEvalScript = function(editEvaluationCriteriaForm) {
             if (editEvaluationCriteriaForm) {
+                /*
                 var formData = new FormData();
                 formData.append("evaluation_script", vm.editEvaluationScript);
+                */
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
                     if (challenge == vm.challengeId) {
@@ -1404,9 +1424,13 @@
                 }
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.method = 'PATCH';
-                parameters.data = formData;
+                parameters.data = {
+                    "evaluation_script": vm.editEvaluationScript       
+                };
                 parameters.callback = {
                     onSuccess: function(response) {
+                        vm.progressPercentage = 100;
+                        vm.submissionInProgress = false;
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
@@ -1414,13 +1438,19 @@
                         }
                     },
                     onError: function(response) {
+                        vm.submissionInProgress = false;
                         $mdDialog.hide();
                         vm.page.evaluation_details = vm.tempEvaluationCriteria;
                         var error = response.data;
                         $rootScope.notify("error", error);
+                    },
+                    onProgress: function (event) {
+                        vm.progressPercentage = parseInt(100.0 * event.loaded / event.total);
                     }
                 };
 
+                vm.progressPercentage = 0;
+                vm.submissionInProgress = true;
                 utilities.sendRequest(parameters, 'header', 'upload');
 
             } else {
@@ -1547,6 +1577,7 @@
                 vm.challengePhaseId = vm.page.challenge_phase.id;
                 parameters.url = "challenges/challenge/" + vm.challengeId + "/challenge_phase/" + vm.challengePhaseId;
                 parameters.method = 'PATCH';
+                /*
                 var formData = new FormData();
                 formData.append("name", vm.page.challenge_phase.name);
                 formData.append("description", vm.page.challenge_phase.description);
@@ -1556,10 +1587,24 @@
                 formData.append("max_submissions", vm.page.challenge_phase.max_submissions);
                 if (vm.testAnnotationFile) {
                     formData.append("test_annotation", vm.testAnnotationFile);
+                }*/
+
+                parameters.data = {
+                    "name": vm.page.challenge_phase.name,
+                    "description": vm.page.challenge_phase.description,
+                    "start_date": vm.phaseStartDate.toISOString(),
+                    "end_date": vm.phaseEndDate.toISOString(),
+                    "max_submissions_per_day": vm.page.challenge_phase.max_submissions_per_day,
+                    "max_submissions": vm.page.challenge_phase.max_submissions
+                };
+                if (vm.testAnnotationFile) {
+                    parameters.data["test_annotation"] = vm.testAnnotationFile;
                 }
-                parameters.data = formData;
+
                 parameters.callback = {
                     onSuccess: function(response) {
+                        vm.progressPercentage = 100;
+                        vm.submissionInProgress = false;
                         var status = response.status;
                         utilities.hideLoader();
                         if (status === 200) {
@@ -1568,13 +1613,19 @@
                         }
                     },
                     onError: function(response) {
+                        vm.submissionInProgress = false;
                         utilities.hideLoader();
                         $mdDialog.hide();
                         var error = response.data;
                         $rootScope.notify("error", error);
+                    },
+                    onProgress: function (event) {
+                        vm.progressPercentage = parseInt(100.0 * event.loaded / event.total);
                     }
                 };
                 utilities.showLoader();
+                vm.progressPercentage = 0;
+                vm.submissionInProgress = true;
                 utilities.sendRequest(parameters, 'header', 'upload');
             } else {
                 parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';

@@ -76,6 +76,9 @@
                         <div class="file-path-wrapper">
                             <input class="file-path" type="text" class="input-field col s11" ng-model="challenge.testAnnotationFile" ng-value="challenge.testAnnotationFile.name">
                         </div>
+                        <div ng-if="challenge.submissionInProgress" class="progress">
+                            <div class="determinate" style="width: {{challenge.progressPercentage}}%"></div>
+                        </div>
                     </div>
                     <br>
                     <br>

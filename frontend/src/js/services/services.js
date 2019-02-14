@@ -9,9 +9,9 @@
         .module('evalai')
         .service('utilities', utilities);
 
-    utilities.$inject = ['$http', 'EnvironmentConfig', '$rootScope'];
+    utilities.$inject = ['$http', 'EnvironmentConfig', '$rootScope', 'Upload'];
 
-    function utilities($http, EnvironmentConfig) {
+    function utilities($http, EnvironmentConfig, $rootScope, Upload) {
 
         // factory for API calls
         this.sendRequest = function(parameters, header, type) {
@@ -61,9 +61,16 @@
                     req.headers = headers;
                 }
             }
-
-            $http(req)
-                .then(successCallback, errorCallback);
+           
+            if (type == "upload") {
+                var progressCallback = parameters.callback.onProgress;
+                Upload.upload(req).
+                    then(successCallback, errorCallback, progressCallback);
+            }
+            else {
+                $http(req)
+                    .then(successCallback, errorCallback);
+            }
         };
 
         this.storeData = function(key, value) {

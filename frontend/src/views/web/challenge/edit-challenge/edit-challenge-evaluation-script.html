@@ -13,6 +13,9 @@
                                 <div class="file-path-wrapper">
                                     <input class="file-path validate" type="text">
                                 </div>
+                                <div ng-if="challenge.submissionInProgress" class="progress">
+                                    <div class="determinate" style="width: {{challenge.progressPercentage}}%"></div>
+                                </div>
                             </div>
                         </div>
                         <ul class="inline-list hide-on-med-and-down">

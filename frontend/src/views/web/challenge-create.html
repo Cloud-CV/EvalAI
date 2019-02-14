@@ -11,6 +11,9 @@
                     <div class="file-path-wrapper">
                         <input class="file-path validate" type="text">
                     </div>
+                    <div ng-if="challengeCreate.submissionInProgress" class="progress">
+                        <div class="determinate" style="width: {{challengeCreate.progressPercentage}}%"></div>
+                    </div>
                     <div class="align-left reg-control">
                         <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
                     </div>
