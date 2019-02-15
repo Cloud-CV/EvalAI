@@ -613,7 +613,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "approved_by_admin": False,
                         "forum_url": self.challenge1.forum_url,
                         "is_docker_based": self.challenge1.is_docker_based,
-                        "slug": self.challenge1.slug
+                        "slug": self.challenge1.slug,
+                        "max_docker_image_size": self.challenge1.max_docker_image_size
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -665,7 +666,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "approved_by_admin": False,
                 "forum_url": self.challenge1.forum_url,
                 "is_docker_based": self.challenge1.is_docker_based,
-                "slug": self.challenge1.slug
+                "slug": self.challenge1.slug,
+                "max_docker_image_size": self.challenge1.max_docker_image_size
             }
         ]
 
