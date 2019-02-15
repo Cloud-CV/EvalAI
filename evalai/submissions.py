@@ -11,7 +11,7 @@ import tempfile
 
 from evalai.utils.common import notify_user
 from evalai.utils.requests import make_request
-from evalai.utils.submissions import display_submission_details
+from evalai.utils.submissions import display_submission_details, convert_bytes_to
 from evalai.utils.urls import URLS
 
 
@@ -50,10 +50,29 @@ def push(image, phase):
     tag = image[1]
     docker_client = docker.from_env()
     try:
-        docker_client.images.get(image)
+        docker_image = docker_client.images.get(image)
     except docker.errors.ImageNotFound:
         message = (
             "\nError: Image not found. Please enter the correct image name and tag."
+        )
+        notify_user(message, color="red")
+        sys.exit(1)
+
+    request_path = URLS.challenge_phase_details.value
+    request_path = request_path.format(phase)
+    response = make_request(request_path, "GET")
+    challenge_pk = response.get('challenge')
+
+    request_path = URLS.challenge_details.value
+    request_path = request_path.format(challenge_pk)
+    response = make_request(request_path, "GET")
+    max_docker_image_size = response.get('max_docker_image_size')
+
+    docker_image_size = docker_image.__dict__.get('attrs').get('VirtualSize')
+    if docker_image_size > max_docker_image_size:
+        max_docker_image_size = convert_bytes_to(max_docker_image_size, 'gb')
+        message = (
+            "\nError: Image is too large. The maximum image size allowed is {} GB".format(max_docker_image_size)
         )
         notify_user(message, color="red")
         sys.exit(1)
@@ -109,10 +128,6 @@ def push(image, phase):
             submission_file_path = os.path.join(BASE_TEMP_DIR, 'submission.json')
             with open(submission_file_path, 'w') as outfile:
                 json.dump(data, outfile)
-            request_path = URLS.challenge_phase_details.value
-            request_path = request_path.format(phase)
-            response = make_request(request_path, "GET")
-            challenge_pk = response.get('challenge')
             request_path = URLS.make_submission.value
             request_path = request_path.format(challenge_pk, phase)
             response = make_request(request_path, "POST", submission_file_path)

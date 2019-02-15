@@ -241,3 +241,26 @@ def display_submission_details(submission_id):
     response = response.json()
 
     pretty_print_submission_details(response)
+
+
+def convert_bytes_to(byte, to, bsize=1024):
+    """
+    Convert bytes to KB, MB, GB etc.
+
+    Arguments:
+        bytes {int} -- The bytes which is to be converted
+        to {str} -- To which unit it is to be converted
+    """
+    units_mapping = {
+        'kb': 1,
+        'mb': 2,
+        'gb': 3,
+        'tb': 4,
+        'pb': 5,
+        'eb': 6
+    }
+    unit = byte
+    for value in range(units_mapping[to]):
+        unit = int(unit / bsize)
+
+    return unit
