@@ -61,7 +61,7 @@ class Challenge(TimeStampedModel):
     slug = models.CharField(
         max_length=200, db_index=True, default='')
     max_docker_image_size = models.BigIntegerField(
-        default=42949672960, null=True, blank=True) # Default is 40 GB
+        default=42949672960, null=True, blank=True)  # Default is 40 GB
 
     class Meta:
         app_label = 'challenges'
