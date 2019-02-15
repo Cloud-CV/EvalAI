@@ -21,6 +21,8 @@ urlpatterns = [
         name='get_all_challenges'),
     url(r'^featured/$', views.get_featured_challenges,
         name='get_featured_challenges'),
+    url(r'^challenge/phase/(?P<pk>[0-9]+)/$',
+        views.get_challenge_phase_by_pk, name='get_challenge_phase_by_pk'),
     url(r'^challenge/(?P<pk>[0-9]+)/$',
         views.get_challenge_by_pk, name='get_challenge_by_pk'),
     url(r'^challenge$', views.get_challenges_based_on_teams,
@@ -56,4 +58,7 @@ urlpatterns = [
         views.get_broker_url_by_challenge_pk, name='get_broker_url_by_challenge_pk'),
     url(r'^get_broker_urls/$',
         views.get_broker_urls, name='get_broker_urls'),
+    url(r'^phases/(?P<phase_pk>[0-9]+)/participant_team/aws/credentials/$',
+        views.get_aws_credentials_for_participant_team,
+        name='get_aws_credentials_for_participant_team'),
 ]
