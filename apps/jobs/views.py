@@ -745,3 +745,31 @@ def update_submission(request, challenge_pk):
     submission.save()
     response_data = {'success': 'Submission result has been successfully updated'}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_submissions_count_by_status(request, challenge_pk, submission_status):
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if submission_status not in [Submission.SUBMITTED, Submission.RUNNING, Submission.FAILED,
+    Submission.CANCELLED, Submission.FINISHED, Submission.SUBMITTING]:
+        response_data = {
+            'error': 'Invalid submission status {}'.format(submission_status)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.id):
+        response_data = {'error': 'Sorry, you are not authorized to make this request!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    submissions_done_in_challenge_count = Submission.objects.filter(
+    challenge_phase__challenge=challenge.id, status=submission_status).count()
+
+    response_data = {
+        'submission_count': submissions_done_in_challenge_count
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
