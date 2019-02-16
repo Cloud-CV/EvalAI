@@ -1497,6 +1497,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 description='Description for Challenge Phase',
                 leaderboard_public=False,
                 is_public=True,
+                is_active=True,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
@@ -1505,6 +1506,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions_per_day=100000,
                 max_submissions_per_month=100000,
                 max_submissions=100000,
+                codename='Phase Code Name'
             )
 
             self.private_challenge_phase = ChallengePhase.objects.create(
@@ -3015,7 +3017,21 @@ class GetChallengePhaseByPk(BaseChallengePhaseClass):
                                 kwargs={'pk': self.challenge_phase.pk})
 
     def test_get_challenge_phase_by_pk(self):
-        expected = self.challenge_phase
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": self.challenge_phase.name,
+            "description": self.challenge_phase.description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "is_public": self.challenge_phase.is_public,
+            "is_active": self.challenge_phase.is_active,
+            "codename": self.challenge_phase.codename,
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
+            'max_submissions_per_month': self.challenge_phase.max_submissions_per_month,
+        }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
