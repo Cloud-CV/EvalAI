@@ -756,7 +756,7 @@ def get_challenge_submissions_count_by_status(request, challenge_pk, submission_
     challenge = get_challenge_model(challenge_pk)
 
     if submission_status not in [Submission.SUBMITTED, Submission.RUNNING, Submission.FAILED,
-    Submission.CANCELLED, Submission.FINISHED, Submission.SUBMITTING]:
+                                 Submission.CANCELLED, Submission.FINISHED, Submission.SUBMITTING]:
         response_data = {
             'error': 'Invalid submission status {}'.format(submission_status)
         }
@@ -767,7 +767,7 @@ def get_challenge_submissions_count_by_status(request, challenge_pk, submission_
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     submissions_done_in_challenge_count = Submission.objects.filter(
-    challenge_phase__challenge=challenge.id, status=submission_status).count()
+        challenge_phase__challenge=challenge.id, status=submission_status).count()
 
     response_data = {
         'submission_count': submissions_done_in_challenge_count
