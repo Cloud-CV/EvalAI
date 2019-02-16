@@ -22,12 +22,12 @@ $(document).ready(function() {
         classes: {
           base: {
             "white-space": "nowrap",
-            "color": "grey",
-            "background-color": "#d3d3d3",
-            "padding": "5px",
-            "border-radius": "4px",
+            "color": "white",
+            "background-color": "black",
+            "padding": "12px",
+            "border-radius": "24px",
             "width": "auto",
-            "font-weight": "600"
+            "font-weight": "300"
           },
           
         }

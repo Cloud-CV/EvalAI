@@ -993,8 +993,8 @@ footer ul.primary-nav li:last-child a {
     margin-bottom: 20px;
 }
 
-#codebg {
-    background-color: #fff;
+.codebg {
+    background-color: #fff !important;
 }
 
 #h3-style {
@@ -1067,4 +1067,27 @@ footer ul.primary-nav li:last-child a {
  #main-button:hover{
     color:#283e54;
     box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+.copy-btn {
+    color: black;
+    float: right;
+    cursor: pointer;
+}
+
+a:hover {
+    color: slategrey;
+}
+
+.header-evalai {
+    color: #000;
+    float: left;
+    vertical-align: middle;
+    margin-left: 15px;
+    font-size: 28px;
+    font-weight: 300;
+}
+
+.fw-300 {
+    font-weight: 300;
 }
