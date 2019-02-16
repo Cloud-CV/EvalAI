@@ -130,7 +130,8 @@ class GetChallengeTest(BaseAPITestClass):
                 "approved_by_admin": False,
                 "forum_url": self.challenge.forum_url,
                 "is_docker_based": self.challenge.is_docker_based,
-                "slug": self.challenge.slug
+                "slug": self.challenge.slug,
+                "max_docker_image_size": self.challenge.max_docker_image_size
             }
         ]
 
@@ -224,7 +225,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug
+            "slug": self.challenge.slug,
+            "max_docker_image_size": self.challenge.max_docker_image_size
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -279,7 +281,8 @@ class GetParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug
+            "slug": self.challenge.slug,
+            "max_docker_image_size": self.challenge.max_docker_image_size
         }
         response = self.client.put(self.url, {'title': new_title, 'description': new_description})
         self.assertEqual(response.data, expected)
@@ -356,7 +359,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug
+            "slug": self.challenge.slug,
+            "max_docker_image_size": self.challenge.max_docker_image_size
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -391,7 +395,8 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug
+            "slug": self.challenge.slug,
+            "max_docker_image_size": self.challenge.max_docker_image_size
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -796,7 +801,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
-                "slug": self.challenge3.slug
+                "slug": self.challenge3.slug,
+                "max_docker_image_size": self.challenge3.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -834,7 +840,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
-                "slug": self.challenge2.slug
+                "slug": self.challenge2.slug,
+                "max_docker_image_size": self.challenge2.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -872,7 +879,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
                 "is_docker_based": self.challenge4.is_docker_based,
-                "slug": self.challenge4.slug
+                "slug": self.challenge4.slug,
+                "max_docker_image_size": self.challenge4.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -910,7 +918,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
                 "is_docker_based": self.challenge4.is_docker_based,
-                "slug": self.challenge4.slug
+                "slug": self.challenge4.slug,
+                "max_docker_image_size": self.challenge4.max_docker_image_size
             },
             {
                 "id": self.challenge3.pk,
@@ -938,7 +947,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
-                "slug": self.challenge3.slug
+                "slug": self.challenge3.slug,
+                "max_docker_image_size": self.challenge3.max_docker_image_size
             },
             {
                 "id": self.challenge2.pk,
@@ -966,7 +976,8 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
-                "slug": self.challenge2.slug
+                "slug": self.challenge2.slug,
+                "max_docker_image_size": self.challenge2.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -1050,7 +1061,8 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
-                "slug": self.challenge3.slug
+                "slug": self.challenge3.slug,
+                "max_docker_image_size": self.challenge3.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -1159,7 +1171,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "approved_by_admin": self.challenge3.approved_by_admin,
             "forum_url": self.challenge3.forum_url,
             "is_docker_based": self.challenge3.is_docker_based,
-            "slug": self.challenge3.slug
+            "slug": self.challenge3.slug,
+            "max_docker_image_size": self.challenge3.max_docker_image_size
         }
 
         response = self.client.get(self.url, {})
@@ -1209,7 +1222,8 @@ class GetChallengeByPk(BaseAPITestClass):
             "approved_by_admin": self.challenge4.approved_by_admin,
             "forum_url": self.challenge4.forum_url,
             "is_docker_based": self.challenge4.is_docker_based,
-            "slug": self.challenge4.slug
+            "slug": self.challenge4.slug,
+            "max_docker_image_size": self.challenge4.max_docker_image_size
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1313,7 +1327,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "approved_by_admin": True,
             "forum_url": self.challenge2.forum_url,
             "is_docker_based": self.challenge2.is_docker_based,
-            "slug": self.challenge2.slug
+            "slug": self.challenge2.slug,
+            "max_docker_image_size": self.challenge2.max_docker_image_size
         }]
 
         response = self.client.get(self.url, {'host_team': self.challenge_host_team2.pk})
@@ -1349,7 +1364,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "approved_by_admin": True,
             "forum_url": self.challenge2.forum_url,
             "is_docker_based": self.challenge2.is_docker_based,
-            "slug": self.challenge2.slug
+            "slug": self.challenge2.slug,
+            "max_docker_image_size": self.challenge2.max_docker_image_size
         }]
 
         response = self.client.get(self.url, {'participant_team': self.participant_team2.pk})
@@ -1385,7 +1401,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             "approved_by_admin": True,
             "forum_url": self.challenge2.forum_url,
             "is_docker_based": self.challenge2.is_docker_based,
-            "slug": self.challenge2.slug
+            "slug": self.challenge2.slug,
+            "max_docker_image_size": self.challenge2.max_docker_image_size
         }]
 
         response = self.client.get(self.url, {'mode': 'participant'})
@@ -1422,7 +1439,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge.forum_url,
                 "is_docker_based": self.challenge.is_docker_based,
-                "slug": self.challenge.slug
+                "slug": self.challenge.slug,
+                "max_docker_image_size": self.challenge.max_docker_image_size
             },
             {
                 "id": self.challenge2.pk,
@@ -1450,7 +1468,8 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
-                "slug": self.challenge2.slug
+                "slug": self.challenge2.slug,
+                "max_docker_image_size": self.challenge2.max_docker_image_size
 
             }
         ]
