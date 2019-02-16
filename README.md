@@ -1,6 +1,8 @@
 # EvalAI-CLI
 
-Official Command Line utility to use EvalAI in your terminal.
+<b>Official Command Line utility to use EvalAI in your terminal.</b>
+
+ EvalAI-CLI is designed to extend the functionality of the EvalAI web application to command line to make the platform more accessible and terminal-friendly to its users.
 
 ------------------------------------------------------------------------------------------
 

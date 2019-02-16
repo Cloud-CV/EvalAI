@@ -34,6 +34,23 @@ $(document).ready(function() {
       });   
 });
 
+ // Show the button when scrolled till 100px
+window.onscroll = function() {scrollFunction()};
+
+ function scrollFunction() {
+  if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+    document.getElementById("up-arrow").style.display = "block";
+  } else {
+    document.getElementById("up-arrow").style.display = "none";
+  }
+}
+
+ // Scroll to the top
+function topFunction() {
+  document.body.scrollTop = 0; 
+  document.documentElement.scrollTop = 0; 
+}
+
 
 
 function CopyToClipboard(elementId) {
