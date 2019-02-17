@@ -412,6 +412,39 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions_for_all_phases(request, challenge_pk):
+    """
+
+    API to number of remaining submission for all phases.
+
+    GET jobs/*challenge_pk*/remaining_submissions
+    {
+        "participant_team": "Sample_Participant_Team",
+        "participant_team_id": 2,
+        "phases": [
+            {
+                "id": 1,
+                "name": "Megan Phase",
+                "start_date": "2018-10-28T14:22:53.022639Z",
+                "end_date": "2020-06-19T14:22:53.022660Z",
+                "message": {
+                    "remaining_submissions_this_month_count": 9,
+                    "remaining_submissions_today_count": 5,
+                    "remaining_submissions": 29
+                }
+            },
+            {
+                "id": 2,
+                "name": "Molly Phase",
+                "start_date": "2018-10-28T14:22:53Z",
+                "end_date": "2020-06-19T14:22:53Z",
+                "message": {
+                    "message": "You have exhausted this month's submission limit!",
+                    "remaining_time": "1481076.929224"
+                }
+            }
+        ]
+    }
+    """
     phases_data = {}
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
