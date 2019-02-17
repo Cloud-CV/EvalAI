@@ -447,7 +447,7 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
     """
     phases_data = {}
     try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
+        challenge = get_challenge_model(challenge_pk)
     except Challenge.DoesNotExist:
         response_data = {'error': 'Challenge does not exist'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
