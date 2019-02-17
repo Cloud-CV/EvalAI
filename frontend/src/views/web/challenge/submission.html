@@ -53,22 +53,24 @@
                     <strong>Submission Limits</strong>
                 </span><br>
                 <span class="fs-14">
-                    <strong>Team Name:</strong> {{challenge.phaseRemainingSubmissions.participant_team}}
+                    <strong>Participant Team:</strong> {{challenge.phaseRemainingSubmissions.participant_team}}
                 </span>
-                <table class="highlight centered">
+                <table class="highlight centered responsive-table">
                     <thead>
                         <tr>
                             <th>Phase</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
                             <th>Remaining Submissions</th>
+                            <th>Command to submit</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr ng-repeat="key in challenge.phaseRemainingSubmissions.phases">
-                            <td>{{key.name}}</td>
-                            <td>{{key.start_date | date:'medium'}}</td>
-                            <td>{{key.end_date | date:'medium'}}</td>
+                            <td>{{key.name}}
+                                <br>
+                                <strong class="text-med-black">Start Date: </strong>{{key.start_date | date:'medium'}}
+                                <br>
+                                <strong class="text-med-black">End Date: </strong>{{key.end_date | date:'medium'}}
+                            </td>
                             <td ng-if="challenge.phaseRemainingSubmissionsFlags[key.id] === 'showSubmissionNumbers'">
                                 <strong>
                                     Today:
@@ -94,6 +96,12 @@
                                 <strong>
                                         {{key.message.maxExceededMessage}}
                                 </strong> 
+                            </td>
+                            <td>
+                                <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase {{key.id}}</code>
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="evalai push <image>:<tag> --phase {{key.id}}">
+                                    <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                </button>
                             </td>
                         </tr>
                         
