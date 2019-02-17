@@ -420,10 +420,12 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     max_submissions_per_month_count = challenge_phase.max_submissions_per_month
     max_submissions_per_day_count = challenge_phase.max_submissions_per_day
 
+    submission_status_to_exclude = [Submission.FAILED, Submission.CANCELLED]
+
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk).exclude(status=Submission.FAILED)
+        participant_team=participant_team_pk).exclude(status__in=submission_status_to_exclude)
 
     submissions_done_this_month = submissions_done.filter(
         submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))

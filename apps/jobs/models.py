@@ -119,7 +119,12 @@ class Submission(TimeStampedModel):
                 participant_team=self.participant_team,
                 status=Submission.FAILED).count()
 
-            successful_count = self.submission_number - failed_count
+            cancelled_count = Submission.objects.filter(
+                challenge_phase=self.challenge_phase,
+                participant_team=self.participant_team,
+                status=Submission.CANCELLED).count()
+
+            successful_count = self.submission_number - failed_count - cancelled_count
 
             if successful_count > self.challenge_phase.max_submissions:
                 logger.info("Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
