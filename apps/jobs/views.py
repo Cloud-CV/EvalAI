@@ -476,7 +476,7 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
             'message': remaining_submission_message
         }))
     phases_data["phases"] = phase_data_list
-    return Response(phases_data)
+    return Response(phases_data, status=status.HTTP_200_OK)
 
 
 @throttle_classes([UserRateThrottle])
