@@ -71,15 +71,15 @@
                             <td>{{key.end_date | date:'medium'}}</td>
                             <td ng-if="challenge.phaseRemainingSubmissionsFlags[key.id] === 'showSubmissionNumbers'">
                                 <strong>
-                                    Today's Remaining Submissions:
+                                    Today:
                                 </strong>
                                 {{key.message.remaining_submissions_today_count}}<br>
                                 <strong>
-                                    Monthly Remaining Submissions:
+                                    This Month:
                                 </strong>
                                 {{key.message.remaining_submissions_this_month_count}}<br>
                                 <strong>
-                                    Total Remaining Submissions:
+                                    Total:
                                 </strong>
                                 {{key.message.remaining_submissions}}
                             </td>
