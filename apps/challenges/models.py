@@ -62,6 +62,9 @@ class Challenge(TimeStampedModel):
         max_length=200, db_index=True, default='')
     max_docker_image_size = models.BigIntegerField(
         default=42949672960, null=True, blank=True)  # Default is 40 GB
+    allowed_files = ArrayField(
+        models.CharField(max_length=10, blank=True),
+        default=['.zip', '.json'], blank=True)
 
     class Meta:
         app_label = 'challenges'

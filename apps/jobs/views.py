@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import os
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -149,6 +150,13 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         except ParticipantTeam.DoesNotExist:
             response_data = {'error': 'You haven\'t participated in the challenge'}
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        # Check the extension of submission file.
+        file_ext = os.path.splitext(str(request.data.get('input_file')))[1]
+        if not file_ext in challenge.allowed_files:
+            response_data = {'error': 'Please upload the correct file type'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
 
         # Fetch the number of submissions under progress.
         submissions_in_progress_status = [Submission.SUBMITTED, Submission.SUBMITTING, Submission.RUNNING]
