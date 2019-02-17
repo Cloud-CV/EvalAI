@@ -41,7 +41,7 @@ from .models import Submission
 from .sender import publish_submission_message
 from .serializers import (SubmissionSerializer,
                           CreateLeaderboardDataSerializer)
-from .utils import get_submission_model, get_remaining_submission_for_phase
+from .utils import get_submission_model, get_remaining_submission_for_a_phase
 
 logger = logging.getLogger(__name__)
 
@@ -401,7 +401,9 @@ def leaderboard(request, challenge_phase_split_id):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
-    response_data, response_status = get_remaining_submission_for_phase(request.user, challenge_phase_pk, challenge_pk)
+    response_data, response_status = get_remaining_submission_for_a_phase(request.user,
+                                                                          challenge_phase_pk,
+                                                                          challenge_pk)
     return Response(response_data, status=response_status)
 
 
@@ -428,9 +430,9 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
             request.user, challenge_pk)
     phase_data_list = list()
     for phase in challenge_phase:
-        remaining_submission_message, response_status = get_remaining_submission_for_phase(request.user,
-                                                                                           phase.id,
-                                                                                           challenge_pk)
+        remaining_submission_message, response_status = get_remaining_submission_for_a_phase(request.user,
+                                                                                             phase.id,
+                                                                                             challenge_pk)
         if response_status != status.HTTP_200_OK:
             return Response(remaining_submission_message, status=response_status)
         phase_data_list.append(dict({

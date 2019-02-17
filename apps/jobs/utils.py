@@ -15,7 +15,7 @@ from base.utils import get_model_object
 get_submission_model = get_model_object(Submission)
 
 
-def get_remaining_submission_for_phase(user, challenge_phase_pk, challenge_pk):
+def get_remaining_submission_for_a_phase(user, challenge_phase_pk, challenge_pk):
     # significance of get_challenge_model() here to check
     # if the challenge exists or not
     get_challenge_model(challenge_pk)
