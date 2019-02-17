@@ -23,29 +23,28 @@
             <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card" ng-if="challenge.page.is_docker_based">
                 <div class="col s11 m11" >
                     <span class="fs-18">
-                        <strong>Instructions to Submit Docker Image using EvalAI-CLI</strong>
+                        <strong>Submission instructions for docker image using evalai-cli</strong>
                     </span>
                     <ol>
-                        <li>Install EvalAI-CLI by using the command:<br>
-                            <code>$ pip install evalai
-                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="pip install evalai">
+                        <li>Install evalai-cli using the command:<br>
+                            <code>$ pip install evalai</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="pip install evalai">
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li>
+                        <li>Add your EvalAI account credentials to cli:<br>
+                                <code>$ evalai set_token {{challenge.authCode}}</code>
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="evalai set_token {{challenge.authCode}}">
                                     <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                                 </button>
-                            </code>
                         </li>
-                        <li>Configure your CLI by using the commad:<br>
-                                <code>$ evalai set_token {{challenge.authCode}}
-                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="evalai set_token {{challenge.authCode}}">
-                                        <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
-                                    </button>
-                                    <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showAuthCode()">
-                                        {{challenge.authCodeToggle}} Auth Token
-                                    </button>
-                                </code>
-                        </li>
-                        <li>
-                            For more details here are docs <a href="https://evalai-cli.cloudcv.org/" class="blue-text" target="_blank">EvalAI-CLI</a>
-                        </li>      
+                        <li>Submit your docker image using:<br>
+                            <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase &lt;phase_id&gt;</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Copied the Command')" ngclipboard data-clipboard-text="evalai push <image>:<tag> --phase <phase_id>">
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li> 
+                        <li>For more commands, please refer evalai-cli <a class="dashed-link" href="https://evalai-cli.cloudcv.org/" target="_blank">documentation</a>.</li>  
                     </ol>
                 </div>
             </div>
@@ -55,9 +54,6 @@
                 </span><br>
                 <span class="fs-14">
                     <strong>Team Name:</strong> {{challenge.phaseRemainingSubmissions.participant_team}}
-                </span><br>
-                <span class="fs-14">
-                    <strong>Team ID:</strong> {{challenge.phaseRemainingSubmissions.participant_team_id}}
                 </span>
                 <table class="highlight centered">
                     <thead>
