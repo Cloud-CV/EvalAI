@@ -55,7 +55,9 @@ function topFunction() {
 
 function CopyToClipboard(elementId) {
   var aux = document.createElement("input");
-  aux.setAttribute("value", document.getElementById(elementId).innerHTML);
+  var command = document.getElementById(elementId).innerHTML ; 
+  command = command.replace('&lt;', '<').replace('&gt;', '>');
+  aux.setAttribute("value", command);
   document.body.appendChild(aux);
   aux.select();
   document.execCommand("copy");
