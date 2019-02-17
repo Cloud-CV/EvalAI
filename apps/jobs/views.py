@@ -405,8 +405,8 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     return Response(response_data, status=response_status)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions_for_all_phases(request, challenge_pk):
