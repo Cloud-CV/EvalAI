@@ -121,6 +121,7 @@ class DatasetSplit(TimeStampedModel):
 class ChallengePhase(TimeStampedModel):
 
     """Model representing a Challenge Phase"""
+
     def __init__(self, *args, **kwargs):
         super(ChallengePhase, self).__init__(*args, **kwargs)
         self._original_test_annotation = self.test_annotation

@@ -935,10 +935,10 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             for email in emails:
                 user = User.objects.get(email=email)
                 host = Participant(
-                            user=user,
-                            status=Participant.ACCEPTED,
-                            team=participant_host_team,
-                    )
+                    user=user,
+                    status=Participant.ACCEPTED,
+                    team=participant_host_team,
+                )
                 host.save()
             challenge.participant_teams.add(participant_host_team)
 

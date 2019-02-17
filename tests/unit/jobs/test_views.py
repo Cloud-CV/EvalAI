@@ -92,7 +92,8 @@ class BaseAPITestClass(APITestCase):
             end_date=timezone.now() + timedelta(days=1),
             published=False,
             enable_forum=True,
-            anonymous_leaderboard=False)
+            anonymous_leaderboard=False,
+            allowed_files=['.txt'],)
 
         self.leaderboard_schema = {
             'labels': ['score', 'test-score'],
@@ -172,6 +173,25 @@ class BaseAPITestClass(APITestCase):
                                     'status': 'submitting', 'input_file': self.input_file}, format="multipart")
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_challange_submission_when_submission_file_type_not_allowed(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        expected = {
+            'error': 'Please upload the correct file type'
+        }
+
+        self.input_file = SimpleUploadedFile(
+            "dummy_input.zip", b"file_content", content_type="application/zip")
+        response = self.client.post(self.url, {
+                                    'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_challenge_submission_when_challenge_is_not_active(self):
         self.url = reverse_lazy('jobs:challenge_submission',
@@ -961,26 +981,26 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             'method_name': 'Updated Method Name'
         }
         expected = {
-                'id': self.submission.id,
-                'participant_team': self.submission.participant_team.pk,
-                'participant_team_name': self.submission.participant_team.team_name,
-                'execution_time': self.submission.execution_time,
-                'challenge_phase': self.submission.challenge_phase.pk,
-                'created_by': self.submission.created_by.pk,
-                'status': self.submission.status,
-                'input_file': "http://testserver%s" % (self.submission.input_file.url),
-                'method_name': self.data['method_name'],
-                'method_description': self.submission.method_description,
-                'project_url': self.submission.project_url,
-                'publication_url': self.submission.publication_url,
-                'stdout_file': None,
-                'stderr_file': None,
-                'submission_result_file': None,
-                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
-                "is_public": self.submission.is_public,
-                "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
-                                                    'Z').replace("+00:00", ""),
-            }
+            'id': self.submission.id,
+            'participant_team': self.submission.participant_team.pk,
+            'participant_team_name': self.submission.participant_team.team_name,
+            'execution_time': self.submission.execution_time,
+            'challenge_phase': self.submission.challenge_phase.pk,
+            'created_by': self.submission.created_by.pk,
+            'status': self.submission.status,
+            'input_file': "http://testserver%s" % (self.submission.input_file.url),
+            'method_name': self.data['method_name'],
+            'method_description': self.submission.method_description,
+            'project_url': self.submission.project_url,
+            'publication_url': self.submission.publication_url,
+            'stdout_file': None,
+            'stderr_file': None,
+            'submission_result_file': None,
+            "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+            "is_public": self.submission.is_public,
+            "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
+                                                'Z').replace("+00:00", ""),
+        }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1046,26 +1066,26 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             'is_public': False
         }
         expected = {
-                'id': self.submission.id,
-                'participant_team': self.submission.participant_team.pk,
-                'participant_team_name': self.submission.participant_team.team_name,
-                'execution_time': self.submission.execution_time,
-                'challenge_phase': self.submission.challenge_phase.pk,
-                'created_by': self.submission.created_by.pk,
-                'status': self.submission.status,
-                'input_file': "http://testserver%s" % (self.submission.input_file.url),
-                'method_name': self.submission.method_name,
-                'method_description': self.submission.method_description,
-                'project_url': self.submission.project_url,
-                'publication_url': self.submission.publication_url,
-                'stdout_file': None,
-                'stderr_file': None,
-                'submission_result_file': None,
-                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
-                "is_public": self.submission.is_public,
-                "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(), 'Z')
-                                    .replace("+00:00", ""),
-            }
+            'id': self.submission.id,
+            'participant_team': self.submission.participant_team.pk,
+            'participant_team_name': self.submission.participant_team.team_name,
+            'execution_time': self.submission.execution_time,
+            'challenge_phase': self.submission.challenge_phase.pk,
+            'created_by': self.submission.created_by.pk,
+            'status': self.submission.status,
+            'input_file': "http://testserver%s" % (self.submission.input_file.url),
+            'method_name': self.submission.method_name,
+            'method_description': self.submission.method_description,
+            'project_url': self.submission.project_url,
+            'publication_url': self.submission.publication_url,
+            'stdout_file': None,
+            'stderr_file': None,
+            'submission_result_file': None,
+            "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+            "is_public": self.submission.is_public,
+            "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(), 'Z')
+            .replace("+00:00", ""),
+        }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1104,26 +1124,26 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.url = reverse_lazy('jobs:get_submission_by_pk',
                                 kwargs={'submission_id': self.submission.id})
         expected = {
-                'id': self.submission.id,
-                'participant_team': self.submission.participant_team.pk,
-                'participant_team_name': self.submission.participant_team.team_name,
-                'execution_time': self.submission.execution_time,
-                'challenge_phase': self.submission.challenge_phase.pk,
-                'created_by': self.submission.created_by.pk,
-                'status': self.submission.status,
-                'input_file': "http://testserver%s" % (self.submission.input_file.url),
-                'method_name': self.submission.method_name,
-                'method_description': self.submission.method_description,
-                'project_url': self.submission.project_url,
-                'publication_url': self.submission.publication_url,
-                'stdout_file': None,
-                'stderr_file': None,
-                'submission_result_file': None,
-                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
-                "is_public": self.submission.is_public,
-                "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
-                                                    'Z').replace("+00:00", ""),
-            }
+            'id': self.submission.id,
+            'participant_team': self.submission.participant_team.pk,
+            'participant_team_name': self.submission.participant_team.team_name,
+            'execution_time': self.submission.execution_time,
+            'challenge_phase': self.submission.challenge_phase.pk,
+            'created_by': self.submission.created_by.pk,
+            'status': self.submission.status,
+            'input_file': "http://testserver%s" % (self.submission.input_file.url),
+            'method_name': self.submission.method_name,
+            'method_description': self.submission.method_description,
+            'project_url': self.submission.project_url,
+            'publication_url': self.submission.publication_url,
+            'stdout_file': None,
+            'stderr_file': None,
+            'submission_result_file': None,
+            "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+            "is_public": self.submission.is_public,
+            "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
+                                                'Z').replace("+00:00", ""),
+        }
 
         self.client.force_authenticate(user=self.submission.created_by)
 
@@ -1136,26 +1156,26 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.url = reverse_lazy('jobs:get_submission_by_pk',
                                 kwargs={'submission_id': self.submission.id})
         expected = {
-                'id': self.submission.id,
-                'participant_team': self.submission.participant_team.pk,
-                'participant_team_name': self.submission.participant_team.team_name,
-                'execution_time': self.submission.execution_time,
-                'challenge_phase': self.submission.challenge_phase.pk,
-                'created_by': self.submission.created_by.pk,
-                'status': self.submission.status,
-                'input_file': "http://testserver%s" % (self.submission.input_file.url),
-                'method_name': self.submission.method_name,
-                'method_description': self.submission.method_description,
-                'project_url': self.submission.project_url,
-                'publication_url': self.submission.publication_url,
-                'stdout_file': None,
-                'stderr_file': None,
-                'submission_result_file': None,
-                "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
-                "is_public": self.submission.is_public,
-                "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
-                                                    'Z').replace("+00:00", ""),
-            }
+            'id': self.submission.id,
+            'participant_team': self.submission.participant_team.pk,
+            'participant_team_name': self.submission.participant_team.team_name,
+            'execution_time': self.submission.execution_time,
+            'challenge_phase': self.submission.challenge_phase.pk,
+            'created_by': self.submission.created_by.pk,
+            'status': self.submission.status,
+            'input_file': "http://testserver%s" % (self.submission.input_file.url),
+            'method_name': self.submission.method_name,
+            'method_description': self.submission.method_description,
+            'project_url': self.submission.project_url,
+            'publication_url': self.submission.publication_url,
+            'stdout_file': None,
+            'stderr_file': None,
+            'submission_result_file': None,
+            "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
+            "is_public": self.submission.is_public,
+            "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
+                                                'Z').replace("+00:00", ""),
+        }
 
         self.client.force_authenticate(user=self.user)
 

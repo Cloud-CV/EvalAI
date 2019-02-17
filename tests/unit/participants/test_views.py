@@ -570,7 +570,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
-            )
+        )
 
         self.url = reverse_lazy(
             'participants:get_teams_and_corresponding_challenges_for_a_participant',
@@ -603,7 +603,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             "team_name": self.challenge_host_team.team_name,
                             "created_by": self.challenge_host_team.created_by.username,
                             "team_url": self.challenge_host_team.team_url
-                            },
+                                },
                         "published": self.challenge1.published,
                         "enable_forum": self.challenge1.enable_forum,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
@@ -656,7 +656,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "team_name": self.challenge_host_team.team_name,
                     "created_by": self.challenge_host_team.created_by.username,
                     "team_url": self.challenge_host_team.team_url
-                    },
+                        },
                 "published": self.challenge1.published,
                 "enable_forum": self.challenge1.enable_forum,
                 "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
