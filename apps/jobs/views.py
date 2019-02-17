@@ -32,6 +32,7 @@ from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
+from jobs.utils import submission_status_to_exclude
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -419,8 +420,6 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     max_submissions_count = challenge_phase.max_submissions
     max_submissions_per_month_count = challenge_phase.max_submissions_per_month
     max_submissions_per_day_count = challenge_phase.max_submissions_per_day
-
-    submission_status_to_exclude = [Submission.FAILED, Submission.CANCELLED]
 
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,

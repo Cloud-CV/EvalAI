@@ -114,17 +114,15 @@ class Submission(TimeStampedModel):
             else:
                 self.submission_number = 1
 
-            failed_count = Submission.objects.filter(
+            submissions = Submission.objects.filter(
                 challenge_phase=self.challenge_phase,
-                participant_team=self.participant_team,
-                status=Submission.FAILED).count()
+                participant_team=self.participant_team)
 
-            cancelled_count = Submission.objects.filter(
-                challenge_phase=self.challenge_phase,
-                participant_team=self.participant_team,
-                status=Submission.CANCELLED).count()
+            submission_status_to_exclude = [Submission.FAILED, Submission.CANCELLED]
 
-            successful_count = self.submission_number - failed_count - cancelled_count
+            num_submissions_to_ignore = submissions.filter(status__in=submission_status_to_exclude).count()
+
+            successful_count = self.submission_number - num_submissions_to_ignore
 
             if successful_count > self.challenge_phase.max_submissions:
                 logger.info("Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
@@ -145,10 +143,11 @@ class Submission(TimeStampedModel):
             )
 
             submissions_done_today_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
-                hour=0, minute=0, second=0, microsecond=0)).exclude(status=Submission.FAILED).count()
+                hour=0, minute=0, second=0, microsecond=0)).exclude(status__in=submission_status_to_exclude).count()
 
             submissions_done_in_month_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
-                day=1, hour=0, minute=0, second=0, microsecond=0)).exclude(status=Submission.FAILED).count()
+                day=1, hour=0, minute=0, second=0, microsecond=0)).exclude(
+                    status__in=submission_status_to_exclude).count()
 
             if self.challenge_phase.max_submissions_per_month - submissions_done_in_month_count == 0:
                 logger.info('Permission Denied: The maximum number of submission for this month has been reached')
