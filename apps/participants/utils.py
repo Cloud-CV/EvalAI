@@ -34,7 +34,7 @@ def get_participant_team_id_of_user_for_a_challenge(user, challenge_id):
 
 
 def get_participant_team_name_of_user_for_a_challenge(user, challenge_id):
-    """Returns the participant team object for a particular user for a particular challenge"""
+    """Returns the participant team name for a particular user for a particular challenge"""
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(user, challenge_id)
     if participant_team_id:
         return ParticipantTeam.objects.get(pk=participant_team_id).team_name
