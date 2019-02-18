@@ -1713,6 +1713,7 @@
         vm.showConfirmation = function(message){
             $rootScope.notify("success", message);
         };
+        
     }
 
 })();
