@@ -14,6 +14,7 @@ from django.utils import timezone
 from base.models import (TimeStampedModel, )
 from base.utils import RandomFileName
 from challenges.models import ChallengePhase
+from jobs.constants import submission_status_to_exclude
 from participants.models import ParticipantTeam
 
 logger = logging.getLogger(__name__)
@@ -117,8 +118,6 @@ class Submission(TimeStampedModel):
             submissions = Submission.objects.filter(
                 challenge_phase=self.challenge_phase,
                 participant_team=self.participant_team)
-
-            submission_status_to_exclude = [Submission.FAILED, Submission.CANCELLED]
 
             num_submissions_to_ignore = submissions.filter(status__in=submission_status_to_exclude).count()
 
