@@ -32,7 +32,7 @@ from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
-from jobs.utils import submission_status_to_exclude
+from jobs.constants import submission_status_to_exclude
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
