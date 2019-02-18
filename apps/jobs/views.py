@@ -32,6 +32,7 @@ from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
+from jobs.constants import submission_status_to_exclude
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -423,7 +424,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk).exclude(status=Submission.FAILED)
+        participant_team=participant_team_pk).exclude(status__in=submission_status_to_exclude)
 
     submissions_done_this_month = submissions_done.filter(
         submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
