@@ -357,7 +357,6 @@ class BaseAPITestClass(APITestCase):
                                         'challenge_phase_id': self.challenge_phase.pk})
         actual_maxinmum_submissions = self.challenge_phase.max_submissions
         self.challenge_phase.max_submissions = 0
-        self.challenge_phase.save()
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
 
@@ -678,7 +677,6 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                 })
         setattr(self.challenge_phase, 'max_submissions_per_month', 1)
         self.challenge_phase.save()
-        self.challenge_phase.save()
         self.submission3.status = 'cancelled'
         self.submission2.status = 'failed'
         self.submission3.save()
@@ -703,7 +701,6 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         setattr(self.challenge_phase, 'max_submissions_per_month', 1)
         setattr(self.challenge_phase, 'max_submissions_per_day', 1)
         self.challenge_phase.save()
-        self.challenge_phase.save()
         self.submission3.status = 'cancelled'
         self.submission2.status = 'failed'
         self.submission3.save()
@@ -726,7 +723,6 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                     'challenge_pk': self.challenge.pk
                                 })
         setattr(self.challenge_phase, 'max_submissions_per_day', 1)
-        self.challenge_phase.save()
         self.challenge_phase.save()
         self.submission3.status = 'cancelled'
         self.submission2.status = 'failed'
@@ -752,7 +748,6 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         setattr(self.challenge_phase, 'max_submissions_per_day', 20)
         setattr(self.challenge_phase, 'max_submissions_per_month', 10)
         setattr(self.challenge_phase, 'max_submissions', 15)
-        self.challenge_phase.save()
         self.challenge_phase.save()
         self.submission3.status = 'cancelled'
         self.submission2.status = 'failed'
@@ -860,7 +855,6 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                 })
         setattr(self.challenge_phase, 'max_submissions_per_day', 15)
         setattr(self.challenge_phase, 'max_submissions_per_month', 13)
-        self.challenge_phase.save()
         self.challenge_phase.save()
         self.submission3.status = 'cancelled'
         self.submission2.status = 'failed'
