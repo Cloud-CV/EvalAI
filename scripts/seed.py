@@ -138,6 +138,7 @@ def create_challenge(title, start_date, end_date, host_team):
     evaluation_script = open(
         os.path.join(settings.BASE_DIR, 'examples', 'example1', 'sample_evaluation_script.zip'), 'rb')
     queue = ''.join(random.choice(string.ascii_letters) for _ in range(75))
+    title = title.lower().replace(" ","-")
     year = datetime.date.today().year
     slug = '{t}-{y}'.format(t=title, y=year)
     Challenge.objects.create(
