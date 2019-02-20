@@ -1526,6 +1526,66 @@
             }
         };
 
+        //  Edit Challenge Date
+        vm.challengeDateDialog = function(ev) {
+        	vm.tempChallenge_start = vm.page.start_date;
+        	vm.tempChallenge_end = vm.page.end_date;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-date.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editChallengeDate = function(editChallengeDateForm) {
+            if (editChallengeDateForm) {
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge == vm.challengeId) {
+                        vm.challengeHostId = challengeHostList[challenge];
+                        break;
+                    }
+                }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                //add a check
+                const start = new Date(vm.page.start_date).valueOf()
+                const end = new Date(vm.page.end_date).valueOf()
+                if (start < end){
+
+                parameters.data = {
+                    "start_date": vm.page.start_date,
+                    "end_date": vm.page.end_date
+                };
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200) {
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The challenge Date is  successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        vm.page.start_date = vm.tempChallenge_start;
+                		vm.page.end_date = vm.tempChallenge_end;
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+            }else{
+                	$rootScope.notify("error", "StartDate greated than EndDate");
+                }
+                utilities.sendRequest(parameters);
+            } else {
+                vm.page.start_date = vm.tempChallenge_start;
+                vm.page.end_date = vm.tempChallenge_end;
+                $mdDialog.hide();
+            }
+        };
+
         vm.challengePhaseDialog = function(ev, phase) {
             vm.page.challenge_phase = phase;
             vm.phaseStartDate = new Date(phase.start_date);
