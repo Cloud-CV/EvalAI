@@ -128,7 +128,8 @@ class BaseAPITestClass(APITestCase):
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
                                                    b'Dummy file content', content_type='text/plain'),
-                codename='Phase Code name'
+                codename='Phase Code name',
+                max_concurrent_submissions_allowed=5
             )
 
             self.private_challenge_phase = ChallengePhase.objects.create(
@@ -527,7 +528,20 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
             created_by=self.challenge_host_team.created_by,
-            status='failed',
+            status='submitted',
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+        self.submission3 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status='submitted',
             input_file=self.challenge_phase.test_annotation,
             method_name="Test Method",
             method_description="Test Description",
@@ -586,10 +600,15 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                     'challenge_phase_pk': self.challenge_phase.pk,
                                     'challenge_pk': self.challenge.pk
                                 })
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
+
         expected = {
-            'remaining_submissions_today_count': 9,
-            'remaining_submissions_this_month_count': 18,
-            'remaining_submissions': 98
+            'remaining_submissions_today_count': 10,
+            'remaining_submissions_this_month_count': 19,
+            'remaining_submissions': 99
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -606,10 +625,15 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                     'challenge_phase_pk': self.challenge_phase.pk,
                                     'challenge_pk': self.challenge.pk
                                 })
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
+
         expected = {
-            'remaining_submissions_today_count': 9,
-            'remaining_submissions_this_month_count': 19,
-            'remaining_submissions': 98
+            'remaining_submissions_today_count': 10,
+            'remaining_submissions_this_month_count': 20,
+            'remaining_submissions': 99
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -626,10 +650,14 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                     'challenge_phase_pk': self.challenge_phase.pk,
                                     'challenge_pk': self.challenge.pk
                                 })
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
         expected = {
-            'remaining_submissions_today_count': 8,
-            'remaining_submissions_this_month_count': 18,
-            'remaining_submissions': 98
+            'remaining_submissions_today_count': 9,
+            'remaining_submissions_this_month_count': 19,
+            'remaining_submissions': 99
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -646,6 +674,10 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                 })
         setattr(self.challenge_phase, 'max_submissions', 1)
         self.challenge_phase.save()
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
 
         expected = {
             'message': 'You have exhausted maximum submission limit!',
@@ -666,6 +698,11 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                 })
         setattr(self.challenge_phase, 'max_submissions_per_month', 1)
         self.challenge_phase.save()
+        self.challenge_phase.save()
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
 
         expected = {
             'message': 'You have exhausted this month\'s submission limit!'
@@ -686,6 +723,11 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         setattr(self.challenge_phase, 'max_submissions_per_month', 1)
         setattr(self.challenge_phase, 'max_submissions_per_day', 1)
         self.challenge_phase.save()
+        self.challenge_phase.save()
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
 
         expected = {
             'message': 'Both daily and monthly submission limits are exhausted!'
@@ -705,6 +747,11 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                 })
         setattr(self.challenge_phase, 'max_submissions_per_day', 1)
         self.challenge_phase.save()
+        self.challenge_phase.save()
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
 
         expected = {
             'message': 'You have exhausted today\'s submission limit!',
@@ -726,11 +773,16 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         setattr(self.challenge_phase, 'max_submissions_per_month', 10)
         setattr(self.challenge_phase, 'max_submissions', 15)
         self.challenge_phase.save()
+        self.challenge_phase.save()
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
 
         expected = {
-            'remaining_submissions_today_count': 8,
-            'remaining_submissions_this_month_count': 8,
-            'remaining_submissions': 13
+            'remaining_submissions_today_count': 9,
+            'remaining_submissions_this_month_count': 9,
+            'remaining_submissions': 14
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -749,11 +801,15 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         setattr(self.challenge_phase, 'max_submissions_per_month', 20)
         setattr(self.challenge_phase, 'max_submissions', 15)
         self.challenge_phase.save()
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
 
         expected = {
-            'remaining_submissions_today_count': 3,
-            'remaining_submissions_this_month_count': 13,
-            'remaining_submissions': 13
+            'remaining_submissions_today_count': 4,
+            'remaining_submissions_this_month_count': 14,
+            'remaining_submissions': 14
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -772,11 +828,15 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         setattr(self.challenge_phase, 'max_submissions_per_month', 20)
         setattr(self.challenge_phase, 'max_submissions', 15)
         self.challenge_phase.save()
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
 
         expected = {
-            'remaining_submissions_today_count': 13,
-            'remaining_submissions_this_month_count': 13,
-            'remaining_submissions': 13
+            'remaining_submissions_today_count': 14,
+            'remaining_submissions_this_month_count': 14,
+            'remaining_submissions': 14
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -795,11 +855,15 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         setattr(self.challenge_phase, 'max_submissions_per_month', 20)
         setattr(self.challenge_phase, 'max_submissions', 15)
         self.challenge_phase.save()
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
 
         expected = {
-            'remaining_submissions_today_count': 13,
-            'remaining_submissions_this_month_count': 13,
-            'remaining_submissions': 13
+            'remaining_submissions_today_count': 14,
+            'remaining_submissions_this_month_count': 14,
+            'remaining_submissions': 14
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -817,11 +881,16 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         setattr(self.challenge_phase, 'max_submissions_per_day', 15)
         setattr(self.challenge_phase, 'max_submissions_per_month', 13)
         self.challenge_phase.save()
+        self.challenge_phase.save()
+        self.submission3.status = 'cancelled'
+        self.submission2.status = 'failed'
+        self.submission3.save()
+        self.submission2.save()
 
         expected = {
-            'remaining_submissions_today_count': 11,
-            'remaining_submissions_this_month_count': 11,
-            'remaining_submissions': 98
+            'remaining_submissions_today_count': 12,
+            'remaining_submissions_this_month_count': 12,
+            'remaining_submissions': 99
         }
 
         self.challenge.participant_teams.add(self.participant_team)
