@@ -153,7 +153,7 @@ def create_challenge(title, start_date, end_date, host_team):
         published=True,
         enable_forum=True,
         anonymous_leaderboard=False,
-        slug=slug.lower().replace(" ","-"),
+        slug=slug.lower().replace(" ", "-"),
         start_date=start_date,
         end_date=end_date,
         queue=queue,
