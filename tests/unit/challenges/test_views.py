@@ -465,6 +465,25 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             blocked_email_domains=[],
             approved_by_admin=False,
         )
+        
+        self.challenge3 = Challenge.objects.create(
+            title='Some Docker Based Challenge',
+            short_description='Short description for some docker based challenge',
+            description='Description for some docker based challenge',
+            terms_and_conditions='Terms and conditions for some docker based challenge',
+            submission_guidelines='Submission guidelines for some docker based challenge',
+            creator=self.challenge_host_team2,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            allowed_email_domains=[],
+            blocked_email_domains=[],
+            approved_by_admin=False,
+            is_docker_based=True,
+            slug=challenge3,
+        )
 
         self.participant_team2 = ParticipantTeam.objects.create(
             team_name='Some Participant Team',
@@ -604,6 +623,23 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
                                         'participant_team_pk': self.participant_team3.pk})
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+    @mock_ecr
+    def test_add_participant_team_to_challenge_when_challenge_is_docker_based(self):
+        AWS_DEFAULT_REGION = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')
+        repository, created = None, False
+        client = boto3.client('ecr', region_name=AWS_DEFAULT_REGION)
+        response = client.describe_repositories(
+            registryID=1234567890,
+            repositoryNames=[
+                '{}-{}'.format(challenge3.slug, participant_team2.team_name),
+            ]
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response['repository'][0]['repositoryName'],
+                         'some_docker_based_challenge-participant_team2')
+        self.assertEqual(response['repository'][0]['repositoryUri'],
+                         '1234567890.dkr.ecr.us-east-1.amazonaws.com/some_docker_based_challenge-participant_team2')
 
 
 class DisableChallengeTest(BaseAPITestClass):
