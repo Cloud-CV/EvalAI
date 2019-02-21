@@ -11,7 +11,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
-import mock
+from moto import mock_ecr
+import boto3
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
