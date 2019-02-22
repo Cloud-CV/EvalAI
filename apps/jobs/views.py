@@ -11,7 +11,7 @@ from rest_framework.decorators import (api_view,
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
-from django.db.models import FloatField
+from django.db.models import FloatField, Q
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -40,6 +40,7 @@ from .models import Submission
 from .sender import publish_submission_message
 from .serializers import (SubmissionSerializer,
                           CreateLeaderboardDataSerializer)
+from jobs.serializers import ChallengeSubmissionManagementSerializer
 from .utils import get_submission_model
 
 logger = logging.getLogger(__name__)
@@ -745,3 +746,78 @@ def update_submission(request, challenge_pk):
     submission.save()
     response_data = {'success': 'Submission result has been successfully updated'}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail,))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_submission_by_pk_or_team_name(request, challenge_pk, challenge_phase_pk, filter_query, filter_by):
+    """
+    API endpoint to fetch the details of a filtered submission by participant name &
+    submission ID.
+    Only the challenge hosts are allowed.
+    """
+    # To check for the corresponding challenge from challenge_pk.
+    challenge = get_challenge_model(challenge_pk)
+
+    # To check for the corresponding challenge phase from the challenge_phase_pk and challenge.
+    try:
+        challenge_phase = ChallengePhase.objects.get(
+            pk=challenge_phase_pk, challenge=challenge)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # To check whether filter query containing only interger or string
+    try:
+        filter_query_is_integer = int(filter_query)
+    except:
+        filter_query_is_integer = False
+
+    # If the Filter By is set to Submission ID
+    if filter_by == 'submissionId':
+        try:
+            submissions = Submission.objects.filter(pk=int(filter_query),
+                                                challenge_phase=challenge_phase)
+        except Submission.DoesNotExist:
+            response_data = {'error': 'Submission with the ID {} does not exist'.format(filter_query)}
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    # If the Filter By is set to Team Name
+    elif filter_by == 'teamName':
+        try:
+            participants = ParticipantTeam.objects.filter(team_name__startswith=filter_query)
+            submissions = Submission.objects.filter(participant_team__in=participants,
+                                                    challenge_phase=challenge_phase).order_by('-submitted_at')
+        except Submission.DoesNotExist:
+            response_data = {'error': 'Submission for team name {} does not exist'.format(filter_query)}
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    # If the Filter By not set then filter by Submission ID or Team Name
+    else:
+        if filter_query_is_integer:
+            try:
+                participants = ParticipantTeam.objects.filter(team_name__startswith=filter_query)
+                submissions = Submission.objects.filter((Q(participant_team__in=participants) | Q(pk=int(filter_query))),
+                                                        challenge_phase=challenge_phase).order_by('-submitted_at')
+            except Submission.DoesNotExist:
+                response_data = {'error': 'Submission for {} does not exist'.format(filter_query)}
+                return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        else:
+            try:
+                participants = ParticipantTeam.objects.filter(team_name__startswith=filter_query)
+                submissions = Submission.objects.filter(participant_team__in=participants,
+                                                        challenge_phase=challenge_phase).order_by('-submitted_at')
+            except Submission.DoesNotExist:
+                response_data = {'error': 'Submission for team name {} does not exist'.format(filter_query)}
+                return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    paginator, result_page = paginated_queryset(submissions, request)
+    try:
+        serializer = ChallengeSubmissionManagementSerializer(
+                result_page, many=True, context={'request': request})
+        response_data = serializer.data
+        return paginator.get_paginated_response(response_data)
+    except:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
