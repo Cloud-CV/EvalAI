@@ -779,8 +779,9 @@ def get_submission_by_pk_or_team_name(request, challenge_pk, challenge_phase_pk,
     # If the Filter By is set to Submission ID
     if filter_by == 'submissionId':
         try:
-            submissions = Submission.objects.filter(pk=int(filter_query),
-                                                challenge_phase=challenge_phase)
+            submissions = Submission.objects.filter(
+                pk=int(filter_query),
+                challenge_phase=challenge_phase)
         except Submission.DoesNotExist:
             response_data = {'error': 'Submission with the ID {} does not exist'.format(filter_query)}
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
@@ -788,8 +789,9 @@ def get_submission_by_pk_or_team_name(request, challenge_pk, challenge_phase_pk,
     elif filter_by == 'teamName':
         try:
             participants = ParticipantTeam.objects.filter(team_name__startswith=filter_query)
-            submissions = Submission.objects.filter(participant_team__in=participants,
-                                                    challenge_phase=challenge_phase).order_by('-submitted_at')
+            submissions = Submission.objects.filter(
+                participant_team__in=participants,
+                challenge_phase=challenge_phase).order_by('-submitted_at')
         except Submission.DoesNotExist:
             response_data = {'error': 'Submission for team name {} does not exist'.format(filter_query)}
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
@@ -798,16 +800,18 @@ def get_submission_by_pk_or_team_name(request, challenge_pk, challenge_phase_pk,
         if filter_query_is_integer:
             try:
                 participants = ParticipantTeam.objects.filter(team_name__startswith=filter_query)
-                submissions = Submission.objects.filter((Q(participant_team__in=participants) | Q(pk=int(filter_query))),
-                                                        challenge_phase=challenge_phase).order_by('-submitted_at')
+                submissions = Submission.objects.filter(
+                    (Q(participant_team__in=participants) | Q(pk=int(filter_query))),
+                    challenge_phase=challenge_phase).order_by('-submitted_at')
             except Submission.DoesNotExist:
                 response_data = {'error': 'Submission for {} does not exist'.format(filter_query)}
                 return Response(response_data, status=status.HTTP_404_NOT_FOUND)
         else:
             try:
                 participants = ParticipantTeam.objects.filter(team_name__startswith=filter_query)
-                submissions = Submission.objects.filter(participant_team__in=participants,
-                                                        challenge_phase=challenge_phase).order_by('-submitted_at')
+                submissions = Submission.objects.filter(
+                    participant_team__in=participants,
+                    challenge_phase=challenge_phase).order_by('-submitted_at')
             except Submission.DoesNotExist:
                 response_data = {'error': 'Submission for team name {} does not exist'.format(filter_query)}
                 return Response(response_data, status=status.HTTP_404_NOT_FOUND)
@@ -820,4 +824,3 @@ def get_submission_by_pk_or_team_name(request, challenge_pk, challenge_phase_pk,
         return paginator.get_paginated_response(response_data)
     except:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
