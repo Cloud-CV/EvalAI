@@ -22,8 +22,7 @@ from challenges.serializers import ChallengeSerializer
 from hosts.utils import is_user_a_host_of_challenge
 
 from .models import (Participant, ParticipantTeam)
-from .serializers import (InviteParticipantToTeamSerializer,
-                          ParticipantTeamSerializer,
+from .serializers import (ParticipantTeamSerializer,
                           ChallengeParticipantTeam,
                           ChallengeParticipantTeamList,
                           ChallengeParticipantTeamListSerializer,
@@ -237,8 +236,7 @@ def team_invitation_accepted(request, encoded_team_id, encoded_email):
                 fail_silently=False)
         except:
             response_data = {
-                'error': 'There was some error while sending the' \
-            'confirmation email to the owner of team'
+                'error': 'There was some error while sending the confirmation email to the owner of team'
             }
             return Response(response_data, status=status.HTTP_417_EXPECTATION_FAILED)
         return Response(response_data, status=status.HTTP_202_ACCEPTED)

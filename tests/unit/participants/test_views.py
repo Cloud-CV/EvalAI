@@ -256,7 +256,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
     def setUp(self):
         super(InviteParticipantToTeamTest, self).setUp()
         self.data = {
-            'email': self.invite_user.email
+            'email': self.invite_user.email,
             'url': 'http://localhost:8888/web/teams'
         }
         self.url = reverse_lazy('participants:invite_participant_to_team',
@@ -276,8 +276,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         encoded_team_id = urlsafe_base64_encode(force_bytes(self.participant_team.pk)).decode()
         encoded_email = urlsafe_base64_encode(force_bytes(self.user.email)).decode()
         url = reverse_lazy('participants:invitation_accepted',
-            kwargs={'encoded_team_id': encoded_team_id,
-                    'encoded_email': encoded_email})
+            kwargs={'encoded_team_id': encoded_team_id, 'encoded_email': encoded_email})
         response = self.client.post(url)
         expected = {
             'message': 'You have been successfully added to the team!'
@@ -289,8 +288,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         encoded_team_id = urlsafe_base64_encode(force_bytes(self.participant_team.pk)).decode()
         encoded_email = urlsafe_base64_encode(force_bytes(self.invite_user.email)).decode()
         url = reverse_lazy('participants:invitation_accepted',
-            kwargs={'encoded_team_id': encoded_team_id,
-                    'encoded_email': encoded_email})
+            kwargs={'encoded_team_id': encoded_team_id, 'encoded_email': encoded_email})
         response = self.client.post(url)
         expected = {
             'message': 'error': 'You aren\'t authorized!'
