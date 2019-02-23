@@ -39,18 +39,18 @@
                                     <span>{{challenge.page.start_date | date:'medium'}}</span>
                                     
                             </span>
-                            <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
-                                <i class="fa fa-pencil" aria-hidden="true"></i>
-                            </a>
+                            	<a class="pointer" ng-click="challenge.challengeDateDialog($event);challenge.status='Start'">
+                                	<i class="fa fa-pencil" aria-hidden="true"></i>
+                            	</a>
                             <br>
                             <span>
                                     <strong class="text-light-black">Ends
                                     On: </strong>
                                     <span>{{challenge.page.end_date | date:'medium'}}</span>
                             </span>
-                            <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
-                                <i class="fa fa-pencil" aria-hidden="true"></i>
-                            </a>
+                            	<a class="pointer" ng-click="challenge.challengeDateDialog($event);challenge.status='End'">
+                                	<i class="fa fa-pencil" aria-hidden="true"></i>
+                            	</a>
                             </span>
                             <span ng-if="!challenge.isPublished">
                                 <a class="pointer" ng-click="challenge.publishChallenge($event)">

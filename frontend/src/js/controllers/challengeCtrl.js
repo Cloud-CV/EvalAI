@@ -39,6 +39,7 @@
         vm.columnIndexSort = 0;
         // save initial ranking
         vm.initial_ranking = {};
+        vm.status = "";
 
       // loader for existing teams
         vm.isExistLoader = false;
@@ -1550,7 +1551,6 @@
                 }
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.method = 'PATCH';
-                //add a check
                 const start = new Date(vm.page.start_date).valueOf()
                 const end = new Date(vm.page.end_date).valueOf()
                 if (start < end){

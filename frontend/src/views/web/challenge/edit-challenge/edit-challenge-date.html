@@ -7,20 +7,24 @@
                       <div class="input-field align-left">
                     
                         <input
+                        	ng-if = "challenge.status == 'Start'"
                         	focus-if="challenge.page.start_date" 
                         	value="{{challenge.page.start_date}}"
        						ng-model="challenge.page.start_date"
        						ng-model-options="{ updateOn: 'blur' }"
-      						moment-picker="challenge.editChallengeDate">
-      					
+      						moment-picker="ctrl.input"
+      						placeholder="Start Date">
+      						
       					<input
+      						ng-if = "challenge.status == 'End'"
                         	focus-if="challenge.page.end_date" 
                         	value="{{challenge.page.end_date}}"
        						ng-model="challenge.page.end_date"
        						ng-model-options="{ updateOn: 'blur' }"
-      						moment-picker="challenge.editChallengeDate">
+      						moment-picker="ctrl.input"
+      						placeholder="End Date">
 
-      					<div moment-picker="myDate"> {{ myDate }} </div>
+       					
       					
                     	</div>
                       <ul class="inline-list pointer">
