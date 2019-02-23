@@ -108,6 +108,8 @@
                 if (status == 403) {
                     vm.error = error;
 
+                    // store email error in localStorage
+                    utilities.storeData('emailError', error.detail);
                     // navigate to permissions denied page
                     $state.go('web.permission-denied');
                 } else if (status == 401) {
@@ -140,6 +142,8 @@
                 if (status == 403) {
                     vm.error = error;
 
+                    // store email error in localStorage
+                    utilities.storeData('emailError', error.detail);
                     // navigate to permissions denied page
                     $state.go('web.permission-denied');
                 } else if (status == 401) {
