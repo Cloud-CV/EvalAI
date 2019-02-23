@@ -276,7 +276,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         encoded_team_id = urlsafe_base64_encode(force_bytes(self.participant_team.pk)).decode()
         encoded_email = urlsafe_base64_encode(force_bytes(self.user.email)).decode()
         url = reverse_lazy('participants:invitation_accepted',
-            kwargs={'encoded_team_id': encoded_team_id, 'encoded_email': encoded_email})
+                            kwargs={'encoded_team_id': encoded_team_id, 'encoded_email': encoded_email})
         response = self.client.post(url)
         expected = {
             'message': 'You have been successfully added to the team!'
@@ -288,10 +288,10 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         encoded_team_id = urlsafe_base64_encode(force_bytes(self.participant_team.pk)).decode()
         encoded_email = urlsafe_base64_encode(force_bytes(self.invite_user.email)).decode()
         url = reverse_lazy('participants:invitation_accepted',
-            kwargs={'encoded_team_id': encoded_team_id, 'encoded_email': encoded_email})
+                            kwargs={'encoded_team_id': encoded_team_id, 'encoded_email': encoded_email})
         response = self.client.post(url)
         expected = {
-            'message': 'error': 'You aren\'t authorized!'
+            'error': 'You aren\'t authorized!'
         }
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
