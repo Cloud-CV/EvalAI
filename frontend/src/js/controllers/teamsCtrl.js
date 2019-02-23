@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('TeamsCtrl', TeamsCtrl);
 
-    TeamsCtrl.$inject = ['utilities','loaderService', '$scope', '$state', '$http', '$rootScope', '$mdDialog'];
+    TeamsCtrl.$inject = ['utilities','loaderService', '$scope', '$stateParams', '$state', '$http', '$rootScope', '$mdDialog'];
 
-    function TeamsCtrl(utilities,loaderService, $scope, $state, $http, $rootScope, $mdDialog) {
+    function TeamsCtrl(utilities,loaderService, $scope, $stateParams, $state, $http, $rootScope, $mdDialog) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         var challengePk = 1;
@@ -324,7 +324,7 @@
             });
         };
 
-
+        // function to send email invite to other participant
         vm.inviteOthers = function(ev, participantTeamId) {
             ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
@@ -342,7 +342,8 @@
                 parameters.url = 'participants/participant_team/' + participantTeamId + '/invite';
                 parameters.method = 'POST';
                 parameters.data = {
-                    "email": result
+                    "email": result,
+                     "url": $state.href('web.teams', {}, {absolute: true})
                 };
                 parameters.token = userKey;
                 parameters.callback = {
@@ -361,6 +362,36 @@
             });
         };
 
+        // function to accept the team invitation
+        vm.acceptTeamInvite = function(){
+            vm.encoded_team_id = $stateParams.encoded_team_id;
+            vm.encoded_email = $stateParams.encoded_email;
+            parameters = {};
+            parameters.url = 'participants/invitation/' + vm.encoded_team_id + '/' + vm.encoded_email;
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function(response) {
+                    $state.go("web.teams");
+                    $rootScope.notify("success", response.data["message"]);
+                },
+                onError: function(response) {
+                    $state.go("web.teams");
+                    var error = response.data['error'];
+                    if(error == undefined){
+                        $rootScope.notify("error",
+                            'Team invitation is not yet accepted, please go to the link again.');
+                    }
+                    else{
+                        $rootScope.notify("error", error);
+                    }
+                }
+            };
+            utilities.sendRequest(parameters);
+
+
+        };
 
         vm.showMdDialog = function(ev, participantTeamId) {
             vm.participantTeamId = participantTeamId;

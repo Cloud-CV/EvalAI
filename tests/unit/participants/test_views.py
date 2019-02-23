@@ -3,6 +3,8 @@ from datetime import timedelta
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -255,17 +257,46 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         super(InviteParticipantToTeamTest, self).setUp()
         self.data = {
             'email': self.invite_user.email
+            'url': 'http://localhost:8888/web/teams'
         }
         self.url = reverse_lazy('participants:invite_participant_to_team',
                                 kwargs={'pk': self.participant_team.pk})
 
     def test_invite_participant_to_team_with_all_data(self):
         expected = {
-            'message': 'User has been successfully added to the team!'
+            'message': '{} has been invited to join team {}'.format(
+                self.invite_user.email,
+                self.participant_team.team_name)
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+    def test_invitation_accepted_by_invited_user(self):
+        encoded_team_id = urlsafe_base64_encode(force_bytes(self.participant_team.pk)).decode()
+        encoded_email = urlsafe_base64_encode(force_bytes(self.user.email)).decode()
+        url = reverse_lazy('participants:invitation_accepted',
+            kwargs={'encoded_team_id': encoded_team_id,
+                    'encoded_email': encoded_email})
+        response = self.client.post(url)
+        expected = {
+            'message': 'You have been successfully added to the team!'
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+    def test_invitation_accepted_by_different_user(self):
+        encoded_team_id = urlsafe_base64_encode(force_bytes(self.participant_team.pk)).decode()
+        encoded_email = urlsafe_base64_encode(force_bytes(self.invite_user.email)).decode()
+        url = reverse_lazy('participants:invitation_accepted',
+            kwargs={'encoded_team_id': encoded_team_id,
+                    'encoded_email': encoded_email})
+        response = self.client.post(url)
+        expected = {
+            'message': 'error': 'You aren\'t authorized!'
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_invite_participant_to_team_with_no_data(self):
         del self.data['email']

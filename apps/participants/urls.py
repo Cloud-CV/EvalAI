@@ -5,6 +5,8 @@ from . import views
 urlpatterns = [
     url(r'^participant_team/(?P<pk>[0-9]+)/invite$', views.invite_participant_to_team,
         name='invite_participant_to_team'),
+    url(r'^invitation/(?P<encoded_team_id>\w+)/(?P<encoded_email>\w+)$',
+        views.team_invitation_accepted, name='invitation_accepted'),
     url(r'^participant_team/(?P<participant_team_pk>[0-9]+)/challenge$', views.get_participant_team_challenge_list,
         name='get_participant_team_challenge_list'),
     url(r'^remove_self_from_participant_team/(?P<participant_team_pk>[0-9]+)$',

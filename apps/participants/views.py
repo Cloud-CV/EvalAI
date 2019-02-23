@@ -1,4 +1,9 @@
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -144,6 +149,10 @@ def invite_participant_to_team(request, pk):
             'error': 'User does not exist with this email address!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    if request.user.email == email:
+        response_data = {'error': 'A participant cannot invite himself'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     participant = Participant.objects.filter(team=participant_team, user=user)
     if participant.exists():
         response_data = {'error': 'User is already part of the team!'}
@@ -167,18 +176,76 @@ def invite_participant_to_team(request, pk):
             ' part of. Please try creating a new team and then invite.'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    serializer = InviteParticipantToTeamSerializer(
-        data=request.data,
-        context={
-            'participant_team': participant_team,
-            'request': request})
-
-    if serializer.is_valid():
-        serializer.save()
-        response_data = {
-            'message': 'User has been successfully added to the team!'}
+    team_name = participant_team.team_name
+    encoded_team_id = urlsafe_base64_encode(force_bytes(pk)).decode()
+    encoded_email = urlsafe_base64_encode(force_bytes(email)).decode()
+    combined_url = "{}/{}".format(encoded_team_id, encoded_email)
+    web_url = request.data['url'].split("team")[0]
+    full_url = "{}invitation/{}".format(web_url, combined_url)
+    message = render_to_string('participant_team_email_invite.html', {
+        'full_url': full_url,
+    })
+    subject = "You have been invited to join {} team at CloudCV!".format(team_name)
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.ADMIN_EMAIL,
+            [email],
+            fail_silently=False,)
+        response_message = "{} has been invited to join team {}".format(email, team_name)
+        response_data = {'message': response_message}
         return Response(response_data, status=status.HTTP_202_ACCEPTED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except:
+        response_data = {'error': 'There was some error while sending the invite.'}
+        return Response(response_data, status=status.HTTP_417_EXPECTATION_FAILED)
+
+
+@throttle_classes([UserRateThrottle])
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def team_invitation_accepted(request, encoded_team_id, encoded_email):
+    '''
+    Accepts a participant team invitation and send the confirmation
+    # email back to the owner of team
+    '''
+    pk = force_text(urlsafe_base64_decode(encoded_team_id).decode())
+    accepted_user_email = force_text(urlsafe_base64_decode(encoded_email).decode())
+    current_user_email = request.user.email
+    participant_team = ParticipantTeam.objects.get(pk=pk)
+
+    if current_user_email == accepted_user_email:
+        Participant.objects.get_or_create(
+            user=User.objects.get(email=accepted_user_email),
+            status=Participant.ACCEPTED,
+            team=participant_team)
+        response_data = {
+            'message': 'You have been successfully added to the team!'}
+
+        # Confirmation email for user1 that user2 has accepted his invitation
+        body = "Congratulations, {} has accepted your invite to team."
+        message = body.format(request.user.email)
+        subject = "Team invitation accepted!"
+        team_owner_email = participant_team.created_by.email
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.ADMIN_EMAIL,
+                [team_owner_email],
+                fail_silently=False)
+        except:
+            response_data = {
+                'error': 'There was some error while sending the' \
+            'confirmation email to the owner of team'
+            }
+            return Response(response_data, status=status.HTTP_417_EXPECTATION_FAILED)
+        return Response(response_data, status=status.HTTP_202_ACCEPTED)
+    response_data = {
+        'error': 'You aren\'t authorized!'
+    }
+    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @throttle_classes([UserRateThrottle])
