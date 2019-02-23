@@ -23,7 +23,6 @@ a.active-auth {
 
 .wrn-msg {
     font-size: 0.8em;
-    margin-top: -16px;
 }
 
 .reg-control {
@@ -50,6 +49,13 @@ img.auth-logo{
     min-height: 100vh;
     overflow: hidden;
     position: relative;
+    input{
+    margin-bottom: 0px;
+    }
+    .input-field{
+    height: 72px;
+    max-height: 72px;
+    }
 }
 
 .graphic-cont {
