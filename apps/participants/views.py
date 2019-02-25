@@ -179,6 +179,7 @@ def invite_participant_to_team(request, pk):
     full_url = "{}invitation/{}".format(web_url, combined_url)
     message = render_to_string('participant_team_email_invite.html', {
         'full_url': full_url,
+        'team_name': team_name
     })
     subject = "You have been invited to join {} team at CloudCV!".format(team_name)
     try:
@@ -221,7 +222,7 @@ def team_invitation_accepted(request, encoded_team_id, encoded_email):
         # Confirmation email for user1 that user2 has accepted his invitation
         body = "Congratulations, {} has accepted your invite to team."
         message = body.format(request.user.email)
-        subject = "Team invitation accepted!"
+        subject = "Team {} invitation accepted!".format(participant_team.team_name)
         team_owner_email = participant_team.created_by.email
         try:
             send_mail(

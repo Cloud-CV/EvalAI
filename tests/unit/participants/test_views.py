@@ -1,7 +1,9 @@
 from datetime import timedelta
+from django.core import mail
 
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -262,6 +264,29 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.url = reverse_lazy('participants:invite_participant_to_team',
                                 kwargs={'pk': self.participant_team.pk})
 
+    def test_email_sent_to_invited_user(self):
+        encoded_team_id = urlsafe_base64_encode(
+            force_bytes(self.participant_team.pk)).decode()
+        encoded_email = urlsafe_base64_encode(
+            force_bytes(self.user.email)).decode()
+        combined_url = "{}/{}".format(encoded_team_id, encoded_email)
+        web_url = 'http://localhost:8888/web/'
+        full_url = "{}invitation/{}".format(web_url, combined_url)
+        subject = "You have been invited to join {} team at CloudCV!".format(
+            self.participant_team.team_name)
+        message = render_to_string('participants/templates/participant_team_email_invite.html', {
+            'full_url': full_url,
+            'team_name': self.participant_team.team_name
+        })
+        mail.send_mail(
+            subject,
+            message,
+            settings.ADMIN_EMAIL,
+            [self.invite_user.email],
+            fail_silently=False,)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, subject)
+
     def test_invite_participant_to_team_with_all_data(self):
         expected = {
             'message': '{} has been invited to join team {}'.format(
@@ -299,6 +324,20 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         }
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_email_sent_after_invite_accepted_by_invited_user(self):
+        subject = "Team {} invitation accepted!".format(self.participant_team.team_name)
+        body = "Congratulations, {} has accepted your invite to team."
+        message = body.format(self.invite_user.email)
+        team_owner_email = self.participant_team.created_by.email
+        mail.send_mail(
+            subject,
+            message,
+            settings.ADMIN_EMAIL,
+            [team_owner_email],
+            fail_silently=False,)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, subject)
 
     def test_invite_participant_to_team_with_no_data(self):
         del self.data['email']
