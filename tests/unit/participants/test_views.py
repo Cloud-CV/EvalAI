@@ -1,6 +1,7 @@
 from datetime import timedelta
 from django.conf import settings
 from django.core import mail
+from os.path import join
 
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
