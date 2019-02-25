@@ -171,6 +171,9 @@ def invite_participant_to_team(request, pk):
             ' part of. Please try creating a new team and then invite.'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    '''
+    Sending unique email url to accept the invitation
+    '''
     team_name = participant_team.team_name
     encoded_team_id = urlsafe_base64_encode(force_bytes(pk)).decode()
     encoded_email = urlsafe_base64_encode(force_bytes(email)).decode()
@@ -188,7 +191,7 @@ def invite_participant_to_team(request, pk):
             message,
             settings.ADMIN_EMAIL,
             [email],
-            fail_silently=False,)
+            fail_silently=False)
         response_message = "{} has been invited to join team {}".format(email, team_name)
         response_data = {'message': response_message}
         return Response(response_data, status=status.HTTP_202_ACCEPTED)
@@ -204,7 +207,7 @@ def invite_participant_to_team(request, pk):
 def team_invitation_accepted(request, encoded_team_id, encoded_email):
     '''
     Accepts a participant team invitation and send the confirmation
-    # email back to the owner of team
+    email back to the owner of team
     '''
     pk = force_text(urlsafe_base64_decode(encoded_team_id).decode())
     accepted_user_email = force_text(urlsafe_base64_decode(encoded_email).decode())
@@ -219,7 +222,7 @@ def team_invitation_accepted(request, encoded_team_id, encoded_email):
         response_data = {
             'message': 'You have been successfully added to the team!'}
 
-        # Confirmation email for user1 that user2 has accepted his invitation
+        # Confirmation email sent after invitation accepted by the invited user
         body = "Congratulations, {} has accepted your invite to team."
         message = body.format(request.user.email)
         subject = "Team {} invitation accepted!".format(participant_team.team_name)
