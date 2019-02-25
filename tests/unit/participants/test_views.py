@@ -276,7 +276,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         full_url = "{}invitation/{}".format(web_url, combined_url)
         subject = "You have been invited to join {} team at CloudCV!".format(
             self.participant_team.team_name)
-        path = join(settings.BASE_DIR, 'apps', 'participants', 'participant_team_email_invite.html')
+        path = join(settings.BASE_DIR, 'apps', 'participants', 'templates', 'participant_team_email_invite.html')
         message = render_to_string(path, {
             'full_url': full_url,
             'team_name': self.participant_team.team_name
