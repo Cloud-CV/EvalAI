@@ -1375,23 +1375,18 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_challenge_phase_by_pk_using_queue_name(request, challenge_phase_pk, queue_name):
+def get_challenge_phase_by_pk(request, challenge_phase_pk):
     """
     API endpoint to fetch the challenge phase details by using pk
 
     Arguments:
-        challenge_phase_pk -- Challenge Phase ID for which the detail is to be fetched
-        queue_name -- Secret token provided by the challenge hosts
+        challenge_phase_pk -- Challenge Phase Id for which the detail is to be fetched
 
     Returns:
-        JSON Object -- An object containing challenge phase details
+        Response Object -- An object containing challenge phase details
     """
 
-    try:
-        challenge_phase = ChallengePhase.objects.get(pk=challenge_phase_pk)
-    except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'Challenge Phase {} does not exist'.format(challenge_phase_pk)}
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
 
     challenge_pk = challenge_phase.challenge.id
 
@@ -1401,16 +1396,10 @@ def get_challenge_phase_by_pk_using_queue_name(request, challenge_phase_pk, queu
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    challenge_queue_name = challenge_phase.challenge.queue
-
-    if (challenge_queue_name == queue_name):
-        serializer = ChallengePhaseCreateSerializer(
-            challenge_phase, context={'request': request})
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-
-    response_data = {'error': 'Sorry, you are not authorized to access this challenge phase.'}
-    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    serializer = ChallengePhaseCreateSerializer(
+        challenge_phase, context={'request': request})
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -1422,11 +1411,11 @@ def get_challenge_by_pk_using_queue_name(request, challenge_pk, queue_name):
     API endpoint to fetch the challenge details by using pk
 
     Arguments:
-        challenge_pk -- Challenge ID for which the details is to be fetched
+        challenge_pk -- Challenge Id for which the details is to be fetched
         queue_name -- Secret token provided by the challenge hosts
 
     Returns:
-        JSON Object -- An object containing challenge details
+        Response Object -- An object containing challenge details
     """
 
     try:
@@ -1456,23 +1445,18 @@ def get_challenge_by_pk_using_queue_name(request, challenge_pk, queue_name):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_challenge_phases_by_challenge_pk_using_queue_name(request, challenge_pk, queue_name):
+def get_challenge_phases_by_challenge_pk(request, challenge_pk):
     """
     API endpoint to fetch all challenge phase details corresponding to a challenge using challenge pk
 
     Arguments:
-        challenge_pk -- Challenge ID for which the details is to be fetched
-        queue_name -- Secret token provided by the challenge hosts
+        challenge_pk -- Challenge Id for which the details is to be fetched
 
     Returns:
-        JSON Object -- An object containing all challenge phases for the challenge
+        Response Object -- An object containing all challenge phases for the challenge
     """
 
-    try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
-    except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+    challenge = get_challenge_model(challenge_pk)
 
     if not is_user_a_host_of_challenge(request.user, challenge.id):
         response_data = {
@@ -1482,14 +1466,9 @@ def get_challenge_phases_by_challenge_pk_using_queue_name(request, challenge_pk,
 
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge_pk)
 
-    challenge_queue_name = challenge.queue
-
-    if (challenge_queue_name == queue_name):
-        serializer = ChallengePhaseCreateSerializer(challenge_phases,
-                                                    context={'request': request},
-                                                    many=True)
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-
-    response_data = {'error': 'Sorry, you are not authorized to access these challenge phases.'}
-    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    serializer = ChallengePhaseCreateSerializer(
+        challenge_phases, context={
+            'request': request
+            }, many=True)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
