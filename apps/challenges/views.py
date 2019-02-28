@@ -944,15 +944,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 'error': 'Error in creating challenge. Please check the yaml configuration!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         finally:
-            shutil.rmtree(BASE_LOCATION)
-            logger.info('Zip folder is removed')
-
-    try:
-        shutil.rmtree(BASE_LOCATION)
-        logger.info('Zip folder is removed')
-    except:
-        logger.info('Zip folder for challenge {} is not removed from location'.format(challenge.pk,
-                                                                                      BASE_LOCATION))
+            try:
+                shutil.rmtree(BASE_LOCATION)
+                logger.info('Zip folder is removed')
+            except:
+                logger.exception('Zip folder for challenge {} is not removed from {} location'.format(
+                    challenge.pk, BASE_LOCATION))
 
 
 @throttle_classes([UserRateThrottle])
