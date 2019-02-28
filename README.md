@@ -64,6 +64,20 @@ The steps are:
 
 If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
 
+## Citing EvalAI
+If you are using EvalAI for hosting challenges, please cite the following technical report:
+
+```
+@article{EvalAI,
+    title   =  {EvalAI: Towards Better Evaluation Systems for AI Agents},
+    author  =  {Deshraj Yadav and Rishabh Jain and Harsh Agrawal and Prithvijit
+                Chattopadhyay and Taranjeet Singh and Akash Jain and Shiv Baran
+                Singh and Stefan Lee and Dhruv Batra},
+    year    =  {2019},
+    volume  =  arXiv:1902.03570
+}
+```
+
 ## Team
 
 EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io), [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](http://taranjeet.github.io/), [Shiv Baran Singh](http://www.shivbaran.in/) and [Rishabh Jain](https://rishabhjain2018.github.io/). A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
