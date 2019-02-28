@@ -216,6 +216,7 @@ def extract_challenge_data(challenge, phases):
         challenge_module = importlib.import_module(CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id))
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
     except:
+        logger.exception('Exception raised while creating Python module for challenge_id: %s' % (challenge.id))
         raise
 
 
