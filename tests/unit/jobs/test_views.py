@@ -581,20 +581,23 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                     'challenge_pk': self.challenge.pk
                                 })
         self.submission3.status = 'cancelled'
-        self.submission2.status = 'failed'
         self.submission3.save()
+        self.submission2.status = 'failed'
         self.submission2.save()
+        self.submission1.submitted_at = timezone.now() - timedelta(days=3)
+        self.submission1.save()
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        monthly_count = 0 if self.submission1.submitted_at.month != timezone.now().month else 1
+        remaining_monthly_submissions = self.challenge_phase.max_submissions_per_month - monthly_count
 
         expected = {
             'remaining_submissions_today_count': 10,
-            'remaining_submissions_this_month_count': 19,
+            'remaining_submissions_this_month_count': remaining_monthly_submissions,
             'remaining_submissions': 99
         }
 
-        self.challenge.participant_teams.add(self.participant_team)
-        self.challenge.save()
-        self.submission1.submitted_at = timezone.now() - timedelta(days=3)
-        self.submission1.save()
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
