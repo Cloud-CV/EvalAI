@@ -35,7 +35,7 @@
         <li ng-hide="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
         <!-- show after authenticate user -->
         <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="web.dashboard" ui-sref-active="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
-        <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{main.user.name}}!</a></li>
+        <li ng-show="isAuth"><a class="waves-effect waves-dark" ui-sref="web.profile" ui-sref-active="active"><i class="fa fa-user"></i>Hi {{main.user.name}}!</a></li>
       </ul>
 
     </div>
