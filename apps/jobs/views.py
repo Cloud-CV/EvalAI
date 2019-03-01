@@ -32,6 +32,7 @@ from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
+from jobs.constants import submission_status_to_exclude
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -341,6 +342,11 @@ def leaderboard(request, challenge_phase_split_id):
 
     challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
 
+    # Check if challenge phase leaderboard is public for participant user or not
+    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
+        response_data = {'error': 'Sorry, the leaderboard is not public!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     leaderboard_data = LeaderboardData.objects.exclude(
         submission__created_by__email__in=challenge_hosts_emails)
 
@@ -355,7 +361,7 @@ def leaderboard(request, challenge_phase_split_id):
             'id', 'submission__participant_team__team_name',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
 
-    if not challenge_host_user:
+    if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
         leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
@@ -378,14 +384,8 @@ def leaderboard(request, challenge_phase_split_id):
                                                 distinct_sorted_leaderboard_data,
                                                 request,
                                                 pagination_class=StandardResultSetPagination())
-
-    # Check if challenge phase leaderboard is public for participant user or not
-    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
-        response_data = {'error': 'Sorry, the leaderboard is not public!'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        response_data = result_page
-        return paginator.get_paginated_response(response_data)
+    response_data = result_page
+    return paginator.get_paginated_response(response_data)
 
 
 @throttle_classes([UserRateThrottle])
@@ -423,7 +423,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk).exclude(status=Submission.FAILED)
+        participant_team=participant_team_pk).exclude(status__in=submission_status_to_exclude)
 
     submissions_done_this_month = submissions_done.filter(
         submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
