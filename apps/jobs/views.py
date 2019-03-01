@@ -368,7 +368,6 @@ def leaderboard(request, challenge_phase_split_id):
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
-    # challenge_host = challenge_phase_split__
     distinct_sorted_leaderboard_data = []
     team_list = set()
     for data in sorted_leaderboard_data:
