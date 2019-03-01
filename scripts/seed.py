@@ -140,6 +140,7 @@ def create_challenge(title, start_date, end_date, host_team):
     queue = ''.join(random.choice(string.ascii_letters) for _ in range(75))
     year = datetime.date.today().year
     slug = '{t}-{y}'.format(t=title, y=year)
+	slug = slug.lower().replace(" ","-")
     Challenge.objects.create(
         title=title,
         short_description=fake.paragraph(),
@@ -153,7 +154,7 @@ def create_challenge(title, start_date, end_date, host_team):
         published=True,
         enable_forum=True,
         anonymous_leaderboard=False,
-        slug=slug.lower().replace(" ", "-"),
+        slug=slug,
         start_date=start_date,
         end_date=end_date,
         queue=queue,
