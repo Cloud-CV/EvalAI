@@ -340,7 +340,6 @@ def leaderboard(request, challenge_phase_split_id):
     # while populating leaderboard
     challenge_obj = challenge_phase_split.challenge_phase.challenge
     challenge_hosts_emails = challenge_obj.creator.get_all_challenge_host_email()
-    # challenge_host = challenge_obj.creator.team_name
     is_challenge_phase_public = challenge_phase_split.challenge_phase.is_public
     # Exclude the submissions from challenge host team to be displayed on the leaderboard of public phases
     challenge_hosts_emails = [] if not is_challenge_phase_public else challenge_hosts_emails
