@@ -581,20 +581,23 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                                     'challenge_pk': self.challenge.pk
                                 })
         self.submission3.status = 'cancelled'
-        self.submission2.status = 'failed'
         self.submission3.save()
+        self.submission2.status = 'failed'
         self.submission2.save()
+        self.submission1.submitted_at = timezone.now() - timedelta(days=3)
+        self.submission1.save()
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        monthly_count = 0 if self.submission1.submitted_at.month != timezone.now().month else 1
+        remaining_monthly_submissions = self.challenge_phase.max_submissions_per_month - monthly_count
 
         expected = {
             'remaining_submissions_today_count': 10,
-            'remaining_submissions_this_month_count': 19,
+            'remaining_submissions_this_month_count': remaining_monthly_submissions,
             'remaining_submissions': 99
         }
 
-        self.challenge.participant_teams.add(self.participant_team)
-        self.challenge.save()
-        self.submission1.submitted_at = timezone.now() - timedelta(days=3)
-        self.submission1.save()
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -1278,32 +1281,55 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             method_name="Test Method",
             method_description="Test Description",
             project_url="http://testserver/",
-            publication_url="http://testserver/"
+            publication_url="http://testserver/",
+            is_public=True
+        )
+
+        self.submission_2 = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.user1,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=False
         )
 
         self.private_submission = Submission.objects.create(
             participant_team=self.host_participant_team,
             challenge_phase=self.private_challenge_phase,
-            created_by=self.user,
+            created_by=self.user1,
             status="submitted",
             input_file=self.private_challenge_phase.test_annotation,
             method_name="Test Method",
             method_description="Test Description",
             project_url="http://testserver/",
-            publication_url="http://testserver/"
+            publication_url="http://testserver/",
         )
 
         self.submission.is_public = True
         self.submission.status = Submission.FINISHED
         self.submission.save()
 
-        self.private_submission.is_public = True
+        self.submission_2.is_public = False
+        self.submission_2.status = Submission.FINISHED
+        self.submission_2.save()
+
+        self.private_submission.is_public = False
         self.private_submission.status = Submission.FINISHED
         self.private_submission.save()
 
         self.result_json = {
             'score': 50.0,
             'test-score': 75.0
+        }
+
+        self.result_json_2 = {
+            'score': 10.0,
+            'test-score': 20.0
         }
 
         self.expected_results = [self.result_json['score'], self.result_json['test-score']]
@@ -1314,6 +1340,13 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             submission=self.submission,
             leaderboard=self.leaderboard,
             result=self.result_json
+        )
+
+        self.leaderboard_data_2 = LeaderboardData.objects.create(
+            challenge_phase_split=self.challenge_phase_split,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result=self.result_json_2
         )
 
         self.private_leaderboard_data = LeaderboardData.objects.create(
@@ -1414,3 +1447,17 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.assertEqual(response.data['previous'], expected['previous'])
         self.assertEqual(response.data['results'], expected['results'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_private_leaderboard_when_user_is_participant(self):
+        self.url = reverse_lazy('jobs:leaderboard',
+                                kwargs={'challenge_phase_split_id': self.private_challenge_phase_split.id})
+
+        expected = {
+            'error': 'Sorry, the leaderboard is not public!'
+        }
+
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
