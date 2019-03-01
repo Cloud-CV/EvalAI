@@ -1310,7 +1310,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             publication_url="http://testserver/",
         )
 
-        self.submission.is_public = True 
+        self.submission.is_public = True
         self.submission.status = Submission.FINISHED
         self.submission.save()
 
