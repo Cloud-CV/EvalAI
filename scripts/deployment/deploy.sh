@@ -76,7 +76,7 @@ case $opt in
             queue_name=($(echo ${queue_name//,/ } | tr -d '[]'))
             queue=$(echo $queue_name | tr -d '"')
             echo "Deploying worker for queue: " $queue
-            docker-compose -f docker-compose-${env}.yml run -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker
+            docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker
             echo "Deployed worker docker container for queue: " $queue
             ;;
         deploy-workers)
@@ -94,7 +94,7 @@ case $opt in
             do
                 queue=$(echo $queue_name | tr -d '"')
                 echo "Deploying worker for queue: " $queue
-                docker-compose -f docker-compose-${env}.yml run -e CHALLENGE_QUEUE=$queue -d worker
+                docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -d worker
                 echo "Deployed worker docker container for queue: " $queue
              done
             ;;
