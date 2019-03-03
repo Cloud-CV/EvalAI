@@ -1529,8 +1529,8 @@
 
         //  Edit Challenge Date
         vm.challengeDateDialog = function(ev) {
-        	vm.tempChallenge_start = vm.page.start_date;
-        	vm.tempChallenge_end = vm.page.end_date;
+        	vm.tempChallengeStart = vm.page.start_date;
+        	vm.tempChallengeEnd = vm.page.end_date;
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
@@ -1551,10 +1551,9 @@
                 }
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.method = 'PATCH';
-                const start = new Date(vm.page.start_date).valueOf()
-                const end = new Date(vm.page.end_date).valueOf()
+                var start = new Date(vm.page.start_date).valueOf()
+                var end = new Date(vm.page.end_date).valueOf()
                 if (start < end){
-
                 parameters.data = {
                     "start_date": vm.page.start_date,
                     "end_date": vm.page.end_date
@@ -1564,24 +1563,30 @@
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
-                            $rootScope.notify("success", "The challenge Date is  successfully updated!");
+                            if (vm.status == 'Start'){
+                                $rootScope.notify("success", "The challenge start date is updated!");
+                            }
+                            if (vm.status === 'End'){
+                                $rootScope.notify("success", "The challenge end date is updated!");
+                            } 
+                            
                         }
                     },
                     onError: function(response) {
                         $mdDialog.hide();
-                        vm.page.start_date = vm.tempChallenge_start;
-                		vm.page.end_date = vm.tempChallenge_end;
+                        vm.page.start_date = vm.tempChallengeStart;
+                        vm.page.end_date = vm.tempChallengeEnd;
                         var error = response.data;
                         $rootScope.notify("error", error);
                     }
                 };
             }else{
-                	$rootScope.notify("error", "StartDate greated than EndDate");
+                	$rootScope.notify("error", "The challenge start date is greater than end date");
                 }
                 utilities.sendRequest(parameters);
             } else {
-                vm.page.start_date = vm.tempChallenge_start;
-                vm.page.end_date = vm.tempChallenge_end;
+                vm.page.start_date = vm.tempChallengeStart;
+                vm.page.end_date = vm.tempChallengeEnd;
                 $mdDialog.hide();
             }
         };

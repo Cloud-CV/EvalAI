@@ -3,30 +3,26 @@
         <div class="col s12 m12">
             <div class="ev-card-body pd-20 font-size-16">
                 <form name="editChallengeDateForm" ng-submit="challenge.editChallengeDate(editChallengeDateForm.$valid)">
-                    <div class="pass-date">Edit Challenge Date</div>
-                      <div class="input-field align-left">
-                    
-                        <input
+                    <div class="pass-date" ng-if = "challenge.status == 'Start'">Edit challenge start date</div>
+                    <div class="pass-date" ng-if = "challenge.status == 'End'">Edit challenge end date</div>
+                      <div class="input-field align-left"> 
+                      <input
                         	ng-if = "challenge.status == 'Start'"
                         	focus-if="challenge.page.start_date" 
-                        	value="{{challenge.page.start_date}}"
-       						ng-model="challenge.page.start_date"
-       						ng-model-options="{ updateOn: 'blur' }"
-      						moment-picker="ctrl.input"
-      						placeholder="Start Date">
-      						
-      					<input
-      						ng-if = "challenge.status == 'End'"
+                          value="{{challenge.page.start_date}}"
+       						        ng-model="challenge.page.start_date"
+       						        ng-model-options="{ updateOn: 'blur' }"
+      						        moment-picker="ctrl.input"
+      						        placeholder="Start Date">     
+                      <input
+      						        ng-if = "challenge.status == 'End'"
                         	focus-if="challenge.page.end_date" 
                         	value="{{challenge.page.end_date}}"
-       						ng-model="challenge.page.end_date"
-       						ng-model-options="{ updateOn: 'blur' }"
-      						moment-picker="ctrl.input"
-      						placeholder="End Date">
-
-       					
-      					
-                    	</div>
+       						        ng-model="challenge.page.end_date"
+       						        ng-model-options="{ updateOn: 'blur' }"
+      						        moment-picker="ctrl.input"
+      						        placeholder="End Date">
+                      </div>
                       <ul class="inline-list pointer">
                         <li>
                             <a ng-click="challenge.editChallengeDate(false)" class="dark-link pointer"><strong>Cancel</strong></a>
