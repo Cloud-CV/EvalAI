@@ -1,0 +1,27 @@
+<app-header-static>
+</app-header-static>
+<div class="container-top">
+  <div class="create-challenge-container">
+    <div class="create-challenge-title">
+    	Create Challenge
+    </div>
+     <app-forcelogin [path]="'/challenge-create'" *ngIf="!authServicePublic.isLoggedIn()"></app-forcelogin>
+    <div class="card card-light" *ngIf="authServicePublic.isLoggedIn()">
+    	
+    <div class="create-form">
+        <div class="title">Please upload zip file to create a challenge!</div>
+    	<app-input [isRequired]="true" [label]="'zip_configuration'" [placeholder]="'Upload File *'" [type]="'file'" [theme]="'dark'"  #formcreate></app-input>
+    	<div class="submit-btn-div">
+          <span class="btn btn-filter selected" (click)="formValidate('formcreate')">Submit</span>
+        </div>
+    </div>
+    <div>
+          	<i class="fas fa-info-circle"></i>
+            To know how to create a challenge using zip file configuration, please see our documentation
+            <a href="https://evalai.readthedocs.io/en/latest/challenge_creation.html#challenge-creation-using-zip-configuration" class="highlight-link" target="_blank">here.</a>.
+          </div>
+
+    </div>
+  </div>
+</div>
+<app-footer></app-footer>

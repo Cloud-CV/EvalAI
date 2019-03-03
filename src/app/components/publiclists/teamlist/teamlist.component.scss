@@ -1,0 +1,107 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.teamlist-container {
+	padding:30px;
+  overflow:auto;
+  .card {
+    background:white;
+    border-radius:10px;
+    @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+    display:inline-block;
+    margin:10px;
+    font-size:$fs-16;
+    font-weight:$fw-light;
+    font-color:$gray-darker;
+    vertical-align:top;
+    .card-title {
+      text-align:center;
+      font-size:$fs-18;
+      font-weight:$fw-regular;
+      padding:20px;
+      padding-bottom:30px;
+      border-bottom:1px solid $gray-light;
+      margin-bottom:20px;
+    }
+    .card-content {
+      padding:30px;
+      position:relative;
+      .see-more {
+        text-align:center;
+        margin-left:0;
+      }
+      .team-create-form {
+        .btn {
+          margin-left:0px;
+        }
+      }
+    }
+    .create-challenge {
+        text-align:center;
+        margin-left:0;
+        border-top:1px solid $gray-light;
+        margin-bottom:5px;
+        .btn {
+          &:hover {
+            color:white;
+          }
+        }
+    }
+    &.team-select {
+      width:50%;
+      float:left;
+      .card-content {
+        // max-height:250px;
+        overflow-y:scroll;
+      }
+    }
+    &.team-create {
+      width:40%;
+      float:right;
+    }
+  }
+  
+}
+
+@include screen-medium {
+  .teamlist-container {
+    .card {
+      display:block;
+      &.team-select {
+        width:100%;
+        float:left;
+        margin-left:0;
+      }
+      &.team-create {
+        margin-left:0;
+        width:100%;
+        float:left;
+      }
+    }
+  }
+}
+
+@include screen-small {
+  .teamlist-container {
+    .card {
+      display:block;
+      .card-content {
+        padding:20px;
+      }
+      &.team-select {
+        width:100%;
+        float:left;
+        margin-left:0;
+        .card-content {
+          padding:0px;
+          padding-bottom:10px;
+        }
+      }
+      &.team-create {
+        margin-left:0;
+        width:100%;
+        float:left;
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.create-challenge-container {
+  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  width:90%;
+  margin: 0 auto;
+  background:$gray-lighter;
+  color:$gray-darker;
+  border-radius:10px;
+  margin-top:50px;
+  margin-bottom:100px;
+  padding:20px;
+  text-align:center;
+  .create-challenge-title {
+    font-size:$fs-24;
+  }
+  .card {
+  	display:inline-block;
+  	padding:30px;
+  	text-align:center;
+    max-width:500px;
+  }
+  .create-form {
+  	text-align:left;
+  	display:inline-block;
+  	margin:30px;
+    .title {
+      margin-bottom:10px;
+    }
+  }
+  .submit-btn-div {
+    .btn {
+      margin-left:0;
+    }
+  }
+
+}

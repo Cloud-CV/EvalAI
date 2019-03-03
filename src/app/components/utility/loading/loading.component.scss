@@ -1,0 +1,51 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.loading-container {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: $white-overlay-medium;
+  z-index: 100;
+  .loader {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index:101;
+    transform: translate(-50%, -50%);
+    span {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 100%;
+      background-color: $red-light;
+      margin: 35px 5px;
+      opacity: 0;
+      &:nth-child(1) {
+        animation: opacitychange 1s ease-in-out infinite;
+      }
+      &:nth-child(2) {
+        animation: opacitychange 1s ease-in-out 0.33s infinite;
+      }
+      &:nth-child(3) {
+        animation: opacitychange 1s ease-in-out 0.66s infinite;
+      }
+    }
+  }
+  &.hidden {
+    display:none;
+  }
+}
+
+@include keyframes(opacitychange) {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  60% {
+    opacity: 1;
+  }
+}

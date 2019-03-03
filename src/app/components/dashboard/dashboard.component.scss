@@ -1,0 +1,41 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.dashboard-container {
+	font-size:$fs-16;
+	font-weight: $fw-light;
+	.card {
+		background: $gray-lighter;
+		padding:30px;
+	.analytics {
+		text-align: center;
+		padding:20px;
+		.btn {
+			margin-left:0;
+			margin-top:30px;
+		}
+	}
+	.section {
+		padding:10px;
+		text-align:center;
+		border-bottom:1px solid rgba(0,0,0,0.05);
+		.section-title {
+          text-align:center;
+          font-size:$fs-18;
+          font-weight:$fw-regular;
+          color: $red-light;
+          padding:20px;
+		}
+		.section-number {
+		  text-align:center;
+		  font-size:$fs-24;
+		  font-weight:$fw-regular;
+		  padding:20px;
+		}
+		.section-link {
+		  text-align:center;
+		  padding:20px;
+		}
+	}
+	}
+}

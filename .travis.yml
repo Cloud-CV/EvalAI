@@ -21,7 +21,7 @@ before_script:
 
 script:
   - ng lint
-  - ng test --watch=false --code-coverage
+  - ng test --watch=false --progress=false --code-coverage > test-log
   - ng e2e
   - ng build --prod
 

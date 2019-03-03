@@ -1,0 +1,123 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.team-card-container {
+  font-size: $fs-16;
+  color: $gray-darker;
+  font-weight: $fw-light;
+  overflow: auto;
+  position: relative;
+  text-align: center;
+  padding-bottom: 20px;
+  .team-content {
+    cursor: pointer;
+    @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+    width: 90%;
+    display: inline-block;
+    position: relative;
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    z-index: 5;
+    overflow: auto;
+    text-align: left;
+    i {
+      &.selectstate {
+        font-size: $fs-18;
+        margin-right:10px;
+        color:$gray-dark;
+        margin-top:15px;
+      }
+      font-size: $fs-24;
+      vertical-align:top;
+      margin-top:10px;
+    }
+    .title {
+      &.toptitle {
+        margin-bottom: 10px;
+      }
+      display:inline-block;
+      font-weight: $fw-bold;
+    }
+    .team-details {
+      display: inline-block;
+      margin: 0px 10px 0px 10px;
+      max-width: 185px;
+      overflow:hidden;
+    }
+    .team-icons {
+      display: inline-block;
+      position: relative;
+      float: right;
+      margin-top: 10px;
+      a {
+      	&.host {
+      		display:none;
+      	}
+      }
+      i {
+        &.no-highlight {
+          color: $gray-dark;
+        }
+        font-size: $fs-16;
+        margin: 0px 10px 0px 10px;
+      }
+    }
+  }
+  .team-members {
+    text-align: left;
+    margin: 0 auto;
+    margin-top: -25px;
+    margin-bottom: 10px;
+    width: 90%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0px 0px 5px 5px;
+    max-height: 0;
+    transition: all 0.5s ease;
+    .title {
+      margin-bottom: 10px;
+      font-weight: $fw-bold;
+    }
+    background:$gray-lighter;
+  }
+  &.selected {
+    &.expand, &.noexpand {
+      .team-members {
+        @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+        max-height: 300px;
+        transition: all 0.5s ease;
+        padding: 15px;
+        padding-top: 20px;
+        padding-left: 20px;
+      }
+    }
+    &.noexpand {
+      .team-content {
+        @include box-shadow(0px, 0px, 10px, 0px, $overlay-light);
+        // background: $gray-lighter;
+      }
+    }
+  }
+}
+
+@include screen-small {
+  .team-card-container {
+    .team-content {
+      width: 95%;
+      .team-details {
+        max-width: 185px;
+      }
+      .team-icons {
+        text-align: center;
+        display: block;
+        float: unset;
+      }
+    }
+    .team-members {
+      width: 95%;
+    }
+  }
+}

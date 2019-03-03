@@ -1,0 +1,118 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.home-main-container {
+  display:block;
+  .header-tagline {
+    color: #fff;
+    font-weight: semibold;
+    padding: 10px;
+  }
+  .header-description {
+    color: #efefef;
+    font-weight: 300;
+    padding: 30px;
+    font-size:$fs-16;
+  }
+  .header-body-buttons {
+    padding-top:40px;
+    padding-bottom:30px;
+    width: 50%;
+    margin: 0 auto;
+    .btn-left {
+      margin-left: 0;
+    }
+    .btn {
+      width: 200px;
+      margin-bottom:20px !important;
+    }
+  }
+  .top-margin {
+    margin-top: 30px;
+  }
+  .top-margin-extra {
+    margin-top: 50px;
+  }
+  .block-inline {
+    display: inline-block;
+  }
+
+  .section-title {
+    font-size: $fs-36 !important;
+    color: #fff;
+    font-weight: semibold;
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .section-title-div {
+    text-align: center;
+    margin-top: 50px;
+  }
+  .header-container {
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    width: 100%;
+  }
+  .header-container .row {
+    padding-left: 2%;
+    padding-right: 2%;
+    text-align: center;
+  }
+  .header-iframe-div {
+    width: 40%;
+    margin: 0 auto;
+    margin-top: 50px;
+    position:relative;
+    img {
+      height:110%;
+      position:absolute;
+      left:30px;
+      top:10px;
+      z-index:0;
+    }
+    iframe {
+      z-index:1;
+      position:relative;
+    }
+  }
+
+  .combinedvideo {
+    width: 80%;
+    height: 250px;
+    margin-top: 50px;
+    cursor: pointer !important;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+}
+
+@include screen-medium {
+  .home-main-container {
+    .header-iframe-div {
+      width: 50% !important;
+      margin-top: 100px;
+    }
+  }
+}
+
+@include screen-small {
+  .home-main-container {
+    .header-iframe-div {
+      width: 90% !important;
+      margin-top: 0px;
+      .combinedvideo {
+        margin: 30px auto 0 !important;
+        max-width: 90%;
+        min-width: 90%;
+        height: 200px;
+      }
+      img {
+        width:90%;
+        left:0px;
+
+      }
+    }
+  }
+}

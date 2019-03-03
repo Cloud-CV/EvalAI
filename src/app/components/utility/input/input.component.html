@@ -1,0 +1,14 @@
+<div class="input-group">
+  <div *ngIf="type!='file'">    
+  <input class="input-field" (input)="validateInput($event.target.value)" [class.isValid]="isValid" [class.theme-dark]="theme=='dark'" type="{{type}}" [value]="value" [readonly]="isReadonly">
+  <span class="input-bar"></span>
+  <label [class.is-not-empty]="!isEmpty" [class.theme-dark]="theme=='dark'">{{placeholder}}</label>
+  <img class="input-icon" src="{{icon}}" *ngIf="isIconPresent" />
+  <div class="input-message" #textValue [class.hidden]="!(((isRequired && isEmpty)||(!isValid && !isEmpty))  && isDirty)">{{message}}</div>
+  </div>
+  <div class="file-upload" *ngIf="type=='file'">
+  	<span class="btn btn-filter" (click)="transferClick('file-upload-custom')" [class.theme-dark]="theme=='dark'" [class.selected]="fileSelected"><i class="fas fa-upload"></i> {{placeholder}}</span>
+    <input type="file" accept=".json, .zip, .txt" class="transparent" id="file-upload-custom" (change)="handleFileInput($event.target.files)" name="fileupload"  [readonly]="isReadonly"/>
+    <div class="input-message" #textValue [class.hidden]="!(((isRequired && isEmpty)||(!isValid && !isEmpty))  && isDirty)">{{message}}</div>
+  </div>
+</div>

@@ -1,0 +1,145 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.input-group {
+  width: 100%;
+  margin-top: 0px;
+  position: relative;
+  height: auto;
+  padding-bottom: 20px;
+  margin-bottom: 10px;
+  .input-icon {
+    height: $fs-14;
+    position: absolute;
+    right: 0;
+    top: 10px;
+  }
+  label {
+    color: $gray-medium;
+    font-size: $fs-14;
+    font-weight: $fw-light;
+    position: absolute;
+    pointer-events: none;
+    left: 0px;
+    top: 10px;
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+    &.theme-dark {
+      color: $gray-dark;
+    }
+    &.is-not-empty {
+      top: -10px;
+      font-size: $fs-12;
+      color: white;
+      &.theme-dark {
+        color: $gray-dark !important;
+      }
+    }
+  }
+  .input-field {
+    font-size: $fs-16;
+    padding: 10px 10px 10px 5px;
+    display: block;
+    width: 100%;
+    border: none;
+    color: white;
+    border-bottom: 1px solid $gray-medium;
+    background: transparent;
+    padding-bottom: 10px;
+    font-weight: $fw-light;
+    &:focus {
+      outline: none;
+    }
+    &.theme-dark {
+      color: $gray-darker;
+      border-bottom: 1px solid $gray-dark;
+    }
+  }
+  input:focus~label {
+    top: -10px;
+    font-size: $fs-14;
+    color: white;
+  }
+  input:focus~label.theme-dark {
+    color: $gray-dark !important;
+  }
+  .input-message {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    text-align: left;
+    margin-top: 10px;
+    font-style: italic;
+    font-weight: $fw-light;
+    color: $red-light;
+    &.hidden {
+      opacity: 0;
+    }
+  }
+  .input-bar {
+    position: relative;
+    display: block;
+    width: 300px;
+  }
+  &:before,
+  &:after {
+    content: '';
+    height: 2px;
+    width: 0;
+    bottom: 1px;
+    position: absolute;
+    background: white;
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+  }
+  &:before {
+    left: 50%;
+  }
+  &:after {
+    right: 50%;
+  }
+  .file-upload {
+    position:relative;
+    overflow:auto;
+    .transparent {
+      position:relative;
+      opacity: 0;
+    }
+    .btn {
+      position:relative;
+      cursor:pointer;
+      margin-left:0;
+      &.theme-dark {
+        color: $gray-dark;
+        &.selected {
+          color:white;
+        }
+      }
+    }
+    .input-message {
+      position:relative;
+    }
+  }
+}
+
+
+/* active state */
+
+.input-field:focus~.input-bar:before,
+.input-field:focus~.input-bar:after {
+  width: 50%;
+}
+
+@include screen-small {
+  .input-group {
+    width: 250px;
+    .input-field {
+      width: 250px;
+    }
+  }
+  .input-bar {
+    width: 250px;
+  }
+}

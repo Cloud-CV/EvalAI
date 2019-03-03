@@ -1,13 +1,22 @@
-import {Location} from '@angular/common';
-import {TestBed, fakeAsync, tick, async} from '@angular/core/testing';
-import {RouterTestingModule} from '@angular/router/testing';
-import {Router} from '@angular/router';
-import {GlobalService} from './global.service';
+import { Location } from '@angular/common';
+import { TestBed, fakeAsync, tick, async } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { Router } from '@angular/router';
+import { GlobalService } from './services/global.service';
+import { AuthService } from './services/auth.service';
+import { EndpointsService } from './services/endpoints.service';
 import { AppComponent } from './app.component';
-import { HomeComponent } from './home/home.component';
-import { ToastComponent } from './toast/toast.component';
-import { HeaderStaticComponent } from './partials/nav/header-static/header-static.component';
-import { FooterComponent } from './footer/footer.component';
+import { HomeComponent } from './components/home/home.component';
+import { HomemainComponent } from './components/home/homemain/homemain.component';
+import { ToastComponent } from './components/utility/toast/toast.component';
+import { HeaderStaticComponent } from './components/nav/header-static/header-static.component';
+import { ApiService } from './services/api.service';
+import { HttpClientModule } from '@angular/common/http';
+import { FooterComponent } from './components/nav/footer/footer.component';
+import { LoadingComponent } from './components/utility/loading/loading.component';
+import { ConfirmComponent } from './components/utility/confirm/confirm.component';
+import { ModalComponent } from './components/utility/modal/modal.component';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('AppComponent', () => {
 
@@ -22,13 +31,24 @@ describe('AppComponent', () => {
         HomeComponent,
         HeaderStaticComponent,
         FooterComponent,
-        ToastComponent
+        ToastComponent,
+        LoadingComponent,
+        ConfirmComponent,
+        HomemainComponent
       ],
       imports: [
-        RouterTestingModule
+        RouterTestingModule,
+        HttpClientModule
       ],
       providers: [
-        GlobalService
+        GlobalService,
+        AuthService,
+        ApiService,
+        ModalComponent,
+        EndpointsService
+      ],
+      schemas: [
+        NO_ERRORS_SCHEMA
       ]
     }).compileComponents();
 

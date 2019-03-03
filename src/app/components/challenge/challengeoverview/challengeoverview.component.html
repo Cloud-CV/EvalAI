@@ -1,0 +1,7 @@
+<div class="challenge-overview-container">
+  <div *ngIf="!challenge"  class="content"> 
+  	<i class="fas fa-spinner"></i>
+  </div>
+  <div *ngIf="challenge && challenge['description']" [innerHTML]="challenge['description']" class="content"> 
+  </div>
+</div>

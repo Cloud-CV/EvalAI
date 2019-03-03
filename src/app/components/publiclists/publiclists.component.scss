@@ -1,0 +1,13 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.publiclist-container {
+  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  width:90%;
+  margin: 0 auto;
+  background:$gray-lighter;
+  color:$gray-darker;
+  border-radius:10px;
+  margin-top:50px;
+  margin-bottom:100px;
+}

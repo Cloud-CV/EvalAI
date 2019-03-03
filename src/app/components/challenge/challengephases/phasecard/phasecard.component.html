@@ -1,0 +1,27 @@
+<div class="phase-container">
+	<div class="phase-title">
+		{{phase['name']}}
+	</div>
+	<div class="phase-section">
+		<div class="start">
+			<span class="phase-heading">Starts on</span> <br>
+			<span>{{startDate}}</span>
+		</div>
+		<div class="end">
+		    <span class="phase-heading">Ends on</span><br>
+			<span>{{endDate}}</span>
+		</div>
+	</div>
+	<div class="phase-description" [innerHTML]="phase['description']">
+	</div>
+	<div class="phase-section">
+		<div class="start">
+			<span class="phase-heading">Max number of submissions/day</span> <br>
+			<span>{{phase['max_submissions_per_day']}}</span>
+		</div>
+		<div class="end">
+		    <span class="phase-heading">Max total submissions</span><br>
+			<span>{{phase['max_submissions']}}</span>
+		</div>
+	</div>
+</div>

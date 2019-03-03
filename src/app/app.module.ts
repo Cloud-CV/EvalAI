@@ -7,25 +7,59 @@ import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
 import { WindowService } from './services/window.service';
 import { ApiService } from './services/api.service';
-import { GlobalService } from './global.service';
+import { GlobalService } from './services/global.service';
+import { ChallengeService } from './services/challenge.service';
+import { EndpointsService } from './services/endpoints.service';
 
 
 // Import Components
 import { AppComponent } from './app.component';
-import { HomeComponent } from './home/home.component';
+import { HomeComponent } from './components/home/home.component';
 import { AppRoutingModule } from './app-routing.module';
-import { HeaderStaticComponent } from './partials/nav/header-static/header-static.component';
-import { FooterComponent } from './footer/footer.component';
-import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
-import { ContactComponent } from './contact/contact.component';
-import { InputComponent } from './input/input.component';
-import { AuthComponent } from './auth/auth.component';
-import { LoginComponent } from './login/login.component';
-import { SignupComponent } from './signup/signup.component';
-import { ToastComponent } from './toast/toast.component';
-import { GetInvolvedComponent } from './get-involved/get-involved.component';
-import { AboutComponent } from './about/about.component';
-
+import { HeaderStaticComponent } from './components/nav/header-static/header-static.component';
+import { ContactComponent } from './components/contact/contact.component';
+import { FooterComponent } from './components/nav/footer/footer.component';
+import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
+import { InputComponent } from './components/utility/input/input.component';
+import { AuthComponent } from './components/auth/auth.component';
+import { LoginComponent } from './components/auth/login/login.component';
+import { SignupComponent } from './components/auth/signup/signup.component';
+import { ToastComponent } from './components/utility/toast/toast.component';
+import { GetInvolvedComponent } from './components/get-involved/get-involved.component';
+import { AboutComponent } from './components/about/about.component';
+import { CardlistComponent } from './components/utility/cardlist/cardlist.component';
+import { ChallengecardComponent } from './components/publiclists/challengelist/challengecard/challengecard.component';
+import { ChallengelistComponent } from './components/publiclists/challengelist/challengelist.component';
+import { TeamcardComponent } from './components/publiclists/teamlist/teamcard/teamcard.component';
+import { TeamlistComponent } from './components/publiclists/teamlist/teamlist.component';
+import { PubliclistsComponent } from './components/publiclists/publiclists.component';
+import { ForceloginComponent } from './components/utility/forcelogin/forcelogin.component';
+import { ChallengeComponent } from './components/challenge/challenge.component';
+import { ChallengeoverviewComponent } from './components/challenge/challengeoverview/challengeoverview.component';
+import { ChallengeevaluationComponent } from './components/challenge/challengeevaluation/challengeevaluation.component';
+import { ChallengephasesComponent } from './components/challenge/challengephases/challengephases.component';
+import { ChallengeparticipateComponent } from './components/challenge/challengeparticipate/challengeparticipate.component';
+import { ChallengeleaderboardComponent } from './components/challenge/challengeleaderboard/challengeleaderboard.component';
+import { ChallengesubmitComponent } from './components/challenge/challengesubmit/challengesubmit.component';
+import { ChallengesubmissionsComponent } from './components/challenge/challengesubmissions/challengesubmissions.component';
+import { PhasecardComponent } from './components/challenge/challengephases/phasecard/phasecard.component';
+import { ConfirmComponent } from './components/utility/confirm/confirm.component';
+import { LoadingComponent } from './components/utility/loading/loading.component';
+import { SelectphaseComponent } from './components/utility/selectphase/selectphase.component';
+import { HomemainComponent } from './components/home/homemain/homemain.component';
+import { ChallengeCreateComponent } from './components/challenge-create/challenge-create.component';
+import { VerifyEmailComponent } from './components/auth/verify-email/verify-email.component';
+import { ModalComponent } from './components/utility/modal/modal.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { ProfileComponent } from './components/profile/profile.component';
+import { NotFoundComponent } from './components/not-found/not-found.component';
+import { OurTeamComponent } from './components/our-team/our-team.component';
+import { TwitterFeedComponent } from './components/home/twitter-feed/twitter-feed.component';
+import { NgxTwitterTimelineModule } from 'ngx-twitter-timeline';
+import { PartnersComponent } from './components/home/partners/partners.component';
+import { RulesComponent } from './components/home/rules/rules.component';
+import { TestimonialsComponent } from './components/home/testimonials/testimonials.component';
+import { FeaturedChallengesComponent } from './components/home/featured-challenges/featured-challenges.component';
 
 @NgModule({
   declarations: [
@@ -41,18 +75,53 @@ import { AboutComponent } from './about/about.component';
     ContactComponent,
     ToastComponent,
     GetInvolvedComponent,
-    AboutComponent
+    AboutComponent,
+    CardlistComponent,
+    ChallengecardComponent,
+    ChallengelistComponent,
+    TeamcardComponent,
+    TeamlistComponent,
+    PubliclistsComponent,
+    ForceloginComponent,
+    ChallengeComponent,
+    ChallengeoverviewComponent,
+    ChallengeevaluationComponent,
+    ChallengephasesComponent,
+    ChallengeparticipateComponent,
+    ChallengeleaderboardComponent,
+    ChallengesubmitComponent,
+    ChallengesubmissionsComponent,
+    PhasecardComponent,
+    ConfirmComponent,
+    LoadingComponent,
+    SelectphaseComponent,
+    HomemainComponent,
+    ChallengeCreateComponent,
+    VerifyEmailComponent,
+    ModalComponent,
+    DashboardComponent,
+    ProfileComponent,
+    NotFoundComponent,
+    OurTeamComponent,
+    TwitterFeedComponent,
+    PartnersComponent,
+    RulesComponent,
+    TestimonialsComponent,
+    FeaturedChallengesComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    NgxTwitterTimelineModule.forRoot()
   ],
   providers: [
     AuthService,
     WindowService,
     ApiService,
-    GlobalService
+    GlobalService,
+    ChallengeService,
+    EndpointsService
   ],
   bootstrap: [AppComponent]
 })

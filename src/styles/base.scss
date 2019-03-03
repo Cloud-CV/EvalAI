@@ -15,9 +15,37 @@ body {
   }
 }
 
+.timeline-Widget {
+  background: rgba(214, 220, 226, 0.28) !important;
+}
+
+.content {
+  line-height: 24px;
+  letter-spacing: 0.1px;
+}
+
 .go {
   -webkit-animation-fill-mode: forwards;
 }
+
+
+/* Text Utilities */
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.lowercase {
+  text-transform: lowercase
+}
+
+
+
+
 
 /*Font weights*/
 
@@ -36,8 +64,6 @@ body {
 .fw-bold {
   font-weight: $fw-bold;
 }
-
-
 
 
 
@@ -76,14 +102,17 @@ body {
 }
 
 
+
+
 /*anchors*/
 
 a {
-  color: $blue-dark;
+  color: $red-light;
   transition: all 0.2s ease-in-out;
   text-decoration: none;
+  cursor: pointer;
   &:hover {
-    color: $blue-light;
+    color: $red-dark;
   }
   &:focus,
   &:active {
@@ -92,7 +121,7 @@ a {
 }
 
 a.light-link {
-  color: $blue-light;
+  color: $red-light;
   transition: all 0.2s ease-in-out;
   &:hover {
     color: white;
@@ -101,7 +130,10 @@ a.light-link {
 
 .pointer {
   cursor: pointer;
+  outline: none;
 }
+
+
 
 
 /*list styles*/
@@ -132,6 +164,8 @@ ul {
 }
 
 
+
+
 /*alignment*/
 
 .left {
@@ -159,11 +193,19 @@ ul {
   text-align: right;
 }
 
+
+
 /*color*/
 
 .white {
   color: white;
 }
+
+.red-dark {
+  color: $red-dark;
+}
+
+
 
 
 
@@ -192,29 +234,41 @@ ul {
   }
 }
 
+
+
+
 /*Buttons*/
 
 .btn {
   border-radius: 20px;
-  margin-left: 10px;
+  margin-right: 10px;
   margin-top: 5px;
   margin-bottom: 0 !important;
   text-align: center;
   cursor: pointer;
   display: inline-block;
   transition: all 0.3s ease;
+  font-size: $fs-14;
 }
 
 .btn-nofill {
   padding: 10px 30px 10px 30px;
-  border: 1.5px solid white;
+  border: 1px solid white;
   color: white;
-  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  @include box-shadow(0px,
+  0px,
+  5px,
+  0px,
+  $overlay-light);
   &:hover {
     background: $gray-light;
-    border: 1.5px solid $gray-light;
+    border: 1px solid $gray-light;
     color: black;
-    @include box-shadow(0px, 15px, 20px, 0px, $overlay-light);
+    @include box-shadow(0px,
+    0px,
+    10px,
+    0px,
+    $overlay-light);
   }
 }
 
@@ -222,11 +276,23 @@ ul {
   padding: 13px 33px 13px 33px;
   border: none;
   color: white;
-  @include linear-gradient-bg(-90deg, $yellow, $orange);
-  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  @include linear-gradient-bg(-90deg,
+  $fire-right,
+  $fire-left);
+  @include box-shadow(0px,
+  0px,
+  5px,
+  0px,
+  $overlay-light);
   &:hover {
-    @include linear-gradient-bg(-90deg, $orange, $yellow);
-    @include box-shadow(0px, 15px, 20px, 0px, $overlay-light);
+    @include linear-gradient-bg(-90deg,
+    $fire-left,
+    $fire-right);
+    @include box-shadow(0px,
+    0px,
+    10px,
+    0px,
+    $overlay-light);
   }
 }
 
@@ -235,12 +301,272 @@ ul {
   border: 1.5px solid white;
   background: white;
   color: $blue-dark;
-  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+  @include box-shadow(0px,
+  0px,
+  5px,
+  0px,
+  $overlay-light);
   &:hover {
-    @include box-shadow(0px, 15px, 20px, 0px, $overlay-light);
+    @include box-shadow(0px,
+    0px,
+    10px,
+    0px,
+    $overlay-light);
     border: 1.5px solid $gray-light;
     background: $gray-light;
     color: black;
   }
 }
 
+.btn-filter {
+  padding: 10px 30px 10px 30px;
+  border: 1px solid $red-light;
+  color: $gray-darker;
+  &.selected {
+    color: white;
+    background: $red-light;
+    &:hover {
+      color: white;
+    }
+  }
+  &:hover {
+    @include box-shadow(0px,
+    0px,
+    5px,
+    0px,
+    $overlay-light);
+    color: $red-light;
+  }
+}
+
+
+
+
+/*Card*/
+
+.card {
+  margin: 20px;
+  margin-bottom: 40px;
+  border-radius: 5px;
+  font-weight: $fw-light;
+  font-size: $fs-16;
+  overflow: auto;
+  @include box-shadow(0px,
+  0px,
+  5px,
+  0px,
+  $overlay-light);
+  hr {
+    border-top: 1px solid $overlay-light;
+    border-bottom: 0px;
+  }
+  &.card-light {
+    color: $gray-darker;
+    background: white;
+    &.selected {
+      @include box-shadow(0px,
+      0px,
+      10px,
+      1px,
+      $overlay-light);
+    }
+  }
+  .card-title {
+    padding: 30px 30px 15px 30px;
+    font-size: $fs-24;
+    font-weight: $fw-regular;
+    color: $gray-darker;
+    overflow: auto;
+  }
+  .card-content {
+    line-height: 20px;
+    letter-spacing: 0.5px;
+    overflow: auto;
+    padding: 15px 30px 30px 30px;
+    h5 {
+      font-size: $fs-18;
+    }
+
+    a {
+      color: $red-light;
+    }
+  }
+}
+
+
+/* Modal */
+
+.modal-container {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: $overlay-medium;
+  z-index: 100;
+  .modal-card {
+    @include box-shadow(0px,
+    0px,
+    5px,
+    0px,
+    $overlay-light);
+    border-radius: 10px;
+    background: white;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 101;
+    transform: translate(-50%, -50%);
+    font-size: $fs-16;
+    color: $gray-darker;
+    padding: 30px;
+    .title {
+      padding: 10px;
+      font-size: $fs-18;
+      font-weight: $fw-bold;
+    }
+    .content {
+      padding: 10px;
+    }
+    .form {
+      padding: 10px;
+    }
+    .buttons {
+      padding: 10px;
+      text-align: right;
+    }
+  }
+}
+
+@include screen-small {
+  .modal-container {
+    .modal-card {
+      width: 300px;
+    }
+  }
+}
+
+
+
+
+
+/* Table */
+
+.table-light {
+  font-size: $fs-16;
+  font-weight: $fw-light;
+  border-top: 1px solid $overlay-light;
+  border-spacing: 0px;
+  border-collapse: collapse;
+  tr {
+    border-bottom: 1px solid $overlay-light;
+    th {
+      font-weight: $fw-regular;
+      div {
+        min-width: 120px;
+        text-align: left;
+        display: block;
+        padding: 25px 10px 25px 10px;
+        span {
+          display: inline-block;
+          min-width: auto;
+          margin-right: 10px;
+        }
+      }
+      .fa-stack-1x {
+        display: inline-block;
+      }
+    }
+    td {
+      vertical-align: middle;
+      text-align: left;
+      min-width: 50px;
+      div {
+        min-width: 120px;
+        text-align: left;
+        display: block;
+        padding: 15px 10px 15px 10px;
+      }
+    }
+    &:hover {
+      background: $gray-lighter;
+    }
+  }
+}
+
+
+
+
+
+/*Navigation*/
+
+.horizontal-nav {
+  white-space: nowrap;
+  overflow-x: scroll;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  margin: 10px;
+  padding-top: 10px;
+  a {
+    display: inline-block;
+    padding: 20px 0px 20px 0px;
+    margin-left: 30px;
+    font-size: $fs-16;
+    color: $gray-dark;
+    font-weight: $fw-light;
+    &.selected {
+      color: $red-light;
+      font-weight: $fw-regular;
+      border-bottom: 2px solid $red-light;
+    }
+  }
+}
+
+
+
+/* Checkbox */
+
+.cbx-label {
+  position: relative;
+  display: block;
+  height: 15px;
+  width: 30px;
+  background: $gray-dark;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  &:after {
+    position: absolute;
+    left: -2px;
+    top: -3px;
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 100px;
+    background: white;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);
+    content: '';
+    transition: all 0.3s ease;
+    &:active {
+      transform: scale(1.15, 0.85);
+    }
+  }
+}
+
+.cbx:checked~.cbx-label {
+  background: $red-light;
+}
+
+.cbx:checked~.cbx-label:after {
+  left: 20px;
+  background: $red-lighter;
+}
+
+.cbx:disabled~.cbx-label {
+  background: $gray-light;
+  pointer-events: none;
+}
+
+.cbx:disabled~.cbx-label:after {
+  background: $gray-lighter;
+}

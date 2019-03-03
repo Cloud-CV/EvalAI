@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener, Inject } from '@angular/core';
-import { GlobalService } from './global.service';
+import { GlobalService } from './services/global.service';
+import { AuthService } from './services/auth.service';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Title } from '@angular/platform-browser';
@@ -12,23 +13,40 @@ import 'rxjs/add/operator/mergeMap';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-
-
-
 export class AppComponent implements OnInit, OnDestroy {
   private scrolledState = false;
+  isLoading = false;
+  confirmParams = { isConfirming: false};
+  modalParams = { isModalVisible: false};
   globalServiceSubscription: any;
+  globalLogoutTrigger: any;
+  globalLoadingSubscription: any;
+  globalConfirmSubscription: any;
+  globalModalSubscription: any;
   globalServiceSubscriptionScrollTop: any;
+
+  /**
+   * Constructor.
+   * @param document  Window document injection
+   * @param router  Router Injection.
+   * @param activatedRoute  ActivatedRoute Injection.
+   * @param titleService  Title from angular's platform-browser Injection.
+   * @param globalService  GlobalService Injection.
+   * @param authService  AuthService Injection.
+   */
   constructor(
   @Inject(DOCUMENT) private document: Document,
   public router: Router,
   public activatedRoute: ActivatedRoute,
   public titleService: Title,
-  private globalService: GlobalService
+  private globalService: GlobalService,
+  private authService: AuthService
   ) {
   }
 
-  // Added listener for header scroll event
+  /**
+   * Scroll event listener.
+   */
   @HostListener('window:scroll', [])
     onWindowScroll(): void {
     const HEADER_ELE = document.getElementById('header-static');
@@ -43,11 +61,31 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     }
 
+  /**
+   * Component when initialized. Subscribes to observables
+   */
   ngOnInit() {
     const SELF = this;
-
-    this.globalServiceSubscription = this.globalService.change.subscribe(scrolledState => {
+    this.globalServiceSubscription = this.globalService.currentScrolledState.subscribe(scrolledState => {
       this.scrolledState = scrolledState;
+    });
+    this.globalLogoutTrigger = this.globalService.logout.subscribe(() => {
+      this.authService.logOut();
+    });
+    this.globalLoadingSubscription = this.globalService.currentisLoading.subscribe(isLoading => {
+      setTimeout(() => {
+        this.isLoading = isLoading;
+      }, 0);
+    });
+    this.globalConfirmSubscription = this.globalService.currentConfirmParams.subscribe(params => {
+      setTimeout(() => {
+        this.confirmParams = params;
+      }, 0);
+    });
+    this.globalModalSubscription = this.globalService.currentModalParams.subscribe(params => {
+      setTimeout(() => {
+        this.modalParams = params;
+      }, 0);
     });
 
     this.globalServiceSubscriptionScrollTop = this.globalService.scrolltop.subscribe(() => {
@@ -73,9 +111,19 @@ export class AppComponent implements OnInit, OnDestroy {
         // set platform based title service
       .subscribe((event) => this.titleService.setTitle(event['title']));
   }
+
+  /**
+   * Component On-Destroy. (Unsubscribes from subscriptions)
+   */
   ngOnDestroy() {
     if (this.globalServiceSubscription) {
       this.globalServiceSubscription.unsubscribe();
+    }
+    if (this.globalLogoutTrigger) {
+      this.globalLogoutTrigger.unsubscribe();
+    }
+    if (this.globalLoadingSubscription) {
+      this.globalLoadingSubscription.unsubscribe();
     }
     if (this.globalServiceSubscriptionScrollTop) {
       this.globalServiceSubscriptionScrollTop.unsubscribe();

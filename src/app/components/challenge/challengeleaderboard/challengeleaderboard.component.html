@@ -1,0 +1,35 @@
+<div class="challenge-leaderboard-container">
+  <div class="phase-select-div">
+    <app-selectphase [phases]="filteredPhaseSplits" [phaseSelected]="phaseSplitSelected()" #phasesplitselect></app-selectphase>
+  </div>
+  <div *ngIf="leaderboard.length <= 0" class="leaderboard-empty">
+      <!-- <img src="assets/images/sadcloud.png" /> -->
+      <i class="fas fa-clipboard" aria-hidden="true"></i> No Results..
+  </div>
+  <div class="leaderboard-table-div" *ngIf="leaderboard.length > 0">
+    
+    <table class="table-light leaderboard-table">
+        <tr>
+          <th>
+            <div (click)="sortColumn!='rank' && reverseSort = false;sortColumn == 'rank' && reverseSort=!reverseSort;sortColumn='rank';sortLeaderboard();" class="fa-stack fa-1x"><span>Rank </span><i class="fas fa-sort-up fa-stack-1x" [class.dark]="reverseSort && sortColumn == 'rank'"></i><i class="fas fa-sort-down fa-stack-1x" [class.dark]="!reverseSort && sortColumn == 'rank'"></i></div>
+          </th>
+          <th>
+          <div (click)="sortColumn!='string' && reverseSort = false;sortColumn == 'string' && reverseSort=!reverseSort;sortColumn='string';sortLeaderboard();" class="fa-stack fa-1x fat"><span>Participant Team</span><i class="fas fa-sort-up fa-stack-1x" [class.dark]="reverseSort && sortColumn == 'string'"></i><i class="fas fa-sort-down fa-stack-1x" [class.dark]="!reverseSort && sortColumn == 'string'"></i></div>
+          </th>
+          <th *ngFor="let key of leaderboard[0].leaderboard__schema.labels;index as i" [attr.data-index]="i"><div href="#" (click)="sortColumn!='number' && columnIndexSort != i && reverseSort = false;sortColumn == 'number' && columnIndexSort == i && reverseSort=!reverseSort;sortColumn = 'number';columnIndexSort = i;sortLeaderboard();" class="fa-stack fa-1x"><span>{{key}}</span><i class="fas fa-sort-up fa-stack-1x" [class.dark]="reverseSort && sortColumn == 'number' && columnIndexSort == i"></i><i class="fas fa-sort-down fa-stack-1x" [class.dark]="!reverseSort && sortColumn == 'number' && columnIndexSort == i"></i></div>
+          </th>
+          <th>
+            <div (click)="sortColumn!='date' && reverseSort = false;sortColumn == 'date' && reverseSort=!reverseSort;sortColumn='date';sortLeaderboard();" class="fa-stack fa-1x fat"><span>Last Submission at</span><i class="fas fa-sort-up fa-stack-1x" [class.dark]="reverseSort && sortColumn == 'date'"></i>
+            <i class="fas fa-sort-down fa-stack-1x" [class.dark]="!reverseSort && sortColumn == 'date'"></i>
+            </div>
+          </th>
+        </tr>
+        <tr *ngFor="let key of leaderboard" [class.highlight]="key.is_highlighted" class="pointer" [routerLink]="routerPublic.url.split('/').length == 6 ? ['../' + key.submission__participant_team__team_name] : [key.submission__participant_team__team_name]">
+          <td><div>{{initial_ranking[key.submission__participant_team__team_name]}}</div></td>
+          <td><div class="fw-regular">{{key.submission__participant_team__team_name}}</div></td>
+          <td *ngFor="let score of key.result"><div>{{score | number : '1.2-2'}}</div></td>
+          <td><div>{{ key.submission__submitted_at_formatted }}</div></td>
+        </tr>
+    </table>
+  </div>
+</div>

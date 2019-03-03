@@ -1,0 +1,47 @@
+@import './styles/variables.scss';
+@import './styles/mixins.scss';
+
+.about-container {
+  overflow-x: hidden;
+  text-align: center;
+  font-size:$fs-16;
+  font-weight:$fw-light;
+  img {
+    width: 90%;
+    min-height: 150px;
+  }
+  * {
+    color: $gray-darker;
+  }
+  .about-title {
+    font-size: $fs-24;
+    margin-top: 50px;
+    margin-bottom: 30px;
+    font-weight: $fw-semibold;
+  }
+  .row {
+    .about-content-column {
+      text-align: left;
+      padding-left: 100px;
+      padding-right: 100px;
+      .about-content-title {
+        font-size: $fs-18;
+        margin-bottom: 30px;
+        margin-top: 30px;
+        font-weight: $fw-semibold;
+      }
+      .about-content-body {
+        font-size: $fs-16;
+        line-height: 20px;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+}
+
+@include screen-small {
+  .about-content-column {
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+}

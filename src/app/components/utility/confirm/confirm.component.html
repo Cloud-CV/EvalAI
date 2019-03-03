@@ -1,0 +1,13 @@
+<div class="modal-container confirm-container">
+	<div class="modal-card confirm-card">
+		<div class="title">
+			{{title}}
+		</div>
+		<div class="content">
+			{{content}}
+		</div>
+		<div class="buttons">
+			<span class="btn btn-filter" appClickstop (click)="denied()">{{deny}}</span> <span class="btn btn-filter selected" appClickstop (click)="confirmed()">{{confirm}}</span>
+		</div>
+	</div>
+</div>

@@ -1,3 +1,6 @@
 <!-- The <router-outlet> tells the router where to display routed views. -->
 <router-outlet></router-outlet>
 <app-toast></app-toast>
+<app-loading *ngIf="isLoading"></app-loading>
+<app-confirm *ngIf="confirmParams['isConfirming']" [params]="confirmParams"></app-confirm>
+<app-modal *ngIf="modalParams['isModalVisible']" [params]="modalParams"></app-modal>

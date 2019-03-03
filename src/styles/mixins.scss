@@ -40,6 +40,12 @@
   }
 }
 
+@mixin screen-large() {
+  @media(min-width: $screen-md) {
+    @content;
+  }
+}
+
 /*Keyframe for animation -------*/
 @mixin keyframes($name) {
   @-webkit-keyframes #{$name} {

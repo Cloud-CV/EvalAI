@@ -1,27 +1,74 @@
 import { Injectable, Output, EventEmitter } from '@angular/core';
+import { GlobalService } from './global.service';
+import { EndpointsService } from './endpoints.service';
+import { ApiService } from './api.service';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Injectable()
 export class AuthService {
   authState = {isLoggedIn: false};
-  @Output() change: EventEmitter<Object> = new EventEmitter();
+  private authStateSource = new BehaviorSubject(this.authState);
+  change = this.authStateSource.asObservable();
 
-  constructor() { }
+  /**
+   * Constructor.
+   * @param globalService  GlobalService Injection.
+   * @param apiService  ApiService Injection.
+   * @param endpointsService  EndpointsService Injection.
+   */
+  constructor(private globalService: GlobalService, private apiService: ApiService, private endpointsService: EndpointsService) { }
 
+    /**
+     * Call this to update authentication state.
+     * @param state  New Authentication state
+     */
     authStateChange(state) {
       this.authState = state;
-      this.change.emit(this.authState);
+      this.authStateSource.next(this.authState);
     }
 
-    tryLogIn(params) {
-      setTimeout(() => {
-        const temp = {isLoggedIn: true, username: 'LoremIpsum'};
-        this.authStateChange(temp);
-      }, 1000);
+    /**
+     * To affirm that user is logged in
+     * @param autoFetchUserDetails  User details fetch flag
+     */
+    loggedIn(autoFetchUserDetails = false) {
+      this.authState = {isLoggedIn: true};
+      if (autoFetchUserDetails) {
+        this.fetchUserDetails();
+      }
     }
+
+    /**
+     * Log Out Trigger
+     */
     logOut() {
-      const temp = {isLoggedIn: false, username: 'LoremIpsum'};
+      const temp = {isLoggedIn: false};
+      this.globalService.deleteData(this.globalService.authStorageKey);
       this.authStateChange(temp);
     }
+
+    /**
+     * User Details fetch Trigger
+     */
+    fetchUserDetails() {
+      const API_PATH = 'auth/user/';
+      const SELF = this;
+      this.apiService.getUrl(API_PATH).subscribe(
+        data => {
+          const TEMP = Object.assign({isLoggedIn: true}, SELF.authState, data);
+          SELF.authStateChange(TEMP);
+        },
+        err => {
+          SELF.globalService.handleApiError(err, false);
+        },
+        () => console.log('User details fetched')
+      );
+    }
+
+    /**
+     * Calculating Password Strength (Not being called as of now)
+     * TODO: make use of it
+     */
     passwordStrength(password) {
       // Regular Expressions.
       const REGEX = new Array();
@@ -60,16 +107,42 @@ export class AuthService {
       return [strength, color];
     }
 
-    // Get Login functionality
-    get isLoggedIn() {
-      // check for token present
-      // TODO => change this token later to dynamic
-      const token = true;
-
+    /**
+     * Check if user is loggedIn and trigger logIn if token present but not loggedIn
+     */
+    isLoggedIn() {
+      const token = this.globalService.getAuthToken();
       if (token) {
+          if (!this.authState['isLoggedIn']) {
+            this.loggedIn(true);
+          }
           return true;
       } else {
-          return false;
+          if (this.authState['isLoggedIn']) {
+            this.logOut();
+          }
       }
+    }
+
+    /**
+     * User Details fetch Trigger
+     * @param  login token
+     * @param  callback function
+     */
+    verifyEmail(token, callback = () => {}) {
+      const API_PATH = this.endpointsService.verifyEmailURL();
+      const SELF = this;
+      const BODY = JSON.stringify({
+        key: token
+      });
+      this.apiService.postUrl(API_PATH, BODY).subscribe(
+        data => {
+          callback();
+        },
+        err => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => console.log('Email Verified')
+      );
     }
 }

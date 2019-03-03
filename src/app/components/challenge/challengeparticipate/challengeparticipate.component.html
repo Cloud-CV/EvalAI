@@ -1,0 +1,12 @@
+<div class="challenge-participate-container">
+  <div class="inactive" *ngIf="!isActive">
+    Sorry, The Challenge is not active!
+  </div>
+  <div *ngIf="isActive">
+    <app-forcelogin *ngIf="!isLoggedIn" [path]="routerPublic.url">
+    </app-forcelogin>
+    <div *ngIf="isLoggedIn">
+      <app-teamlist></app-teamlist>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,73 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.challenge-leaderboard-container {
+  padding: 20px;
+  overflow: auto;
+  .phase-select-div {
+    overflow: auto;
+    position: relative;
+    display: block;
+  }
+  .leaderboard-empty {
+    padding: 30px;
+    display: block;
+    position: relative;
+    text-align: center;
+  }
+  .leaderboard-table-div {
+    text-align:center;
+    font-size: $fs-16;
+    color: $gray-darker;
+    font-weight: $fw-light;
+    top: 20px;
+    width: 100%;
+    position: relative;
+    display: block;
+    padding: 30px;
+    padding-top: 0px;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    max-height: 500px;
+    .leaderboard-table {
+      width:100%;
+      tr {
+      	&:hover {
+      		background:white;
+      	}
+        &.highlight {
+          background: $red-lighter;
+        }
+        th {
+          color: $gray-dark;
+          .fa-stack-1x {
+            left: unset;
+            width: auto;
+          }
+          div {
+          	font-weight:$fw-light;
+          	&:hover {
+          		font-weight: $fw-regular;
+          	}
+            &.fat {
+              min-width: 180px;
+            }
+            &.fa-stack {
+              height: auto;
+              line-height: unset;
+            }
+            span,
+            i {
+              cursor: pointer;
+              &.dark {
+                color: $gray-darker;
+              }
+            }
+          }
+        }
+
+        td {}
+      }
+    }
+  }
+}

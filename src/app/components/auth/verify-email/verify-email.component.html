@@ -1,0 +1,13 @@
+<div class="verify-email-container">
+<div class="align-center">
+<div *ngIf="!isVerified">
+<div>Verifying your email ...</div>
+<div><img src="assets/images/rocket.gif" /></div>
+</div>
+<div *ngIf="isVerified">
+	<i class="fas fa-check"></i>
+	<div> Email verified successfully!</div>
+	<span class="btn btn-fire" [routerLink]="['/auth/login']">LOGIN</span>
+</div>
+</div>
+</div>

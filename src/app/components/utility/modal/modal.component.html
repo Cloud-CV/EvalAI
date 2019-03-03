@@ -1,0 +1,18 @@
+<div class="modal-container">
+  <div class="modal-card">
+    <div class="title">
+      {{title}}
+    </div>
+    <div class="content">
+      {{content}}
+    </div>
+    <div class="form">
+      <div *ngFor="let item of form">
+        <app-input [isRequired]="item['isRequired']" [label]="item['label']" [placeholder]="item['placeholder']" [type]="item['type']" [theme]="'dark'" [icon]="item['icon']" [value]="item['value']" #formmodal></app-input>
+      </div>
+    </div>
+    <div class="buttons">
+      <span class="btn btn-filter" appClickstop (click)="denied()">{{deny}}</span> <span class="btn btn-filter selected" appClickstop (click)="formValidate()">{{confirm}}</span>
+    </div>
+  </div>
+</div>

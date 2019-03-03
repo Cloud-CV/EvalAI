@@ -1,0 +1,42 @@
+<app-header-static>
+</app-header-static>
+<div class="container-top">
+  <div class="challenge-container">
+    <div class="challenge-image-container">
+     <img class="challenge-cover-image" [src]="challenge['cover_image']" (error)="challenge['cover_image']='assets/images/wide.jpg';" />
+    </div>
+    <div class="challenge-content-container">
+    <div class="challenge-header">
+      <div class="challenge-img-parent">
+        <div class="challenge-img-wrap">
+          <img class="challenge-img" [src]="challenge['image']" (error)="challenge['image']='assets/images/404.png';" />
+        </div>
+      </div>
+    <div class="challenge-title">
+      <span class="title">
+        {{challenge['title']}}
+      </span>
+      <span [class.is-starred]="stars['is_starred']" [class.is-clickable]="isLoggedIn" (click)="starToggle(challenge['id'])" class="stars">
+        <i class="fas fa-star"></i>
+        {{stars['count']}}
+      </span>
+      
+    </div>
+    <div class="challenge-host">
+      Organized by: <span>{{challenge['creator']['team_name']}}</span>
+    </div>
+    </div>
+    <div class="horizontal-nav">
+      <a [class.selected]="localRouter.url.endsWith('overview')" [routerLink]="['./overview']">Overview</a>
+      <a [class.selected]="localRouter.url.endsWith('evaluation')" [routerLink]="['./evaluation']">Evaluation</a>
+      <a [class.selected]="localRouter.url.endsWith('phases')" [routerLink]="['./phases']">Phases</a>
+      <a [class.selected]="localRouter.url.endsWith('participate')" [routerLink]="['./participate']" *ngIf="!isParticipated">Participate</a>
+      <a [class.selected]="localRouter.url.endsWith('submit')" [routerLink]="['./submit']" *ngIf="isParticipated">Submit</a>
+      <a [class.selected]="localRouter.url.indexOf('submissions') >= 0" [routerLink]="['./submissions']" *ngIf="isParticipated">My Submissions</a>
+      <a [class.selected]="localRouter.url.indexOf('leaderboard') >= 0" [routerLink]="['./leaderboard']">Leaderboard</a>
+    </div>
+    <router-outlet></router-outlet>
+  </div>
+  </div>
+</div>
+<app-footer></app-footer>

@@ -1,0 +1,9 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.confirm-container {
+  z-index: 110;
+  .confirm-card {
+    z-index: 111;
+  }
+}

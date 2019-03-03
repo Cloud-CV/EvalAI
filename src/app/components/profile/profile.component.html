@@ -1,0 +1,77 @@
+<app-header-static></app-header-static>
+
+<div class="container-top profile-container">
+    <div class="card">
+	<div class="item">
+		<img class="profile-photo" src="assets/images/profile.png" />
+	</div>
+	<div class="item">
+		<div class="dark">
+			{{user.username}}
+		</div>
+        <div>
+        	{{user.email}}
+        </div>
+	</div>
+	<div class="item">
+		<div>
+			First Name
+		</div>
+		<div class="dark">
+			{{user.first_name}}
+		</div>
+	</div>
+	<div class="item">
+		<div>
+			Last Name
+		</div>
+		<div class="dark">
+			{{user.last_name}}
+		</div>
+	</div>
+	<div class="item">
+		<div>
+			Affiliated to
+		</div>
+		<div class="dark">
+			{{user.affiliation}}
+		</div>
+	</div>
+	<div class="item">
+	  <div class="red">Profile Completed</div>
+	  <div class="dark">{{pcomp}}</div>
+	</div>
+	<div class="item">
+	  <span class="btn btn-filter selected" (click) = "isTokenModalVisible = true;">Get your Auth Token</span>
+	</div>
+	<hr>
+	<div class="item">
+	  <span (click)="updatePassword()" class="btn btn-filter selected">Change Password</span>
+	  <span (click)="updateUserDetails()" class="btn btn-filter red">Update Profile</span>
+	</div>
+	</div>
+
+<div class="modal-container" [class.hidden]="!isTokenModalVisible">
+  <div class="modal-card">
+    <div class="title">
+      API Authentication Token
+    </div>
+    <div class="form row">
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+        <app-input [label]="'token'" [placeholder]="'Auth Token'" [type]="'password'" [theme]="'dark'" [value]="token" [readonly]="true" #formtoken></app-input>
+    </div>
+    <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1 btn btn-filter selected copy" (click)="copyToken()">
+    	<i class="fas fa-copy"></i>
+    </div>
+    </div>
+    <div class="buttons">
+      <span class="btn btn-filter" (click)="isTokenModalVisible = false;">Cancel</span>
+      <span class="btn btn-filter" (click)="downloadToken()">Download JSON</span>
+      <span class="btn btn-filter selected" (click)="tokenModalButtonToggle()">{{tokenModalButton}}</span>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<app-footer></app-footer>

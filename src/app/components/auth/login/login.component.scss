@@ -1,0 +1,47 @@
+@import './styles/variables.scss';
+@import './styles/mixins.scss';
+
+.login-container {
+  .auth-forgot-div {
+    position: relative;
+    display: block;
+    .btn-fire {
+      margin-left: 0;
+    }
+
+    .auth-forgot {
+      font-size: $fs-14;
+      font-weight: $fw-regular;
+      color: $gray-darker;
+      cursor: pointer;
+      position: absolute;
+      right: 0;
+      float: right;
+      top: 50%;
+      transform: translate(0, -50%);
+    }
+  }
+  .auth-signup-row {
+    padding-top: 20px;
+    padding-left: 10px;
+    span {
+      font-size: $fs-14;
+      font-weight: $fw-light;
+    }
+    a {
+      font-size: $fs-14;
+      font-weight: $fw-semibold;
+      cursor: pointer;
+    }
+  }
+}
+
+@include screen-small {
+  .login-container {
+    .auth-forgot-div {
+      .auth-forgot {
+        width: 150px;
+      }
+    }
+  }
+}

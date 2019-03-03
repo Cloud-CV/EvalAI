@@ -1,0 +1,55 @@
+<div class="challenge-card-container">
+  <div class="challenge-img-div" (click)="challengeClicked()">
+    <span class="helper"></span>
+    <div class="challenge-img-parent">
+        <img class="challenge-img" [src]="challenge['image']" (error)="challenge['image']='assets/images/404.png';" />
+    </div>
+  </div>
+  <div class="challenge-details">
+    <div class="challenge-title" (click)="challengeClicked()">
+      {{challenge['title']}}
+    </div>
+    <div class="challenge-host">
+    	Organized by: <span>{{challenge['creator']['team_name']}}</span>
+    </div>
+
+    <span class="challenge-type upcoming" *ngIf="isUpcoming">
+    	Upcoming
+    </span>
+    <span class="challenge-type ongoing" *ngIf="isOngoing">
+    	Ongoing
+    </span>
+    <span class="challenge-type past" *ngIf="isPast">
+    	Past
+    </span>
+
+    <div>
+    <div class="challenge-description">
+    	{{challenge['short_description']}}
+    </div>
+    </div>
+
+    <div>
+    	<div class="challenge-time-remaining">
+    		{{timeRemaining}}
+    	</div>
+    	<div class="challenge-time-range">
+    		<img src="assets/images/clock.png" /> {{startDate}}  -  {{endDate}}
+    	</div>
+    </div>
+    <div class="challenge-participate-div">
+    	<a class="btn btn-filter challenge-participate" (click)="participateInChallenge()">Participate</a>
+    </div>
+    <div class="challenge-labels">
+    	<span [class.is-starred]="stars['is_starred']" [class.is-clickable]="isLoggedIn" (click)="starToggle()" class="stars">
+        <i class="fas fa-star"></i>
+        {{stars['count']}}
+        </span>
+    	<div class="challenge-tags">
+    	<i class="fas fa-tag"></i>
+        <span *ngFor="let tag of tags">  &nbsp;{{tag}} &nbsp;|</span>
+    	</div>
+    </div>
+
+  </div>
+</div>

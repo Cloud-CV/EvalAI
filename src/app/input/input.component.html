@@ -1,7 +1,0 @@
-<div class="input-group">     
-  <input class="input-field" (input)="validateInput($event.target.value)" [class.isValid]="isValid == true" [class.theme-dark]="theme=='dark'" type="{{type}}">
-  <span class="input-bar"></span>
-  <label [class.is-not-empty]="!isEmpty" [class.theme-dark]="theme=='dark'">{{label}}</label>
-  <img class="input-icon" src="{{icon}}" *ngIf="isIconPresent" />
-  <div class="input-message" #textValue [class.hidden]="!(((isRequired && isEmpty)||(!isValid && !isEmpty))  && isDirty)">{{message}}</div>
-</div>

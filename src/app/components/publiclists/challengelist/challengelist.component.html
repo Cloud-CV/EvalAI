@@ -1,0 +1,14 @@
+<div class="challengelist-container">
+ <div *ngIf="authServicePublic.isLoggedIn() || routerPublic.url == '/challenges/all'">
+ <div class="challengelist-filters">
+ 	<a [class.selected]="isUpcomingChecked" class="btn btn-filter" (click)="toggleFilter('isUpcomingChecked')">Upcoming Challenges</a>
+ 	<a [class.selected]="isOngoingChecked" class="btn btn-filter" (click)="toggleFilter('isOngoingChecked')">Ongoing Challenges</a>
+ 	<a [class.selected]="isPastChecked" class="btn btn-filter" (click)="toggleFilter('isPastChecked')">Past Challenges</a>
+ </div>
+ <app-cardlist [type]="'challenges'" [data]="filteredChallengesView"></app-cardlist>
+ <div class="see-more" *ngIf="filteredChallengesView.length < filteredChallenges.length">
+    <a class="btn btn-filter" (click)="seeMoreClicked()">See More</a>
+ </div>
+ </div>
+ <app-forcelogin [path]="'/challenges/me'" *ngIf="!authServicePublic.isLoggedIn() && routerPublic.url == '/challenges/me'"></app-forcelogin>
+</div>

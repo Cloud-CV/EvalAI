@@ -1,0 +1,14 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.cardlist-container {
+  .cardlist-empty {
+    font-size: $fs-16;
+    color: $gray-darker;
+    text-align: center;
+    padding: 20px;
+    img {
+      height: 100px;
+    }
+  }
+}

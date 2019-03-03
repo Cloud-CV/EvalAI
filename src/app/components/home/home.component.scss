@@ -1,0 +1,67 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.home-container {
+  overflow-x:hidden;
+  overflow-y:scroll;
+  .home-section-title {
+    font-size: $fs-30;
+    font-weight:$fw-regular;
+    margin-top:50px;
+  }
+  .construction {
+    margin:0 auto;
+    width:400px;
+    text-align:center;
+    background:white;
+    font-size:$fs-24;
+    margin-top:100px;
+    overflow:auto;
+    color:$gray-darker;
+    padding:20px;
+    border-radius:10px;
+    @include box-shadow(0px, 0px, 10px, 5px, $overlay-light);
+    img {
+      height:100px;
+      width:auto;
+    }
+    span {
+      display:block;
+    }
+  }
+  .main-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    img {
+      width: 100%;
+    }
+  }
+  .home-content-temporary {
+    position: relative;
+    height: 1000px;
+  }
+}
+
+@include screen-medium {
+  .home-container {
+    .main-bg {
+      img {
+        width:200%;
+        left:-50%;
+      }
+    }
+  }
+}
+
+@include screen-small {
+  .home-container {
+    .main-bg {
+      img {
+        width:300%;
+        left:-100%;
+      }
+    }
+  }
+}

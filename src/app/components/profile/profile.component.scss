@@ -1,0 +1,66 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.profile-container {
+	.card {
+		background: $gray-lighter;
+		padding-bottom:30px;
+		width:50%;
+		margin:0 auto;
+	}
+	font-size:$fs-16;
+	font-weight: $fw-light;
+	color:$gray-dark;
+	margin:30px;
+
+	.dark {
+		color:$gray-darker;
+	}
+	.red {
+		color: $red-light;
+	}
+	.item {
+		margin:20px;
+		text-align:center;
+	}
+	.profile-photo {
+		height:100px;
+		border-radius:50%;
+		@include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+	}
+	.modal-container {
+		&.hidden {
+			display:none;
+		}
+	}
+	.copy {
+		background: none !important;
+	    border: none !important;
+	    color: $red-light !important;
+	    font-size: $fs-24 !important;
+	    i {
+	    	margin-left:-20px;
+	    }
+	    &:hover {
+	    	box-shadow:none !important;
+	    	color: $red-medium;
+	    }
+	}
+
+}
+
+@include screen-medium {
+	.profile-container {
+		.card {
+			width:70%;
+		}
+	}
+}
+
+@include screen-small {
+	.profile-container {
+		.card {
+			width:90%;
+		}
+	}
+}

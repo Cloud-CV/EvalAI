@@ -1,0 +1,61 @@
+<div class = "footer-container" [class.at-home]="atHome">
+<div class="footer-bg">
+	<img *ngIf="localRouter.url == '/'" src = "/assets/images/footer_complete.png"/>
+	<img *ngIf="localRouter.url != '/'" src = "/assets/images/footer_partial.png"/>
+</div>
+<!-- <img class="footer-bg" src="assets/images/Footer.png"/> -->
+<div class="footer-content">
+	<div class="footer-content-top">
+	<div *ngIf="localRouter.url == '/'">
+	<span class="section-title notifications">Stay Notified</span>
+	<div class="footer-description">	
+			<div class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
+	</div>
+	<div class="centerall footer-buttons" >
+			<div class="footer-buttons-div">
+				<input id = "notification-email" class = "btn btn-fill input-fill" placeholder="Name@company.com"/>	
+				<span class = "btn btn-fire" (click)="getNotifications()">Get Notifications</span>
+			</div>
+	</div>
+	</div>
+	<div class="row top-margin-extra">
+	<div class="footer-location col-lg-6 col-md-6 col-sm-12 col-xs-12">
+		<div class="footer-logo top-margin-extra" ><img src="assets/images/evalai_logo_light.png"/></div>
+		<div class="footer-text">Evaluating state of the art in AI</div>
+		<div class="footer-text">
+		<table><tr>
+			<td>
+				<img src="assets/images/mapmarker.png" class="invert-color footer-map-icon"/>
+			</td>
+			<td>
+				College of computing, Second Floor, 801 Atlantic Drive, Atlanta, GA 30332-0280
+			</td>
+		</tr></table>
+		</div>
+		<div class="footer-text top-margin-extra">
+		© CloudCV 2018
+		</div>
+	</div>
+	<div class="footer-links top-margin-extra col-lg-6 col-md-6 col-sm-12 col-xs-12">
+		<table class="footer-table" width="100%">
+			<tr> 
+				<td><a (click)="navigateTo('/about')">About Us</a></td>
+				<td><a (click)="navigateTo('/contact')">Contact Us</a></td>
+			</tr>
+			<tr> 
+				<td><a (click)="navigateTo('/our-team')">Our Team</a></td>
+				<td><a (click)="navigateTo('/get-involved')">Get Involved</a></td>
+			</tr>
+			<tr> 
+				<td ><a (click)="navigateTo('/privacy-policy')">Privacy Policy</a></td>
+				<td><a target="_blank" href="https://cloudcv.org/">CloudCV Website</a></td>
+			</tr>
+		</table>
+		<div class="footer-jump-links top-margin-extra">
+		<a target="_blank" href="https://github.com/Cloud-CV"><img src="assets/images/git.png" /></a>
+		<a target="_blank" href="https://twitter.com/project_cloudcv"><img src="assets/images/twitter.png" /></a></div>
+	</div>
+	</div>
+	</div>
+</div>
+</div>
