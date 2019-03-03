@@ -20,8 +20,6 @@ import zipfile
 
 from os.path import join
 
-from django.utils import timezone
-
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
@@ -275,7 +273,7 @@ def process_submission_message(message):
     if not challenge_phase:
         logger.exception(
             "Challenge Phase {} does not exist for queue {}".format(
-                phase_pk, queue_name
+                phase_pk, QUEUE_NAME
             )
         )
         raise
@@ -375,7 +373,7 @@ def get_message_from_sqs_queue():
 def delete_message_from_sqs_queue(receipt_handle):
     url = URLS.get("delete_message_from_sqs_queue").format(QUEUE_NAME, receipt_handle)
     url = return_url_per_environment(url)
-    response = make_request(url, "GET")
+    response = make_request(url, "GET") # noqa
     return
 
 
@@ -470,9 +468,7 @@ def run_submission(
 
     try:
         logger.info("Sending submission {} for evaluation".format(submission_pk))
-        with stdout_redirect(stdout) as new_stdout, stderr_redirect(
-            stderr
-        ) as new_stderr:  # noqa
+        with stdout_redirect(stdout), stderr_redirect(stderr):
             submission_output = EVALUATION_SCRIPTS[challenge_pk].evaluate(
                 annotation_file_path,
                 user_annotation_file_path,

@@ -1,9 +1,7 @@
-import boto3
 import botocore
 import datetime
 import json
 import logging
-import os
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -11,7 +9,6 @@ from rest_framework.decorators import (api_view,
                                        permission_classes,
                                        throttle_classes,)
 
-from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
@@ -694,7 +691,7 @@ def update_submission(request, challenge_pk):
                         dataset_split__codename=split)
                 except ChallengePhaseSplit.DoesNotExist:
                     response_data = {'error': 'Challenge Phase Split does not exist with phase_id: {} and'
-                                    ' split codename: {}'.format(challenge_phase_pk, split)}
+                                     ' split codename: {}'.format(challenge_phase_pk, split)}
                     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
                 leaderboard_metrics = challenge_phase_split.leaderboard.schema.get('labels')
@@ -709,12 +706,12 @@ def update_submission(request, challenge_pk):
 
                 if len(missing_metrics):
                     response_data = {'error': 'Following metrics are missing in the'
-                                    'leaderboard data: {}'.format(missing_metrics)}
+                                     'leaderboard data: {}'.format(missing_metrics)}
                     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
                 if len(malformed_metrics):
                     response_data = {'error': 'Values for following metrics are not of'
-                                    'float/int: {}'.format(malformed_metrics)}
+                                     'float/int: {}'.format(malformed_metrics)}
                     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
                 data = {'result': accuracies}
@@ -902,4 +899,3 @@ def update_submission_status_by_queue_name(request, challenge_pk, submission_pk,
             'error': 'Sorry, you are not authorized to update this submission!'
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
