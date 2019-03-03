@@ -425,9 +425,15 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'GET':
-        serializer = ChallengePhaseSerializer(challenge_phase)
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
+        if not is_user_a_host_of_challenge(request.user, challenge.id):
+            serializer = ChallengePhaseSerializer(challenge_phase)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            serializer = ChallengePhaseCreateSerializer(
+                challenge_phase, context={'request': request})
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ['PUT', 'PATCH']:
         if request.method == 'PATCH':
@@ -1362,37 +1368,6 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_challenge_phase_by_pk(request, challenge_phase_pk):
-    """
-    API endpoint to fetch the challenge phase details by using pk
-
-    Arguments:
-        challenge_phase_pk -- Challenge Phase Id for which the detail is to be fetched
-
-    Returns:
-        Response Object -- An object containing challenge phase details
-    """
-
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-
-    challenge_pk = challenge_phase.challenge.id
-
-    if not is_user_a_host_of_challenge(request.user, challenge_pk):
-        response_data = {
-            'error': 'Sorry, you are not authorized to access this challenge phase.'
-        }
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
-    serializer = ChallengePhaseCreateSerializer(
-        challenge_phase, context={'request': request})
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_by_queue_name(request, queue_name):
     """
     API endpoint to fetch the challenge details by using pk
@@ -1486,18 +1461,5 @@ def get_challenge_phases_by_challenge_pk(request, challenge_pk):
         challenge_phases, context={
             'request': request
             }, many=True)
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
-@throttle_classes([AnonRateThrottle])
-def get_challenge_phase_by_pk(request, pk):
-    """
-    Returns a particular challenge phase details by pk
-    """
-    challenge_phase = get_challenge_phase_model(pk)
-    serializer = ChallengePhaseSerializer(
-        challenge_phase, context={'request': request})
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)

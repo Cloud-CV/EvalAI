@@ -51,7 +51,7 @@ URLS = {
     "get_submission_by_pk": "/api/jobs/submission/{}",
     "get_challenge_phases_by_challenge_pk": "/api/challenges/{}/phases/",
     "get_challenge_by_queue_name": "/api/challenges/challenge/queues/{}/",
-    "get_challenge_phase_by_pk": "/api/challenges/phase/{}/",
+    "get_challenge_phase_by_pk": "/api/challenges/challenge/{}/challenge_phase/{}",
     "update_submission_data": "/api/jobs/challenge/{}/update_submission/",
 }
 EVALAI_ERROR_CODES = [400, 401, 406]
@@ -271,7 +271,7 @@ def process_submission_message(message):
     if not submission_instance:
         return
 
-    challenge_phase = get_challenge_phase_by_pk(phase_pk)
+    challenge_phase = get_challenge_phase_by_pk(challenge_pk, phase_pk)
     if not challenge_phase:
         logger.exception(
             "Challenge Phase {} does not exist for queue {}".format(
@@ -338,10 +338,13 @@ def make_request(url, method, data=None):
             response = requests.put(url=url, headers=headers, data=data)
             response.raise_for_status()
         except requests.exceptions.RequestException as err:
-            logger.info("The worker is not able to establish connection with EvalAI")
+            logger.exception(
+                "The worker is not able to establish connection with EvalAI due to {}"
+                % (response.json())
+            )
             raise
         except requests.exceptions.HTTPError as err:
-            logger.info(
+            logger.exception(
                 "The request to URL {} is failed due to {}" % (url, response.json())
             )
             raise
@@ -397,8 +400,8 @@ def get_challenge_by_queue_name():
     return response
 
 
-def get_challenge_phase_by_pk(challenge_phase_pk):
-    url = URLS.get("get_challenge_phase_by_pk").format(challenge_phase_pk)
+def get_challenge_phase_by_pk(challenge_pk, challenge_phase_pk):
+    url = URLS.get("get_challenge_phase_by_pk").format(challenge_pk, challenge_phase_pk)
     url = return_url_per_environment(url)
     response = make_request(url, "GET")
     return response
