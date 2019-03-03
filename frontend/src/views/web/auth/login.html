@@ -10,22 +10,22 @@
     <form name="loginForm" ng-submit="auth.userLogin(loginForm.$valid)" id="log-in" novalidate>
         <!-- username -->
         <div class="input-field align-left">
-            <input type="text" id="name" class="dark-autofill" name="name" ng-model="auth.getUser.name" ng-minlength="3" required>
+            <input type="text" id="name" class="dark-autofill" name="name" ng-model="auth.getUser.name" ng-change="auth.checkUserName()">
             <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
             <label for="name">Username*</label>
-            <div class="wrn-msg text-highlight" ng-messages="loginForm.name.$error" ng-if="loginForm.name.$touched || loginForm.$submitted">
-                <p ng-message="minlength">Username is too short.</p>
-                <p ng-message="required">Username is required.</p>
+            <div class="wrn-msg text-highlight">
+                <p ng-if="auth.user_empty || auth.user_min_length">{{auth.user_msg}}</p>
+                <p ng-if="!auth.user_empty && !auth.user_min_length" style="visibility: hidden;">&nbsp;</p>
             </div>
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input type="password" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.getUser.password" autocomplete="new-password" ng-minlength="8" required>
+            <input type="password" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.getUser.password" autocomplete="new-password" ng-change="auth.checkPassword()">
             <span class="form-icon form-icon-dark"><i class="fa fa-key"></i></span>
             <label for="password">Password (min 8 characters) *</label>
-            <div class="wrn-msg text-highlight" ng-messages="loginForm.password.$error" ng-if="loginForm.password.$touched || loginForm.$submitted">
-                <p ng-message="minlength">Password is less than 8 characters.</p>
-                <p ng-message="required">Password is required.</p>
+            <div class="wrn-msg text-highlight">
+                <p ng-if="auth.pass_empty || auth.pass_min_length">{{auth.pass_msg}}</p>
+                <p ng-if="!auth.pass_empty && !auth.pass_min_length" style="visibility: hidden;">&nbsp;</p>
             </div>
         </div>
         <div class="row">

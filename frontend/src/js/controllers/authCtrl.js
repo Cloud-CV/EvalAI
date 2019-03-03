@@ -11,6 +11,13 @@
 
     function AuthCtrl(utilities, $state, $rootScope) {
         var vm = this;
+        
+        vm.user_empty = true;
+        vm.user_min_length = false;
+        vm.user_msg = '';
+        vm.pass_empty = true;
+        vm.pass_min_length = false;
+        vm.pass_msg = '';
 
         vm.isRem = false;
         vm.isAuth = false;
@@ -288,5 +295,42 @@
         $rootScope.$on('$stateChangeStart', function() {
             vm.resetForm();
         });
+
+        vm.checkUserName = function(){
+            if(vm.getUser.name.length==0){
+                vm.user_empty=true;
+                vm.user_min_length=false;
+            }else if(vm.getUser.name.length<3){
+                vm.user_min_length=true;
+                vm.user_empty=false;
+            }else{
+                vm.user_min_length=false;
+                vm.user_empty=false;
+            }
+            if(vm.user_min_length)
+                vm.user_msg = 'Username is too short';
+            if(vm.user_empty)
+                vm.user_msg = 'Username is required';
+        }
+
+        vm.checkPassword = function(){
+            if(vm.getUser.password.length==0){
+                vm.pass_empty=true;
+                vm.pass_min_length=false;
+            }else if(vm.getUser.password.length<8){
+                vm.pass_min_length=true;
+                vm.pass_empty=false;
+            }else{
+                vm.pass_min_length=false;
+                vm.pass_empty=false;
+            }
+            if(vm.pass_min_length)
+                vm.pass_msg = 'Password is less than 8 characters.';
+            if(vm.pass_empty)
+                vm.pass_msg = 'Password is required.';
+            console.log(vm.getUser.password.length);
+            console.log(vm.pass_empty);
+            console.log(vm.pass_min_length);
+            }
     }
 })();
