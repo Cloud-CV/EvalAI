@@ -1,4 +1,5 @@
 # Command to run : python manage.py shell  < scripts/seed.py
+import datetime
 import os
 import random
 import string
@@ -137,6 +138,9 @@ def create_challenge(title, start_date, end_date, host_team):
     evaluation_script = open(
         os.path.join(settings.BASE_DIR, 'examples', 'example1', 'sample_evaluation_script.zip'), 'rb')
     queue = ''.join(random.choice(string.ascii_letters) for _ in range(75))
+    year = datetime.date.today().year
+    slug = '{t}-{y}'.format(t=title, y=year)
+    slug = slug.lower().replace(" ", "-")
     Challenge.objects.create(
         title=title,
         short_description=fake.paragraph(),
@@ -150,6 +154,7 @@ def create_challenge(title, start_date, end_date, host_team):
         published=True,
         enable_forum=True,
         anonymous_leaderboard=False,
+        slug=slug,
         start_date=start_date,
         end_date=end_date,
         queue=queue,
