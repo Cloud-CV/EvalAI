@@ -26,7 +26,7 @@ urlpatterns = [
         name='get_challenge_by_queue_name'),
     url(r'^challenge/(?P<pk>[0-9]+)/$',
         views.get_challenge_by_pk, name='get_challenge_by_pk'),
-    url(r'^challenge/(?P<challenge_pk>[0-9]+)/phases/$',
+    url(r'^(?P<challenge_pk>[0-9]+)/phases/$',
         views.get_challenge_phases_by_challenge_pk,
         name='get_challenge_phases_by_challenge_pk'),
     url(r'^phase/(?P<challenge_phase_pk>[0-9]+)/$',

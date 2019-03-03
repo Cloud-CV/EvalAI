@@ -49,7 +49,7 @@ URLS = {
     "get_message_from_sqs_queue": "/api/jobs/challenge/queues/{}/",
     "delete_message_from_sqs_queue": "/api/jobs/queues/{}/receipt/{}/",
     "get_submission_by_pk": "/api/jobs/submission/{}",
-    "get_challenge_phases_by_challenge_pk": "/api/challenges/challenge/{}/phases/",
+    "get_challenge_phases_by_challenge_pk": "/api/challenges/{}/phases/",
     "get_challenge_by_queue_name": "/api/challenges/challenge/queues/{}/",
     "get_challenge_phase_by_pk": "/api/challenges/phase/{}/",
     "update_submission_data": "/api/jobs/challenge/{}/update_submission/",
@@ -200,7 +200,7 @@ def extract_challenge_data(challenge, phases):
     create_dir_as_python_package(challenge_data_directory)
 
     # set entry in map
-    PHASE_ANNOTATION_FILE_NAME_MAP[str(challenge.get("id"))] = {}
+    PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")] = {}
 
     challenge_zip_file = join(
         challenge_data_directory, "challenge_{}.zip".format(challenge.get("id"))
@@ -221,10 +221,9 @@ def extract_challenge_data(challenge, phases):
         # create phase directory
         create_dir(phase_data_directory)
         annotation_file_url = phase.get("test_annotation")
-        # annotation_file_url = return_url_per_environment(annotation_file_url)
         annotation_file_name = os.path.basename(phase.get("test_annotation"))
-        PHASE_ANNOTATION_FILE_NAME_MAP[str(challenge.get("id"))][
-            str(phase.get("id"))
+        PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")][
+            phase.get("id")
         ] = annotation_file_name
         annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(
             challenge_id=challenge.get("id"),
@@ -237,7 +236,7 @@ def extract_challenge_data(challenge, phases):
         challenge_module = importlib.import_module(
             CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.get("id"))
         )
-        EVALUATION_SCRIPTS[str(challenge.get("id"))] = challenge_module
+        EVALUATION_SCRIPTS[challenge.get("id")] = challenge_module
     except:
         logger.exception(
             "Exception raised while creating Python module for challenge_id: %s"
@@ -263,7 +262,7 @@ def process_submission_message(message):
     Extracts the submission related metadata from the message
     and send the submission object for evaluation
     """
-    challenge_pk = message.get("challenge_pk")
+    challenge_pk = int(message.get("challenge_pk"))
     phase_pk = message.get("phase_pk")
     submission_pk = message.get("submission_pk")
     submission_instance = extract_submission_data(submission_pk)
@@ -444,8 +443,7 @@ def run_submission(
     submission_output = None
     phase_pk = challenge_phase.get("id")
     submission_pk = submission.get("id")
-    challenge_pk = str(challenge_pk)
-    annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP[challenge_pk][str(phase_pk)]
+    annotation_file_name = PHASE_ANNOTATION_FILE_NAME_MAP[challenge_pk][phase_pk]
     annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(
         challenge_id=challenge_pk,
         phase_id=phase_pk,
