@@ -1406,23 +1406,24 @@ def get_challenge_phase_by_pk(request, challenge_phase_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_challenge_by_pk_using_queue_name(request, challenge_pk, queue_name):
+def get_challenge_by_queue_name(request, queue_name):
     """
     API endpoint to fetch the challenge details by using pk
 
     Arguments:
-        challenge_pk -- Challenge Id for which the details is to be fetched
-        queue_name -- Secret token provided by the challenge hosts
+        queue_name -- Challenge queue name for which the challenge deatils are fetched
 
     Returns:
         Response Object -- An object containing challenge details
     """
 
     try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
+        challenge = Challenge.objects.get(queue=queue_name)
     except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge {} does not exist'.format(challenge_pk)}
-        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        response_data = {
+            'error': 'Challenge with queue name {} does not exists'.format(queue_name)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if not is_user_a_host_of_challenge(request.user, challenge.id):
         response_data = {
@@ -1430,15 +1431,9 @@ def get_challenge_by_pk_using_queue_name(request, challenge_pk, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    challenge_queue_name = challenge.queue
-
-    if (challenge_queue_name == queue_name):
-        serializer = ZipChallengeSerializer(challenge, context={'request': request})
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-
-    response_data = {'error': 'Sorry, you are not authorized to access this challenge.'}
-    return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    serializer = ZipChallengeSerializer(challenge, context={'request': request})
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
