@@ -39,6 +39,7 @@ class ParticipantTeam(TimeStampedModel):
     team_name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(User, null=True)
     team_url = models.CharField(max_length=1000, default="", blank=True)
+    docker_repository_uri = models.CharField(max_length=1000, default="", blank=True)
 
     def __str__(self):
         return '{}'.format(self.team_name)
@@ -46,6 +47,12 @@ class ParticipantTeam(TimeStampedModel):
     def get_all_participants_email(self):
         email_ids = Participant.objects.filter(team=self).values_list('user__email', flat=True)
         return list(email_ids)
+
+    def get_docker_repository_name(self):
+        if self.docker_repository_uri != "":
+            return self.docker_repository_uri.split("/")[-1]
+        else:
+            return None
 
     class Meta:
         app_label = 'participants'
