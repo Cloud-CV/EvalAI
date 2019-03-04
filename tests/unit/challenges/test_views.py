@@ -88,7 +88,8 @@ class GetParticipantTeamNameTest(BaseAPITestClass):
 
         expected = {"team_name": "Participant Team for Challenge"}
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'], expected)
 
 
 class GetChallengeTest(BaseAPITestClass):

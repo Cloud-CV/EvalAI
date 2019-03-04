@@ -93,9 +93,9 @@ class TestChallengeUrls(BaseAPITestClass):
         self.assertEqual(url, '/api/challenges/challenge_host_team/' +
                          str(self.challenge_host_team.pk) + '/challenge/' + str(self.challenge.pk))
         url = reverse_lazy('challenges:get_team_name_for_challenge',
-                            kwargs={'challenge_pk': self.challenge_pk})
+                           kwargs={'challenge_pk': self.challenge.pk})
         self.assertEqual(url, '/api/challenges/challenge/' +
-                        str(self.challenge_pk) + '/participant_team/team_name')
+                         str(self.challenge.pk) + '/participant_team/team_name')
         url = reverse_lazy('challenges:add_participant_team_to_challenge',
                            kwargs={'challenge_pk': self.challenge.pk, 'participant_team_pk': self.participant_team.pk})
         self.assertEqual(url, '/api/challenges/challenge/' + str(self.challenge.pk) + '/participant_team/' +
