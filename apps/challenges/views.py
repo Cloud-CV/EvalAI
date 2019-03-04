@@ -83,17 +83,15 @@ def team_name_for_challenge(request, challenge_pk):
     """
     Returns the name of the user's participation team in the current challenge.
     """
-    #challenge = get_challenge_model(challenge_pk)
-
     if has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk)
-        participant_team=ParticipantTeam.objects.get(pk=participant_team_pk) #will this work? or is participant_team_pk the model itself?
+        participant_team=ParticipantTeam.objects.get(pk=participant_team_pk)
         serializer = ParticipantTeamDetailSerializer(participant_team)
         details = serializer.data
         response_data = {"team_name": details["team_name"]}
 
-        return Response(response_data, status=status.HTTP_200_OK) #Read what has to go inside the Response constructor.
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 @throttle_classes([UserRateThrottle])
