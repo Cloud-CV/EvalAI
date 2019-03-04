@@ -75,6 +75,7 @@ try:
 except NameError:
     xrange = range  # Python 3
 
+
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -86,7 +87,7 @@ def team_name_for_challenge(request, challenge_pk):
     if has_user_participated_in_challenge(user=request.user, challenge_id=challenge_pk):
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk)
-        participant_team=ParticipantTeam.objects.get(pk=participant_team_pk)
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
         serializer = ParticipantTeamDetailSerializer(participant_team)
         details = serializer.data
         response_data = {"team_name": details["team_name"]}
