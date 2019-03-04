@@ -254,23 +254,6 @@
 
         utilities.sendRequest(parameters);
 
-
-        /*vm.get_team_name_for_challenge = function() { //The request below is not being sent through the browser. Checked from network tools.
-            if(vm.isParticipated) {
-                parameters.url = 'challenges/challenge/'+vm.challengeID+'/participant_team/team_name';
-                parameters.method = 'GET';
-                parameters.data = {};
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
-                        vm.current_team_name = details.team_name;
-                    }
-                };
-                utilities.sendRequest(parameters);
-            }
-        }*/
-
-
         vm.makeSubmission = function() {
             if (vm.isParticipated) {
 
@@ -360,9 +343,6 @@
                 var details = response.data;
                 vm.current_team_name = details.team_name;
             },
-            onError: function(response){
-                vm.current_team_name = "Error";
-            }
         };
 
         utilities.sendRequest(parameters);
