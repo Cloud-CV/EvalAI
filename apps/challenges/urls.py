@@ -8,6 +8,8 @@ urlpatterns = [
         name='get_challenge_list'),
     url(r'^challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/challenge/(?P<challenge_pk>[0-9]+)$',
         views.challenge_detail, name='get_challenge_detail'),
+    url(r'^challenge/(?P<challenge_pk>[0-9]+)/participant_team/team_name$',
+        views.team_name_for_challenge, name='get_team_name_for_challenge'),
     url(r'^challenge/(?P<challenge_pk>[0-9]+)/participant_team/(?P<participant_team_pk>[0-9]+)$',
         views.add_participant_team_to_challenge, name='add_participant_team_to_challenge'),
     url(r'^challenge/(?P<challenge_pk>[0-9]+)/disable$',

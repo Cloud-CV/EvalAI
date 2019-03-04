@@ -254,6 +254,23 @@
 
         utilities.sendRequest(parameters);
 
+
+        /*vm.get_team_name_for_challenge = function() { //The request below is not being sent through the browser. Checked from network tools.
+            if(vm.isParticipated) {
+                parameters.url = 'challenges/challenge/'+vm.challengeID+'/participant_team/team_name';
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        vm.current_team_name = details.team_name;
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }
+        }*/
+
+
         vm.makeSubmission = function() {
             if (vm.isParticipated) {
 
@@ -335,7 +352,20 @@
             }
         };
 
+        parameters.url = 'challenges/challenge/' + vm.challengeId + '/participant_team/team_name';
+        parameters.method = 'GET';
+        parameters.data={};
+        parameters.callback = {
+            onSuccess: function(response) {
+                var details = response.data;
+                vm.current_team_name = details.team_name;
+            },
+            onError: function(response){
+                vm.current_team_name = "Error";
+            }
+        };
 
+        utilities.sendRequest(parameters);
 
         // get details of the particular challenge phase
         parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
@@ -494,8 +524,8 @@
                                 vm.leaderboard[i].timeSpan = 'hour';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'hours';
-                            }                        
-                        } 
+                            }
+                        }
                         else if (duration._data.minutes !=0) {
                             var minutes = duration.asMinutes();
                             vm.leaderboard[i].submission__submitted_at = minutes;
