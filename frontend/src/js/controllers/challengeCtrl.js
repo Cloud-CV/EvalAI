@@ -52,8 +52,10 @@
         vm.startLoader = loaderService.startLoader;
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
+        vm.authToken = '';
 
         var userKey = utilities.getData('userKey');
+        vm.authToken = userKey;
 
         vm.subErrors = {};
 
