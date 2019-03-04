@@ -38,8 +38,7 @@ def get_participant_team_name_of_user_for_a_challenge(user, challenge_id):
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(user, challenge_id)
     if participant_team_id:
         return ParticipantTeam.objects.get(pk=participant_team_id).team_name
-    else:
-        None
+    return
 
 
 def get_list_of_challenges_for_participant_team(participant_teams=[]):

@@ -396,11 +396,16 @@ def leaderboard(request, challenge_phase_split_id):
         return paginator.get_paginated_response(response_data)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
+    '''
+    Returns the number of remaining submissions that a participant can
+    do daily, monthly and in total to a particular challenge phase of a
+    challenge.
+    '''
     response_data, response_status = get_remaining_submission_for_a_phase(request.user,
                                                                           challenge_phase_pk,
                                                                           challenge_pk)
@@ -412,11 +417,10 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions_for_all_phases(request, challenge_pk):
-    """
+    '''
+    API to get the number of remaining submission for all phases.
+    Below is the sample response returned by the API
 
-    API to number of remaining submission for all phases.
-
-    GET jobs/*challenge_pk*/remaining_submissions
     {
         "participant_team": "Sample_Participant_Team",
         "participant_team_id": 2,
@@ -444,19 +448,16 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
             }
         ]
     }
-    """
+    '''
     phases_data = {}
-    try:
-        challenge = get_challenge_model(challenge_pk)
-    except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge does not exist'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    challenge = get_challenge_model(challenge_pk)
     if is_user_a_host_of_challenge(request.user, challenge_pk):
         challenge_phase = ChallengePhase.objects.filter(
             challenge=challenge).order_by('pk')
     else:
         challenge_phase = ChallengePhase.objects.filter(
             challenge=challenge, is_public=True).order_by('pk')
+
     phases_data['participant_team'] = get_participant_team_name_of_user_for_a_challenge(
             request.user, challenge_pk)
     phases_data['participant_team_id'] = get_participant_team_id_of_user_for_a_challenge(
