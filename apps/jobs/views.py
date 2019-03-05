@@ -751,25 +751,34 @@ def update_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_challenge_submissions_count_by_status(request, challenge_pk, submission_status):
+def get_challenge_submissions_by_status(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
-
-    if submission_status not in [Submission.SUBMITTED, Submission.RUNNING, Submission.FAILED,
-                                 Submission.CANCELLED, Submission.FINISHED, Submission.SUBMITTING]:
-        response_data = {
-            'error': 'Invalid submission status {}'.format(submission_status)
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if not is_user_a_host_of_challenge(request.user, challenge.id):
         response_data = {'error': 'Sorry, you are not authorized to make this request!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    submissions_done_in_challenge_count = Submission.objects.filter(
-        challenge_phase__challenge=challenge.id, status=submission_status).count()
+    submission_status = request.query_params.get('status', None)
 
+    valid_submission_status = [Submission.SUBMITTED, Submission.RUNNING, Submission.FAILED,
+                               Submission.CANCELLED, Submission.FINISHED, Submission.SUBMITTING]
+
+    if submission_status not in valid_submission_status:
+        response_data = {
+            'error': 'Invalid submission status {}'.format(submission_status)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    submissions_done_in_challenge = Submission.objects.filter(
+        challenge_phase__challenge=challenge.id, status=submission_status)
+
+    submissions_done_in_challenge_count = submissions_done_in_challenge.count()
+
+    serializer = SubmissionSerializer(
+        submissions_done_in_challenge, many=True, context={'request': request})
     response_data = {
-        'submission_count': submissions_done_in_challenge_count
+        'submissions': serializer.data,
+        'submissions_count': submissions_done_in_challenge_count
     }
     return Response(response_data, status=status.HTTP_200_OK)

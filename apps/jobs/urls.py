@@ -19,6 +19,6 @@ urlpatterns = [
         views.get_submission_by_pk, name='get_submission_by_pk'),
     url(r'^challenge/(?P<challenge_pk>[0-9]+)/update_submission/$',
         views.update_submission, name='update_submission'),
-    url(r'^challenge/(?P<challenge_pk>[0-9]+)/submission/(?P<submission_status>[A-Za-z]+)/$',
-        views.get_challenge_submissions_count_by_status, name='get_challenge_submissions_count_by_status'),
+    url(r'^challenge/(?P<challenge_pk>[0-9]+)/submission/',
+        views.get_challenge_submissions_by_status, name='get_challenge_submissions_count_by_status'),
 ]

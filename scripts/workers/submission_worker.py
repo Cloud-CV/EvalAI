@@ -558,15 +558,20 @@ def main():
                 break
             time.sleep(0.1)
     else:
-        maximum_concurrent_submissions = challenges.evaluate_concurrent_max_submissions
-        while True:
-            submissions_done_in_challenge_count = Submission.objects.filter(
-                challenge_phase__challenge=challenge.id, status='running').count()
+        try:
+            challenge = Challenge.objects.get(**q_params)
+        except Challenge.DoesNotExist:
+            logger.exception('Challenge with pk does not exists'.format(challenge_pk))
+            raise
 
-            if submissions_done_in_challenge_count == maximum_concurrent_submissions:
-                pass
-            else:
-                for message in queue.receive_messages():
+        maximum_concurrent_submissions = challenge.max_concurrent_submission_evaluation
+        while True:
+            for message in queue.receive_messages():
+                current_running_submissions_count = Submission.objects.filter(
+                    challenge_phase__challenge=challenge.id, status='running').count()
+                if current_running_submissions_count == maximum_concurrent_submissions:
+                    pass
+                else:
                     logger.info('Processing message body: {0}'.format(message.body))
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed

@@ -62,7 +62,7 @@ class Challenge(TimeStampedModel):
         max_length=200, db_index=True, default='')
     max_docker_image_size = models.BigIntegerField(
         default=42949672960, null=True, blank=True)  # Default is 40 GB
-    evaluate_concurrent_max_submissions = models.PositiveIntegerField(default=100000)
+    max_concurrent_submission_evaluation = models.PositiveIntegerField(default=100000)
 
     class Meta:
         app_label = 'challenges'
