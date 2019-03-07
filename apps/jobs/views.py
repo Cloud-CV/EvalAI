@@ -146,7 +146,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         # check if challenge is docker based
         if challenge.is_docker_based:
             response_data = {
-                'error': 'The challenge {0} requires code upload in the form of docker images. \
+                'error': '{0} requires uploading docker image. \
                     Please use evalai-cli to make submissions.'.format(challenge.title)}
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
