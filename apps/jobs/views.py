@@ -443,7 +443,7 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
                 "end_date": "2020-06-19T14:22:53Z",
                 "message": {
                     "message": "You have exhausted this month's submission limit!",
-                    "remaining_time": "1481076.929224"
+                    "remaining_time": "1481076.929224"  // remaining_time is in seconds
                 }
             }
         ]
