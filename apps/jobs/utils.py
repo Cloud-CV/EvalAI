@@ -22,11 +22,8 @@ def get_remaining_submission_for_a_phase(user, challenge_phase_pk, challenge_pk)
     challenge.
     '''
 
-    # check if the challenge exists or not
     get_challenge_model(challenge_pk)
-
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
        user, challenge_pk)
 
