@@ -37,8 +37,8 @@ from .serializers import (ChallengePhaseSubmissionAnalytics,
                           )
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_participant_team_count(request, challenge_pk):
@@ -52,8 +52,8 @@ def get_participant_team_count(request, challenge_pk):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_participant_count(request, challenge_pk):
@@ -68,8 +68,8 @@ def get_participant_count(request, challenge_pk):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_submission_count(request, challenge_pk, duration):
@@ -107,8 +107,8 @@ def get_submission_count(request, challenge_pk, duration):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_submission_count_by_team(request, challenge_pk, challenge_phase_pk):
@@ -136,8 +136,8 @@ def get_challenge_phase_submission_count_by_team(request, challenge_pk, challeng
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_last_submission_time(request, challenge_pk, challenge_phase_pk, submission_by):
@@ -163,8 +163,8 @@ def get_last_submission_time(request, challenge_pk, challenge_phase_pk, submissi
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase_pk):
@@ -210,8 +210,8 @@ def get_last_submission_datetime_analysis(request, challenge_pk, challenge_phase
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_submission_analysis(request, challenge_pk, challenge_phase_pk):

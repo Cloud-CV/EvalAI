@@ -26,8 +26,8 @@ def disable_user(request):
     return Response(status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_auth_token(request):

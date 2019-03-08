@@ -20,8 +20,8 @@ from .serializers import (ChallengeHostSerializer,
 from .utils import (is_user_part_of_host_team,)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_team_list(request):
@@ -44,8 +44,8 @@ def challenge_host_team_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_team_detail(request, pk):
@@ -83,8 +83,8 @@ def challenge_host_team_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_list(request, challenge_host_team_pk):
@@ -122,8 +122,8 @@ def challenge_host_list(request, challenge_host_team_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_detail(request, challenge_host_team_pk, pk):
@@ -168,8 +168,8 @@ def challenge_host_detail(request, challenge_host_team_pk, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_challenge_host_team(request):
@@ -189,8 +189,8 @@ def create_challenge_host_team(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle, ])
 @api_view(['DELETE', ])
+@throttle_classes([UserRateThrottle, ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication, ))
 def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
@@ -211,8 +211,8 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def invite_host_to_team(request, pk):

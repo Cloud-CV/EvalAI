@@ -77,8 +77,8 @@ def notify_users_about_challenge(request):
         return render(request, 'error404.html')
 
 
-@throttle_classes([AnonRateThrottle, ])
 @api_view(['GET', 'POST'])
+@throttle_classes([AnonRateThrottle, ])
 @permission_classes((permissions.AllowAny,))
 def contact_us(request):
     user_does_not_exist = False
@@ -106,8 +106,8 @@ def contact_us(request):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([AnonRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([AnonRateThrottle])
 @permission_classes((permissions.AllowAny,))
 def our_team(request):
     if request.method == 'GET':
