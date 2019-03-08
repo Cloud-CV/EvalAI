@@ -573,11 +573,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         with open(join(BASE_LOCATION, unique_folder_name, yaml_file), "r") as stream:
             yaml_file_data = yaml.safe_load(stream)
     except (yaml.YAMLError, ScannerError) as exc:
-        message = 'Error in creating challenge. Please check the yaml configuration!'
         response_data = {
-            'error': message
+            'error': exc
         }
-        logger.exception(exc)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script path in yaml file.
@@ -593,7 +591,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script file in extracted zip folder.
@@ -607,7 +604,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for test annotation file path in yaml file.
@@ -619,7 +615,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     for data in challenge_phases_data:
@@ -636,7 +631,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-            logger.exception(message)
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -647,7 +641,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-            logger.exception(message)
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -683,7 +676,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for evaluation details file
@@ -707,7 +699,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for terms and conditions file
@@ -729,7 +720,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for submission guidelines file
@@ -752,7 +742,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for leaderboard schema in YAML file
@@ -776,7 +765,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-            logger.exception(message)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         if 'labels' not in leaderboard_schema[0].get('schema'):
             message = ('There is no \'labels\' key in leaderboard '
@@ -784,7 +772,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-            logger.exception(message)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
     else:
         message = ('There is no key \'leaderboard\' '
@@ -792,7 +779,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -897,7 +883,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 response_data = {
                     'error': message
                 }
-                logger.exception(message)
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             for data in challenge_phase_splits_data:
@@ -963,14 +948,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 shutil.rmtree(BASE_LOCATION)
                 logger.info('Zip folder is removed')
             except:
-                logger.exception('Zip folder for challenge {} is not removed from location'.format(challenge.pk,
-                                                                                                   BASE_LOCATION))
-    try:
-        shutil.rmtree(BASE_LOCATION)
-        logger.info('Zip folder is removed')
-    except:
-        logger.info('Zip folder for challenge {} is not removed from location'.format(challenge.pk,
-                                                                                      BASE_LOCATION))
+                logger.exception('Zip folder for challenge {} is not removed from {} location'.format(
+                    challenge.pk, BASE_LOCATION))
 
 
 @throttle_classes([UserRateThrottle])
