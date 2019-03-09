@@ -232,7 +232,7 @@ class GetParticularChallenge(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_challenge_when_user_is_not_its_creator(self):
+    def test_update_challenge_when_user_is_not_host(self):
         self.user1 = User.objects.create(
             username='someuser1',
             email="user1@test.com",
@@ -252,7 +252,26 @@ class GetParticularChallenge(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_update_challenge_when_user_is_its_creator(self):
+    def test_update_challenge_when_user_is_host(self):
+        self.user1 = User.objects.create(
+            username='someuser1',
+            email="user1@test.com",
+            password='secret_psassword')
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email='user1@test.com',
+            primary=True,
+            verified=True)
+
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user1,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
+        self.client.force_authenticate(user=self.user1)
+
         new_title = 'Rose Challenge'
         new_description = 'New description.'
         expected = {
@@ -1802,7 +1821,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_challenge_phase_when_user_is_not_its_creator(self):
+    def test_update_challenge_phase_when_user_is_not_its_host(self):
         self.user1 = User.objects.create(
             username='someuser1',
             email="user1@test.com",
@@ -1822,7 +1841,26 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_update_challenge_phase_when_user_is_its_creator(self):
+    def test_update_challenge_phase_when_user_is_its_host(self):
+        self.user1 = User.objects.create(
+            username='someuser1',
+            email="user1@test.com",
+            password='secret_psassword')
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email='user1@test.com',
+            primary=True,
+            verified=True)
+
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user1,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN)
+
+        self.client.force_authenticate(user=self.user1)
+
         new_name = 'Rose Phase'
         new_description = 'New description.'
         expected = {
