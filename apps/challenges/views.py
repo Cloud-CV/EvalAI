@@ -374,7 +374,7 @@ def get_challenges_based_on_teams(request):
 
 @api_view(['GET', 'POST'])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail, IsMemberOfHostTeam))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_list(request, challenge_pk):
     try:
