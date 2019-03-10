@@ -1,0 +1,3 @@
+[submodule "examples/EvalAI-Starters"]
+	path = examples/EvalAI-Starters
+	url = https://github.com/Cloud-CV/EvalAI-Starters.git

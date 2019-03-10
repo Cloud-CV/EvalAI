@@ -47,7 +47,7 @@ The steps are:
 2. Get the source code on to your machine via git.
 
     ```shell
-    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    git clone --recurse-submodules https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
     ```
 
 3. Build and run the Docker containers. This might take a while.

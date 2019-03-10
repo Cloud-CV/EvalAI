@@ -136,7 +136,7 @@ def create_challenge(title, start_date, end_date, host_team):
     Creates a challenge.
     """
     evaluation_script = open(
-        os.path.join(settings.BASE_DIR, 'examples', 'example1', 'sample_evaluation_script.zip'), 'rb')
+        os.path.join(settings.BASE_DIR, 'examples', 'evaluation_script.zip'), 'rb')
     queue = ''.join(random.choice(string.ascii_letters) for _ in range(75))
     year = datetime.date.today().year
     slug = '{t}-{y}'.format(t=title, y=year)
@@ -171,7 +171,8 @@ def create_challenge_phases(challenge, number_of_phases=1):
     challenge_phases = []
     for i in range(number_of_phases):
         name = "{} Phase".format(fake.first_name())
-        with open(os.path.join(settings.BASE_DIR, 'examples', 'example1', 'test_annotation.txt'), 'rb') as data_file:
+        with open(os.path.join(settings.BASE_DIR, 'examples', 'EvalAI-Starters',
+                               'annotations/test_annotations_devsplit.json'), 'rb') as data_file:
             data = data_file.read()
         data = data or None
         challenge_phase = ChallengePhase.objects.create(

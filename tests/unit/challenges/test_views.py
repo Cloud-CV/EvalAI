@@ -2502,31 +2502,19 @@ class CreateChallengeUsingZipFile(APITestCase):
             team_name="Test Challenge Host Team", created_by=self.user
         )
 
-        self.path = join(
-            settings.BASE_DIR, "examples", "example1", "test_zip_file"
-        )
+        self.path = join(settings.BASE_DIR, 'examples', 'EvalAI-Starters', '')
 
         self.challenge = Challenge.objects.create(
-            title="Challenge Title",
-            short_description="Short description of the challenge (preferably 140 characters)",
-            description=open(join(self.path, "description.html"), "rb")
-            .read()
-            .decode("utf-8"),
-            terms_and_conditions=open(
-                join(self.path, "terms_and_conditions.html"), "rb"
-            )
-            .read()
-            .decode("utf-8"),
-            submission_guidelines=open(
-                join(self.path, "submission_guidelines.html"), "rb"
-            )
-            .read()
-            .decode("utf-8"),
-            evaluation_details=open(
-                join(self.path, "evaluation_details.html"), "rb"
-            )
-            .read()
-            .decode("utf-8"),
+            title='Challenge Title',
+            short_description='Short description of the challenge (preferably 140 characters)',
+            description=open(join(self.path, 'templates/description.html'),
+                             'rb').read().decode('utf-8'),
+            terms_and_conditions=open(join(self.path, 'templates/terms_and_conditions.html'),
+                                      'rb').read().decode('utf-8'),
+            submission_guidelines=open(join(self.path, 'templates/submission_guidelines.html'),
+                                       'rb').read().decode('utf-8'),
+            evaluation_details=open(join(self.path, 'templates/evaluation_details.html'),
+                                    'rb').read().decode('utf-8'),
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
@@ -2541,9 +2529,9 @@ class CreateChallengeUsingZipFile(APITestCase):
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             self.challenge_phase = ChallengePhase.objects.create(
-                name="Challenge Phase",
+                name='Challenge Phase',
                 description=open(
-                    join(self.path, "challenge_phase_description.html"), "rb"
+                    join(self.path, "templates/challenge_phase_1_description.html"), "rb"
                 )
                 .read()
                 .decode("utf-8"),
@@ -2552,11 +2540,11 @@ class CreateChallengeUsingZipFile(APITestCase):
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
-                test_annotation=SimpleUploadedFile(
-                    open(join(self.path, "test_annotation.txt"), "rb").name,
-                    open(join(self.path, "test_annotation.txt"), "rb").read(),
-                    content_type="text/plain",
-                ),
+                test_annotation=SimpleUploadedFile(open(join(self.path, 'annotations/test_annotations_devsplit.json'),
+                                                        'rb').name,
+                                                   open(join(self.path, 'annotations/test_annotations_testsplit.json'),
+                                                        'rb').read(),
+                                                   content_type='text/plain')
             )
         self.dataset_split = DatasetSplit.objects.create(
             name="Name of the dataset split",
@@ -2579,12 +2567,7 @@ class CreateChallengeUsingZipFile(APITestCase):
             visibility=ChallengePhaseSplit.PUBLIC,
         )
 
-        self.zip_file = open(
-            join(
-                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
-            ),
-            "rb",
-        )
+        self.zip_file = open(join(settings.BASE_DIR, 'examples', 'challenge_config.zip'), 'rb')
 
         self.test_zip_file = SimpleUploadedFile(
             self.zip_file.name,
@@ -2719,9 +2702,9 @@ class CreateChallengeUsingZipFile(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.assertEqual(Challenge.objects.count(), 2)
-        self.assertEqual(DatasetSplit.objects.count(), 2)
+        self.assertEqual(DatasetSplit.objects.count(), 3)
         self.assertEqual(Leaderboard.objects.count(), 2)
-        self.assertEqual(ChallengePhaseSplit.objects.count(), 2)
+        self.assertEqual(ChallengePhaseSplit.objects.count(), 4)
 
 
 class GetAllSubmissionsTest(BaseAPITestClass):
