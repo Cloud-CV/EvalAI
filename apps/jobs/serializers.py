@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from challenges.models import LeaderboardData
+from challenges.models import LeaderboardData, ChallengePhase
 from participants.models import Participant, ParticipantTeam
 
 from .models import Submission
@@ -143,3 +143,14 @@ class CreateLeaderboardDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaderboardData
         fields = ('challenge_phase_split', 'submission', 'result', 'leaderboard')
+
+
+class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
+    message = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChallengePhase
+        fields = ('id', 'name', 'start_date', 'end_date', 'message')
+
+    def get_message(self, obj):
+        return self.context["message"]

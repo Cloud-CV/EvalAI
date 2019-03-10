@@ -40,7 +40,8 @@ from participants.utils import (
 from .models import Submission
 from .sender import publish_submission_message
 from .serializers import (SubmissionSerializer,
-                          CreateLeaderboardDataSerializer)
+                          CreateLeaderboardDataSerializer,
+                          RemainingSubmissionDataSerializer,)
 from .utils import get_submission_model, get_remaining_submission_for_a_phase
 
 logger = logging.getLogger(__name__)
@@ -468,13 +469,9 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
                                                                                              challenge_pk)
         if response_status != status.HTTP_200_OK:
             return Response(remaining_submission_message, status=response_status)
-        phase_data_list.append(dict({
-            'id': phase.id,
-            'name': phase.name,
-            'start_date': phase.start_date,
-            'end_date': phase.end_date,
-            'message': remaining_submission_message
-        }))
+        phase_data_list.append(RemainingSubmissionDataSerializer(phase,
+                                                                 context={'message': remaining_submission_message}
+                                                                 ).data)
     phases_data["phases"] = phase_data_list
     return Response(phases_data, status=status.HTTP_200_OK)
 
