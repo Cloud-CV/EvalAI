@@ -7,6 +7,9 @@ from import_export.admin import ExportMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import Token
 
+from .models import InviteUserToChallenge
+from base.admin import ImportExportTimeStampedAdmin
+
 
 class UserResource(resources.ModelResource):
     class Meta:
@@ -44,3 +47,22 @@ class TokenAdmin(TokenAdmin):
 
 admin.site.unregister(Token)
 admin.site.register(Token, TokenAdmin)
+
+
+@admin.register(InviteUserToChallenge)
+class InviteUserToChallengeAdmin(ImportExportTimeStampedAdmin):
+    list_display = ('email', 'invitation_key', 'status', 'get_challenge_name_and_id', "get_username_and_id")
+    list_filter = ('status', 'challenge__title')
+    search_fields = ('email',)
+
+    def get_challenge_name_and_id(self, obj):
+        """Return challenge name and id for a challenge"""
+        return "%s - %s" % (obj.challenge.title, obj.challenge.id)
+    get_challenge_name_and_id.short_description = 'Challenge'
+    get_challenge_name_and_id.admin_order_field = 'challenge'
+
+    def get_username_and_id(self, obj):
+        """Return username and id of a user"""
+        return "%s - %s" % (obj.user.username, obj.user.id)
+    get_username_and_id.short_description = 'User'
+    get_username_and_id.admin_order_field = 'username'

@@ -1,12 +1,16 @@
 import base64
 import os
+import sendgrid
 import uuid
 
 from django.conf import settings
+from django.template.loader import render_to_string
 from django.utils.deconstruct import deconstructible
 
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
+
+from sendgrid.helpers.mail import Email, Content, Mail
 
 
 class StandardResultSetPagination(PageNumberPagination):
@@ -15,9 +19,13 @@ class StandardResultSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+<<<<<<< HEAD
 def paginated_queryset(
     queryset, request, pagination_class=PageNumberPagination()
 ):
+=======
+def paginated_queryset(queryset, request, pagination_class=PageNumberPagination()):
+>>>>>>> Add feature to invite users via email by challenge host
     """
         Return a paginated result for a queryset
     """
@@ -76,3 +84,17 @@ def decode_data(data):
     for i in data:
         decoded.append(base64.decodestring(i + "=="))
     return decoded
+
+
+def send_email(subject, template, sender_email, to_email, context):
+    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get("SENDGRID_API_KEY"))
+    sender_email = Email(sender_email)
+    to_email = Email(to_email)
+    subject = subject
+    body = render_to_string(template, context)
+    content = Content("text/html", body)
+    mail = Mail(sender_email, subject, to_email, content)
+    response = sg.client.mail.send.post(request_body=mail.get())
+    if response.status_code == 202 or response.status_code == 200:
+        return response.status_code
+    return response

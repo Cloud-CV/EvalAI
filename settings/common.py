@@ -284,4 +284,8 @@ SWAGGER_SETTINGS = {
     },
 }
 
-REDOC_SETTINGS = {"SPEC_URL": ("docs.yaml", {"format": ".yaml"})}
+REDOC_SETTINGS = {
+    'SPEC_URL': ('docs.yaml', {'format': '.yaml'}),
+}
+
+EVALAI_HOST_URL = os.environ.get("EVALAI_HOST_URL")
