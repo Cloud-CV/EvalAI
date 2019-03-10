@@ -35,7 +35,7 @@ from hosts.utils import is_user_a_host_of_challenge
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,
-    get_participant_team_name_of_user_for_a_challenge,)
+    get_participant_team_of_user_for_a_challenge,)
 
 from .models import Submission
 from .sender import publish_submission_message
@@ -458,10 +458,9 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
         challenge_phase = ChallengePhase.objects.filter(
             challenge=challenge, is_public=True).order_by('pk')
 
-    phases_data['participant_team'] = get_participant_team_name_of_user_for_a_challenge(
-            request.user, challenge_pk)
-    phases_data['participant_team_id'] = get_participant_team_id_of_user_for_a_challenge(
-            request.user, challenge_pk)
+    participant_team = get_participant_team_of_user_for_a_challenge(request.user, challenge_pk)
+    phases_data['participant_team'] = participant_team.team_name
+    phases_data['participant_team_id'] = participant_team.id
     phase_data_list = list()
     for phase in challenge_phase:
         remaining_submission_message, response_status = get_remaining_submission_for_a_phase(request.user,
