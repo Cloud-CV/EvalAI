@@ -452,12 +452,14 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
     '''
     phases_data = {}
     challenge = get_challenge_model(challenge_pk)
-    if is_user_a_host_of_challenge(request.user, challenge_pk):
-        challenge_phase = ChallengePhase.objects.filter(
+    challenge_phase = ChallengePhase.objects.filter(
             challenge=challenge).order_by('pk')
-    else:
-        challenge_phase = ChallengePhase.objects.filter(
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        challenge_phase = challenge_phase.filter(
             challenge=challenge, is_public=True).order_by('pk')
+    # else:
+    #     challenge_phase = ChallengePhase.objects.filter(
+    #         challenge=challenge, is_public=True).order_by('pk')
 
     participant_team = get_participant_team_of_user_for_a_challenge(request.user, challenge_pk)
     phases_data['participant_team'] = participant_team.team_name
