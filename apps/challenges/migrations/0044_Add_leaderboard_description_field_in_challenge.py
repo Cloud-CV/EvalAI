@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0041_add_challenge_phase_max_submissions_per_month'),
+        ('challenges', '0043_add_max_docker_image_size_for_challenge'),
     ]
 
     operations = [
