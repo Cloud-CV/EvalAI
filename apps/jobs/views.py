@@ -751,7 +751,7 @@ def update_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_challenge_submissions_by_status(request, challenge_pk):
+def get_submissions_for_challenge(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
 
@@ -773,12 +773,7 @@ def get_challenge_submissions_by_status(request, challenge_pk):
     submissions_done_in_challenge = Submission.objects.filter(
         challenge_phase__challenge=challenge.id, status=submission_status)
 
-    submissions_done_in_challenge_count = submissions_done_in_challenge.count()
-
     serializer = SubmissionSerializer(
         submissions_done_in_challenge, many=True, context={'request': request})
-    response_data = {
-        'submissions': serializer.data,
-        'submissions_count': submissions_done_in_challenge_count
-    }
-    return Response(response_data, status=status.HTTP_200_OK)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
