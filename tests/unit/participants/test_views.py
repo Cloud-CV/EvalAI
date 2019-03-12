@@ -76,6 +76,7 @@ class GetParticipantTeamTest(BaseAPITestClass):
                 "team_name": self.participant_team.team_name,
                 "created_by": self.user.username,
                 "team_url": self.participant_team.team_url,
+                "docker_repository_uri": self.participant_team.docker_repository_uri,
                 "members": [
                     {
                         "member_name": self.participant.user.username,
@@ -158,6 +159,7 @@ class GetParticularParticipantTeam(BaseAPITestClass):
             "team_name": self.participant_team.team_name,
             "created_by": self.user.username,
             "team_url": self.participant_team.team_url,
+            "docker_repository_uri": self.participant_team.docker_repository_uri,
             "members": [
                 {
                     "member_name": self.participant.user.username,
@@ -208,7 +210,8 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
             "id": self.participant_team.pk,
             "team_name": self.partial_update_participant_team_name,
             "created_by": self.user.username,
-            "team_url": self.participant_team.team_url
+            "team_url": self.participant_team.team_url,
+            "docker_repository_uri": self.participant_team.docker_repository_uri
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -219,7 +222,8 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
             "id": self.participant_team.pk,
             "team_name": self.update_participant_team_name,
             "created_by": self.user.username,
-            "team_url": self.participant_team.team_url
+            "team_url": self.participant_team.team_url,
+            "docker_repository_uri": self.participant_team.docker_repository_uri
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -611,12 +615,16 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "blocked_email_domains": [],
                         "approved_by_admin": False,
                         "forum_url": self.challenge1.forum_url,
+                        "is_docker_based": self.challenge1.is_docker_based,
+                        "slug": self.challenge1.slug,
+                        "max_docker_image_size": self.challenge1.max_docker_image_size
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
                         "team_name": self.participant_team.team_name,
                         "created_by": self.participant_team.created_by.username,
-                        "team_url": self.participant_team.team_url
+                        "team_url": self.participant_team.team_url,
+                        "docker_repository_uri": self.participant_team.docker_repository_uri
                     }
                 }
             ],
@@ -661,6 +669,9 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "blocked_email_domains": [],
                 "approved_by_admin": False,
                 "forum_url": self.challenge1.forum_url,
+                "is_docker_based": self.challenge1.is_docker_based,
+                "slug": self.challenge1.slug,
+                "max_docker_image_size": self.challenge1.max_docker_image_size
             }
         ]
 
@@ -681,7 +692,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "id": self.participant_team.id,
                         "team_name": self.participant_team.team_name,
                         "created_by": self.participant_team.created_by.username,
-                        "team_url": self.participant_team.team_url
+                        "team_url": self.participant_team.team_url,
+                        "docker_repository_uri": self.participant_team.docker_repository_uri
                     }
                 }
             ],
