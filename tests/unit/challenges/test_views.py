@@ -138,10 +138,10 @@ class GetChallengeTest(BaseAPITestClass):
         ]
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['results'], expected)
         print(response.data['results'])
         print("-----------------------------------")
         print(expected)
+        self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_host_team_for_challenge_does_not_exist(self):
