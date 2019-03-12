@@ -138,9 +138,9 @@ class GetChallengeTest(BaseAPITestClass):
         ]
 
         response = self.client.get(self.url, {})
-        print(response.data['results'])
+        print(dict(response.data['results']))
         print("-----------------------------------")
-        print(expected)
+        print(dict(expected))
         self.assertEqual(response.data['results'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
