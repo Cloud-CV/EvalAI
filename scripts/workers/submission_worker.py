@@ -547,26 +547,15 @@ def main():
     queue_name = os.environ.get('CHALLENGE_QUEUE', 'evalai_submission_queue')
     queue = get_or_create_sqs_queue(queue_name)
 
-    if settings.DEBUG or settings.TEST:
-        while True:
-            for message in queue.receive_messages():
+    maximum_concurrent_submissions = challenge.max_concurrent_submission_evaluation
+    while True:
+        for message in queue.receive_messages():
+            if settings.DEBUG or settings.TEST:
                 logger.info('Processing message body: {0}'.format(message.body))
                 process_submission_callback(message.body)
                 # Let the queue know that the message is processed
                 message.delete()
-            if killer.kill_now:
-                break
-            time.sleep(0.1)
-    else:
-        try:
-            challenge = Challenge.objects.get(**q_params)
-        except Challenge.DoesNotExist:
-            logger.exception('Challenge with pk does not exists'.format(challenge_pk))
-            raise
-
-        maximum_concurrent_submissions = challenge.max_concurrent_submission_evaluation
-        while True:
-            for message in queue.receive_messages():
+            else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status='running').count()
                 if current_running_submissions_count == maximum_concurrent_submissions:
@@ -576,10 +565,9 @@ def main():
                     process_submission_callback(message.body)
                     # Let the queue know that the message is processed
                     message.delete()
-
-            if killer.kill_now:
-                break
-            time.sleep(0.1)
+        if killer.kill_now:
+            break
+        time.sleep(0.1)
 
 
 if __name__ == '__main__':
