@@ -360,6 +360,13 @@
             title: "Get Involved"
         };
 
+        var maintenance_page = {
+            name: 'maintenance-page',
+            url: "/maintenance-page",
+            templateUrl: baseUrl + "/web/maintenance-pages/maintenance.html",
+            title: "Maintenance page"
+        };
+
         var update_profile = {
             name: "web.update-profile",
             parent: "web",
@@ -497,6 +504,7 @@
         $stateProvider.state(get_involved);
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
+        $stateProvider.state(maintenance_page);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
