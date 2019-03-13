@@ -14,6 +14,7 @@ from django.utils import timezone
 from base.models import (TimeStampedModel, )
 from base.utils import RandomFileName
 from challenges.models import ChallengePhase
+from jobs.constants import submission_status_to_exclude
 from participants.models import ParticipantTeam
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,7 @@ class Submission(TimeStampedModel):
         ChallengePhase, related_name='submissions')
     created_by = models.ForeignKey(User)
     status = models.CharField(max_length=30, choices=STATUS_OPTIONS, db_index=True)
-    is_public = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True)
     is_flagged = models.BooleanField(default=False)
     submission_number = models.PositiveIntegerField(default=0)
     download_count = models.IntegerField(default=0)
@@ -114,12 +115,13 @@ class Submission(TimeStampedModel):
             else:
                 self.submission_number = 1
 
-            failed_count = Submission.objects.filter(
+            submissions = Submission.objects.filter(
                 challenge_phase=self.challenge_phase,
-                participant_team=self.participant_team,
-                status=Submission.FAILED).count()
+                participant_team=self.participant_team)
 
-            successful_count = self.submission_number - failed_count
+            num_submissions_to_ignore = submissions.filter(status__in=submission_status_to_exclude).count()
+
+            successful_count = self.submission_number - num_submissions_to_ignore
 
             if successful_count > self.challenge_phase.max_submissions:
                 logger.info("Checking to see if the successful_count {0} is greater than maximum allowed {1}".format(
@@ -133,25 +135,25 @@ class Submission(TimeStampedModel):
                 logger.info("Submission is below for user {0} form participant_team {1} for challenge_phase {2}".format(
                     self.created_by.pk, self.participant_team.pk, self.challenge_phase.pk))
 
-            if hasattr(self.challenge_phase, 'max_submissions_per_day'):
-                submissions_done_today_count = Submission.objects.filter(
-                    challenge_phase__challenge=self.challenge_phase.challenge,
-                    participant_team=self.participant_team,
-                    challenge_phase=self.challenge_phase,
-                    # Get the midnight time of the day
-                    submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)).count()
+            total_submissions_done = Submission.objects.filter(
+                challenge_phase__challenge=self.challenge_phase.challenge,
+                participant_team=self.participant_team,
+                challenge_phase=self.challenge_phase,
+            )
 
-                failed_count = Submission.objects.filter(
-                    challenge_phase=self.challenge_phase,
-                    participant_team=self.participant_team,
-                    status=Submission.FAILED,
-                    # Get the midnight time of the day
-                    submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)).count()
+            submissions_done_today_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
+                hour=0, minute=0, second=0, microsecond=0)).exclude(status__in=submission_status_to_exclude).count()
 
-                if ((submissions_done_today_count + 1 - failed_count > self.challenge_phase.max_submissions_per_day) or
-                        (self.challenge_phase.max_submissions_per_day == 0)):
-                    logger.info("Permission Denied: The maximum number of submission for today has been reached")
-                    raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
+            submissions_done_in_month_count = total_submissions_done.filter(submitted_at__gte=timezone.now().replace(
+                day=1, hour=0, minute=0, second=0, microsecond=0)).exclude(
+                    status__in=submission_status_to_exclude).count()
+
+            if self.challenge_phase.max_submissions_per_month - submissions_done_in_month_count == 0:
+                logger.info('Permission Denied: The maximum number of submission for this month has been reached')
+                raise PermissionDenied({'error': 'The maximum number of submission for this month has been reached'})
+            if self.challenge_phase.max_submissions_per_day - submissions_done_today_count == 0:
+                logger.info('Permission Denied: The maximum number of submission for today has been reached')
+                raise PermissionDenied({'error': 'The maximum number of submission for today has been reached'})
 
             self.is_public = (True if self.challenge_phase.is_submission_public else False)
 

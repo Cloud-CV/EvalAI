@@ -67,7 +67,7 @@ case $opt in
             fi
             echo "Pulling queue name for $env server challenge..."
             if [ ${env} == "staging" ]; then
-                queue_name=$(curl -L -X GET -H "Authorization: Token $token" http://staging.evalai.cloudcv.org:8000/api/challenges/get_broker_url/$challenge/)
+                queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://staging-evalai.cloudcv.org/api/challenges/get_broker_url/$challenge/)
             elif [ ${env} == "production" ]; then
                 queue_name=$(curl -k -L -X GET -H "Authorization: Token $token" https://evalapi.cloudcv.org/api/challenges/get_broker_url/$challenge/)
             fi
@@ -76,14 +76,14 @@ case $opt in
             queue_name=($(echo ${queue_name//,/ } | tr -d '[]'))
             queue=$(echo $queue_name | tr -d '"')
             echo "Deploying worker for queue: " $queue
-            docker-compose -f docker-compose-${env}.yml run -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker
+            docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -e CHALLENGE_PK=$challenge -d worker
             echo "Deployed worker docker container for queue: " $queue
             ;;
         deploy-workers)
             token=${3}
             echo "Pulling queue names for $env server challenges..."
             if [ ${env} == "staging" ]; then
-                queue_names=$(curl -L -X GET -H "Authorization: Token $token" http://staging.evalai.cloudcv.org:8000/api/challenges/get_broker_urls/)
+                queue_names=$(curl -k -L -X GET -H "Authorization: Token $token" https://staging-evalai.cloudcv.org/api/challenges/get_broker_urls/)
             elif [ ${env} == "production" ]; then
                 queue_names=$(curl -k -L -X GET -H "Authorization: Token $token" https://evalapi.cloudcv.org/api/challenges/get_broker_urls/)
             fi
@@ -94,7 +94,7 @@ case $opt in
             do
                 queue=$(echo $queue_name | tr -d '"')
                 echo "Deploying worker for queue: " $queue
-                docker-compose -f docker-compose-${env}.yml run -e CHALLENGE_QUEUE=$queue -d worker
+                docker-compose -f docker-compose-${env}.yml run --name=worker_${queue} -e CHALLENGE_QUEUE=$queue -d worker
                 echo "Deployed worker docker container for queue: " $queue
              done
             ;;

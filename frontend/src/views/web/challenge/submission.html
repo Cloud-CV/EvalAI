@@ -38,16 +38,21 @@
                                 <ul>
                                     <b>Select Phase:</b>
                                     <li ng-repeat="item in challenge.phases.results">
-                                        <input ng-if="challenge.currentDate < item.end_date" type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}" value="{{item.id}}" ng-model="challenge.phaseId" ng-click="challenge.showRemainingSubmissions(item.id)">
-                                        <input ng-if="challenge.currentDate >= item.end_date" type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}" value="{{item.id}}" ng-model="challenge.phaseId" ng-click="challenge.showRemainingSubmissions(item.id)" disabled="true">
+                                        <input ng-disabled="challenge.currentDate < item.start_date || challenge.currentDate >= item.end_date" type="radio" name="selectPhase" class="with-gap selectPhase" id="{{item.id}}" value="{{item.id}}" ng-model="challenge.phaseId" ng-click="challenge.showRemainingSubmissions(item.id)">
                                         <label for="{{item.id}}"></label>
                                         <div class="show-member-title pointer" ng-if="!item.showPrivate"><strong class="text-med-black">Phase: </strong>{{item.name}}
                                             <br>
-                                            <strong class="text-med-black">End Date: </strong>{{item.end_date | date:'medium'}}</div>
+                                            <strong class="text-med-black">Start Date: </strong>{{item.start_date | date:'medium'}}
+                                            <br>
+                                            <strong class="text-med-black">End Date: </strong>{{item.end_date | date:'medium'}}
+                                        </div>
                                         <div class="show-member-title pointer" ng-if="item.showPrivate"><strong class="text-highlight">Phase: </strong> <span class="text-highlight">
                                             {{item.name}}</span>
                                             <br>
-                                            <strong class="text-highlight">End Date: </strong><span class="text-highlight">{{item.end_date | date:'medium'}}</span></div>
+                                            <strong class="text-highlight">Start Date: </strong><span class="text-highlight">{{item.start_date | date:'medium'}}</span>
+                                            <br>
+                                            <strong class="text-highlight">End Date: </strong><span class="text-highlight">{{item.end_date | date:'medium'}}</span>
+                                        </div>
                                         <div class="clearfix"></div>
                                     </li>
                                     <div class="row">
@@ -107,6 +112,17 @@
                             </form>
                         </div>
                     </div>
+                    <div ng-if="challenge.maxExceeded" class="col s12 m5">
+                        <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
+                            <div class="row">
+                            <span class="color-black">
+                                <strong>
+                                    {{challenge.maxExceededMessage}}
+                                </strong> 
+                            </span>
+                            </div>
+                        </div>
+                    </div>
                     <div ng-if="challenge.showSubmissionNumbers" class="col s12 m5">
                         <div class="ev-card-body exist-team-card ev-remaining-submission remaining-submission-clock">
                             <div class="row">
@@ -121,6 +137,17 @@
                             </span>
                             </div>
                             <div class="row">
+                            <div class="row">
+                                <span class="color-black">
+                                    <strong>
+                                        Monthly Remaining Submissions:
+                                    </strong> 
+                                <span class="color-black">
+                                    <strong>
+                                        {{challenge.remainingSubmissions.remaining_submissions_this_month_count}}
+                                    </strong>
+                                </span>
+                            </div>
                             <span class="color-black">
                                 <strong>
                                     Total Remaining Submissions:
@@ -145,7 +172,7 @@
                                 Next set of submissions will be available after:
                             </div>
                             <div>
-                                {{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
+                                <span ng-if="challenge.days!=0">{{challenge.days}} Days, </span>{{challenge.hours}} hours : {{challenge.minutes}} minutes : {{challenge.remainingSeconds}} seconds
                             </div>
                         </div>
                     </div>
@@ -156,6 +183,6 @@
 </section>
 <section ng-if="!challenge.isActive" class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
-        <p><strong>Sorry, The Challenge is not active!</strong></p>
+        <p><strong>Sorry, the challenge is not active.</strong></p>
     </div>
 </section>

@@ -56,6 +56,12 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Remote Evaluation", db_index=True)
     queue = models.CharField(
         max_length=200, default='', verbose_name="SQS queue name", db_index=True)
+    is_docker_based = models.BooleanField(
+        default=False, verbose_name="Is Docker Based", db_index=True)
+    slug = models.CharField(
+        max_length=200, db_index=True, default='')
+    max_docker_image_size = models.BigIntegerField(
+        default=42949672960, null=True, blank=True)  # Default is 40 GB
 
     class Meta:
         app_label = 'challenges'
@@ -128,6 +134,7 @@ class ChallengePhase(TimeStampedModel):
     is_submission_public = models.BooleanField(default=False)
     test_annotation = models.FileField(upload_to=RandomFileName("test_annotations"), default=False)
     max_submissions_per_day = models.PositiveIntegerField(default=100000, db_index=True)
+    max_submissions_per_month = models.PositiveIntegerField(default=100000, db_index=True)
     max_submissions = models.PositiveIntegerField(default=100000, db_index=True)
     max_concurrent_submissions_allowed = models.PositiveIntegerField(default=3)
     codename = models.CharField(max_length=100, default="Phase Code Name")
