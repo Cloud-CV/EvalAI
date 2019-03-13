@@ -114,6 +114,6 @@ def get_remaining_submission_for_a_phase(user, challenge_phase_pk, challenge_pk)
         response_data = {
             'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
             'remaining_submissions_today_count': remaining_submissions_today_count,
-            'remaining_submissions': remaining_submission_count
+            'remaining_submissions_count': remaining_submission_count
         }
         return response_data, status.HTTP_200_OK

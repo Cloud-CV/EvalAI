@@ -434,7 +434,7 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
                 "message": {
                     "remaining_submissions_this_month_count": 9,
                     "remaining_submissions_today_count": 5,
-                    "remaining_submissions": 29
+                    "remaining_submissions_count": 29
                 }
             },
             {

@@ -83,7 +83,7 @@
                                 <strong>
                                     Total:
                                 </strong>
-                                {{key.message.remaining_submissions}}
+                                {{key.message.remaining_submissions_count}}
                             </td>
                             <td ng-if="challenge.phaseRemainingSubmissionsFlags[key.id] === 'showClock'">
                                 <strong>{{key.message.message}}</strong><br> Next submission will be available in<br>
@@ -234,7 +234,7 @@
                             </span>
                             <span class="color-black">
                                 <strong>
-                                {{challenge.remainingSubmissions.remaining_submissions}}
+                                {{challenge.remainingSubmissions.remaining_submissions_count}}
                                 </strong>
                             </span>
                             </div>

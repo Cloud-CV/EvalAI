@@ -605,7 +605,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         expected = {
             'remaining_submissions_today_count': 10,
             'remaining_submissions_this_month_count': 19,
-            'remaining_submissions': 99
+            'remaining_submissions_count': 99
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -630,7 +630,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         expected = {
             'remaining_submissions_today_count': 10,
             'remaining_submissions_this_month_count': 20,
-            'remaining_submissions': 99
+            'remaining_submissions_count': 99
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -654,7 +654,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         expected = {
             'remaining_submissions_today_count': 9,
             'remaining_submissions_this_month_count': 19,
-            'remaining_submissions': 99
+            'remaining_submissions_count': 99
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -779,7 +779,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         expected = {
             'remaining_submissions_today_count': 9,
             'remaining_submissions_this_month_count': 9,
-            'remaining_submissions': 14
+            'remaining_submissions_count': 14
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -806,7 +806,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         expected = {
             'remaining_submissions_today_count': 4,
             'remaining_submissions_this_month_count': 14,
-            'remaining_submissions': 14
+            'remaining_submissions_count': 14
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -833,7 +833,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         expected = {
             'remaining_submissions_today_count': 14,
             'remaining_submissions_this_month_count': 14,
-            'remaining_submissions': 14
+            'remaining_submissions_count': 14
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -860,7 +860,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         expected = {
             'remaining_submissions_today_count': 14,
             'remaining_submissions_this_month_count': 14,
-            'remaining_submissions': 14
+            'remaining_submissions_count': 14
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -887,7 +887,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         expected = {
             'remaining_submissions_today_count': 12,
             'remaining_submissions_this_month_count': 12,
-            'remaining_submissions': 99
+            'remaining_submissions_count': 99
         }
 
         self.challenge.participant_teams.add(self.participant_team)
@@ -919,7 +919,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
                 'message': {
                     'remaining_submissions_today_count': 12,
                     'remaining_submissions_this_month_count': 12,
-                    'remaining_submissions': 99
+                    'remaining_submissions_count': 99
                 }
             }]
         }
