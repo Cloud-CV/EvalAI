@@ -1079,12 +1079,18 @@
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
             vm.maxExceeded = false;
-            parameters.url = "jobs/" + vm.challengeId + "/phases/" + phaseId + "/remaining_submissions";
+            vm.phaseID = phaseId;
+            parameters.url = "jobs/" + vm.challengeId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var details = response.data;
+                    var details;
+                    for(var phase in response.data.phases) {
+                        if(response.data.phases[phase].id == vm.phaseID) {
+                           details = response.data.phases[phase].message
+                        }
+                    }
                     if (status === 200) {
                         if (details.submission_limit_exceeded === true) {
                             vm.maxExceeded = true;
