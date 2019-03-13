@@ -1014,7 +1014,7 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
