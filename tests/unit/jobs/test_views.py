@@ -678,7 +678,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
 
         expected = {
             'message': 'You have exhausted maximum submission limit!',
-            'max_submission_exceeded': True
+            'submission_limit_exceeded': True
         }
 
         self.challenge.participant_teams.add(self.participant_team)

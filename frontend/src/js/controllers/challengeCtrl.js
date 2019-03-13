@@ -267,7 +267,7 @@
                         vm.phaseRemainingSubmissions = response.data;
                         var details = vm.phaseRemainingSubmissions.phases;
                         for (let i = 0; i < details.length; i++) {
-                            if (details[i].message.max_submission_exceeded === true) {
+                            if (details[i].message.submission_limit_exceeded === true) {
                                 vm.phaseRemainingSubmissionsFlags[details[i].id] = "maxExceeded";
                             } else if (details[i].message.remaining_submissions_today_count > 0) {
                                 vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
@@ -1086,7 +1086,7 @@
                     var status = response.status;
                     var details = response.data;
                     if (status === 200) {
-                        if (details.max_submission_exceeded === true) {
+                        if (details.submission_limit_exceeded === true) {
                             vm.maxExceeded = true;
                             vm.maxExceededMessage = details.message;
                         }

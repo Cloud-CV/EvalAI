@@ -58,7 +58,7 @@ def get_remaining_submission_for_a_phase(user, challenge_phase_pk, challenge_pk)
     if submissions_done_count >= max_submissions_count:
         response_data = {
             'message': 'You have exhausted maximum submission limit!',
-            'max_submission_exceeded': True
+            'submission_limit_exceeded': True
         }
         return response_data, status.HTTP_200_OK
 
