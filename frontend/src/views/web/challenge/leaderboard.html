@@ -56,7 +56,7 @@
                                                 </span>
                                             </a>
                                         </td>
-                                        <td class="align-right" ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">
+                                        <td class="align-center" ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels">
                                             <a href="#" ng-click="$parent.challenge.sortLeaderboard($parent.challenge, 'number', $index);">
                                                 {{key}}
                                                 <span class="fa-stack fa-1x">
@@ -65,7 +65,7 @@
                                                 </span>
                                             </a>
                                         </td>
-                                        <td class="align-right" data-field="submission_time">
+                                        <td class="align-center" data-field="submission_time">
                                             <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'date');">
                                                 Last Submission at
                                                 <span class="fa-stack fa-1x">
