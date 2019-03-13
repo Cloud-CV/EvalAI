@@ -28,8 +28,8 @@ from .utils import (get_list_of_challenges_for_participant_team,
                     is_user_part_of_participant_team,)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_list(request):
@@ -58,8 +58,8 @@ def participant_team_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_participant_team_challenge_list(request, participant_team_pk):
@@ -82,8 +82,8 @@ def get_participant_team_challenge_list(request, participant_team_pk):
         return paginator.get_paginated_response(response_data)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def participant_team_detail(request, pk):
@@ -121,8 +121,8 @@ def participant_team_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def invite_participant_to_team(request, pk):
@@ -181,8 +181,8 @@ def invite_participant_to_team(request, pk):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['DELETE'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def delete_participant_from_team(request, participant_team_pk, participant_pk):
@@ -216,8 +216,8 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_teams_and_corresponding_challenges_for_a_participant(request, challenge_pk):
@@ -250,8 +250,8 @@ def get_teams_and_corresponding_challenges_for_a_participant(request, challenge_
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['DELETE', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def remove_self_from_participant_team(request, participant_team_pk):

@@ -78,8 +78,8 @@ logger = logging.getLogger(__name__)
     responses={
         status.HTTP_201_CREATED: openapi.Response(''),
 })
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_submission(request, challenge_id, challenge_phase_id):
@@ -179,8 +179,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['PATCH'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def change_submission_data_and_visibility(request, challenge_pk, challenge_phase_pk, submission_pk):
@@ -309,8 +309,8 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         ),
     }
 )
-@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
     """Returns leaderboard for a corresponding Challenge Phase Split"""
 
@@ -342,6 +342,11 @@ def leaderboard(request, challenge_phase_split_id):
 
     challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
 
+    # Check if challenge phase leaderboard is public for participant user or not
+    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
+        response_data = {'error': 'Sorry, the leaderboard is not public!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     leaderboard_data = LeaderboardData.objects.exclude(
         submission__created_by__email__in=challenge_hosts_emails)
 
@@ -356,7 +361,7 @@ def leaderboard(request, challenge_phase_split_id):
             'id', 'submission__participant_team__team_name',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
 
-    if not challenge_host_user:
+    if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
         leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
@@ -379,18 +384,12 @@ def leaderboard(request, challenge_phase_split_id):
                                                 distinct_sorted_leaderboard_data,
                                                 request,
                                                 pagination_class=StandardResultSetPagination())
-
-    # Check if challenge phase leaderboard is public for participant user or not
-    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
-        response_data = {'error': 'Sorry, the leaderboard is not public!'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        response_data = result_page
-        return paginator.get_paginated_response(response_data)
+    response_data = result_page
+    return paginator.get_paginated_response(response_data)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
@@ -502,8 +501,8 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_submission_by_pk(request, submission_id):
@@ -610,8 +609,8 @@ def get_submission_by_pk(request, submission_id):
         status.HTTP_400_BAD_REQUEST: openapi.Response("{'error': 'Error message goes here'}"),
     }
 )
-@throttle_classes([UserRateThrottle, ])
 @api_view(['PUT', ])
+@throttle_classes([UserRateThrottle, ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail,))
 @authentication_classes((ExpiringTokenAuthentication,))
 def update_submission(request, challenge_pk):
