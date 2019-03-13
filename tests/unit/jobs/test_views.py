@@ -376,7 +376,7 @@ class BaseAPITestClass(APITestCase):
         response = self.client.post(self.url, {
                                         'status': 'submitting', 'input_file': self.input_file}, format="multipart")
         expected = {
-                'error': 'The challenge {0} requires code upload in the form of docker images. \
+                'error': '{0} requires uploading docker image. \
                     Please use evalai-cli to make submissions.'.format(self.challenge.title)}
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(response.data, expected)
@@ -892,6 +892,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_all_phases_remaining(self):
+        self.maxDiff = None
         self.url = reverse_lazy('jobs:get_remaining_submissions_for_all_phases',
                                 kwargs={
                                     'challenge_pk': self.challenge.pk
@@ -909,8 +910,8 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
             'phases': [{
                 'name': self.challenge_phase.name,
                 'id': self.challenge_phase.id,
-                'start_date': self.challenge_phase.start_date,
-                'end_date': self.challenge_phase.end_date,
+                'start_date': "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+                'end_date': "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
                 'message': {
                     'remaining_submissions_today_count': 12,
                     'remaining_submissions_this_month_count': 12,
