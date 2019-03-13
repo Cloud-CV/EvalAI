@@ -23,7 +23,6 @@ a.active-auth {
 
 .wrn-msg {
     font-size: 0.8em;
-    margin-top: -16px;
 }
 
 .reg-control {
@@ -35,7 +34,7 @@ a.active-auth {
     margin-top: 5px;
 }
 
-img.auth-logo{
+img.auth-logo {
     width:90px;
 }
 
@@ -50,6 +49,15 @@ img.auth-logo{
     min-height: 100vh;
     overflow: hidden;
     position: relative;
+
+    input {
+        margin-bottom: 0px;
+    }
+
+    .input-field {
+        height: 72px;
+        max-height: 72px;
+    }
 }
 
 .graphic-cont {
@@ -72,6 +80,7 @@ img.auth-logo{
     height: 30%;
     width: 100%;
     left: 0;
+
     img {
         width: 120%;
         position: absolute;
@@ -79,17 +88,20 @@ img.auth-logo{
     }
 }
 
-.social-auth-group{
+.social-auth-group {
     margin-top:20px;
 }
+
 .moon {
     width: 80px;
     position: absolute;
     top: 10px;
     left: 10px;
+
     img {
         width: 100%;
     }
+
     animation: plane 50s linear infinite;
 }
 
@@ -107,9 +119,11 @@ img.auth-logo{
     position: absolute;
     bottom: 15%;
     right: -45px;
+
     img {
         width: 100%;
     }
+
     animation: sun 70s linear infinite;
 }
 
@@ -170,9 +184,11 @@ img.auth-logo{
 .ufo {
     width: 120px;
     position: absolute;
+
     img {
         width: 100%;
     }
+
     animation: spaceman 14s alternate linear infinite;
 }
 
@@ -202,12 +218,12 @@ img.auth-logo{
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {
-    .graphic-cont{
+    .graphic-cont {
         position: absolute;
         width: 100%;
         opacity: 0.4;
     }
-    .auth-cont{
+    .auth-cont {
         width: 100%;
         background-color: rgba(255,255,255,0.9);
     }
