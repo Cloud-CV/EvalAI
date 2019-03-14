@@ -145,7 +145,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
 
             # if allowed email ids list exist, check if the user exist in that list or not
             if challenge_phase.allowed_email_ids:
-                if not request.user.email in challenge_phase.allowed_email_ids:
+                if request.user.email not in challenge_phase.allowed_email_ids:
                     response_data = {
                         "error": "Sorry, you are not allowed to participate in this challenge phase"
                     }
