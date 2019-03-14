@@ -38,7 +38,7 @@
                         <div class="col s6 m2">
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
                         </div>
-                        <div class="col s12 m4" ng-if="challenge.phaseId">
+                        <div class="col s12 m4" ng-if="challenge.phaseId && challenge.isResult">
                             <div class="add-line-height">
                                 <span>
                                     <strong class="text-med-black">
@@ -120,7 +120,7 @@
                         </div>
                     </div>
                 </div>
-                <section class="pagination" ng-if="challenge.showPagination">
+                <section class="pagination" ng-if="challenge.showPagination && challenge.isResult">
                     <div class="row">
                         <div class="col s12 left-align">
                             <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.previous)">
