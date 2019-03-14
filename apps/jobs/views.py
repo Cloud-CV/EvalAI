@@ -82,8 +82,8 @@ logger = logging.getLogger(__name__)
     responses={
         status.HTTP_201_CREATED: openapi.Response(''),
 })
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_submission(request, challenge_id, challenge_phase_id):
@@ -183,8 +183,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['PATCH'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def change_submission_data_and_visibility(request, challenge_pk, challenge_phase_pk, submission_pk):
@@ -313,8 +313,8 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         ),
     }
 )
-@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
     """Returns leaderboard for a corresponding Challenge Phase Split"""
 
@@ -392,8 +392,8 @@ def leaderboard(request, challenge_phase_split_id):
     return paginator.get_paginated_response(response_data)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
