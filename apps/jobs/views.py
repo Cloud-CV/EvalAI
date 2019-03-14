@@ -3,6 +3,8 @@ import datetime
 import json
 import logging
 
+import boto3
+
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
