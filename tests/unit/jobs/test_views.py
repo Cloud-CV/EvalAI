@@ -233,7 +233,6 @@ class BaseAPITestClass(APITestCase):
         expected = {
             'error': 'Sorry, you are not allowed to participate in this challenge phase'
         }
-
         response = self.client.post(self.url, {
                                     'status': 'submitting', 'input_file': self.input_file}, format="multipart")
         self.assertEqual(response.data, expected)
@@ -259,7 +258,6 @@ class BaseAPITestClass(APITestCase):
 
         self.challenge_phase.allowed_email_ids = ['abc@test.com']
         self.challenge_phase.save()
-
         self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url, {
                                     'status': 'submitting', 'input_file': self.input_file}, format="multipart")
