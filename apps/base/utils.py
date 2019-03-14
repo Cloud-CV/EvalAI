@@ -5,8 +5,10 @@ import uuid
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
 
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, Throttled
 from rest_framework.pagination import PageNumberPagination
+
+from rest_framework.views import exception_handler
 
 
 class StandardResultSetPagination(PageNumberPagination):
@@ -69,3 +71,20 @@ def decode_data(data):
     for i in data:
         decoded.append(base64.decodestring(i+"=="))
     return decoded
+
+
+def custom_exception_handler(exc, context):
+    """
+    Returns a response with the waiting time in minutes if
+    exception type is Throttled.
+    """
+    response = exception_handler(exc, context)
+
+    if isinstance(exc, Throttled):
+        time = exc.wait/60
+        custom_response_data = {
+            'message': 'Request limit exceeded. Please wait for %d minutes.' % time
+        }
+        response.data = custom_response_data
+
+    return response

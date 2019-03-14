@@ -1,6 +1,8 @@
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
+from allauth.account.utils import send_email_confirmation
+
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -12,6 +14,8 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
 
 from .permissions import HasVerifiedEmail
+
+from .throttles import ResendEmailThrottle
 
 
 @api_view(['POST'])
@@ -45,3 +49,16 @@ def get_auth_token(request):
 
     response_data = {"token": "{}".format(token)}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@throttle_classes([ResendEmailThrottle])
+@permission_classes((permissions.IsAuthenticated,))
+@authentication_classes((ExpiringTokenAuthentication,))
+def resend_email_confirmation(request):
+    """
+    Resends the confirmation Email by the users request.
+    """
+    user = request.user
+    send_email_confirmation(request._request, user)
+    return Response(status=status.HTTP_200_OK)

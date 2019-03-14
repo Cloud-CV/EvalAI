@@ -6,5 +6,6 @@ urlpatterns = [
 
     url(r'^user/disable$', views.disable_user, name='disable_user'),
     url(r'^user/get_auth_token$', views.get_auth_token, name='get_auth_token'),
+    url(r'^user/resend-email$', views.resend_email_confirmation, name='resend_email'),
 
 ]
