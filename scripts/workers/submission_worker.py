@@ -454,9 +454,9 @@ def process_submission_message(message):
     Extracts the submission related metadata from the message
     and send the submission object for evaluation
     '''
-    challenge_id = message.get('challenge_id')
-    phase_id = message.get('phase_id')
-    submission_id = message.get('submission_id')
+    challenge_id = message.get('challenge_pk')
+    phase_id = message.get('phase_pk')
+    submission_id = message.get('submission_pk')
     submission_instance = extract_submission_data(submission_id)
 
     # so that the further execution does not happen
