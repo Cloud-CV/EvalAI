@@ -1033,3 +1033,55 @@ def delete_submission_message_from_queue(request, queue_name, receipt_handle):
             "SQS message is not deleted due to {}".format(response_data)
         )
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_submission_related_files(request):
+    '''Returns S3 signed URL for a particular file residing on S3 bucket
+
+    Arguments:
+        request {object} -- Request object
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    '''
+
+    bucket = request.data.get('bucket')
+    # Assumption: file will be stored in this format: 'team_{id}/submission_{id}/.../file.log'
+    key = request.data.get('key')
+
+    try:
+        splits = key.split('/')
+        participant_team_id, submission_id = splits[0].replace('team_', ''), splits[1].replace('submission_', '')
+    except:
+        response_data = {'error': 'Invalid file path format. Please try again with correct file path format.'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        participant_team = ParticipantTeam.objects.get(id=participant_team_id)
+    except ParticipantTeam.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if not is_user_part_of_participant_team(request.user, participant_team):
+        response_data = {'error': 'You are not part of this participant team.'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        Submission.objects.get(participant_team=participant_team, id=submission_id)
+    except Submission.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    # TODO: Modify this s3 client creation code when we have challenge based AWS keys
+    s3 = boto3.client('s3')
+    url = s3.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={
+            'Bucket': bucket,
+            'Key': key,
+        }
+    )
+    response_data = {'signed_url': url}
+    return Response(response_data, status=status.HTTP_200_OK)
