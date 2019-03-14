@@ -43,7 +43,8 @@ services:
       - docker/dev/docker.env
     build:
       context: ./
-      dockerfile: docker/dev/remote_worker/Dockerfile
+      dockerfile: docker/dev/worker/Dockerfile
+    command: ["./docker/wait-for-it.sh", "django:8000", "--", "python", "-m", "scripts.workers.remote_submission_worker"]
     depends_on:
       - django
     volumes:

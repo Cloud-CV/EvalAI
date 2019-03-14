@@ -34,9 +34,10 @@ services:
       - /code/bower_components
 
   remote-worker:
-    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker:${COMMIT_ID}
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-remote-worker:${COMMIT_ID}
     build:
       context: ./
-      dockerfile: docker/prod/remote_worker/Dockerfile
+      dockerfile: docker/prod/worker/Dockerfile
+    command: ["python", "-m", "scripts.workers.remote_submission_worker"]
     env_file:
       - docker/prod/docker_remote_worker_production.env

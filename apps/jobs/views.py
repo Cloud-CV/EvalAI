@@ -741,15 +741,27 @@ def update_submission(request, challenge_pk):
                 response_data = {'error': 'Failed to update submission_id {} related metadata'.format(submission_pk)}
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        submission.status = submission_status
-        submission.completed_at = timezone.now()
-        submission.stdout_file.save('stdout.txt', ContentFile(stdout_content))
-        submission.stderr_file.save('stderr.txt', ContentFile(stderr_content))
-        submission.submission_result_file.save('submission_result.json', ContentFile(str(public_results)))
-        submission.submission_metadata_file.save('submission_metadata_file.json', ContentFile(str(metadata)))
-        submission.save()
-        response_data = {'success': 'Submission result has been successfully updated'}
-        return Response(response_data, status=status.HTTP_200_OK)
+        stdout_file = ContentFile(stdout_content)
+        stderr_file = ContentFile(stderr_content)
+        result_file = ContentFile(str(public_results))
+        stdout_file.name = "stdout.txt"
+        stderr_file.name = "stderr.txt"
+        result_file.name = "submission_result.json"
+        data = {
+            'status': submission_status,
+            'completed_at': timezone.now(),
+            'stdout_file': stdout_file,
+            'stderr_file': stderr_file,
+            'submission_result_file': result_file,
+        }
+        serializer = SubmissionSerializer(submission, data=data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            submission.output = results
+            submission.submission_metadata_file.save('submission_metadata_file.json', ContentFile(str(metadata)))
+            submission.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "PATCH":
         submission_pk = request.data.get('submission')
@@ -760,11 +772,15 @@ def update_submission(request, challenge_pk):
             response_data = {'error': 'Sorry, submission status is invalid'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        submission.status = submission_status
-        submission.started_at = timezone.now()
-        submission.save()
-        response_data = {'success': 'Submission status has been successfully updated'}
-        return Response(response_data, status=status.HTTP_200_OK)
+        data = {
+            'status': submission_status,
+            'started_at': timezone.now()
+        }
+        serializer = SubmissionSerializer(submission, data=data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            submission.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -773,29 +789,29 @@ def update_submission(request, challenge_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_submission_message_from_queue(request, queue_name):
     """
-    API endpoint to fetch the submission message from AWS SQS Queue
+    API to fetch submission message from AWS SQS queue
+
+    Arguments:
+        queue_name  -- The unique authentication token provided by challenge hosts
     """
     try:
         challenge = Challenge.objects.get(queue=queue_name) # noqa
     except Challenge.DoesNotExist:
         response_data = {
-            'error': 'Challenge with queue name {} does not exists'.format(queue_name)
+            'error': 'Challenge with queue name {} does not exist'.format(queue_name)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not is_user_a_host_of_challenge(request.user, challenge.id):
-        response_data = {
-            'error': 'Sorry, you are not authorized to access this resource'
-        }
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {'error': 'Sorry, you are not authorized to access this resource'}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
     queue = get_sqs_queue_object()
-
     try:
-        message = queue.receive_messages()
-        if len(message):
-            message_receipt_handle = message[0].receipt_handle
-            message_body = eval(message[0].body)
+        messages = queue.receive_messages()
+        if len(messages):
+            message_receipt_handle = messages[0].receipt_handle
+            message_body = eval(messages[0].body)
             logger.info('A submission is received with pk {}'.format(message_body.get('submission_pk')))
         else:
             logger.info("No submission received")
@@ -817,9 +833,13 @@ def get_submission_message_from_queue(request, queue_name):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def delete_submission_message_by_queue_name(request, queue_name, receipt_handle):
+def delete_submission_message_from_queue(request, queue_name, receipt_handle):
     """
-    API endpoint to delete the submission message from the AWS SQS Queue
+    API to delete submission message from AWS SQS queue
+
+    Arguments:
+        queue_name  -- The unique authentication token provided by challenge hosts
+        receipt_handle -- The receipt handle of the message to be deleted
     """
     try:
         challenge = Challenge.objects.get(queue=queue_name)
@@ -829,7 +849,7 @@ def delete_submission_message_by_queue_name(request, queue_name, receipt_handle)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge_pk = challenge.id
+    challenge_pk = challenge.pk
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             'error': 'Sorry, you are not authorized to access this resource'
@@ -837,7 +857,6 @@ def delete_submission_message_by_queue_name(request, queue_name, receipt_handle)
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
     queue = get_sqs_queue_object()
-
     try:
         message = queue.Message(receipt_handle)
         message.delete()
@@ -849,53 +868,3 @@ def delete_submission_message_by_queue_name(request, queue_name, receipt_handle)
         response_data = ex
         logger.exception('SQS message is not deleted due to {}'.format(response_data))
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['PUT'])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
-def update_submission_status_by_queue_name(request, challenge_pk, submission_pk, queue_name):
-    """
-    API to update the submission status by the challenge hosts
-
-    Arguments:
-        challenge_pk  -- The challenge ID whose submision is to be updated
-        submission_pk  -- The submission ID which is to be updated
-        queue_name  -- The unique authentication token provided by challenge hosts
-
-    """
-
-    try:
-        submission = Submission.objects.get(pk=submission_pk)
-    except Submission.DoesNotExist:
-        response_data = {
-            'error': 'Submission {} does not exists!'.format(submission_pk)
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    if not is_user_a_host_of_challenge(request.user, challenge_pk):
-        response_data = {
-            'error': 'Sorry, you are not authorized to access this resource!'
-        }
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
-
-    challenge_queue_name = submission.challenge_phase.challenge.queue
-
-    if (challenge_queue_name == queue_name):
-        serializer = SubmissionSerializer(submission,
-                                          data=request.data,
-                                          context={'request': request},
-                                          partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data
-            return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            response_data = serializer.errors
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        response_data = {
-            'error': 'Sorry, you are not authorized to update this submission!'
-        }
-        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)

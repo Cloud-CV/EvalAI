@@ -1383,11 +1383,11 @@ def get_challenge_by_queue_name(request, queue_name):
         challenge = Challenge.objects.get(queue=queue_name)
     except Challenge.DoesNotExist:
         response_data = {
-            'error': 'Challenge with queue name {} does not exists'.format(queue_name)
+            'error': 'Challenge with queue name {} does not exist'.format(queue_name)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if not is_user_a_host_of_challenge(request.user, challenge.id):
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
             'error': 'Sorry, you are not authorized to access this challenge.'
         }
@@ -1449,14 +1449,13 @@ def get_challenge_phases_by_challenge_pk(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
 
-    if not is_user_a_host_of_challenge(request.user, challenge.id):
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
             'error': 'Sorry, you are not authorized to access these challenge phases.'
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
     challenge_phases = ChallengePhase.objects.filter(challenge=challenge_pk)
-
     serializer = ChallengePhaseCreateSerializer(
         challenge_phases, context={
             'request': request

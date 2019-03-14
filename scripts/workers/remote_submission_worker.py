@@ -422,6 +422,8 @@ def update_submission_status(data, challenge_pk):
 def read_file_content(file_path):
     with open(file_path, "r") as obj:
         file_content = obj.read()
+        if not file_content:
+            file_content = " "
         return file_content
 
 
