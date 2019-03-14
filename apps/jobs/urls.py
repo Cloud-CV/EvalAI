@@ -50,4 +50,6 @@ urlpatterns = [
         views.get_submission_message_from_queue,
         name="get_submission_message_from_queue",
     ),
+    url(r'^submission_files/$',
+        views.get_signed_url, name='get_signed_url_for_submission_related_file'),
 ]
