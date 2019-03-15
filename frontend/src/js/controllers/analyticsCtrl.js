@@ -109,7 +109,7 @@
                                 var status = response.status;
                                 var details = response.data;
                                 if (status == 200) {
-                                    vm.totalTeams = details.participant_team_count;
+                                    vm.totalChallengeTeams = details.participant_team_count;
                                 }
                             },
                             onError: function(response) {
