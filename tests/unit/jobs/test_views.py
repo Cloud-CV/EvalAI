@@ -1538,6 +1538,36 @@ class UpdateSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_update_submission_for_False_submission_status(self):
+        self.url = reverse_lazy('jobs:update_submission',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        })
+        self.data = {
+            'challenge_phase': self.challenge_phase.id,
+            'submission': self.submission.id,
+            'submission_status': 'CANCELLED',
+            'stdout': "qwerty",
+            'stderr': "qwerty",
+            'result': json.dumps([
+                {
+                    "split": self.datasetSplit.codename,
+                    "show_to_participant": True,
+                    "accuracies": {
+                        "metric1": 60,
+                        "metric2": 30
+                    }
+                }
+            ])
+        }
+
+        expected = {
+            'success': 'Submission result has been successfully updated'}
+        self.client.force_authenticate(
+            user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_update_submission_for_submission_status_not_provided(self):
         self.url = reverse_lazy('jobs:update_submission',
                                 kwargs={'challenge_pk': self.challenge.pk,
@@ -1596,7 +1626,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_update_submission_for_invalid_data(self):
+    def test_update_submission_for_invalid_data_in_result_key(self):
         self.url = reverse_lazy('jobs:update_submission',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         })
@@ -1617,7 +1647,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_update_submission_when_challenge_phase_split_not_exists(self):
+    def test_update_submission_when_challenge_phase_split_not_exist(self):
         self.url = reverse_lazy('jobs:update_submission',
                                 kwargs={'challenge_pk': self.challenge.pk,
                                         })
