@@ -1067,14 +1067,20 @@ def get_signed_url(request):
     except ParticipantTeam.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if not is_user_part_of_participant_team(request.user, participant_team):
-        response_data = {'error': 'You are not part of this participant team.'}
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
     try:
-        Submission.objects.get(participant_team=participant_team, id=submission_id)
+        submission = Submission.objects.get(id=submission_id)
     except Submission.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+    challenge_pk = submission.challenge_phase.challenge.pk
+    if (not is_user_part_of_participant_team(request.user, participant_team)
+            or not is_user_a_host_of_challenge(request.user, challenge_pk)):
+        response_data = {'error': 'You are not authorized to access this file.'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if submission.participant_team != participant_team:
+        response_data = {'error': 'You are not authorized to access this file.'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     # TODO: Modify this s3 client creation code when we have challenge based AWS keys
     s3 = boto3.client('s3')
