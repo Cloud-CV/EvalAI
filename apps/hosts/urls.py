@@ -16,4 +16,6 @@ urlpatterns = [
         views.remove_self_from_challenge_host_team, name='remove_self_from_challenge_host_team'),
     url(r'^challenge_host_teams/(?P<pk>[0-9]+)/invite$', views.invite_host_to_team,
         name='invite_host_to_team'),
+    url(r'^challenge_host_team/add_to_host_team/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<chtid64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        views.add_to_host_team, name='add_to_host_team'),
 ]

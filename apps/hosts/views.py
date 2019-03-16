@@ -1,4 +1,15 @@
+import logging
+
+from django.template.loader import render_to_string
 from django.contrib.auth.models import User
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from hosts.token import host_invitations_token_generator
+from django.core.mail import EmailMessage
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (api_view,
@@ -18,6 +29,8 @@ from .serializers import (ChallengeHostSerializer,
                           InviteHostToTeamSerializer,
                           HostTeamDetailSerializer,)
 from .utils import (is_user_part_of_host_team,)
+
+logger = logging.getLogger(__name__)
 
 
 @throttle_classes([UserRateThrottle])
@@ -242,7 +255,32 @@ def invite_host_to_team(request, pk):
     if host.exists():
         response_data = {'error': 'User is already part of the team!'}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    current_site = get_current_site(request)
+    mail_subject = 'Activate your blog account.'
+    user.is_user_host = is_user_part_of_host_team(user, challenge_host_team)
+    logger.info('URL ' + str(request.data))
+    try:
+        message = render_to_string(
+            'invitation_activation.html', {
+                'user': user,
+                'challenge_host_team_name': challenge_host_team.team_name,
+                'domain': current_site.domain,
+                'uid':urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+                'chtid': urlsafe_base64_encode(force_bytes(challenge_host_team.pk)).decode(),
+                'token': host_invitations_token_generator.make_token(user),
+            }
+        )
+        logger.info(message)
+    except Exception as e:
+        logger.info('Error rendering site to string : '+ str(e))
 
+    to_email = user.email
+    email = EmailMessage(mail_subject, message, to=[to_email])
+    email.send()
+    response_data = {
+        'message': 'User has been sent the host team invitation.'}
+    return Response(response_data, status=status.HTTP_202_ACCEPTED)
+    '''
     serializer = InviteHostToTeamSerializer(
         data=request.data,
         context={
@@ -256,3 +294,42 @@ def invite_host_to_team(request, pk):
             'message': 'User has been added successfully to the host team'}
         return Response(response_data, status=status.HTTP_202_ACCEPTED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    '''
+
+def add_to_host_team(request, uidb64, chtid64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        chtid = force_text(urlsafe_base64_decode(chtid64))
+        user = User.objects.get(pk=uid)
+        try:
+            challenge_host_team = ChallengeHostTeam.objects.get(pk=chtid)
+        except ChallengeHostTeam.DoesNotExist:
+            response_data = {'error': 'Host Team does not exist'}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        user.is_user_host = is_user_part_of_host_team(user, challenge_host_team)
+        if user.is_user_host:
+            return HttpResponse('You are already part of the host team - {}'.format(challenge_host_team.team_name))
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and host_invitations_token_generator.check_token(user, token):
+        request.data = {
+            'email': user.email
+        }
+        logger.info(request.data)
+
+        serializer = InviteHostToTeamSerializer(
+            data=request.data,
+            context={
+                'challenge_host_team': challenge_host_team,
+                'request': request
+        })
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = {
+                'message': 'User has been added successfully to the host team'}
+            return HttpResponse('Thank you for your email confirmation. You have now been added to the host team - {}'.format(challenge_host_team.team_name))
+            return Response(response_data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return HttpResponse('Activation link is invalid!')
