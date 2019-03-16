@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>EvalAI- Confirmation</title>
+</head>
+<body>
+<h1>Confirm email</h1>
+{% autoescape off %}
+
+Hi {{ user.username }},
+Please click on the link to join the host team - {{ challenge_host_team_name }},
+http://{{ domain }}{% url 'hosts:add_to_host_team' uidb64=uid chtid64=chtid token=token %}
+
+{% endautoescape %}
+</body>
+</html>
