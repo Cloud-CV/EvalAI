@@ -101,7 +101,35 @@
                     onSuccess: function(response) {
                         var status = response.status;
                         var details = response.data;
+                        parameters.url = 'analytics/challenge/' + vm.challengeId + '/team/count';
+                        parameters.method = 'GET';
+                        parameters.token = userKey;
+                        parameters.callback = {
+                            onSuccess: function(response) {
+                                var status = response.status;
+                                var details = response.data;
+                                if (status == 200) {
+                                    vm.totalChallengeTeams = details.participant_team_count;
+                                }
+                            },
+                            onError: function(response) {
+                                var status = response.status;
+                                var error = response.data;
+                                if (status == 403) {
+                                    vm.error = error;
 
+                                    // navigate to permissions denied page
+                                    $state.go('web.permission-denied');
+                                } else if (status == 401) {
+                                    alert("Timeout, Please login again to continue!");
+                                    utilities.resetStorage();
+                                    $state.go("auth.login");
+                                    $rootScope.isAuth = false;
+
+                                }
+                            }
+                        };
+                        utilities.sendRequest(parameters);
 
                         if (status === 200) {
                             vm.currentPhase = details.results;
