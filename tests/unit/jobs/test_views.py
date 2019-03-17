@@ -224,6 +224,46 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_challenge_submission_when_user_does_not_exist_in_allowed_emails(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.challenge_phase.allowed_email_ids = ['abc@test.com']
+        self.challenge_phase.save()
+        expected = {
+            'error': 'Sorry, you are not allowed to participate in this challenge phase'
+        }
+        response = self.client.post(self.url, {
+                                    'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_challenge_submission_when_user_exist_in_allowed_emails(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.challenge_phase.allowed_email_ids = ['abc@test.com', 'user1@test.com']
+        self.challenge_phase.save()
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+        response = self.client.post(self.url, {
+                                    'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_challenge_submission_when_user_does_not_exist_in_allowed_emails_and_is_host(self):
+        self.url = reverse_lazy('jobs:challenge_submission',
+                                kwargs={'challenge_id': self.challenge.pk,
+                                        'challenge_phase_id': self.challenge_phase.pk})
+
+        self.challenge_phase.allowed_email_ids = ['abc@test.com']
+        self.challenge_phase.save()
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.url, {
+                                    'status': 'submitting', 'input_file': self.input_file}, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
     def test_challenge_submission_when_challenge_phase_is_private_and_user_is_host(self):
         self.url = reverse_lazy('jobs:challenge_submission',
                                 kwargs={'challenge_id': self.challenge.pk,
