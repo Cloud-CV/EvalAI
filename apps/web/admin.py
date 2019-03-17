@@ -7,7 +7,7 @@ from .models import Contact, Team
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ("name", "email", "message", "created_at", "modified_at",)
+    list_display = ("name", "email", "message", "status", "created_at", "modified_at",)
     search_fields = ("email",)
 
 

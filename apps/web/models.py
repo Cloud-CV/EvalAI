@@ -7,9 +7,17 @@ from base.models import (TimeStampedModel, )
 
 class Contact(TimeStampedModel):
     """Model representing details of User submitting queries."""
+    PENDING = 'Pending'
+    RESOLVED = 'Resolved'
+
+    STATUS_OPTIONS = (
+        (PENDING, PENDING),
+        (RESOLVED, RESOLVED),
+    )
     name = models.CharField(max_length=100,)
     email = models.EmailField(max_length=70,)
     message = models.CharField(max_length=500,)
+    status = models.CharField(max_length=30, choices=STATUS_OPTIONS, default=PENDING)
 
     def __str__(self):
         return '{0}: {1}: {2}'.format(self.name, self.email, self.message)
