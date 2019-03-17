@@ -139,6 +139,8 @@ class ChallengePhase(TimeStampedModel):
     max_concurrent_submissions_allowed = models.PositiveIntegerField(default=3)
     codename = models.CharField(max_length=100, default="Phase Code Name")
     dataset_split = models.ManyToManyField(DatasetSplit, blank=True, through='ChallengePhaseSplit')
+    allowed_email_ids = ArrayField(models.TextField(
+        null=True, blank=True), default=[], blank=True, null=True)
 
     class Meta:
         app_label = 'challenges'
