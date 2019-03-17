@@ -270,22 +270,11 @@
                     vm.loaderContainer = angular.element('.exist-team-card');
 
 
-                    vm.startLoader("Making Submission");
                     if (vm.input_file) {
                         // vm.upload(vm.input_file);
                     }
                     parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
-                    /*
-                    var formData = new FormData();
-                    formData.append("status", "submitting");
-                    formData.append("input_file", vm.input_file);
-                    formData.append("method_name", vm.methodName);
-                    formData.append("method_description", vm.methodDesc);
-                    formData.append("project_url", vm.projectUrl);
-                    formData.append("publication_url", vm.publicationUrl);
-
-                    parameters.data = formData;*/
                     parameters.data = {
                         'status': 'submitting',
                         'input_file': vm.input_file,
@@ -319,7 +308,6 @@
                             vm.publicationUrl = "";
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
 
-                            vm.stopLoader();
                         },
                         onError: function(response) {
                             vm.submissionInProgress = false;
@@ -340,7 +328,6 @@
                                     vm.subErrors.msg = error.input_file[0];
                                 }
                             }
-                            vm.stopLoader();
                         },
                         onProgress: function (event) {
                             vm.progressPercentage = parseInt(100.0 * event.loaded / event.total);
@@ -1411,10 +1398,6 @@
 
         vm.editEvalScript = function(editEvaluationCriteriaForm) {
             if (editEvaluationCriteriaForm) {
-                /*
-                var formData = new FormData();
-                formData.append("evaluation_script", vm.editEvaluationScript);
-                */
                 var challengeHostList = utilities.getData("challengeCreator");
                 for (var challenge in challengeHostList) {
                     if (challenge == vm.challengeId) {
@@ -1577,17 +1560,6 @@
                 vm.challengePhaseId = vm.page.challenge_phase.id;
                 parameters.url = "challenges/challenge/" + vm.challengeId + "/challenge_phase/" + vm.challengePhaseId;
                 parameters.method = 'PATCH';
-                /*
-                var formData = new FormData();
-                formData.append("name", vm.page.challenge_phase.name);
-                formData.append("description", vm.page.challenge_phase.description);
-                formData.append("start_date", vm.phaseStartDate.toISOString());
-                formData.append("end_date", vm.phaseEndDate.toISOString());
-                formData.append("max_submissions_per_day", vm.page.challenge_phase.max_submissions_per_day);
-                formData.append("max_submissions", vm.page.challenge_phase.max_submissions);
-                if (vm.testAnnotationFile) {
-                    formData.append("test_annotation", vm.testAnnotationFile);
-                }*/
 
                 parameters.data = {
                     "name": vm.page.challenge_phase.name,
@@ -1606,7 +1578,6 @@
                         vm.progressPercentage = 100;
                         vm.submissionInProgress = false;
                         var status = response.status;
-                        utilities.hideLoader();
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The challenge phase details are successfully updated!");
@@ -1614,7 +1585,6 @@
                     },
                     onError: function(response) {
                         vm.submissionInProgress = false;
-                        utilities.hideLoader();
                         $mdDialog.hide();
                         var error = response.data;
                         $rootScope.notify("error", error);
@@ -1623,7 +1593,6 @@
                         vm.progressPercentage = parseInt(100.0 * event.loaded / event.total);
                     }
                 };
-                utilities.showLoader();
                 vm.progressPercentage = 0;
                 vm.submissionInProgress = true;
                 utilities.sendRequest(parameters, 'header', 'upload');

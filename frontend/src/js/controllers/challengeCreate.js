@@ -42,21 +42,15 @@
                     var parameters = {};
                     parameters.url = 'challenges/challenge/challenge_host_team/' + hostTeamId + '/zip_upload/';
                     parameters.method = 'POST';
-                    /*
-                    var formData = new FormData();
-                    formData.append("zip_configuration", vm.input_file);*/
                     parameters.data = {
                         "zip_configuration": vm.input_file
                     };
-
-                    //parameters.data = formData;
 
                     parameters.token = userKey;
                     parameters.callback = {
                         onSuccess: function(response) {
                             vm.progressPercentage = 100;
                             vm.submissionInProgress = false;
-                            utilities.hideLoader();
                             var status = response.status;
                             var details =  response.data;
                             if (status === 201) {
@@ -76,18 +70,15 @@
                         },
                         onError: function(response) {
                             vm.submissionInProgress = false;
-                            utilities.hideLoader();
                             var error = response.data;
                             angular.element(".file-path").val(null);
                             $rootScope.notify("error", error.error);
-                            vm.stopLoader();
                         },
                         onProgress: function (event) {
                             vm.progressPercentage = parseInt(100.0 * event.loaded / event.total);
                         }
                     };
                 }
-                utilities.showLoader();
                 vm.progressPercentage = 0;
                 vm.submissionInProgress = true;
                 utilities.sendRequest(parameters, 'header', 'upload');
