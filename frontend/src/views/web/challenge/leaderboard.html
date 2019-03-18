@@ -77,15 +77,11 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort">
-                                      <div ng-class="{'lightgrey':classLink==challenge.initial_ranking[key.submission__participant_team__team_name]}">
-                                      <div id="{{challenge.initial_ranking[key.submission__participant_team__team_name]}}"
+                                    <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort" ng-class="{'lightgrey':classLink==challenge.initial_ranking[key.submission__participant_team__team_name]}" id="{{challenge.initial_ranking[key.submission__participant_team__team_name]}}">
                                         <td class="align-left"><a ng-click="gotolink(challenge.initial_ranking[key.submission__participant_team__team_name])" class="challengeleaderboardlink" href="{{beforeLink}}#{{challenge.initial_ranking[key.submission__participant_team__team_name]}}">{{challenge.initial_ranking[key.submission__participant_team__team_name]}}</a></td>
                                         <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
                                         <td class="align-center" ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
                                         <td class="align-center">{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago</td>
-                                      </div>
-                                      </div>
                                     </tr>
                                     </tbody>
                                 </table>

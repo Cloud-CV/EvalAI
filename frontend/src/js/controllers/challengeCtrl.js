@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment','$location','$anchorScroll'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment', '$location', '$anchorScroll'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment,$location,$anchorScroll) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -63,21 +63,21 @@
         $scope.beforeLink=reversestring.slice(indexOfString-1,).reverse().join("");
 
         // watch when there is change in url
-        $scope.$watch(function(){
+        $scope.$watch(function() {
           return $location.absUrl();
         },
-      function(value){
-        if(value.indexOf('#')!=-1){
-          var index=value.indexOf('#');
-          $scope.gotolink(value.slice(index+1,));
-        }
-      });
+        function(value) {
+            if(value.indexOf('#')!=-1) {
+                var index=value.indexOf('#');
+                $scope.gotolink(value.slice(index+1,));
+            }
+        });
       // Scroll to specific hash position
-    $scope.gotolink=function(x){
-      $location.hash(x);
-      $anchorScroll();
-      $scope.classLink=x;
-    };
+        $scope.gotolink=function(x) {
+        $location.hash(x);
+        $anchorScroll();
+        $scope.classLink=x;
+        };
         // get details of the particular challenge
         var parameters = {};
         parameters.token = null;
