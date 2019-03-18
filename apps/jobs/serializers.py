@@ -153,4 +153,4 @@ class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'start_date', 'end_date', 'message')
 
     def get_message(self, obj):
-        return self.context["message"]
+        return self.context.get("message")
