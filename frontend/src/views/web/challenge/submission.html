@@ -20,18 +20,97 @@
                     </a>
                 </div>
             </div>
-            <div class=" ev-card-panel ev-z-depth-5 ">
-                <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
-                    <div class="loader">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card" ng-if="challenge.page.is_docker_based">
+                <div class="col s11 m11" >
+                    <span class="fs-18">
+                        <strong>Submission instructions for docker image using evalai-cli</strong>
+                    </span>
+                    <ol>
+                        <li>Install evalai-cli using the command:<br>
+                            <code>$ pip install evalai</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard data-clipboard-text="pip install evalai">
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li>
+                        <li>Add your EvalAI account credentials to cli:<br>
+                                <code>$ evalai set_token {{challenge.authToken}}</code>
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard data-clipboard-text="evalai set_token {{challenge.authCode}}">
+                                    <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                </button>
+                        </li>
+                        <li>Submit your docker image using:<br>
+                            <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase &lt;phase_id&gt;</code>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard data-clipboard-text="evalai push <image>:<tag> --phase <phase_id>">
+                                <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                            </button>
+                        </li> 
+                        <li>For more commands, please refer evalai-cli <a class="highlight-link" href="https://evalai-cli.cloudcv.org/" target="_blank">documentation</a>.</li>  
+                    </ol>
                 </div>
-                <div class="ev-md-container ev-panel-title"><strong>Please fill the following fields to submit</strong></div>
-                <div class="row">
+            </div>
+            <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view eval-card" ng-if="challenge.page.is_docker_based">
+                <span class="fs-18">
+                    <strong>Submission Limits</strong>
+                </span><br><br>
+                <span class="fs-15">
+                    <strong>Team Name:</strong> {{challenge.phaseRemainingSubmissions.participant_team}}
+                </span>
+                <table class="highlight centered responsive-table">
+                    <thead>
+                        <tr>
+                            <th>Phase Details</th>
+                            <th>Remaining Submissions</th>
+                            <th>Command to submit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="key in challenge.phaseRemainingSubmissions.phases">
+                            <td>{{key.name}}
+                                <br>
+                                <strong class="text-med-black">Start Date: </strong>{{key.start_date | date:'medium'}}
+                                <br>
+                                <strong class="text-med-black">End Date: </strong>{{key.end_date | date:'medium'}}
+                            </td>
+                            <td ng-if="challenge.phaseRemainingSubmissionsFlags[key.id] === 'showSubmissionNumbers'">
+                                <strong>
+                                    Today:
+                                </strong>
+                                {{key.limits.remaining_submissions_today_count}}<br>
+                                <strong>
+                                    This Month:
+                                </strong>
+                                {{key.limits.remaining_submissions_this_month_count}}<br>
+                                <strong>
+                                    Total:
+                                </strong>
+                                {{key.limits.remaining_submissions_count}}
+                            </td>
+                            <td ng-if="challenge.phaseRemainingSubmissionsFlags[key.id] === 'showClock'">
+                                <strong>{{key.limits.message}}</strong><br> Next submission will be available in<br>
+                                <div>
+                                    <span ng-if="challenge.days!=0">{{challenge.phaseRemainingSubmissionsCountdown[key.id].days}} Days, </span>{{challenge.phaseRemainingSubmissionsCountdown[key.id].hours}} hours : {{challenge.phaseRemainingSubmissionsCountdown[key.id].minutes}} minutes : {{challenge.phaseRemainingSubmissionsCountdown[key.id].seconds}} seconds
+                                </div>
+                            </td>
+                            <td ng-if="challenge.phaseRemainingSubmissionsFlags[key.id] === 'maxExceeded'">
+                                <strong>{{key.limits.message}}</strong><br>
+                                <strong>
+                                        {{key.limits.maxExceededMessage}}
+                                </strong> 
+                            </td>
+                            <td>
+                                <code>$ evalai push &lt;image&gt;:&lt;tag&gt; --phase {{key.id}}</code>
+                                <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn" ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard data-clipboard-text="evalai push <image>:<tag> --phase {{key.id}}">
+                                    <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
+                                </button>
+                            </td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+            <div class=" ev-card-panel ev-z-depth-5 ">
+                <div class="ev-md-container ev-panel-title" ng-if="!challenge.page.is_docker_based"><strong>Please fill the following fields to submit</strong></div>
+                <div class="row" ng-if="!challenge.page.is_docker_based">
                     <div class="col s12 m7">
                         <div class="ev-card-body exist-team-card">
                             <form ng-submit="challenge.makeSubmission()">
@@ -155,7 +234,7 @@
                             </span>
                             <span class="color-black">
                                 <strong>
-                                {{challenge.remainingSubmissions.remaining_submissions}}
+                                {{challenge.remainingSubmissions.remaining_submissions_count}}
                                 </strong>
                             </span>
                             </div>
