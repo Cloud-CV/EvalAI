@@ -408,23 +408,7 @@ def leaderboard(request, challenge_phase_split_id):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
-    '''
-    Returns the number of remaining submissions that a participant can
-    do daily, monthly and in total to a particular challenge phase of a
-    challenge.
-    '''
-    response_data, response_status = get_remaining_submission_for_a_phase(request.user,
-                                                                          challenge_phase_pk,
-                                                                          challenge_pk)
-    return Response(response_data, status=response_status)
-
-
-@api_view(['GET'])
-@throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
-@authentication_classes((ExpiringTokenAuthentication,))
-def get_remaining_submissions_for_all_phases(request, challenge_pk):
+def get_remaining_submissions(request, challenge_pk):
     '''
     API to get the number of remaining submission for all phases.
     Below is the sample response returned by the API
@@ -464,10 +448,6 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         challenge_phases = challenge_phases.filter(
             challenge=challenge, is_public=True).order_by('pk')
-
-    participant_team = get_participant_team_of_user_for_a_challenge(request.user, challenge_pk)
-    phases_data['participant_team'] = participant_team.team_name
-    phases_data['participant_team_id'] = participant_team.id
     phase_data_list = list()
     for phase in challenge_phases:
         remaining_submission_message, response_status = get_remaining_submission_for_a_phase(request.user,
@@ -479,6 +459,9 @@ def get_remaining_submissions_for_all_phases(request, challenge_pk):
                                                                  context={'message': remaining_submission_message}
                                                                  ).data)
     phases_data["phases"] = phase_data_list
+    participant_team = get_participant_team_of_user_for_a_challenge(request.user, challenge_pk)
+    phases_data['participant_team'] = participant_team.team_name
+    phases_data['participant_team_id'] = participant_team.id
     return Response(phases_data, status=status.HTTP_200_OK)
 
 
