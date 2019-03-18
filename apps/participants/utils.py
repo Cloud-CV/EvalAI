@@ -1,6 +1,6 @@
 from challenges.models import Challenge
 
-from .models import Participant
+from .models import Participant, ParticipantTeam
 
 
 def is_user_part_of_participant_team(user, participant_team):
@@ -31,6 +31,14 @@ def get_participant_team_id_of_user_for_a_challenge(user, challenge_id):
         if Challenge.objects.filter(pk=challenge_id, participant_teams=participant_team).exists():
             return participant_team
     return None
+
+
+def get_participant_team_of_user_for_a_challenge(user, challenge_id):
+    """Returns the participant team object for a particular user for a particular challenge"""
+    participant_team_id = get_participant_team_id_of_user_for_a_challenge(user, challenge_id)
+    if participant_team_id:
+        return ParticipantTeam.objects.get(pk=participant_team_id)
+    return
 
 
 def get_list_of_challenges_for_participant_team(participant_teams=[]):
