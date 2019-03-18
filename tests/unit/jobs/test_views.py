@@ -636,7 +636,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         }
 
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected)
+        self.assertEqual(response.data['phases'][0]['limits'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_remaining_submission_when_submission_made_one_month_back(self):
@@ -660,7 +660,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.submission1.submitted_at = timezone.now() - timedelta(days=32)
         self.submission1.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected)
+        self.assertEqual(response.data['phases'][0]['limits'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_remaining_submission_when_submission_is_done(self):
@@ -681,7 +681,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected)
+        self.assertEqual(response.data['phases'][0]['limits'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def get_remaining_submission_time_when_max_limit_is_exhausted(self):
@@ -704,7 +704,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected)
+        self.assertEqual(response.data['phases'][0]['limits'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def get_remaining_submission_time_when_monthly_limit_is_exhausted(self):
@@ -726,7 +726,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected['message'])
+        self.assertEqual(response.data['phases'][0]['limits']['message'], expected['message'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def get_remaining_submission_time_when_both_monthly_and_daily_limit_is_exhausted(self):
@@ -749,7 +749,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected['message'])
+        self.assertEqual(response.data['phases'][0]['limits']['message'], expected['message'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_remaining_submission_time_when_daily_limit_is_exhausted(self):
@@ -771,7 +771,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message']['message'], expected['message'])
+        self.assertEqual(response.data['phases'][0]['limits']['message'], expected['message'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_remaining_submissions_when_todays_is_greater_than_monthly_and_total(self):
@@ -797,7 +797,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected)
+        self.assertEqual(response.data['phases'][0]['limits'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_remaining_submissions_when_total_less_than_monthly(self):
@@ -823,7 +823,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected)
+        self.assertEqual(response.data['phases'][0]['limits'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_remaining_submission_when_total_less_than_monthly_and_monthly_equal_daily(self):
@@ -849,7 +849,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected)
+        self.assertEqual(response.data['phases'][0]['limits'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_remaining_submission_when_total_less_than_monthly_and_monthly_less_than_daily(self):
@@ -875,7 +875,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected)
+        self.assertEqual(response.data['phases'][0]['limits'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_remaining_submissions_when_monthly_remaining_less_than_todays(self):
@@ -900,7 +900,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data['phases'][0]['message'], expected)
+        self.assertEqual(response.data['phases'][0]['limits'], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_all_phases_remaining(self):
