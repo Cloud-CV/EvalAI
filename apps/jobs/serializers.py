@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from challenges.models import LeaderboardData, ChallengePhase
+from challenges.models import ChallengePhase, LeaderboardData
 from participants.models import Participant, ParticipantTeam
 
 from .models import Submission
