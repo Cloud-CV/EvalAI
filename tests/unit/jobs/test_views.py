@@ -771,7 +771,6 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         response = self.client.get(self.url, {})
-        print(response.data['phases'][0]['message'])
         self.assertEqual(response.data['phases'][0]['message']['message'], expected['message'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
