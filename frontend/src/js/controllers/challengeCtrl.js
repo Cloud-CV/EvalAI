@@ -267,15 +267,15 @@
                         vm.phaseRemainingSubmissions = response.data;
                         var details = vm.phaseRemainingSubmissions.phases;
                         for (let i = 0; i < details.length; i++) {
-                            if (details[i].message.submission_limit_exceeded === true) {
+                            if (details[i].limits.submission_limit_exceeded === true) {
                                 vm.phaseRemainingSubmissionsFlags[details[i].id] = "maxExceeded";
-                            } else if (details[i].message.remaining_submissions_today_count > 0) {
+                            } else if (details[i].limits.remaining_submissions_today_count > 0) {
                                 vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
                             } else {
                                 vm.eachPhase = details[i];
                                 vm.phaseRemainingSubmissionsFlags[details[i].id] = "showClock";
                                 vm.countDownTimer = function () {
-                                    vm.remainingTime = vm.eachPhase.message.remaining_time;
+                                    vm.remainingTime = vm.eachPhase.limits.remaining_time;
                                     vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
                                     vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
                                     vm.hours = Math.floor(vm.hoursLeft / 3600);
@@ -1088,7 +1088,7 @@
                     var details;
                     for(var phase in response.data.phases) {
                         if(response.data.phases[phase].id == vm.phaseID) {
-                           details = response.data.phases[phase].message
+                           details = response.data.phases[phase].limits
                         }
                     }
                     if (status === 200) {

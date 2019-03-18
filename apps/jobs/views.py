@@ -422,7 +422,7 @@ def get_remaining_submissions(request, challenge_pk):
                 "name": "Megan Phase",
                 "start_date": "2018-10-28T14:22:53.022639Z",
                 "end_date": "2020-06-19T14:22:53.022660Z",
-                "message": {
+                "limits": {
                     "remaining_submissions_this_month_count": 9,
                     "remaining_submissions_today_count": 5,
                     "remaining_submissions_count": 29
@@ -433,7 +433,7 @@ def get_remaining_submissions(request, challenge_pk):
                 "name": "Molly Phase",
                 "start_date": "2018-10-28T14:22:53Z",
                 "end_date": "2020-06-19T14:22:53Z",
-                "message": {
+                "limits": {
                     "message": "You have exhausted this month's submission limit!",
                     "remaining_time": "1481076.929224"  // remaining_time is in seconds
                 }
@@ -456,7 +456,7 @@ def get_remaining_submissions(request, challenge_pk):
         if response_status != status.HTTP_200_OK:
             return Response(remaining_submission_message, status=response_status)
         phase_data_list.append(RemainingSubmissionDataSerializer(phase,
-                                                                 context={'message': remaining_submission_message}
+                                                                 context={'limits': remaining_submission_message}
                                                                  ).data)
     phases_data["phases"] = phase_data_list
     participant_team = get_participant_team_of_user_for_a_challenge(request.user, challenge_pk)

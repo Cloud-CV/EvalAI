@@ -75,26 +75,26 @@
                                 <strong>
                                     Today:
                                 </strong>
-                                {{key.message.remaining_submissions_today_count}}<br>
+                                {{key.limits.remaining_submissions_today_count}}<br>
                                 <strong>
                                     This Month:
                                 </strong>
-                                {{key.message.remaining_submissions_this_month_count}}<br>
+                                {{key.limits.remaining_submissions_this_month_count}}<br>
                                 <strong>
                                     Total:
                                 </strong>
-                                {{key.message.remaining_submissions_count}}
+                                {{key.limits.remaining_submissions_count}}
                             </td>
                             <td ng-if="challenge.phaseRemainingSubmissionsFlags[key.id] === 'showClock'">
-                                <strong>{{key.message.message}}</strong><br> Next submission will be available in<br>
+                                <strong>{{key.limits.message}}</strong><br> Next submission will be available in<br>
                                 <div>
                                     <span ng-if="challenge.days!=0">{{challenge.phaseRemainingSubmissionsCountdown[key.id].days}} Days, </span>{{challenge.phaseRemainingSubmissionsCountdown[key.id].hours}} hours : {{challenge.phaseRemainingSubmissionsCountdown[key.id].minutes}} minutes : {{challenge.phaseRemainingSubmissionsCountdown[key.id].seconds}} seconds
                                 </div>
                             </td>
                             <td ng-if="challenge.phaseRemainingSubmissionsFlags[key.id] === 'maxExceeded'">
-                                <strong>{{key.message.message}}</strong><br>
+                                <strong>{{key.limits.message}}</strong><br>
                                 <strong>
-                                        {{key.message.maxExceededMessage}}
+                                        {{key.limits.maxExceededMessage}}
                                 </strong> 
                             </td>
                             <td>

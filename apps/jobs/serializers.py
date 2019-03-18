@@ -146,11 +146,11 @@ class CreateLeaderboardDataSerializer(serializers.ModelSerializer):
 
 
 class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
-    message = serializers.SerializerMethodField()
+    limits = serializers.SerializerMethodField()
 
     class Meta:
         model = ChallengePhase
-        fields = ('id', 'name', 'start_date', 'end_date', 'message')
+        fields = ('id', 'name', 'start_date', 'end_date', 'limits')
 
-    def get_message(self, obj):
-        return self.context.get("message")
+    def get_limits(self, obj):
+        return self.context.get("limits")
