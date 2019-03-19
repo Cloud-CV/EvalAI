@@ -8,6 +8,9 @@ from botocore.exceptions import ClientError
 
 from base.utils import get_model_object
 
+from moto import mock_ecr
+
+
 from .models import Challenge, ChallengePhase, Leaderboard, DatasetSplit, ChallengePhaseSplit
 
 logger = logging.getLogger(__name__)
@@ -82,22 +85,41 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
     '''
     AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID')
     repository, created = None, False
-    client = boto3.client('ecr', region_name=region_name)
-    try:
-        response = client.describe_repositories(
-            registryId=AWS_ACCOUNT_ID,
-            repositoryNames=[
+    if  settings.DEBUG:
+        with mock_ecr():
+            client = boto3.client('ecr', region_name=region_name)
+            try:
+                response = client.describe_repositories(
+                    registryId=AWS_ACCOUNT_ID,
+                    repositoryNames=[
+                    name,
+                    ]
+                )
+                repository = response['repositories'][0]
+            except ClientError as e:
+                if e.response['Error']['Code'] == 'RepositoryNotFoundException':
+                    response = client.create_repository(repositoryName=name)
+                    repository = response['repository']
+                    created = True
+                else:
+                    logger.exception(e)
+    else:
+        client = boto3.client('ecr', region_name=region_name)
+        try:
+            response = client.describe_repositories(
+                registryId=AWS_ACCOUNT_ID,
+                repositoryNames=[
                 name,
-            ]
-        )
-        repository = response['repositories'][0]
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'RepositoryNotFoundException':
-            response = client.create_repository(repositoryName=name)
-            repository = response['repository']
-            created = True
-        else:
-            logger.exception(e)
+                ]
+            )
+            repository = response['repositories'][0]
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'RepositoryNotFoundException':
+                response = client.create_repository(repositoryName=name)
+                repository = response['repository']
+                created = True
+            else:
+                logger.exception(e)
     return (repository, created)
 
 
