@@ -442,6 +442,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
+            is_host_submission=False,
         )
 
     def test_challenge_submission_when_challenge_does_not_exist(self):
@@ -527,6 +528,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "submitted_at": "{0}{1}".format(self.submission.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
                 "is_public": self.submission.is_public,
                 "when_made_public": self.submission.when_made_public,
+                "is_host_submission": self.submission.is_host_submission,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
@@ -954,7 +956,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
-            when_made_public=timezone.now()
+            when_made_public=timezone.now(),
+            is_host_submission=False,
         )
 
         self.private_submission = Submission.objects.create(
@@ -968,7 +971,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
-            when_made_public=timezone.now()
+            when_made_public=timezone.now(),
+            is_host_submission=False,
         )
 
         self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
@@ -1107,6 +1111,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
                 "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
                                                     'Z').replace("+00:00", ""),
+                
             }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1119,7 +1124,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                                         'challenge_phase_pk': self.private_challenge_phase.pk,
                                         'submission_pk': self.private_submission.pk})
         self.data = {
-            'method_name': 'Updated Method Name'
+            'method_name': 'Updated Method Name',
+            'is_host_submission': True
         }
 
         expected = {
@@ -1143,6 +1149,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "is_public": self.private_submission.is_public,
             "when_made_public": "{0}{1}".format(self.private_submission.when_made_public.isoformat(),
                                                 'Z').replace("+00:00", ""),
+            "is_host_submission": self.data['is_host_submission'],
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1192,6 +1199,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
                 "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(), 'Z')
                                     .replace("+00:00", ""),
+                "is_host_submission": self.submission.is_host_submission,
             }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1250,6 +1258,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
                 "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
                                                     'Z').replace("+00:00", ""),
+                "is_host_submission": self.submission.is_host_submission,
             }
 
         self.client.force_authenticate(user=self.submission.created_by)
@@ -1282,6 +1291,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
                 "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
                                                     'Z').replace("+00:00", ""),
+                "is_host_submission": self.submission.is_host_submission,
             }
 
         self.client.force_authenticate(user=self.user)

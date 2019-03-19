@@ -2518,7 +2518,6 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "participant_team_members": [{'username': 'participant', 'email': 'user6@test.com'}],
                     "created_at": submission.created_at,
                     "method_name": submission.method_name,
-                    "is_host_submission": submission.is_host_submission,
                 }
             )
         response_phase1 = self.client.get(self.url_phase1, {})
