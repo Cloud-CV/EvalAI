@@ -142,15 +142,6 @@ class TestJobsUrls(BaseAPITestClass):
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:challenge_submission')
 
-    def test_get_remaining_submissons_url(self):
-        self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk})
-        self.assertEqual(self.url, '/api/jobs/{}/phases/{}/remaining_submissions'.format(self.challenge.pk,
-                                                                                         self.challenge_phase.pk))
-        resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'jobs:get_remaining_submissions')
-
     def test_leaderboard(self):
         self.url = reverse_lazy('jobs:leaderboard',
                                 kwargs={'challenge_phase_split_id': self.challenge_phase_split.pk})
@@ -166,3 +157,10 @@ class TestJobsUrls(BaseAPITestClass):
                          '/api/jobs/submission/{}'.format(self.submission.pk))
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, 'jobs:get_submission_by_pk')
+
+    def test_get_remaining_submissons_for_all_phases_url(self):
+        self.url = reverse_lazy('jobs:get_remaining_submissions',
+                                kwargs={'challenge_pk': self.challenge.pk})
+        self.assertEqual(self.url, '/api/jobs/{0}/remaining_submissions/'.format(self.challenge.pk))
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.view_name, 'jobs:get_remaining_submissions')
