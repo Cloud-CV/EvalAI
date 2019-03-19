@@ -581,10 +581,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         # To get the error line and column number
         if hasattr(exc, 'problem_mark'):
             mark = exc.problem_mark
-            line_number = mark.line+1
-            column_number = mark.column+1
+            line_number = mark.line + 1
+            column_number = mark.column + 1
         message = (
-            'Your yaml file contain invalid YAML syntax! '
             '{} in line {}, column {}'.format(error_description, line_number, column_number)
         )
         response_data = {
