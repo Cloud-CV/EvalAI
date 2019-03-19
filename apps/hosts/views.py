@@ -263,7 +263,13 @@ def invite_host_to_team(request, pk):
         domain = current_site.domain
         uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
         chtid = urlsafe_base64_encode(force_bytes(challenge_host_team.pk)).decode()
-        token = host_invitations_token_generator.make_token(user)
+
+        user_data = {
+            "user": user,
+            "challenge_host_team": challenge_host_team,
+        }
+        token = host_invitations_token_generator.make_token(user_data)
+
         referenced_link = reverse('hosts:add_to_host_team', args = (uid, chtid, token))
         link = 'http://{}{}'.format(domain, referenced_link)
 
@@ -295,9 +301,13 @@ def add_to_host_team(request, uidb64, chtid64, token):
         user.is_user_host = is_user_part_of_host_team(user, challenge_host_team)
         if user.is_user_host:
             return HttpResponse('You are already part of the host team - {}'.format(challenge_host_team.team_name))
+        user_data = {
+            "user": user,
+            "challenge_host_team": challenge_host_team,
+        }
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-    if user is not None and host_invitations_token_generator.check_token(user, token):
+        user_data = None
+    if user is not None and host_invitations_token_generator.check_token(user_data, token):
         request.data = {
             'email': user.email
         }
@@ -312,10 +322,7 @@ def add_to_host_team(request, uidb64, chtid64, token):
 
         if serializer.is_valid():
             serializer.save()
-            response_data = {
-                'message': 'User has been added successfully to the host team'}
             return HttpResponse('Thank you for your email confirmation. You have now been added to the host team - {}'.format(challenge_host_team.team_name))
-            return Response(response_data, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         return HttpResponse('Activation link is invalid!')

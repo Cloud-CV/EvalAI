@@ -492,7 +492,7 @@ class InviteHostToTeamTest(BaseAPITestClass):
 
     def test_invite_host_to_team_with_all_data(self):
         expected = {
-            'message': 'User has been added successfully to the host team'
+            'message': 'User has been sent the host team invitation.'
         }
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.data, expected)
