@@ -1111,7 +1111,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
                 "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
                                                     'Z').replace("+00:00", ""),
-                
+                "is_host_submission": self.submission.is_host_submission,
             }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
