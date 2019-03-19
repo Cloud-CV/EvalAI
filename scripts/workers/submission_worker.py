@@ -230,7 +230,7 @@ def load_challenge(challenge):
     extract_challenge_data(challenge, phases)
 
 
-def load_challenge_if_host_submission(challenge_id, submission_id): # pragma: no cover
+def load_challenge_if_host_submission(challenge_id, submission_id):  # pragma: no cover
     '''
         * Expects a challenge id and submission id and loads the challenge data
         * iff the submission is done by the host user itself
