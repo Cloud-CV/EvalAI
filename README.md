@@ -26,11 +26,7 @@ The goal of this package is to offer almost all the features available on the we
 
 3. Login with your credentials and move to the profile section.
 
-4. Click on `Get your Auth Token` to get the authentication token & download it as a JSON file.
-
-5. Create a folder with name `.evalai` in your home directory by using the command `mkdir ~/.evalai`.
-
-6. Place the downloaded authentication token in this folder by using the command `mv ~/Downloads/token.json ~/.evalai/`.
+4. Click on `Get your Auth Token` to get the authentication token & copy the token.
 
 ### Step 2:
 
@@ -59,6 +55,8 @@ pip install -r requirements.txt
 ```bash
 pip install -e .
 ```
+
+5. Set the auth token using command ``` evalai set_token <auth_token>```
 
 ## Contributing Guidelines
 
