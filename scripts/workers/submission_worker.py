@@ -230,6 +230,21 @@ def load_challenge(challenge):
     extract_challenge_data(challenge, phases)
 
 
+def load_challenge_if_host_submission(challenge_id, submission_id):
+    '''
+        * Expects a challenge id and submission id and loads the challenge data
+        * iff the submission is done by the host user itself
+    '''
+    try:
+        challenge = Challenge.objects.get(id=challenge_id)
+        submission = Submission.objects.get(id=submission_id)
+    except (Challenge.DoesNotExist, Submission.DoesNotExist):
+        return None
+
+    if submission.is_host_submission:
+        load_challenge(challenge)
+
+
 def extract_submission_data(submission_id):
     '''
         * Expects submission id and extracts input file for it.
@@ -457,6 +472,8 @@ def process_submission_message(message):
     challenge_id = message.get('challenge_id')
     phase_id = message.get('phase_id')
     submission_id = message.get('submission_id')
+    # load the challenge data if its a host submission
+    load_challenge_if_host_submission(challenge_id, submission_id)
     submission_instance = extract_submission_data(submission_id)
 
     # so that the further execution does not happen
