@@ -245,7 +245,7 @@ def load_challenge_if_host_submission(challenge_id, submission_id):  # pragma: n
         load_challenge(challenge)
 
 
-def extract_submission_data(submission_id):
+def extract_submission_data(submission_id):  # pragma: no cover
     '''
         * Expects submission id and extracts input file for it.
     '''
@@ -473,8 +473,8 @@ def process_submission_message(message):
     phase_id = message.get('phase_id')
     submission_id = message.get('submission_id')
     # load the challenge data if its a host submission
-    load_challenge_if_host_submission(challenge_id, submission_id)
-    submission_instance = extract_submission_data(submission_id)
+    load_challenge_if_host_submission(challenge_id, submission_id)  # pragma: no cover
+    submission_instance = extract_submission_data(submission_id)  # pragma: no cover
 
     # so that the further execution does not happen
     if not submission_instance:
