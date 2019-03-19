@@ -5,12 +5,11 @@ import json
 import logging
 
 from botocore.exceptions import ClientError
-
-from base.utils import get_model_object
-
 from moto import mock_ecr
 
+from django.conf import settings
 
+from base.utils import get_model_object
 from .models import Challenge, ChallengePhase, Leaderboard, DatasetSplit, ChallengePhaseSplit
 
 logger = logging.getLogger(__name__)
@@ -85,14 +84,14 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
     '''
     AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID')
     repository, created = None, False
-    if  settings.DEBUG:
+    if settings.DEBUG:
         with mock_ecr():
             client = boto3.client('ecr', region_name=region_name)
             try:
                 response = client.describe_repositories(
                     registryId=AWS_ACCOUNT_ID,
                     repositoryNames=[
-                    name,
+                        name,
                     ]
                 )
                 repository = response['repositories'][0]
@@ -109,7 +108,7 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
             response = client.describe_repositories(
                 registryId=AWS_ACCOUNT_ID,
                 repositoryNames=[
-                name,
+                    name,
                 ]
             )
             repository = response['repositories'][0]
