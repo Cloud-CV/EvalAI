@@ -143,9 +143,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data = {
                     'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
                 return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-        else:
-            # setting is_host_submission field if its a submission by the host user
-            request.data['is_host_submission'] = True
 
             # if allowed email ids list exist, check if the user exist in that list or not
             if challenge_phase.allowed_email_ids:
@@ -154,6 +151,9 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                         "error": "Sorry, you are not allowed to participate in this challenge phase"
                     }
                     return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        else:
+            # setting is_host_submission field if its a submission by the host user
+            request.data['is_host_submission'] = True
 
         # check if challenge is docker based
         if challenge.is_docker_based:

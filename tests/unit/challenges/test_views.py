@@ -2428,6 +2428,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver1/",
                 publication_url="http://testserver1/",
                 is_public=True,
+                is_host_submission=False,
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2443,6 +2444,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver2/",
                 publication_url="http://testserver2/",
                 is_public=True,
+                is_host_submission=True,
             )
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
@@ -2458,6 +2460,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver3/",
                 publication_url="http://testserver3/",
                 is_public=True,
+                is_host_submission=True,
             )
 
         self.client.force_authenticate(user=self.user6)
@@ -2515,6 +2518,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "participant_team_members": [{'username': 'participant', 'email': 'user6@test.com'}],
                     "created_at": submission.created_at,
                     "method_name": submission.method_name,
+                    "is_host_submission": submission.is_host_submission,
                 }
             )
         response_phase1 = self.client.get(self.url_phase1, {})
@@ -2549,6 +2553,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "submitted_at": "{0}{1}".format(self.submission1.submitted_at.isoformat(), 'Z').replace("+00:00", ""),
                 "is_public": self.submission1.is_public,
                 "when_made_public": self.submission1.when_made_public,
+                "is_host_submission": self.submission1.is_host_submission,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
@@ -2638,6 +2643,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
                 project_url="http://testserver/",
                 publication_url="http://testserver/",
                 is_public=True,
+                is_host_submission=False,
             )
 
         self.file_type_csv = 'csv'
