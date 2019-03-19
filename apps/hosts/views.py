@@ -8,6 +8,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.urls import reverse
 from hosts.token import host_invitations_token_generator
 from django.core.mail import EmailMessage
 
@@ -258,19 +259,19 @@ def invite_host_to_team(request, pk):
     current_site = get_current_site(request)
     mail_subject = 'Activate your blog account.'
     user.is_user_host = is_user_part_of_host_team(user, challenge_host_team)
-    logger.info('URL ' + str(request.data))
     try:
-        message = render_to_string(
-            'invitation_activation.html', {
-                'user': user,
-                'challenge_host_team_name': challenge_host_team.team_name,
-                'domain': current_site.domain,
-                'uid':urlsafe_base64_encode(force_bytes(user.pk)).decode(),
-                'chtid': urlsafe_base64_encode(force_bytes(challenge_host_team.pk)).decode(),
-                'token': host_invitations_token_generator.make_token(user),
-            }
-        )
-        logger.info(message)
+        domain = current_site.domain
+        uid = urlsafe_base64_encode(force_bytes(user.pk)).decode()
+        chtid = urlsafe_base64_encode(force_bytes(challenge_host_team.pk)).decode()
+        token = host_invitations_token_generator.make_token(user)
+        referenced_link = reverse('hosts:add_to_host_team', args = (uid, chtid, token))
+        link = 'http://{}{}'.format(domain, referenced_link)
+
+        message = '''
+        Hi {},
+        Please click on the authentication link to join the host team - {},
+        {}
+        '''.format(user.username, challenge_host_team.team_name, link)
     except Exception as e:
         logger.info('Error rendering site to string : '+ str(e))
 
@@ -280,21 +281,6 @@ def invite_host_to_team(request, pk):
     response_data = {
         'message': 'User has been sent the host team invitation.'}
     return Response(response_data, status=status.HTTP_202_ACCEPTED)
-    '''
-    serializer = InviteHostToTeamSerializer(
-        data=request.data,
-        context={
-            'challenge_host_team': challenge_host_team,
-            'request': request
-        })
-
-    if serializer.is_valid():
-        serializer.save()
-        response_data = {
-            'message': 'User has been added successfully to the host team'}
-        return Response(response_data, status=status.HTTP_202_ACCEPTED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    '''
 
 def add_to_host_team(request, uidb64, chtid64, token):
     try:
