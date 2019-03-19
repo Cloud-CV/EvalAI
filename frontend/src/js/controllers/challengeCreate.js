@@ -16,8 +16,10 @@
         vm.wrnMsg = {};
         vm.isValid = {};
         vm.isFormError = false;
+        vm.isSyntaxErrorInYamlFile = false;
         vm.input_file = null;
         vm.formError = {};
+        vm.syntaxErrorInYamlFile = {};
 
         // start loader
         vm.startLoader = loaderService.startLoader;
@@ -70,7 +72,8 @@
                             utilities.hideLoader();
                             var error = response.data;
                             angular.element(".file-path").val(null);
-                            $rootScope.notify("error", error.error);
+                            vm.isSyntaxErrorInYamlFile = true;
+                            vm.syntaxErrorInYamlFile = error.error;
                             vm.stopLoader();
                         }
                     };

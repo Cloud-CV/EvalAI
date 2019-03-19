@@ -27,4 +27,13 @@
             <a href="https://evalai.readthedocs.io/en/latest/challenge_creation.html#challenge-creation-using-zip-configuration" class="highlight-link" target="_blank">here.</a>.
         </div>
     </div>
+    <div ng-if="challengeCreate.isSyntaxErrorInYamlFile" class="row">
+        <hr class="hr-line">
+        <div class="col s12 m9 offset-m3">
+            <div class="syntax-wrn-msg text-highlight">
+                The YAML file in the challenge configuration contains the following error - <br>
+                {{challengeCreate.syntaxErrorInYamlFile}}
+            </div>
+        </div>
+    </div>
 </section>
