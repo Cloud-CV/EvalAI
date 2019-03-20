@@ -557,6 +557,36 @@
         if (vm.phaseSplitId) {
             vm.getLeaderboard(vm.phaseSplitId);
         }
+        vm.selected_teams = [];
+        vm.all_teams_checked = false;
+
+        vm.filterByTeams = function(team){
+            return (vm.selected_teams.indexOf(team.participant_team) !== -1);
+        };
+
+        vm.isAllTeamsChecked = function() {
+            if (vm.submissionResult != undefined && vm.submissionResult.results != undefined) {
+                vm.all_teams_checked = ((vm.selected_teams.length) == (vm.submissionResult.results.map(a => a.participant_team).length));
+            } else {
+                vm.all_teams_checked = false;
+            }
+        };
+
+        vm.isTeamChecked = function (item, list) {
+            vm.isAllTeamsChecked();
+            return list.indexOf(item) > -1;
+        };
+
+        vm.toggleAll = function() {
+            let all_teams = vm.submissionResult.results.map(a => a.participant_team);
+            if (vm.selected_teams.length === all_teams.length) {
+                vm.selected_teams = [];
+            } else if (vm.selected_teams.length === 0 || vm.selected_teams.length > 0) {
+                vm.selected_teams = all_teams.slice(0);
+            }
+            vm.isAllTeamsChecked();
+        };
+
 
         vm.getResults = function(phaseId) {
 

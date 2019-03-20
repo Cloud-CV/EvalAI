@@ -338,6 +338,7 @@
                 .cancel('Cancel');
 
             $mdDialog.show(confirm).then(function(result) {
+                vm.startLoader();
                 var parameters = {};
                 parameters.url = 'participants/participant_team/' + participantTeamId + '/invite';
                 parameters.method = 'POST';
@@ -349,6 +350,46 @@
                     onSuccess: function(response) {
                         var message = response.data['message'];
                         $rootScope.notify("success", message);
+                        var parameters = {};
+                        parameters.url = 'participants/participant_team';
+                        parameters.method = 'GET';
+                        parameters.token = userKey;
+                        parameters.callback = {
+                            onSuccess: function(response) {
+                                var status = response.status;
+                                var details = response.data;
+                                if (status == 200) {
+                                    vm.existTeam = details;
+                                    // condition for pagination
+                                    if (vm.existTeam.next === null) {
+                                        vm.isNext = 'disabled';
+                                        vm.currentPage = vm.existTeam.count / 10;
+                                    } else {
+                                        vm.isNext = '';
+                                        vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+                                    }
+
+                                    if (vm.existTeam.previous === null) {
+                                        vm.isPrev = 'disabled';
+                                    } else {
+                                        vm.isPrev = '';
+                                    }
+
+
+                                    if (vm.existTeam.count === 0) {
+
+                                        vm.showPagination = false;
+                                        vm.paginationMsg = "No team exists for now. Start by creating a new team!";
+                                    } else {
+                                        vm.showPagination = true;
+                                        vm.paginationMsg = "";
+                                    }
+                                }
+
+                                vm.stopLoader();
+                            }
+                        };
+                        utilities.sendRequest(parameters);
                     },
                     onError: function(response) {
                         var error = response.data['error'];

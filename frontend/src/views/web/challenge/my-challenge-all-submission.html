@@ -39,6 +39,27 @@
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col xs12 s6" ng-if="challenge.isResult">
+                            <md-select ng-if="challenge.isResult" multiple="{{false}}" placeholder="Filter Teams"
+                                       ng-model="challenge.selected_teams">
+
+                                <md-switch ng-if="challenge.isResult" class="md-primary teams-filter-switch" md-no-ink
+                                           ng-model="challenge.all_teams_checked" ng-click="challenge.toggleAll()"
+                                           >
+                                    <span ng-if="challenge.all_teams_checked">Un-</span>Select All
+                                </md-switch>
+                                <md-optgroup label="Teams">
+                                    <md-option
+                                            ng-if="challenge.isResult"
+                                            ng-checked="challenge.isTeamChecked(item.participant_team, challenge.selected_teams)"
+                                            ng-repeat="item in challenge.submissionResult.results"
+                                            value="{{item.participant_team}}">{{ item.participant_team }}
+                                    </md-option>
+                                </md-optgroup>
+                            </md-select>
+                        </div>
+                    </div>
                 </div>
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
@@ -60,8 +81,9 @@
                                         <th data-field="file">Metadata File</th>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
-                                        <td class="align-center">{{key.participant_team}}</td>
+                                <tr ng-repeat="key in challenge.submissionResult.results | filter:challenge.filterByTeams"
+                                    class="result-val">
+                                    <td class="align-center">{{key.participant_team}}</td>
 
                                         <td>{{key.created_by}}</td>
 
