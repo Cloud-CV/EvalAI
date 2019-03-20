@@ -52,7 +52,6 @@
         vm.startLoader = loaderService.startLoader;
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
-        vm.authToken = '';
 
         var userKey = utilities.getData('userKey');
         vm.authToken = userKey;
@@ -266,7 +265,7 @@
                     onSuccess: function (response) {
                         vm.phaseRemainingSubmissions = response.data;
                         var details = vm.phaseRemainingSubmissions.phases;
-                        for (let i = 0; i < details.length; i++) {
+                        for (var i = 0; i < details.length; i++) {
                             if (details[i].limits.submission_limit_exceeded === true) {
                                 vm.phaseRemainingSubmissionsFlags[details[i].id] = "maxExceeded";
                             } else if (details[i].limits.remaining_submissions_today_count > 0) {
@@ -1085,10 +1084,9 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var details;
-                    for(var phase in response.data.phases) {
-                        if(response.data.phases[phase].id == vm.phaseID) {
-                           details = response.data.phases[phase].limits
+                    for (var phase in response.data.phases) {
+                        if (response.data.phases[phase].id == vm.phaseID) {
+                           var details = response.data.phases[phase].limits;
                         }
                     }
                     if (status === 200) {
