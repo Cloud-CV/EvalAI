@@ -774,7 +774,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     if leaderboard_schema:
         if 'schema' not in leaderboard_schema[0]:
             message = ('There is no leaderboard schema in the YAML '
-                    'configuration file. Please add it and then try again!')
+                       'configuration file. Please add it and then try again!')
             response_data = {
                 'error': message
             }
