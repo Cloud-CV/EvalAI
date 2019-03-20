@@ -36,7 +36,7 @@ def host(set_host):
             echo(
                 style(
                     "You haven't configured a Host URL for the CLI.\n"
-                    "The CLI would be using http://localhost:8000 as the default url.",
+                    "The CLI would be using https://evalapi.cloudcv.org as the default url.",
                     bold=True,
                 )
             )

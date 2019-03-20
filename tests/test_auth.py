@@ -127,7 +127,7 @@ class TestHostConfig(BaseTestClass):
     def test_get_default_host(self):
         expected = (
             "You haven't configured a Host URL for the CLI.\n"
-            "The CLI would be using http://localhost:8000 as the default url.\n"
+            "The CLI would be using https://evalapi.cloudcv.org as the default url.\n"
         )
         runner = CliRunner()
         result = runner.invoke(host)
