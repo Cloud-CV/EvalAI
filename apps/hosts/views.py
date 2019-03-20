@@ -1,10 +1,7 @@
 import logging
 
-from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -279,7 +276,7 @@ def invite_host_to_team(request, pk):
         {}
         '''.format(user.username, challenge_host_team.team_name, link)
     except Exception as e:
-        logger.info('Error rendering site to string : '+ str(e))
+        logger.info("Error rendering site to string : " + str(e))
 
     to_email = user.email
     email = EmailMessage(mail_subject, message, to=[to_email])
