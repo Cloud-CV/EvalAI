@@ -1088,7 +1088,7 @@
                     var details;
                     for(var phase in response.data.phases) {
                         if(response.data.phases[phase].id == vm.phaseID) {
-                           details = response.data.phases[phase].limits
+                           details = response.data.phases[phase].limits;
                         }
                     }
                     if (status === 200) {
