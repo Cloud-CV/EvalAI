@@ -152,13 +152,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     }
                     return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-        # check if challenge is docker based
-        if challenge.is_docker_based:
-            response_data = {
-                'error': '{0} requires uploading docker image. \
-                    Please use evalai-cli to make submissions.'.format(challenge.title)}
-            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id)
         try:
