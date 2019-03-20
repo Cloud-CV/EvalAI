@@ -922,23 +922,23 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         zip_config = ChallengeConfiguration.objects.get(
             pk=uploaded_zip_file.pk)
         if zip_config:
-
-            # Add the Challenge Host as a test participant.
-            emails = challenge_host_team.get_all_challenge_host_email()
-            team_name = "Host_{}_Team".format(random.randint(1, 100000))
-            participant_host_team = ParticipantTeam(
-                team_name=team_name,
-                created_by=challenge_host_team.created_by,)
-            participant_host_team.save()
-            for email in emails:
-                user = User.objects.get(email=email)
-                host = Participant(
-                            user=user,
-                            status=Participant.ACCEPTED,
-                            team=participant_host_team,
-                    )
-                host.save()
-            challenge.participant_teams.add(participant_host_team)
+            if not challenge.is_docker_based:
+                # Add the Challenge Host as a test participant.
+                emails = challenge_host_team.get_all_challenge_host_email()
+                team_name = "Host_{}_Team".format(random.randint(1, 100000))
+                participant_host_team = ParticipantTeam(
+                    team_name=team_name,
+                    created_by=challenge_host_team.created_by,)
+                participant_host_team.save()
+                for email in emails:
+                    user = User.objects.get(email=email)
+                    host = Participant(
+                                user=user,
+                                status=Participant.ACCEPTED,
+                                team=participant_host_team,
+                        )
+                    host.save()
+                challenge.participant_teams.add(participant_host_team)
 
             zip_config.challenge = challenge
             zip_config.save()
