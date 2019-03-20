@@ -9,7 +9,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.urls import reverse
-from hosts.token import host_invitations_token_generator
 from django.core.mail import EmailMessage
 
 from rest_framework import permissions, status
@@ -23,6 +22,7 @@ from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
+from hosts.token import host_invitations_token_generator
 from .models import (ChallengeHost,
                      ChallengeHostTeam,)
 from .serializers import (ChallengeHostSerializer,
@@ -270,7 +270,7 @@ def invite_host_to_team(request, pk):
         }
         token = host_invitations_token_generator.make_token(user_data)
 
-        referenced_link = reverse('hosts:add_to_host_team', args = (uid, chtid, token))
+        referenced_link = reverse('hosts:add_to_host_team', args=(uid, chtid, token))
         link = 'http://{}{}'.format(domain, referenced_link)
 
         message = '''
@@ -288,6 +288,8 @@ def invite_host_to_team(request, pk):
         'message': 'User has been sent the host team invitation.'}
     return Response(response_data, status=status.HTTP_202_ACCEPTED)
 
+@throttle_classes([UserRateThrottle])
+@api_view(['GET', 'POST'])
 def add_to_host_team(request, uidb64, chtid64, token):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
@@ -311,7 +313,6 @@ def add_to_host_team(request, uidb64, chtid64, token):
         request.data = {
             'email': user.email
         }
-        logger.info(request.data)
 
         serializer = InviteHostToTeamSerializer(
             data=request.data,
@@ -322,7 +323,9 @@ def add_to_host_team(request, uidb64, chtid64, token):
 
         if serializer.is_valid():
             serializer.save()
-            return HttpResponse('Thank you for your email confirmation. You have now been added to the host team - {}'.format(challenge_host_team.team_name))
+            return HttpResponse(
+                'Thank you for your email confirmation. You have now been added to the host team - {}'
+                .format(challenge_host_team.team_name))
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         return HttpResponse('Activation link is invalid!')
