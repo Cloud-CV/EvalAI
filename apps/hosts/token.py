@@ -13,4 +13,6 @@ class TokenGenerator(PasswordResetTokenGenerator):
             six.text_type(user.pk) + six.text_type(timestamp) + six.text_type(
                 user.is_user_host) + six.text_type(challenge_host_team.pk)
         )
+
+
 host_invitations_token_generator = TokenGenerator()

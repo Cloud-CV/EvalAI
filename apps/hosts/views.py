@@ -285,6 +285,7 @@ def invite_host_to_team(request, pk):
         'message': 'User has been sent the host team invitation.'}
     return Response(response_data, status=status.HTTP_202_ACCEPTED)
 
+
 @throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
 def add_to_host_team(request, uidb64, chtid64, token):
@@ -316,7 +317,8 @@ def add_to_host_team(request, uidb64, chtid64, token):
             context={
                 'challenge_host_team': challenge_host_team,
                 'request': request
-        })
+            }
+        )
 
         if serializer.is_valid():
             serializer.save()
