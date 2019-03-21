@@ -37,6 +37,7 @@ class Challenge(TimeStampedModel):
         default=False, verbose_name="Publicly Available", db_index=True)
     enable_forum = models.BooleanField(default=True)
     forum_url = models.URLField(max_length=100, blank=True, null=True)
+    leaderboard_description = models.TextField(null=True, blank=True)
     anonymous_leaderboard = models.BooleanField(default=False)
     participant_teams = models.ManyToManyField(ParticipantTeam, blank=True)
     is_disabled = models.BooleanField(default=False, db_index=True)
@@ -139,6 +140,8 @@ class ChallengePhase(TimeStampedModel):
     max_concurrent_submissions_allowed = models.PositiveIntegerField(default=3)
     codename = models.CharField(max_length=100, default="Phase Code Name")
     dataset_split = models.ManyToManyField(DatasetSplit, blank=True, through='ChallengePhaseSplit')
+    allowed_email_ids = ArrayField(models.TextField(
+        null=True, blank=True), default=[], blank=True, null=True)
 
     class Meta:
         app_label = 'challenges'

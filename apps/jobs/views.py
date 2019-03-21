@@ -32,16 +32,17 @@ from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
-from jobs.constants import submission_status_to_exclude
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
-    get_participant_team_id_of_user_for_a_challenge,)
+    get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_of_user_for_a_challenge,)
 
 from .models import Submission
 from .sender import publish_submission_message
 from .serializers import (SubmissionSerializer,
-                          CreateLeaderboardDataSerializer)
-from .utils import get_submission_model
+                          CreateLeaderboardDataSerializer,
+                          RemainingSubmissionDataSerializer,)
+from .utils import get_submission_model, get_remaining_submission_for_a_phase
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +79,8 @@ logger = logging.getLogger(__name__)
     responses={
         status.HTTP_201_CREATED: openapi.Response(''),
 })
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_submission(request, challenge_id, challenge_phase_id):
@@ -143,6 +144,14 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                     'error': 'Sorry, cannot accept submissions since challenge phase is not public'}
                 return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
+            # if allowed email ids list exist, check if the user exist in that list or not
+            if challenge_phase.allowed_email_ids:
+                if request.user.email not in challenge_phase.allowed_email_ids:
+                    response_data = {
+                        "error": "Sorry, you are not allowed to participate in this challenge phase"
+                    }
+                    return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
         participant_team_id = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_id)
         try:
@@ -179,8 +188,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['PATCH'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def change_submission_data_and_visibility(request, challenge_pk, challenge_phase_pk, submission_pk):
@@ -309,8 +318,8 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
         ),
     }
 )
-@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
     """Returns leaderboard for a corresponding Challenge Phase Split"""
 
@@ -342,6 +351,11 @@ def leaderboard(request, challenge_phase_split_id):
 
     challenge_host_user = is_user_a_host_of_challenge(request.user, challenge_obj.pk)
 
+    # Check if challenge phase leaderboard is public for participant user or not
+    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
+        response_data = {'error': 'Sorry, the leaderboard is not public!'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     leaderboard_data = LeaderboardData.objects.exclude(
         submission__created_by__email__in=challenge_hosts_emails)
 
@@ -356,7 +370,7 @@ def leaderboard(request, challenge_phase_split_id):
             'id', 'submission__participant_team__team_name',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
 
-    if not challenge_host_user:
+    if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
         leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
@@ -379,131 +393,73 @@ def leaderboard(request, challenge_phase_split_id):
                                                 distinct_sorted_leaderboard_data,
                                                 request,
                                                 pagination_class=StandardResultSetPagination())
-
-    # Check if challenge phase leaderboard is public for participant user or not
-    if challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC and not challenge_host_user:
-        response_data = {'error': 'Sorry, the leaderboard is not public!'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        response_data = result_page
-        return paginator.get_paginated_response(response_data)
+    response_data = result_page
+    return paginator.get_paginated_response(response_data)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
-
+def get_remaining_submissions(request, challenge_pk):
     '''
-    Returns the number of remaining submissions that a participant can
-    do daily, monthly and in total to a particular challenge phase of a
-    challenge.
+    API to get the number of remaining submission for all phases.
+    Below is the sample response returned by the API
+
+    {
+        "participant_team": "Sample_Participant_Team",
+        "participant_team_id": 2,
+        "phases": [
+            {
+                "id": 1,
+                "name": "Megan Phase",
+                "start_date": "2018-10-28T14:22:53.022639Z",
+                "end_date": "2020-06-19T14:22:53.022660Z",
+                "limits": {
+                    "remaining_submissions_this_month_count": 9,
+                    "remaining_submissions_today_count": 5,
+                    "remaining_submissions_count": 29
+                }
+            },
+            {
+                "id": 2,
+                "name": "Molly Phase",
+                "start_date": "2018-10-28T14:22:53Z",
+                "end_date": "2020-06-19T14:22:53Z",
+                "limits": {
+                    "message": "You have exhausted this month's submission limit!",
+                    "remaining_time": "1481076.929224"  // remaining_time is in seconds
+                }
+            }
+        ]
+    }
     '''
-
-    # significance of get_challenge_model() here to check
-    # if the challenge exists or not
-    get_challenge_model(challenge_pk)
-
-    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
-
-    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-        request.user, challenge_pk)
-
-    # Conditional check for the existence of participant team of the user.
-    if not participant_team_pk:
-        response_data = {
-            'error': 'You haven\'t participated in the challenge'
-        }
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-    max_submissions_count = challenge_phase.max_submissions
-    max_submissions_per_month_count = challenge_phase.max_submissions_per_month
-    max_submissions_per_day_count = challenge_phase.max_submissions_per_day
-
-    submissions_done = Submission.objects.filter(
-        challenge_phase__challenge=challenge_pk,
-        challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk).exclude(status__in=submission_status_to_exclude)
-
-    submissions_done_this_month = submissions_done.filter(
-        submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
-
-    # Get the submissions_done_today by midnight time of the day
-    submissions_done_today = submissions_done.filter(
-        submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0))
-
-    submissions_done_count = submissions_done.count()
-    submissions_done_this_month_count = submissions_done_this_month.count()
-    submissions_done_today_count = submissions_done_today.count()
-
-    # Check for maximum submission limit
-    if submissions_done_count >= max_submissions_count:
-        response_data = {
-            'message': 'You have exhausted maximum submission limit!',
-            'max_submission_exceeded': True
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
-
-    # Check for monthy submission limit
-    elif submissions_done_this_month_count >= max_submissions_per_month_count:
-        date_time_now = timezone.now()
-        next_month_start_date_time = date_time_now + datetime.timedelta(days=+30)
-        next_month_start_date_time = next_month_start_date_time.replace(
-            day=1, hour=0, minute=0, second=0, microsecond=0)
-        remaining_time = next_month_start_date_time - date_time_now
-
-        if submissions_done_today_count >= max_submissions_per_day_count:
-            response_data = {
-                'message': 'Both daily and monthly submission limits are exhausted!',
-                'remaining_time': remaining_time
-            }
-        else:
-            response_data = {
-                'message': 'You have exhausted this month\'s submission limit!',
-                'remaining_time': remaining_time
-            }
-        return Response(response_data, status=status.HTTP_200_OK)
-
-    # Checks if #today's successful submission is greater than or equal to max submission per day
-    elif submissions_done_today_count >= max_submissions_per_day_count:
-        date_time_now = timezone.now()
-        date_time_tomorrow = date_time_now + datetime.timedelta(1)
-        # Get the midnight time of the day i.e. 12:00 AM of next day.
-        midnight = date_time_tomorrow.replace(hour=0, minute=0, second=0)
-        remaining_time = midnight - date_time_now
-
-        response_data = {
-            'message': 'You have exhausted today\'s submission limit!',
-            'remaining_time': remaining_time
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
-
-    else:
-        # calculate the remaining submissions from total submissions.
-        remaining_submission_count = max_submissions_count - submissions_done_count
-        # Calculate the remaining submissions for current month.
-        remaining_submissions_this_month_count = (max_submissions_per_month_count -
-                                                  submissions_done_this_month_count)
-        # Calculate the remaining submissions for today.
-        remaining_submissions_today_count = (max_submissions_per_day_count -
-                                             submissions_done_today_count)
-
-        remaining_submissions_this_month_count = min(remaining_submission_count,
-                                                     remaining_submissions_this_month_count)
-        remaining_submissions_today_count = min(remaining_submissions_this_month_count,
-                                                remaining_submissions_today_count)
-
-        response_data = {
-            'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
-            'remaining_submissions_today_count': remaining_submissions_today_count,
-            'remaining_submissions': remaining_submission_count
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
+    phases_data = {}
+    challenge = get_challenge_model(challenge_pk)
+    challenge_phases = ChallengePhase.objects.filter(
+            challenge=challenge).order_by('pk')
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        challenge_phases = challenge_phases.filter(
+            challenge=challenge, is_public=True).order_by('pk')
+    phase_data_list = list()
+    for phase in challenge_phases:
+        remaining_submission_message, response_status = get_remaining_submission_for_a_phase(request.user,
+                                                                                             phase.id,
+                                                                                             challenge_pk)
+        if response_status != status.HTTP_200_OK:
+            return Response(remaining_submission_message, status=response_status)
+        phase_data_list.append(RemainingSubmissionDataSerializer(phase,
+                                                                 context={'limits': remaining_submission_message}
+                                                                 ).data)
+    phases_data["phases"] = phase_data_list
+    participant_team = get_participant_team_of_user_for_a_challenge(request.user, challenge_pk)
+    phases_data['participant_team'] = participant_team.team_name
+    phases_data['participant_team_id'] = participant_team.id
+    return Response(phases_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_submission_by_pk(request, submission_id):
@@ -610,8 +566,8 @@ def get_submission_by_pk(request, submission_id):
         status.HTTP_400_BAD_REQUEST: openapi.Response("{'error': 'Error message goes here'}"),
     }
 )
-@throttle_classes([UserRateThrottle, ])
 @api_view(['PUT', ])
+@throttle_classes([UserRateThrottle, ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail,))
 @authentication_classes((ExpiringTokenAuthentication,))
 def update_submission(request, challenge_pk):

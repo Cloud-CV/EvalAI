@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from challenges.models import LeaderboardData
+from challenges.models import ChallengePhase, LeaderboardData
 from participants.models import Participant, ParticipantTeam
 
 from .models import Submission
@@ -143,3 +143,14 @@ class CreateLeaderboardDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaderboardData
         fields = ('challenge_phase_split', 'submission', 'result', 'leaderboard')
+
+
+class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
+    limits = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChallengePhase
+        fields = ('id', 'name', 'start_date', 'end_date', 'limits')
+
+    def get_limits(self, obj):
+        return self.context.get("limits")
