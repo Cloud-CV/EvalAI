@@ -1,3 +1,4 @@
+import os
 import csv
 import logging
 import random
@@ -61,7 +62,10 @@ from .serializers import (ChallengeConfigSerializer,
                           StarChallengeSerializer,
                           ZipChallengeSerializer,
                           ZipChallengePhaseSplitSerializer,)
-from .utils import get_file_content
+from .utils import (get_file_content,
+                    get_or_create_ecr_repository,
+                    convert_to_aws_ecr_compatible_format,
+                    create_federated_user,)
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +75,8 @@ except NameError:
     xrange = range  # Python 3
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_list(request, challenge_host_team_pk):
@@ -109,8 +113,8 @@ def challenge_list(request, challenge_host_team_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, challenge_pk):
@@ -159,8 +163,8 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk):
@@ -182,9 +186,7 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is in allowed list.
-
     user_email = request.user.email
-
     if len(challenge.allowed_email_domains) > 0:
         present = False
         for domain in challenge.allowed_email_domains:
@@ -201,7 +203,6 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check if user is in blocked list.
-
     for domain in challenge.blocked_email_domains:
         domain = "@" + domain
         if domain.lower() in user_email.lower():
@@ -214,7 +215,6 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
             return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # check to disallow the user if he is a Challenge Host for this challenge
-
     participant_team_user_ids = set(Participant.objects.select_related('user').filter(
         team__id=participant_team_pk).values_list('user', flat=True))
 
@@ -230,12 +230,20 @@ def add_participant_team_to_challenge(request, challenge_pk, participant_team_pk
                          'participant_team_id': int(participant_team_pk)}
         return Response(response_data, status=status.HTTP_200_OK)
     else:
+        # Create ECR Repository for the participant team if challenge is docker based
+        if challenge.is_docker_based:
+            AWS_DEFAULT_REGION = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')
+            ecr_repository_name = '{}-{}'.format(challenge.slug, participant_team.team_name)
+            ecr_repository_name = convert_to_aws_ecr_compatible_format(ecr_repository_name)
+            repository, created = get_or_create_ecr_repository(ecr_repository_name, region_name=AWS_DEFAULT_REGION)
+            participant_team.docker_repository_uri = repository['repositoryUri']
+            participant_team.save()
         challenge.participant_teams.add(participant_team)
         return Response(status=status.HTTP_201_CREATED)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def disable_challenge(request, challenge_pk):
@@ -250,8 +258,8 @@ def disable_challenge(request, challenge_pk):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
 def get_all_challenges(request, challenge_time):
     """
     Returns the list of all challenges
@@ -284,8 +292,8 @@ def get_all_challenges(request, challenge_time):
     return paginator.get_paginated_response(response_data)
 
 
-@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
 def get_featured_challenges(request):
     """
     Returns the list of featured challenges
@@ -301,8 +309,8 @@ def get_featured_challenges(request):
     return paginator.get_paginated_response(response_data)
 
 
-@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
 def get_challenge_by_pk(request, pk):
     """
     Returns a particular challenge by id
@@ -324,8 +332,8 @@ def get_challenge_by_pk(request, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', ])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenges_based_on_teams(request):
@@ -364,8 +372,8 @@ def get_challenges_based_on_teams(request):
     return paginator.get_paginated_response(response_data)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_list(request, challenge_pk):
@@ -399,8 +407,8 @@ def challenge_phase_list(request, challenge_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail, IsChallengeCreator))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_phase_detail(request, challenge_pk, pk):
@@ -446,8 +454,8 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@throttle_classes([AnonRateThrottle])
 @api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
 def challenge_phase_split_list(request, challenge_pk):
     """
     Returns the list of Challenge Phase Splits for a particular challenge
@@ -473,8 +481,8 @@ def challenge_phase_split_list(request, challenge_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_challenge_using_zip_file(request, challenge_host_team_pk):
@@ -565,11 +573,22 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         with open(join(BASE_LOCATION, unique_folder_name, yaml_file), "r") as stream:
             yaml_file_data = yaml.safe_load(stream)
     except (yaml.YAMLError, ScannerError) as exc:
-        message = 'Error in creating challenge. Please check the yaml configuration!'
+        # To get the problem description
+        if hasattr(exc, 'problem'):
+            error_description = exc.problem
+            # To capitalize the first alphabet of the problem description as default is in lowercase
+            error_description = error_description[0:].capitalize()
+        # To get the error line and column number
+        if hasattr(exc, 'problem_mark'):
+            mark = exc.problem_mark
+            line_number = mark.line + 1
+            column_number = mark.column + 1
+        message = (
+            '{} in line {}, column {}'.format(error_description, line_number, column_number)
+        )
         response_data = {
             'error': message
         }
-        logger.exception(exc)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script path in yaml file.
@@ -585,7 +604,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script file in extracted zip folder.
@@ -599,7 +617,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for test annotation file path in yaml file.
@@ -611,7 +628,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     for data in challenge_phases_data:
@@ -628,7 +644,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-            logger.exception(message)
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -639,7 +654,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-            logger.exception(message)
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -675,7 +689,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for evaluation details file
@@ -699,7 +712,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for terms and conditions file
@@ -721,7 +733,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for submission guidelines file
@@ -744,7 +755,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for leaderboard schema in YAML file
@@ -768,7 +778,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-            logger.exception(message)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         if 'labels' not in leaderboard_schema[0].get('schema'):
             message = ('There is no \'labels\' key in leaderboard '
@@ -776,7 +785,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-            logger.exception(message)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
     else:
         message = ('There is no key \'leaderboard\' '
@@ -784,7 +792,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         response_data = {
             'error': message
         }
-        logger.exception(message)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -889,7 +896,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 response_data = {
                     'error': message
                 }
-                logger.exception(message)
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             for data in challenge_phase_splits_data:
@@ -916,23 +922,23 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         zip_config = ChallengeConfiguration.objects.get(
             pk=uploaded_zip_file.pk)
         if zip_config:
-
-            # Add the Challenge Host as a test participant.
-            emails = challenge_host_team.get_all_challenge_host_email()
-            team_name = "Host_{}_Team".format(random.randint(1, 100000))
-            participant_host_team = ParticipantTeam(
-                team_name=team_name,
-                created_by=challenge_host_team.created_by,)
-            participant_host_team.save()
-            for email in emails:
-                user = User.objects.get(email=email)
-                host = Participant(
-                            user=user,
-                            status=Participant.ACCEPTED,
-                            team=participant_host_team,
-                    )
-                host.save()
-            challenge.participant_teams.add(participant_host_team)
+            if not challenge.is_docker_based:
+                # Add the Challenge Host as a test participant.
+                emails = challenge_host_team.get_all_challenge_host_email()
+                team_name = "Host_{}_Team".format(random.randint(1, 100000))
+                participant_host_team = ParticipantTeam(
+                    team_name=team_name,
+                    created_by=challenge_host_team.created_by,)
+                participant_host_team.save()
+                for email in emails:
+                    user = User.objects.get(email=email)
+                    host = Participant(
+                                user=user,
+                                status=Participant.ACCEPTED,
+                                team=participant_host_team,
+                        )
+                    host.save()
+                challenge.participant_teams.add(participant_host_team)
 
             zip_config.challenge = challenge
             zip_config.save()
@@ -955,18 +961,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 shutil.rmtree(BASE_LOCATION)
                 logger.info('Zip folder is removed')
             except:
-                logger.exception('Zip folder for challenge {} is not removed from location'.format(challenge.pk,
-                                                                                                   BASE_LOCATION))
-    try:
-        shutil.rmtree(BASE_LOCATION)
-        logger.info('Zip folder is removed')
-    except:
-        logger.info('Zip folder for challenge {} is not removed from location'.format(challenge.pk,
-                                                                                      BASE_LOCATION))
+                logger.exception('Zip folder for challenge {} is not removed from {} location'.format(
+                    challenge.pk, BASE_LOCATION))
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
@@ -1027,8 +1027,8 @@ def get_all_submissions_of_challenge(request, challenge_pk, challenge_phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_type):
@@ -1136,8 +1136,8 @@ def download_all_submissions(request, challenge_pk, challenge_phase_pk, file_typ
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_leaderboard(request):
@@ -1153,8 +1153,8 @@ def create_leaderboard(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PATCH'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_or_update_leaderboard(request, leaderboard_pk):
@@ -1180,8 +1180,8 @@ def get_or_update_leaderboard(request, leaderboard_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_dataset_split(request):
@@ -1199,8 +1199,8 @@ def create_dataset_split(request):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PATCH'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_or_update_dataset_split(request, dataset_split_pk):
@@ -1226,8 +1226,8 @@ def get_or_update_dataset_split(request, dataset_split_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_challenge_phase_split(request):
@@ -1245,8 +1245,8 @@ def create_challenge_phase_split(request):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'PATCH'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
@@ -1272,8 +1272,8 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def star_challenge(request, challenge_pk):
@@ -1323,8 +1323,8 @@ def star_challenge(request, challenge_pk):
             return Response(response_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_broker_urls(request):
@@ -1348,8 +1348,8 @@ def get_broker_urls(request):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@throttle_classes([UserRateThrottle])
 @api_view(['GET'])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_broker_url_by_challenge_pk(request, challenge_pk):
@@ -1369,3 +1369,50 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
 
         response_data = [challenge.queue]
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_aws_credentials_for_participant_team(request, phase_pk):
+    """
+    Returns:
+        Dictionary containing AWS credentials for the participant team for a particular challenge
+    """
+
+    challenge_phase = get_challenge_phase_model(phase_pk)
+
+    challenge = challenge_phase.challenge
+    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+        request.user, challenge.pk)
+
+    if not challenge.is_docker_based:
+        response_data = {'error': 'Sorry, this is not a docker based challenge.'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if participant_team_pk is None:
+        response_data = {'error': 'You have not participated in this challenge.'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    participant_team = ParticipantTeam.objects.get(id=participant_team_pk)
+    federated_user = create_federated_user(participant_team.team_name, participant_team.get_docker_repository_name())
+    data = {
+        'federated_user': federated_user,
+        'docker_repository_uri': participant_team.docker_repository_uri
+    }
+    response_data = {'success': data}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_pk(request, pk):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    challenge_phase = get_challenge_phase_model(pk)
+    serializer = ChallengePhaseSerializer(
+        challenge_phase, context={'request': request})
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
