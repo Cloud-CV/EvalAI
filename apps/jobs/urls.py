@@ -10,6 +10,13 @@ urlpatterns = [
         name="change_submission_data_and_visibility",
     ),
     url(
+        r"^challenge/(?P<challenge_pk>[0-9]+)/"
+        r"challenge_phase/(?P<challenge_phase_pk>[0-9]+)/submission/(?P<submission_pk>[0-9]+)/"
+        r"status/$",
+        views.change_submission_status,
+        name="change_submission_status"
+    ),
+    url(
         r"^challenge/(?P<challenge_id>[0-9]+)/"
         r"challenge_phase/(?P<challenge_phase_id>[0-9]+)/submission/$",
         views.challenge_submission,

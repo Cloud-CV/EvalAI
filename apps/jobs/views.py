@@ -316,6 +316,66 @@ def change_submission_data_and_visibility(
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['PATCH'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def change_submission_status(
+    request, challenge_pk, challenge_phase_pk, submission_pk
+):
+    """API Endpoint for changing submission status"""
+
+    # check if the challenge exists or not
+    challenge = get_challenge_model(challenge_pk)
+
+    # check if the challenge phase exists or not
+    challenge_phase = get_challenge_phase_model(challenge_phase_pk)
+
+    if not challenge.is_active:
+        response_data = {'error': 'Challenge is not active'}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    # check if the user is a host of the challenge or not
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            'error': 'Submission status can only be changed by a host of the challenge'
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        submission = Submission.objects.get(
+            challenge_phase=challenge_phase,
+            id=submission_pk
+        )
+    except Submission.DoesNotExist:
+        response_data = {'error': 'Submission does not exist'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    data = {}
+    try:
+        data['status'] = request.data['status']
+    except KeyError:
+        response_data = {'error': 'Submission status not received'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = SubmissionSerializer(
+        submission,
+        data=data,
+        context={
+            'challenge_phase': challenge_phase,
+            'request': request
+        },
+        partial=True
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @swagger_auto_schema(
     methods=["get"],
     manual_parameters=[
