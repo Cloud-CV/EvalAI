@@ -573,8 +573,21 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         with open(join(BASE_LOCATION, unique_folder_name, yaml_file), "r") as stream:
             yaml_file_data = yaml.safe_load(stream)
     except (yaml.YAMLError, ScannerError) as exc:
+        # To get the problem description
+        if hasattr(exc, 'problem'):
+            error_description = exc.problem
+            # To capitalize the first alphabet of the problem description as default is in lowercase
+            error_description = error_description[0:].capitalize()
+        # To get the error line and column number
+        if hasattr(exc, 'problem_mark'):
+            mark = exc.problem_mark
+            line_number = mark.line + 1
+            column_number = mark.column + 1
+        message = (
+            '{} in line {}, column {}'.format(error_description, line_number, column_number)
+        )
         response_data = {
-            'error': exc
+            'error': message
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -909,23 +922,23 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         zip_config = ChallengeConfiguration.objects.get(
             pk=uploaded_zip_file.pk)
         if zip_config:
-
-            # Add the Challenge Host as a test participant.
-            emails = challenge_host_team.get_all_challenge_host_email()
-            team_name = "Host_{}_Team".format(random.randint(1, 100000))
-            participant_host_team = ParticipantTeam(
-                team_name=team_name,
-                created_by=challenge_host_team.created_by,)
-            participant_host_team.save()
-            for email in emails:
-                user = User.objects.get(email=email)
-                host = Participant(
-                            user=user,
-                            status=Participant.ACCEPTED,
-                            team=participant_host_team,
-                    )
-                host.save()
-            challenge.participant_teams.add(participant_host_team)
+            if not challenge.is_docker_based:
+                # Add the Challenge Host as a test participant.
+                emails = challenge_host_team.get_all_challenge_host_email()
+                team_name = "Host_{}_Team".format(random.randint(1, 100000))
+                participant_host_team = ParticipantTeam(
+                    team_name=team_name,
+                    created_by=challenge_host_team.created_by,)
+                participant_host_team.save()
+                for email in emails:
+                    user = User.objects.get(email=email)
+                    host = Participant(
+                                user=user,
+                                status=Participant.ACCEPTED,
+                                team=participant_host_team,
+                        )
+                    host.save()
+                challenge.participant_teams.add(participant_host_team)
 
             zip_config.challenge = challenge
             zip_config.save()
