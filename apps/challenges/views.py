@@ -587,7 +587,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             '{} in line {}, column {}'.format(error_description, line_number, column_number)
         )
         response_data = {
-            'error': message
+            'error': message,
+            'is_yaml_syntax_error': 1
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 

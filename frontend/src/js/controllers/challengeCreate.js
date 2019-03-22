@@ -72,8 +72,15 @@
                             utilities.hideLoader();
                             var error = response.data;
                             angular.element(".file-path").val(null);
-                            vm.isSyntaxErrorInYamlFile = true;
-                            vm.syntaxErrorInYamlFile = error.error;
+                            if(error.is_yaml_syntax_error == 1) {
+                                vm.isSyntaxErrorInYamlFile = true;
+                                vm.syntaxErrorInYamlFile = error.error;
+                            }
+                            else {
+                                vm.isSyntaxErrorInYamlFile = false;
+                                vm.syntaxErrorInYamlFile = '';
+                                $rootScope.notify("error", error.error);
+                            }
                             vm.stopLoader();
                         }
                     };
