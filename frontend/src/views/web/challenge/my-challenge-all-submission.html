@@ -65,7 +65,33 @@
 
                                         <td>{{key.created_by}}</td>
 
-                                        <td class="val-style capitalize" ng-class="key.status">{{key.status}}</td>
+                                        <td ng-if="!key.editStatus" class="val-style capitalize" ng-class="key.status">
+                                            <div class="flex-display flex-space-between">
+                                                <span>{{key.status}}</span>
+                                                <span>
+                                                    <a class="pointer" class="mh-4" ng-click="key.editStatus = true">
+                                                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                                                    </a>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td ng-if="key.editStatus" class="val-style capitalize width-0">
+                                            <div class="flex-display">
+                                                <span>
+                                                    <md-select ng-model="key.selectedStatus" placeholder="Status" class="m-0">
+                                                        <md-option class="capitalize" ng-repeat="status in challenge.availableStatus" value={{status}}>{{status}}</md-option>
+                                                    </md-select>
+                                                </span>
+                                                <span class="flex-display valign-wrapper">
+                                                    <a class="pointer mh-4" ng-click="challenge.changeSubmissionStatus(key)">
+                                                        <i class="fa fa-check green-text" aria-hidden="true"></i>
+                                                    </a>
+                                                    <a class="pointer mh-4" ng-click="key.editStatus = false">
+                                                        <i class="fa fa-times red-text" aria-hidden="true"></i>
+                                                    </a>
+                                                </span>
+                                            </div>
+                                        </td>
 
                                         <td class="align-center">{{key.execution_time}}</td>
 
