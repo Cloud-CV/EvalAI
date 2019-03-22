@@ -84,7 +84,7 @@ class Submission(TimeStampedModel):
     method_description = models.TextField(blank=True, default="")
     publication_url = models.CharField(max_length=1000, default="", blank=True)
     project_url = models.CharField(max_length=1000, default="", blank=True)
-    baseline_submission = models.BooleanField(default=False, null=False)
+    baseline_submission = models.BooleanField(default=False)
 
     def __str__(self):
         return '{}'.format(self.id)
