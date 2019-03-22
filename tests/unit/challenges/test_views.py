@@ -93,6 +93,7 @@ class GetChallengeTest(BaseAPITestClass):
             published=False,
             enable_forum=True,
             is_disabled=True,
+            leaderboard_description=None,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
@@ -123,12 +124,16 @@ class GetChallengeTest(BaseAPITestClass):
                 },
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
+                "leaderboard_description": self.challenge.leaderboard_description,
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": False,
                 "forum_url": self.challenge.forum_url,
+                "is_docker_based": self.challenge.is_docker_based,
+                "slug": self.challenge.slug,
+                "max_docker_image_size": self.challenge.max_docker_image_size
             }
         ]
 
@@ -166,6 +171,7 @@ class CreateChallengeTest(BaseAPITestClass):
             },
             'published': False,
             'enable_forum': True,
+            "leaderboard_description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             'anonymous_leaderboard': False,
             'start_date': timezone.now() - timedelta(days=2),
             'end_date': timezone.now() + timedelta(days=1),
@@ -215,12 +221,16 @@ class GetParticularChallenge(BaseAPITestClass):
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
+            "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
+            "is_docker_based": self.challenge.is_docker_based,
+            "slug": self.challenge.slug,
+            "max_docker_image_size": self.challenge.max_docker_image_size
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -268,12 +278,16 @@ class GetParticularChallenge(BaseAPITestClass):
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
+            "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
+            "is_docker_based": self.challenge.is_docker_based,
+            "slug": self.challenge.slug,
+            "max_docker_image_size": self.challenge.max_docker_image_size
         }
         response = self.client.put(self.url, {'title': new_title, 'description': new_description})
         self.assertEqual(response.data, expected)
@@ -341,6 +355,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
+            "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "is_active": True,
             "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
@@ -349,6 +364,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
+            "is_docker_based": self.challenge.is_docker_based,
+            "slug": self.challenge.slug,
+            "max_docker_image_size": self.challenge.max_docker_image_size
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -374,6 +392,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             },
             "published": self.challenge.published,
             "enable_forum": self.challenge.enable_forum,
+            "leaderboard_description": self.challenge.leaderboard_description,
             "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
             "is_active": True,
             "start_date": "{0}{1}".format(self.challenge.start_date.isoformat(), 'Z').replace("+00:00", ""),
@@ -382,6 +401,9 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "blocked_email_domains": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
+            "is_docker_based": self.challenge.is_docker_based,
+            "slug": self.challenge.slug,
+            "max_docker_image_size": self.challenge.max_docker_image_size
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -458,6 +480,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             creator=self.challenge_host_team2,
             published=False,
             enable_forum=True,
+            leaderboard_description='Pellentesque at dictum odio, sit amet fringilla sem',
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
@@ -720,6 +743,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             published=True,
             enable_forum=True,
             approved_by_admin=True,
+            leaderboard_description='Donec sollicitudin, nisi vel tempor semper, nulla odio dapibus felis',
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
@@ -752,6 +776,7 @@ class GetAllChallengesTest(BaseAPITestClass):
             published=True,
             enable_forum=True,
             approved_by_admin=True,
+            leaderboard_description=None,
             anonymous_leaderboard=False,
             start_date=timezone.now() + timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
@@ -779,12 +804,16 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "published": self.challenge3.published,
                 "enable_forum": self.challenge3.enable_forum,
+                "leaderboard_description": self.challenge3.leaderboard_description,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
+                "is_docker_based": self.challenge3.is_docker_based,
+                "slug": self.challenge3.slug,
+                "max_docker_image_size": self.challenge3.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -815,12 +844,16 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,
+                "leaderboard_description": self.challenge2.leaderboard_description,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
+                "is_docker_based": self.challenge2.is_docker_based,
+                "slug": self.challenge2.slug,
+                "max_docker_image_size": self.challenge2.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -851,12 +884,16 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "published": self.challenge4.published,
                 "enable_forum": self.challenge4.enable_forum,
+                "leaderboard_description": self.challenge4.leaderboard_description,
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
+                "is_docker_based": self.challenge4.is_docker_based,
+                "slug": self.challenge4.slug,
+                "max_docker_image_size": self.challenge4.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -887,12 +924,16 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "published": self.challenge4.published,
                 "enable_forum": self.challenge4.enable_forum,
+                "leaderboard_description": self.challenge4.leaderboard_description,
                 "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
+                "is_docker_based": self.challenge4.is_docker_based,
+                "slug": self.challenge4.slug,
+                "max_docker_image_size": self.challenge4.max_docker_image_size
             },
             {
                 "id": self.challenge3.pk,
@@ -913,12 +954,16 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "published": self.challenge3.published,
                 "enable_forum": self.challenge3.enable_forum,
+                "leaderboard_description": self.challenge3.leaderboard_description,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
+                "is_docker_based": self.challenge3.is_docker_based,
+                "slug": self.challenge3.slug,
+                "max_docker_image_size": self.challenge3.max_docker_image_size
             },
             {
                 "id": self.challenge2.pk,
@@ -939,12 +984,16 @@ class GetAllChallengesTest(BaseAPITestClass):
                 },
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,
+                "leaderboard_description": self.challenge2.leaderboard_description,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
+                "is_docker_based": self.challenge2.is_docker_based,
+                "slug": self.challenge2.slug,
+                "max_docker_image_size": self.challenge2.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -994,6 +1043,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
             published=True,
             enable_forum=True,
             approved_by_admin=True,
+            leaderboard_description=None,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
@@ -1021,12 +1071,16 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 },
                 "published": self.challenge3.published,
                 "enable_forum": self.challenge3.enable_forum,
+                "leaderboard_description": self.challenge3.leaderboard_description,
                 "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
                 "is_active": False,
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
+                "is_docker_based": self.challenge3.is_docker_based,
+                "slug": self.challenge3.slug,
+                "max_docker_image_size": self.challenge3.max_docker_image_size
             }
         ]
         response = self.client.get(self.url, {}, format='json')
@@ -1074,6 +1128,7 @@ class GetChallengeByPk(BaseAPITestClass):
             creator=self.challenge_host_team,
             published=True,
             enable_forum=True,
+            leaderboard_description='Curabitur nec placerat libero.',
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
@@ -1090,6 +1145,7 @@ class GetChallengeByPk(BaseAPITestClass):
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
+            leaderboard_description=None,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
@@ -1128,12 +1184,16 @@ class GetChallengeByPk(BaseAPITestClass):
             },
             "published": self.challenge3.published,
             "enable_forum": self.challenge3.enable_forum,
+            "leaderboard_description": self.challenge3.leaderboard_description,
             "anonymous_leaderboard": self.challenge3.anonymous_leaderboard,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": self.challenge3.approved_by_admin,
             "forum_url": self.challenge3.forum_url,
+            "is_docker_based": self.challenge3.is_docker_based,
+            "slug": self.challenge3.slug,
+            "max_docker_image_size": self.challenge3.max_docker_image_size
         }
 
         response = self.client.get(self.url, {})
@@ -1176,12 +1236,16 @@ class GetChallengeByPk(BaseAPITestClass):
             },
             "published": self.challenge4.published,
             "enable_forum": self.challenge4.enable_forum,
+            "leaderboard_description": self.challenge4.leaderboard_description,
             "anonymous_leaderboard": self.challenge4.anonymous_leaderboard,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": self.challenge4.approved_by_admin,
             "forum_url": self.challenge4.forum_url,
+            "is_docker_based": self.challenge4.is_docker_based,
+            "slug": self.challenge4.slug,
+            "max_docker_image_size": self.challenge4.max_docker_image_size
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1224,6 +1288,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             creator=self.challenge_host_team,
             published=True,
             enable_forum=True,
+            leaderboard_description=None,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
@@ -1278,12 +1343,16 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             },
             "published": self.challenge2.published,
             "enable_forum": self.challenge2.enable_forum,
+            "leaderboard_description": self.challenge2.leaderboard_description,
             "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": True,
             "forum_url": self.challenge2.forum_url,
+            "is_docker_based": self.challenge2.is_docker_based,
+            "slug": self.challenge2.slug,
+            "max_docker_image_size": self.challenge2.max_docker_image_size
         }]
 
         response = self.client.get(self.url, {'host_team': self.challenge_host_team2.pk})
@@ -1312,12 +1381,16 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             },
             "published": self.challenge2.published,
             "enable_forum": self.challenge2.enable_forum,
+            "leaderboard_description": self.challenge2.leaderboard_description,
             "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": True,
             "forum_url": self.challenge2.forum_url,
+            "is_docker_based": self.challenge2.is_docker_based,
+            "slug": self.challenge2.slug,
+            "max_docker_image_size": self.challenge2.max_docker_image_size
         }]
 
         response = self.client.get(self.url, {'participant_team': self.participant_team2.pk})
@@ -1346,12 +1419,16 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
             },
             "published": self.challenge2.published,
             "enable_forum": self.challenge2.enable_forum,
+            "leaderboard_description": self.challenge2.leaderboard_description,
             "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
             "approved_by_admin": True,
             "forum_url": self.challenge2.forum_url,
+            "is_docker_based": self.challenge2.is_docker_based,
+            "slug": self.challenge2.slug,
+            "max_docker_image_size": self.challenge2.max_docker_image_size
         }]
 
         response = self.client.get(self.url, {'mode': 'participant'})
@@ -1381,12 +1458,16 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 },
                 "published": self.challenge.published,
                 "enable_forum": self.challenge.enable_forum,
+                "leaderboard_description": self.challenge.leaderboard_description,
                 "anonymous_leaderboard": self.challenge.anonymous_leaderboard,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge.forum_url,
+                "is_docker_based": self.challenge.is_docker_based,
+                "slug": self.challenge.slug,
+                "max_docker_image_size": self.challenge.max_docker_image_size
             },
             {
                 "id": self.challenge2.pk,
@@ -1407,12 +1488,17 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 },
                 "published": self.challenge2.published,
                 "enable_forum": self.challenge2.enable_forum,
+                "leaderboard_description": self.challenge2.leaderboard_description,
                 "anonymous_leaderboard": self.challenge2.anonymous_leaderboard,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
+                "is_docker_based": self.challenge2.is_docker_based,
+                "slug": self.challenge2.slug,
+                "max_docker_image_size": self.challenge2.max_docker_image_size
+
             }
         ]
 

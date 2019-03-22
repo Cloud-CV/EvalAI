@@ -76,6 +76,7 @@ class GetParticipantTeamTest(BaseAPITestClass):
                 "team_name": self.participant_team.team_name,
                 "created_by": self.user.username,
                 "team_url": self.participant_team.team_url,
+                "docker_repository_uri": self.participant_team.docker_repository_uri,
                 "members": [
                     {
                         "member_name": self.participant.user.username,
@@ -158,6 +159,7 @@ class GetParticularParticipantTeam(BaseAPITestClass):
             "team_name": self.participant_team.team_name,
             "created_by": self.user.username,
             "team_url": self.participant_team.team_url,
+            "docker_repository_uri": self.participant_team.docker_repository_uri,
             "members": [
                 {
                     "member_name": self.participant.user.username,
@@ -208,7 +210,8 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
             "id": self.participant_team.pk,
             "team_name": self.partial_update_participant_team_name,
             "created_by": self.user.username,
-            "team_url": self.participant_team.team_url
+            "team_url": self.participant_team.team_url,
+            "docker_repository_uri": self.participant_team.docker_repository_uri
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -219,7 +222,8 @@ class UpdateParticularParticipantTeam(BaseAPITestClass):
             "id": self.participant_team.pk,
             "team_name": self.update_participant_team_name,
             "created_by": self.user.username,
-            "team_url": self.participant_team.team_url
+            "team_url": self.participant_team.team_url,
+            "docker_repository_uri": self.participant_team.docker_repository_uri
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -377,6 +381,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
+            leaderboard_description=None,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
@@ -549,6 +554,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
+            leaderboard_description='Lorem ipsum dolor sit amet, consectetur adipiscing elit',
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
@@ -602,18 +608,23 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             },
                         "published": self.challenge1.published,
                         "enable_forum": self.challenge1.enable_forum,
+                        "leaderboard_description": self.challenge1.leaderboard_description,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                         "is_active": True,
                         "allowed_email_domains": [],
                         "blocked_email_domains": [],
                         "approved_by_admin": False,
                         "forum_url": self.challenge1.forum_url,
+                        "is_docker_based": self.challenge1.is_docker_based,
+                        "slug": self.challenge1.slug,
+                        "max_docker_image_size": self.challenge1.max_docker_image_size
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
                         "team_name": self.participant_team.team_name,
                         "created_by": self.participant_team.created_by.username,
-                        "team_url": self.participant_team.team_url
+                        "team_url": self.participant_team.team_url,
+                        "docker_repository_uri": self.participant_team.docker_repository_uri
                     }
                 }
             ],
@@ -651,12 +662,16 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     },
                 "published": self.challenge1.published,
                 "enable_forum": self.challenge1.enable_forum,
+                "leaderboard_description": self.challenge1.leaderboard_description,
                 "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
                 "approved_by_admin": False,
                 "forum_url": self.challenge1.forum_url,
+                "is_docker_based": self.challenge1.is_docker_based,
+                "slug": self.challenge1.slug,
+                "max_docker_image_size": self.challenge1.max_docker_image_size
             }
         ]
 
@@ -677,7 +692,8 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "id": self.participant_team.id,
                         "team_name": self.participant_team.team_name,
                         "created_by": self.participant_team.created_by.username,
-                        "team_url": self.participant_team.team_url
+                        "team_url": self.participant_team.team_url,
+                        "docker_repository_uri": self.participant_team.docker_repository_uri
                     }
                 }
             ],
@@ -738,6 +754,7 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
             creator=self.challenge_host_team,
             published=False,
             enable_forum=True,
+            leaderboard_description='Fusce quis sapien eget sem accumsan euismod',
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),

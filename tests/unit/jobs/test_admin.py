@@ -1,10 +1,9 @@
 import os
-import json
 import shutil
 
 from datetime import timedelta
 
-from django.core.urlresolvers import reverse_lazy, resolve
+from django.contrib.admin.sites import AdminSite
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -12,9 +11,12 @@ from django.utils import timezone
 from allauth.account.models import EmailAddress
 from rest_framework.test import APITestCase, APIClient
 
-from challenges.models import Challenge, ChallengePhase, Leaderboard, DatasetSplit, ChallengePhaseSplit
+from challenges.models import (Challenge,
+                               ChallengePhase,
+                               )
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
+from jobs.admin import SubmissionAdmin
 from participants.models import ParticipantTeam, Participant
 
 
@@ -88,17 +90,6 @@ class BaseAPITestClass(APITestCase):
                                                    b'Dummy file content', content_type='text/plain')
             )
 
-        self.dataset_split = DatasetSplit.objects.create(name="Test Dataset Split", codename="test-split")
-
-        self.leaderboard = Leaderboard.objects.create(schema=json.dumps({'hello': 'world'}))
-
-        self.challenge_phase_split = ChallengePhaseSplit.objects.create(
-            dataset_split=self.dataset_split,
-            challenge_phase=self.challenge_phase,
-            leaderboard=self.leaderboard,
-            visibility=ChallengePhaseSplit.PUBLIC
-            )
-
         self.submission = Submission.objects.create(
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
@@ -118,49 +109,26 @@ class BaseAPITestClass(APITestCase):
         shutil.rmtree('/tmp/evalai')
 
 
-class TestJobsUrls(BaseAPITestClass):
+class MockRequest(object):
+    pass
 
-    def test_change_submisson_visibility_url(self):
-        self.url = reverse_lazy('jobs:change_submission_data_and_visibility',
-                                kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
-                                        'submission_pk': self.submission.pk})
-        self.assertEqual(self.url,
-                         '/api/jobs/challenge/{}/challenge_phase/{}/submission/{}'.format(self.challenge.pk,
-                                                                                          self.challenge_phase.pk,
-                                                                                          self.submission.pk))
-        resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'jobs:change_submission_data_and_visibility')
+request = MockRequest()
 
-    def test_challenge_submisson_url(self):
-        self.url = reverse_lazy('jobs:challenge_submission',
-                                kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
-        self.assertEqual(self.url,
-                         '/api/jobs/challenge/{}/challenge_phase/{}/submission/'.format(self.challenge.pk,
-                                                                                        self.challenge_phase.pk))
-        resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'jobs:challenge_submission')
 
-    def test_leaderboard(self):
-        self.url = reverse_lazy('jobs:leaderboard',
-                                kwargs={'challenge_phase_split_id': self.challenge_phase_split.pk})
-        self.assertEqual(self.url,
-                         '/api/jobs/challenge_phase_split/{}/leaderboard/'.format(self.challenge_phase_split.pk))
-        resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'jobs:leaderboard')
+class SubmissionAdminTest(BaseAPITestClass):
+    """
+    Test case for re-running submissions from admin
+    """
 
-    def test_get_submission_by_pk(self):
-        self.url = reverse_lazy('jobs:get_submission_by_pk',
-                                kwargs={'submission_id': self.submission.pk})
-        self.assertEqual(self.url,
-                         '/api/jobs/submission/{}'.format(self.submission.pk))
-        resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'jobs:get_submission_by_pk')
+    def setUp(self):
+        super(SubmissionAdminTest, self).setUp()
+        self.app_admin = SubmissionAdmin(Submission, AdminSite())
 
-    def test_get_remaining_submissons_for_all_phases_url(self):
-        self.url = reverse_lazy('jobs:get_remaining_submissions',
-                                kwargs={'challenge_pk': self.challenge.pk})
-        self.assertEqual(self.url, '/api/jobs/{0}/remaining_submissions/'.format(self.challenge.pk))
-        resolver = resolve(self.url)
-        self.assertEqual(resolver.view_name, 'jobs:get_remaining_submissions')
+    def test_submit_job_to_worker(self):
+
+        Submission.objects.filter(status=self.submission.status).update(status="finished")
+        queryset = Submission.objects.filter(status="finished")
+        self.app_admin.submit_job_to_worker(request, queryset)
+        self.assertEqual(
+            Submission.objects.filter(status="submitted").count(), 1
+        )
