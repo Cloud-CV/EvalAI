@@ -41,6 +41,14 @@
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
+        vm.availableStatus = [
+            "submitted",
+            "running",
+            "failed",
+            "cancelled",
+            "finished",
+            "submitting"
+        ];
         // save initial ranking
         vm.initial_ranking = {};
       // loader for existing teams
@@ -1067,6 +1075,28 @@
             parameters.callback = {
                 onSuccess: function() {},
                 onError: function() {}
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
+        vm.changeSubmissionStatus = function(submission) {
+            submission.editStatus = false;
+
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + 
+                             "/submission/" + submission.id + "/status/";
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "status": submission.selectedStatus
+            };
+            parameters.callback = {
+                onSuccess: function() {
+                    submission.status = submission.selectedStatus;
+                },
+                onError: function(response) {
+                    var error = response.data.error;
+                    $rootScope.notify("error", error);
+                }
             };
 
             utilities.sendRequest(parameters);
