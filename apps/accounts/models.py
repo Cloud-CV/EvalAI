@@ -7,6 +7,7 @@ from django.dispatch import receiver
 
 from base.models import TimeStampedModel
 from challenges.models import Challenge
+from hosts.models import ChallengeHost
 
 
 class UserStatus(TimeStampedModel):
@@ -71,9 +72,12 @@ class InviteUserToChallenge(TimeStampedModel):
     STATUS_OPTIONS = ((ACCEPTED, ACCEPTED), (PENDING, PENDING))
     email = models.EmailField(max_length=200)
     invitation_key = models.CharField(max_length=200)
-    status = models.CharField(max_length=30, choices=STATUS_OPTIONS, db_index=True)
+    status = models.CharField(
+        max_length=30, choices=STATUS_OPTIONS, db_index=True
+    )
     challenge = models.ForeignKey(Challenge, related_name="challenge")
     user = models.ForeignKey(User)
+    invited_by = models.ForeignKey(ChallengeHost)
 
     class Meta:
         app_label = "accounts"

@@ -29,6 +29,7 @@ from .serializers import (
 from base.utils import send_email
 from challenges.utils import get_challenge_model
 from hosts.utils import is_user_a_host_of_challenge
+from hosts.models import ChallengeHost
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,12 @@ def invite_users_to_challenge(request, challenge_pk):
 
     challenge = get_challenge_model(challenge_pk)
 
+    try:
+        challenge_host = ChallengeHost.objects.get(user=request.user.pk)
+    except ChallengeHost.DoesNotExist:
+        response_data = {"error": "You're not a challenge host"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
     if not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
             "error": "You're not authorized to invite a user in {}".format(
@@ -86,7 +93,9 @@ def invite_users_to_challenge(request, challenge_pk):
     subject = request.data.get("subject")
 
     if not users_email or not subject:
-        response_data = {"error": "Users email or subject field can't be blank"}
+        response_data = {
+            "error": "Users email or subject field can't be blank"
+        }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     users_email = eval(users_email)
@@ -98,7 +107,9 @@ def invite_users_to_challenge(request, challenge_pk):
             )
             invitation_key = invited_user.invitation_key
         except InviteUserToChallenge.DoesNotExist:
-            user, created = User.objects.get_or_create(username=email, email=email)
+            user, created = User.objects.get_or_create(
+                username=email, email=email
+            )
             if created:
                 EmailAddress.objects.create(
                     user=user, email=email, primary=True, verified=True
@@ -111,6 +122,7 @@ def invite_users_to_challenge(request, challenge_pk):
                 "status": invitation_status,
                 "challenge": challenge.pk,
                 "user": user.pk,
+                "invited_by": challenge_host.pk,
             }
             serializer = InviteUserToChallengeSerializer(data=data)
 
@@ -126,14 +138,22 @@ def invite_users_to_challenge(request, challenge_pk):
         context = {"title": challenge.title, "url": url}
 
         if email not in invalid_emails:
-            send_email(subject, "challenge_invitation_email.html", sender_email, email, context)
+            send_email(
+                subject,
+                "challenge_invitation_email.html",
+                sender_email,
+                email,
+                context,
+            )
 
     if len(users_email) == len(invalid_emails):
         response_data = {"error": "Please enter correct email ids"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     response_data = {
-        "success": "The invitation to register for {} is sent".format(challenge.title),
+        "success": "The invitation to register for {} is sent".format(
+            challenge.title
+        ),
         "invalid_emails": invalid_emails,
     }
     return Response(response_data, status=status.HTTP_200_OK)
@@ -144,10 +164,14 @@ def invite_users_to_challenge(request, challenge_pk):
 @permission_classes(())
 def accept_challenge_invitation(request, invitation_key):
     try:
-        invitation = InviteUserToChallenge.objects.get(invitation_key=invitation_key)
+        invitation = InviteUserToChallenge.objects.get(
+            invitation_key=invitation_key
+        )
     except InviteUserToChallenge.DoesNotExist:
         response_data = {
-            "error": "The invitation with key {} doesn't exist".format(invitation_key)
+            "error": "The invitation with key {} doesn't exist".format(
+                invitation_key
+            )
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -156,10 +180,12 @@ def accept_challenge_invitation(request, invitation_key):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == "PUT":
-        serializer = AcceptChallengeInvitationSerializer(invitation.user, data=request.data)
+        serializer = AcceptChallengeInvitationSerializer(
+            invitation.user, data=request.data
+        )
         if serializer.is_valid():
             serializer.save()
-            invitation.user.set_password(serializer.data.get('password'))
+            invitation.user.set_password(serializer.data.get("password"))
             invitation.user.save()
             invitation.status = "accepted"
             invitation.save()

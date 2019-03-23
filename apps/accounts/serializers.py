@@ -62,6 +62,7 @@ class InviteUserToChallengeSerializer(serializers.ModelSerializer):
             "challenge_title",
             "challenge_host_team_name",
             "username",
+            "invited_by",
         )
 
     def get_challenge_title(self, obj):

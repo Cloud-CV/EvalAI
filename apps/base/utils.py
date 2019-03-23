@@ -19,13 +19,9 @@ class StandardResultSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-<<<<<<< HEAD
 def paginated_queryset(
     queryset, request, pagination_class=PageNumberPagination()
 ):
-=======
-def paginated_queryset(queryset, request, pagination_class=PageNumberPagination()):
->>>>>>> Add feature to invite users via email by challenge host
     """
         Return a paginated result for a queryset
     """
