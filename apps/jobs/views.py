@@ -11,7 +11,7 @@ from rest_framework.decorators import (api_view,
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
-from django.db.models import FloatField, Q
+from django.db.models import FloatField
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
