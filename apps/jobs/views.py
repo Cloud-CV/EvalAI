@@ -384,14 +384,14 @@ def leaderboard(request, challenge_phase_split_id):
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
     distinct_sorted_leaderboard_data = []
-    team_list = set()
+    team_list = []
     for data in sorted_leaderboard_data:
         if data['submission__participant_team__team_name'] in team_list:
             continue
         else:
             distinct_sorted_leaderboard_data.append(data)
             if not data['submission__participant_team__team_name'] in host_participanting_teams:
-                team_list.add(data['submission__participant_team__team_name'])
+                team_list.append(data['submission__participant_team__team_name'])
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
     for item in distinct_sorted_leaderboard_data:
