@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0045_Add_leaderboard_description_field_in_challenge'),
+        ("challenges", "0045_Add_leaderboard_description_field_in_challenge")
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='max_concurrent_submission_evaluation',
+            model_name="challenge",
+            name="max_concurrent_submission_evaluation",
             field=models.PositiveIntegerField(default=100000),
-        ),
+        )
     ]
