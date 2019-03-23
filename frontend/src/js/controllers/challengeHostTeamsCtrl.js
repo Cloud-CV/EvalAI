@@ -106,7 +106,7 @@
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.existTeam.count / 10;
+                                    vm.currentPage = vm.existTeam.count / 100;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);

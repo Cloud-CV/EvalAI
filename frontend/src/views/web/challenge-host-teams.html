@@ -43,7 +43,7 @@
                                 <a ng-class="challengeHostTeams.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.previous)">
                                     <i class="fa fa-chevron-left"></i>
                                 </a>
-                                <span class="pagination-title"> <strong class="text-med-black"> Page {{challengeHostTeams.currentPage | ceil}} of {{challengeHostTeams.existTeam.count/10 | ceil}} </strong></span>
+                                <span class="pagination-title"> <strong class="text-med-black"> Page {{challengeHostTeams.currentPage | ceil}} of {{challengeHostTeams.existTeam.count/100 | ceil}} </strong></span>
                                 <a ng-class="challengeHostTeams.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challengeHostTeams.load(challengeHostTeams.existTeam.next)">
                                     <i class="fa fa-chevron-right"></i>
                                 </a>
