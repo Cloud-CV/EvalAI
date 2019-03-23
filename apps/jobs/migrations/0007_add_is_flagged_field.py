@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('jobs', '0006_add_indexing_to_some_attributes'),
-    ]
+    dependencies = [("jobs", "0006_add_indexing_to_some_attributes")]
 
     operations = [
         migrations.AddField(
-            model_name='submission',
-            name='is_flagged',
+            model_name="submission",
+            name="is_flagged",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]

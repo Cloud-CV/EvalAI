@@ -7,13 +7,10 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0020_alter_challenge_phase_split'),
-    ]
+    dependencies = [("challenges", "0020_alter_challenge_phase_split")]
 
     operations = [
         migrations.RemoveField(
-            model_name='challengephase',
-            name='dataset_split',
-        ),
+            model_name="challengephase", name="dataset_split"
+        )
     ]

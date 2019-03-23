@@ -8,28 +8,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('web', '0003_added_description_and_background_image_to_team_model'),
+        ("web", "0003_added_description_and_background_image_to_team_model")
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='team',
-            name='email',
+            model_name="team",
+            name="email",
             field=models.EmailField(blank=True, max_length=70, null=True),
         ),
         migrations.AlterField(
-            model_name='team',
-            name='github_url',
+            model_name="team",
+            name="github_url",
             field=models.CharField(blank=True, max_length=200, null=True),
         ),
         migrations.AlterField(
-            model_name='team',
-            name='linkedin_url',
+            model_name="team",
+            name="linkedin_url",
             field=models.CharField(blank=True, max_length=200, null=True),
         ),
         migrations.AlterField(
-            model_name='team',
-            name='personal_website',
+            model_name="team",
+            name="personal_website",
             field=models.CharField(blank=True, max_length=200, null=True),
         ),
     ]

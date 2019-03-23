@@ -7,14 +7,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0015_added_dataset_split'),
-    ]
+    dependencies = [("challenges", "0015_added_dataset_split")]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='dataset_split',
-            field=models.ManyToManyField(blank=True, to='challenges.DatasetSplit'),
-        ),
+            model_name="challengephase",
+            name="dataset_split",
+            field=models.ManyToManyField(
+                blank=True, to="challenges.DatasetSplit"
+            ),
+        )
     ]

@@ -7,74 +7,96 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0030_add_boolean_field_in_star_model'),
-    ]
+    dependencies = [("challenges", "0030_add_boolean_field_in_star_model")]
 
     operations = [
         migrations.AlterField(
-            model_name='challenge',
-            name='approved_by_admin',
-            field=models.BooleanField(db_index=True, default=False, verbose_name='Approved By Admin'),
+            model_name="challenge",
+            name="approved_by_admin",
+            field=models.BooleanField(
+                db_index=True, default=False, verbose_name="Approved By Admin"
+            ),
         ),
         migrations.AlterField(
-            model_name='challenge',
-            name='end_date',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='End Date (UTC)'),
+            model_name="challenge",
+            name="end_date",
+            field=models.DateTimeField(
+                blank=True,
+                db_index=True,
+                null=True,
+                verbose_name="End Date (UTC)",
+            ),
         ),
         migrations.AlterField(
-            model_name='challenge',
-            name='is_disabled',
+            model_name="challenge",
+            name="is_disabled",
             field=models.BooleanField(db_index=True, default=False),
         ),
         migrations.AlterField(
-            model_name='challenge',
-            name='published',
-            field=models.BooleanField(db_index=True, default=False, verbose_name='Publicly Available'),
+            model_name="challenge",
+            name="published",
+            field=models.BooleanField(
+                db_index=True, default=False, verbose_name="Publicly Available"
+            ),
         ),
         migrations.AlterField(
-            model_name='challenge',
-            name='start_date',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='Start Date (UTC)'),
+            model_name="challenge",
+            name="start_date",
+            field=models.DateTimeField(
+                blank=True,
+                db_index=True,
+                null=True,
+                verbose_name="Start Date (UTC)",
+            ),
         ),
         migrations.AlterField(
-            model_name='challenge',
-            name='title',
+            model_name="challenge",
+            name="title",
             field=models.CharField(db_index=True, max_length=100),
         ),
         migrations.AlterField(
-            model_name='challengeconfiguration',
-            name='is_created',
+            model_name="challengeconfiguration",
+            name="is_created",
             field=models.BooleanField(db_index=True, default=False),
         ),
         migrations.AlterField(
-            model_name='challengephase',
-            name='end_date',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='End Date (UTC)'),
+            model_name="challengephase",
+            name="end_date",
+            field=models.DateTimeField(
+                blank=True,
+                db_index=True,
+                null=True,
+                verbose_name="End Date (UTC)",
+            ),
         ),
         migrations.AlterField(
-            model_name='challengephase',
-            name='max_submissions',
+            model_name="challengephase",
+            name="max_submissions",
             field=models.PositiveIntegerField(db_index=True, default=100000),
         ),
         migrations.AlterField(
-            model_name='challengephase',
-            name='max_submissions_per_day',
+            model_name="challengephase",
+            name="max_submissions_per_day",
             field=models.PositiveIntegerField(db_index=True, default=100000),
         ),
         migrations.AlterField(
-            model_name='challengephase',
-            name='name',
+            model_name="challengephase",
+            name="name",
             field=models.CharField(db_index=True, max_length=100),
         ),
         migrations.AlterField(
-            model_name='challengephase',
-            name='start_date',
-            field=models.DateTimeField(blank=True, db_index=True, null=True, verbose_name='Start Date (UTC)'),
+            model_name="challengephase",
+            name="start_date",
+            field=models.DateTimeField(
+                blank=True,
+                db_index=True,
+                null=True,
+                verbose_name="Start Date (UTC)",
+            ),
         ),
         migrations.AlterField(
-            model_name='starchallenge',
-            name='is_starred',
+            model_name="starchallenge",
+            name="is_starred",
             field=models.BooleanField(db_index=True, default=False),
         ),
     ]

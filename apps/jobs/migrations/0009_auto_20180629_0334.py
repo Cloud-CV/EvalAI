@@ -7,29 +7,27 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('jobs', '0008_remove_indexing_submission'),
-    ]
+    dependencies = [("jobs", "0008_remove_indexing_submission")]
 
     operations = [
         migrations.AlterField(
-            model_name='submission',
-            name='method_description',
-            field=models.TextField(blank=True, default=''),
+            model_name="submission",
+            name="method_description",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='method_name',
-            field=models.CharField(db_index=True, default='', max_length=1000),
+            model_name="submission",
+            name="method_name",
+            field=models.CharField(db_index=True, default="", max_length=1000),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='project_url',
-            field=models.CharField(default='', max_length=1000),
+            model_name="submission",
+            name="project_url",
+            field=models.CharField(default="", max_length=1000),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='publication_url',
-            field=models.CharField(default='', max_length=1000),
+            model_name="submission",
+            name="publication_url",
+            field=models.CharField(default="", max_length=1000),
         ),
     ]

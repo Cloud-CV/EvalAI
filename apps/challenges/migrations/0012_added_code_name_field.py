@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0011_approved_by_admin_field_added'),
-    ]
+    dependencies = [("challenges", "0011_approved_by_admin_field_added")]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='code_name',
-            field=models.CharField(default='Phase Code Name', max_length=100),
-        ),
+            model_name="challengephase",
+            name="code_name",
+            field=models.CharField(default="Phase Code Name", max_length=100),
+        )
     ]

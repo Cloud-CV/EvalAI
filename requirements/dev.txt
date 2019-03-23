@@ -9,6 +9,7 @@ django-extensions==1.7.8
 django-silk==1.0.0
 django-spaghetti-and-meatballs==0.2.2
 flake8==3.0.4
+pre-commit==1.14.4
 pytest==3.5.0
 pytest-cov==2.5.1
 recommonmark==0.4.0

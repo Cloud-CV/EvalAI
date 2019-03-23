@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0024_added_short_description_field'),
-    ]
+    dependencies = [("challenges", "0024_added_short_description_field")]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='is_submission_public',
+            model_name="challengephase",
+            name="is_submission_public",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]

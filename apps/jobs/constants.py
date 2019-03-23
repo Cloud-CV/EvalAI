@@ -1,1 +1,1 @@
-submission_status_to_exclude = ['failed', 'cancelled']
+submission_status_to_exclude = ["failed", "cancelled"]

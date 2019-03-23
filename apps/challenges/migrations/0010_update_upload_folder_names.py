@@ -7,19 +7,19 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0009_challengephase_is_public'),
-    ]
+    dependencies = [("challenges", "0009_challengephase_is_public")]
 
     operations = [
         migrations.AlterField(
-            model_name='challenge',
-            name='evaluation_script',
-            field=models.FileField(default=False, upload_to='evaluation_scripts'),
+            model_name="challenge",
+            name="evaluation_script",
+            field=models.FileField(
+                default=False, upload_to="evaluation_scripts"
+            ),
         ),
         migrations.AlterField(
-            model_name='challengephase',
-            name='test_annotation',
-            field=models.FileField(upload_to='test_annotations'),
+            model_name="challengephase",
+            name="test_annotation",
+            field=models.FileField(upload_to="test_annotations"),
         ),
     ]

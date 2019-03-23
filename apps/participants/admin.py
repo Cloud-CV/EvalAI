@@ -1,20 +1,16 @@
 from django.contrib import admin
 
 from base.admin import ImportExportTimeStampedAdmin
-from .models import (
-    Participant,
-    ParticipantTeam,
-)
+from .models import Participant, ParticipantTeam
 
 from import_export import resources
 
 
 class ParticipantResource(resources.ModelResource):
-
     class Meta:
         model = Participant
-        fields = ('user__username', 'user__email', 'team', 'status',)
-        export_order = ('user__username', 'user__email', 'team', 'status',)
+        fields = ("user__username", "user__email", "team", "status")
+        export_order = ("user__username", "user__email", "team", "status")
 
 
 @admin.register(Participant)
@@ -23,9 +19,10 @@ class ParticipantAdmin(ImportExportTimeStampedAdmin):
     An abstract base class which provides an
     interface to display user and team status.
     """
-    list_display = ('user', 'status', 'team')
-    search_fields = ('user__username', 'status', 'team__team_name')
-    list_filter = ('status', 'team')
+
+    list_display = ("user", "status", "team")
+    search_fields = ("user__username", "status", "team__team_name")
+    list_filter = ("status", "team")
     resource_class = ParticipantResource
 
 
@@ -35,5 +32,11 @@ class ParticipantTeamAdmin(ImportExportTimeStampedAdmin):
     A class which provides interface to display
     and filter team names.
     """
-    list_display = ('team_name', 'get_all_participants_email', 'team_url', 'docker_repository_uri',)
-    list_filter = ('team_name',)
+
+    list_display = (
+        "team_name",
+        "get_all_participants_email",
+        "team_url",
+        "docker_repository_uri",
+    )
+    list_filter = ("team_name",)

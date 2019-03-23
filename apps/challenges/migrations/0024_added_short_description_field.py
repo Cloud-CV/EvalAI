@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0023_upload_unique_random_filename'),
-    ]
+    dependencies = [("challenges", "0023_upload_unique_random_filename")]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='short_description',
+            model_name="challenge",
+            name="short_description",
             field=models.TextField(blank=True, null=True),
-        ),
+        )
     ]

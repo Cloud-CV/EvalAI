@@ -9,13 +9,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0043_add_max_docker_image_size_for_challenge'),
+        ("challenges", "0043_add_max_docker_image_size_for_challenge")
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='allowed_email_ids',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.TextField(blank=True, null=True), blank=True, default=[], null=True, size=None),
-        ),
+            model_name="challengephase",
+            name="allowed_email_ids",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.TextField(blank=True, null=True),
+                blank=True,
+                default=[],
+                null=True,
+                size=None,
+            ),
+        )
     ]

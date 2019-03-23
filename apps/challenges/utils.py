@@ -8,7 +8,13 @@ from botocore.exceptions import ClientError
 
 from base.utils import get_model_object
 
-from .models import Challenge, ChallengePhase, Leaderboard, DatasetSplit, ChallengePhaseSplit
+from .models import (
+    Challenge,
+    ChallengePhase,
+    Leaderboard,
+    DatasetSplit,
+    ChallengePhaseSplit,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,36 +36,36 @@ def get_file_content(file_path, mode):
 
 
 def convert_to_aws_ecr_compatible_format(string):
-    '''Make string compatible with AWS ECR repository naming
+    """Make string compatible with AWS ECR repository naming
 
     Arguments:
         string {string} -- Desired ECR repository name
 
     Returns:
         string -- Valid ECR repository name
-    '''
+    """
     return string.replace(" ", "-").lower()
 
 
 def convert_to_aws_federated_user_format(string):
-    '''Make string compatible with AWS ECR repository naming
+    """Make string compatible with AWS ECR repository naming
 
     Arguments:
         string {string} -- Desired ECR repository name
 
     Returns:
         string -- Valid ECR repository name
-    '''
+    """
     string = string.replace(" ", "-")
     result = ""
     for ch in string:
-        if ch.isalnum() or ch in ['=', ',', '.', '@', '-']:
+        if ch.isalnum() or ch in ["=", ",", ".", "@", "-"]:
             result += ch
     return result
 
 
-def get_or_create_ecr_repository(name, region_name='us-east-1'):
-    '''Get or create AWS ECR Repository
+def get_or_create_ecr_repository(name, region_name="us-east-1"):
+    """Get or create AWS ECR Repository
 
     Arguments:
         name {string} -- name of ECR repository
@@ -79,22 +85,19 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
                 },
                 False
             )
-    '''
-    AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID')
+    """
+    AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID")
     repository, created = None, False
-    client = boto3.client('ecr', region_name=region_name)
+    client = boto3.client("ecr", region_name=region_name)
     try:
         response = client.describe_repositories(
-            registryId=AWS_ACCOUNT_ID,
-            repositoryNames=[
-                name,
-            ]
+            registryId=AWS_ACCOUNT_ID, repositoryNames=[name]
         )
-        repository = response['repositories'][0]
+        repository = response["repositories"][0]
     except ClientError as e:
-        if e.response['Error']['Code'] == 'RepositoryNotFoundException':
+        if e.response["Error"]["Code"] == "RepositoryNotFoundException":
             response = client.create_repository(repositoryName=name)
-            repository = response['repository']
+            repository = response["repository"]
             created = True
         else:
             logger.exception(e)
@@ -102,7 +105,7 @@ def get_or_create_ecr_repository(name, region_name='us-east-1'):
 
 
 def create_federated_user(name, repository):
-    '''Create AWS federated user
+    """Create AWS federated user
 
     Arguments:
         name {string} -- Name of participant team for which federated user is to be created
@@ -135,26 +138,26 @@ def create_federated_user(name, repository):
                 'RetryAttempts': 0
             }
         }
-    '''
-    AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID')
+    """
+    AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID")
     policy = {
         "Version": "2012-10-17",
         "Statement": [
             {
                 "Effect": "Allow",
                 "Action": "ecr:*",
-                "Resource": "arn:aws:ecr:us-east-1:{}:repository/{}".format(AWS_ACCOUNT_ID, repository),
+                "Resource": "arn:aws:ecr:us-east-1:{}:repository/{}".format(
+                    AWS_ACCOUNT_ID, repository
+                ),
             },
             {
                 "Effect": "Allow",
-                "Action": [
-                    "ecr:GetAuthorizationToken"
-                ],
-                "Resource": "*"
-            }
-        ]
+                "Action": ["ecr:GetAuthorizationToken"],
+                "Resource": "*",
+            },
+        ],
     }
-    client = boto3.client('sts')
+    client = boto3.client("sts")
     response = client.get_federation_token(
         Name=convert_to_aws_federated_user_format(name),
         Policy=json.dumps(policy),

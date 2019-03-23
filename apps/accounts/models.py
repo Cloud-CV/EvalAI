@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 
-from base.models import (TimeStampedModel,)
+from base.models import TimeStampedModel
 
 
 class UserStatus(TimeStampedModel):
@@ -19,10 +19,11 @@ class UserStatus(TimeStampedModel):
             - Accepted
             - Pending.
     """
-    UNKNOWN = 'unknown'
-    DENIED = 'denied'
-    ACCEPTED = 'accepted'
-    PENDING = 'pending'
+
+    UNKNOWN = "unknown"
+    DENIED = "denied"
+    ACCEPTED = "accepted"
+    PENDING = "pending"
     name = models.CharField(max_length=30)
     status = models.CharField(max_length=30, unique=True)
 
@@ -30,13 +31,14 @@ class UserStatus(TimeStampedModel):
         return self.name
 
     class Meta:
-        app_label = 'accounts'
+        app_label = "accounts"
 
 
 class Profile(TimeStampedModel):
     """
     Model to store profile of a user
     """
+
     user = models.OneToOneField(User)
     contact_number = models.CharField(max_length=10, blank=False, null=True)
     affiliation = models.CharField(max_length=512)
@@ -44,11 +46,11 @@ class Profile(TimeStampedModel):
     recieve_newsletter = models.BooleanField(default=False)
 
     def __str__(self):
-        return '{}'.format(self.user)
+        return "{}".format(self.user)
 
     class Meta:
-        app_label = 'accounts'
-        db_table = 'user_profile'
+        app_label = "accounts"
+        db_table = "user_profile"
 
 
 @receiver(post_save, sender=User)

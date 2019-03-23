@@ -7,14 +7,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0002_challenge_participant_teams'),
-    ]
+    dependencies = [("challenges", "0002_challenge_participant_teams")]
 
     operations = [
         migrations.AlterField(
-            model_name='challenge',
-            name='participant_teams',
-            field=models.ManyToManyField(blank=True, to='participants.ParticipantTeam'),
-        ),
+            model_name="challenge",
+            name="participant_teams",
+            field=models.ManyToManyField(
+                blank=True, to="participants.ParticipantTeam"
+            ),
+        )
     ]

@@ -7,24 +7,24 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('jobs', '0009_auto_20180629_0334'),
-    ]
+    dependencies = [("jobs", "0009_auto_20180629_0334")]
 
     operations = [
         migrations.AlterField(
-            model_name='submission',
-            name='method_name',
-            field=models.CharField(blank=True, db_index=True, default='', max_length=1000),
+            model_name="submission",
+            name="method_name",
+            field=models.CharField(
+                blank=True, db_index=True, default="", max_length=1000
+            ),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='project_url',
-            field=models.CharField(blank=True, default='', max_length=1000),
+            model_name="submission",
+            name="project_url",
+            field=models.CharField(blank=True, default="", max_length=1000),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='publication_url',
-            field=models.CharField(blank=True, default='', max_length=1000),
+            model_name="submission",
+            name="publication_url",
+            field=models.CharField(blank=True, default="", max_length=1000),
         ),
     ]

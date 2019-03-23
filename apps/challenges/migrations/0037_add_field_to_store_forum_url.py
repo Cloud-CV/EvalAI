@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0036_Add_unique_random_name_to_challenge_logo'),
+        ("challenges", "0036_Add_unique_random_name_to_challenge_logo")
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='forum_url',
+            model_name="challenge",
+            name="forum_url",
             field=models.URLField(blank=True, max_length=100, null=True),
-        ),
+        )
     ]

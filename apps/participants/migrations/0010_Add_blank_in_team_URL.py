@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('participants', '0009_participantteam_team_url'),
-    ]
+    dependencies = [("participants", "0009_participantteam_team_url")]
 
     operations = [
         migrations.AlterField(
-            model_name='participantteam',
-            name='team_url',
-            field=models.CharField(blank=True, default='', max_length=1000),
-        ),
+            model_name="participantteam",
+            name="team_url",
+            field=models.CharField(blank=True, default="", max_length=1000),
+        )
     ]

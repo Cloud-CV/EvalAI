@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('jobs', '0002_path_fix_for_submission_files'),
-    ]
+    dependencies = [("jobs", "0002_path_fix_for_submission_files")]
 
     operations = [
         migrations.AddField(
-            model_name='submission',
-            name='method_name',
+            model_name="submission",
+            name="method_name",
             field=models.CharField(max_length=1000, null=True),
-        ),
+        )
     ]

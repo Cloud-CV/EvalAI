@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('web', '0004_change_team_model_field_type'),
-    ]
+    dependencies = [("web", "0004_change_team_model_field_type")]
 
     operations = [
         migrations.AlterField(
-            model_name='team',
-            name='visible',
+            model_name="team",
+            name="visible",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]

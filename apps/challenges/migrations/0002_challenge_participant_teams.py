@@ -8,14 +8,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('participants', '0005_remove_participantteam_challenge'),
-        ('challenges', '0001_initial'),
+        ("participants", "0005_remove_participantteam_challenge"),
+        ("challenges", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='participant_teams',
-            field=models.ManyToManyField(to='participants.ParticipantTeam'),
-        ),
+            model_name="challenge",
+            name="participant_teams",
+            field=models.ManyToManyField(to="participants.ParticipantTeam"),
+        )
     ]

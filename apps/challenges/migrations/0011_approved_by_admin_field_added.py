@@ -7,14 +7,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0010_update_upload_folder_names'),
-    ]
+    dependencies = [("challenges", "0010_update_upload_folder_names")]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='approved_by_admin',
-            field=models.BooleanField(default=False, verbose_name='Approved By Admin'),
-        ),
+            model_name="challenge",
+            name="approved_by_admin",
+            field=models.BooleanField(
+                default=False, verbose_name="Approved By Admin"
+            ),
+        )
     ]

@@ -2,11 +2,9 @@ import datetime
 from rest_framework import status
 from django.utils import timezone
 
-from challenges.utils import (get_challenge_model,
-                              get_challenge_phase_model)
+from challenges.utils import get_challenge_model, get_challenge_phase_model
 
-from participants.utils import (
-    get_participant_team_id_of_user_for_a_challenge,)
+from participants.utils import get_participant_team_id_of_user_for_a_challenge
 
 from .constants import submission_status_to_exclude
 from .models import Submission
@@ -15,23 +13,24 @@ from base.utils import get_model_object
 get_submission_model = get_model_object(Submission)
 
 
-def get_remaining_submission_for_a_phase(user, challenge_phase_pk, challenge_pk):
-    '''
+def get_remaining_submission_for_a_phase(
+    user, challenge_phase_pk, challenge_pk
+):
+    """
     Returns the number of remaining submissions that a participant can
     do daily, monthly and in total to a particular challenge phase of a
     challenge.
-    '''
+    """
 
     get_challenge_model(challenge_pk)
     challenge_phase = get_challenge_phase_model(challenge_phase_pk)
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-       user, challenge_pk)
+        user, challenge_pk
+    )
 
     # Conditional check for the existence of participant team of the user.
     if not participant_team_pk:
-        response_data = {
-            'error': 'You haven\'t participated in the challenge'
-        }
+        response_data = {"error": "You haven't participated in the challenge"}
         return response_data, status.HTTP_403_FORBIDDEN
 
     max_submissions_count = challenge_phase.max_submissions
@@ -41,14 +40,21 @@ def get_remaining_submission_for_a_phase(user, challenge_phase_pk, challenge_pk)
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk).exclude(status__in=submission_status_to_exclude)
+        participant_team=participant_team_pk,
+    ).exclude(status__in=submission_status_to_exclude)
 
     submissions_done_this_month = submissions_done.filter(
-        submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
+        submitted_at__gte=timezone.now().replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+    )
 
     # Get the submissions_done_today by midnight time of the day
     submissions_done_today = submissions_done.filter(
-        submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0))
+        submitted_at__gte=timezone.now().replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+    )
 
     submissions_done_count = submissions_done.count()
     submissions_done_this_month_count = submissions_done_this_month.count()
@@ -57,28 +63,31 @@ def get_remaining_submission_for_a_phase(user, challenge_phase_pk, challenge_pk)
     # Check for maximum submission limit
     if submissions_done_count >= max_submissions_count:
         response_data = {
-            'message': 'You have exhausted maximum submission limit!',
-            'submission_limit_exceeded': True
+            "message": "You have exhausted maximum submission limit!",
+            "submission_limit_exceeded": True,
         }
         return response_data, status.HTTP_200_OK
 
     # Check for monthy submission limit
     elif submissions_done_this_month_count >= max_submissions_per_month_count:
         date_time_now = timezone.now()
-        next_month_start_date_time = date_time_now + datetime.timedelta(days=+30)
+        next_month_start_date_time = date_time_now + datetime.timedelta(
+            days=+30
+        )
         next_month_start_date_time = next_month_start_date_time.replace(
-            day=1, hour=0, minute=0, second=0, microsecond=0)
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
         remaining_time = next_month_start_date_time - date_time_now
 
         if submissions_done_today_count >= max_submissions_per_day_count:
             response_data = {
-                'message': 'Both daily and monthly submission limits are exhausted!',
-                'remaining_time': remaining_time
+                "message": "Both daily and monthly submission limits are exhausted!",
+                "remaining_time": remaining_time,
             }
         else:
             response_data = {
-                'message': 'You have exhausted this month\'s submission limit!',
-                'remaining_time': remaining_time
+                "message": "You have exhausted this month's submission limit!",
+                "remaining_time": remaining_time,
             }
         return response_data, status.HTTP_200_OK
 
@@ -91,29 +100,36 @@ def get_remaining_submission_for_a_phase(user, challenge_phase_pk, challenge_pk)
         remaining_time = midnight - date_time_now
 
         response_data = {
-            'message': 'You have exhausted today\'s submission limit!',
-            'remaining_time': remaining_time
+            "message": "You have exhausted today's submission limit!",
+            "remaining_time": remaining_time,
         }
         return response_data, status.HTTP_200_OK
 
     else:
         # calculate the remaining submissions from total submissions.
-        remaining_submission_count = max_submissions_count - submissions_done_count
+        remaining_submission_count = (
+            max_submissions_count - submissions_done_count
+        )
         # Calculate the remaining submissions for current month.
-        remaining_submissions_this_month_count = (max_submissions_per_month_count -
-                                                  submissions_done_this_month_count)
+        remaining_submissions_this_month_count = (
+            max_submissions_per_month_count - submissions_done_this_month_count
+        )
         # Calculate the remaining submissions for today.
-        remaining_submissions_today_count = (max_submissions_per_day_count -
-                                             submissions_done_today_count)
+        remaining_submissions_today_count = (
+            max_submissions_per_day_count - submissions_done_today_count
+        )
 
-        remaining_submissions_this_month_count = min(remaining_submission_count,
-                                                     remaining_submissions_this_month_count)
-        remaining_submissions_today_count = min(remaining_submissions_this_month_count,
-                                                remaining_submissions_today_count)
+        remaining_submissions_this_month_count = min(
+            remaining_submission_count, remaining_submissions_this_month_count
+        )
+        remaining_submissions_today_count = min(
+            remaining_submissions_this_month_count,
+            remaining_submissions_today_count,
+        )
 
         response_data = {
-            'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
-            'remaining_submissions_today_count': remaining_submissions_today_count,
-            'remaining_submissions_count': remaining_submission_count
+            "remaining_submissions_this_month_count": remaining_submissions_this_month_count,
+            "remaining_submissions_today_count": remaining_submissions_today_count,
+            "remaining_submissions_count": remaining_submission_count,
         }
         return response_data, status.HTTP_200_OK

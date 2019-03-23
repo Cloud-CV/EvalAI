@@ -7,14 +7,15 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0019_added_leaderboard_data_table'),
-    ]
+    dependencies = [("challenges", "0019_added_leaderboard_data_table")]
 
     operations = [
         migrations.AlterField(
-            model_name='challengephasesplit',
-            name='visibility',
-            field=models.PositiveSmallIntegerField(choices=[(1, 'host'), (2, 'owner and host'), (3, 'public')], default=3),
-        ),
+            model_name="challengephasesplit",
+            name="visibility",
+            field=models.PositiveSmallIntegerField(
+                choices=[(1, "host"), (2, "owner and host"), (3, "public")],
+                default=3,
+            ),
+        )
     ]

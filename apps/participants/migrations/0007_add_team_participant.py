@@ -8,25 +8,24 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('participants', '0006_alter_status_participant_choices'),
-    ]
+    dependencies = [("participants", "0006_alter_status_participant_choices")]
 
     operations = [
         migrations.RemoveField(
-            model_name='participantteammember',
-            name='participant',
+            model_name="participantteammember", name="participant"
         ),
         migrations.RemoveField(
-            model_name='participantteammember',
-            name='team',
+            model_name="participantteammember", name="team"
         ),
         migrations.AddField(
-            model_name='participant',
-            name='team',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='participants', to='participants.ParticipantTeam'),
+            model_name="participant",
+            name="team",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="participants",
+                to="participants.ParticipantTeam",
+            ),
         ),
-        migrations.DeleteModel(
-            name='ParticipantTeamMember',
-        ),
+        migrations.DeleteModel(name="ParticipantTeamMember"),
     ]

@@ -7,23 +7,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('accounts', '0002_profile'),
-    ]
+    dependencies = [("accounts", "0002_profile")]
 
     operations = [
         migrations.RemoveField(
-            model_name='useraffliation',
-            name='affiliation',
+            model_name="useraffliation", name="affiliation"
         ),
-        migrations.RemoveField(
-            model_name='useraffliation',
-            name='user',
-        ),
-        migrations.DeleteModel(
-            name='Affiliation',
-        ),
-        migrations.DeleteModel(
-            name='UserAffliation',
-        ),
+        migrations.RemoveField(model_name="useraffliation", name="user"),
+        migrations.DeleteModel(name="Affiliation"),
+        migrations.DeleteModel(name="UserAffliation"),
     ]
