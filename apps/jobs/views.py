@@ -362,11 +362,7 @@ def leaderboard(request, challenge_phase_split_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     leaderboard_data = LeaderboardData.objects.exclude(
-        Q(submission__created_by__email__in=challenge_hosts_emails) & Q(submission__baseline_submission=False))
-
-    host_participanting_teams = set(LeaderboardData.objects.filter(
-        submission__created_by__email__in=challenge_hosts_emails).values_list(
-        'submission__participant_team__team_name', flat=True)[::1])
+        submission__baseline_submission=False)
 
     # Get all the successful submissions related to the challenge phase split
     leaderboard_data = leaderboard_data.filter(
@@ -388,10 +384,11 @@ def leaderboard(request, challenge_phase_split_id):
     for data in sorted_leaderboard_data:
         if data['submission__participant_team__team_name'] in team_list:
             continue
+        elif data['submission__baseline_submission'] is True:
+            distinct_sorted_leaderboard_data.append(data)
         else:
             distinct_sorted_leaderboard_data.append(data)
-            if not data['submission__participant_team__team_name'] in host_participanting_teams:
-                team_list.append(data['submission__participant_team__team_name'])
+            team_list.append(data['submission__participant_team__team_name'])
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema['labels']
     for item in distinct_sorted_leaderboard_data:
