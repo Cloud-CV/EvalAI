@@ -8,18 +8,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0041_add_challenge_phase_max_submissions_per_month'),
+        ("challenges", "0041_add_challenge_phase_max_submissions_per_month")
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='is_docker_based',
-            field=models.BooleanField(db_index=True, default=False, verbose_name='Is Docker Based'),
+            model_name="challenge",
+            name="is_docker_based",
+            field=models.BooleanField(
+                db_index=True, default=False, verbose_name="Is Docker Based"
+            ),
         ),
         migrations.AddField(
-            model_name='challenge',
-            name='slug',
-            field=models.CharField(db_index=True, default='', max_length=200),
+            model_name="challenge",
+            name="slug",
+            field=models.CharField(db_index=True, default="", max_length=200),
         ),
     ]

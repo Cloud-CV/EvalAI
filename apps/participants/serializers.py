@@ -4,60 +4,77 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from challenges.serializers import ChallengeSerializer
-from .models import (Participant, ParticipantTeam)
+from .models import Participant, ParticipantTeam
 
 
 class ParticipantTeamSerializer(serializers.ModelSerializer):
     """Serializer class to map Participants to Teams."""
-    created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+
+    created_by = serializers.SlugRelatedField(
+        slug_field="username", queryset=User.objects.all()
+    )
 
     def __init__(self, *args, **kwargs):
         super(ParticipantTeamSerializer, self).__init__(*args, **kwargs)
-        context = kwargs.get('context')
+        context = kwargs.get("context")
         if context:
-            request = context.get('request')
-            kwargs['data']['created_by'] = request.user.username
+            request = context.get("request")
+            kwargs["data"]["created_by"] = request.user.username
 
     class Meta:
         model = ParticipantTeam
-        fields = ('id', 'team_name', 'created_by', 'team_url', 'docker_repository_uri',)
+        fields = (
+            "id",
+            "team_name",
+            "created_by",
+            "team_url",
+            "docker_repository_uri",
+        )
 
 
 class InviteParticipantToTeamSerializer(serializers.Serializer):
     """Serializer class for inviting Participant to Team."""
+
     email = serializers.EmailField()
 
     def __init__(self, *args, **kwargs):
-        super(InviteParticipantToTeamSerializer, self).__init__(*args, **kwargs)
-        context = kwargs.get('context')
+        super(InviteParticipantToTeamSerializer, self).__init__(
+            *args, **kwargs
+        )
+        context = kwargs.get("context")
         if context:
-            self.participant_team = context.get('participant_team')
-            self.user = context.get('request').user
+            self.participant_team = context.get("participant_team")
+            self.user = context.get("request").user
 
     def validate_email(self, value):
         if value == self.user.email:
-            raise serializers.ValidationError('A participant cannot invite himself')
+            raise serializers.ValidationError(
+                "A participant cannot invite himself"
+            )
         try:
             User.objects.get(email=value)
         except User.DoesNotExist:
-            raise serializers.ValidationError('User does not exist')
+            raise serializers.ValidationError("User does not exist")
         return value
 
     def save(self):
-        email = self.validated_data.get('email')
-        return Participant.objects.get_or_create(user=User.objects.get(email=email),
-                                                 status=Participant.ACCEPTED,
-                                                 team=self.participant_team)
+        email = self.validated_data.get("email")
+        return Participant.objects.get_or_create(
+            user=User.objects.get(email=email),
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
     """Serializer class for Participants."""
+
     member_name = serializers.SerializerMethodField()
     member_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Participant
-        fields = ('member_name', 'status', 'member_id')
+        fields = ("member_name", "status", "member_id")
 
     def get_member_name(self, obj):
         return obj.user.username
@@ -68,12 +85,22 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
 class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
     """Serializer for Participant Teams and Participant Combined."""
+
     members = serializers.SerializerMethodField()
-    created_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    created_by = serializers.SlugRelatedField(
+        slug_field="username", queryset=User.objects.all()
+    )
 
     class Meta:
         model = ParticipantTeam
-        fields = ('id', 'team_name', 'created_by', 'members', 'team_url', 'docker_repository_uri',)
+        fields = (
+            "id",
+            "team_name",
+            "created_by",
+            "members",
+            "team_url",
+            "docker_repository_uri",
+        )
 
     def get_members(self, obj):
         participants = Participant.objects.filter(team__pk=obj.id)
@@ -83,6 +110,7 @@ class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
 
 class ChallengeParticipantTeam(object):
     """Serializer to map Challenge and Participant Teams."""
+
     def __init__(self, challenge, participant_team):
         self.challenge = challenge
         self.participant_team = participant_team
@@ -90,19 +118,24 @@ class ChallengeParticipantTeam(object):
 
 class ChallengeParticipantTeamSerializer(serializers.Serializer):
     """Serializer to initialize Challenge and Participant's Team"""
+
     challenge = ChallengeSerializer()
     participant_team = ParticipantTeamSerializer()
 
 
 class ChallengeParticipantTeamList(object):
     """Class to create a list of Challenge and Participant Teams."""
+
     def __init__(self, challenge_participant_team_list):
         self.challenge_participant_team_list = challenge_participant_team_list
 
 
 class ChallengeParticipantTeamListSerializer(serializers.Serializer):
     """Serializer to map a challenge's participant team lists."""
-    challenge_participant_team_list = ChallengeParticipantTeamSerializer(many=True)
+
+    challenge_participant_team_list = ChallengeParticipantTeamSerializer(
+        many=True
+    )
     datetime_now = serializers.SerializerMethodField()
 
     def get_datetime_now(self, obj):
