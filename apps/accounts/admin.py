@@ -7,7 +7,7 @@ from import_export.admin import ExportMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import Token
 
-from .models import InviteUserToChallenge
+from .models import UserInvitation
 from base.admin import ImportExportTimeStampedAdmin
 
 
@@ -49,8 +49,8 @@ admin.site.unregister(Token)
 admin.site.register(Token, TokenAdmin)
 
 
-@admin.register(InviteUserToChallenge)
-class InviteUserToChallengeAdmin(ImportExportTimeStampedAdmin):
+@admin.register(UserInvitation)
+class UserInvitationAdmin(ImportExportTimeStampedAdmin):
     list_display = (
         "email",
         "invitation_key",
@@ -83,5 +83,5 @@ class InviteUserToChallengeAdmin(ImportExportTimeStampedAdmin):
             obj.invited_by.user.username,
         )
 
-    get_host_team_and_member_name.short_description = "Invited bY"
+    get_host_team_and_member_name.short_description = "Invited by"
     get_host_team_and_member_name.admin_order_field = "invited_by"

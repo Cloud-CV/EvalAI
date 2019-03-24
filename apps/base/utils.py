@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 import sendgrid
 import uuid
@@ -10,7 +11,9 @@ from django.utils.deconstruct import deconstructible
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 
-from sendgrid.helpers.mail import Email, Content, Mail
+from sendgrid.helpers.mail import Email, Content, Mail, Personalization
+
+logger = logging.getLogger(__name__)
 
 
 class StandardResultSetPagination(PageNumberPagination):
@@ -82,15 +85,36 @@ def decode_data(data):
     return decoded
 
 
-def send_email(subject, template, sender_email, to_email, context):
-    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get("SENDGRID_API_KEY"))
-    sender_email = Email(sender_email)
-    to_email = Email(to_email)
-    subject = subject
-    body = render_to_string(template, context)
-    content = Content("text/html", body)
-    mail = Mail(sender_email, subject, to_email, content)
-    response = sg.client.mail.send.post(request_body=mail.get())
-    if response.status_code == 202 or response.status_code == 200:
-        return response.status_code
-    return response
+def send_email(
+    sender=settings.CLOUDCV_TEAM_EMAIL,
+    recepient=None,
+    template_id=None,
+    template_data={},
+):
+    """Function to send email
+
+    Keyword Arguments:
+        sender {string} -- Email of sender (default: {settings.TEAM_EMAIL})
+        recepient {string} -- Recepient email address
+        template_id {string} -- Sendgrid template id
+        template_data {dict} -- Dictionary to substitute values in subject and email body
+    """
+    try:
+        sg = sendgrid.SendGridAPIClient(
+            apikey=os.environ.get("SENDGRID_API_KEY")
+        )
+        sender = Email(sender)
+        mail = Mail()
+        mail.from_email = sender
+        mail.template_id = template_id
+        to_list = Personalization()
+        to_list.dynamic_template_data = template_data
+        to_email = Email(recepient)
+        to_list.add_to(to_email)
+        mail.add_personalization(to_list)
+        sg.client.mail.send.post(request_body=mail.get())
+    except Exception:
+        logger.warning(
+            "Cannot make sendgrid call. Please check if SENDGRID_API_KEY is present."
+        )
+    return

@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 
-from .models import InviteUserToChallenge
+from .models import UserInvitation
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
@@ -13,7 +13,14 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ("pk", "email", "username", "first_name", "last_name")
+        fields = (
+            "pk",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "password",
+        )
         read_only_fields = ("email", "username")
 
 
@@ -42,7 +49,7 @@ class ProfileSerializer(UserDetailsSerializer):
         return instance
 
 
-class InviteUserToChallengeSerializer(serializers.ModelSerializer):
+class UserInvitationSerializer(serializers.ModelSerializer):
     """
     Serializer to store the invitation details
     """
@@ -52,7 +59,7 @@ class InviteUserToChallengeSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
 
     class Meta:
-        model = InviteUserToChallenge
+        model = UserInvitation
         fields = (
             "email",
             "invitation_key",
@@ -75,11 +82,11 @@ class InviteUserToChallengeSerializer(serializers.ModelSerializer):
         return obj.user.username
 
 
-class AcceptChallengeInvitationSerializer(serializers.ModelSerializer):
-    """
-    Serializer to accept challenge invitation
-    """
+# class AcceptChallengeInvitationSerializer(serializers.ModelSerializer):
+#     """
+#     Serializer to accept challenge invitation
+#     """
 
-    class Meta:
-        model = get_user_model()
-        fields = ("first_name", "last_name", "password")
+#     class Meta:
+#         model = get_user_model()
+#         fields = ("first_name", "last_name", "password")

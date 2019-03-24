@@ -14,37 +14,34 @@
         var vm = this;
         vm.invitationKey = $stateParams.invitationKey;
 
-        vm.registerChallengeParticipant = function (registerChallengeParticipantForm) {
-            if (registerChallengeParticipantForm) {
-                var parameters = {};
-                parameters.url = 'accounts/accept/invitation/' + vm.invitationKey + '/';
-                parameters.method = 'PUT';
-                parameters.token = null;
-                parameters.data = {
-                    "first_name": vm.first_name,
-                    "last_name": vm.last_email,
-                    "password": vm.password,
-                };
-                parameters.callback = {
-                    onSuccess: function (response) {
-                        var status = response.status;
-                        if (status == 200) {
-                            $state.go('auth.login');
-                            $rootScope.notify("success", "You've successfully accepted the challenge invitation.");
-                        }
-                    },
-                    onError: function (response) {
-                        var error = response.error;
-                        $rootScope.notify("error", error);
-
+        vm.registerChallengeParticipant = function () {
+            var parameters = {};
+            parameters.url = 'challenges/' + vm.invitationKey + '/accept-invitation/';
+            parameters.method = 'PATCH';
+            parameters.token = null;
+            parameters.data = {
+                "first_name": vm.first_name,
+                "last_name": vm.last_email,
+                "password": vm.password,
+            };
+            parameters.callback = {
+                onSuccess: function (response) {
+                    var status = response.status;
+                    if (status == 200) {
+                        $state.go('auth.login');
+                        $rootScope.notify("success", "You've successfully accepted the challenge invitation.");
                     }
-                };
-                utilities.sendRequest(parameters);
-            }
+                },
+                onError: function (response) {
+                    var error = response.error;
+                    $rootScope.notify("error", error);
+                }
+            };
+            utilities.sendRequest(parameters);
         };
 
         var parameters = {};
-        parameters.url = 'accounts/accept/invitation/' + vm.invitationKey + '/';
+        parameters.url = 'challenges/' + vm.invitationKey + '/accept-invitation/';
         parameters.method = 'GET';
         parameters.token = null;
         parameters.callback = {

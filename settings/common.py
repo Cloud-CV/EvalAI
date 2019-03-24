@@ -284,8 +284,10 @@ SWAGGER_SETTINGS = {
     },
 }
 
-REDOC_SETTINGS = {
-    'SPEC_URL': ('docs.yaml', {'format': '.yaml'}),
-}
+REDOC_SETTINGS = {"SPEC_URL": ("docs.yaml", {"format": ".yaml"})}
 
-EVALAI_HOST_URL = os.environ.get("EVALAI_HOST_URL")
+EVALAI_HOST_URL = os.environ.get("HOSTNAME")
+
+SENDGRID_SETTINGS = {
+    "TEMPLATES": {"CHALLENGE_INVITATION": "d-60825bcf014f4958bdb1b9173471d420"}
+}
