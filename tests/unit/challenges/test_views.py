@@ -2107,14 +2107,12 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_phase_does_not_exist(self):
-        self.url = reverse_lazy(
-            "challenges:get_challenge_phase_detail",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "pk": self.challenge_phase.pk + 2,
-            },
-        )
-        expected = {"error": "ChallengePhase does not exist"}
+        self.url = reverse_lazy('challenges:get_challenge_phase_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.challenge_phase.pk + 2})
+        expected = {
+            'error': 'Challenge Phase {} does not exist'.format(self.challenge_phase.pk + 2)
+        }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
