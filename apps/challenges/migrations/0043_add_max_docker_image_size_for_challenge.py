@@ -8,13 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0042_add_slug_field_and_flag_for_docker_based_challenges'),
+        (
+            "challenges",
+            "0042_add_slug_field_and_flag_for_docker_based_challenges",
+        )
     ]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='max_docker_image_size',
-            field=models.BigIntegerField(blank=True, default=42949672960, null=True),
-        ),
+            model_name="challenge",
+            name="max_docker_image_size",
+            field=models.BigIntegerField(
+                blank=True, default=42949672960, null=True
+            ),
+        )
     ]

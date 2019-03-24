@@ -7,17 +7,22 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('participants', '0005_remove_participantteam_challenge'),
-    ]
+    dependencies = [("participants", "0005_remove_participantteam_challenge")]
 
     operations = [
         migrations.AlterField(
-            model_name='participant',
-            name='status',
-            field=models.CharField(choices=[('Accepted', 'Accepted'), ('Denied', 'Denied'), ('Pending', 'Pending'), ('Self', 'Self'), ('Unknown', 'Unknown')], max_length=30),
+            model_name="participant",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("Accepted", "Accepted"),
+                    ("Denied", "Denied"),
+                    ("Pending", "Pending"),
+                    ("Self", "Self"),
+                    ("Unknown", "Unknown"),
+                ],
+                max_length=30,
+            ),
         ),
-        migrations.DeleteModel(
-            name='ParticipantStatus',
-        ),
+        migrations.DeleteModel(name="ParticipantStatus"),
     ]
