@@ -43,6 +43,7 @@ from .serializers import (SubmissionSerializer,
                           CreateLeaderboardDataSerializer,
                           RemainingSubmissionDataSerializer,)
 from .utils import get_submission_model, get_remaining_submission_for_a_phase
+from .filters import SubmissionFilter
 
 logger = logging.getLogger(__name__)
 
@@ -716,21 +717,8 @@ def get_submissions_for_challenge(request, challenge_pk):
         response_data = {'error': 'Sorry, you are not authorized to make this request!'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    submission_status = request.query_params.get('status', None)
-
-    valid_submission_status = [Submission.SUBMITTED, Submission.RUNNING, Submission.FAILED,
-                               Submission.CANCELLED, Submission.FINISHED, Submission.SUBMITTING]
-
-    if submission_status not in valid_submission_status:
-        response_data = {
-            'error': 'Invalid submission status {}'.format(submission_status)
-        }
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    submissions_done_in_challenge = Submission.objects.filter(
-        challenge_phase__challenge=challenge.id, status=submission_status)
-
+    submissions_done_in_challenge = SubmissionFilter(request.GET, queryset=Submission.objects.filter(challenge_phase__challenge=challenge.id))
     serializer = SubmissionSerializer(
-        submissions_done_in_challenge, many=True, context={'request': request})
+        submissions_done_in_challenge.qs, many=True, context={'request': request})
 
     return Response(serializer.data, status=status.HTTP_200_OK)
