@@ -7,18 +7,16 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0013_added_code_name_field'),
-    ]
+    dependencies = [("challenges", "0013_added_code_name_field")]
 
     operations = [
         migrations.RenameField(
-            model_name='challengephase',
-            old_name='code_name',
-            new_name='codename',
+            model_name="challengephase",
+            old_name="code_name",
+            new_name="codename",
         ),
         migrations.AlterUniqueTogether(
-            name='challengephase',
-            unique_together=set([('codename', 'challenge')]),
+            name="challengephase",
+            unique_together=set([("codename", "challenge")]),
         ),
     ]
