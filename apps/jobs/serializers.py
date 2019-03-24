@@ -14,25 +14,41 @@ class SubmissionSerializer(serializers.ModelSerializer):
     execution_time = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        context = kwargs.get('context')
-        if context and context.get('request').method == 'POST':
-            created_by = context.get('request').user
-            kwargs['data']['created_by'] = created_by.pk
+        context = kwargs.get("context")
+        if context and context.get("request").method == "POST":
+            created_by = context.get("request").user
+            kwargs["data"]["created_by"] = created_by.pk
 
-            participant_team = context.get('participant_team').pk
-            kwargs['data']['participant_team'] = participant_team
+            participant_team = context.get("participant_team").pk
+            kwargs["data"]["participant_team"] = participant_team
 
-            challenge_phase = context.get('challenge_phase').pk
-            kwargs['data']['challenge_phase'] = challenge_phase
+            challenge_phase = context.get("challenge_phase").pk
+            kwargs["data"]["challenge_phase"] = challenge_phase
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
 
     class Meta:
         model = Submission
-        fields = ('id', 'participant_team', 'participant_team_name', 'execution_time', 'challenge_phase',
-                  'created_by', 'status', 'input_file', 'stdout_file', 'stderr_file', 'submitted_at',
-                  'method_name', 'method_description', 'project_url', 'publication_url', 'is_public',
-                  'submission_result_file', 'when_made_public',)
+        fields = (
+            "id",
+            "participant_team",
+            "participant_team_name",
+            "execution_time",
+            "challenge_phase",
+            "created_by",
+            "status",
+            "input_file",
+            "stdout_file",
+            "stderr_file",
+            "submitted_at",
+            "method_name",
+            "method_description",
+            "project_url",
+            "publication_url",
+            "is_public",
+            "submission_result_file",
+            "when_made_public",
+        )
 
     def get_participant_team_name(self, obj):
         return obj.participant_team.team_name
@@ -51,7 +67,13 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LeaderboardData
-        fields = ('id', 'participant_team_name', 'challenge_phase_split', 'leaderboard_schema', 'result')
+        fields = (
+            "id",
+            "participant_team_name",
+            "challenge_phase_split",
+            "leaderboard_schema",
+            "result",
+        )
 
     def get_participant_team_name(self, obj):
         return obj.submission.participant_team.team_name
@@ -71,10 +93,26 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Submission
-        fields = ('id', 'participant_team', 'challenge_phase', 'created_by', 'status', 'is_public',
-                  'submission_number', 'submitted_at', 'execution_time', 'input_file', 'stdout_file',
-                  'stderr_file', 'submission_result_file', 'submission_metadata_file',
-                  'participant_team_members_email_ids', 'created_at', 'method_name', 'participant_team_members',)
+        fields = (
+            "id",
+            "participant_team",
+            "challenge_phase",
+            "created_by",
+            "status",
+            "is_public",
+            "submission_number",
+            "submitted_at",
+            "execution_time",
+            "input_file",
+            "stdout_file",
+            "stderr_file",
+            "submission_result_file",
+            "submission_metadata_file",
+            "participant_team_members_email_ids",
+            "created_at",
+            "method_name",
+            "participant_team_members",
+        )
 
     def get_participant_team(self, obj):
         return obj.participant_team.team_name
@@ -87,24 +125,40 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
 
     def get_participant_team_members_email_ids(self, obj):
         try:
-            participant_team = ParticipantTeam.objects.get(team_name=obj.participant_team.team_name)
+            participant_team = ParticipantTeam.objects.get(
+                team_name=obj.participant_team.team_name
+            )
         except ParticipantTeam.DoesNotExist:
-            return 'Participant team does not exist'
+            return "Participant team does not exist"
 
-        participant_ids = Participant.objects.filter(team=participant_team).values_list('user_id', flat=True)
-        return list(User.objects.filter(id__in=participant_ids).values_list('email', flat=True))
+        participant_ids = Participant.objects.filter(
+            team=participant_team
+        ).values_list("user_id", flat=True)
+        return list(
+            User.objects.filter(id__in=participant_ids).values_list(
+                "email", flat=True
+            )
+        )
 
     def get_created_at(self, obj):
         return obj.created_at
 
     def get_participant_team_members(self, obj):
         try:
-            participant_team = ParticipantTeam.objects.get(team_name=obj.participant_team.team_name)
+            participant_team = ParticipantTeam.objects.get(
+                team_name=obj.participant_team.team_name
+            )
         except ParticipantTeam.DoesNotExist:
-            return 'Participant team does not exist'
+            return "Participant team does not exist"
 
-        participant_ids = Participant.objects.filter(team=participant_team).values_list('user_id', flat=True)
-        return list(User.objects.filter(id__in=participant_ids).values('username', 'email'))
+        participant_ids = Participant.objects.filter(
+            team=participant_team
+        ).values_list("user_id", flat=True)
+        return list(
+            User.objects.filter(id__in=participant_ids).values(
+                "username", "email"
+            )
+        )
 
 
 class SubmissionCount(object):
@@ -126,23 +180,29 @@ class LastSubmissionDateTimeSerializer(serializers.Serializer):
 
 
 class CreateLeaderboardDataSerializer(serializers.ModelSerializer):
-
     def __init__(self, *args, **kwargs):
-        context = kwargs.get('context')
-        if context and context.get('request').method == 'PUT':
-            challenge_phase_split = context.get('challenge_phase_split')
-            kwargs['data']['challenge_phase_split'] = challenge_phase_split.pk
+        context = kwargs.get("context")
+        if context and context.get("request").method == "PUT":
+            challenge_phase_split = context.get("challenge_phase_split")
+            kwargs["data"]["challenge_phase_split"] = challenge_phase_split.pk
 
-            submission = context.get('submission').pk
-            kwargs['data']['submission'] = submission
+            submission = context.get("submission").pk
+            kwargs["data"]["submission"] = submission
 
-            kwargs['data']['leaderboard'] = challenge_phase_split.leaderboard.pk
+            kwargs["data"][
+                "leaderboard"
+            ] = challenge_phase_split.leaderboard.pk
 
         super(CreateLeaderboardDataSerializer, self).__init__(*args, **kwargs)
 
     class Meta:
         model = LeaderboardData
-        fields = ('challenge_phase_split', 'submission', 'result', 'leaderboard')
+        fields = (
+            "challenge_phase_split",
+            "submission",
+            "result",
+            "leaderboard",
+        )
 
 
 class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
@@ -150,7 +210,7 @@ class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePhase
-        fields = ('id', 'name', 'start_date', 'end_date', 'limits')
+        fields = ("id", "name", "start_date", "end_date", "limits")
 
     def get_limits(self, obj):
         return self.context.get("limits")
