@@ -87,13 +87,3 @@ class UserInvitationSerializer(serializers.ModelSerializer):
 
     def get_username(self, obj):
         return obj.user.username
-
-
-# class AcceptChallengeInvitationSerializer(serializers.ModelSerializer):
-#     """
-#     Serializer to accept challenge invitation
-#     """
-
-#     class Meta:
-#         model = get_user_model()
-#         fields = ("first_name", "last_name", "password")
