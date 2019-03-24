@@ -862,6 +862,30 @@
 
             utilities.sendRequest(parameters);
         };
+
+        vm.rerunSubmission = function(submission_number) {
+            parameters.url = 'jobs/challenge/' + vm.challengeId +'/challenge_phase/' + vm.phaseId + '/re_run_submission/' + submission_number;
+            parameters.method = 'POST';
+            var formData = new FormData();
+            parameters.data = formData;
+
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function() {
+                    $rootScope.notify("success", "Your submission has been re-run succesfully!");
+                    vm.stopLoader();
+                },
+                onError: function(response) {
+                    var status = response.status;
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    vm.stopLoader();
+                }
+            };
+            vm.startLoader("Loading Submissions");
+            utilities.sendRequest(parameters);
+        };
+
         vm.refreshLeaderboard = function() {
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
@@ -1372,7 +1396,7 @@
 
                 };
                 parameters.callback = {
-                    onSuccess: function(response) {
+                    onSuccess: function(response) {vm.challengePhaseId = vm.page.challenge_phase.id;
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();

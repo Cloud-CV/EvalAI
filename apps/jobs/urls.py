@@ -9,6 +9,9 @@ urlpatterns = [
     url(r'^challenge/(?P<challenge_id>[0-9]+)/'
         r'challenge_phase/(?P<challenge_phase_id>[0-9]+)/submission/$',
         views.challenge_submission, name='challenge_submission'),
+    url(r'^challenge/(?P<challenge_id>[0-9]+)/'
+        r'challenge_phase/(?P<challenge_phase_id>[0-9]+)/re_run_submission/(?P<submission_number>[0-9]+)$',
+        views.re_run_submission, name='re_run_submission'),
     url(r'^(?P<challenge_pk>[0-9]+)/'
         r'remaining_submissions/$',
         views.get_remaining_submissions,
