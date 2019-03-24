@@ -29,7 +29,8 @@
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
-
+        // save initial ranking
+        vm.initial_ranking = {};
         // show loader
         vm.startLoader = loaderService.startLoader;
         // stop loader
@@ -162,6 +163,8 @@
                     var details = response.data;
                     vm.leaderboard = details.results;
                     for (var i=0; i<vm.leaderboard.length; i++) {
+                        vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
+                        vm.initial_ranking[vm.leaderboard[i].submission__participant_team__team_name] = i+1;
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
