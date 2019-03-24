@@ -17,7 +17,7 @@
                     </div>
                     <div class="row">
                         <div class="col s12">
-                            <strong>Please select a phase to get list of submissions!</strong>
+                            <strong>Please select a phase to get list of submissions! {{challenge.isChallengeHost}}</strong>
                         </div>
                     </div>
                     <div class="row">
@@ -60,7 +60,7 @@
                                 <table ng-if="challenge.isResult" class="highlight all-submission-table">
                                     <thead>
                                         <tr>
-                                            <th data-field="isBaseline" ng-if="challenge.enableBaselineToggle">Baseline</th>
+                                            <th data-field="isBaseline" ng-if="challenge.isChallengeHost">Baseline</th>
                                             <th data-field="team">Team Name</th>
                                             <th data-field="method-name">Method Name</th>
                                             <th data-field="method-description">Method Description</th>
@@ -79,7 +79,7 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
-                                            <td ng-if="challenge.enableBaselineToggle" class="center">
+                                            <td ng-if="challenge.isChallengeHost" class="center">
                                                 <input ng-checked="key.baseline_submission" ng-if="key.status == 'finished'" ng-model="challenge.baselineStatus[key.id]"
                                                     type="checkbox" id="baselineSubmission{{ key.id }}" ng-change="challenge.changeBaselineStatus(key.id)" />
                                                 <label for="baselineSubmission{{ key.id }}"></label>

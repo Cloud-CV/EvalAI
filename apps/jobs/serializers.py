@@ -4,7 +4,6 @@ from rest_framework import serializers
 
 from challenges.models import ChallengePhase, LeaderboardData
 from participants.models import Participant, ParticipantTeam
-from hosts.utils import is_user_a_host_of_challenge
 
 from .models import Submission
 
@@ -27,15 +26,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
             kwargs['data']['challenge_phase'] = challenge_phase
 
         super(SubmissionSerializer, self).__init__(*args, **kwargs)
-
-    def to_representation(self, obj):
-        """
-            baseline_submission should only be for Hosts
-        """
-        ret = super(SubmissionSerializer, self).to_representation(obj)
-        if not is_user_a_host_of_challenge(self.context.get("request").user, self.context.get("challenge_id")):
-            ret.pop('baseline_submission')
-        return ret
 
     class Meta:
         model = Submission

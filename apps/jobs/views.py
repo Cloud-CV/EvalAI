@@ -11,7 +11,7 @@ from rest_framework.decorators import (api_view,
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
-from django.db.models import FloatField
+from django.db.models import FloatField, Q
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -249,7 +249,6 @@ def change_submission_data_and_visibility(request, challenge_pk, challenge_phase
                                       context={
                                                'participant_team': participant_team,
                                                'challenge_phase': challenge_phase,
-                                               'challenge_id': challenge_pk,
                                                'request': request
                                       },
                                       partial=True)
@@ -362,7 +361,7 @@ def leaderboard(request, challenge_phase_split_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     leaderboard_data = LeaderboardData.objects.exclude(
-        submission__baseline_submission=False)
+        Q(submission__created_by__email__in=challenge_hosts_emails) & Q(submission__baseline_submission=False))
 
     # Get all the successful submissions related to the challenge phase split
     leaderboard_data = leaderboard_data.filter(
