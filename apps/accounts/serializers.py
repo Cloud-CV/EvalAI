@@ -3,8 +3,6 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 
-from .models import UserInvitation
-
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     """
@@ -54,36 +52,3 @@ class ProfileSerializer(UserDetailsSerializer):
             profile.affiliation = affiliation
             profile.save()
         return instance
-
-
-class UserInvitationSerializer(serializers.ModelSerializer):
-    """
-    Serializer to store the invitation details
-    """
-
-    challenge_title = serializers.SerializerMethodField()
-    challenge_host_team_name = serializers.SerializerMethodField()
-    username = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UserInvitation
-        fields = (
-            "email",
-            "invitation_key",
-            "status",
-            "challenge",
-            "user",
-            "challenge_title",
-            "challenge_host_team_name",
-            "username",
-            "invited_by",
-        )
-
-    def get_challenge_title(self, obj):
-        return obj.challenge.title
-
-    def get_challenge_host_team_name(self, obj):
-        return obj.challenge.creator.team_name
-
-    def get_username(self, obj):
-        return obj.user.username

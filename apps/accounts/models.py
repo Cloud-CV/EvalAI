@@ -59,30 +59,3 @@ class Profile(TimeStampedModel):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-
-
-class UserInvitation(TimeStampedModel):
-    """
-    Model to store invitation status
-    """
-
-    ACCEPTED = "accepted"
-    PENDING = "pending"
-
-    STATUS_OPTIONS = ((ACCEPTED, ACCEPTED), (PENDING, PENDING))
-    email = models.EmailField(max_length=200)
-    invitation_key = models.CharField(max_length=200)
-    status = models.CharField(
-        max_length=30, choices=STATUS_OPTIONS, db_index=True
-    )
-    challenge = models.ForeignKey(Challenge, related_name="challenge")
-    user = models.ForeignKey(User)
-    invited_by = models.ForeignKey(ChallengeHost)
-
-    class Meta:
-        app_label = "accounts"
-        db_table = "invite_user_to_challenge"
-
-    def __str__(self):
-        """Returns the email of the user"""
-        return self.email

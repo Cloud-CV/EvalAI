@@ -21,7 +21,7 @@
             parameters.token = null;
             parameters.data = {
                 "first_name": vm.first_name,
-                "last_name": vm.last_email,
+                "last_name": vm.last_name,
                 "password": vm.password,
             };
             parameters.callback = {
@@ -52,7 +52,8 @@
                     vm.challengeTitle = vm.data.challenge_title;
                     vm.host = vm.data.challenge_host_team_name;
                     vm.email = vm.data.email;
-                    vm.username = vm.data.username;
+                    vm.userDetails = vm.data.user_details;
+                    console.log(vm.userDetails);
                 } else {
                     $state.go('error-404');
                 }

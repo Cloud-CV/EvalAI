@@ -436,11 +436,11 @@
 
         var challenge_invitation = {
             name: "challenge-invitation",
-            url: "/accept/invitation/:invitationKey",
+            url: "/accept-invitation/:invitationKey",
             controller: "ChallengeInviteCtrl",
             controllerAs: "challenge_invitation",
             templateUrl: baseUrl + "/web/challenge-invite.html",
-            title: "Challenge Invite"
+            title: "Accept challenge invitation"
         };
 
         // call all states here

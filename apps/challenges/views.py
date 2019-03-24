@@ -13,6 +13,7 @@ import zipfile
 from os.path import basename, isfile, join
 
 from django.conf import settings
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.db import transaction
@@ -35,12 +36,8 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from yaml.scanner import ScannerError
 
 from allauth.account.models import EmailAddress
-from accounts.models import UserInvitation
 from accounts.permissions import HasVerifiedEmail
-from accounts.serializers import (
-    UserInvitationSerializer,
-    UserDetailsSerializer,
-)
+from accounts.serializers import UserDetailsSerializer
 from base.utils import paginated_queryset, send_email
 from challenges.utils import (
     get_challenge_model,
@@ -73,6 +70,7 @@ from .models import (
     ChallengePhaseSplit,
     ChallengeConfiguration,
     StarChallenge,
+    UserInvitation,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
@@ -84,6 +82,7 @@ from .serializers import (
     DatasetSplitSerializer,
     LeaderboardSerializer,
     StarChallengeSerializer,
+    UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
@@ -1738,7 +1737,8 @@ def invite_users_to_challenge(request, challenge_pk):
                 invalid_emails.append(email)
 
         sender_email = settings.CLOUDCV_TEAM_EMAIL
-        url = "{}/accept/invitation/{}/".format(
+        # TODO: Update this URL after shifting django backend from evalapi.cloudcv.org to evalai.cloudcv.org/api
+        url = "{}/accept-invitation/{}/".format(
             settings.EVALAI_HOST_URL, invitation_key
         )
         template_data = {"title": challenge.title, "url": url}
@@ -1791,9 +1791,17 @@ def accept_challenge_invitation(request, invitation_key):
         )
         if serializer.is_valid():
             serializer.save()
-            invitation.user.set_password(serializer.data.get("password"))
-            invitation.user.save()
-            invitation.status = UserInvitation.ACCEPTED
-            invitation.save()
+            data = {"password": make_password(serializer.data.get("password"))}
+            serializer = UserDetailsSerializer(
+                invitation.user, data=data, partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+            data = {"status": UserInvitation.ACCEPTED}
+            serializer = UserInvitationSerializer(
+                invitation, data=data, partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

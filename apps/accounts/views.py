@@ -1,4 +1,3 @@
-import logging
 import uuid
 
 from django.conf import settings
@@ -24,9 +23,6 @@ from .permissions import HasVerifiedEmail
 from base.utils import send_email
 from challenges.utils import get_challenge_model
 from hosts.utils import is_user_a_host_of_challenge
-from hosts.models import ChallengeHost
-
-logger = logging.getLogger(__name__)
 
 
 @api_view(["POST"])
