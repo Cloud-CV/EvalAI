@@ -1396,7 +1396,7 @@
 
                 };
                 parameters.callback = {
-                    onSuccess: function(response) {vm.challengePhaseId = vm.page.challenge_phase.id;
+                    onSuccess: function(response) {
                         var status = response.status;
                         if (status === 200) {
                             $mdDialog.hide();
