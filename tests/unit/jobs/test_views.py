@@ -1251,7 +1251,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 "is_public": self.submission.is_public,
                 "when_made_public": "{0}{1}".format(self.submission.when_made_public.isoformat(),
                                                     'Z').replace("+00:00", ""),
-                "baseline_submission": self.submission.baseline,
+                "baseline_submission": self.submission.baseline_submission,
             }
 
         self.client.force_authenticate(user=self.submission.created_by)
