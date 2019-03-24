@@ -32,7 +32,14 @@ class ProfileSerializer(UserDetailsSerializer):
     affiliation = serializers.CharField(source="profile.affiliation")
 
     class Meta(UserDetailsSerializer.Meta):
-        fields = UserDetailsSerializer.Meta.fields + ("affiliation",)
+        fields = (
+            "pk",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "affiliation",
+        )
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop("profile", {})
