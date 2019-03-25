@@ -1,4 +1,3 @@
-import os
 import csv
 import logging
 import random
@@ -62,6 +61,7 @@ from participants.utils import (
     get_participant_teams_for_user,
     has_user_participated_in_challenge,
     get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_of_user_for_a_challenge,
 )
 
 from .models import (
@@ -87,10 +87,11 @@ from .serializers import (
     ZipChallengePhaseSplitSerializer,
 )
 from .utils import (
+    create_federated_user,
+    convert_to_aws_ecr_compatible_format,
+    get_aws_credentials_for_challenge,
     get_file_content,
     get_or_create_ecr_repository,
-    convert_to_aws_ecr_compatible_format,
-    create_federated_user,
 )
 
 logger = logging.getLogger(__name__)
@@ -305,9 +306,7 @@ def add_participant_team_to_challenge(
     else:
         # Create ECR Repository for the participant team if challenge is docker based
         if challenge.is_docker_based:
-            AWS_DEFAULT_REGION = os.environ.get(
-                "AWS_DEFAULT_REGION", "us-east-1"
-            )
+            aws_keys = get_aws_credentials_for_challenge(challenge.pk)
             ecr_repository_name = "{}-{}".format(
                 challenge.slug, participant_team.team_name
             )
@@ -315,7 +314,7 @@ def add_participant_team_to_challenge(
                 ecr_repository_name
             )
             repository, created = get_or_create_ecr_repository(
-                ecr_repository_name, region_name=AWS_DEFAULT_REGION
+                ecr_repository_name, aws_keys
             )
             participant_team.docker_repository_uri = repository[
                 "repositoryUri"
@@ -1619,30 +1618,27 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
     Returns:
         Dictionary containing AWS credentials for the participant team for a particular challenge
     """
-
     challenge_phase = get_challenge_phase_model(phase_pk)
-
     challenge = challenge_phase.challenge
-    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+    participant_team = get_participant_team_of_user_for_a_challenge(
         request.user, challenge.pk
     )
-
     if not challenge.is_docker_based:
         response_data = {
             "error": "Sorry, this is not a docker based challenge."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if participant_team_pk is None:
+    if participant_team is None:
         response_data = {
             "error": "You have not participated in this challenge."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    participant_team = ParticipantTeam.objects.get(id=participant_team_pk)
+    aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    name = str(uuid.uuid4())[:32]
     federated_user = create_federated_user(
-        participant_team.team_name,
-        participant_team.get_docker_repository_name(),
+        name, participant_team.get_docker_repository_name(), aws_keys
     )
     data = {
         "federated_user": federated_user,
