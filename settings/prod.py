@@ -76,7 +76,7 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS")
 REST_FRAMEWORK_DOCS = {"HIDE_DOCS": True}
 
 # Port number for the python-memcached cache backend.
-CACHES["default"]["LOCATION"] = os.environ.get(
+CACHES["default"]["LOCATION"] = os.environ.get(  # noqa: ignore=F405
     "MEMCACHED_LOCATION"
 )  # noqa: ignore=F405
 
