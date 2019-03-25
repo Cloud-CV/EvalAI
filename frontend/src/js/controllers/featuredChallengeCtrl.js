@@ -34,6 +34,8 @@
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
         vm.subErrors = {};
+        var userKey = utilities.getData('userKey');
+        vm.authToken = userKey;
 
         utilities.showLoader();
 
@@ -47,7 +49,8 @@
                 var details = response.data;
                 vm.page = details;
                 vm.isActive = details.is_active;
-
+                vm.isForumEnabled = details.enable_forum;
+                vm.forumURL = details.forum_url;
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -107,6 +110,55 @@
         };
 
         utilities.sendRequest(parameters);
+
+        vm.isStarred = function() {
+            // Get the stars count and user specific starred or unstarred
+            parameters.url = "challenges/" + vm.challengeId + "/";
+            parameters.method = 'GET';
+            parameters.data = {};
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    vm.count = details['count'] || 0;
+                    vm.is_starred = details['is_starred'];
+                    if (details['is_starred'] === false) {
+                        vm.caption = 'Star';
+                    } else {
+                        vm.caption = 'Unstar';
+                    }
+                },
+                onError: function() {}
+            };
+            utilities.sendRequest(parameters);
+        };
+        
+        vm.starChallenge = function() {
+            parameters.url = "challenges/" + vm.challengeId + "/";
+            parameters.method = 'POST';
+            parameters.data = {};
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var details = response.data;
+                    vm.count = details['count'];
+                    vm.is_starred = details['is_starred'];
+                    if (details.is_starred === true) {
+                        vm.caption = 'Unstar';
+                    } else {
+                        vm.caption = 'Star';
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    utilities.storeData('emailError', error.detail);
+                    $state.go('web.permission-denied');
+                    utilities.hideLoader();
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+                
 
         vm.getLeaderboard = function(phaseSplitId) {
             vm.isResult = true;
@@ -207,3 +259,4 @@
     }
 
 })();
+
