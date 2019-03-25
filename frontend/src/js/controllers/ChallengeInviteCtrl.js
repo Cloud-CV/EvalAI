@@ -53,7 +53,6 @@
                     vm.host = vm.data.challenge_host_team_name;
                     vm.email = vm.data.email;
                     vm.userDetails = vm.data.user_details;
-                    console.log(vm.userDetails);
                 } else {
                     $state.go('error-404');
                 }
