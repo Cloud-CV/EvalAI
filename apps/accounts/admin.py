@@ -7,8 +7,6 @@ from import_export.admin import ExportMixin
 from rest_framework.authtoken.admin import TokenAdmin
 from rest_framework.authtoken.models import Token
 
-from base.admin import ImportExportTimeStampedAdmin
-
 
 class UserResource(resources.ModelResource):
     class Meta:

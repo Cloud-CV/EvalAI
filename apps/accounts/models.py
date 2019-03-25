@@ -6,8 +6,6 @@ from django.contrib.auth.models import User
 from django.dispatch import receiver
 
 from base.models import TimeStampedModel
-from challenges.models import Challenge
-from hosts.models import ChallengeHost
 
 
 class UserStatus(TimeStampedModel):
