@@ -1,5 +1,7 @@
 import base64
+import logging
 import os
+import sendgrid
 import uuid
 
 from django.conf import settings
@@ -7,6 +9,10 @@ from django.utils.deconstruct import deconstructible
 
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
+
+from sendgrid.helpers.mail import Email, Mail, Personalization
+
+logger = logging.getLogger(__name__)
 
 
 class StandardResultSetPagination(PageNumberPagination):
@@ -76,3 +82,47 @@ def decode_data(data):
     for i in data:
         decoded.append(base64.decodestring(i + "=="))
     return decoded
+
+
+def send_email(
+    sender=settings.CLOUDCV_TEAM_EMAIL,
+    recepient=None,
+    template_id=None,
+    template_data={},
+):
+    """Function to send email
+
+    Keyword Arguments:
+        sender {string} -- Email of sender (default: {settings.TEAM_EMAIL})
+        recepient {string} -- Recepient email address
+        template_id {string} -- Sendgrid template id
+        template_data {dict} -- Dictionary to substitute values in subject and email body
+    """
+    try:
+        sg = sendgrid.SendGridAPIClient(
+            apikey=os.environ.get("SENDGRID_API_KEY")
+        )
+        sender = Email(sender)
+        mail = Mail()
+        mail.from_email = sender
+        mail.template_id = template_id
+        to_list = Personalization()
+        to_list.dynamic_template_data = template_data
+        to_email = Email(recepient)
+        to_list.add_to(to_email)
+        mail.add_personalization(to_list)
+        sg.client.mail.send.post(request_body=mail.get())
+    except Exception:
+        logger.warning(
+            "Cannot make sendgrid call. Please check if SENDGRID_API_KEY is present."
+        )
+    return
+
+
+def get_url_from_hostname(hostname):
+    if settings.DEBUG or settings.TEST:
+        scheme = "http"
+    else:
+        scheme = "https"
+    url = "{}://{}".format(scheme, hostname)
+    return url

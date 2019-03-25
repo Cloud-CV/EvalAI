@@ -42,6 +42,7 @@ class TestUpdateUser(BaseAPITestClass):
         self.data = {
             "username": "anotheruser",
             "affiliation": "some_affiliation",
+            "password": "secret_password",
         }
         response = self.client.put(
             os.path.join("api", "auth", str(self.url)), self.data
