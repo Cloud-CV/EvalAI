@@ -1,12 +1,11 @@
 import os
 
-import boto3
 import json
 import logging
 
 from botocore.exceptions import ClientError
 
-from base.utils import get_model_object
+from base.utils import get_model_object, get_boto3_client
 
 from .models import (
     Challenge,
@@ -88,24 +87,6 @@ def get_aws_credentials_for_challenge(challenge_pk):
             "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         }
     return aws_keys
-
-
-def get_boto3_client(resource, aws_keys):
-    """
-    Returns the boto3 client for a resource in AWS
-    Arguments:
-        resource {str} -- Name of the resource for which client is to be created
-        aws_keys {dict} -- AWS keys which are to be used
-    Returns:
-        Boto3 client object for the resource
-    """
-    client = boto3.client(
-        resource,
-        region_name=aws_keys.get("AWS_REGION"),
-        aws_access_key_id=aws_keys.get("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=aws_keys.get("AWS_SECRET_ACCESS_KEY"),
-    )
-    return client
 
 
 def get_or_create_ecr_repository(name, aws_keys):
