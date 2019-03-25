@@ -117,3 +117,12 @@ def send_email(
             "Cannot make sendgrid call. Please check if SENDGRID_API_KEY is present."
         )
     return
+
+
+def get_url_from_hostname(hostname):
+    if settings.DEBUG or settings.TEST:
+        scheme = "http"
+    else:
+        scheme = "https"
+    url = "{}://{}".format(scheme, hostname)
+    return url

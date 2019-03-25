@@ -38,7 +38,7 @@ from yaml.scanner import ScannerError
 from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
-from base.utils import paginated_queryset, send_email
+from base.utils import paginated_queryset, send_email, get_url_from_hostname
 from challenges.utils import (
     get_challenge_model,
     get_challenge_phase_model,
@@ -1738,9 +1738,8 @@ def invite_users_to_challenge(request, challenge_pk):
 
         sender_email = settings.CLOUDCV_TEAM_EMAIL
         # TODO: Update this URL after shifting django backend from evalapi.cloudcv.org to evalai.cloudcv.org/api
-        url = "{}/accept-invitation/{}/".format(
-            settings.EVALAI_HOST_URL, invitation_key
-        )
+        hostname = get_url_from_hostname(settings.HOSTNAME)
+        url = "{}/accept-invitation/{}/".format(hostname, invitation_key)
         template_data = {"title": challenge.title, "url": url}
         if challenge.image:
             template_data["image"] = challenge.image.url
