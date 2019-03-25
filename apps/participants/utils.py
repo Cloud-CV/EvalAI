@@ -33,18 +33,19 @@ def has_user_participated_in_challenge(user, challenge_id):
 
 
 def get_participant_team_id_of_user_for_a_challenge(user, challenge_id):
-    """Returns the participant team object for a particular user for a particular challenge"""
+    """Returns the participant team id for a particular user for a particular challenge"""
     participant_teams = get_participant_teams_for_user(user)
     for participant_team in participant_teams:
         if Challenge.objects.filter(
             pk=challenge_id, participant_teams=participant_team
         ).exists():
             return participant_team
-    return None
+    return
 
 
 def get_participant_team_of_user_for_a_challenge(user, challenge_id):
     """Returns the participant team object for a particular user for a particular challenge"""
+    # TODO: Remove other functions and use this function
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
         user, challenge_id
     )

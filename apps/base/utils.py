@@ -1,4 +1,5 @@
 import base64
+import boto3
 import logging
 import os
 import sendgrid
@@ -126,3 +127,21 @@ def get_url_from_hostname(hostname):
         scheme = "https"
     url = "{}://{}".format(scheme, hostname)
     return url
+
+
+def get_boto3_client(resource, aws_keys):
+    """
+    Returns the boto3 client for a resource in AWS
+    Arguments:
+        resource {str} -- Name of the resource for which client is to be created
+        aws_keys {dict} -- AWS keys which are to be used
+    Returns:
+        Boto3 client object for the resource
+    """
+    client = boto3.client(
+        resource,
+        region_name=aws_keys.get("AWS_REGION"),
+        aws_access_key_id=aws_keys.get("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=aws_keys.get("AWS_SECRET_ACCESS_KEY"),
+    )
+    return client

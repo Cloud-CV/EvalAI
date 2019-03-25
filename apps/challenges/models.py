@@ -88,6 +88,19 @@ class Challenge(TimeStampedModel):
     max_concurrent_submission_evaluation = models.PositiveIntegerField(
         default=100000
     )
+    aws_account_id = models.CharField(
+        max_length=200, default="", null=True, blank=True
+    )
+    aws_access_key_id = models.CharField(
+        max_length=200, default="", null=True, blank=True
+    )
+    aws_secret_access_key = models.CharField(
+        max_length=200, default="", null=True, blank=True
+    )
+    aws_region = models.CharField(
+        max_length=50, default="us-east-1", null=True, blank=True
+    )
+    use_host_credentials = models.BooleanField(default=False)
 
     class Meta:
         app_label = "challenges"
