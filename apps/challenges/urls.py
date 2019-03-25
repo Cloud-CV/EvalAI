@@ -126,4 +126,14 @@ urlpatterns = [
         views.get_aws_credentials_for_participant_team,
         name="get_aws_credentials_for_participant_team",
     ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/send-invitation/$",
+        views.invite_users_to_challenge,
+        name="invite_users_to_challenge",
+    ),
+    url(
+        r"^(?P<invitation_key>[\w-]+)/accept-invitation/$",
+        views.accept_challenge_invitation,
+        name="accept_challenge_invitation",
+    ),
 ]
