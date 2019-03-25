@@ -1695,13 +1695,13 @@ def invite_users_to_challenge(request, challenge_pk):
     users_email = request.data.get("emails")
 
     if not users_email:
-        response_data = {"error": "Users email can't be blank."}
+        response_data = {"error": "Users email can't be blank"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         users_email = eval(users_email)
     except Exception:
-        response_data = {"error": "Invalid format for users email."}
+        response_data = {"error": "Invalid format for users email"}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     invalid_emails = []
