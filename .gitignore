@@ -103,3 +103,6 @@ env3/
 
 # pytest
 .pytest_cache/
+
+# Text Editors
+.vscode/
