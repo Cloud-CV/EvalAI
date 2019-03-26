@@ -1,5 +1,6 @@
 import base64
 import boto3
+import botocore
 import logging
 import os
 import sendgrid
@@ -148,3 +149,33 @@ def get_boto3_client(resource, aws_keys):
         return client
     except Exception as e:
         logger.exception(e)
+
+
+def get_sqs_queue_object():
+    if settings.DEBUG or settings.TEST:
+        queue_name = "evalai_submission_queue"
+        sqs = boto3.resource(
+            "sqs",
+            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
+            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
+        )
+    else:
+        sqs = boto3.resource(
+            "sqs",
+            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+        )
+    # Check if the queue exists. If no, then create one
+    try:
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
+    except botocore.exceptions.ClientError as ex:
+        if (
+            ex.response["Error"]["Code"]
+            != "AWS.SimpleQueueService.NonExistentQueue"
+        ):
+            logger.exception("Cannot get queue: {}".format(queue_name))
+        queue = sqs.create_queue(QueueName=queue_name)
+    return queue
