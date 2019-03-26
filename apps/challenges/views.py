@@ -304,22 +304,6 @@ def add_participant_team_to_challenge(
         }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
-        # Create ECR Repository for the participant team if challenge is docker based
-        if challenge.is_docker_based:
-            aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-            ecr_repository_name = "{}-{}".format(
-                challenge.slug, participant_team.team_name
-            )
-            ecr_repository_name = convert_to_aws_ecr_compatible_format(
-                ecr_repository_name
-            )
-            repository, created = get_or_create_ecr_repository(
-                ecr_repository_name, aws_keys
-            )
-            participant_team.docker_repository_uri = repository[
-                "repositoryUri"
-            ]
-            participant_team.save()
         challenge.participant_teams.add(participant_team)
         return Response(status=status.HTTP_201_CREATED)
 
@@ -1636,13 +1620,21 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    name = str(uuid.uuid4())[:32]
-    federated_user = create_federated_user(
-        name, participant_team.get_docker_repository_name(), aws_keys
+    ecr_repository_name = "{}-participant-team-{}".format(
+        challenge.slug, participant_team.pk
     )
+    ecr_repository_name = convert_to_aws_ecr_compatible_format(
+        ecr_repository_name
+    )
+    repository, created = get_or_create_ecr_repository(
+        ecr_repository_name, aws_keys
+    )
+    name = str(uuid.uuid4())[:32]
+    docker_repository_uri = repository["repositoryUri"]
+    federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
     data = {
         "federated_user": federated_user,
-        "docker_repository_uri": participant_team.docker_repository_uri,
+        "docker_repository_uri": docker_repository_uri,
     }
     response_data = {"success": data}
     return Response(response_data, status=status.HTTP_200_OK)
