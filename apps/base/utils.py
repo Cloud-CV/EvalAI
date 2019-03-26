@@ -138,10 +138,13 @@ def get_boto3_client(resource, aws_keys):
     Returns:
         Boto3 client object for the resource
     """
-    client = boto3.client(
-        resource,
-        region_name=aws_keys.get("AWS_REGION"),
-        aws_access_key_id=aws_keys.get("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=aws_keys.get("AWS_SECRET_ACCESS_KEY"),
-    )
-    return client
+    try:
+        client = boto3.client(
+            resource,
+            region_name=aws_keys["AWS_REGION"],
+            aws_access_key_id=aws_keys["AWS_ACCESS_KEY_ID"],
+            aws_secret_access_key=aws_keys["AWS_SECRET_ACCESS_KEY"],
+        )
+        return client
+    except Exception as e:
+        logger.exception(e)
