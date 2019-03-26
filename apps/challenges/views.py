@@ -1620,7 +1620,9 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    ecr_repository_name = "{}-{}".format(challenge.slug, participant_team.pk)
+    ecr_repository_name = "{}-participant-team-{}".format(
+        challenge.slug, participant_team.pk
+    )
     ecr_repository_name = convert_to_aws_ecr_compatible_format(
         ecr_repository_name
     )
