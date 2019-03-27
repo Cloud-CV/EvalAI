@@ -40,7 +40,7 @@ services:
 
   remote-worker:
     env_file:
-      - docker/dev/docker.env
+      - docker/dev/docker_remote_worker.env
     build:
       context: ./
       dockerfile: docker/dev/worker/Dockerfile
