@@ -29,11 +29,8 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     paginated_queryset,
     StandardResultSetPagination,
-<<<<<<< HEAD
     get_sqs_queue_object,
-=======
     get_boto3_client,
->>>>>>> Add query params check and modified conditions in API
 )
 from challenges.models import (
     ChallengePhase,
@@ -1044,7 +1041,7 @@ def delete_submission_message_from_queue(request, queue_name, receipt_handle):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
