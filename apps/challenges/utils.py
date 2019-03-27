@@ -2,6 +2,8 @@ import os
 
 import json
 import logging
+import uuid
+import re
 
 from botocore.exceptions import ClientError
 
@@ -61,6 +63,26 @@ def convert_to_aws_federated_user_format(string):
         if ch.isalnum() or ch in ["=", ",", ".", "@", "-"]:
             result += ch
     return result
+
+
+def generate_sqs_queue_name(challenge_title):
+    """Generate string compatible with SQS queue naming
+
+    Arguments:
+        challenge_title {string} -- Challenge title
+
+    Returns:
+        sqs_queue_name {string} -- Valid SQS queue name
+    """
+
+    # sqs queue name length should be <= 80
+    escaped_challenge_title = re.sub(
+        "[^a-zA-Z0-9_-]", "", challenge_title.replace(" ", "-")
+    ).lower()[:43]
+    random_challenge_id = uuid.uuid4()
+    return "{}-{}".format(
+        escaped_challenge_title, random_challenge_id
+    )
 
 
 def get_aws_credentials_for_challenge(challenge_pk):
