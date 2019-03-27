@@ -390,7 +390,7 @@
             ev.stopPropagation();
             // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
-                .title('Add other memebers to this Team')
+                .title('Add other members to your team')
                 .textContent('Enter the email address of the person')
                 .placeholder('email')
                 .ariaLabel('')
