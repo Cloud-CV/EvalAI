@@ -1,4 +1,5 @@
 import os
+import json
 import csv
 import logging
 import random
@@ -50,7 +51,8 @@ from .models import (Challenge,
                      ChallengePhase,
                      ChallengePhaseSplit,
                      ChallengeConfiguration,
-                     StarChallenge)
+                     StarChallenge,
+                     ChallengeDescriptionImage)
 from .permissions import IsChallengeCreator
 from .serializers import (ChallengeConfigSerializer,
                           ChallengePhaseSerializer,
@@ -73,6 +75,53 @@ try:
     xrange          # Python 2
 except NameError:
     xrange = range  # Python 3
+
+
+@api_view(['POST'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def upload_overview_image(request, challenge_pk):
+    try:
+        challenge = Challenge.objects.get(pk=challenge_pk)
+    except Challenge.DoesNotExist:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Create new instance with the uploaded image for the current challenge
+    try:
+        instance = ChallengeDescriptionImage.objects.create(
+            challenge=challenge,
+            image=request.FILES['file'])
+    except:
+        response_data = {'error': 'Error in uploading the image'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    response_data = {
+        'url': instance.image.url,
+        'image_id': instance.id,
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def remove_overview_image(request, challenge_pk):
+    image_id = request.POST.get('remove_image_id')
+    image_id_list = json.loads(image_id)
+    try:
+        for image_id in image_id_list:
+            instance = ChallengeDescriptionImage.objects.get(
+                id=image_id)
+            instance.delete()
+    except:
+        response_data = {'error': 'Error in removing the image'}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    response_data = {
+        'success': 'Successfully deleted the image!',
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'POST'])
@@ -144,6 +193,17 @@ def challenge_detail(request, challenge_host_team_pk, challenge_pk):
                                                 context={'challenge_host_team': challenge_host_team,
                                                          'request': request},
                                                 partial=True)
+            # user delete the uploaded image
+            image_id = request.data['remove_image_id']
+            image_id_list = json.loads(image_id)
+            try:
+                for image_id in image_id_list:
+                    instance = ChallengeDescriptionImage.objects.get(
+                        id=image_id)
+                    instance.delete()
+            except:
+                response_data = {'error': 'Error in removing the image'}
+                return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
         else:
             serializer = ZipChallengeSerializer(challenge,
                                                 data=request.data,

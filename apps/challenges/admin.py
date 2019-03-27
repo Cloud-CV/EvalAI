@@ -9,7 +9,8 @@ from .models import (Challenge,
                      DatasetSplit,
                      Leaderboard,
                      LeaderboardData,
-                     StarChallenge,)
+                     StarChallenge,
+                     ChallengeDescriptionImage)
 
 
 @admin.register(Challenge)
@@ -20,6 +21,11 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
                     'is_docker_based', 'slug',)
     list_filter = ('published', 'enable_forum', 'anonymous_leaderboard', 'featured', 'start_date', 'end_date',)
     search_fields = ('title', 'creator', 'creator__team_name', 'slug',)
+
+
+@admin.register(ChallengeDescriptionImage)
+class ChallengeDescriptionImageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'challenge')
 
 
 @admin.register(ChallengeConfiguration)

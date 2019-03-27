@@ -56,6 +56,11 @@
         var userKey = utilities.getData('userKey');
         vm.authToken = userKey;
 
+        // store `id` of images in `edit overview details` to delete
+        var remove_image_id = [];
+        var remove_after_upload_image_id = [];
+        var total_images = 0;
+
         vm.subErrors = {};
 
         utilities.showLoader();
@@ -1276,10 +1281,14 @@
                         break;
                     }
                 }
+                if (total_images == 0){
+                    remove_image_id = [];
+                }
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.method = 'PATCH';
                 parameters.data = {
-                    "description": vm.page.description
+                    "description": vm.page.description,
+                    "remove_image_id": JSON.stringify(remove_image_id)
 
                 };
                 parameters.callback = {
@@ -1302,7 +1311,21 @@
             } else {
                 vm.page.description = vm.tempDesc;
                 $mdDialog.hide();
+
+                // delete the uploaded image
+                var remove_image_url = 'http://127.0.0.1:8000/api/challenges/remove_overview_image/' + vm.challengeId + '/';
+                var form = new FormData;
+                form.append("remove_image_id", JSON.stringify(remove_after_upload_image_id));
+                var xhr = new XMLHttpRequest;
+                xhr.open('POST', remove_image_url, true);
+                if (userKey) {
+                    xhr.setRequestHeader('Authorization', 'Token ' + userKey);
+                }
+                xhr.send(form);
             }
+            remove_after_upload_image_id = [];
+            remove_image_id = [];
+            total_images = 0;
         };
 
         // Delete challenge
@@ -1723,7 +1746,62 @@
         vm.showConfirmation = function(message){
             $rootScope.notify("success", message);
         };
-        
-    }
 
+        // remove the uploaded image of `edit challenge description`
+        $scope.trixAttachmentRemove = function(e, editor) {
+            console.log('asdasd');
+            var attachment = e.attachment;
+            var current_image_id = attachment.attachment.attributes.values.image_id;
+            if (remove_image_id.includes(current_image_id)) {
+                total_images = current_image_id.length;
+                remove_image_id = [];
+            }
+            if (remove_image_id.length > total_images && total_images != 0) {
+                remove_image_id = [];
+            }
+            remove_image_id.push(current_image_id);
+        }
+
+        // upload the image of `edit challenge description`
+        var uploadAttachment;
+        $scope.trixAttachmentAdd = function(e, editor) {
+            var attachment = e.attachment;
+            if (attachment.file) {
+                return uploadAttachment(attachment);
+            }
+        }
+        var upload_image_url = 'http://127.0.0.1:8000/api/challenges/upload_overview_image/' + vm.challengeId + '/';
+
+        uploadAttachment = function(attachment) {
+            var file = attachment.file;
+            var form = new FormData;
+            form.append("file", file);
+            var xhr = new XMLHttpRequest;
+            xhr.open("POST", upload_image_url, true);
+            if (userKey) {
+                xhr.setRequestHeader('Authorization', 'Token ' + userKey);
+            }
+            xhr.upload.onprogress = function(event) {
+                var progress;
+                progress = event.loaded / event.total * 100;
+                return attachment.setUploadProgress(progress);
+            };
+
+            xhr.onreadystatechange = function() {
+                var href, url, data, jsonResponse;
+                if (this.readyState == 4 && this.status == 200) {
+                    data = this.responseText;
+                    jsonResponse = JSON.parse(data);
+                    url = href = 'http://127.0.0.1:8000' + jsonResponse['url'];
+                    remove_after_upload_image_id.push(jsonResponse['image_id']);
+                    return attachment.setAttributes({
+                        url: url,
+                        href: href,
+                        image_id: jsonResponse['image_id'],
+                    });
+                }
+            };
+            return xhr.send(form);
+        };
+    }
 })();

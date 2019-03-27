@@ -105,6 +105,15 @@ signals.post_save.connect(model_field_name(field_name='evaluation_script')(creat
                           sender=Challenge, weak=False)
 
 
+class ChallengeDescriptionImage(models.Model):
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, null=True)
+    image = models.ImageField(
+        upload_to=RandomFileName('description_image'), null=True, blank=True, verbose_name="Description Image")
+
+    def __str__(self):
+        return self.challenge.title
+
+
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
     codename = models.CharField(max_length=100)

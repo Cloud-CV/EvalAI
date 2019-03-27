@@ -4,6 +4,10 @@ from . import views
 
 urlpatterns = [
 
+    url(r'^upload_overview_image/(?P<challenge_pk>[0-9]+)/$', views.upload_overview_image,
+        name='upload_overview_image'),
+    url(r'^remove_overview_image/(?P<challenge_pk>[0-9]+)/$', views.remove_overview_image,
+        name='remove_overview_image'),
     url(r'^challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/challenge$', views.challenge_list,
         name='get_challenge_list'),
     url(r'^challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/challenge/(?P<challenge_pk>[0-9]+)$',
