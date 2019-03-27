@@ -30,6 +30,7 @@ from base.utils import (
     paginated_queryset,
     StandardResultSetPagination,
     get_sqs_queue_object,
+    get_boto3_client,
 )
 from challenges.models import (
     ChallengePhase,
@@ -37,11 +38,16 @@ from challenges.models import (
     ChallengePhaseSplit,
     LeaderboardData,
 )
-from challenges.utils import get_challenge_model, get_challenge_phase_model
+from challenges.utils import (
+    get_challenge_model,
+    get_challenge_phase_model,
+    get_aws_credentials_for_challenge,
+)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
 from participants.models import ParticipantTeam
 from participants.utils import (
+    get_participant_team_model,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
 )
@@ -1033,3 +1039,65 @@ def delete_submission_message_from_queue(request, queue_name, receipt_handle):
             "SQS message is not deleted due to {}".format(response_data)
         )
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_signed_url_for_submission_related_file(request):
+    """Returns S3 signed URL for a particular file residing on S3 bucket
+
+    Arguments:
+        request {object} -- Request object
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    """
+
+    # Assumption: file will be stored in this format: 'team_{id}/submission_{id}/.../file.log'
+    bucket = request.query_params.get("bucket", None)
+    key = request.query_params.get("key", None)
+
+    if not bucket or not key:
+        response_data = {"error": "key and bucket names can't be empty"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        splits = key.split("/")
+        participant_team_id, submission_id = (
+            splits[0].replace("team_", ""),
+            splits[1].replace("submission_", ""),
+        )
+    except Exception:
+        response_data = {
+            "error": "Invalid file path format. Please try again with correct file path format."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    participant_team = get_participant_team_model(participant_team_id)
+    submission = get_submission_model(submission_id)
+    challenge_pk = submission.challenge_phase.challenge.pk
+
+    if submission.participant_team != participant_team:
+        response_data = {
+            "error": "You are not authorized to access this file."
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if (
+        request.user.id == submission.created_by.id
+        or is_user_a_host_of_challenge(request.user, challenge_pk)
+    ):
+        aws_keys = get_aws_credentials_for_challenge(challenge_pk)
+        s3 = get_boto3_client("s3", aws_keys)
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object", Params={"Bucket": bucket, "Key": key}
+        )
+        response_data = {"signed_url": url}
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {
+            "error": "You are not authorized to access this file."
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
