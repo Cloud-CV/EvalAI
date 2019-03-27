@@ -45,6 +45,19 @@ class BaseAPITestClass(APITestCase):
             user=self.user, email="user@test.com", primary=True, verified=True
         )
 
+        self.participant_user = User.objects.create(
+            username="someparticipantuser",
+            email="participantuser@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.participant_user,
+            email="participantuser@test.com",
+            primary=True,
+            verified=True,
+        )
+
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
@@ -2028,7 +2041,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             },
         )
 
-    def test_get_particular_challenge_phase(self):
+    def test_get_particular_challenge_phase_if_user_is_participant(self):
         expected = {
             "id": self.challenge_phase.id,
             "name": self.challenge_phase.name,
@@ -2048,6 +2061,35 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
         }
+        self.client.force_authenticate(user=self.participant_user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_particular_challenge_phase_if_user_is_challenge_host(self):
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": self.challenge_phase.name,
+            "description": self.challenge_phase.description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(
+                self.challenge_phase.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.challenge_phase.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "is_public": self.challenge_phase.is_public,
+            "is_submission_public": self.challenge_phase.is_submission_public,
+            "is_active": True,
+            "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "test_annotation": "http://testserver%s"
+            % (self.challenge_phase.test_annotation.url),
+        }
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
