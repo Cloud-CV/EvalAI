@@ -7,29 +7,27 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('jobs', '0007_add_is_flagged_field'),
-    ]
+    dependencies = [("jobs", "0007_add_is_flagged_field")]
 
     operations = [
         migrations.AlterField(
-            model_name='submission',
-            name='execution_time_limit',
+            model_name="submission",
+            name="execution_time_limit",
             field=models.PositiveIntegerField(default=300),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='method_description',
+            model_name="submission",
+            name="method_description",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='project_url',
+            model_name="submission",
+            name="project_url",
             field=models.CharField(max_length=1000, null=True),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='publication_url',
+            model_name="submission",
+            name="publication_url",
             field=models.CharField(max_length=1000, null=True),
         ),
     ]

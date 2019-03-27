@@ -86,6 +86,8 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
 
     * **max_submissions_per_day**: Positive integer which tells the maximum number of submissions per day to a challenge phase.
 
+    * **max_submissions_per_month**: Positive integer which tells the maximum number of submissions per month to a challenge phase.
+
     * **max_submissions**: a Positive integer that decides the overall maximum number of submissions that can be done to a challenge phase.
 
 * **dataset_splits**:
