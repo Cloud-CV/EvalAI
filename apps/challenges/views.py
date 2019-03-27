@@ -1,6 +1,5 @@
-import os
-import json
 import csv
+import json
 import logging
 import random
 import requests

@@ -2,16 +2,18 @@ from django.contrib import admin
 
 from base.admin import ImportExportTimeStampedAdmin
 
-from .models import (Challenge,
-                     ChallengeConfiguration,
-                     ChallengePhase,
-                     ChallengePhaseSplit,
-                     DatasetSplit,
-                     Leaderboard,
-                     LeaderboardData,
-                     StarChallenge,
-                     UserInvitation,
-                     ChallengeDescriptionImage)
+from .models import (
+    Challenge,
+    ChallengeConfiguration,
+    ChallengePhase,
+    ChallengePhaseSplit,
+    DatasetSplit,
+    Leaderboard,
+    LeaderboardData,
+    StarChallenge,
+    UserInvitation,
+    ChallengeDescriptionImage,
+)
 
 
 @admin.register(Challenge)
