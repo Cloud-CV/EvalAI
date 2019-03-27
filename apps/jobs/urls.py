@@ -40,4 +40,19 @@ urlpatterns = [
         views.get_submissions_for_challenge,
         name="get_submissions_for_challenge",
     ),
+    url(
+        r"^queues/(?P<queue_name>[\w-]+)/receipt/(?P<receipt_handle>[\w-]+)/$",
+        views.delete_submission_message_from_queue,
+        name="delete_submission_message_from_queue",
+    ),
+    url(
+        r"^challenge/queues/(?P<queue_name>[\w-]+)/$",
+        views.get_submission_message_from_queue,
+        name="get_submission_message_from_queue",
+    ),
+    url(
+        r"^submission_files/$",
+        views.get_signed_url_for_submission_related_file,
+        name="get_signed_url_for_submission_related_file",
+    ),
 ]
