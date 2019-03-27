@@ -44,6 +44,7 @@ from challenges.utils import (
     get_challenge_phase_split_model,
     get_dataset_split_model,
     get_leaderboard_model,
+    generate_sqs_queue_name,
 )
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
@@ -936,13 +937,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
-                challenge_title = challenge.title.split(" ")
-                challenge_title = "-".join(challenge_title).lower()
-                random_challenge_id = uuid.uuid4()
-                challenge_queue_name = "{}-{}".format(
-                    challenge_title, random_challenge_id
-                )
-                challenge.queue = challenge_queue_name
+                challenge.queue = generate_sqs_queue_name(challenge.title)
                 challenge.save()
             else:
                 response_data = serializer.errors
