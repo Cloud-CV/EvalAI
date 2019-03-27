@@ -29,3 +29,28 @@
 .add-line-height {
 	line-height: 36px;
 }
+
+li {
+	margin-bottom: 1.5%;
+  }
+  
+  li:last-child {
+   margin-bottom: 0px;
+  }
+
+code {
+	font-family: Courier, 'New Courier', monospace;
+	font-size: 12px;
+	background:#eff0f1; border:#eff0f1 dashed 1px; padding:6px;
+	border-radius: 10px;
+}
+
+.code-btn {
+	height: 100% !important;
+	padding: 0 0.5rem !important;
+	line-height: 200% !important;
+}
+
+.dashed-link {
+	border-bottom: 1px orange dashed;
+}

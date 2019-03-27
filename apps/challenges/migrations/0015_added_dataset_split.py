@@ -7,22 +7,26 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0014_changed_code_name_field'),
-    ]
+    dependencies = [("challenges", "0014_changed_code_name_field")]
 
     operations = [
         migrations.CreateModel(
-            name='DatasetSplit',
+            name="DatasetSplit",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('modified_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=100)),
-                ('codename', models.CharField(max_length=100)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("modified_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=100)),
+                ("codename", models.CharField(max_length=100)),
             ],
-            options={
-                'db_table': 'dataset_split',
-            },
-        ),
+            options={"db_table": "dataset_split"},
+        )
     ]
