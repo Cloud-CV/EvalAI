@@ -55,30 +55,29 @@ def get_or_create_sqs_queue(queue_name):
     return queue
 
 
-def publish_submission_message(challenge_id, phase_id, submission_id):
+def publish_submission_message(challenge_pk, phase_pk, submission_pk):
     """
     Args:
-        challenge_id: Challenge Id
-        phase_id: Challenge Phase Id
-        submission_id: Submission Id
+        challenge_pk: Challenge Id
+        phase_pk: Challenge Phase Id
+        submission_pk: Submission Id
 
     Returns:
         Returns SQS response
     """
     message = {
-        "challenge_id": challenge_id,
-        "phase_id": phase_id,
-        "submission_id": submission_id,
+        "challenge_pk": challenge_pk,
+        "phase_pk": phase_pk,
+        "submission_pk": submission_pk,
     }
 
     try:
-        challenge = Challenge.objects.get(pk=challenge_id)
+        challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
         logger.exception(
-            "Challenge does not exist for the given id {}".format(challenge_id)
+            "Challenge does not exist for the given id {}".format(challenge_pk)
         )
         return
-
     queue_name = challenge.queue
     queue = get_or_create_sqs_queue(queue_name)
     response = queue.send_message(MessageBody=json.dumps(message))

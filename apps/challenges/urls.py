@@ -45,11 +45,6 @@ urlpatterns = [
         name="get_featured_challenges",
     ),
     url(
-        r"^challenge/phase/(?P<pk>[0-9]+)/$",
-        views.get_challenge_phase_by_pk,
-        name="get_challenge_phase_by_pk",
-    ),
-    url(
         r"^challenge/(?P<pk>[0-9]+)/$",
         views.get_challenge_by_pk,
         name="get_challenge_by_pk",
@@ -135,5 +130,15 @@ urlpatterns = [
         r"^(?P<invitation_key>[\w-]+)/accept-invitation/$",
         views.accept_challenge_invitation,
         name="accept_challenge_invitation",
+    ),
+    url(
+        r"^challenge/queues/(?P<queue_name>[\w-]+)/$",
+        views.get_challenge_by_queue_name,
+        name="get_challenge_by_queue_name",
+    ),
+    url(
+        r"^(?P<challenge_pk>[0-9]+)/phases/$",
+        views.get_challenge_phases_by_challenge_pk,
+        name="get_challenge_phases_by_challenge_pk",
     ),
 ]
