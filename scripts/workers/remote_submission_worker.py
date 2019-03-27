@@ -277,7 +277,8 @@ def process_submission_message(message):
     # so that the further execution does not happen
     if not submission_instance:
         return
-
+    challenge = get_challenge_by_queue_name()
+    remote_evaluation = challenge.get("remote_evaluation")
     challenge_phase = get_challenge_phase_by_pk(challenge_pk, phase_pk)
     if not challenge_phase:
         logger.exception(
@@ -295,6 +296,7 @@ def process_submission_message(message):
         challenge_phase,
         submission_instance,
         user_annotation_file_path,
+        remote_evaluation,
     )
 
 
@@ -453,7 +455,11 @@ def read_file_content(file_path):
 
 
 def run_submission(
-    challenge_pk, challenge_phase, submission, user_annotation_file_path
+    challenge_pk,
+    challenge_phase,
+    submission,
+    user_annotation_file_path,
+    remote_evaluation,
 ):
     """
     * Checks whether the corresponding evaluation script and the annotation file for the challenge exists or not
@@ -511,6 +517,8 @@ def run_submission(
                 challenge_phase.get("codename"),
                 submission_metadata=submission,
             )
+        if remote_evaluation:
+            return
     except Exception:
         status = "failed"
         stderr.write(traceback.format_exc())
