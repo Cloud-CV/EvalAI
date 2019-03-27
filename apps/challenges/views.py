@@ -304,22 +304,6 @@ def add_participant_team_to_challenge(
         }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
-        # Create ECR Repository for the participant team if challenge is docker based
-        if challenge.is_docker_based:
-            aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-            ecr_repository_name = "{}-{}".format(
-                challenge.slug, participant_team.team_name
-            )
-            ecr_repository_name = convert_to_aws_ecr_compatible_format(
-                ecr_repository_name
-            )
-            repository, created = get_or_create_ecr_repository(
-                ecr_repository_name, aws_keys
-            )
-            participant_team.docker_repository_uri = repository[
-                "repositoryUri"
-            ]
-            participant_team.save()
         challenge.participant_teams.add(participant_team)
         return Response(status=status.HTTP_201_CREATED)
 
@@ -534,9 +518,16 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == "GET":
-        serializer = ChallengePhaseSerializer(challenge_phase)
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
+        if not is_user_a_host_of_challenge(request.user, challenge.id):
+            serializer = ChallengePhaseSerializer(challenge_phase)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            serializer = ChallengePhaseCreateSerializer(
+                challenge_phase, context={"request": request}
+            )
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
         if request.method == "PATCH":
@@ -1636,29 +1627,23 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    name = str(uuid.uuid4())[:32]
-    federated_user = create_federated_user(
-        name, participant_team.get_docker_repository_name(), aws_keys
+    ecr_repository_name = "{}-participant-team-{}".format(
+        challenge.slug, participant_team.pk
     )
+    ecr_repository_name = convert_to_aws_ecr_compatible_format(
+        ecr_repository_name
+    )
+    repository, created = get_or_create_ecr_repository(
+        ecr_repository_name, aws_keys
+    )
+    name = str(uuid.uuid4())[:32]
+    docker_repository_uri = repository["repositoryUri"]
+    federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
     data = {
         "federated_user": federated_user,
-        "docker_repository_uri": participant_team.docker_repository_uri,
+        "docker_repository_uri": docker_repository_uri,
     }
     response_data = {"success": data}
-    return Response(response_data, status=status.HTTP_200_OK)
-
-
-@api_view(["GET"])
-@throttle_classes([AnonRateThrottle])
-def get_challenge_phase_by_pk(request, pk):
-    """
-    Returns a particular challenge phase details by pk
-    """
-    challenge_phase = get_challenge_phase_model(pk)
-    serializer = ChallengePhaseSerializer(
-        challenge_phase, context={"request": request}
-    )
-    response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -1800,3 +1785,67 @@ def accept_challenge_invitation(request, invitation_key):
                 serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_by_queue_name(request, queue_name):
+    """
+    API endpoint to fetch the challenge details by using pk
+    Arguments:
+        queue_name -- Challenge queue name for which the challenge deatils are fetched
+    Returns:
+        Response Object -- An object containing challenge details
+    """
+
+    try:
+        challenge = Challenge.objects.get(queue=queue_name)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": "Challenge with queue name {} does not exist".format(
+                queue_name
+            )
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this challenge."
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    serializer = ZipChallengeSerializer(
+        challenge, context={"request": request}
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_phases_by_challenge_pk(request, challenge_pk):
+    """
+    API endpoint to fetch all challenge phase details corresponding to a challenge using challenge pk
+    Arguments:
+        challenge_pk -- Challenge Id for which the details is to be fetched
+    Returns:
+        Response Object -- An object containing all challenge phases for the challenge
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access these challenge phases."
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge_pk)
+    serializer = ChallengePhaseCreateSerializer(
+        challenge_phases, context={"request": request}, many=True
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)

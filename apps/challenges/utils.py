@@ -164,14 +164,15 @@ def create_federated_user(name, repository, aws_keys):
         }
     """
     AWS_ACCOUNT_ID = aws_keys.get("AWS_ACCOUNT_ID")
+    AWS_REGION = aws_keys.get("AWS_REGION")
     policy = {
         "Version": "2012-10-17",
         "Statement": [
             {
                 "Effect": "Allow",
                 "Action": "ecr:*",
-                "Resource": "arn:aws:ecr:us-east-1:{}:repository/{}".format(
-                    AWS_ACCOUNT_ID, repository
+                "Resource": "arn:aws:ecr:{}:{}:repository/{}".format(
+                    AWS_REGION, AWS_ACCOUNT_ID, repository
                 ),
             },
             {
