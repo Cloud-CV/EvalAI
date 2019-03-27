@@ -405,6 +405,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "is_docker_based": self.challenge.is_docker_based,
             "slug": self.challenge.slug,
             "max_docker_image_size": self.challenge.max_docker_image_size,
+            "remove_image_id": [],
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)

@@ -1749,7 +1749,6 @@
 
         // remove the uploaded image of `edit challenge description`
         $scope.trixAttachmentRemove = function(e, editor) {
-            console.log('asdasd');
             var attachment = e.attachment;
             var current_image_id = attachment.attachment.attributes.values.image_id;
             if (remove_image_id.includes(current_image_id)) {
