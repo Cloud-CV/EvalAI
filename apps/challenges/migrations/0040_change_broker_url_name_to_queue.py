@@ -8,13 +8,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0039_add_sqs_broker_url_for_challenge_based_worker'),
+        ("challenges", "0039_add_sqs_broker_url_for_challenge_based_worker")
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='challenge',
-            old_name='broker_url',
-            new_name='queue',
-        ),
+            model_name="challenge", old_name="broker_url", new_name="queue"
+        )
     ]
