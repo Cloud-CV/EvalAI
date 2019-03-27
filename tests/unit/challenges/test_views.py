@@ -382,7 +382,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
     def test_particular_challenge_partial_update(self):
         self.partial_update_data = {
             "title": self.partial_update_challenge_title,
-            "remove_image_id": []
+            "remove_image_id": '[]'
         }
         expected = {
             "id": self.challenge.pk,
