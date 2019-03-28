@@ -434,6 +434,22 @@
             title: 'Leaderboard'
         };
 
+        var challenge_invitation = {
+            name: "challenge-invitation",
+            url: "/accept-invitation/:invitationKey",
+            controller: "ChallengeInviteCtrl",
+            controllerAs: "challenge_invitation",
+            templateUrl: baseUrl + "/web/challenge-invite.html",
+            title: "Accept challenge invitation"
+        };
+
+        var get_submission_related_files = {
+            name: "get-submission-related-files",
+            url: "/web/submission-files?bucket&key",
+            controller: "SubmissionFilesCtrl",
+            controllerAs: "submission_files",
+        };
+
         // call all states here
         $stateProvider.state(home);
         $stateProvider.state(privacy_policy);
@@ -497,6 +513,8 @@
         $stateProvider.state(get_involved);
         $stateProvider.state(update_profile);
         $stateProvider.state(contact_us);
+        $stateProvider.state(challenge_invitation);
+        $stateProvider.state(get_submission_related_files);
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');
