@@ -50,6 +50,7 @@ from participants.utils import (
     get_participant_team_model,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
+    is_user_part_of_participant_team,
 )
 
 from .models import Submission
@@ -1085,10 +1086,9 @@ def get_signed_url_for_submission_related_file(request):
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-    if (
-        request.user.id == submission.created_by.id
-        or is_user_a_host_of_challenge(request.user, challenge_pk)
-    ):
+    if is_user_part_of_participant_team(
+        request.user, participant_team
+    ) or is_user_a_host_of_challenge(request.user, challenge_pk):
         aws_keys = get_aws_credentials_for_challenge(challenge_pk)
         s3 = get_boto3_client("s3", aws_keys)
         url = s3.generate_presigned_url(
