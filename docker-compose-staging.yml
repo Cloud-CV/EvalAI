@@ -40,4 +40,4 @@ services:
       dockerfile: docker/prod/worker/Dockerfile
     command: ["python", "-m", "scripts.workers.remote_submission_worker"]
     env_file:
-      - docker/prod/docker_remote_worker_staging.env
+      - docker/prod/docker_remote_worker.env
