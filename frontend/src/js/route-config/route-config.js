@@ -445,7 +445,7 @@
 
         var get_submission_related_files = {
             name: "get-submission-related-files",
-            url: "/:bucket/*key",
+            url: "/web/submission-files?bucket&key",
             controller: "SubmissionFilesCtrl",
             controllerAs: "submission_files",
         };
