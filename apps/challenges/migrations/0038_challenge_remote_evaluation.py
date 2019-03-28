@@ -7,14 +7,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0037_add_field_to_store_forum_url'),
-    ]
+    dependencies = [("challenges", "0037_add_field_to_store_forum_url")]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='remote_evaluation',
-            field=models.BooleanField(db_index=True, default=False, verbose_name='Remote Evaluation'),
-        ),
+            model_name="challenge",
+            name="remote_evaluation",
+            field=models.BooleanField(
+                db_index=True, default=False, verbose_name="Remote Evaluation"
+            ),
+        )
     ]

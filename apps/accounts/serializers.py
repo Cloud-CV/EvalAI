@@ -7,10 +7,18 @@ class UserDetailsSerializer(serializers.ModelSerializer):
     """
     Make username as a read_only field.
     """
+
     class Meta:
         model = get_user_model()
-        fields = ('pk', 'email', 'username', 'first_name', 'last_name')
-        read_only_fields = ('email', 'username')
+        fields = (
+            "pk",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "password",
+        )
+        read_only_fields = ("email", "username")
 
 
 class ProfileSerializer(UserDetailsSerializer):
@@ -21,13 +29,22 @@ class ProfileSerializer(UserDetailsSerializer):
     affiliation = serializers.CharField(source="profile.affiliation")
 
     class Meta(UserDetailsSerializer.Meta):
-        fields = UserDetailsSerializer.Meta.fields + ('affiliation',)
+        fields = (
+            "pk",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "affiliation",
+        )
 
     def update(self, instance, validated_data):
-        profile_data = validated_data.pop('profile', {})
-        affiliation = profile_data.get('affiliation')
+        profile_data = validated_data.pop("profile", {})
+        affiliation = profile_data.get("affiliation")
 
-        instance = super(ProfileSerializer, self).update(instance, validated_data)
+        instance = super(ProfileSerializer, self).update(
+            instance, validated_data
+        )
 
         profile = instance.profile
         if profile_data and affiliation:
