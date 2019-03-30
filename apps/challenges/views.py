@@ -1849,3 +1849,17 @@ def get_challenge_phases_by_challenge_pk(request, challenge_pk):
     )
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_pk(request, pk):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    challenge_phase = get_challenge_phase_model(pk)
+    serializer = ChallengePhaseSerializer(
+        challenge_phase, context={"request": request}
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
