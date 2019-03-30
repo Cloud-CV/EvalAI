@@ -31,7 +31,9 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
     data = dict(data, **submission_metadata)
 
     try:
-        response = requests.post(url, headers=headers, files=input_file, data=data)
+        response = requests.post(
+            url, headers=headers, files=input_file, data=data
+        )
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         if response.status_code in EVALAI_ERROR_CODES:
@@ -51,7 +53,7 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
         if "input_file" in response.json():
             echo(style(response.json()["input_file"][0], fg="red", bold=True))
         sys.exit(1)
-    except requests.exceptions.RequestException as err:
+    except requests.exceptions.RequestException:
         echo(
             style(
                 "\nCould not establish a connection to EvalAI."
@@ -117,7 +119,9 @@ def pretty_print_my_submissions_data(submissions, start_date, end_date):
             # Check for empty method name
             date = convert_UTC_date_to_local(submission["submitted_at"])
             method_name = (
-                submission["method_name"] if submission["method_name"] else "None"
+                submission["method_name"]
+                if submission["method_name"]
+                else "None"
             )
             values = list(map(lambda item: submission[item], attributes))
             values.append(date)
@@ -134,7 +138,9 @@ def pretty_print_my_submissions_data(submissions, start_date, end_date):
     echo(table)
 
 
-def display_my_submission_details(challenge_id, phase_id, start_date, end_date):
+def display_my_submission_details(
+    challenge_id, phase_id, start_date, end_date
+):
     """
     Function to display the details of a particular submission.
     """
@@ -162,7 +168,7 @@ def display_my_submission_details(challenge_id, phase_id, start_date, end_date):
         else:
             echo(err)
         sys.exit(1)
-    except requests.exceptions.RequestException as err:
+    except requests.exceptions.RequestException:
         echo(
             style(
                 "\nCould not establish a connection to EvalAI."
@@ -191,14 +197,19 @@ def pretty_print_submission_details(submission):
     )
     team_name = "{} {}".format(team_name, sid)
 
-    status = style("\nSubmission Status : {}\n".format(submission["status"]), bold=True)
+    status = style(
+        "\nSubmission Status : {}\n".format(submission["status"]), bold=True
+    )
     execution_time = style(
-        "\nExecution Time (sec) : {}\n".format(submission["execution_time"]), bold=True
+        "\nExecution Time (sec) : {}\n".format(submission["execution_time"]),
+        bold=True,
     )
 
     date = convert_UTC_date_to_local(submission["submitted_at"])
     submitted_at = style("\nSubmitted At : {}\n".format(date), bold=True)
-    submission = "{}{}{}{}".format(team_name, status, execution_time, submitted_at)
+    submission = "{}{}{}{}".format(
+        team_name, status, execution_time, submitted_at
+    )
     echo(submission)
 
 
@@ -220,7 +231,9 @@ def display_submission_details(submission_id):
                 style(
                     "\nError: {}\n"
                     "\nUse `evalai challenge CHALLENGE phase PHASE submissions` "
-                    "to view your submission.\n".format(response.json()["error"]),
+                    "to view your submission.\n".format(
+                        response.json()["error"]
+                    ),
                     fg="red",
                     bold=True,
                 )
@@ -228,7 +241,7 @@ def display_submission_details(submission_id):
         else:
             echo(err)
         sys.exit(1)
-    except requests.exceptions.RequestException as err:
+    except requests.exceptions.RequestException:
         echo(
             style(
                 "\nCould not establish a connection to EvalAI."
@@ -251,14 +264,7 @@ def convert_bytes_to(byte, to, bsize=1024):
         bytes {int} -- The bytes which is to be converted
         to {str} -- To which unit it is to be converted
     """
-    units_mapping = {
-        'kb': 1,
-        'mb': 2,
-        'gb': 3,
-        'tb': 4,
-        'pb': 5,
-        'eb': 6
-    }
+    units_mapping = {"kb": 1, "mb": 2, "gb": 3, "tb": 4, "pb": 5, "eb": 6}
     unit = byte
     for value in range(units_mapping[to]):
         unit = int(unit / bsize)

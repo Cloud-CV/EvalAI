@@ -70,7 +70,9 @@ class TestDisplayChallenges(BaseTestClass):
         for challenge_data in reversed(challenges_json):
             values = list(map(lambda item: challenge_data[item], attributes))
             creator = challenge_data["creator"]["team_name"]
-            start_date = convert_UTC_date_to_local(challenge_data["start_date"])
+            start_date = convert_UTC_date_to_local(
+                challenge_data["start_date"]
+            )
             end_date = convert_UTC_date_to_local(challenge_data["end_date"])
             values.extend([creator, start_date, end_date])
             table.append_row(values)
@@ -137,15 +139,20 @@ class TestDisplayChallengeDetails(BaseTestClass):
         ]
         table.column_headers = column_attributes
         values = []
-        start_date = convert_UTC_date_to_local(self.challenge_data["start_date"]).split(
-            " "
-        )[0]
-        end_date = convert_UTC_date_to_local(self.challenge_data["end_date"]).split(
-            " "
-        )[0]
+        start_date = convert_UTC_date_to_local(
+            self.challenge_data["start_date"]
+        ).split(" ")[0]
+        end_date = convert_UTC_date_to_local(
+            self.challenge_data["end_date"]
+        ).split(" ")[0]
         values.extend([start_date, end_date])
         values.extend(
-            list(map(lambda item: clean_data(self.challenge_data[item]), attributes))
+            list(
+                map(
+                    lambda item: clean_data(self.challenge_data[item]),
+                    attributes,
+                )
+            )
         )
         table.append_row(values)
         expected = str(table)
@@ -158,7 +165,9 @@ class TestDisplayChallengeDetails(BaseTestClass):
 
 class TestOngoingChallengesConditions(BaseTestClass):
     @responses.activate
-    def test_display_ongoing_challenges_when_challenge_is_not_publicly_available(self):
+    def test_display_ongoing_challenges_when_challenge_is_not_publicly_available(
+        self
+    ):
 
         challenge_data = json.loads(challenge_response.challenges)
 
@@ -179,7 +188,9 @@ class TestOngoingChallengesConditions(BaseTestClass):
         assert result.output.strip() == expected
 
     @responses.activate
-    def test_display_ongoing_challenges_when_challenge_is_not_approved_by_admin(self):
+    def test_display_ongoing_challenges_when_challenge_is_not_approved_by_admin(
+        self
+    ):
 
         challenge_data = json.loads(challenge_response.challenges)
 
@@ -232,7 +243,9 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
 
         url = "{}{}"
 
-        challenges = '{"count": 2, "next": null, "previous": null,"results": []}'
+        challenges = (
+            '{"count": 2, "next": null, "previous": null,"results": []}'
+        )
 
         responses.add(
             responses.GET,
@@ -257,7 +270,9 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format(
+                "3"
+            ),
             json=json.loads(challenges),
             status=200,
         )
@@ -271,9 +286,9 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format(
-                "1"
-            ),
+            url.format(
+                API_HOST_URL, URLS.challenge_phase_split_detail.value
+            ).format("1"),
             json=[],
             status=200,
         )
@@ -311,7 +326,9 @@ class TestDisplayChallengesWithNoChallengeData(BaseTestClass):
         assert response == self.output
 
     @responses.activate
-    def test_display_participant_and_host_challenge_lists_with_no_challenge_data(self):
+    def test_display_participant_and_host_challenge_lists_with_no_challenge_data(
+        self
+    ):
         runner = CliRunner()
         host_string = "\nHosted Challenges\n\n"
         self.output = "{}{}{}".format(host_string, self.output, self.output)
@@ -358,7 +375,9 @@ class TestParticipantChallengesConditions(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format(
+                "3"
+            ),
             json=challenge_data,
             status=200,
         )
@@ -391,7 +410,9 @@ class TestParticipantChallengesConditions(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format(
+                "3"
+            ),
             json=challenge_data,
             status=200,
         )
@@ -422,7 +443,9 @@ class TestParticipantChallengesConditions(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format(
+                "3"
+            ),
             json=challenge_data,
             status=200,
         )
@@ -459,7 +482,9 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format(
+                "3"
+            ),
             json=challenge_data,
             status=200,
         )
@@ -487,7 +512,9 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         for challenge_data in reversed(challenges_json):
             values = list(map(lambda item: challenge_data[item], attributes))
             creator = challenge_data["creator"]["team_name"]
-            start_date = convert_UTC_date_to_local(challenge_data["start_date"])
+            start_date = convert_UTC_date_to_local(
+                challenge_data["start_date"]
+            )
             end_date = convert_UTC_date_to_local(challenge_data["end_date"])
             values.extend([creator, start_date, end_date])
             table.append_row(values)
@@ -526,7 +553,9 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
 
 class TestDisplayChallengePhases(BaseTestClass):
     def setup(self):
-        challenge_phase_list_json = json.loads(challenge_response.challenge_phase_list)
+        challenge_phase_list_json = json.loads(
+            challenge_response.challenge_phase_list
+        )
         challenge_phase_details_json = json.loads(
             challenge_response.challenge_phase_details
         )
@@ -534,7 +563,9 @@ class TestDisplayChallengePhases(BaseTestClass):
         url = "{}{}"
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.challenge_phase_list.value).format("10"),
+            url.format(API_HOST_URL, URLS.challenge_phase_list.value).format(
+                "10"
+            ),
             json=challenge_phase_list_json,
             status=200,
         )
@@ -554,7 +585,12 @@ class TestDisplayChallengePhases(BaseTestClass):
     def test_display_challenge_phase_list(self):
         table = BeautifulTable(max_width=150)
         attributes = ["id", "name", "challenge"]
-        columns_attributes = ["Phase ID", "Phase Name", "Challenge ID", "Description"]
+        columns_attributes = [
+            "Phase ID",
+            "Phase Name",
+            "Challenge ID",
+            "Description",
+        ]
         table.column_headers = columns_attributes
         for phase in self.phases:
             values = list(map(lambda item: phase[item], attributes))
@@ -637,7 +673,9 @@ class TestDisplaySubmission(BaseTestClass):
         url = "{}{}"
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
+            url.format(API_HOST_URL, URLS.my_submissions.value).format(
+                "3", "7"
+            ),
             json=json_data,
             status=200,
         )
@@ -646,7 +684,12 @@ class TestDisplaySubmission(BaseTestClass):
     @responses.activate
     def test_display_my_submission_details(self):
         table = BeautifulTable(max_width=100)
-        attributes = ["id", "participant_team_name", "execution_time", "status"]
+        attributes = [
+            "id",
+            "participant_team_name",
+            "execution_time",
+            "status",
+        ]
         columns_attributes = [
             "ID",
             "Participant Team",
@@ -672,7 +715,9 @@ class TestDisplaySubmission(BaseTestClass):
 
             # Check for empty method name
             method_name = (
-                submission["method_name"] if submission["method_name"] else "None"
+                submission["method_name"]
+                if submission["method_name"]
+                else "None"
             )
             values = list(map(lambda item: submission[item], attributes))
             values.append(date)
@@ -698,7 +743,12 @@ class TestDisplaySubmission(BaseTestClass):
     @responses.activate
     def test_display_my_submission_details_with_start_date(self):
         table = BeautifulTable(max_width=100)
-        attributes = ["id", "participant_team_name", "execution_time", "status"]
+        attributes = [
+            "id",
+            "participant_team_name",
+            "execution_time",
+            "status",
+        ]
         columns_attributes = [
             "ID",
             "Participant Team",
@@ -717,7 +767,9 @@ class TestDisplaySubmission(BaseTestClass):
                 # Check for empty method name
                 date = convert_UTC_date_to_local(submission["submitted_at"])
                 method_name = (
-                    submission["method_name"] if submission["method_name"] else "None"
+                    submission["method_name"]
+                    if submission["method_name"]
+                    else "None"
                 )
                 values = list(map(lambda item: submission[item], attributes))
                 values.append(date)
@@ -734,7 +786,12 @@ class TestDisplaySubmission(BaseTestClass):
     @responses.activate
     def test_display_my_submission_details_with_end_date(self):
         table = BeautifulTable(max_width=100)
-        attributes = ["id", "participant_team_name", "execution_time", "status"]
+        attributes = [
+            "id",
+            "participant_team_name",
+            "execution_time",
+            "status",
+        ]
         columns_attributes = [
             "ID",
             "Participant Team",
@@ -753,7 +810,9 @@ class TestDisplaySubmission(BaseTestClass):
                 # Check for empty method name
                 date = convert_UTC_date_to_local(submission["submitted_at"])
                 method_name = (
-                    submission["method_name"] if submission["method_name"] else "None"
+                    submission["method_name"]
+                    if submission["method_name"]
+                    else "None"
                 )
                 values = list(map(lambda item: submission[item], attributes))
                 values.append(date)
@@ -770,7 +829,12 @@ class TestDisplaySubmission(BaseTestClass):
     @responses.activate
     def test_display_my_submission_details_with_end_date_and_start_date(self):
         table = BeautifulTable(max_width=100)
-        attributes = ["id", "participant_team_name", "execution_time", "status"]
+        attributes = [
+            "id",
+            "participant_team_name",
+            "execution_time",
+            "status",
+        ]
         columns_attributes = [
             "ID",
             "Participant Team",
@@ -789,7 +853,9 @@ class TestDisplaySubmission(BaseTestClass):
                 # Check for empty method name
                 date = convert_UTC_date_to_local(submission["submitted_at"])
                 method_name = (
-                    submission["method_name"] if submission["method_name"] else "None"
+                    submission["method_name"]
+                    if submission["method_name"]
+                    else "None"
                 )
                 values = list(map(lambda item: submission[item], attributes))
                 values.append(date)
@@ -812,7 +878,16 @@ class TestDisplaySubmission(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(
             challenge,
-            ["3", "phase", "7", "submissions", "-s", "6/10/18", "-e", "6/15/18"],
+            [
+                "3",
+                "phase",
+                "7",
+                "submissions",
+                "-s",
+                "6/10/18",
+                "-e",
+                "6/15/18",
+            ],
         )
         response = result.output.strip()
         assert response == output
@@ -836,7 +911,9 @@ class TestDisplayLeaderboard(BaseTestClass):
         attributes = self.leaderboard[0]["leaderboard__schema"]["labels"]
 
         table = BeautifulTable(max_width=150)
-        attributes = ["Rank", "Participant Team"] + attributes + ["Last Submitted"]
+        attributes = (
+            ["Rank", "Participant Team"] + attributes + ["Last Submitted"]
+        )
         attributes = list(map(lambda item: str(item), attributes))
         table.column_headers = attributes
 
@@ -887,9 +964,9 @@ class TestDisplayChallengePhaseSplit(BaseTestClass):
         url = "{}{}"
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format(
-                "1"
-            ),
+            url.format(
+                API_HOST_URL, URLS.challenge_phase_split_detail.value
+            ).format("1"),
             json=json_data,
             status=200,
         )
@@ -948,7 +1025,9 @@ class TestDisplaySubmissionWithoutSubmissionData(BaseTestClass):
         url = "{}{}"
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
+            url.format(API_HOST_URL, URLS.my_submissions.value).format(
+                "3", "7"
+            ),
             json=json_data,
             status=200,
         )

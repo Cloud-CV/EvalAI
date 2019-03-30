@@ -52,12 +52,16 @@ class TestHTTPErrorRequests(BaseTestClass):
         )
 
         responses.add(
-            responses.GET, url.format(API_HOST_URL, URLS.host_teams.value), status=404
+            responses.GET,
+            url.format(API_HOST_URL, URLS.host_teams.value),
+            status=404,
         )
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format(
+                "3"
+            ),
             status=404,
         )
 
@@ -89,9 +93,9 @@ class TestHTTPErrorRequests(BaseTestClass):
 
         responses.add(
             responses.POST,
-            url.format(API_HOST_URL, URLS.participate_in_a_challenge.value).format(
-                "2", "3"
-            ),
+            url.format(
+                API_HOST_URL, URLS.participate_in_a_challenge.value
+            ).format("2", "3"),
             status=404,
         )
 
@@ -99,7 +103,9 @@ class TestHTTPErrorRequests(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.challenge_phase_list.value).format("10"),
+            url.format(API_HOST_URL, URLS.challenge_phase_list.value).format(
+                "10"
+            ),
             status=404,
         )
 
@@ -114,7 +120,9 @@ class TestHTTPErrorRequests(BaseTestClass):
         # Submission URLS
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
+            url.format(API_HOST_URL, URLS.my_submissions.value).format(
+                "3", "7"
+            ),
             status=404,
         )
         # Leaderboard URLS
@@ -132,16 +140,18 @@ class TestHTTPErrorRequests(BaseTestClass):
 
         responses.add(
             responses.POST,
-            url.format(API_HOST_URL, URLS.make_submission.value).format("1", "2"),
+            url.format(API_HOST_URL, URLS.make_submission.value).format(
+                "1", "2"
+            ),
             status=404,
         )
 
         # PhaseSplit URLS
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format(
-                "1"
-            ),
+            url.format(
+                API_HOST_URL, URLS.challenge_phase_split_detail.value
+            ).format("1"),
             status=404,
         )
 
@@ -196,7 +206,9 @@ class TestHTTPErrorRequests(BaseTestClass):
         assert response == self.expected.format(url)
 
     @responses.activate
-    def test_display_participant_and_host_challenge_lists_for_http_error_404(self):
+    def test_display_participant_and_host_challenge_lists_for_http_error_404(
+        self
+    ):
         runner = CliRunner()
         result = runner.invoke(challenges, ["--participant", "--host"])
         response = result.output.rstrip()
@@ -238,7 +250,9 @@ class TestHTTPErrorRequests(BaseTestClass):
             "Do you want to enter the Team URL [y/N]: N\n"
         )
         runner = CliRunner()
-        result = runner.invoke(teams, ["create", "participant"], input="TeamTest\ny\nN")
+        result = runner.invoke(
+            teams, ["create", "participant"], input="TeamTest\ny\nN"
+        )
         response = result.output
         url = "{}{}".format(API_HOST_URL, URLS.participant_team_list.value)
         expected = "{}{}".format(self.expected.format(url), "\n")
@@ -250,9 +264,9 @@ class TestHTTPErrorRequests(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenge, ["2", "participate", "3"])
         response = result.output
-        url = "{}{}".format(API_HOST_URL, URLS.participate_in_a_challenge.value).format(
-            "2", "3"
-        )
+        url = "{}{}".format(
+            API_HOST_URL, URLS.participate_in_a_challenge.value
+        ).format("2", "3")
         expected = "{}{}".format(self.expected.format(url), "\n")
         assert response == expected
 
@@ -261,7 +275,9 @@ class TestHTTPErrorRequests(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenge, ["3", "phase", "7", "submissions"])
         response = result.output
-        url = "{}{}".format(API_HOST_URL, URLS.my_submissions.value).format("3", "7")
+        url = "{}{}".format(API_HOST_URL, URLS.my_submissions.value).format(
+            "3", "7"
+        )
         expected = "{}{}".format(self.expected.format(url), "\n")
         assert response == expected
 
@@ -270,13 +286,17 @@ class TestHTTPErrorRequests(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(submission, ["9"])
         response = result.output.rstrip()
-        url = "{}{}".format(API_HOST_URL, URLS.get_submission.value).format("9")
+        url = "{}{}".format(API_HOST_URL, URLS.get_submission.value).format(
+            "9"
+        )
         assert response == self.expected.format(url)
 
     @responses.activate
     def test_make_submission_for_http_error_404(self):
         runner = CliRunner()
-        url = "{}{}".format(API_HOST_URL, URLS.make_submission.value).format("1", "2")
+        url = "{}{}".format(API_HOST_URL, URLS.make_submission.value).format(
+            "1", "2"
+        )
         with runner.isolated_filesystem():
             with open("test_file.txt", "w") as f:
                 f.write("1 2 3 4 5 6")
@@ -297,7 +317,9 @@ class TestHTTPErrorRequests(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenge, ["1", "phase", "2", "splits"])
         response = result.output.rstrip()
-        url = "{}{}".format(API_HOST_URL, URLS.challenge_phase_split_detail.value)
+        url = "{}{}".format(
+            API_HOST_URL, URLS.challenge_phase_split_detail.value
+        )
         expected = self.expected.format(url).format("1")
         assert response == expected.format(url)
 
@@ -306,7 +328,9 @@ class TestHTTPErrorRequests(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenge, ["1"])
         response = result.output
-        url = "{}{}".format(API_HOST_URL, URLS.challenge_details.value).format("1")
+        url = "{}{}".format(API_HOST_URL, URLS.challenge_details.value).format(
+            "1"
+        )
         expected = "{}{}".format(self.expected.format(url), "\n")
         assert response == expected
 
@@ -334,7 +358,9 @@ class TestSubmissionDetailsWhenObjectDoesNotExist(BaseTestClass):
 
         responses.add(
             responses.POST,
-            url.format(API_HOST_URL, URLS.make_submission.value).format("1", "2"),
+            url.format(API_HOST_URL, URLS.make_submission.value).format(
+                "1", "2"
+            ),
             json=error_data,
             status=406,
         )
@@ -371,7 +397,8 @@ class TestSubmissionDetailsWhenObjectDoesNotExist(BaseTestClass):
                 self.expected
             )
             expected = "{}\n\n{}".format(
-                expected, "Use `evalai challenges` to fetch the active challenges."
+                expected,
+                "Use `evalai challenges` to fetch the active challenges.",
             )
             expected = "{}\n\n{}".format(
                 expected,
@@ -403,9 +430,9 @@ class TestTeamsWhenObjectDoesNotExist(BaseTestClass):
 
         responses.add(
             responses.POST,
-            url.format(API_HOST_URL, URLS.participate_in_a_challenge.value).format(
-                "2", "3"
-            ),
+            url.format(
+                API_HOST_URL, URLS.participate_in_a_challenge.value
+            ).format("2", "3"),
             json=error_data,
             status=406,
         )
@@ -426,7 +453,9 @@ class TestTeamsWhenObjectDoesNotExist(BaseTestClass):
             "Do you want to enter the Team URL [y/N]: N\n"
         )
         runner = CliRunner()
-        result = runner.invoke(teams, ["create", "participant"], input="TeamTest\ny\nN")
+        result = runner.invoke(
+            teams, ["create", "participant"], input="TeamTest\ny\nN"
+        )
         response = result.output.rstrip()
         expected = "{}{}".format(user_prompt_text, self.expected)
         assert response == expected
@@ -437,7 +466,8 @@ class TestTeamsWhenObjectDoesNotExist(BaseTestClass):
         result = runner.invoke(challenge, ["2", "participate", "3"])
         response = result.output.rstrip()
         expected = "\n{}\n\n{}".format(
-            self.expected, "Use `evalai challenges` to fetch the active challenges."
+            self.expected,
+            "Use `evalai challenges` to fetch the active challenges.",
         )
         expected = "{}\n\n{}".format(
             expected, "Use `evalai teams` to fetch your participant teams."
@@ -448,7 +478,9 @@ class TestTeamsWhenObjectDoesNotExist(BaseTestClass):
 class TestTeamsWhenTeamNameAlreadyExists(BaseTestClass):
     def setup(self):
 
-        error_data = json.loads(teams_response.participant_team_already_exists_error)
+        error_data = json.loads(
+            teams_response.participant_team_already_exists_error
+        )
         url = "{}{}"
 
         responses.add(
@@ -466,9 +498,13 @@ class TestTeamsWhenTeamNameAlreadyExists(BaseTestClass):
             "Do you want to enter the Team URL [y/N]: N\n"
         )
         runner = CliRunner()
-        result = runner.invoke(teams, ["create", "participant"], input="TeamTest\ny\nN")
+        result = runner.invoke(
+            teams, ["create", "participant"], input="TeamTest\ny\nN"
+        )
         response = result.output.rstrip()
-        expected = "Error: participant team with this team name already exists."
+        expected = (
+            "Error: participant team with this team name already exists."
+        )
         expected = "{}{}".format(user_prompt_text, expected)
         assert response == expected
 
@@ -481,7 +517,9 @@ class TestDisplayChallengePhasesWhenObjectDoesNotExist(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.challenge_phase_list.value).format("10"),
+            url.format(API_HOST_URL, URLS.challenge_phase_list.value).format(
+                "10"
+            ),
             json=error_data,
             status=406,
         )
@@ -516,7 +554,8 @@ class TestDisplayChallengePhasesWhenObjectDoesNotExist(BaseTestClass):
         result = runner.invoke(challenge, ["10", "phase", "20"])
         response = result.output.rstrip()
         expected = "\n{}\n\n{}".format(
-            self.expected, "Use `evalai challenges` to fetch the active challenges."
+            self.expected,
+            "Use `evalai challenges` to fetch the active challenges.",
         )
         expected = "{}\n\n{}".format(
             expected,
@@ -542,7 +581,9 @@ class TestGetParticipantOrHostTeamChallengesHTTPErrorRequests(BaseTestClass):
         )
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format(
+                "3"
+            ),
             status=404,
         )
 
@@ -557,7 +598,9 @@ class TestGetParticipantOrHostTeamChallengesHTTPErrorRequests(BaseTestClass):
         assert response == self.expected.format(url.format("3"))
 
 
-class TestGetParticipantOrHostTeamChallengesRequestForExceptions(BaseTestClass):
+class TestGetParticipantOrHostTeamChallengesRequestForExceptions(
+    BaseTestClass
+):
     def setup(self):
 
         participant_team_data = json.loads(
@@ -574,14 +617,18 @@ class TestGetParticipantOrHostTeamChallengesRequestForExceptions(BaseTestClass):
         )
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format(
+                "3"
+            ),
             body=Exception("..."),
         )
 
         self.expected = "404 Client Error: Not Found for url: {}"
 
     @responses.activate
-    def test_get_participant_or_host_team_challenges_for_request_exception(self):
+    def test_get_participant_or_host_team_challenges_for_request_exception(
+        self
+    ):
         runner = CliRunner()
         result = runner.invoke(challenges, ["--participant"])
         assert result.exit_code == -1
@@ -632,7 +679,9 @@ class TestRequestForExceptions(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.participant_challenges.value).format("3"),
+            url.format(API_HOST_URL, URLS.participant_challenges.value).format(
+                "3"
+            ),
             body=RequestException("..."),
         )
 
@@ -664,9 +713,9 @@ class TestRequestForExceptions(BaseTestClass):
 
         responses.add(
             responses.POST,
-            url.format(API_HOST_URL, URLS.participate_in_a_challenge.value).format(
-                "2", "3"
-            ),
+            url.format(
+                API_HOST_URL, URLS.participate_in_a_challenge.value
+            ).format("2", "3"),
             body=RequestException("..."),
         )
 
@@ -674,7 +723,9 @@ class TestRequestForExceptions(BaseTestClass):
 
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.challenge_phase_list.value).format("10"),
+            url.format(API_HOST_URL, URLS.challenge_phase_list.value).format(
+                "10"
+            ),
             body=RequestException("..."),
         )
 
@@ -689,7 +740,9 @@ class TestRequestForExceptions(BaseTestClass):
         # Submission URLS
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.my_submissions.value).format("3", "7"),
+            url.format(API_HOST_URL, URLS.my_submissions.value).format(
+                "3", "7"
+            ),
             body=RequestException("..."),
         )
 
@@ -701,16 +754,18 @@ class TestRequestForExceptions(BaseTestClass):
 
         responses.add(
             responses.POST,
-            url.format(API_HOST_URL, URLS.make_submission.value).format("1", "2"),
+            url.format(API_HOST_URL, URLS.make_submission.value).format(
+                "1", "2"
+            ),
             body=RequestException("..."),
         )
 
         # Phase Split URLS
         responses.add(
             responses.GET,
-            url.format(API_HOST_URL, URLS.challenge_phase_split_detail.value).format(
-                "1"
-            ),
+            url.format(
+                API_HOST_URL, URLS.challenge_phase_split_detail.value
+            ).format("1"),
             body=RequestException("..."),
         )
 
@@ -758,7 +813,9 @@ class TestRequestForExceptions(BaseTestClass):
         assert result.exit_code == 1
 
     @responses.activate
-    def test_display_participant_and_host_challenge_lists_for_request_exception(self):
+    def test_display_participant_and_host_challenge_lists_for_request_exception(
+        self
+    ):
         runner = CliRunner()
         result = runner.invoke(challenges, ["--participant", "--host"])
         assert result.exit_code == 1
@@ -772,7 +829,9 @@ class TestRequestForExceptions(BaseTestClass):
     @responses.activate
     def test_create_team_for_request_exception(self):
         runner = CliRunner()
-        result = runner.invoke(teams, ["create", "participant"], input="TeamTest\ny\nN")
+        result = runner.invoke(
+            teams, ["create", "participant"], input="TeamTest\ny\nN"
+        )
         assert result.exit_code == 1
 
     @responses.activate

@@ -89,7 +89,9 @@ class TestMakeSubmission(BaseTestClass):
         url = "{}{}"
         responses.add(
             responses.POST,
-            url.format(API_HOST_URL, URLS.make_submission.value).format("1", "2"),
+            url.format(API_HOST_URL, URLS.make_submission.value).format(
+                "1", "2"
+            ),
             json=self.submission,
             status=200,
         )

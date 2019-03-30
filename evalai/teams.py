@@ -10,7 +10,9 @@ from evalai.utils.teams import create_team, display_teams
 @click.group(invoke_without_command=True)
 @click.pass_context
 @click.option("--host", "-h", is_flag=True, help="View your host teams.")
-@click.option("--participant", "-p", is_flag=True, help="View your host teams.")
+@click.option(
+    "--participant", "-p", is_flag=True, help="View your host teams."
+)
 def teams(ctx, host, participant):
     """
     List all the participant/host teams of a user.
@@ -53,11 +55,17 @@ def create(team):
         sys.exit(1)
 
     team_name = click.prompt("Enter team name", type=str)
-    if click.confirm("Please confirm the team name - {}".format(team_name), abort=True):
+    if click.confirm(
+        "Please confirm the team name - {}".format(team_name), abort=True
+    ):
         team_url = ""
-        if click.confirm("Do you want to enter the Team URL".format(team_name)):
+        if click.confirm(
+            "Do you want to enter the Team URL".format(team_name)
+        ):
             team_url = click.prompt("Team URL", type=str)
-            while not (validators.url(team_url) or validators.domain(team_url)):
+            while not (
+                validators.url(team_url) or validators.domain(team_url)
+            ):
                 echo("Sorry, please enter a valid link.")
                 team_url = click.prompt("Team URL", type=str)
 

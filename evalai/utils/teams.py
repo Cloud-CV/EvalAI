@@ -20,12 +20,20 @@ def pretty_print_team_data(teams, is_host):
     """
     table = BeautifulTable(max_width=200)
     attributes = ["id", "team_name", "created_by"]
-    columns_attributes = ["ID", "Team Name", "Created By", "Members", "Team URL"]
+    columns_attributes = [
+        "ID",
+        "Team Name",
+        "Created By",
+        "Members",
+        "Team URL",
+    ]
     table.column_headers = columns_attributes
     for team in teams:
         values = list(map(lambda item: team[item], attributes))
         if is_host:
-            members = ", ".join(map(lambda member: member["user"], team["members"]))
+            members = ", ".join(
+                map(lambda member: member["user"], team["members"])
+            )
         else:
             members = ", ".join(
                 map(lambda member: member["member_name"], team["members"])
@@ -57,12 +65,16 @@ def display_teams(is_host):
         if response.status_code in EVALAI_ERROR_CODES:
             validate_token(response.json())
             echo(
-                style("Error: {}".format(response.json()["error"]), fg="red", bold=True)
+                style(
+                    "Error: {}".format(response.json()["error"]),
+                    fg="red",
+                    bold=True,
+                )
             )
         else:
             echo(err)
         sys.exit(1)
-    except requests.exceptions.RequestException as err:
+    except requests.exceptions.RequestException:
         echo(
             style(
                 "\nCould not establish a connection to EvalAI."
@@ -126,7 +138,7 @@ def create_team(team_name, team_url, is_host):
         else:
             echo(err)
         sys.exit(1)
-    except requests.exceptions.RequestException as err:
+    except requests.exceptions.RequestException:
         echo(
             style(
                 "\nCould not establish a connection to EvalAI."
@@ -190,7 +202,7 @@ def participate_in_a_challenge(challenge_id, participant_team_id):
         else:
             echo(err)
         sys.exit(1)
-    except requests.exceptions.RequestException as err:
+    except requests.exceptions.RequestException:
         echo(
             style(
                 "\nCould not establish a connection to EvalAI."

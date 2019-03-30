@@ -4,10 +4,12 @@ import sys
 import requests
 
 from click import echo, style
-from evalai.utils.config import (AUTH_TOKEN_PATH,
-                                 API_HOST_URL,
-                                 EVALAI_ERROR_CODES,
-                                 HOST_URL_FILE_PATH)
+from evalai.utils.config import (
+    AUTH_TOKEN_PATH,
+    API_HOST_URL,
+    EVALAI_ERROR_CODES,
+    HOST_URL_FILE_PATH,
+)
 from evalai.utils.urls import URLS
 
 
@@ -20,10 +22,10 @@ def get_user_auth_token_by_login(username, password):
     """
     url = "{}{}".format(get_host_url(), URLS.login.value)
     try:
-        payload = {'username': username, 'password': password}
+        payload = {"username": username, "password": password}
         response = requests.post(url, data=payload)
         response.raise_for_status()
-    except requests.exceptions.HTTPError as err:
+    except requests.exceptions.HTTPError:
         if response.status_code in EVALAI_ERROR_CODES:
             echo(
                 style(
@@ -33,7 +35,7 @@ def get_user_auth_token_by_login(username, password):
                 )
             )
         sys.exit(1)
-    except requests.exceptions.RequestException as err:
+    except requests.exceptions.RequestException:
         echo(
             style(
                 "\nCould not establish a connection to EvalAI."

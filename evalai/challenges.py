@@ -48,9 +48,13 @@ class PhaseGroup(click.Group):
 @click.group(invoke_without_command=True)
 @click.pass_context
 @click.option(
-    "--participant", is_flag=True, help="List the challenges that you've participated"
+    "--participant",
+    is_flag=True,
+    help="List the challenges that you've participated",
 )
-@click.option("--host", is_flag=True, help="List the challenges that you've hosted")
+@click.option(
+    "--host", is_flag=True, help="List the challenges that you've hosted"
+)
 def challenges(ctx, participant, host):
     """
     Lists challenges
@@ -158,7 +162,9 @@ def submissions(ctx, start_date, end_date):
     """
     Invoked by running `evalai challenge CHALLENGE phase PHASE submissions`.
     """
-    display_my_submission_details(ctx.challenge_id, ctx.phase_id, start_date, end_date)
+    display_my_submission_details(
+        ctx.challenge_id, ctx.phase_id, start_date, end_date
+    )
 
 
 @phase.command()
@@ -201,7 +207,9 @@ def participate(ctx, team):
 
 @phase.command()
 @click.pass_obj
-@click.option("--file", type=click.File("rb"), help="File path to the submission file")
+@click.option(
+    "--file", type=click.File("rb"), help="File path to the submission file"
+)
 def submit(ctx, file):
     """
     Make submission to a challenge.

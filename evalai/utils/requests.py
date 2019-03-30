@@ -31,7 +31,7 @@ def make_request(path, method, files=None, data=None):
             else:
                 echo(err)
             sys.exit(1)
-        except requests.exceptions.RequestException as err:
+        except requests.exceptions.RequestException:
             echo(
                 style(
                     "\nCould not establish a connection to EvalAI."
@@ -44,12 +44,14 @@ def make_request(path, method, files=None, data=None):
         return response.json()
     elif method == "POST":
         if files:
-            files = {"input_file": open(files, 'rb')}
+            files = {"input_file": open(files, "rb")}
         else:
             files = None
         data = {"status": "submitting"}
         try:
-            response = requests.post(url, headers=headers, files=files, data=data)
+            response = requests.post(
+                url, headers=headers, files=files, data=data
+            )
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             if response.status_code in EVALAI_ERROR_CODES:
@@ -67,7 +69,7 @@ def make_request(path, method, files=None, data=None):
             else:
                 echo(err)
             sys.exit(1)
-        except requests.exceptions.RequestException as err:
+        except requests.exceptions.RequestException:
             echo(
                 style(
                     "\nCould not establish a connection to EvalAI."
@@ -88,7 +90,7 @@ def make_request(path, method, files=None, data=None):
         echo(
             style(
                 "You can use `evalai submission {}` to view this submission's status.\n".format(
-                    response.get('id')
+                    response.get("id")
                 ),
                 bold=True,
             )

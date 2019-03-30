@@ -11,7 +11,10 @@ import tempfile
 
 from evalai.utils.common import notify_user
 from evalai.utils.requests import make_request
-from evalai.utils.submissions import display_submission_details, convert_bytes_to
+from evalai.utils.submissions import (
+    display_submission_details,
+    convert_bytes_to,
+)
 from evalai.utils.urls import URLS
 
 
@@ -52,27 +55,25 @@ def push(image, phase):
     try:
         docker_image = docker_client.images.get(image)
     except docker.errors.ImageNotFound:
-        message = (
-            "\nError: Image not found. Please enter the correct image name and tag."
-        )
+        message = "\nError: Image not found. Please enter the correct image name and tag."
         notify_user(message, color="red")
         sys.exit(1)
 
     request_path = URLS.challenge_phase_details.value
     request_path = request_path.format(phase)
     response = make_request(request_path, "GET")
-    challenge_pk = response.get('challenge')
+    challenge_pk = response.get("challenge")
 
     request_path = URLS.challenge_details.value
     request_path = request_path.format(challenge_pk)
     response = make_request(request_path, "GET")
-    max_docker_image_size = response.get('max_docker_image_size')
+    max_docker_image_size = response.get("max_docker_image_size")
 
-    docker_image_size = docker_image.__dict__.get('attrs').get('VirtualSize')
+    docker_image_size = docker_image.__dict__.get("attrs").get("VirtualSize")
     if docker_image_size > max_docker_image_size:
-        max_docker_image_size = convert_bytes_to(max_docker_image_size, 'gb')
-        message = (
-            "\nError: Image is too large. The maximum image size allowed is {} GB".format(max_docker_image_size)
+        max_docker_image_size = convert_bytes_to(max_docker_image_size, "gb")
+        message = "\nError: Image is too large. The maximum image size allowed is {} GB".format(
+            max_docker_image_size
         )
         notify_user(message, color="red")
         sys.exit(1)
@@ -84,7 +85,9 @@ def push(image, phase):
     federated_user = response["success"]["federated_user"]
     repository_uri = response["success"]["docker_repository_uri"]
 
-    AWS_ACCOUNT_ID = federated_user["FederatedUser"]["FederatedUserId"].split(":")[0]
+    AWS_ACCOUNT_ID = federated_user["FederatedUser"]["FederatedUserId"].split(
+        ":"
+    )[0]
     AWS_SERVER_PUBLIC_KEY = federated_user["Credentials"]["AccessKeyId"]
     AWS_SERVER_SECRET_KEY = federated_user["Credentials"]["SecretAccessKey"]
     SESSION_TOKEN = federated_user["Credentials"]["SessionToken"]
@@ -105,28 +108,34 @@ def push(image, phase):
         .split(":")
     )
     registry = token["authorizationData"][0]["proxyEndpoint"]
-    docker_client.login(username, password, registry=registry, dockercfg_path=os.getcwd())
+    docker_client.login(
+        username, password, registry=registry, dockercfg_path=os.getcwd()
+    )
 
     # Tag and push docker image and create a submission if successfully pushed
     docker_client.images.get(image).tag("{}:{}".format(repository_uri, tag))
     for line in docker_client.images.push(
         repository_uri, tag, stream=True, decode=True
     ):
-        if line.get("status") in ["Pushing", "Pushed"] and line.get("progress"):
+        if line.get("status") in ["Pushing", "Pushed"] and line.get(
+            "progress"
+        ):
             print("{id}: {status} {progress}".format(**line))
         elif line.get("errorDetail"):
             error = line.get("error")
             notify_user(error, color="red")
-        elif line.get('aux'):
-            aux = line.get('aux')
-            pushed_image_tag = aux['Tag']
-            submitted_image_uri = '{}:{}'.format(repository_uri, pushed_image_tag)
+        elif line.get("aux"):
+            aux = line.get("aux")
+            pushed_image_tag = aux["Tag"]
+            submitted_image_uri = "{}:{}".format(
+                repository_uri, pushed_image_tag
+            )
             BASE_TEMP_DIR = tempfile.mkdtemp()
-            data = {
-                "submitted_image_uri": submitted_image_uri
-            }
-            submission_file_path = os.path.join(BASE_TEMP_DIR, 'submission.json')
-            with open(submission_file_path, 'w') as outfile:
+            data = {"submitted_image_uri": submitted_image_uri}
+            submission_file_path = os.path.join(
+                BASE_TEMP_DIR, "submission.json"
+            )
+            with open(submission_file_path, "w") as outfile:
                 json.dump(data, outfile)
             request_path = URLS.make_submission.value
             request_path = request_path.format(challenge_pk, phase)

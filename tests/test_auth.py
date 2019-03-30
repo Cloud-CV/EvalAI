@@ -112,7 +112,9 @@ class TestUserRequestWithExpiredToken(BaseTestClass):
 
     @responses.activate
     def test_display_all_challenge_lists_when_token_has_expired(self):
-        expected = "\nSorry, the token has expired. Please generate it again.\n\n"
+        expected = (
+            "\nSorry, the token has expired. Please generate it again.\n\n"
+        )
         runner = CliRunner()
         result = runner.invoke(challenges)
         response = result.output
@@ -145,7 +147,9 @@ class TestHostConfig(BaseTestClass):
         assert result.exit_code == 0
 
     def test_set_host_url(self):
-        expected = "{} is set as the host url.\n".format("https://evalapi.cloudcv.org")
+        expected = "{} is set as the host url.\n".format(
+            "https://evalapi.cloudcv.org"
+        )
         runner = CliRunner()
         result = runner.invoke(host, ["-sh", "https://evalapi.cloudcv.org"])
         assert expected == result.output
@@ -168,7 +172,9 @@ class TestSetAndLoadHostURL(BaseTestClass):
         url = "{}{}"
         responses.add(
             responses.GET,
-            url.format("https://evalapi.cloudcv.org", URLS.challenge_list.value),
+            url.format(
+                "https://evalapi.cloudcv.org", URLS.challenge_list.value
+            ),
             json=challenge_data,
             status=200,
         )
@@ -189,7 +195,9 @@ class TestSetAndLoadHostURL(BaseTestClass):
         for challenge_json in reversed(challenge_data):
             values = list(map(lambda item: challenge_json[item], attributes))
             creator = challenge_json["creator"]["team_name"]
-            start_date = convert_UTC_date_to_local(challenge_json["start_date"])
+            start_date = convert_UTC_date_to_local(
+                challenge_json["start_date"]
+            )
             end_date = convert_UTC_date_to_local(challenge_json["end_date"])
             values.extend([creator, start_date, end_date])
             table.append_row(values)

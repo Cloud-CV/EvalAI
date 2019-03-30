@@ -16,11 +16,15 @@ class URLS(Enum):
     host_team_list = "/api/hosts/challenge_host_team/"
     participant_challenges = "/api/participants/participant_team/{}/challenge"
     participant_team_list = "/api/participants/participant_team"
-    participate_in_a_challenge = "/api/challenges/challenge/{}/participant_team/{}"
+    participate_in_a_challenge = (
+        "/api/challenges/challenge/{}/participant_team/{}"
+    )
     challenge_phase_list = "/api/challenges/challenge/{}/challenge_phase"
     challenge_phase_detail = "/api/challenges/challenge/{}/challenge_phase/{}"
     my_submissions = "/api/jobs/challenge/{}/challenge_phase/{}/submission/"
     make_submission = "/api/jobs/challenge/{}/challenge_phase/{}/submission/"
     get_submission = "/api/jobs/submission/{}"
     leaderboard = "/api/jobs/challenge_phase_split/{}/leaderboard/"
-    get_aws_credentials = "/api/challenges/phases/{}/participant_team/aws/credentials/"
+    get_aws_credentials = (
+        "/api/challenges/phases/{}/participant_team/aws/credentials/"
+    )

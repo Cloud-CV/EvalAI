@@ -43,9 +43,9 @@ class TestTeams:
 
         responses.add(
             responses.POST,
-            url.format(API_HOST_URL, URLS.participate_in_a_challenge.value).format(
-                "2", "3"
-            ),
+            url.format(
+                API_HOST_URL, URLS.participate_in_a_challenge.value
+            ).format("2", "3"),
             json=team_list_data,
             status=201,
         )
@@ -64,7 +64,13 @@ class TestTeams:
     def test_display_participant_teams_list(self):
         table = BeautifulTable(max_width=200)
         attributes = ["id", "team_name", "created_by"]
-        columns_attributes = ["ID", "Team Name", "Created By", "Members", "Team URL"]
+        columns_attributes = [
+            "ID",
+            "Team Name",
+            "Created By",
+            "Members",
+            "Team URL",
+        ]
         table.column_headers = columns_attributes
         for team in self.participant_teams:
             values = list(map(lambda item: team[item], attributes))
@@ -87,11 +93,19 @@ class TestTeams:
     def test_display_host_teams_list(self):
         table = BeautifulTable(max_width=200)
         attributes = ["id", "team_name", "created_by"]
-        columns_attributes = ["ID", "Team Name", "Created By", "Members", "Team URL"]
+        columns_attributes = [
+            "ID",
+            "Team Name",
+            "Created By",
+            "Members",
+            "Team URL",
+        ]
         table.column_headers = columns_attributes
         for team in self.host_teams:
             values = list(map(lambda item: team[item], attributes))
-            members = ", ".join(map(lambda member: member["user"], team["members"]))
+            members = ", ".join(
+                map(lambda member: member["user"], team["members"])
+            )
             values.append(members)
             if team["team_url"]:
                 values.append(team["team_url"])
@@ -113,7 +127,9 @@ class TestTeams:
             "\nYour participant team TestTeam was successfully created."
         )
         runner = CliRunner()
-        result = runner.invoke(teams, ["create", "participant"], input="TeamTest\ny\nN")
+        result = runner.invoke(
+            teams, ["create", "participant"], input="TeamTest\ny\nN"
+        )
         response = result.output.strip()
         assert response == output
 
@@ -126,7 +142,9 @@ class TestTeams:
             "\nYour host team TestTeam was successfully created."
         )
         runner = CliRunner()
-        result = runner.invoke(teams, ["create", "host"], input="TeamTest\ny\nN")
+        result = runner.invoke(
+            teams, ["create", "host"], input="TeamTest\ny\nN"
+        )
         response = result.output.strip()
         assert response == output
 
@@ -138,7 +156,9 @@ class TestTeams:
             "Aborted!\n"
         )
         runner = CliRunner()
-        result = runner.invoke(teams, ["create", "host"], input="TeamTest\nn\n")
+        result = runner.invoke(
+            teams, ["create", "host"], input="TeamTest\nn\n"
+        )
         response = result.output
         assert response == output
 
@@ -153,7 +173,9 @@ class TestTeams:
         )
         runner = CliRunner()
         result = runner.invoke(
-            teams, ["create", "host"], input="TeamTest\ny\nY\nhttp://testteam.com\n"
+            teams,
+            ["create", "host"],
+            input="TeamTest\ny\nY\nhttp://testteam.com\n",
         )
         response = result.output.strip()
         assert response == output
@@ -180,7 +202,9 @@ class TestTeams:
 
     @responses.activate
     def test_create_team_for_wrong_argument(self):
-        output = "Sorry, wrong argument. Please choose either participant or host."
+        output = (
+            "Sorry, wrong argument. Please choose either participant or host."
+        )
         runner = CliRunner()
         result = runner.invoke(teams, ["create", "test"])
         response = result.output.strip()
@@ -188,7 +212,9 @@ class TestTeams:
 
     @responses.activate
     def test_participate_in_a_challenge(self):
-        output = "Your team id {} is now participating in this challenge.\n".format("3")
+        output = "Your team id {} is now participating in this challenge.\n".format(
+            "3"
+        )
         runner = CliRunner()
         result = runner.invoke(challenge, ["2", "participate", "3"])
         response = result.output
@@ -219,7 +245,9 @@ class TestTeams:
 
 class TestDisplayTeamsListWithNoTeamsData:
     def setup(self):
-        team_list_data = '{"count": 2, "next": null, "previous": null, "results": []}'
+        team_list_data = (
+            '{"count": 2, "next": null, "previous": null, "results": []}'
+        )
         url = "{}{}"
         responses.add(
             responses.GET,
