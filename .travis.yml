@@ -10,6 +10,7 @@ script:
 - py.test --cov . --cov-config .coveragerc
 after_success:
 - coveralls --rcfile=.coveragerc
+- ./deploy-staging.sh
 notifications:
   email:
     on_success: change
@@ -23,4 +24,3 @@ deploy:
   distributions: "sdist bdist_wheel"
   on:
     tags: true
-    branch: master
