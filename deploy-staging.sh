@@ -8,7 +8,7 @@ build_and_push() {
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "Skipping deploy to https://test-pypi.org; The commit is not on staging branch"
     exit 0
-elif [ "${TRAVIS_BRANCH}" == "staging"; then
+elif [ "${TRAVIS_BRANCH}" == "staging" ]; then
     build_and_push $TRAVIS_BRANCH
     exit 0
 else
