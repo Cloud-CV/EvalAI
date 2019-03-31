@@ -2,7 +2,7 @@
 
 <b>Official Command Line utility to use EvalAI in your terminal.</b>
 
- EvalAI-CLI is designed to extend the functionality of the EvalAI web application to command line to make the platform more accessible and terminal-friendly to its users.
+EvalAI-CLI is designed to extend the functionality of the EvalAI web application to command line to make the platform more accessible and terminal-friendly to its users.
 
 ------------------------------------------------------------------------------------------
 
@@ -12,31 +12,21 @@
 [![Documentation Status](https://readthedocs.org/projects/markdown-guide/badge/?version=latest)](https://evalai-cli.cloudcv.org)
 
 
-## Goal
+## Contributing Guidelines
 
-The goal of this package is to offer almost all the features available on the website within your terminal.
+If you are interested in contributing to EvalAI-CLI, follow our [contribution guidelines](https://github.com/Cloud-CV/evalai-cli/blob/master/.github/CONTRIBUTING.md).
 
 ## Development Setup
 
-### Step 1:
-
 1. Setup the development environment for EvalAI and make sure that it is running perfectly.
 
-2. Now, Open web browser and hit the url http://127.0.0.1:8888.
-
-3. Login with your credentials and move to the profile section.
-
-4. Click on `Get your Auth Token` to get the authentication token & copy the token.
-
-### Step 2:
-
-1. Clone the evalai-cli repository to your machine via git
+2. Clone the evalai-cli repository to your machine via git
 
 ```bash
 git clone https://github.com/Cloud-CV/evalai-cli.git EvalAI-CLI
 ```
 
-2. Create a virtual environment
+3. Create a virtual environment
 
 ```bash
 cd EvalAI-CLI
@@ -44,20 +34,16 @@ virtualenv -p python3 venv
 source venv/bin/activate
 ```
 
-3. Install the package dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-4. Install the package locally to try it out
+4. Install the package locally
 
 ```bash
 pip install -e .
 ```
 
-5. Set the auth token using command ``` evalai set_token <auth_token>```
+5. Login to cli using the command ``` evalai login```
+Two users will be created by default which are listed below -
 
-## Contributing Guidelines
-
-If you are interested in contributing to EvalAI-CLI, follow our [contribution guidelines](https://github.com/Cloud-CV/evalai-cli/blob/master/.github/CONTRIBUTING.md).
+```bash
+Host User - username: host, password: password
+Participant User - username: participant, password: password
+```

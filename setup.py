@@ -34,7 +34,7 @@ install_requires = [
 
 setup(
     name=PROJECT,
-    version="1.1.6",
+    version="1.2.0",
     description="Use EvalAI through command line interface",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -43,7 +43,7 @@ setup(
     url="https://github.com/Cloud-CV/evalai_cli ",
     classifiers=(
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ),
     platforms=["Any"],
