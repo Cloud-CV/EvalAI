@@ -1,4 +1,3 @@
-import os
 import csv
 import logging
 import random
@@ -12,6 +11,8 @@ import zipfile
 
 from os.path import basename, isfile, join
 
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.db import transaction
@@ -33,8 +34,10 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from yaml.scanner import ScannerError
 
+from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from accounts.serializers import UserDetailsSerializer
+from base.utils import paginated_queryset, send_email, get_url_from_hostname
 from challenges.utils import (
     get_challenge_model,
     get_challenge_phase_model,
@@ -58,6 +61,7 @@ from participants.utils import (
     get_participant_teams_for_user,
     has_user_participated_in_challenge,
     get_participant_team_id_of_user_for_a_challenge,
+    get_participant_team_of_user_for_a_challenge,
 )
 
 from .models import (
@@ -66,6 +70,7 @@ from .models import (
     ChallengePhaseSplit,
     ChallengeConfiguration,
     StarChallenge,
+    UserInvitation,
 )
 from .permissions import IsChallengeCreator
 from .serializers import (
@@ -77,14 +82,16 @@ from .serializers import (
     DatasetSplitSerializer,
     LeaderboardSerializer,
     StarChallengeSerializer,
+    UserInvitationSerializer,
     ZipChallengeSerializer,
     ZipChallengePhaseSplitSerializer,
 )
 from .utils import (
+    create_federated_user,
+    convert_to_aws_ecr_compatible_format,
+    get_aws_credentials_for_challenge,
     get_file_content,
     get_or_create_ecr_repository,
-    convert_to_aws_ecr_compatible_format,
-    create_federated_user,
 )
 
 logger = logging.getLogger(__name__)
@@ -297,24 +304,6 @@ def add_participant_team_to_challenge(
         }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
-        # Create ECR Repository for the participant team if challenge is docker based
-        if challenge.is_docker_based:
-            AWS_DEFAULT_REGION = os.environ.get(
-                "AWS_DEFAULT_REGION", "us-east-1"
-            )
-            ecr_repository_name = "{}-{}".format(
-                challenge.slug, participant_team.team_name
-            )
-            ecr_repository_name = convert_to_aws_ecr_compatible_format(
-                ecr_repository_name
-            )
-            repository, created = get_or_create_ecr_repository(
-                ecr_repository_name, region_name=AWS_DEFAULT_REGION
-            )
-            participant_team.docker_repository_uri = repository[
-                "repositoryUri"
-            ]
-            participant_team.save()
         challenge.participant_teams.add(participant_team)
         return Response(status=status.HTTP_201_CREATED)
 
@@ -529,9 +518,16 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == "GET":
-        serializer = ChallengePhaseSerializer(challenge_phase)
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
+        if not is_user_a_host_of_challenge(request.user, challenge.id):
+            serializer = ChallengePhaseSerializer(challenge_phase)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            serializer = ChallengePhaseCreateSerializer(
+                challenge_phase, context={"request": request}
+            )
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
         if request.method == "PATCH":
@@ -1613,36 +1609,245 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
     Returns:
         Dictionary containing AWS credentials for the participant team for a particular challenge
     """
-
     challenge_phase = get_challenge_phase_model(phase_pk)
-
     challenge = challenge_phase.challenge
-    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+    participant_team = get_participant_team_of_user_for_a_challenge(
         request.user, challenge.pk
     )
-
     if not challenge.is_docker_based:
         response_data = {
             "error": "Sorry, this is not a docker based challenge."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    if participant_team_pk is None:
+    if participant_team is None:
         response_data = {
             "error": "You have not participated in this challenge."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    participant_team = ParticipantTeam.objects.get(id=participant_team_pk)
-    federated_user = create_federated_user(
-        participant_team.team_name,
-        participant_team.get_docker_repository_name(),
+    aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    ecr_repository_name = "{}-participant-team-{}".format(
+        challenge.slug, participant_team.pk
     )
+    ecr_repository_name = convert_to_aws_ecr_compatible_format(
+        ecr_repository_name
+    )
+    repository, created = get_or_create_ecr_repository(
+        ecr_repository_name, aws_keys
+    )
+    name = str(uuid.uuid4())[:32]
+    docker_repository_uri = repository["repositoryUri"]
+    federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
     data = {
         "federated_user": federated_user,
-        "docker_repository_uri": participant_team.docker_repository_uri,
+        "docker_repository_uri": docker_repository_uri,
     }
     response_data = {"success": data}
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def invite_users_to_challenge(request, challenge_pk):
+
+    challenge = get_challenge_model(challenge_pk)
+
+    if not challenge.is_active or not challenge.approved_by_admin:
+        response_data = {"error": "Sorry, the challenge is not active"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        challenge_host = ChallengeHost.objects.get(user=request.user)
+    except ChallengeHost.DoesNotExist:
+        response_data = {"error": "You're not a challenge host"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "You're not authorized to invite a user in {}".format(
+                challenge.title
+            )
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    users_email = request.data.get("emails")
+
+    if not users_email:
+        response_data = {"error": "Users email can't be blank"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        users_email = eval(users_email)
+    except Exception:
+        response_data = {"error": "Invalid format for users email"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    invalid_emails = []
+    valid_emails = []
+    for email in users_email:
+        try:
+            invited_user = UserInvitation.objects.get(
+                email=email, challenge=challenge.pk
+            )
+            invitation_key = invited_user.invitation_key
+        except UserInvitation.DoesNotExist:
+            invitation_key = uuid.uuid4()
+            invitation_status = UserInvitation.PENDING
+            data = {
+                "email": email,
+                "invitation_key": str(invitation_key),
+                "status": invitation_status,
+                "challenge": challenge.pk,
+                "invited_by": challenge_host.pk,
+            }
+            serializer = UserInvitationSerializer(data=data, partial=True)
+            if serializer.is_valid():
+                user, created = User.objects.get_or_create(
+                    username=email, email=email
+                )
+                if created:
+                    EmailAddress.objects.create(
+                        user=user, email=email, primary=True, verified=True
+                    )
+                data["user"] = user.pk
+                valid_emails.append(data)
+            else:
+                invalid_emails.append(email)
+
+        sender_email = settings.CLOUDCV_TEAM_EMAIL
+        # TODO: Update this URL after shifting django backend from evalapi.cloudcv.org to evalai.cloudcv.org/api
+        hostname = get_url_from_hostname(settings.HOSTNAME)
+        url = "{}/accept-invitation/{}/".format(hostname, invitation_key)
+        template_data = {"title": challenge.title, "url": url}
+        if challenge.image:
+            template_data["image"] = challenge.image.url
+        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+            "CHALLENGE_INVITATION"
+        )
+
+        if email not in invalid_emails:
+            send_email(sender_email, email, template_id, template_data)
+
+    if valid_emails:
+        serializer = UserInvitationSerializer(data=valid_emails, many=True)
+        if serializer.is_valid():
+            serializer.save()
+
+    if len(users_email) == len(invalid_emails):
+        response_data = {"error": "Please enter correct email addresses"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    response_data = {
+        "success": "Invitations sent successfully",
+        "invalid_emails": invalid_emails,
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET", "PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(())
+def accept_challenge_invitation(request, invitation_key):
+    try:
+        invitation = UserInvitation.objects.get(invitation_key=invitation_key)
+    except UserInvitation.DoesNotExist:
+        response_data = {
+            "error": "The invitation with key {} doesn't exist".format(
+                invitation_key
+            )
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "GET":
+        serializer = UserInvitationSerializer(invitation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == "PATCH":
+        serializer = UserDetailsSerializer(
+            invitation.user, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            data = {"password": make_password(serializer.data.get("password"))}
+            serializer = UserDetailsSerializer(
+                invitation.user, data=data, partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+            data = {"status": UserInvitation.ACCEPTED}
+            serializer = UserInvitationSerializer(
+                invitation, data=data, partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_by_queue_name(request, queue_name):
+    """
+    API endpoint to fetch the challenge details by using pk
+    Arguments:
+        queue_name -- Challenge queue name for which the challenge deatils are fetched
+    Returns:
+        Response Object -- An object containing challenge details
+    """
+
+    try:
+        challenge = Challenge.objects.get(queue=queue_name)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": "Challenge with queue name {} does not exist".format(
+                queue_name
+            )
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this challenge."
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    serializer = ZipChallengeSerializer(
+        challenge, context={"request": request}
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_phases_by_challenge_pk(request, challenge_pk):
+    """
+    API endpoint to fetch all challenge phase details corresponding to a challenge using challenge pk
+    Arguments:
+        challenge_pk -- Challenge Id for which the details is to be fetched
+    Returns:
+        Response Object -- An object containing all challenge phases for the challenge
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access these challenge phases."
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge_pk)
+    serializer = ChallengePhaseCreateSerializer(
+        challenge_phases, context={"request": request}, many=True
+    )
+    response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
 
 
