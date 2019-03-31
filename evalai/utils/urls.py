@@ -28,3 +28,4 @@ class URLS(Enum):
     get_aws_credentials = (
         "/api/challenges/phases/{}/participant_team/aws/credentials/"
     )
+    download_file = "/api/jobs/submission_files/?bucket={}&key={}"

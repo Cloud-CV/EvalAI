@@ -19,3 +19,9 @@ API_HOST_URL = os.environ.get("EVALAI_API_URL", "https://evalapi.cloudcv.org")
 EVALAI_ERROR_CODES = [400, 401, 406]
 
 HOST_URL_FILE_PATH = os.path.join(AUTH_TOKEN_DIR, HOST_URL_FILE_NAME)
+
+EVALAI_HOST_URLS = [
+    "https://evalai.cloudcv.org",
+    "https://evalai-staging.cloudcv.org",
+    "http://localhost:8888",
+]
