@@ -1,4 +1,5 @@
 # Command to run: python manage.py shell < scripts/migration/set_phase_slug_as_unique.py
+# TODO: Figure out how to use global imports
 
 
 def set_phase_slug_as_unique():
@@ -13,7 +14,7 @@ def set_phase_slug_as_unique():
                 challenge_phase.challenge.pk,
             )
             print(
-                "Adding Challenge Phase Slug: `%s` --> `%s` "
+                "Adding challenge phase slug: `%s` --> `%s` "
                 % (challenge_phase.name, phase_slug)
             )
             challenge_phase.slug = phase_slug

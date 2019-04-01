@@ -991,7 +991,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     challenge.title.split(" ")[0].lower(),
                     data["codename"].replace(" ", "-").lower(),
                     challenge.pk,
-                )
+                )[:200]
                 if test_annotation_file:
                     test_annotation_file_path = join(
                         BASE_LOCATION,
@@ -1883,8 +1883,8 @@ def get_challenge_phase_by_slug(request, slug):
             "error": "Challenge phase with slug {} does not exist".format(slug)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    serializer = ChallengePhaseSerializer(
-        challenge_phase, context={"request": request}
-    )
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
+    serializer = ChallengePhaseSerializer(challenge_phase)
+    if serializer.is_valid():
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

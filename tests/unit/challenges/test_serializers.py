@@ -87,11 +87,14 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 max_submissions_per_day=100000,
                 max_submissions=100000,
                 max_submissions_per_month=100000,
-                slug="{}-phase-code-name-{}".format(
-                    self.challenge.title.split(" ")[0].lower(),
-                    self.challenge.pk,
-                ),
+                codename="Phase Code Name",
             )
+            self.challenge_phase.slug = "{}-{}-{}".format(
+                self.challenge.title.split(" ")[0].lower(),
+                self.challenge_phase.codename.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:200]
+            self.challenge_phase.save()
 
             self.serializer_data = {
                 "id": self.challenge_phase.pk,

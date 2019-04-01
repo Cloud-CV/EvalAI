@@ -1751,11 +1751,14 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions_per_day=100000,
                 max_submissions_per_month=100000,
                 max_submissions=100000,
-                slug="{}-phase-code-name-{}".format(
-                    self.challenge.title.split(" ")[0].lower(),
-                    self.challenge.pk,
-                ),
+                codename="Phase Code Name",
             )
+            self.challenge_phase.slug = "{}-{}-{}".format(
+                self.challenge.title.split(" ")[0].lower(),
+                self.challenge_phase.codename.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )
+            self.challenge_phase.save()
 
             self.private_challenge_phase = ChallengePhase.objects.create(
                 name="Private Challenge Phase",
@@ -1774,11 +1777,15 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions_per_month=100000,
                 max_submissions=100000,
                 codename="Private Phase Code Name",
-                slug="{}-private-phase-code-name-{}".format(
-                    self.challenge.title.split(" ")[0].lower(),
-                    self.challenge.pk,
-                ),
             )
+            self.private_challenge_phase.slug = "{}-{}-{}".format(
+                self.challenge.title.split(" ")[0].lower(),
+                self.private_challenge_phase.codename.replace(
+                    " ", "-"
+                ).lower(),
+                self.challenge.pk,
+            )
+            self.private_challenge_phase.save()
 
     def tearDown(self):
         shutil.rmtree("/tmp/evalai")
