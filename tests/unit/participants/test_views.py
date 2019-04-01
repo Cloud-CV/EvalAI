@@ -582,6 +582,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+        self.challenge1.slug = "{}-{}".format(
+            self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
+        )[:199]
+        self.challenge1.save()
 
         self.challenge2 = Challenge.objects.create(
             title="Test Challenge 2",
