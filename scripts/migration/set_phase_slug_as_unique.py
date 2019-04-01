@@ -1,10 +1,11 @@
-# Command to run: python manage.py shell < scripts/migration/set_phase_slug_as_unique.py
-# TODO: Figure out how to use global imports
+# To run the file:
+# 1. Open django shell using -- python manage.py shell
+# 2. Run the script in shell -- exec(open('scripts/migration/set_phase_slug_as_unique.py').read())
+
+from challenges.models import ChallengePhase
 
 
 def set_phase_slug_as_unique():
-    from challenges.models import ChallengePhase
-
     challenge_phases = ChallengePhase.objects.all()
     try:
         for challenge_phase in challenge_phases:
