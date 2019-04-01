@@ -991,7 +991,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     challenge.title.split(" ")[0].lower(),
                     data["codename"].replace(" ", "-").lower(),
                     challenge.pk,
-                )[:200]
+                )[:198]
                 if test_annotation_file:
                     test_annotation_file_path = join(
                         BASE_LOCATION,

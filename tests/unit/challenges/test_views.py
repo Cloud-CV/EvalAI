@@ -1757,7 +1757,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 self.challenge.title.split(" ")[0].lower(),
                 self.challenge_phase.codename.replace(" ", "-").lower(),
                 self.challenge.pk,
-            )
+            )[:198]
             self.challenge_phase.save()
 
             self.private_challenge_phase = ChallengePhase.objects.create(
@@ -1784,7 +1784,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                     " ", "-"
                 ).lower(),
                 self.challenge.pk,
-            )
+            )[:198]
             self.private_challenge_phase.save()
 
     def tearDown(self):

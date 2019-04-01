@@ -93,7 +93,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 self.challenge.title.split(" ")[0].lower(),
                 self.challenge_phase.codename.replace(" ", "-").lower(),
                 self.challenge.pk,
-            )[:200]
+            )[:198]
             self.challenge_phase.save()
 
             self.serializer_data = {
