@@ -87,7 +87,14 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 max_submissions_per_day=100000,
                 max_submissions=100000,
                 max_submissions_per_month=100000,
+                codename="Phase Code Name",
             )
+            self.challenge_phase.slug = "{}-{}-{}".format(
+                self.challenge.title.split(" ")[0].lower(),
+                self.challenge_phase.codename.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:198]
+            self.challenge_phase.save()
 
             self.serializer_data = {
                 "id": self.challenge_phase.pk,
@@ -108,6 +115,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "max_submissions_per_month": 100000,
                 "codename": self.challenge_phase.codename,
                 "is_active": self.challenge_phase.is_active,
+                "slug": self.challenge_phase.slug,
             }
             self.challenge_phase_create_serializer = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -131,6 +139,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "max_submissions": 500,
                 "codename": self.challenge_phase.codename,
                 "is_active": self.challenge_phase.is_active,
+                "slug": self.challenge_phase.slug,
             }
             self.challenge_phase_create_serializer_wihout_max_submissions_per_month = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
@@ -159,6 +168,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "codename",
                     "test_annotation",
                     "is_submission_public",
+                    "slug",
                 ]
             ),
         )
@@ -194,6 +204,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
             data["test_annotation"], self.serializer_data["test_annotation"]
         )
         self.assertEqual(data["is_active"], self.serializer_data["is_active"])
+        self.assertEqual(data["slug"], self.serializer_data["slug"])
 
     def test_challenge_phase_create_serializer_wihout_max_submissions_per_month(
         self
@@ -222,6 +233,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                     "codename",
                     "test_annotation",
                     "is_submission_public",
+                    "slug",
                 ]
             ),
         )
@@ -257,9 +269,12 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
             data["test_annotation"], self.serializer_data["test_annotation"]
         )
         self.assertEqual(data["is_active"], self.serializer_data["is_active"])
+        self.assertEqual(data["slug"], self.serializer_data["slug"])
 
     def test_challenge_phase_create_serializer_with_invalid_data(self):
 
         serializer = ChallengePhaseCreateSerializer(data=self.serializer_data)
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(set(serializer.errors), set(["test_annotation"]))
+        self.assertEqual(
+            set(serializer.errors), set(["test_annotation", "slug"])
+        )

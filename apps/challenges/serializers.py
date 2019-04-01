@@ -85,6 +85,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_public",
             "is_active",
             "codename",
+            "slug",
         )
 
 
@@ -241,6 +242,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_submission_public",
             "codename",
             "test_annotation",
+            "slug",
         )
 
 

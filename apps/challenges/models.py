@@ -200,6 +200,7 @@ class ChallengePhase(TimeStampedModel):
         blank=True,
         null=True,
     )
+    slug = models.SlugField(max_length=200, null=True, unique=True)
 
     class Meta:
         app_label = "challenges"
