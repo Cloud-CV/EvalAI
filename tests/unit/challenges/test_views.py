@@ -76,6 +76,10 @@ class BaseAPITestClass(APITestCase):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
         )
+        self.challenge.slug = "{}-{}".format(
+            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        )[:199]
+        self.challenge.save()
 
         self.challenge_host = ChallengeHost.objects.create(
             user=self.user,
@@ -324,7 +328,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug,
+            "slug": "{}-{}".format(
+                new_title.replace(" ", "-").lower(), self.challenge.pk
+            )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
         }
         response = self.client.put(
@@ -416,7 +422,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug,
+            "slug": "{}-{}".format(
+                self.partial_update_challenge_title.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
         }
         response = self.client.patch(self.url, self.partial_update_data)
@@ -457,7 +466,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug,
+            "slug": "{}-{}".format(
+                self.update_challenge_title.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
         }
         response = self.client.put(self.url, self.data)
@@ -2503,6 +2515,10 @@ class CreateChallengeUsingZipFile(APITestCase):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+        self.challenge.slug = "{}-{}".format(
+            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        )[:199]
+        self.challenge.save()
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             self.challenge_phase = ChallengePhase.objects.create(
