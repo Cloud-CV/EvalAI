@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
@@ -14,6 +16,13 @@ from base.models import (
 from base.utils import RandomFileName
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
+
+
+@receiver(pre_save, sender="challenges.Challenge")
+def save_challenge_slug(sender, instance, **kwargs):
+    instance.slug = "{}-{}".format(
+        instance.title.replace(" ", "-").lower(), instance.pk
+    )[:199]
 
 
 class Challenge(TimeStampedModel):
@@ -81,7 +90,7 @@ class Challenge(TimeStampedModel):
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
     )
-    slug = models.CharField(max_length=200, db_index=True, default="")
+    slug = models.SlugField(max_length=200, null=True, unique=True)
     max_docker_image_size = models.BigIntegerField(
         default=42949672960, null=True, blank=True
     )  # Default is 40 GB
