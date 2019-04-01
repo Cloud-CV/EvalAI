@@ -641,18 +641,27 @@ def main():
     if challenge_pk:
         q_params["pk"] = challenge_pk
 
-    challenges = Challenge.objects.filter(**q_params)
-    for challenge in challenges:
+    if settings.DEBUG or settings.TEST:
+        challenges = Challenge.objects.filter(**q_params)
+        for challenge in challenges:
+            load_challenge(challenge)
+    else:
+        try:
+            challenge = Challenge.objects.get(**q_params)
+        except Challenge.DoesNotExist:
+            logger.exception(
+                "Challenge with pk {} doesn't exist".format(challenge_pk)
+            )
+            raise
         load_challenge(challenge)
+        maximum_concurrent_submissions = (
+            challenge.max_concurrent_submission_evaluation
+        )
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name)
-
-    maximum_concurrent_submissions = (
-        challenge.max_concurrent_submission_evaluation
-    )
     while True:
         for message in queue.receive_messages():
             if settings.DEBUG or settings.TEST:
