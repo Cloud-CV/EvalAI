@@ -1110,9 +1110,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
         except:  # noqa: E722
-            import traceback
-
-            print(traceback.print_exc())
             response_data = {
                 "error": "Error in creating challenge. Please check the yaml configuration!"
             }
