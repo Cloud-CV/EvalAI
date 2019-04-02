@@ -628,12 +628,12 @@ def get_or_create_sqs_queue(queue_name):
     return queue
 
 
-def load_challenge_and_return_max_submissions(q_param):
+def load_challenge_and_return_max_submissions(q_params):
     try:
-        challenge = Challenge.objects.get(**q_param)
+        challenge = Challenge.objects.get(**q_params)
     except Challenge.DoesNotExist:
         logger.exception(
-            "Challenge with pk {} doesn't exist".format(q_param["pk"])
+            "Challenge with pk {} doesn't exist".format(q_params["pk"])
         )
         raise
     load_challenge(challenge)
@@ -663,8 +663,7 @@ def main():
         if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
             if not challenge_pk:
                 logger.exception(
-                    "Please add CHALLENGE_PK for the challenge to be loaded "
-                    "as the environment variable in the docker.env file."
+                    "Please add CHALLENGE_PK for the challenge to be loaded as the environment variable in the docker.env file."
                 )
                 sys.exit(1)
             maximum_concurrent_submissions = load_challenge_and_return_max_submissions(
