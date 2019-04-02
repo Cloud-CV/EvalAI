@@ -1884,7 +1884,5 @@ def get_challenge_phase_by_slug(request, slug):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     serializer = ChallengePhaseSerializer(challenge_phase)
-    if serializer.is_valid():
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
