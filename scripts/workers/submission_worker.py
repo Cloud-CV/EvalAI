@@ -38,6 +38,9 @@ DJANGO_SETTINGS_MODULE = os.environ.get(
     "DJANGO_SETTINGS_MODULE", "settings.dev"
 )
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
+LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
+    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
+)
 
 from challenges.models import (
     Challenge,
@@ -625,6 +628,21 @@ def get_or_create_sqs_queue(queue_name):
     return queue
 
 
+def load_challenge_and_return_max_submissions(q_params):
+    try:
+        challenge = Challenge.objects.get(**q_params)
+    except Challenge.DoesNotExist:
+        logger.exception(
+            "Challenge with pk {} doesn't exist".format(q_params["pk"])
+        )
+        raise
+    load_challenge(challenge)
+    maximum_concurrent_submissions = (
+        challenge.max_concurrent_submission_evaluation
+    )
+    return maximum_concurrent_submissions
+
+
 def main():
     killer = GracefulKiller()
     logger.info(
@@ -641,18 +659,29 @@ def main():
     if challenge_pk:
         q_params["pk"] = challenge_pk
 
-    challenges = Challenge.objects.filter(**q_params)
-    for challenge in challenges:
-        load_challenge(challenge)
+    if settings.DEBUG or settings.TEST:
+        if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+            if not challenge_pk:
+                logger.exception(
+                    "Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file."
+                )
+                sys.exit(1)
+            maximum_concurrent_submissions = load_challenge_and_return_max_submissions(
+                q_params
+            )
+        else:
+            challenges = Challenge.objects.filter(**q_params)
+            for challenge in challenges:
+                load_challenge(challenge)
+    else:
+        maximum_concurrent_submissions = load_challenge_and_return_max_submissions(
+            q_params
+        )
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name)
-
-    maximum_concurrent_submissions = (
-        challenge.max_concurrent_submission_evaluation
-    )
     while True:
         for message in queue.receive_messages():
             if settings.DEBUG or settings.TEST:
