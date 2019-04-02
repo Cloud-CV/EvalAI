@@ -22,28 +22,28 @@ If you are interested in contributing to EvalAI-CLI, follow our [contribution gu
 
 2. Clone the evalai-cli repository to your machine via git
 
-```bash
-git clone https://github.com/Cloud-CV/evalai-cli.git EvalAI-CLI
-```
+    ```bash
+    git clone https://github.com/Cloud-CV/evalai-cli.git evalai-cli
+    ```
 
 3. Create a virtual environment
 
-```bash
-cd EvalAI-CLI
-virtualenv -p python3 venv
-source venv/bin/activate
-```
+    ```bash
+    cd EvalAI-CLI
+    virtualenv -p python3 venv
+    source venv/bin/activate
+    ```
 
 4. Install the package locally
 
-```bash
-pip install -e .
-```
+    ```bash
+    pip install -e .
+    ```
 
 5. Login to cli using the command ``` evalai login```
 Two users will be created by default which are listed below -
 
-```bash
-Host User - username: host, password: password
-Participant User - username: participant, password: password
-```
+    ```bash
+    Host User - username: host, password: password
+    Participant User - username: participant, password: password
+    ```

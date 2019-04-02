@@ -29,3 +29,4 @@ class URLS(Enum):
         "/api/challenges/phases/{}/participant_team/aws/credentials/"
     )
     download_file = "/api/jobs/submission_files/?bucket={}&key={}"
+    phase_details_using_slug = "/api/challenges/phase/{}/"

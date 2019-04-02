@@ -40,7 +40,7 @@ def submission(submission_id):
 @click.option(
     "-p",
     "--phase",
-    help="challenge-phase-id to which image is to be pushed",
+    help="challenge-phase-name to which image is to be pushed",
     required=True,
 )
 def push(image, phase):
@@ -64,10 +64,11 @@ def push(image, phase):
         notify_user(message, color="red")
         sys.exit(1)
 
-    request_path = URLS.challenge_phase_details.value
+    request_path = URLS.phase_details_using_slug.value
     request_path = request_path.format(phase)
     response = make_request(request_path, "GET")
     challenge_pk = response.get("challenge")
+    phase_pk = response.get("id")
 
     request_path = URLS.challenge_details.value
     request_path = request_path.format(challenge_pk)
@@ -84,7 +85,7 @@ def push(image, phase):
         sys.exit(1)
 
     request_path = URLS.get_aws_credentials.value
-    request_path = request_path.format(phase)
+    request_path = request_path.format(phase_pk)
 
     response = make_request(request_path, "GET")
     federated_user = response["success"]["federated_user"]
@@ -143,7 +144,7 @@ def push(image, phase):
             with open(submission_file_path, "w") as outfile:
                 json.dump(data, outfile)
             request_path = URLS.make_submission.value
-            request_path = request_path.format(challenge_pk, phase)
+            request_path = request_path.format(challenge_pk, phase_pk)
             response = make_request(request_path, "POST", submission_file_path)
             shutil.rmtree(BASE_TEMP_DIR)
         else:
