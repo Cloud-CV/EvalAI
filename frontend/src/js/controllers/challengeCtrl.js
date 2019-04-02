@@ -47,6 +47,7 @@
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
+        vm.termsAndConditions = false;
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -1723,6 +1724,28 @@
         vm.showConfirmation = function(message){
             $rootScope.notify("success", message);
         };
+
+        vm.termsAndConditionDialog = function (ev) {
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/terms-and-conditions.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.acceptTermsAndConditions = function (acceptTermsAndConditionsForm) {
+            if (acceptTermsAndConditionsForm) {
+                if (vm.termsAndConditions) {
+                    vm.selectExistTeam();
+                    $mdDialog.hide();
+                }
+            } else {
+                $mdDialog.hide();
+            }
+        };
+
         
     }
 
