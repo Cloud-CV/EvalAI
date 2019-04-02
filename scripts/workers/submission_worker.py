@@ -38,6 +38,9 @@ DJANGO_SETTINGS_MODULE = os.environ.get(
     "DJANGO_SETTINGS_MODULE", "settings.dev"
 )
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
+LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
+    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
+)
 
 from challenges.models import (
     Challenge,
@@ -657,10 +660,11 @@ def main():
         q_params["pk"] = challenge_pk
 
     if settings.DEBUG or settings.TEST:
-        if settings.LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+        if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
             if not challenge_pk:
                 logger.exception(
-                    "Please add CHALLENGE_PK as environment variable"
+                    "Please add CHALLENGE_PK for the challenge to be loaded "
+                    "as the environment variable in the docker.env file."
                 )
                 sys.exit(1)
             maximum_concurrent_submissions = load_challenge_and_return_max_submissions(

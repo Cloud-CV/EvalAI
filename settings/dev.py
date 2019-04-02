@@ -77,5 +77,3 @@ warnings.filterwarnings(
     RuntimeWarning,
     r"django\.db\.models\.fields",
 )
-
-LIMIT_CONCURRENT_SUBMISSION_PROCESSING = False
