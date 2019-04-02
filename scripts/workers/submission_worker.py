@@ -625,6 +625,21 @@ def get_or_create_sqs_queue(queue_name):
     return queue
 
 
+def load_challenge_and_return_max_submissions(q_param):
+    try:
+        challenge = Challenge.objects.get(**q_param)
+    except Challenge.DoesNotExist:
+        logger.exception(
+            "Challenge with pk {} doesn't exist".format(q_param["pk"])
+        )
+        raise
+    load_challenge(challenge)
+    maximum_concurrent_submissions = (
+        challenge.max_concurrent_submission_evaluation
+    )
+    return maximum_concurrent_submissions
+
+
 def main():
     killer = GracefulKiller()
     logger.info(
@@ -642,20 +657,22 @@ def main():
         q_params["pk"] = challenge_pk
 
     if settings.DEBUG or settings.TEST:
-        challenges = Challenge.objects.filter(**q_params)
-        for challenge in challenges:
-            load_challenge(challenge)
-    else:
-        try:
-            challenge = Challenge.objects.get(**q_params)
-        except Challenge.DoesNotExist:
-            logger.exception(
-                "Challenge with pk {} doesn't exist".format(challenge_pk)
+        if settings.LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+            if not challenge_pk:
+                logger.exception(
+                    "Please add CHALLENGE_PK as environment variable"
+                )
+                sys.exit(1)
+            maximum_concurrent_submissions = load_challenge_and_return_max_submissions(
+                q_params
             )
-            raise
-        load_challenge(challenge)
-        maximum_concurrent_submissions = (
-            challenge.max_concurrent_submission_evaluation
+        else:
+            challenges = Challenge.objects.filter(**q_params)
+            for challenge in challenges:
+                load_challenge(challenge)
+    else:
+        maximum_concurrent_submissions = load_challenge_and_return_max_submissions(
+            q_params
         )
 
     # create submission base data directory
