@@ -663,7 +663,7 @@ def main():
         if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
             if not challenge_pk:
                 logger.exception(
-                    "Please add CHALLENGE_PK for the challenge to be loaded as the environment variable in the docker.env file."
+                    "Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file."
                 )
                 sys.exit(1)
             maximum_concurrent_submissions = load_challenge_and_return_max_submissions(
