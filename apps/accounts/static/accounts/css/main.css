@@ -108,7 +108,7 @@ p.no-top-para {
 }
 
 .fs-16 {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .fs-18 {
@@ -866,7 +866,7 @@ section.bg-section .bg-image {
   color: #adb4d0;
   width: 75%;
   right: 0;
-  height: 50vh;
+  height: 70vh;
   overflow: hidden;
   direction: ltr;
 }
