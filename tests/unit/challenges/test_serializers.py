@@ -10,7 +10,7 @@ from allauth.account.models import EmailAddress
 from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge, ChallengePhase
-from challenges.serializers import ChallengePhaseCreateSerializer
+from challenges.serializers import ChallengePhaseCreateSerializer, UserInvitationSerializer
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 
@@ -141,7 +141,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 "is_active": self.challenge_phase.is_active,
                 "slug": self.challenge_phase.slug,
             }
-            self.challenge_phase_create_serializer_wihout_max_submissions_per_month = ChallengePhaseCreateSerializer(
+            self.challenge_phasse_create_serializer_wihout_max_submissions_per_month = ChallengePhaseCreateSerializer(
                 instance=self.challenge_phase
             )
 
@@ -278,3 +278,24 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         self.assertEqual(
             set(serializer.errors), set(["test_annotation", "slug"])
         )
+
+
+class UserInvitationCreateSerializer(BaseTestCase):
+    def setUp(self):
+        self(UserInvitationCreateSerializer, self.setUp())
+        try:
+            os.makedirs("/tmp/evalai")
+        except OSError:
+            pass
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.serializer_data = {
+            "email":
+            "invitation_key"
+            "status"
+            "challenge"
+            "user"
+            "challenge_title"
+            "challenge_host_team_name"
+            "user_details"
+            "invited_by"
+            }

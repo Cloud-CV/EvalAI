@@ -16,6 +16,7 @@ from challenges.models import (
     DatasetSplit,
     Leaderboard,
     LeaderboardData,
+    UserInvitation,
 )
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -257,3 +258,16 @@ class LeaderboardDataTestCase(BaseTestCase):
             "{0} : {1}".format(self.challenge_phase_split, self.submission),
             self.leaderboard_data.__str__(),
         )
+
+
+class UserInvitationTestCase(BaseTestCase):
+    def setUp(self):
+        super(UserInvitationTestCase, self).setUp()
+
+        self.user_email = UserInvitation.objects.create(
+            email='user@gmail.com',
+            invitation_key='Hello',
+        )
+
+    def test_str_(self):
+        self.assertEqual(self.user_email.email, self.user_email.__str__(),)

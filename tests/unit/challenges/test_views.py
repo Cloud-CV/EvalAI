@@ -25,10 +25,12 @@ from challenges.models import (
     DatasetSplit,
     Leaderboard,
     StarChallenge,
+    UserInvitation,
 )
 from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
+from hosts.utils import is_user_a_host_of_challenge
 
 
 class BaseAPITestClass(APITestCase):
@@ -3644,3 +3646,73 @@ class StarChallengesTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class InviteUserChallengeTest(BaseAPITestClass):
+    url = reverse_lazy("challenges:invite_users_to_challenge")
+    def setUp(self):
+        super(InviteUserChallengeTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:invite_users_to_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.user2 = User.objects.create(
+            username="someuser2",
+            email="user2@test.com",
+            password="secret_password",
+        )
+        EmailAddress.objects.create(
+            user=self.user2,
+            email="user2@test.com",
+            primary=True,
+            verified=True,
+        )
+        self.challenge1 = Challenge.objects.create(
+            title="Test Challenge1",
+            short_description="Short description for test challenge1",
+            description="Description for test challenge1",
+            terms_and_conditions="Terms and conditions for test challenge1",
+            submission_guidelines="Submission guidelines for test challenge1",
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+            approved_by_admin=True,
+        )
+        self.invited_user = UserInvitation.objects.get(
+            email=self.email, challenge=self.challenge1.pk
+        )
+        self.client.force_authenticate(user=self.user)
+        self.challenge_host1 = ChallengeHost.objects.get(user=request.user2)
+
+    def test_invite_user_not_active_and_approved(self):
+        self.url = reverse_lazy(
+            "challenges:invite_users_to_challenge",
+            kwargs = {
+                "challenge_pk": self.challenge1.pk
+            },
+        )
+        self.challenge1.approved_by_admin = False
+        self.challenge1.is_active = False
+        expected = {"error": "Sorry, the challenge is not active"}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invite_user_is_not_a_host(self):
+        self.url = reverse_lazy(
+        "challenges:invite_users_to_challenge",
+        kwargs = {
+                "challenge_pk": self.challenge1.pk
+        },)
+        if not is_user_a_host_of_challenge(self.user2, self.challenge1.pk):
+            expected = {
+            "error": "You're not authorized to invite a user in {}".format(
+                self.challenge1.title
+            )
+            }    
+            response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
