@@ -3624,3 +3624,119 @@ class StarChallengesTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
+    def setUp(self):
+        super(GetChallengePhaseByPkTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phase_by_pk",
+            kwargs={
+                "pk": self.challenge_phase.pk,
+            },
+        )
+
+    def test_get_challenge_phase_by_pk_returns_right_challenge_phase(self):
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": self.challenge_phase.name,
+            "description": self.challenge_phase.description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(
+                self.challenge_phase.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.challenge_phase.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "is_public": self.challenge_phase.is_public,
+            "is_active": True,
+            "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "slug": self.challenge_phase.slug,
+        }
+        self.client.force_authenticate(user=self.participant_user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_phase_by_pk_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phase_by_pk",
+            kwargs={
+                "pk": self.challenge_phase.pk+10,
+            },
+        )
+        expected = {"detail": "ChallengePhase {} does not exist".format(self.challenge_phase.pk+10)}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_challenge_phase_by_pk_when_user_is_not_authenticated(self):
+        self.client.force_authenticate(user=None)
+
+        expected = {"error": "Authentication credentials were not provided."}
+
+        response = self.client.post(self.url, {})
+        self.assertEqual(list(response.data.values())[0], expected["error"])
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GetChallengePhaseBySlugTest(BaseChallengePhaseClass):
+    def setUp(self):
+        super(GetChallengePhaseBySlugTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phase_by_slug",
+            kwargs={
+                "slug": self.challenge_phase.slug,
+            },
+        )
+
+    def test_get_challenge_phase_by_slug_returns_right_challenge_phase(self):
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": self.challenge_phase.name,
+            "description": self.challenge_phase.description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(
+                self.challenge_phase.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.challenge_phase.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "is_public": self.challenge_phase.is_public,
+            "is_active": True,
+            "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "slug": self.challenge_phase.slug,
+        }
+        self.client.force_authenticate(user=self.participant_user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_phase_by_slug_does_not_exist(self):
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phase_by_slug",
+            kwargs={
+                "slug": self.challenge_phase.pk+10,
+            },
+        )
+        expected = {"error": "Challenge phase with slug {} does not exist".format(self.challenge_phase.pk+10)}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_challenge_phase_by_slug_when_user_is_not_authenticated(self):
+        self.client.force_authenticate(user=None)
+
+        expected = {"error": "Authentication credentials were not provided."}
+
+        response = self.client.post(self.url, {})
+        self.assertEqual(list(response.data.values())[0], expected["error"])
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
