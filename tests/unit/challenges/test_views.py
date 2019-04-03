@@ -3666,10 +3666,10 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_by_pk",
             kwargs={
-                "pk": self.challenge_phase.pk+10,
+                "pk": self.challenge_phase.pk + 10,
             },
         )
-        expected = {"detail": "ChallengePhase {} does not exist".format(self.challenge_phase.pk+10)}
+        expected = {"detail": "ChallengePhase {} does not exist".format(self.challenge_phase.pk + 10)}
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -3724,10 +3724,10 @@ class GetChallengePhaseBySlugTest(BaseChallengePhaseClass):
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_by_slug",
             kwargs={
-                "slug": self.challenge_phase.pk+10,
+                "slug": self.challenge_phase.pk + 10,
             },
         )
-        expected = {"error": "Challenge phase with slug {} does not exist".format(self.challenge_phase.pk+10)}
+        expected = {"error": "Challenge phase with slug {} does not exist".format(self.challenge_phase.pk + 10)}
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
