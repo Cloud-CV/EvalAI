@@ -35,8 +35,7 @@
                                             </div>
                                             <div class="col s12 m6 ">
                                                 <div class="align-right ">
-                                                    <button ng-if="challenge.existTeam.results.length" class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.selectExistTeam()" value="Submit">Participate</button>
-                                                    <button ng-if="!challenge.existTeam.results.length" class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.selectExistTeam()" value="Submit" disabled>Participate</button>
+                                                    <button ng-disabled="!challenge.teamId" ng-if="challenge.existTeam.results.length" class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.termsAndConditionDialog($event)" value="Submit">Continue</button>
                                                     <br>
                                                     <br>
                                                     <span class="text-dark-black"><strong >{{challenge.existTeamError}}</strong></span>

@@ -24,12 +24,16 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.phaseRemainingSubmissions = {};
+        vm.phaseRemainingSubmissionsFlags = {};
+        vm.phaseRemainingSubmissionsCountdown = {};
         vm.isValid = {};
         vm.submissionVisibility = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
         vm.isChallengeHost = false;
+        vm.isDockerBased = false;
         vm.stopLeaderboard = function() {};
         vm.stopFetchingSubmissions = function() {};
         vm.currentDate = null;
@@ -39,11 +43,11 @@
         vm.columnIndexSort = 0;
         // save initial ranking
         vm.initial_ranking = {};
-
       // loader for existing teams
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
+        vm.termsAndConditions = false;
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -51,6 +55,7 @@
         vm.stopLoader = loaderService.stopLoader;
 
         var userKey = utilities.getData('userKey');
+        vm.authToken = userKey;
 
         vm.subErrors = {};
 
@@ -157,6 +162,7 @@
                                                     onSuccess: function() {
                                                         vm.isParticipated = true;
                                                         $state.go('web.challenge-main.challenge-page.submission');
+                                                        vm.displayDockerSubmissionInstructions(vm.page.is_docker_based, vm.isParticipated);
                                                         vm.stopLoader();
                                                     },
                                                     onError: function(response) {
@@ -227,17 +233,13 @@
                                 utilities.sendRequest(parameters);
 
                             }
-                            // This condition means that the user is eligible to make submissions
-                            // else if (vm.isParticipated) {
-
-                            // }
+                            vm.displayDockerSubmissionInstructions(vm.page.is_docker_based, vm.isParticipated);
                             utilities.hideLoader();
                         },
                         onError: function() {
                             utilities.hideLoader();
                         }
                     };
-
                     utilities.sendRequest(parameters);
                 }
 
@@ -253,6 +255,65 @@
         };
 
         utilities.sendRequest(parameters);
+
+        vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
+            // get remaining submission for docker based challenge
+            if (isDockerBased && isParticipated == true) {
+                parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions';
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function (response) {
+                        vm.phaseRemainingSubmissions = response.data;
+                        var details = vm.phaseRemainingSubmissions.phases;
+                        for (var i = 0; i < details.length; i++) {
+                            if (details[i].limits.submission_limit_exceeded === true) {
+                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "maxExceeded";
+                            } else if (details[i].limits.remaining_submissions_today_count > 0) {
+                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
+                            } else {
+                                vm.eachPhase = details[i];
+                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showClock";
+                                vm.countDownTimer = function () {
+                                    vm.remainingTime = vm.eachPhase.limits.remaining_time;
+                                    vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
+                                    vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
+                                    vm.hours = Math.floor(vm.hoursLeft / 3600);
+                                    vm.minutesLeft = Math.floor((vm.hoursLeft) - (vm.hours * 3600));
+                                    vm.minutes = Math.floor(vm.minutesLeft / 60);
+                                    vm.remainingSeconds = Math.floor(vm.remainingTime % 60);
+                                    if (vm.remainingSeconds < 10) {
+                                        vm.remainingSeconds = "0" + vm.remainingSeconds;
+                                    }
+                                    vm.phaseRemainingSubmissionsCountdown[details[i].id] = {
+                                        "days": vm.days,
+                                        "hours": vm.hours,
+                                        "minutes": vm.minutes,
+                                        "seconds": vm.remainingSeconds
+                                    };
+                                    if (vm.remainingTime === 0) {
+                                        vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
+                                    } else {
+                                        vm.remainingSeconds--;
+                                    }
+                                };
+                                setInterval(function () {
+                                    $rootScope.$apply(vm.countDownTimer);
+                                }, 1000);
+                                vm.countDownTimer();
+                            }
+                        }
+                        utilities.hideLoader();
+                    },
+                    onError: function (response) {
+                        var error = response.data;
+                        utilities.storeData('emailError', error.detail);
+                        $state.go('web.permission-denied');
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }
+        };
 
         vm.makeSubmission = function() {
             if (vm.isParticipated) {
@@ -666,7 +727,7 @@
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 10;
+                                    vm.currentPage = vm.submissionResult.count / 100;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
@@ -969,7 +1030,7 @@
                                 // condition for pagination
                                 if (vm.submissionResult.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.submissionResult.count / 10;
+                                    vm.currentPage = vm.submissionResult.count / 100;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.submissionResult.next.split('page=')[1] - 1);
@@ -1018,14 +1079,19 @@
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
             vm.maxExceeded = false;
-            parameters.url = "jobs/" + vm.challengeId + "/phases/" + phaseId + "/remaining_submissions";
+            vm.phaseID = phaseId;
+            parameters.url = "jobs/" + vm.challengeId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
-                    var details = response.data;
+                    for (var phase in response.data.phases) {
+                        if (response.data.phases[phase].id == vm.phaseID) {
+                           var details = response.data.phases[phase].limits;
+                        }
+                    }
                     if (status === 200) {
-                        if (details.max_submission_exceeded === true) {
+                        if (details.submission_limit_exceeded === true) {
                             vm.maxExceeded = true;
                             vm.maxExceededMessage = details.message;
                         }
@@ -1654,6 +1720,33 @@
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
         });
+
+        vm.showConfirmation = function(message){
+            $rootScope.notify("success", message);
+        };
+
+        vm.termsAndConditionDialog = function (ev) {
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/terms-and-conditions.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.acceptTermsAndConditions = function (acceptTermsAndConditionsForm) {
+            if (acceptTermsAndConditionsForm) {
+                if (vm.termsAndConditions) {
+                    vm.selectExistTeam();
+                    $mdDialog.hide();
+                }
+            } else {
+                $mdDialog.hide();
+            }
+        };
+
+        
     }
 
 })();

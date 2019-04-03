@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0026_adds_default_field_in_test_annotation'),
+        ("challenges", "0026_adds_default_field_in_test_annotation")
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='datasetsplit',
-            name='codename',
+            model_name="datasetsplit",
+            name="codename",
             field=models.CharField(max_length=100, unique=True),
-        ),
+        )
     ]

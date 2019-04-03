@@ -9,23 +9,39 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jobs', '0001_squashed_0005_upload_unique_random_filename'),
+        ("jobs", "0001_squashed_0005_upload_unique_random_filename")
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='submission',
-            name='input_file',
-            field=models.FileField(upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            model_name="submission",
+            name="input_file",
+            field=models.FileField(
+                upload_to=base.utils.RandomFileName(
+                    "submission_files/submission_{id}"
+                )
+            ),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='stderr_file',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            model_name="submission",
+            name="stderr_file",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to=base.utils.RandomFileName(
+                    "submission_files/submission_{id}"
+                ),
+            ),
         ),
         migrations.AlterField(
-            model_name='submission',
-            name='stdout_file',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            model_name="submission",
+            name="stdout_file",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to=base.utils.RandomFileName(
+                    "submission_files/submission_{id}"
+                ),
+            ),
         ),
     ]
