@@ -640,7 +640,7 @@ def load_challenge_and_return_max_submissions(q_params):
     maximum_concurrent_submissions = (
         challenge.max_concurrent_submission_evaluation
     )
-    return maximum_concurrent_submissions
+    return maximum_concurrent_submissions, challenge
 
 
 def main():
@@ -666,7 +666,7 @@ def main():
                     "Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file."
                 )
                 sys.exit(1)
-            maximum_concurrent_submissions = load_challenge_and_return_max_submissions(
+            maximum_concurrent_submissions, challenge = load_challenge_and_return_max_submissions(
                 q_params
             )
         else:
@@ -674,7 +674,7 @@ def main():
             for challenge in challenges:
                 load_challenge(challenge)
     else:
-        maximum_concurrent_submissions = load_challenge_and_return_max_submissions(
+        maximum_concurrent_submissions, challenge = load_challenge_and_return_max_submissions(
             q_params
         )
 
@@ -685,12 +685,30 @@ def main():
     while True:
         for message in queue.receive_messages():
             if settings.DEBUG or settings.TEST:
-                logger.info(
-                    "Processing message body: {0}".format(message.body)
-                )
-                process_submission_callback(message.body)
-                # Let the queue know that the message is processed
-                message.delete()
+                if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+                    current_running_submissions_count = Submission.objects.filter(
+                        challenge_phase__challenge=challenge.id,
+                        status="running",
+                    ).count()
+                    if (
+                        current_running_submissions_count
+                        == maximum_concurrent_submissions
+                    ):
+                        pass
+                    else:
+                        logger.info(
+                            "Processing message body: {0}".format(message.body)
+                        )
+                        process_submission_callback(message.body)
+                        # Let the queue know that the message is processed
+                        message.delete()
+                else:
+                    logger.info(
+                        "Processing message body: {0}".format(message.body)
+                    )
+                    process_submission_callback(message.body)
+                    # Let the queue know that the message is processed
+                    message.delete()
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"
