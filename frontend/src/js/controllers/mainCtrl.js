@@ -29,7 +29,6 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     vm.challengeList = response.data;
-                    console.log(vm.challengeList);
                 },
                 onError: function() {}
             };
