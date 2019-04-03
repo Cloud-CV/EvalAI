@@ -20,14 +20,8 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div ng-include="'dist/views/web/partials/rocket-container.html'" class="display-large"></div> -->
             </div>
         </div>
-        <!-- <section class="ev-container center ev-insight" style="padding-right:0;">
-            <img src="dist/images/teaser.png" width="80%" height="400px" class="right responsive-img">
-        </section> -->
-        <!-- challenge section -->
-        <!-- <div class="divider"></div> -->
         <section class="ev-container ev-details text-med-black ev-super-light-bg" id="ev-scroll-down">
             <div class="grad-container text-med-black ">
                 <div class="row">
@@ -91,10 +85,10 @@
                     <h4 class="w-300 center">Popular challenges</h4>
                 </div>
                 <div class="row">
-                    <div class="col s12 m3" ng-repeat="challenge in main.challengeList.results"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+                    <div class="col s12 m3 l3" ng-repeat="challenge in main.challengeList.results track by $index" ng-if="$index < 4"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
                             <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                                 <div class="card-image ev-card-image">
-                                    <img class="bg-img" ng-src="{{challenge.image}}" width="100%">
+                                    <img class="bg-img" ng-src="{{challenge.image}}">
                                     <span class=" ev-card-title fs-14"><span><img ng-src="{{challenge.image}}" ></span>{{challenge.title}}</span>
                                 </div>
                                 <div class="card-content">
@@ -119,157 +113,118 @@
                         <p class="text-dark-black w-300 center fs-16">Sorry! there are no featured challenges. Please check again later.</p>
                     </div>
                 </div>
-                <!-- <div class="row">
-                    <div class="col s12 m12 l12">
-                        <div ng-if=main.isChallenge>
-                            <div class="challenge-logo">
-                                <img ng-src="{{main.featuredChallenge.image}}"> &nbsp;
-                                <h4 class="grad-span">
-                                <a ui-sref="featured-challenge-page({challengeId:main.featuredChallenge.id})">{{main.featuredChallenge.title}}</a>
-                            </h4>
-                            </div>
-                            <p>
-                                <span class="w-500 text-light-black">Organized by: </span> <span class="w-500">{{main.featuredChallenge.creator.team_name}}</span>
-                            </p>
-                            <p>
-                                <span class="text-dark-black">{{main.featuredChallenge.short_description}}<span ng-if="main.isMore">...</span></span>
-                            </p>
-                            <p>
-                                <span class="w-500 text-light-black">Status: </span> <span class="w-500"> In Progress</span>
-                                <span class="right">
-                                    <a ng-show="isAuth" class="view-more" ui-sref="web.challenge-main.challenge-page({challengeId:main.featuredChallenge.id})">view more <i class="fa fa-external-link"></i></a>
-                                    <a ng-show="!isAuth" class="view-more" ui-sref="featured-challenge-page({challengeId:main.featuredChallenge.id})">view more <i class="fa fa-external-link"></i></a>
-                                </span>
-                            </p>
-                        </div>
-                        <div class="display-small">
-                            <p class="text-light-black">
-                                Explore other past, ongoing and upcoming challenges.
-                            </p>
-                            <a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-light fs-14 mt-12" ui-sref="web.challenge-main">View All</a>
-                        </div>
-                    </div>
-                </div> -->
             </div>
         </section>
         <!-- organizatons section -->
         <section class="ev-container ev-reverse-details text-med-black ev-super-light-bg " id="ev-scroll-down">
-                
             <div class="grad-container text-med-black ">
                 <div class="row">
-                    <div class="col s12">
-                        <div class="align-center">
-                            <h4><div>Who uses EvalAI?</div></h4>
-                             <p><span class="text-med-black">Several partner organizations already host their challenges on EvalAI:</span>
-                             </p>
-                           <div class="row">
-                             <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/cmu.png">
-                                    </div>
-                               </div>
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/draper.png" id="draper-logo">
-                                    </div>
-                               </div>
-                                <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/ebay.png" id="ebay-logo">
-                                    </div>
-                               </div>
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/fb.png" id="fb-logo">
-                                    </div>
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/gt.png">
-                                    </div>
-                               </div>
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/google.png">
-                                    </div>
-                               </div>
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/iitm.png" id="iitm-logo">
-                                    </div>
-                               </div>
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/mapillary.png" id="mapillary-logo">
-                                    </div>
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/siop.png">
-                                    </div>
-                               </div>
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/stanford.png">
-                                    </div>
-                               </div>
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/adelaide.png" id="adelaide-logo">
-                                    </div>
-                               </div>
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/umbc.png" id="umbc-logo">
-                                    </div>
-                               </div>
-                           </div>
-                           <div class="row">
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/pitt.png" id="pitt-logo">
-                                    </div>
-                               </div>
-                               <div class="col s12 l3">
-                                    <div class="org-logo">
-                                        <img src="dist/images/organizations/vt.png">
-                                    </div>
-                               </div>
-                           </div>
+                    <div class="col s12 m12 l12">
+                        <div class="row">
+                            <h4 class="w-300 center">Partner Organizations</h4>
+                        </div>
+                        <div class="row">
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/cmu.png" width="100px">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/draper.png" id="draper-logo">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/ebay.png" id="ebay-logo">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/fb.png" id="fb-logo">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/gt.png">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/google.png">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/iitm.png" id="iitm-logo">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/mapillary.png" id="mapillary-logo">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/siop.png">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/stanford.png">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/adelaide.png" id="adelaide-logo">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/umbc.png" id="umbc-logo">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/pitt.png" id="pitt-logo">
+                                </div>
+                            </div>
+                            <div class="col s12 l3">
+                                <div class="org-logo">
+                                    <img src="dist/images/organizations/vt.png">
+                                </div>
+                            </div>
+                        </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        <!-- Bib Entry -->
+        <!-- Arxiv Entry -->
         <section class="ev-container ev-reverse-details text-med-black " id="ev-scroll-down">
             <div class="grad-container text-med-black ">
                 <div class="row">
+                    <h4 class="w-300 center">Cite our work</h4>
+                </div>
+                <div class="row">
                     <div class="col s12 m12 l12">
-                        <span class="align-center">
-                            <h4>
-                                Cite our work
-                            </h4>
-                        </span>
-                        <pre>
-                            @article{EvalAI,
-                               title   =  {EvalAI: Towards Better Evaluation Systems for AI Agents},
-                               author  =  {Deshraj Yadav and Rishabh Jain and Harsh Agrawal and Prithvijit
-                                           Chattopadhyay and Taranjeet Singh and Akash Jain and Shiv Baran
-                                           Singh and Stefan Lee and Dhruv Batra},
-                               year    =  {2019},
-                               volume  =  <a href="https://arxiv.org/abs/1902.03570" target="_blank">arXiv:1902.03570</a>
-                            }
-                        </pre>
+                        <h5 class="w-400">EvalAI: Towards Better Evaluation Systems for AI Agents</h5>
+                        <span class="w-300 fs-16">Deshraj Yadav, Rishabh Jain, Harsh Agrawal, Prithvijit Chattopadhyay, Taranjeet Singh, Akash Jain, Shiv Baran Singh, Stefan Lee, Dhruv Batra</span>
                     </div>
+                </div>
+                <div class="row">
+                    <a href="https://arxiv.org/abs/1902.03570" target="_blank">
+                        <img src="dist/images/thumb.jpg" alt="" width="100%" class="thumb">
+                    </a>
                 </div>
             </div>
         </section>
     </div>
-    <!-- footer -->
     <landing-footer></landing-footer>
 </div>
