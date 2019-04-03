@@ -1101,7 +1101,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
             "phases": [
                 {
                     "name": self.challenge_phase.name,
-                    "id": self.challenge_phase.id,
+                    "slug": self.challenge_phase.slug,
                     "start_date": "{0}{1}".format(
                         self.challenge_phase.start_date.isoformat(), "Z"
                     ).replace("+00:00", ""),
