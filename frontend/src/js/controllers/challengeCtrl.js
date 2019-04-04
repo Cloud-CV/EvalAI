@@ -674,7 +674,7 @@
 
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                        vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
+                        vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                     }
 
                     vm.submissionResult = details;
@@ -774,7 +774,7 @@
                             // Set the is_public flag corresponding to each submission
                             for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                                vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
+                                vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                             }
 
                             if (vm.submissionResult.results.length !== details.results.length) {
@@ -854,7 +854,7 @@
                     // Set the is_public flag corresponding to each submission
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                        vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
+                        vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                     }
 
                     vm.submissionResult = details;
@@ -1082,7 +1082,7 @@
             parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
             parameters.method = 'PATCH';
             parameters.data = {
-                "baseline_submission": vm.baselineStatus[submission_id]
+                "is_baseline": vm.baselineStatus[submission_id]
             };
             parameters.callback = {
                 onSuccess: function() {},
