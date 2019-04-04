@@ -45,6 +45,19 @@ class BaseAPITestClass(APITestCase):
             user=self.user, email="user@test.com", primary=True, verified=True
         )
 
+        self.participant_user = User.objects.create(
+            username="someparticipantuser",
+            email="participantuser@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.participant_user,
+            email="participantuser@test.com",
+            primary=True,
+            verified=True,
+        )
+
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
@@ -63,6 +76,10 @@ class BaseAPITestClass(APITestCase):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
         )
+        self.challenge.slug = "{}-{}".format(
+            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        )[:199]
+        self.challenge.save()
 
         self.challenge_host = ChallengeHost.objects.create(
             user=self.user,
@@ -311,7 +328,9 @@ class GetParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug,
+            "slug": "{}-{}".format(
+                new_title.replace(" ", "-").lower(), self.challenge.pk
+            )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
         }
         response = self.client.put(
@@ -403,7 +422,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug,
+            "slug": "{}-{}".format(
+                self.partial_update_challenge_title.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
         }
         response = self.client.patch(self.url, self.partial_update_data)
@@ -444,7 +466,10 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug,
+            "slug": "{}-{}".format(
+                self.update_challenge_title.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
         }
         response = self.client.put(self.url, self.data)
@@ -1738,7 +1763,14 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions_per_day=100000,
                 max_submissions_per_month=100000,
                 max_submissions=100000,
+                codename="Phase Code Name",
             )
+            self.challenge_phase.slug = "{}-{}-{}".format(
+                self.challenge.title.split(" ")[0].lower(),
+                self.challenge_phase.codename.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:198]
+            self.challenge_phase.save()
 
             self.private_challenge_phase = ChallengePhase.objects.create(
                 name="Private Challenge Phase",
@@ -1758,6 +1790,14 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions=100000,
                 codename="Private Phase Code Name",
             )
+            self.private_challenge_phase.slug = "{}-{}-{}".format(
+                self.challenge.title.split(" ")[0].lower(),
+                self.private_challenge_phase.codename.replace(
+                    " ", "-"
+                ).lower(),
+                self.challenge.pk,
+            )[:198]
+            self.private_challenge_phase.save()
 
     def tearDown(self):
         shutil.rmtree("/tmp/evalai")
@@ -1791,6 +1831,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "slug": self.challenge_phase.slug,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1810,6 +1851,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
+                "slug": self.private_challenge_phase.slug,
             },
         ]
 
@@ -1837,6 +1879,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+                "slug": self.challenge_phase.slug,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -1874,6 +1917,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "slug": self.challenge_phase.slug,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1893,6 +1937,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
+                "slug": self.private_challenge_phase.slug,
             },
         ]
 
@@ -2028,7 +2073,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             },
         )
 
-    def test_get_particular_challenge_phase(self):
+    def test_get_particular_challenge_phase_if_user_is_participant(self):
         expected = {
             "id": self.challenge_phase.id,
             "name": self.challenge_phase.name,
@@ -2047,7 +2092,38 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "slug": self.challenge_phase.slug,
         }
+        self.client.force_authenticate(user=self.participant_user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_particular_challenge_phase_if_user_is_challenge_host(self):
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": self.challenge_phase.name,
+            "description": self.challenge_phase.description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(
+                self.challenge_phase.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.challenge_phase.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "is_public": self.challenge_phase.is_public,
+            "is_submission_public": self.challenge_phase.is_submission_public,
+            "is_active": True,
+            "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "test_annotation": "http://testserver%s"
+            % (self.challenge_phase.test_annotation.url),
+            "slug": self.challenge_phase.slug,
+        }
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2099,6 +2175,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "slug": self.challenge_phase.slug,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2187,6 +2264,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "slug": self.challenge_phase.slug,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -2437,6 +2515,10 @@ class CreateChallengeUsingZipFile(APITestCase):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+        self.challenge.slug = "{}-{}".format(
+            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        )[:199]
+        self.challenge.save()
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             self.challenge_phase = ChallengePhase.objects.create(

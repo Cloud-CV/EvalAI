@@ -23,13 +23,7 @@ class ParticipantTeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ParticipantTeam
-        fields = (
-            "id",
-            "team_name",
-            "created_by",
-            "team_url",
-            "docker_repository_uri",
-        )
+        fields = ("id", "team_name", "created_by", "team_url")
 
 
 class InviteParticipantToTeamSerializer(serializers.Serializer):
@@ -93,14 +87,7 @@ class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ParticipantTeam
-        fields = (
-            "id",
-            "team_name",
-            "created_by",
-            "members",
-            "team_url",
-            "docker_repository_uri",
-        )
+        fields = ("id", "team_name", "created_by", "members", "team_url")
 
     def get_members(self, obj):
         participants = Participant.objects.filter(team__pk=obj.id)

@@ -33,10 +33,5 @@ class ParticipantTeamAdmin(ImportExportTimeStampedAdmin):
     and filter team names.
     """
 
-    list_display = (
-        "team_name",
-        "get_all_participants_email",
-        "team_url",
-        "docker_repository_uri",
-    )
+    list_display = ("team_name", "get_all_participants_email", "team_url")
     list_filter = ("team_name",)
