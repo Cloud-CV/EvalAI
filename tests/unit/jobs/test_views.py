@@ -676,7 +676,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 ).replace("+00:00", ""),
                 "is_public": self.submission.is_public,
                 "when_made_public": self.submission.when_made_public,
-                "baseline_submission": self.submission.baseline_submission,
+                "is_baseline": self.submission.is_baseline,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
@@ -1328,7 +1328,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
-            "baseline_submission": self.submission.baseline_submission,
+            "is_baseline": self.submission.is_baseline,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1372,7 +1372,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "when_made_public": "{0}{1}".format(
                 self.private_submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
-            "baseline_submission": self.submission.baseline_submission,
+            "is_baseline": self.submission.is_baseline,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1434,7 +1434,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
-            "baseline_submission": self.submission.baseline_submission,
+            "is_baseline": self.submission.is_baseline,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1507,7 +1507,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
-            "baseline_submission": self.submission.baseline_submission,
+            "is_baseline": self.submission.is_baseline,
         }
 
         self.client.force_authenticate(user=self.submission.created_by)
@@ -1546,7 +1546,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
-            "baseline_submission": self.submission.baseline_submission,
+            "is_baseline": self.submission.is_baseline,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1701,7 +1701,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                         "labels": ["score", "test-score"],
                     },
                     "submission__submitted_at": self.submission.submitted_at,
-                    "submission__baseline_submission": False
+                    "submission__is_baseline": False
                 }
             ],
         }
@@ -1773,7 +1773,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                         "labels": ["score", "test-score"],
                     },
                     "submission__submitted_at": self.private_submission.submitted_at,
-                    "submission__baseline_submission": False
+                    "submission__is_baseline": False
                 }
             ],
         }

@@ -280,7 +280,7 @@ def change_submission_data_and_visibility(
                 "error": "Sorry, cannot accept submissions since challenge phase is not public"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-        elif 'baseline_submission' in request.data:
+        elif 'is_baseline' in request.data:
             response_data = {'error': 'Sorry, you are not authorized to make this request!'}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
@@ -450,7 +450,7 @@ def leaderboard(request, challenge_phase_split_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     leaderboard_data = LeaderboardData.objects.exclude(
-        Q(submission__created_by__email__in=challenge_hosts_emails) & Q(submission__baseline_submission=False)
+        Q(submission__created_by__email__in=challenge_hosts_emails) & Q(submission__is_baseline=False)
     )
 
     # Get all the successful submissions related to the challenge phase split
@@ -467,7 +467,7 @@ def leaderboard(request, challenge_phase_split_id):
     ).values(
         "id",
         "submission__participant_team__team_name",
-        "submission__baseline_submission",
+        "submission__is_baseline",
         "challenge_phase_split",
         "result",
         "filtering_score",
@@ -489,7 +489,7 @@ def leaderboard(request, challenge_phase_split_id):
     for data in sorted_leaderboard_data:
         if data["submission__participant_team__team_name"] in team_list:
             continue
-        elif data['submission__baseline_submission'] is True:
+        elif data['submission__is_baseline'] is True:
             distinct_sorted_leaderboard_data.append(data)
         else:
             distinct_sorted_leaderboard_data.append(data)

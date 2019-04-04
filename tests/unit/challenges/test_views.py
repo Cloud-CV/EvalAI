@@ -3022,7 +3022,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 ).replace("+00:00", ""),
                 "is_public": self.submission1.is_public,
                 "when_made_public": self.submission1.when_made_public,
-                "baseline_submission": self.submission1.baseline_submission,
+                "is_baseline": self.submission1.is_baseline,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)

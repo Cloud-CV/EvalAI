@@ -48,7 +48,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "is_public",
             "submission_result_file",
             "when_made_public",
-            "baseline_submission",
+            "is_baseline",
         )
 
     def get_participant_team_name(self, obj):
