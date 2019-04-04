@@ -280,8 +280,8 @@ def change_submission_data_and_visibility(
                 "error": "Sorry, cannot accept submissions since challenge phase is not public"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-        elif 'is_baseline' in request.data:
-            response_data = {'error': 'Sorry, you are not authorized to make this request!'}
+        elif request.data.get("is_baseline"):
+            response_data = {"error": "Sorry, you are not authorized to make this request"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
