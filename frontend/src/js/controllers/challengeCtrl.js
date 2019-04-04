@@ -674,9 +674,6 @@
 
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                    }
-                    
-                    for (var i = 0; i < details.results.length; i++) {
                         vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
                     }
 
@@ -777,9 +774,6 @@
                             // Set the is_public flag corresponding to each submission
                             for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                            }
-
-                            for (var i = 0; i < details.results.length; i++) {
                                 vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
                             }
 
@@ -860,9 +854,6 @@
                     // Set the is_public flag corresponding to each submission
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                    }
-
-                    for (var i = 0; i < details.results.length; i++) {
                         vm.baselineStatus[details.results[i].id] = details.results[i].baseline_submission;
                     }
 
