@@ -1701,7 +1701,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                         "labels": ["score", "test-score"],
                     },
                     "submission__submitted_at": self.submission.submitted_at,
-                    "submission__is_baseline": False
+                    "submission__is_baseline": False,
+                    "submission__method_name": self.submission.method_name,
                 }
             ],
         }
@@ -1773,7 +1774,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                         "labels": ["score", "test-score"],
                     },
                     "submission__submitted_at": self.private_submission.submitted_at,
-                    "submission__is_baseline": False
+                    "submission__is_baseline": False,
+                    "submission__method_name": self.submission.method_name,
                 }
             ],
         }

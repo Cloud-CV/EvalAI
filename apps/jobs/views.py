@@ -281,7 +281,9 @@ def change_submission_data_and_visibility(
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
         elif request.data.get("is_baseline"):
-            response_data = {"error": "Sorry, you are not authorized to make this request"}
+            response_data = {
+                "error": "Sorry, you are not authorized to make this request"
+            }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
@@ -450,7 +452,8 @@ def leaderboard(request, challenge_phase_split_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     leaderboard_data = LeaderboardData.objects.exclude(
-        Q(submission__created_by__email__in=challenge_hosts_emails) & Q(submission__is_baseline=False)
+        Q(submission__created_by__email__in=challenge_hosts_emails)
+        & Q(submission__is_baseline=False)
     )
 
     # Get all the successful submissions related to the challenge phase split
@@ -473,6 +476,7 @@ def leaderboard(request, challenge_phase_split_id):
         "filtering_score",
         "leaderboard__schema",
         "submission__submitted_at",
+        "submission__method_name",
     )
 
     if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
@@ -489,7 +493,7 @@ def leaderboard(request, challenge_phase_split_id):
     for data in sorted_leaderboard_data:
         if data["submission__participant_team__team_name"] in team_list:
             continue
-        elif data['submission__is_baseline'] is True:
+        elif data["submission__is_baseline"] is True:
             distinct_sorted_leaderboard_data.append(data)
         else:
             distinct_sorted_leaderboard_data.append(data)
