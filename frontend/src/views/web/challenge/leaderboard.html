@@ -89,7 +89,7 @@
                                     <tbody>
                                     <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort" class="fs-16">
                                         <td>{{challenge.initial_ranking[key.id]}}</td>
-                                        <td>{{key.submission__participant_team__team_name}} (<span ng-if="key.submission__is_baseline">{{key.submission__method_name | limitTo:30}})</span><span id="baseline-badge" class="new badge orange-background" data-badge-caption="B" ng-if="key.submission__is_baseline"></span></td>
+                                        <td>{{key.submission__participant_team__team_name}} <span ng-if="key.submission__is_baseline">({{key.submission__method_name | limitTo:30}})</span><span id="baseline-badge" class="new badge orange-background" data-badge-caption="B" ng-if="key.submission__is_baseline"></span></td>
                                         <td ng-repeat="score in key.result track by $index" >{{score | number : 2}}</td>
                                         <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago</td>
                                     </tr>
