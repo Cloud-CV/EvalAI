@@ -6,8 +6,18 @@
 
 
 #baseline-badge {
-	font-size: 1rem ;
-	font-weight: normal ;
-	float:right ;
-	margin-right: 40% ;
+	font-weight: 300;
+	min-width: 0rem;
+	font-size: 16px;
+	float: right;
+
+}
+
+#baseline-badge-desc {
+	font-weight: 300;
+	min-width: 0rem;
+	font-size: 16px;
+	margin-left: 0px;
+	float: none;
+
 }
