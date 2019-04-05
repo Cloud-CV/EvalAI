@@ -29,6 +29,7 @@
         vm.phaseRemainingSubmissionsCountdown = {};
         vm.isValid = {};
         vm.submissionVisibility = {};
+        vm.baselineStatus = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -464,7 +465,7 @@
                 return Date.parse(key.submission__submitted_at_formatted);
             }
             else if (vm.sortColumn === 'rank') {
-                return vm.initial_ranking[key.submission__participant_team__team_name];
+                return vm.initial_ranking[key.id];
             }
             else if (vm.sortColumn === 'number') {
                 return parseFloat(key.result[vm.columnIndexSort]);
@@ -517,7 +518,7 @@
                     vm.leaderboard = details.results;
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
-                        vm.initial_ranking[vm.leaderboard[i].submission__participant_team__team_name] = i+1;
+                        vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
@@ -673,7 +674,9 @@
 
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                        vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                     }
+
                     vm.submissionResult = details;
 
                     vm.start();
@@ -771,6 +774,7 @@
                             // Set the is_public flag corresponding to each submission
                             for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                                vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                             }
 
                             if (vm.submissionResult.results.length !== details.results.length) {
@@ -850,6 +854,7 @@
                     // Set the is_public flag corresponding to each submission
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                        vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                     }
 
                     vm.submissionResult = details;
@@ -1064,6 +1069,20 @@
             parameters.method = 'PATCH';
             parameters.data = {
                 "is_public": vm.submissionVisibility[submission_id]
+            };
+            parameters.callback = {
+                onSuccess: function() {},
+                onError: function() {}
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
+        vm.changeBaselineStatus = function(submission_id) {
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "is_baseline": vm.baselineStatus[submission_id]
             };
             parameters.callback = {
                 onSuccess: function() {},
