@@ -1441,6 +1441,25 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_toggle_baseline_when_user_is_not_a_host(
+        self
+    ):
+        self.url = reverse_lazy(
+            "jobs:change_submission_data_and_visibility",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "submission_pk": self.submission.pk,
+            },
+        )
+        self.data = {"is_baseline": True}
+        self.challenge.save()
+        self.client.force_authenticate(user=self.user1)
+        expected = {"error": "Sorry, you are not authorized to make this request"}
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_change_submission_data_and_visibility_when_submission_doesnt_exist(
         self
     ):
