@@ -73,6 +73,7 @@
                                             <th data-field="file">Stderr File</th>
                                             <th class="align-center" data-field="file">Submitted At</th>
                                             <th class="align-center" ng-if="challenge.currentPhaseLeaderboardPublic" data-field="file">Show on Leaderboard</th>
+                                            <th data-field="isBaseline" ng-if="challenge.isChallengeHost">Baseline</th>
                                             <th>Edit</th>
                                         </tr>
                                     </thead>
@@ -112,6 +113,12 @@
                                                 <label for="isPublic{{ key.id }}"></label>
                                                 <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                             </td>
+                                            <td ng-if="challenge.isChallengeHost" class="center">
+                                                <input ng-checked="key.is_baseline" ng-if="key.status == 'finished'" ng-model="challenge.baselineStatus[key.id]"
+                                                    type="checkbox" id="baselineSubmission{{ key.id }}" ng-change="challenge.changeBaselineStatus(key.id)" />
+                                                <label for="baselineSubmission{{ key.id }}"></label>
+                                                <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
+                                            </td>
                                             <td><a class="pointer" ng-click="challenge.showMdDialog($event, key.id)"><i class="fa fa-pencil" aria-hidden="true"></i></a></td>
                                         </tr>
                                     </tbody>
@@ -126,7 +133,7 @@
                             <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.previous)">
                                 <i class="fa fa-chevron-left"></i>
                             </a>
-                            <span class="pagination-title"> <strong class="text-med-black"> Page {{challenge.currentPage | ceil}} of {{challenge.submissionResult.count/10 | ceil}} </strong></span>
+                            <span class="pagination-title"> <strong class="text-med-black"> Page {{challenge.currentPage | ceil}} of {{challenge.submissionResult.count/100 | ceil}} </strong></span>
                             <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.next)">
                                 <i class="fa fa-chevron-right"></i>
                             </a>

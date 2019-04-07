@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0040_change_broker_url_name_to_queue'),
-    ]
+    dependencies = [("challenges", "0040_change_broker_url_name_to_queue")]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='max_submissions_per_month',
+            model_name="challengephase",
+            name="max_submissions_per_month",
             field=models.PositiveIntegerField(db_index=True, default=100000),
-        ),
+        )
     ]
