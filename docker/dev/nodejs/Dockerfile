@@ -4,13 +4,12 @@ WORKDIR /code
 
 # Add dependencies
 ADD ./package.json /code
-ADD ./bower.json /code
 ADD ./gulpfile.js /code
 ADD ./.eslintrc /code
 ADD ./karma.conf.js /code
 
 # Install Prerequisites
-RUN npm install -g bower gulp
+RUN npm install -g yarn gulp
 
 # This enables `apt` to run from the new sources
 RUN printf "deb http://archive.debian.org/debian/ \
@@ -31,9 +30,7 @@ RUN apt-get update && \
 RUN npm link gulp
 
 RUN npm cache clean -f
-RUN npm install
-RUN npm install -g karma-cli
-RUN bower install --allow-root
+RUN yarn install
 
 CMD ["gulp", "dev:runserver"]
 

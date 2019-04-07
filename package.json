@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "karma start karma.conf.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/@bower_components'), 'bower_components', 'junction') } catch (e) { }\""
   },
   "author": "",
   "license": "ISC",
@@ -32,22 +33,35 @@
     "gulp-uglify": "^3.0.0",
     "lodash": "^4.16.6",
     "merge-stream": "^1.0.0",
-    "node-sass": "^4.9.0"
+    "node-sass": "^4.9.0",
+    "@bower_components/AngularJS-Toaster": "jirikavi/AngularJS-Toaster#^2.1.0",
+    "@bower_components/angular": "angular/bower-angular#1.7.0",
+    "@bower_components/angular-animate": "angular/bower-angular-animate#^1.5.8",
+    "@bower_components/angular-aria": "angular/bower-angular-aria#^1.5.8",
+    "@bower_components/angular-material": "angular/bower-material#master",
+    "@bower_components/angular-messages": "angular/bower-angular-messages#^1.5.8",
+    "@bower_components/angular-moment": "urish/angular-moment#^1.2.0",
+    "@bower_components/angular-sanitize": "angular/bower-angular-sanitize#1.7.0",
+    "@bower_components/angular-trix": "sachinchoolur/angular-trix#^1.0.2",
+    "@bower_components/angular-ui-router": "angular-ui/angular-ui-router-bower#^0.3.1",
+    "@bower_components/animate.css": "daneden/animate.css#^3.5.2",
+    "@bower_components/clipboard": "zenorocha/clipboard.js#^2.0.0",
+    "@bower_components/font-awesome": "FortAwesome/Font-Awesome#^4.7.0",
+    "@bower_components/jquery": "jquery/jquery-dist#^3.1.1",
+    "@bower_components/lodash": "lodash/lodash#^4.17.2",
+    "@bower_components/materialize": "Dogfalo/materialize#^0.97.8",
+    "@bower_components/moment": "moment/moment#^2.21.0",
+    "@bower_components/ng-file-upload": "danialfarid/angular-file-upload-bower#^12.2.13",
+    "@bower_components/ng-focus-if": "hiebj/ng-focus-if#master",
+    "@bower_components/ngSmoothScroll": "d-oliveros/angular-smooth-scroll#master",
+    "@bower_components/ngclipboard": "sachinchoolur/ngclipboard#^2.0.0",
+    "@bower_components/trix": "basecamp/trix#*"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/Cloud-CV/EvalAI.git"
   },
-  "devDependencies": {
-    "angular-mocks": "1.7.0",
-    "istanbul": "^0.4.5",
-    "jasmine-core": "^3.4.0",
-    "karma": "^4.1.0",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-cli": "^2.0.0",
-    "karma-coverage": "^1.1.2",
-    "karma-coveralls": "^2.1.0",
-    "karma-jasmine": "^2.0.1",
-    "puppeteer": "^1.16.0"
+  "engines": {
+    "yarn": ">= 1.0.0"
   }
 }
