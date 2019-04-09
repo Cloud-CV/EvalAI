@@ -4,7 +4,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import contextlib
-import django
 import importlib
 import json
 import logging
@@ -25,7 +24,6 @@ BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
 logger = logging.getLogger(__name__)
-django.setup()
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
