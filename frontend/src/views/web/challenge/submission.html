@@ -28,10 +28,10 @@
                     </span>
                     <ol>
                         <li>Install evalai-cli<br>
-                            <code>$ pip install evalai</code>
+                            <code>$ pip install evalai{{challenge.cliVersion}}</code>
                             <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
                                 ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                data-clipboard-text="pip install evalai">
+                                data-clipboard-text='pip install "evalai{{challenge.cliVersion}}"'>
                                 <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                             </button>
                         </li>
