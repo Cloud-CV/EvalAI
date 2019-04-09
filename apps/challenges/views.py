@@ -1501,7 +1501,7 @@ def star_challenge(request, challenge_pk):
     if request.method == "POST":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user, challenge=challenge
+                user=request.user.pk, challenge=challenge
             )
             starred_challenge.is_starred = not starred_challenge.is_starred
             starred_challenge.save()
@@ -1528,7 +1528,7 @@ def star_challenge(request, challenge_pk):
     if request.method == "GET":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user, challenge=challenge
+                user=request.user.pk, challenge=challenge
             )
             serializer = StarChallengeSerializer(starred_challenge)
             response_data = serializer.data
