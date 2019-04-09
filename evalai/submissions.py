@@ -10,6 +10,7 @@ import shutil
 import sys
 import tempfile
 import urllib.parse as urlparse
+import uuid
 
 from click import echo, style
 
@@ -55,7 +56,7 @@ def push(image, phase):
         notify_user(message, color="red")
         sys.exit(1)
 
-    tag = image[1]
+    tag = str(uuid.uuid4())
     docker_client = docker.from_env()
     try:
         docker_image = docker_client.images.get(image)
