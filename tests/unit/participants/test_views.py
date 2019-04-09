@@ -649,6 +649,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "is_docker_based": self.challenge1.is_docker_based,
                         "slug": self.challenge1.slug,
                         "max_docker_image_size": self.challenge1.max_docker_image_size,
+                        "cli_version": self.challenge1.cli_version,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -710,6 +711,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "is_docker_based": self.challenge1.is_docker_based,
                 "slug": self.challenge1.slug,
                 "max_docker_image_size": self.challenge1.max_docker_image_size,
+                "cli_version": self.challenge1.cli_version,
             }
         ]
 

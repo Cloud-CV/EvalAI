@@ -54,6 +54,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "is_docker_based",
             "slug",
             "max_docker_image_size",
+            "cli_version",
         )
 
 
@@ -190,6 +191,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "is_docker_based",
             "slug",
             "max_docker_image_size",
+            "cli_version",
         )
 
 
