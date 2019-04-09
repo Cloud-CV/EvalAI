@@ -158,6 +158,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "is_docker_based": self.challenge.is_docker_based,
                 "slug": self.challenge.slug,
                 "max_docker_image_size": self.challenge.max_docker_image_size,
+                "cli_version": self.challenge.cli_version,
             }
         ]
 
@@ -263,6 +264,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "is_docker_based": self.challenge.is_docker_based,
             "slug": self.challenge.slug,
             "max_docker_image_size": self.challenge.max_docker_image_size,
+            "cli_version": self.challenge.cli_version,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -332,6 +334,7 @@ class GetParticularChallenge(BaseAPITestClass):
                 new_title.replace(" ", "-").lower(), self.challenge.pk
             )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
+            "cli_version": self.challenge.cli_version,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -427,6 +430,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 self.challenge.pk,
             )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
+            "cli_version": self.challenge.cli_version,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -471,6 +475,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
                 self.challenge.pk,
             )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
+            "cli_version": self.challenge.cli_version,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -948,6 +953,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge3.is_docker_based,
                 "slug": self.challenge3.slug,
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
+                "cli_version": self.challenge3.cli_version,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -994,6 +1000,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1040,6 +1047,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge4.is_docker_based,
                 "slug": self.challenge4.slug,
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
+                "cli_version": self.challenge4.cli_version,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1085,6 +1093,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge4.is_docker_based,
                 "slug": self.challenge4.slug,
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
+                "cli_version": self.challenge4.cli_version,
             },
             {
                 "id": self.challenge3.pk,
@@ -1119,6 +1128,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge3.is_docker_based,
                 "slug": self.challenge3.slug,
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
+                "cli_version": self.challenge3.cli_version,
             },
             {
                 "id": self.challenge2.pk,
@@ -1153,6 +1163,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1246,6 +1257,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge3.is_docker_based,
                 "slug": self.challenge3.slug,
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
+                "cli_version": self.challenge3.cli_version,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1365,6 +1377,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "is_docker_based": self.challenge3.is_docker_based,
             "slug": self.challenge3.slug,
             "max_docker_image_size": self.challenge3.max_docker_image_size,
+            "cli_version": self.challenge3.cli_version,
         }
 
         response = self.client.get(self.url, {})
@@ -1423,6 +1436,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "is_docker_based": self.challenge4.is_docker_based,
             "slug": self.challenge4.slug,
             "max_docker_image_size": self.challenge4.max_docker_image_size,
+            "cli_version": self.challenge4.cli_version,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1535,6 +1549,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             }
         ]
 
@@ -1581,6 +1596,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             }
         ]
 
@@ -1627,6 +1643,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             }
         ]
 
@@ -1671,6 +1688,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge.is_docker_based,
                 "slug": self.challenge.slug,
                 "max_docker_image_size": self.challenge.max_docker_image_size,
+                "cli_version": self.challenge.cli_version,
             },
             {
                 "id": self.challenge2.pk,
@@ -1705,6 +1723,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             },
         ]
 
