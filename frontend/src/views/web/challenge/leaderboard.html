@@ -43,8 +43,8 @@
                         <div class="horizontal-scroll">
                             <div class="col s12">
                                 <div ng-if="!challenge.isResult" class=" w-400 result-wrn">No phase selected.</div>
-                                <div ng-if="challenge.isResult" class="result-wrn"><span id="baseline-badge-desc" class="new badge orange-background w-400" data-badge-caption="B"
-                                    ng-if="challenge.isResult"></span><span class="w-400"> - Baseline submission</span></div>                                
+                                <div ng-if="challenge.isResult && challenge.leaderboard.length && !challenge.leaderboard.error" class="result-wrn"><span id="baseline-badge-desc" class="new badge orange-background w-400" data-badge-caption="B"></span>
+                                    <span class="w-400"> - Baseline submission</span></div>                                
                                 <table ng-if="challenge.isResult && challenge.leaderboard.length" class="centered highlight">
                                     <thead>
                                     <tr>
@@ -59,7 +59,7 @@
                                         </td>
                                         <td data-field="team" class="align-center">
                                             <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'string');">
-                                                <span class="w-400 fs-18">Participant Team</span>
+                                                <span class="w-400 fs-18">Participant team</span>
                                                 <span class="fa-stack fa-1x">
                                                     <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
                                                     <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'string'? 'text-dark-black' : 'text-light-black w-500'"></i>
@@ -77,7 +77,7 @@
                                         </td>
                                         <td data-field="submission_time" class="align-center">
                                             <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'date');">
-                                                <span class="fs-18 w-400">Last Submission at</span>
+                                                <span class="fs-18 w-400">Last submission at</span>
                                                 <span class="fa-stack fa-1x">
                                                     <i class="fa fa-sort-asc fa-stack-1x" ng-class="challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
                                                     <i class="fa fa-sort-desc fa-stack-1x" ng-class="!challenge.reverseSort && challenge.sortColumn == 'date'? 'text-dark-black' : 'text-light-black w-500'"></i>
