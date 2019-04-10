@@ -22,6 +22,7 @@ import yaml
 import zipfile
 
 from os.path import join
+from types import ModuleType
 
 from django.core.files.base import ContentFile
 from django.utils import timezone
@@ -38,8 +39,8 @@ DJANGO_SETTINGS_MODULE = os.environ.get(
     "DJANGO_SETTINGS_MODULE", "settings.dev"
 )
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
-LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
-    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
+LIMIT_CONCURRENT_SUBMISSION_PROCESSING = eval(
+    os.environ.get("LIMIT_CONCURRENT_SUBMISSION_PROCESSING")
 )
 
 from challenges.models import (
@@ -249,6 +250,7 @@ def extract_challenge_data(challenge, phases):
             CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id)
         )
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
+        return challenge_module
     except Exception:
         logger.exception(
             "Exception raised while creating Python module for challenge_id: %s"
@@ -264,7 +266,11 @@ def load_challenge(challenge):
     # make sure that the challenge base directory exists
     create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
     phases = challenge.challengephase_set.all()
-    extract_challenge_data(challenge, phases)
+    challenge_module = extract_challenge_data(challenge, phases)
+    if isinstance(challenge_module, ModuleType):
+        return
+    else:
+        sys.exit(1)
 
 
 def extract_submission_data(submission_id):
