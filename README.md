@@ -1,4 +1,4 @@
-<p align="center"><img width="65%" src="docs/source/\_static/img/evalai_logo.png" /></p>
+<p align="center"><img width="65%" src="docs/source/_static/img/evalai_logo.png" /></p>
 
 ------------------------------------------------------------------------------------------
 
@@ -34,7 +34,7 @@ The features offered by us are -
 
 A question we’re often asked is: Doesn’t Kaggle already do this? The central differences are:
 
-<p align="center"><img width="65%" src="docs/source/\_static/img/kaggle_comparison.png" /></p>
+<p align="center"><img width="65%" src="docs/source/_static/img/kaggle_comparison.png" /></p>
 
 ## Goal
 
