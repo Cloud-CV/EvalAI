@@ -265,10 +265,9 @@ class UserInvitationTestCase(BaseTestCase):
         super(UserInvitationTestCase, self).setUp()
 
         self.user_email = UserInvitation.objects.create(
-            email='user@test.com',
-            invitation_key='daslkasdlk'
+            email='user@gmail.com',
+            invitation_key='Hello',
         )
 
     def test_str_(self):
         self.assertEqual(self.user_email.email, self.user_email.__str__(),)
-        
