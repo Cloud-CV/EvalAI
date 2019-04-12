@@ -57,6 +57,43 @@
 
         var userKey = utilities.getData('userKey');
         vm.authToken = userKey;
+        var currenttext='en';
+        var data_page=[];
+        $scope.display_content = function(string1){
+            data_page[0]=vm.page.description;
+            data_page[1]=vm.page.evaluation_details;
+            data_page[2]=vm.page.terms_and_conditions;
+            var lang=currenttext+'-'+string1;
+            currenttext=string1;
+            var url="https://translate.yandex.net/api/v1.5/tr.json/translate";
+            var key="trnsl.1.1.20190408T152605Z.cbfe1c05c44fd090.949f0bcb97fea0fef2cf4797bb7549e60f10685e";
+            $scope.method = 'POST';
+            $scope.url = 'https://translate.yandex.net/api/v1.5/tr.json/translate?';
+                $http({
+                    url: url,
+                    method:"POST",
+                    params:{key:key,text:vm.page.description,lang:lang},
+                })
+                .then(function(data){
+                    vm.page.description=data.data.text;
+                });
+                $http({
+                    url: url,
+                    method:"POST",
+                    params:{key:key,text:vm.page.evaluation_details,lang:lang},
+                })
+                .then(function(data){
+                    vm.page.evaluation_details=data.data.text;
+                });
+                $http({
+                    url: url,
+                    method:"POST",
+                    params:{key:key,text:vm.page.terms_and_conditions,lang:lang},
+                })
+                .then(function(data){
+                    vm.page.terms_and_conditions=data.data.text;
+                });
+            };
 
         vm.subErrors = {};
 

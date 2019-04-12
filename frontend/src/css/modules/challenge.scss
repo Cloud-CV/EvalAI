@@ -179,3 +179,24 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
     background-color: #ffaf4b !important;
 }
 
+.vertical-content{
+     display: none;
+     position: absolute;
+     box-shadow: 0px 8px 16px 0px rgba(0,0,0,.2);
+}
+
+.vertical-content a{
+    padding: 12px 16px;
+    color: black;
+    text-decoration: none;
+    display: block;
+}
+.inline{
+    display: inline-block;
+}
+
+.dropdown:hover > .vertical-content{
+    display: block;
+}
+
+.vertical-content a:hover {background-color: #f1f1f1}
