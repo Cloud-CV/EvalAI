@@ -466,6 +466,9 @@ def leaderboard(request, challenge_phase_split_id):
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL(
             "result->>%s", (default_order_by,), output_field=FloatField()
+        ),
+        filtering_error=RawSQL(
+            "error->>%s", ("error_{0}".format(default_order_by),), output_field=FloatField()
         )
     ).values(
         "id",
@@ -475,6 +478,7 @@ def leaderboard(request, challenge_phase_split_id):
         "result",
         "error",
         "filtering_score",
+        "filtering_error",
         "leaderboard__schema",
         "submission__submitted_at",
         "submission__method_name",
@@ -485,7 +489,7 @@ def leaderboard(request, challenge_phase_split_id):
 
     sorted_leaderboard_data = sorted(
         leaderboard_data,
-        key=lambda k: float(k["filtering_score"]),
+        key=lambda k: (float(k["filtering_score"]), float(-k["filtering_error"])),
         reverse=True,
     )
 
