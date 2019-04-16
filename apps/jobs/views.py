@@ -468,8 +468,10 @@ def leaderboard(request, challenge_phase_split_id):
             "result->>%s", (default_order_by,), output_field=FloatField()
         ),
         filtering_error=RawSQL(
-            "error->>%s", ("error_{0}".format(default_order_by),), output_field=FloatField()
-        )
+            "error->>%s",
+            ("error_{0}".format(default_order_by),),
+            output_field=FloatField(),
+        ),
     ).values(
         "id",
         "submission__participant_team__team_name",
@@ -493,7 +495,10 @@ def leaderboard(request, challenge_phase_split_id):
 
     sorted_leaderboard_data = sorted(
         leaderboard_data,
-        key=lambda k: (float(k["filtering_score"]), float(-k["filtering_error"])),
+        key=lambda k: (
+            float(k["filtering_score"]),
+            float(-k["filtering_error"]),
+        ),
         reverse=True,
     )
 
@@ -515,7 +520,8 @@ def leaderboard(request, challenge_phase_split_id):
         ]
         if item["error"] is not None:
             item["error"] = [
-                item["error"]["error_{0}".format(index)] for index in leaderboard_labels
+                item["error"]["error_{0}".format(index)]
+                for index in leaderboard_labels
             ]
 
     paginator, result_page = paginated_queryset(
