@@ -487,6 +487,10 @@ def leaderboard(request, challenge_phase_split_id):
     if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
         leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
+    for leaderboard_item in leaderboard_data:
+        if leaderboard_item["error"] is None:
+            leaderboard_item.update(filtering_error=0)
+
     sorted_leaderboard_data = sorted(
         leaderboard_data,
         key=lambda k: (float(k["filtering_score"]), float(-k["filtering_error"])),
