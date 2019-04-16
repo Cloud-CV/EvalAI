@@ -473,6 +473,7 @@ def leaderboard(request, challenge_phase_split_id):
         "submission__is_baseline",
         "challenge_phase_split",
         "result",
+        "error",
         "filtering_score",
         "leaderboard__schema",
         "submission__submitted_at",
@@ -504,6 +505,10 @@ def leaderboard(request, challenge_phase_split_id):
         item["result"] = [
             item["result"][index] for index in leaderboard_labels
         ]
+        if item["error"] is not None:
+            item["error"] = [
+                item["error"]["error_{0}".format(index)] for index in leaderboard_labels
+            ]
 
     paginator, result_page = paginated_queryset(
         distinct_sorted_leaderboard_data,
