@@ -1047,6 +1047,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     data["description"] = None
 
                 test_annotation_file = data["test_annotation_file"]
+                data["slug"] = "{}-{}-{}".format(
+                    challenge.title.split(" ")[0].lower(),
+                    data["codename"].replace(" ", "-").lower(),
+                    challenge.pk,
+                )[:198]
                 if test_annotation_file:
                     test_annotation_file_path = join(
                         BASE_LOCATION,
@@ -1556,7 +1561,7 @@ def star_challenge(request, challenge_pk):
     if request.method == "POST":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user, challenge=challenge
+                user=request.user.pk, challenge=challenge
             )
             starred_challenge.is_starred = not starred_challenge.is_starred
             starred_challenge.save()
@@ -1583,7 +1588,7 @@ def star_challenge(request, challenge_pk):
     if request.method == "GET":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user, challenge=challenge
+                user=request.user.pk, challenge=challenge
             )
             serializer = StarChallengeSerializer(starred_challenge)
             response_data = serializer.data
@@ -1907,5 +1912,37 @@ def get_challenge_phases_by_challenge_pk(request, challenge_pk):
     serializer = ChallengePhaseCreateSerializer(
         challenge_phases, context={"request": request}, many=True
     )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_pk(request, pk):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    challenge_phase = get_challenge_phase_model(pk)
+    serializer = ChallengePhaseSerializer(
+        challenge_phase, context={"request": request}
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_slug(request, slug):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    try:
+        challenge_phase = ChallengePhase.objects.get(slug=slug)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            "error": "Challenge phase with slug {} does not exist".format(slug)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ChallengePhaseSerializer(challenge_phase)
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)

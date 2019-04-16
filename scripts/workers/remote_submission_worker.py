@@ -4,7 +4,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import contextlib
-import django
 import importlib
 import json
 import logging
@@ -25,12 +24,8 @@ BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
 logger = logging.getLogger(__name__)
-django.setup()
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
-DJANGO_SETTINGS_MODULE = os.environ.get(
-    "DJANGO_SETTINGS_MODULE", "settings.dev"
-)
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
 DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT", "8000")
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
@@ -171,8 +166,6 @@ def create_dir_as_python_package(directory):
 def return_url_per_environment(url):
     base_url = "http://{0}:{1}".format(DJANGO_SERVER, DJANGO_SERVER_PORT)
     url = "{0}{1}".format(base_url, url)
-    if DJANGO_SETTINGS_MODULE == "settings.test":
-        url = "{0}{1}".format("http://testserver", url)
     return url
 
 

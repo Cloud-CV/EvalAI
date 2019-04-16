@@ -582,6 +582,10 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+        self.challenge1.slug = "{}-{}".format(
+            self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
+        )[:199]
+        self.challenge1.save()
 
         self.challenge2 = Challenge.objects.create(
             title="Test Challenge 2",
@@ -645,6 +649,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "is_docker_based": self.challenge1.is_docker_based,
                         "slug": self.challenge1.slug,
                         "max_docker_image_size": self.challenge1.max_docker_image_size,
+                        "cli_version": self.challenge1.cli_version,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -706,6 +711,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "is_docker_based": self.challenge1.is_docker_based,
                 "slug": self.challenge1.slug,
                 "max_docker_image_size": self.challenge1.max_docker_image_size,
+                "cli_version": self.challenge1.cli_version,
             }
         ]
 
