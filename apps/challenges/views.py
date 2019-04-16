@@ -2,6 +2,7 @@ import csv
 import logging
 import random
 import requests
+import re
 import shutil
 import string
 import tempfile
@@ -943,13 +944,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
-                challenge_title = challenge.title.split(" ")
-                challenge_title = "-".join(challenge_title).lower()
+                challenge_title = challenge.title.replace(" ", "-").lower()
+                challenge_title = re.sub(r"\W+", "-", challenge_title)
                 random_challenge_id = uuid.uuid4()
                 challenge_queue_name = "{}-{}".format(
                     challenge_title, random_challenge_id
                 )
-                challenge.queue = challenge_queue_name
+                challenge.queue = challenge_queue_name[:80]
                 challenge.save()
             else:
                 response_data = serializer.errors
