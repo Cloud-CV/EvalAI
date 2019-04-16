@@ -29,6 +29,7 @@
         vm.phaseRemainingSubmissionsCountdown = {};
         vm.isValid = {};
         vm.submissionVisibility = {};
+        vm.baselineStatus = {};
         vm.showUpdate = false;
         vm.showLeaderboardUpdate = false;
         vm.poller = null;
@@ -47,6 +48,7 @@
         vm.isExistLoader = false;
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
+        vm.termsAndConditions = false;
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -82,6 +84,7 @@
                 vm.isPublished = vm.page.published;
                 vm.isForumEnabled = details.enable_forum;
                 vm.forumURL = details.forum_url;
+                vm.cliVersion = details.cli_version;
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -468,7 +471,7 @@
                 return Date.parse(key.submission__submitted_at_formatted);
             }
             else if (vm.sortColumn === 'rank') {
-                return vm.initial_ranking[key.submission__participant_team__team_name];
+                return vm.initial_ranking[key.id];
             }
             else if (vm.sortColumn === 'number') {
                 return parseFloat(key.result[vm.columnIndexSort]);
@@ -521,7 +524,7 @@
                     vm.leaderboard = details.results;
                     for (var i=0; i<vm.leaderboard.length; i++) {
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
-                        vm.initial_ranking[vm.leaderboard[i].submission__participant_team__team_name] = i+1;
+                        vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
                         var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
                         var duration = moment.duration(dateTimeNow.diff(submissionTime));
@@ -677,7 +680,9 @@
 
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                        vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                     }
+
                     vm.submissionResult = details;
 
                     vm.start();
@@ -775,6 +780,7 @@
                             // Set the is_public flag corresponding to each submission
                             for (var i = 0; i < details.results.length; i++) {
                                 vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                                vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                             }
 
                             if (vm.submissionResult.results.length !== details.results.length) {
@@ -854,6 +860,7 @@
                     // Set the is_public flag corresponding to each submission
                     for (var i = 0; i < details.results.length; i++) {
                         vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                        vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
                     }
 
                     vm.submissionResult = details;
@@ -1077,13 +1084,26 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.showRemainingSubmissions = function(phaseId) {
+        vm.changeBaselineStatus = function(submission_id) {
+            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/" + submission_id;
+            parameters.method = 'PATCH';
+            parameters.data = {
+                "is_baseline": vm.baselineStatus[submission_id]
+            };
+            parameters.callback = {
+                onSuccess: function() {},
+                onError: function() {}
+            };
+
+            utilities.sendRequest(parameters);
+        };
+
+        vm.showRemainingSubmissions = function() {
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
             vm.maxExceeded = false;
-            vm.phaseID = phaseId;
             parameters.url = "jobs/" + vm.challengeId + "/remaining_submissions";
             parameters.method = 'GET';
             parameters.callback = {
@@ -1746,6 +1766,30 @@
         vm.showConfirmation = function(message){
             $rootScope.notify("success", message);
         };
+
+        vm.termsAndConditionDialog = function (ev) {
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/terms-and-conditions.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.acceptTermsAndConditions = function (acceptTermsAndConditionsForm) {
+            if (acceptTermsAndConditionsForm) {
+                if (vm.termsAndConditions) {
+                    vm.selectExistTeam();
+                    $mdDialog.hide();
+                }
+            } else {
+                $mdDialog.hide();
+            }
+        };
+
+        
+    }
 
         // remove the uploaded image of `edit challenge description`
         $scope.trixAttachmentRemove = function(e, editor) {

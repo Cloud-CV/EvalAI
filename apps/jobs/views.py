@@ -14,7 +14,7 @@ from rest_framework.decorators import (
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
-from django.db.models import FloatField
+from django.db.models import FloatField, Q
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -50,6 +50,7 @@ from participants.utils import (
     get_participant_team_model,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
+    is_user_part_of_participant_team,
 )
 
 from .models import Submission
@@ -279,6 +280,11 @@ def change_submission_data_and_visibility(
                 "error": "Sorry, cannot accept submissions since challenge phase is not public"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        elif request.data.get("is_baseline"):
+            response_data = {
+                "error": "Sorry, you are not authorized to make this request"
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge_pk
@@ -446,7 +452,8 @@ def leaderboard(request, challenge_phase_split_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     leaderboard_data = LeaderboardData.objects.exclude(
-        submission__created_by__email__in=challenge_hosts_emails
+        Q(submission__created_by__email__in=challenge_hosts_emails)
+        & Q(submission__is_baseline=False)
     )
 
     # Get all the successful submissions related to the challenge phase split
@@ -463,11 +470,14 @@ def leaderboard(request, challenge_phase_split_id):
     ).values(
         "id",
         "submission__participant_team__team_name",
+        "submission__participant_team__team_url",
+        "submission__is_baseline",
         "challenge_phase_split",
         "result",
         "filtering_score",
         "leaderboard__schema",
         "submission__submitted_at",
+        "submission__method_name",
     )
 
     if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
@@ -481,10 +491,11 @@ def leaderboard(request, challenge_phase_split_id):
 
     distinct_sorted_leaderboard_data = []
     team_list = []
-
     for data in sorted_leaderboard_data:
         if data["submission__participant_team__team_name"] in team_list:
             continue
+        elif data["submission__is_baseline"] is True:
+            distinct_sorted_leaderboard_data.append(data)
         else:
             distinct_sorted_leaderboard_data.append(data)
             team_list.append(data["submission__participant_team__team_name"])
@@ -518,7 +529,7 @@ def get_remaining_submissions(request, challenge_pk):
         "participant_team_id": 2,
         "phases": [
             {
-                "id": 1,
+                "slug": "megan-phase-1",
                 "name": "Megan Phase",
                 "start_date": "2018-10-28T14:22:53.022639Z",
                 "end_date": "2020-06-19T14:22:53.022660Z",
@@ -529,7 +540,7 @@ def get_remaining_submissions(request, challenge_pk):
                 }
             },
             {
-                "id": 2,
+                "slug": "molly-phase-2",
                 "name": "Molly Phase",
                 "start_date": "2018-10-28T14:22:53Z",
                 "end_date": "2020-06-19T14:22:53Z",
@@ -1085,10 +1096,9 @@ def get_signed_url_for_submission_related_file(request):
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-    if (
-        request.user.id == submission.created_by.id
-        or is_user_a_host_of_challenge(request.user, challenge_pk)
-    ):
+    if is_user_part_of_participant_team(
+        request.user, participant_team
+    ) or is_user_a_host_of_challenge(request.user, challenge_pk):
         aws_keys = get_aws_credentials_for_challenge(challenge_pk)
         s3 = get_boto3_client("s3", aws_keys)
         url = s3.generate_presigned_url(
