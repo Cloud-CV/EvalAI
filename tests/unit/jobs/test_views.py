@@ -1987,11 +1987,11 @@ class UpdateSubmissionTest(BaseAPITestClass):
         }
 
         expected = {
-            "error": "`result` key contains invalid data. Please try again with correct format!"
+            "message": "`result` key contains invalid data. Please try again with correct format."
         }
         self.client.force_authenticate(user=self.challenge_host.user)
         response = self.client.put(self.url, self.data)
-        self.assertEqual(response.data, expected)
+        self.assertEqual(response.data["message"], expected["message"])
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_submission_when_challenge_phase_split_not_exist(self):
