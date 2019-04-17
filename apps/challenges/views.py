@@ -37,7 +37,12 @@ from yaml.scanner import ScannerError
 from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
-from base.utils import paginated_queryset, send_email, get_url_from_hostname
+from base.utils import (
+    paginated_queryset,
+    send_email,
+    get_url_from_hostname,
+    get_queue_name,
+)
 from challenges.utils import (
     get_challenge_model,
     get_challenge_phase_model,
@@ -943,13 +948,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
-                challenge_title = challenge.title.split(" ")
-                challenge_title = "-".join(challenge_title).lower()
-                random_challenge_id = uuid.uuid4()
-                challenge_queue_name = "{}-{}".format(
-                    challenge_title, random_challenge_id
-                )
-                challenge.queue = challenge_queue_name
+                queue_name = get_queue_name(challenge.title)
+                challenge.queue = queue_name
                 challenge.save()
             else:
                 response_data = serializer.errors

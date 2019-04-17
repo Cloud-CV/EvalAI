@@ -3,6 +3,7 @@ import boto3
 import botocore
 import logging
 import os
+import re
 import sendgrid
 import uuid
 
@@ -179,3 +180,21 @@ def get_sqs_queue_object():
             logger.exception("Cannot get queue: {}".format(queue_name))
         queue = sqs.create_queue(QueueName=queue_name)
     return queue
+
+
+def get_slug(param):
+    slug = param.replace(" ", "-").lower()
+    slug = re.sub(r"\W+", "-", slug)
+    slug = slug[
+        :180
+    ]  # The max-length for slug is 200, but 180 is used here so as to append pk
+    return slug
+
+
+def get_queue_name(param):
+    queue_name = param.replace(" ", "-").lower()
+    queue_name = re.sub(r"\W+", "-", queue_name)
+    queue_name = "{}-{}".format(queue_name, uuid.uuid4())[
+        :80
+    ]  # The max-length for queue-name is 80 in SQS
+    return queue_name
