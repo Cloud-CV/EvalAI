@@ -1,7 +1,5 @@
 from __future__ import unicode_literals
 
-import re
-
 from django.contrib.auth.models import User
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -15,16 +13,15 @@ from base.models import (
     model_field_name,
     create_post_model_field,
 )
-from base.utils import RandomFileName
+from base.utils import RandomFileName, get_slug
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
 
 
 @receiver(pre_save, sender="challenges.Challenge")
 def save_challenge_slug(sender, instance, **kwargs):
-    title = instance.title.replace(" ", "-").lower()
-    title = re.sub(r"\W+", "-", title)
-    instance.slug = "{}-{}".format(title, instance.pk)[:200]
+    title = get_slug(instance.title)
+    instance.slug = "{}-{}".format(title, instance.pk)
 
 
 class Challenge(TimeStampedModel):
