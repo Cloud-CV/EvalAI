@@ -1983,11 +1983,19 @@ class UpdateSubmissionTest(BaseAPITestClass):
             "submission_status": "FINISHED",
             "stdout": "qwerty",
             "stderr": "qwerty",
-            "result": "qwerty",
+            "result": [
+                {
+                    "split": "split1",
+                    "accuracies": {"score": 100},
+                    "show_to_participant": True,
+                }
+            ],
         }
 
         expected = {
-            "error": "`result` key contains invalid data. Please try again with correct format!"
+            "error": "`result` key contains invalid data with error "
+            "the JSON object must be str, bytes or bytearray, not 'list'."
+            "Please try again with correct format."
         }
         self.client.force_authenticate(user=self.challenge_host.user)
         response = self.client.put(self.url, self.data)
