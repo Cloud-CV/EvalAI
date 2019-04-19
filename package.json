@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "angular-mocks": "^1.6.1",
+    "angular-mocks": "^1.7.0",
     "autoprefixer": "^8.2.0",
     "del": "^3.0.0",
     "eslint": "^4.19.1",
@@ -38,5 +38,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Cloud-CV/EvalAI.git"
+  },
+  "devDependencies": {
+    "jasmine-core": "^3.4.0",
+    "karma": "^4.1.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^2.0.1"
   }
 }

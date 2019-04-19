@@ -17,22 +17,23 @@ describe('Unit Tests for auth controller', function() {
 
     describe('Global Variables', function() {
         it('has default values', function() {
-            expect(vm.isRem).to.equal(false);
-            expect(vm.isAuth).to.equal(false);
-            expect(vm.isMail).to.equal(true);
-            expect(vm.userMail).to.equal('');
-            expect(vm.regUser).to.be.empty;
-            expect(vm.getUser).to.be.empty;
-            expect(vm.isResetPassword).to.equal(false);
-            expect(vm.isFormError).to.equal(false);
-            expect(vm.FormError).to.be.empty;
-            expect(vm.redirectUrl).to.be.empty;
-            expect(vm.isLoader).to.equal(false);
-            expect(vm.isPassConf).to.equal(true);
-            expect(vm.wrnMsg).to.be.empty;
-            expect(vm.isValid).to.be.empty;
-            expect(vm.confirmMsg).to.equal('');
-            expect($rootScope.loaderTitle).to.equal('');
+            expect(vm.isRem).toEqual(false);
+            expect(vm.isAuth).toEqual(false);
+            expect(vm.isMail).toEqual(true);
+            expect(vm.userMail).toEqual('');
+            expect(vm.regUser).toEqual({});
+            expect(vm.getUser).toEqual({});
+            expect(vm.color).toEqual({});
+            expect(vm.isResetPassword).toEqual(false);
+            expect(vm.isFormError).toEqual(false);
+            expect(vm.FormError).toEqual({});
+            expect(vm.redirectUrl).toEqual({});
+            expect(vm.isLoader).toEqual(false);
+            expect(vm.isPassConf).toEqual(true);
+            expect(vm.wrnMsg).toEqual({});
+            expect(vm.isValid).toEqual({});
+            expect(vm.confirmMsg).toEqual('');
+            expect($rootScope.loaderTitle).toEqual('');
         });
     })
 
@@ -40,24 +41,24 @@ describe('Unit Tests for auth controller', function() {
         it('startLoader', function() {
             var message = 'Start Loader';
             vm.startLoader(message);
-            expect($rootScope.isLoader).to.equal(true);
-            expect($rootScope.loaderTitle).to.equal(message);
+            expect($rootScope.isLoader).toEqual(true);
+            expect($rootScope.loaderTitle).toEqual(message);
         });
 
         it('stopLoader', function() {
             var message = '';
             vm.stopLoader();
-            expect($rootScope.isLoader).to.equal(false);
-            expect($rootScope.loaderTitle).to.equal(message);
+            expect($rootScope.isLoader).toEqual(false);
+            expect($rootScope.loaderTitle).toEqual(message);
         });
 
         it('resetForm', function() {
             vm.resetForm();
-            expect(vm.regUser).to.be.empty;
-            expect(vm.getUser).to.be.empty;
-            expect(vm.wrnMsg).to.be.empty;
-            expect(vm.isFormError).to.equal(false);
-            expect(vm.isMail).to.equal(true);
+            expect(vm.regUser).toEqual({});
+            expect(vm.getUser).toEqual({});
+            expect(vm.wrnMsg).toEqual({});
+            expect(vm.isFormError).toEqual(false);
+            expect(vm.isMail).toEqual(true);
         });
     });
 
@@ -112,41 +113,41 @@ describe('Unit Tests for auth controller', function() {
         it('correct sign up details', function() {
             vm.userSignUp(true);
             var response = utilities.sendRequest(vm.regUser);
-            expect(response.status).to.equal(201);
-            expect(response.data).to.equal("success");
+            expect(response.status).toEqual(201);
+            expect(response.data).toEqual("success");
         });
 
         it('missing username', function() {
             vm.regUser.username = '';
             var response = utilities.sendRequest(vm.regUser);
-            expect(response.status).to.equal(400);
-            expect(response.data).to.equal(errors.username);
+            expect(response.status).toEqual(400);
+            expect(response.data).toEqual(errors.username);
         });
 
         it('missing email', function() {
             vm.regUser.email = '';
             var response = utilities.sendRequest(vm.regUser);
-            expect(response.status).to.equal(400);
-            expect(response.data).to.equal(errors.email);
+            expect(response.status).toEqual(400);
+            expect(response.data).toEqual(errors.email);
         });
 
         it('missing password', function() {
             vm.regUser.password1 = '';
             var response = utilities.sendRequest(vm.regUser);
-            expect(response.status).to.equal(400);
-            expect(response.data).to.equal(errors.password1);
+            expect(response.status).toEqual(400);
+            expect(response.data).toEqual(errors.password1);
         });
 
         it('mismatch password', function() {
             vm.regUser.password2 = 'failword';
             var response = utilities.sendRequest(vm.regUser);
-            expect(response.status).to.equal(400);
-            expect(response.data).to.equal(errors.password2);
+            expect(response.status).toEqual(400);
+            expect(response.data).toEqual(errors.password2);
         });
 
         it('invalid details', function() {
             vm.userSignUp(false);
-            expect($rootScope.isLoader).to.equal(false);
+            expect($rootScope.isLoader).toEqual(false);
         });
     });
 
@@ -191,23 +192,111 @@ describe('Unit Tests for auth controller', function() {
             vm.userLogin(true);
             var token = "encrypted";
             var response = utilities.sendRequest(vm.getUser);
-            expect(response.status).to.equal(200);
-            expect(response.data).to.equal("success");
-            expect(angular.equals(response.userKey, token)).to.equal(true);
+            expect(response.status).toEqual(200);
+            expect(response.data).toEqual("success");
+            expect(angular.equals(response.userKey, token)).toEqual(true);
         });
 
         it('backend error', function() {
             vm.getUser.username = '';
             var token = "notFound";
             var response = utilities.sendRequest(vm.getUser);
-            expect(response.status).to.equal(400);
-            expect(response.data).to.equal("error");
-            expect(angular.equals(response.userKey, token)).to.equal(true);
+            expect(response.status).toEqual(400);
+            expect(response.data).toEqual("error");
+            expect(angular.equals(response.userKey, token)).toEqual(true);
         });
 
         it('invalid details', function() {
             vm.userLogin(false);
-            expect($rootScope.isLoader).to.equal(false);
+            expect($rootScope.isLoader).toEqual(false);
+        });
+    });
+
+    describe('checkStrength', function() {
+
+        beforeEach(function() {
+            utilities.passwordStrength = function(password) {
+                //Regular Expressions.  
+                var regex = new Array();
+                regex.push("[A-Z]","[a-z]","[0-9]","[$$!%*#?&]");
+
+                var passed = 0;
+                //Validate for each Regular Expression.  
+                for (var i = 0; i < regex.length; i++) {
+                    if (new RegExp(regex[i]).test(password)) {
+                        passed++;
+                    }
+                }
+                //Validate for length of Password.  
+                if (passed > 2 && password.length > 8) {
+                    passed++;
+                }
+     
+                var color = "";
+                var strength = "";
+                if (passed == 1) {
+                    strength = "Weak";
+                    color = "red";
+                } else if (passed == 2) {
+                    strength = "Average";
+                    color = "darkorange";
+                } else if (passed == 3) {
+                    strength = "Good";
+                    color = "green";
+                } else if (passed == 4) {
+                    strength = "Strong";
+                    color = "darkgreen";
+                } else if (passed == 5) {
+                    strength = "Very Strong";
+                    color = "darkgreen";
+                }
+                return [strength, color];
+            }
+        });
+
+        it('check Weak password', function() {
+            var password = 'password';
+            vm.checkStrength(password);
+
+            var passwordStrength = utilities.passwordStrength(password);
+            expect(passwordStrength[0]).toEqual('Weak');
+            expect(passwordStrength[1]).toEqual('red');
+        });
+
+        it('check Average password', function() {
+            var password = 'password123';
+            vm.checkStrength(password);
+
+            var passwordStrength = utilities.passwordStrength(password);
+            expect(passwordStrength[0]).toEqual('Average');
+            expect(passwordStrength[1]).toEqual('darkorange');
+        });
+
+        it('check Good password', function() {
+            var password = 'pWord1';
+            vm.checkStrength(password);
+
+            var passwordStrength = utilities.passwordStrength(password);
+            expect(passwordStrength[0]).toEqual('Good');
+            expect(passwordStrength[1]).toEqual('green');
+        });
+
+        it('check Strong password', function() {
+            var password = 'passwordLength123';
+            vm.checkStrength(password);
+
+            var passwordStrength = utilities.passwordStrength(password);
+            expect(passwordStrength[0]).toEqual('Strong');
+            expect(passwordStrength[1]).toEqual('darkgreen');
+        });
+
+        it('check Very Strong password', function() {
+            var password = '#passwordLength123';
+            vm.checkStrength(password);
+
+            var passwordStrength = utilities.passwordStrength(password);
+            expect(passwordStrength[0]).toEqual('Very Strong');
+            expect(passwordStrength[1]).toEqual('darkgreen');
         });
     });
 
@@ -227,13 +316,13 @@ describe('Unit Tests for auth controller', function() {
         it('correct email', function() {
             verified = true;
             vm.verifyEmail();
-            expect(vm.email_verify_msg).to.equal('Your email has been verified successfully');
+            expect(vm.email_verify_msg).toEqual('Your email has been verified successfully');
         });
 
         it('incorrect email', function() {
             verified = false;
             vm.verifyEmail();
-            expect(vm.email_verify_msg).to.equal('Something went wrong!! Please try again.');
+            expect(vm.email_verify_msg).toEqual('Something went wrong!! Please try again.');
         });
     });
 
@@ -259,19 +348,19 @@ describe('Unit Tests for auth controller', function() {
         it('sent successfully', function() {
             success = true;
             vm.resetPassword(true);
-            expect(vm.isFormError).to.equal(false);
-            expect(vm.deliveredMsg).to.equal(mailSent);
+            expect(vm.isFormError).toEqual(false);
+            expect(vm.deliveredMsg).toEqual(mailSent);
         });
 
         it('backend error', function() {
             success = false;
             vm.resetPassword(true);
-            expect(vm.isFormError).to.equal(true);
+            expect(vm.isFormError).toEqual(true);
         });
 
         it('invalid details', function() {
             vm.resetPassword(false);
-            expect($rootScope.isLoader).to.equal(false);
+            expect($rootScope.isLoader).toEqual(false);
         });
     });
 
@@ -299,20 +388,20 @@ describe('Unit Tests for auth controller', function() {
             $state.params.reset_token = 'secure';
             success = true;
             vm.resetPasswordConfirm(true);
-            expect(vm.isResetPassword).to.equal(true);
-            expect(vm.deliveredMsg).to.equal(resetConfirm);
+            expect(vm.isResetPassword).toEqual(true);
+            expect(vm.deliveredMsg).toEqual(resetConfirm);
         });
 
         it('backend error', function() {
             $state.params.user_id = 42;
             success = false;
             vm.resetPasswordConfirm(true);
-            expect(vm.isFormError).to.equal(true);
+            expect(vm.isFormError).toEqual(true);
         });
 
         it('invalid details', function() {
             vm.resetPasswordConfirm(false);
-            expect($rootScope.isLoader).to.equal(false);
+            expect($rootScope.isLoader).toEqual(false);
         });
     });
 });
