@@ -10,7 +10,7 @@ addons:
     packages:
     - postgresql-10
     - postgresql-client-10
-    - oracle-java8-set-default
+    - oracle-java9-set-default # Java9 is used for elasticmq
 env:
   global:
   - PGPORT=5432
