@@ -1,4 +1,4 @@
-<p align="center"><img width="65%%" src="docs/source/_static/img/evalai_logo.png"/></p>
+<p align="center"><img width="65%" src="docs/source/_static/img/evalai_logo.png"/></p>
 
 ------------------------------------------------------------------------------------------
 
