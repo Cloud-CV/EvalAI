@@ -1,4 +1,4 @@
-<p style="text-align:center"><img width="100%" src="docs/source/_static/img/evalai_logo.png"></p>
+<p align="center"><img width="100%" src="docs/source/_static/img/evalai_logo.png"/></p>
 
 ------------------------------------------------------------------------------------------
 
@@ -27,6 +27,16 @@ In recent years, it has become increasingly difficult to compare an algorithm so
 - **Portability**: EvalAI is designed with keeping in mind scalability and portability of such a system from the very inception of the idea. Most of the components rely heavily on open-source technologies – Docker, Django, Node.js, and PostgreSQL.
 
 - **Faster evaluation**: We warm-up the worker nodes at start-up by importing the challenge code and pre-loading the dataset in memory. We also split the dataset into small chunks that are simultaneously evaluated on multiple cores. These simple tricks result in faster evaluation and reduces the evaluation time by an order of magnitude in some cases.
+
+## Platform Comparison
+|          Features          |          OpenML          |         TopCoder         |          Kaggle          |          CrowdAI         |          ParlAI          |          Codalab         |       EvalAI       |
+|:--------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------:|
+|    AI challenge hosting    | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    |    :white_check_mark:    | :heavy_multiplication_x: |    :white_check_mark:    | :white_check_mark: |
+|       Custom metrics       | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    |    :white_check_mark:    | :white_check_mark: |
+|   Multiple phases/splits   | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    | :heavy_multiplication_x: |    :white_check_mark:    | :white_check_mark: |
+|         Open source        |    :white_check_mark:    | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    |    :white_check_mark:    | :white_check_mark: |
+|      Remote evaluation     | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    | :white_check_mark: |
+| Evaluation in Environments | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    | :heavy_multiplication_x: | :heavy_multiplication_x: | :white_check_mark: |
 
 ## Goal
 
@@ -72,7 +82,7 @@ If you are using EvalAI for hosting challenges, please cite the following techni
     volume  =  arXiv:1902.03570
 }
 ```
-<p>
+<p align="center">
     <a href="https://arxiv.org/abs/1902.03570"><img src="docs/source/_static/img/evalai-paper.jpg"/></a>
 </p>
 
