@@ -82,7 +82,7 @@ If you are using EvalAI for hosting challenges, please cite the following techni
     volume  =  arXiv:1902.03570
 }
 ```
-<p align="center">
+<p>
     <a href="https://arxiv.org/abs/1902.03570"><img src="docs/source/_static/img/evalai-paper.jpg"/></a>
 </p>
 
