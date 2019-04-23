@@ -470,6 +470,7 @@ def leaderboard(request, challenge_phase_split_id):
     ).values(
         "id",
         "submission__participant_team__team_name",
+        "submission__participant_team__team_url",
         "submission__is_baseline",
         "challenge_phase_split",
         "result",
@@ -777,9 +778,10 @@ def update_submission(request, challenge_pk):
         if successful_submission:
             try:
                 results = json.loads(submission_result)
-            except ValueError:
+            except (ValueError, TypeError) as exc:
                 response_data = {
-                    "error": "`result` key contains invalid data. Please try again with correct format!"
+                    "error": "`result` key contains invalid data with error {}."
+                    "Please try again with correct format.".format(str(exc))
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
