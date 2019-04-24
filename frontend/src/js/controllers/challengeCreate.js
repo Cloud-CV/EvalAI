@@ -43,9 +43,6 @@
                     
                 }
                 if (vm.input_file) {
-                    vm.isExistLoader = true;
-                    vm.loaderTitle = '';
-                    vm.loaderContainer = angular.element('.exist-team-card');
                     vm.startLoader('create challenge');
 
                     var parameters = {};

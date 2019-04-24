@@ -214,6 +214,34 @@ describe('Unit Tests for auth controller', function() {
 
     describe('checkStrength', function() {
 
+        var passwordProperties = [
+            {
+                passwordValidator: 1,
+                expectedStrength: "Weak",
+                expectedColor: "red"
+            },
+            {
+                passwordValidator: 2,
+                expectedStrength: "Average",
+                expectedColor: "darkorange"
+            },
+            {
+                passwordValidator: 3,
+                expectedStrength: "Good",
+                expectedColor: "green"
+            },
+            {
+                passwordValidator: 4,
+                expectedStrength: "Strong",
+                expectedColor: "darkgreen"
+            },
+            {
+                passwordValidator: 5,
+                expectedStrength: "Very Strong",
+                expectedColor: "darkgreen"
+            },
+        ];
+
         beforeEach(function() {
             utilities.passwordStrength = function(password) {
                 //Regular Expressions.  
@@ -231,26 +259,12 @@ describe('Unit Tests for auth controller', function() {
                 if (passed > 2 && password.length > 8) {
                     passed++;
                 }
-     
-                var color = "";
-                var strength = "";
-                if (passed == 1) {
-                    strength = "Weak";
-                    color = "red";
-                } else if (passed == 2) {
-                    strength = "Average";
-                    color = "darkorange";
-                } else if (passed == 3) {
-                    strength = "Good";
-                    color = "green";
-                } else if (passed == 4) {
-                    strength = "Strong";
-                    color = "darkgreen";
-                } else if (passed == 5) {
-                    strength = "Very Strong";
-                    color = "darkgreen";
+
+                for (var i = 0; i < passwordProperties.length; i++){
+                    if (passwordProperties[i].passwordValidator == passed) {
+                        return [passwordProperties[i].expectedStrength, passwordProperties[i].expectedColor];
+                    }
                 }
-                return [strength, color];
             }
         });
 
