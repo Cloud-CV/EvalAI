@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0008_max_submissions'),
-    ]
+    dependencies = [("challenges", "0008_max_submissions")]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='is_public',
+            model_name="challengephase",
+            name="is_public",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]
