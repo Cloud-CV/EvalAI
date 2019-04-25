@@ -1,22 +1,22 @@
 'use strict';
 
-describe('Unit Tests for auth controller', function() {
+describe('Unit Tests for auth controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, $rootScope, $state, $window, $scope, utilities, vm;
 
-    beforeEach(inject(function(_$controller_, _$rootScope_, _$state_, _utilities_) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _$state_, _utilities_) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         $state = _$state_;
         utilities = _utilities_;
-        
+
         $scope = $rootScope.$new();
-        vm = $controller('AuthCtrl', { $scope: $scope });
+        vm = $controller('AuthCtrl', {$scope: $scope});
     }));
 
-    describe('Global Variables', function() {
-        it('has default values', function() {
+    describe('Global Variables', function () {
+        it('has default values', function () {
             expect(vm.isRem).toEqual(false);
             expect(vm.isAuth).toEqual(false);
             expect(vm.isMail).toEqual(true);
@@ -35,24 +35,24 @@ describe('Unit Tests for auth controller', function() {
             expect(vm.confirmMsg).toEqual('');
             expect($rootScope.loaderTitle).toEqual('');
         });
-    })
+    });
 
-    describe('Validate helper functions', function() {
-        it('startLoader', function() {
+    describe('Validate helper functions', function () {
+        it('startLoader', function () {
             var message = 'Start Loader';
             vm.startLoader(message);
             expect($rootScope.isLoader).toEqual(true);
             expect($rootScope.loaderTitle).toEqual(message);
         });
 
-        it('stopLoader', function() {
+        it('stopLoader', function () {
             var message = '';
             vm.stopLoader();
             expect($rootScope.isLoader).toEqual(false);
             expect($rootScope.loaderTitle).toEqual(message);
         });
 
-        it('resetForm', function() {
+        it('resetForm', function () {
             vm.resetForm();
             expect(vm.regUser).toEqual({});
             expect(vm.getUser).toEqual({});
@@ -62,7 +62,7 @@ describe('Unit Tests for auth controller', function() {
         });
     });
 
-    describe('Unit test for userSignUp function', function() {
+    describe('Unit test for userSignUp function', function () {
         var errors = {
             username: 'username error',
             email: 'email error',
@@ -70,7 +70,7 @@ describe('Unit Tests for auth controller', function() {
             password2: 'password confirm error'
         };
 
-        beforeEach(function() {
+        beforeEach(function () {
             vm.regUser = {
                 username: 'ford',
                 email: 'fordprefect@hitchhikers.guide',
@@ -78,7 +78,7 @@ describe('Unit Tests for auth controller', function() {
                 password2: 'dontpanic'
             };
 
-            utilities.sendRequest = function(parameters) {
+            utilities.sendRequest = function (parameters) {
                 var data, status;
                 var emailRegex = /\S+@\S+\.\S+/;
                 var usernameRegex = /^[a-zA-Z0-9]{3,30}$/;
@@ -106,55 +106,55 @@ describe('Unit Tests for auth controller', function() {
                 return {
                     "data": data,
                     "status": parseInt(status)
-                }
-            }
+                };
+            };
         });
 
-        it('correct sign up details', function() {
+        it('correct sign up details', function () {
             vm.userSignUp(true);
             var response = utilities.sendRequest(vm.regUser);
             expect(response.status).toEqual(201);
             expect(response.data).toEqual("success");
         });
 
-        it('missing username', function() {
+        it('missing username', function () {
             vm.regUser.username = '';
             var response = utilities.sendRequest(vm.regUser);
             expect(response.status).toEqual(400);
             expect(response.data).toEqual(errors.username);
         });
 
-        it('missing email', function() {
+        it('missing email', function () {
             vm.regUser.email = '';
             var response = utilities.sendRequest(vm.regUser);
             expect(response.status).toEqual(400);
             expect(response.data).toEqual(errors.email);
         });
 
-        it('missing password', function() {
+        it('missing password', function () {
             vm.regUser.password1 = '';
             var response = utilities.sendRequest(vm.regUser);
             expect(response.status).toEqual(400);
             expect(response.data).toEqual(errors.password1);
         });
 
-        it('mismatch password', function() {
+        it('mismatch password', function () {
             vm.regUser.password2 = 'failword';
             var response = utilities.sendRequest(vm.regUser);
             expect(response.status).toEqual(400);
             expect(response.data).toEqual(errors.password2);
         });
 
-        it('invalid details', function() {
+        it('invalid details', function () {
             vm.userSignUp(false);
             expect($rootScope.isLoader).toEqual(false);
         });
     });
 
-    describe('Unit test for userLogin function', function() {
+    describe('Unit test for userLogin function', function () {
         var nonFieldErrors, token;
- 
-        beforeEach(function() {
+
+        beforeEach(function () {
             nonFieldErrors = false;
 
             vm.getUser = {
@@ -162,10 +162,10 @@ describe('Unit Tests for auth controller', function() {
                 password: 'dontpanic',
             };
 
-            utilities.sendRequest = function(parameters) {
+            utilities.sendRequest = function (parameters) {
                 var data, status, userKey;
                 var error = 'error';
-                var success = "success"
+                var success = "success";
                 var usernameRegex = /^[a-zA-Z0-9]+$/;
                 var passwordRegex = /^[a-zA-Z0-9!@#$%^&*_]{8,30}$/;
                 var isUsernameValid = usernameRegex.test(parameters.username);
@@ -174,8 +174,7 @@ describe('Unit Tests for auth controller', function() {
                     data = error;
                     status = 400;
                     userKey = "notFound";
-                }
-                else {
+                } else {
                     data = success;
                     status = 200;
                     userKey = "encrypted";
@@ -184,11 +183,11 @@ describe('Unit Tests for auth controller', function() {
                     "data": data,
                     "status": parseInt(status),
                     "userKey": userKey
-                }
+                };
             };
         });
 
-        it('correct login details', function() {
+        it('correct login details', function () {
             vm.userLogin(true);
             var token = "encrypted";
             var response = utilities.sendRequest(vm.getUser);
@@ -197,7 +196,7 @@ describe('Unit Tests for auth controller', function() {
             expect(angular.equals(response.userKey, token)).toEqual(true);
         });
 
-        it('backend error', function() {
+        it('backend error', function () {
             vm.getUser.username = '';
             var token = "notFound";
             var response = utilities.sendRequest(vm.getUser);
@@ -206,47 +205,53 @@ describe('Unit Tests for auth controller', function() {
             expect(angular.equals(response.userKey, token)).toEqual(true);
         });
 
-        it('invalid details', function() {
+        it('invalid details', function () {
             vm.userLogin(false);
             expect($rootScope.isLoader).toEqual(false);
         });
     });
 
-    describe('checkStrength', function() {
+    describe('checkPassWordStrength', function () {
 
-        var passwordProperties = [
+        var passWordsTestsList = [
             {
+                password: 'password',
                 passwordValidator: 1,
                 expectedStrength: "Weak",
                 expectedColor: "red"
             },
             {
+                password: 'password123',
                 passwordValidator: 2,
                 expectedStrength: "Average",
                 expectedColor: "darkorange"
             },
             {
+                password: 'pWord1',
                 passwordValidator: 3,
                 expectedStrength: "Good",
                 expectedColor: "green"
             },
             {
+                password: 'passwordLength123',
                 passwordValidator: 4,
                 expectedStrength: "Strong",
                 expectedColor: "darkgreen"
             },
             {
+                password: '#passwordLength123',
                 passwordValidator: 5,
                 expectedStrength: "Very Strong",
                 expectedColor: "darkgreen"
             },
         ];
 
-        beforeEach(function() {
-            utilities.passwordStrength = function(password) {
+
+        beforeEach(function () {
+            utilities.passwordStrength = function (password) {
                 //Regular Expressions.  
                 var regex = new Array();
-                regex.push("[A-Z]","[a-z]","[0-9]","[$$!%*#?&]");
+                regex.push("[A-Z]", "[a-z]", "[0-9]", "[$$!%*#?&]");
 
                 var passed = 0;
                 //Validate for each Regular Expression.  
@@ -260,65 +265,28 @@ describe('Unit Tests for auth controller', function() {
                     passed++;
                 }
 
-                for (var i = 0; i < passwordProperties.length; i++){
-                    if (passwordProperties[i].passwordValidator == passed) {
-                        return [passwordProperties[i].expectedStrength, passwordProperties[i].expectedColor];
+                for (var i = 0; i < passWordsTestsList.length; i++) {
+                    if (passWordsTestsList[i].passwordValidator == passed) {
+                        return [passWordsTestsList[i].expectedStrength, passWordsTestsList[i].expectedColor];
                     }
                 }
-            }
+            };
         });
 
-        it('check Weak password', function() {
-            var password = 'password';
-            vm.checkStrength(password);
-
-            var passwordStrength = utilities.passwordStrength(password);
-            expect(passwordStrength[0]).toEqual('Weak');
-            expect(passwordStrength[1]).toEqual('red');
-        });
-
-        it('check Average password', function() {
-            var password = 'password123';
-            vm.checkStrength(password);
-
-            var passwordStrength = utilities.passwordStrength(password);
-            expect(passwordStrength[0]).toEqual('Average');
-            expect(passwordStrength[1]).toEqual('darkorange');
-        });
-
-        it('check Good password', function() {
-            var password = 'pWord1';
-            vm.checkStrength(password);
-
-            var passwordStrength = utilities.passwordStrength(password);
-            expect(passwordStrength[0]).toEqual('Good');
-            expect(passwordStrength[1]).toEqual('green');
-        });
-
-        it('check Strong password', function() {
-            var password = 'passwordLength123';
-            vm.checkStrength(password);
-
-            var passwordStrength = utilities.passwordStrength(password);
-            expect(passwordStrength[0]).toEqual('Strong');
-            expect(passwordStrength[1]).toEqual('darkgreen');
-        });
-
-        it('check Very Strong password', function() {
-            var password = '#passwordLength123';
-            vm.checkStrength(password);
-
-            var passwordStrength = utilities.passwordStrength(password);
-            expect(passwordStrength[0]).toEqual('Very Strong');
-            expect(passwordStrength[1]).toEqual('darkgreen');
+        passWordsTestsList.forEach(passWord => {
+            it(passWord.password + ' should have a strength & color of : ' + passWord.expectedStrength + ':' + passWord.expectedColor, () => {
+                var passwordStrength = utilities.passwordStrength(passWord.password);
+                expect(passwordStrength[0]).toEqual(passWord.expectedStrength);
+                expect(passwordStrength[1]).toEqual(passWord.expectedColor);
+            });
         });
     });
 
-    describe('verifyEmail', function() {
+    describe('verifyEmail', function () {
         var verified;
 
-        beforeEach(function() {
-            utilities.sendRequest = function(parameters) {
+        beforeEach(function () {
+            utilities.sendRequest = function (parameters) {
                 if (verified) {
                     parameters.callback.onSuccess();
                 } else {
@@ -327,26 +295,26 @@ describe('Unit Tests for auth controller', function() {
             };
         });
 
-        it('correct email', function() {
+        it('correct email', function () {
             verified = true;
             vm.verifyEmail();
             expect(vm.email_verify_msg).toEqual('Your email has been verified successfully');
         });
 
-        it('incorrect email', function() {
+        it('incorrect email', function () {
             verified = false;
             vm.verifyEmail();
             expect(vm.email_verify_msg).toEqual('Something went wrong!! Please try again.');
         });
     });
 
-    describe('resetPassword', function() {
+    describe('resetPassword', function () {
         var success;
 
         var mailSent = 'mail sent';
 
-        beforeEach(function() {
-            utilities.sendRequest = function(parameters) {
+        beforeEach(function () {
+            utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
                         data: {
@@ -359,32 +327,32 @@ describe('Unit Tests for auth controller', function() {
             };
         });
 
-        it('sent successfully', function() {
+        it('sent successfully', function () {
             success = true;
             vm.resetPassword(true);
             expect(vm.isFormError).toEqual(false);
             expect(vm.deliveredMsg).toEqual(mailSent);
         });
 
-        it('backend error', function() {
+        it('backend error', function () {
             success = false;
             vm.resetPassword(true);
             expect(vm.isFormError).toEqual(true);
         });
 
-        it('invalid details', function() {
+        it('invalid details', function () {
             vm.resetPassword(false);
             expect($rootScope.isLoader).toEqual(false);
         });
     });
 
-    describe('resetPasswordConfirm', function() {
+    describe('resetPasswordConfirm', function () {
         var success;
 
         var resetConfirm = 'password reset confirmed';
 
-        beforeEach(function() {
-            utilities.sendRequest = function(parameters) {
+        beforeEach(function () {
+            utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
                         data: {
@@ -397,7 +365,7 @@ describe('Unit Tests for auth controller', function() {
             };
         });
 
-        it('successful reset', function() {
+        it('successful reset', function () {
             $state.params.user_id = 42;
             $state.params.reset_token = 'secure';
             success = true;
@@ -406,14 +374,14 @@ describe('Unit Tests for auth controller', function() {
             expect(vm.deliveredMsg).toEqual(resetConfirm);
         });
 
-        it('backend error', function() {
+        it('backend error', function () {
             $state.params.user_id = 42;
             success = false;
             vm.resetPasswordConfirm(true);
             expect(vm.isFormError).toEqual(true);
         });
 
-        it('invalid details', function() {
+        it('invalid details', function () {
             vm.resetPasswordConfirm(false);
             expect($rootScope.isLoader).toEqual(false);
         });
