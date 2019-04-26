@@ -9,18 +9,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jobs', '0004_added_method_desc_aand_urls_to_submission_model'),
+        ("jobs", "0004_added_method_desc_aand_urls_to_submission_model")
     ]
 
     operations = [
         migrations.AddField(
-            model_name='submission',
-            name='submission_metadata_file',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            model_name="submission",
+            name="submission_metadata_file",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to=base.utils.RandomFileName(
+                    "submission_files/submission_{id}"
+                ),
+            ),
         ),
         migrations.AddField(
-            model_name='submission',
-            name='submission_result_file',
-            field=models.FileField(blank=True, null=True, upload_to=base.utils.RandomFileName('submission_files/submission_{id}')),
+            model_name="submission",
+            name="submission_result_file",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to=base.utils.RandomFileName(
+                    "submission_files/submission_{id}"
+                ),
+            ),
         ),
     ]

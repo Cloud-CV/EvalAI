@@ -7,19 +7,19 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('web', '0002_added_team_model'),
-    ]
+    dependencies = [("web", "0002_added_team_model")]
 
     operations = [
         migrations.AddField(
-            model_name='team',
-            name='background_image',
-            field=models.ImageField(blank=True, null=True, upload_to='bg-images'),
+            model_name="team",
+            name="background_image",
+            field=models.ImageField(
+                blank=True, null=True, upload_to="bg-images"
+            ),
         ),
         migrations.AddField(
-            model_name='team',
-            name='description',
+            model_name="team",
+            name="description",
             field=models.TextField(null=True),
         ),
     ]

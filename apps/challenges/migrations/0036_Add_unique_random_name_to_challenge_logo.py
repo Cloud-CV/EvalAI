@@ -9,13 +9,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0035_add_max_concurrent_submissions_allowed_field'),
+        ("challenges", "0035_add_max_concurrent_submissions_allowed_field")
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='challenge',
-            name='image',
-            field=models.ImageField(blank=True, null=True, upload_to=base.utils.RandomFileName('logos'), verbose_name='Logo'),
-        ),
+            model_name="challenge",
+            name="image",
+            field=models.ImageField(
+                blank=True,
+                null=True,
+                upload_to=base.utils.RandomFileName("logos"),
+                verbose_name="Logo",
+            ),
+        )
     ]
