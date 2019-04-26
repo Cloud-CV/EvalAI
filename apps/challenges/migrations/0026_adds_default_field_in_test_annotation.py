@@ -8,14 +8,15 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0025_added_is_submission_pubblic_field'),
-    ]
+    dependencies = [("challenges", "0025_added_is_submission_pubblic_field")]
 
     operations = [
         migrations.AlterField(
-            model_name='challengephase',
-            name='test_annotation',
-            field=models.FileField(default=False, upload_to=base.utils.RandomFileName('test_annotations')),
-        ),
+            model_name="challengephase",
+            name="test_annotation",
+            field=models.FileField(
+                default=False,
+                upload_to=base.utils.RandomFileName("test_annotations"),
+            ),
+        )
     ]
