@@ -912,12 +912,19 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     ]
     """
     if leaderboard_schema:
-        if "default_order_by" not in leaderboard_schema[0].get("schema"):
-            message = (
-                "There is no 'default_order_by' key in leaderboard "
-                "schema. Please add it and then try again!"
-            )
-            response_data = {"error": message}
+        if 'schema' not in leaderboard_schema[0]:
+            message = ('There is no leaderboard schema in the YAML '
+                       'configuration file. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+        if 'default_order_by' not in leaderboard_schema[0].get('schema'):
+            message = ('There is no \'default_order_by\' key in leaderboard '
+                       'schema. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         if "labels" not in leaderboard_schema[0].get("schema"):
             message = (
