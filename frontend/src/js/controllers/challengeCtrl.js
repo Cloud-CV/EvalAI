@@ -1093,7 +1093,7 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.showRemainingSubmissions = function() {
+        vm.showRemainingSubmissions = function(phaseID) {
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
             vm.showClock = false;
@@ -1105,7 +1105,7 @@
                 onSuccess: function(response) {
                     var status = response.status;
                     for (var phase in response.data.phases) {
-                        if (response.data.phases[phase].id == vm.phaseID) {
+                        if (response.data.phases[phase].id == phaseID) {
                            var details = response.data.phases[phase].limits;
                         }
                     }

@@ -529,6 +529,7 @@ def get_remaining_submissions(request, challenge_pk):
         "participant_team_id": 2,
         "phases": [
             {
+                "id": 1,
                 "slug": "megan-phase-1",
                 "name": "Megan Phase",
                 "start_date": "2018-10-28T14:22:53.022639Z",
@@ -540,6 +541,7 @@ def get_remaining_submissions(request, challenge_pk):
                 }
             },
             {
+                "id": 2,
                 "slug": "molly-phase-2",
                 "name": "Molly Phase",
                 "start_date": "2018-10-28T14:22:53Z",
