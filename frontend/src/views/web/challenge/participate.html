@@ -10,6 +10,7 @@
                         <div class="ev-md-container ev-panel-title"><strong>My Existing Participating Teams</strong></div>
                         <div class="ev-md-container ev-card-body exist-team-card">
                             <form>
+                                <div ng-if="!showPagination" class="page-msg">{{challenge.paginationMsg}}</div>
                                 <ul>
                                     <li ng-repeat="(key, value) in challenge.existTeam.results">
                                         <input type="radio" name="selectExistTeam" class="with-gap selectTeam" id="{{value.id}}" value="{{value.id}}" ng-model="challenge.teamId">
@@ -22,7 +23,7 @@
                                             <strong class="text-med-black">Created By: </strong>{{value.created_by}}</div>
                                         <div class="clearfix"></div>
                                     </li>
-                                    <section class="pagination">
+                                    <section class="pagination" ng-if="challenge.showPagination">
                                         <div class="row rm-gut">
                                             <div class="col s12 m6 ">
                                                 <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.existTeam.previous)">
