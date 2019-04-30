@@ -48,6 +48,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "is_public",
             "submission_result_file",
             "when_made_public",
+            "is_baseline",
         )
 
     def get_participant_team_name(self, obj):
@@ -210,7 +211,7 @@ class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePhase
-        fields = ("slug", "name", "start_date", "end_date", "limits")
+        fields = ("slug", "name", "start_date", "end_date", "limits", "id")
 
     def get_limits(self, obj):
         return self.context.get("limits")
