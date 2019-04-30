@@ -7,19 +7,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0007_rename_test_environment'),
-    ]
+    dependencies = [("challenges", "0007_rename_test_environment")]
 
     operations = [
         migrations.AddField(
-            model_name='challengephase',
-            name='max_submissions',
+            model_name="challengephase",
+            name="max_submissions",
             field=models.PositiveIntegerField(default=100000),
         ),
         migrations.AddField(
-            model_name='challengephase',
-            name='max_submissions_per_day',
+            model_name="challengephase",
+            name="max_submissions_per_day",
             field=models.PositiveIntegerField(default=100000),
         ),
     ]
