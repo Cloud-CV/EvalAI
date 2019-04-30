@@ -120,7 +120,7 @@ class TestChallengeUrls(BaseAPITestClass):
             + "/challenge/"
             + str(self.challenge.pk),
         )
-        
+
         url = reverse_lazy(
             "challenges:get_team_name_for_challenge",
             kwargs={
@@ -128,9 +128,9 @@ class TestChallengeUrls(BaseAPITestClass):
             },
         )
         self.assertEqual(
-            url, 
-            "/api/challenges/challenge/" 
-            + str(self.challenge.pk) 
+            url,
+            "/api/challenges/challenge/"
+            + str(self.challenge.pk)
             + "/participant_team/team_name",
         )
 

@@ -108,7 +108,7 @@ try:
 except NameError:
     xrange = range  # Python 3
 
-    
+
 @api_view(['GET', ])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -127,7 +127,7 @@ def team_name_for_challenge(request, challenge_pk):
 
         return Response(response_data, status=status.HTTP_200_OK)
 
-      
+
 @api_view(['GET', 'POST'])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))

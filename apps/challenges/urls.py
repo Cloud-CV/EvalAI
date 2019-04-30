@@ -15,7 +15,7 @@ urlpatterns = [
     ),
     url(
         r"^challenge/(?P<challenge_pk>[0-9]+)/participant_team/team_name$",
-        views.team_name_for_challenge, 
+        views.team_name_for_challenge,
         name="get_team_name_for_challenge",
     ),
     url(
