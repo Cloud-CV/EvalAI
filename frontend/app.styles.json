@@ -5,7 +5,8 @@
       "angular-material",
       "materialize",
       "AngularJS-Toaster",
-      "trix"
+      "trix",
+      "moment-picker"
     ]
   },
   "paths": {
@@ -13,6 +14,7 @@
        "angular-material": "bower_components/angular-material/angular-material.css",
        "materialize": "bower_components/materialize/dist/css/materialize.css",
        "AngularJS-Toaster": "bower_components/AngularJS-Toaster/toaster.min.css",
-       "trix": "bower_components/trix/dist/trix.css"
+       "trix": "bower_components/trix/dist/trix.css",
+       "moment-picker": "bower_components/angular-moment-picker/dist/angular-moment-picker.css"
       }
 }
