@@ -37,7 +37,12 @@ from yaml.scanner import ScannerError
 from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
-from base.utils import paginated_queryset, send_email, get_url_from_hostname
+from base.utils import (
+    paginated_queryset,
+    send_email,
+    get_url_from_hostname,
+    get_queue_name,
+)
 from challenges.utils import (
     get_challenge_model,
     get_challenge_phase_model,
@@ -533,14 +538,14 @@ def challenge_phase_detail(request, challenge_pk, pk):
         if request.method == "PATCH":
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
-                data=request.data,
+                data=request.data.copy(),
                 context={"challenge": challenge},
                 partial=True,
             )
         else:
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
-                data=request.data,
+                data=request.data.copy(),
                 context={"challenge": challenge},
             )
         if serializer.is_valid():
@@ -907,12 +912,19 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     ]
     """
     if leaderboard_schema:
-        if "default_order_by" not in leaderboard_schema[0].get("schema"):
-            message = (
-                "There is no 'default_order_by' key in leaderboard "
-                "schema. Please add it and then try again!"
-            )
-            response_data = {"error": message}
+        if 'schema' not in leaderboard_schema[0]:
+            message = ('There is no leaderboard schema in the YAML '
+                       'configuration file. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+        if 'default_order_by' not in leaderboard_schema[0].get('schema'):
+            message = ('There is no \'default_order_by\' key in leaderboard '
+                       'schema. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         if "labels" not in leaderboard_schema[0].get("schema"):
             message = (
@@ -943,13 +955,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
-                challenge_title = challenge.title.split(" ")
-                challenge_title = "-".join(challenge_title).lower()
-                random_challenge_id = uuid.uuid4()
-                challenge_queue_name = "{}-{}".format(
-                    challenge_title, random_challenge_id
-                )
-                challenge.queue = challenge_queue_name
+                queue_name = get_queue_name(challenge.title)
+                challenge.queue = queue_name
                 challenge.save()
             else:
                 response_data = serializer.errors
@@ -987,6 +994,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     data["description"] = None
 
                 test_annotation_file = data["test_annotation_file"]
+                data["slug"] = "{}-{}-{}".format(
+                    challenge.title.split(" ")[0].lower(),
+                    data["codename"].replace(" ", "-").lower(),
+                    challenge.pk,
+                )[:198]
                 if test_annotation_file:
                     test_annotation_file_path = join(
                         BASE_LOCATION,
@@ -1496,7 +1508,7 @@ def star_challenge(request, challenge_pk):
     if request.method == "POST":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user, challenge=challenge
+                user=request.user.pk, challenge=challenge
             )
             starred_challenge.is_starred = not starred_challenge.is_starred
             starred_challenge.save()
@@ -1523,7 +1535,7 @@ def star_challenge(request, challenge_pk):
     if request.method == "GET":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user, challenge=challenge
+                user=request.user.pk, challenge=challenge
             )
             serializer = StarChallengeSerializer(starred_challenge)
             response_data = serializer.data
@@ -1861,5 +1873,23 @@ def get_challenge_phase_by_pk(request, pk):
     serializer = ChallengePhaseSerializer(
         challenge_phase, context={"request": request}
     )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_slug(request, slug):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    try:
+        challenge_phase = ChallengePhase.objects.get(slug=slug)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            "error": "Challenge phase with slug {} does not exist".format(slug)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ChallengePhaseSerializer(challenge_phase)
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)

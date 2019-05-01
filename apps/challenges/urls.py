@@ -146,4 +146,9 @@ urlpatterns = [
         views.get_challenge_phase_by_pk,
         name="get_challenge_phase_by_pk",
     ),
+    url(
+        r"^phase/(?P<slug>[\w-]+)/$",
+        views.get_challenge_phase_by_slug,
+        name="get_challenge_phase_by_slug",
+    ),
 ]
