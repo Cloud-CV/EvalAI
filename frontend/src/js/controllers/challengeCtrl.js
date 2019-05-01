@@ -126,6 +126,14 @@
                                         if (status == 200) {
                                             vm.existTeam = details;
 
+                                            if (vm.existTeam.count === 0) {
+                                                vm.showPagination = false;
+                                                vm.paginationMsg = "No team exists for now. Start by creating a new team!";
+                                            } else {
+                                                vm.showPagination = true;
+                                                vm.paginationMsg = "";
+                                            }
+
                                             // clear error msg from storage
                                             utilities.deleteData('emailError');
 
@@ -143,6 +151,8 @@
                                             }
                                             if (vm.existTeam.next !== null) {
                                                 vm.currentPage = vm.existTeam.next.split('page=')[1] - 1;
+                                            } else {
+                                                vm.currentPage = 1;
                                             }
 
 
@@ -1093,7 +1103,7 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.showRemainingSubmissions = function() {
+        vm.showRemainingSubmissions = function(phaseID) {
             vm.remainingSubmissions = {};
             vm.remainingTime = {};
             vm.showClock = false;
@@ -1105,7 +1115,7 @@
                 onSuccess: function(response) {
                     var status = response.status;
                     for (var phase in response.data.phases) {
-                        if (response.data.phases[phase].id == vm.phaseID) {
+                        if (response.data.phases[phase].id == phaseID) {
                            var details = response.data.phases[phase].limits;
                         }
                     }
@@ -1613,8 +1623,11 @@
 
         vm.challengePhaseDialog = function(ev, phase) {
             vm.page.challenge_phase = phase;
-            vm.phaseStartDate = new Date(phase.start_date);
-            vm.phaseEndDate = new Date(phase.end_date);
+            vm.page.max_submissions_per_day = phase.max_submissions_per_day;
+            vm.phaseStartDate = phase.start_date;
+            vm.phaseStartDate = moment(vm.phaseStartDate);
+            vm.phaseEndDate = phase.end_date;
+            vm.phaseEndDate = moment(vm.phaseEndDate);
             vm.testAnnotationFile = null;
             vm.sanityCheckPass = true;
             vm.sanityCheck = "";
