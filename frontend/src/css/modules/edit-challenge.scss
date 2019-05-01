@@ -17,3 +17,41 @@ trix-toolbar .trix-button-row {
 .row .col .pd-0 {
 	padding: 0px;
 }
+
+/*trix toolbar styling*/
+trix-toolbar .trix-button-group {
+    display: inline-block !important;
+    margin-top: 10px;
+}
+
+trix-toolbar .trix-button--icon {
+    width: 3.0em !important;
+    height: 2.0em !important;
+}
+
+md-toolbar {
+    min-height: 40px;
+}
+
+md-toolbar:not(.md-menu-toolbar) {
+    background-color: #3c3e49 !important;
+}
+
+.attachment--preview img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.attachment__caption {
+    width: 100px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.trix-toolbar {
+    text-align: center;
+    border: 1px solid #D9DEE0;
+    justify-content: center;
+}
