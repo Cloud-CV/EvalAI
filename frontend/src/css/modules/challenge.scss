@@ -176,14 +176,13 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
 }
 
 .md-checkbox-enabled.md-default-theme[selected] .md-icon, .md-checkbox-enabled[selected] .md-icon {
-    background-color: #ffaf4b !important;
-}
-
-md-select-menu.md-default-theme md-content md-option[selected], md-select-menu md-content md-option[selected] {
-    color: #ffaf4b !important;
+    background-color: #ffaf4b;
 }
 
 .orange-background {
     background-color: #ffaf4b !important;
 }
 
+#option-text-color {
+    color: #252833;
+}
