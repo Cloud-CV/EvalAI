@@ -104,7 +104,7 @@
                             <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.previous)">
                                 <i class="fa fa-chevron-left"></i>
                             </a>
-                            <span class="pagination-title"> <strong class="text-med-black"> Page {{challenge.currentPage | ceil}} of {{challenge.submissionResult.count/10 | ceil}} </strong></span>
+                            <span class="pagination-title"> <strong class="text-med-black"> Page {{challenge.currentPage | ceil}} of {{challenge.submissionResult.count/100 | ceil}} </strong></span>
                             <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.next)">
                                 <i class="fa fa-chevron-right"></i>
                             </a>
