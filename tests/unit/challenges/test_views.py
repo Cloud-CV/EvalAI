@@ -1659,13 +1659,13 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
 
         expected = [
             {
-                "id": self.challenge.pk,
-                "title": self.challenge.title,
-                "short_description": self.challenge.short_description,
-                "description": self.challenge.description,
-                "terms_and_conditions": self.challenge.terms_and_conditions,
-                "submission_guidelines": self.challenge.submission_guidelines,
-                "evaluation_details": self.challenge.evaluation_details,
+                "id": self.challenge2.pk,
+                "title": self.challenge2.title,
+                "short_description": self.challenge2.short_description,
+                "description": self.challenge2.description,
+                "terms_and_conditions": self.challenge2.terms_and_conditions,
+                "submission_guidelines": self.challenge2.submission_guidelines,
+                "evaluation_details": self.challenge2.evaluation_details,
                 "image": None,
                 "start_date": "{0}{1}".format(
                     self.challenge.start_date.isoformat(), "Z"

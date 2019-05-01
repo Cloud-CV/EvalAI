@@ -1230,7 +1230,7 @@ def download_all_submissions(
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'GET':
+    if request.method == "GET":
         if file_type == "csv":
             if is_user_a_host_of_challenge(
                 user=request.user, challenge_pk=challenge_pk
