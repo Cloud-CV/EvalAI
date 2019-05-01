@@ -42,7 +42,7 @@
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
-        vm.submissionsExhausted = true;
+        vm.disableSubmit = true;
         // save initial ranking
         vm.initial_ranking = {};
       // loader for existing teams
@@ -1128,11 +1128,11 @@
                         else if (details.remaining_submissions_today_count > 0) {
                             vm.remainingSubmissions = details;
                             vm.showSubmissionNumbers = true;
-                            vm.submissionsExhausted = false;
+                            vm.disableSubmit = false;
                         } else {
                             vm.message = details;
                             vm.showClock = true;
-                            vm.submissionsExhausted = true;
+                            vm.disableSubmit = true;
                             vm.countDownTimer = function() {
                                 vm.remainingTime = vm.message.remaining_time;
                                 vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
