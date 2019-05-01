@@ -8,12 +8,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('participants', '0002_participantteam_participantteammember'),
+        ("participants", "0002_participantteam_participantteammember")
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='participant',
-            name='challenge',
-        ),
+        migrations.RemoveField(model_name="participant", name="challenge")
     ]
