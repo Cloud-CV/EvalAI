@@ -2,6 +2,18 @@
 omit =
     */python?.?/*
     */migrations/*
+    */templates/*
+    */static/*
+    */python?.?/*
+    */migrations/*
+    */tests/*
+    */middleware/*
+    frontend/
+    settings/custom_storages.py
+    settings/staging.py
+    settings/dev.py
+    settings/prod.py
+    scripts/seed.py
 source = evalai/
 
 [report]
@@ -11,14 +23,3 @@ exclude_lines =
     @authentication_classes
     @permission_classes
     @csrf_exempt
-
-omit =
-    */templates/*
-    */static/*
-    */python?.?/*
-    */migrations/*
-    */tests/*
-    */middleware/*
-    frontend/
-    settings/prod.py
-    scripts/seed.py
