@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from accounts.serializers import UserDetailsSerializer
 from hosts.serializers import ChallengeHostTeamSerializer
 
 from .models import (
@@ -10,6 +11,7 @@ from .models import (
     DatasetSplit,
     Leaderboard,
     StarChallenge,
+    UserInvitation,
 )
 
 
@@ -52,6 +54,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "is_docker_based",
             "slug",
             "max_docker_image_size",
+            "cli_version",
         )
 
 
@@ -83,6 +86,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_public",
             "is_active",
             "codename",
+            "slug",
         )
 
 
@@ -187,6 +191,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "is_docker_based",
             "slug",
             "max_docker_image_size",
+            "cli_version",
         )
 
 
@@ -239,6 +244,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_submission_public",
             "codename",
             "test_annotation",
+            "slug",
         )
 
 
@@ -269,3 +275,37 @@ class StarChallengeSerializer(serializers.ModelSerializer):
             challenge=obj.challenge, is_starred=True
         ).count()
         return count
+
+
+class UserInvitationSerializer(serializers.ModelSerializer):
+    """
+    Serializer to store the invitation details
+    """
+
+    challenge_title = serializers.SerializerMethodField()
+    challenge_host_team_name = serializers.SerializerMethodField()
+    user_details = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserInvitation
+        fields = (
+            "email",
+            "invitation_key",
+            "status",
+            "challenge",
+            "user",
+            "challenge_title",
+            "challenge_host_team_name",
+            "invited_by",
+            "user_details",
+        )
+
+    def get_challenge_title(self, obj):
+        return obj.challenge.title
+
+    def get_challenge_host_team_name(self, obj):
+        return obj.challenge.creator.team_name
+
+    def get_user_details(self, obj):
+        serializer = UserDetailsSerializer(obj.user)
+        return serializer.data

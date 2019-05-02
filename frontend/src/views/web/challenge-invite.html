@@ -1,0 +1,117 @@
+<section class="ev-sm-container ev-view ">
+    <div class="row">
+        <div class="col s12 m6 offset-m3">
+            <div class=" ev-card-panel ev-z-depth-5">
+                <div class="ev-md-container ev-panel-title center w-300 fs-30">
+                    Challenge Invitation
+                </div>
+                <div class="loader-container card-loader-container" id="loader" ng-show="teams.isLoader" class="fade">
+                    <div class="loader">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                </div>
+                <div class="ev-md-container ev-card-body new-team-card">
+                    <div class="pd-btm-20">
+                        You have been invited to participate in <strong>{{challenge_invitation.challengeTitle}}</strong> hosted by <strong>{{challenge_invitation.host}}</strong> on EvalAI.
+                        Please enter your personal information below to participate in the challenge.
+                    </div>
+                    <div class="col s8 m8 offset-m2">
+                            <form name="registerChallengeParticipantForm" ng-submit="challenge_invitation.registerChallengeParticipant(registerChallengeParticipantForm.$valid)" novalidate>
+                                <div class="row">
+                                    <div class="col s12 m12">
+                                        <div class="input-field align-left">
+                                            <input type="text" id="username" class="dark-autofill" name="name" ng-model="challenge_invitation.userDetails.username" ng-minlength="3"
+                                                focus-if="challenge_invitation.userDetails.username" ng-disabled="challenge_invitation.userDetails.username" required>
+                                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                                            <label ng-class="{'active': challenge_invitation.userDetails.username.length > 0}" for="name">Username*</label>
+                                            <div class="wrn-msg text-highlight" ng-messages="registerChallengeParticipantForm.username.$error"
+                                                ng-if="registerChallengeParticipantForm.username.$touched || registerChallengeParticipantForm.$submitted">
+                                                <p ng-message="minlength">Username is too short.</p>
+                                                <p ng-message="required">Username is required.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s12 m12">
+                                        <div class="input-field align-left">
+                                            <input type="email" id="email" class="dark-autofill" name="email" ng-model="challenge_invitation.email"
+                                            focus-if="challenge_invitation.email" ng-disabled="challenge_invitation.email">
+                                            <span class="form-icon form-icon-dark"><i class="fa fa-envelope"></i></span>
+                                            <label ng-class="{'active': challenge_invitation.email.length > 0}" for="email">Email</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s6 m6">
+                                        <div class="input-field align-left">
+                                            <input id="first_name" type="text" class="validate text-dark-black dark-autofill w-400"
+                                            ng-model="challenge_invitation.first_name" focus-if>
+                                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                                            <label for="first_name" data-error="wrong" data-success="right">First Name*</label>
+                                            <div class="wrn-msg text-highlight" ng-show="challenge_invitation.error">{{challenge_invitation.error}}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col s6 m6">
+                                            <div class="input-field align-left">
+                                            <input id="last_name" type="text" class="validate text-dark-black dark-autofill w-400"
+                                            ng-model="challenge_invitation.last_name">
+                                            <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
+                                            <label for="last_name" data-error="wrong" data-success="right">Last Name*</label>
+                                            <div class="wrn-msg text-highlight" ng-show="challenge_invitation.error">{{challenge_invitation.error}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s12 m12">
+                                        <div class="input-field align-left">
+                                            <input type="password" id="password" onpaste="return false;" class="dark-autofill" name="password"
+                                            ng-model="challenge_invitation.password" ng-minlength="8" required>
+                                            <span class="form-icon form-icon-dark"><i class="fa fa-key"></i></span>
+                                            <label for="password">
+                                                <strong>Password-minlength:8 required*</strong>
+                                                <span ng-style="{color: auth.color}">{{auth.message}}</span>
+                                            </label>
+                                            <div class="wrn-msg text-highlight" ng-messages="registerChallengeParticipantForm.password.$error"
+                                            ng-if="registerChallengeParticipantForm.password.$touched || registerChallengeParticipantForm.$submitted">
+                                                <p ng-message="minlength">Password is less than 8 characters.</p>
+                                                <p ng-message="required">Password is required.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s12 m12">
+                                        <div class="input-field align-left">
+                                            <input type="password" id="confirm_password" onpaste="return false;" class="dark-autofill" name="confirm_password"
+                                                ng-model="challenge_invitation.confirm_password" ng-minlength="8" compare-to="challenge_invitation.password" required>
+                                            <span class="form-icon form-icon-dark"><i class="fa fa-check-circle"></i></span>
+                                            <label for="confirm_password">Confirm Password *</label>
+                                            <div class="wrn-msg text-highlight" ng-messages="registerChallengeParticipantForm.confirm_password.$error"
+                                                ng-if="registerChallengeParticipantForm.confirm_password.$touched || registerChallengeParticipantForm.$submitted">
+                                                <p ng-message="compareTo">Passwords do not match</p>
+                                                <p ng-message="minlength">Password is less than 8 characters.</p>
+                                                <p ng-message="required">Password confirmation is required.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col s12 m12">
+                                        <div class="align-center reg-control">
+                                            <button class="waves-effect waves-dark btn grad-btn ev-btn-dark w-300 fs-14" type="submit" value="Submit" ng-disabled=!registerChallengeParticipantForm.$valid>Accept Invitation</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
