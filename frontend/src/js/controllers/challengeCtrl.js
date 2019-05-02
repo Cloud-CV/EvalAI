@@ -380,7 +380,8 @@
                             vm.projectUrl = "";
                             vm.publicationUrl = "";
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
-
+                            vm.disableSubmit = true;
+                            vm.showSubmissionNumbers = false;
                             vm.stopLoader();
                         },
                         onError: function(response) {
@@ -1124,6 +1125,7 @@
                         if (details.submission_limit_exceeded === true) {
                             vm.maxExceeded = true;
                             vm.maxExceededMessage = details.message;
+                            vm.disableSubmit = true;
                         }
                         else if (details.remaining_submissions_today_count > 0) {
                             vm.remainingSubmissions = details;
