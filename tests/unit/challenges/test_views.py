@@ -3648,6 +3648,7 @@ class GetChallengePhaseByPk(BaseChallengePhaseClass):
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": self.challenge_phase.codename,
+            "slug": self.challenge_phase.slug,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
