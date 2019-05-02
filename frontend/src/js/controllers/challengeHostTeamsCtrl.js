@@ -106,7 +106,7 @@
                                 // condition for pagination
                                 if (vm.existTeam.next === null) {
                                     vm.isNext = 'disabled';
-                                    vm.currentPage = vm.existTeam.count / 10;
+                                    vm.currentPage = vm.existTeam.count / 100;
                                 } else {
                                     vm.isNext = '';
                                     vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
@@ -390,7 +390,7 @@
             ev.stopPropagation();
             // Appending dialog to document.body 
             var confirm = $mdDialog.prompt()
-                .title('Add other memebers to this Team')
+                .title('Add other members to your team')
                 .textContent('Enter the email address of the person')
                 .placeholder('email')
                 .ariaLabel('')
