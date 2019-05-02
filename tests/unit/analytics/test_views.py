@@ -15,7 +15,6 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from analytics.serializers import ChallengeParticipantSerializer
-from base.utils import paginated_queryset
 from challenges.models import Challenge, ChallengePhase
 from challenges.utils import get_challenge_model
 from hosts.models import ChallengeHost, ChallengeHostTeam

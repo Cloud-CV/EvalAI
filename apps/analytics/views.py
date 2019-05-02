@@ -19,7 +19,6 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
 from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
 from hosts.utils import is_user_a_host_of_challenge
@@ -338,11 +337,10 @@ def download_all_participants(request, challenge_pk):
             user=request.user, challenge_pk=challenge_pk
     ):
         challenge = get_challenge_model(challenge_pk)
-        participant_team = challenge.participant_teams.all().order_by("-team_name")
-        paginator, result_page = paginated_queryset(participant_team, request)
-        part = ChallengeParticipantSerializer(result_page, many=True, context={"request": request})
+        participant_teams = challenge.participant_teams.all().order_by("-team_name")
+        teams = ChallengeParticipantSerializer(participant_teams, many=True, context={"request": request})
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = "attachment; filename=all_submissions.csv"
+        response["Content-Disposition"] = "attachment; filename=participant_teams_{0}.csv".format(challenge_pk)
         writer = csv.writer(response)
         writer.writerow(
             [
@@ -351,15 +349,15 @@ def download_all_participants(request, challenge_pk):
                 "Team Members Email ID",
             ]
         )
-        for submission in part.data:
+        for team in teams.data:
             writer.writerow(
                 [
-                    submission["team_name"],
+                    team["team_name"],
                     ",".join(
-                        submission["team_members"]
+                        team["team_members"]
                     ),
                     ",".join(
-                        submission["team_members_email_ids"]
+                        team["team_members_email_ids"]
                     ),
                 ]
             )
