@@ -517,9 +517,9 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge_phase = ChallengePhase.objects.get(pk=pk)
+        challenge_phase = ChallengePhase.objects.get(challenge=challenge, pk=pk)
     except ChallengePhase.DoesNotExist:
-        response_data = {"error": "ChallengePhase does not exist"}
+        response_data = {"error": "Challenge phase {} does not exist for challenge {}".format(pk, challenge.pk)}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == "GET":
