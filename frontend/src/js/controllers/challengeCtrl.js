@@ -1084,13 +1084,14 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var status = response.status;
+                    var message = "";
                     if(status === 200) {
                       var detail = response.data;
                       if (detail['is_public'] == true) {
-                        var message = "This Submission is Public."
+                        message = "This Submission is Public.";
                       }
-                      else{
-                        var message = "This Submission is Private."
+                      else {
+                        message = "This Submission is Private.";
                       }
                       $rootScope.notify("success", message);
                     }
