@@ -4,6 +4,8 @@ from rest_framework import serializers
 
 from challenges.models import Challenge
 from participants.models import Participant, ParticipantTeam
+
+
 class ChallengePhaseSubmissionAnalytics(object):
     def __init__(
         self,
@@ -116,4 +118,3 @@ class ChallengeParticipantSerializer(serializers.Serializer):
                 "email", flat=True
             )
         )
-
