@@ -1088,10 +1088,10 @@
                     if(status === 200) {
                       var detail = response.data;
                       if (detail['is_public'] == true) {
-                        message = "This Submission is Public.";
+                        message = "The submission is made public.";
                       }
                       else {
-                        message = "This Submission is Private.";
+                        message = "The submission is made private.";
                       }
                       $rootScope.notify("success", message);
                     }
