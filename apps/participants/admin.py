@@ -35,5 +35,5 @@ class ParticipantTeamAdmin(ImportExportTimeStampedAdmin):
     A class which provides interface to display
     and filter team names.
     """
-    list_display = ('team_name', 'get_all_participants_email', 'team_url')
+    list_display = ('team_name', 'get_all_participants_email', 'team_url', 'docker_repository_uri',)
     list_filter = ('team_name',)

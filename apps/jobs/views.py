@@ -32,6 +32,7 @@ from challenges.utils import (get_challenge_model,
                               get_challenge_phase_model)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
+from jobs.constants import submission_status_to_exclude
 from participants.models import (ParticipantTeam,)
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,)
@@ -350,13 +351,13 @@ def leaderboard(request, challenge_phase_split_id):
         submission__is_flagged=False,
         submission__status=Submission.FINISHED).order_by('created_at')
 
-    if not challenge_host_user:
-        leaderboard_data = leaderboard_data.filter(submission__is_public=True)
-
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL('result->>%s', (default_order_by, ), output_field=FloatField())).values(
             'id', 'submission__participant_team__team_name',
             'challenge_phase_split', 'result', 'filtering_score', 'leaderboard__schema', 'submission__submitted_at')
+
+    if not challenge_host_user:
+        leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
     sorted_leaderboard_data = sorted(leaderboard_data, key=lambda k: float(k['filtering_score']), reverse=True)
 
@@ -423,7 +424,7 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
     submissions_done = Submission.objects.filter(
         challenge_phase__challenge=challenge_pk,
         challenge_phase=challenge_phase_pk,
-        participant_team=participant_team_pk).exclude(status=Submission.FAILED)
+        participant_team=participant_team_pk).exclude(status__in=submission_status_to_exclude)
 
     submissions_done_this_month = submissions_done.filter(
         submitted_at__gte=timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0))
@@ -487,6 +488,12 @@ def get_remaining_submissions(request, challenge_phase_pk, challenge_pk):
         # Calculate the remaining submissions for today.
         remaining_submissions_today_count = (max_submissions_per_day_count -
                                              submissions_done_today_count)
+
+        remaining_submissions_this_month_count = min(remaining_submission_count,
+                                                     remaining_submissions_this_month_count)
+        remaining_submissions_today_count = min(remaining_submissions_this_month_count,
+                                                remaining_submissions_today_count)
+
         response_data = {
             'remaining_submissions_this_month_count': remaining_submissions_this_month_count,
             'remaining_submissions_today_count': remaining_submissions_today_count,
