@@ -3024,12 +3024,12 @@ class GetChallengePhaseByPk(BaseChallengePhaseClass):
             "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
             "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            'max_submissions_per_month': self.challenge_phase.max_submissions_per_month,
+            "max_submissions": self.challenge_phase.max_submissions,
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
             "codename": self.challenge_phase.codename,
-            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-            "max_submissions": self.challenge_phase.max_submissions,
-            'max_submissions_per_month': self.challenge_phase.max_submissions_per_month,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
