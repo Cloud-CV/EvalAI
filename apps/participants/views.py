@@ -246,11 +246,6 @@ def team_invitation_accepted(request, encoded_team_id, encoded_email):
     participant_team = ParticipantTeam.objects.get(pk=pk)
 
     if current_user_email == accepted_user_email:
-        Participant.objects.get_or_create(
-            user=User.objects.get(email=accepted_user_email),
-            status=Participant.ACCEPTED,
-            team=participant_team)
-        
         serializer = InviteParticipantToTeamSerializer(
             data=request.data,
             context={"participant_team": participant_team, "request": request},
@@ -272,7 +267,8 @@ def team_invitation_accepted(request, encoded_team_id, encoded_email):
                     message,
                     settings.ADMIN_EMAIL,
                     [team_owner_email],
-                    fail_silently=False)
+                    fail_silently=False
+                )
             except:
                 response_data = {
                     'error': 'There was some error while sending the confirmation email to the owner of team'

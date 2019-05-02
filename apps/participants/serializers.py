@@ -29,8 +29,6 @@ class ParticipantTeamSerializer(serializers.ModelSerializer):
 class InviteParticipantToTeamSerializer(serializers.Serializer):
     """Serializer class for inviting Participant to Team."""
 
-    email = serializers.EmailField()
-
     def __init__(self, *args, **kwargs):
         super(InviteParticipantToTeamSerializer, self).__init__(
             *args, **kwargs
@@ -52,9 +50,8 @@ class InviteParticipantToTeamSerializer(serializers.Serializer):
         return value
 
     def save(self):
-        email = self.validated_data.get("email")
         return Participant.objects.get_or_create(
-            user=User.objects.get(email=email),
+            user=User.objects.get(email=self.user.email),
             status=Participant.ACCEPTED,
             team=self.participant_team,
         )
