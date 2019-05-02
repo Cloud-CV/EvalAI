@@ -18,12 +18,9 @@
         vm.isFormError = false;
 
         // default parameters
-        $rootScope.oldpwdInputType = 'password';
-        $rootScope.newpwdInputType = 'password';
-        $rootScope.newpwdAgainInputType = 'password';
-        $rootScope.showEyeIconOldpwd = false;
-        $rootScope.showEyeIconNewpwd = false;
-        $rootScope.showEyeIconNewpwdAgain = false;
+        $rootScope.canShowOldPassword = false;
+        $rootScope.canShowNewPassword = false;
+        $rootScope.canShowNewConfirmPassword = false;
 
         vm.changepassContainer = angular.element('.change-passowrd-card');
 
@@ -41,36 +38,18 @@
         };
 
         // toggle old password visibility
-        vm.toggleOldpwdVisibility = function() {
-            $rootScope.showEyeIconOldpwd = !$rootScope.showEyeIconOldpwd;
-            if ($rootScope.oldpwdInputType == 'password'){
-                $rootScope.oldpwdInputType = 'text';
-            }
-            else{
-                $rootScope.oldpwdInputType = 'password';
-            }
+        vm.toggleOldPasswordVisibility = function() {
+            $rootScope.canShowOldPassword = !$rootScope.canShowOldPassword;
         };
 
         // toggle new password visibility
-        vm.toggleNewpwdVisibility = function() {
-            $rootScope.showEyeIconNewpwd = !$rootScope.showEyeIconNewpwd;
-            if ($rootScope.newpwdInputType == 'password'){
-                $rootScope.newpwdInputType = 'text';
-            }
-            else{
-                $rootScope.newpwdInputType = 'password';
-            }
+        vm.toggleNewPasswordVisibility = function() {
+            $rootScope.canShowNewPassword = !$rootScope.canShowNewPassword;
         };
 
         // toggle new password again visibility
-        vm.toggleNewpwdAgainVisibility = function() {
-            $rootScope.showEyeIconNewpwdAgain = !$rootScope.showEyeIconNewpwdAgain;
-            if ($rootScope.newpwdAgainInputType == 'password'){
-                $rootScope.newpwdAgainInputType = 'text';
-            }
-            else{
-                $rootScope.newpwdAgainInputType = 'password';
-            }
+        vm.toggleNewConfirmVisibility = function() {
+            $rootScope.canShowNewConfirmPassword = !$rootScope.canShowNewConfirmPassword;
         };
 
         // function to change password

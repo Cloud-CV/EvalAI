@@ -36,10 +36,8 @@
         vm.isValid = {};
         vm.confirmMsg = '';
         $rootScope.loaderTitle = '';
-        $rootScope.passwordInputType = 'password';
-        $rootScope.confirmPasswordInputType = 'password';
-        $rootScope.showEyeIcon = false;
-        $rootScope.showEyeIconConfirmpwd = false;
+        $rootScope.canShowPassword = false;
+        $rootScope.canShowConfirmPassword = false;
         vm.loginContainer = angular.element('.auth-container');
 
         // show loader
@@ -58,24 +56,12 @@
 
         // toggle password visibility
         vm.togglePasswordVisibility = function() {
-            $rootScope.showEyeIcon = !$rootScope.showEyeIcon;
-            if ($rootScope.passwordInputType == 'password'){
-                $rootScope.passwordInputType = 'text';
-            }
-            else{
-                $rootScope.passwordInputType = 'password';
-            }
+            $rootScope.canShowPassword = !$rootScope.canShowPassword;
         };
 
         // toggle confirm password visibility
         vm.toggleConfirmPasswordVisibility = function() {
-            $rootScope.showEyeIconConfirmpwd = !$rootScope.showEyeIconConfirmpwd;
-            if ($rootScope.confirmPasswordInputType == 'password'){
-                $rootScope.confirmPasswordInputType = 'text';
-            }
-            else{
-                $rootScope.confirmPasswordInputType = 'password';
-            }
+            $rootScope.canShowConfirmPassword = !$rootScope.canShowConfirmPassword;
         };
 
         vm.resetForm = function() {
@@ -94,10 +80,8 @@
             vm.isMail = true;
 
             // reset the eye icon and type to password 
-            $rootScope.showEyeIcon = false;
-            $rootScope.showEyeIconConfirmpwd = false;
-            $rootScope.passwordInputType = 'password';
-            $rootScope.confirmPasswordInputType = 'password';
+            $rootScope.canShowPassword = false;
+            $rootScope.canShowConfirmPassword = false;
         };
 
         // Function to signup

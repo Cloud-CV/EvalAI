@@ -20,10 +20,10 @@
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input type="{{passwordInputType}}" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.getUser.password" autocomplete="new-password" ng-minlength="8" required>
+            <input type="{{canShowPassword ? 'text' : 'password'}}" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.getUser.password" autocomplete="new-password" ng-minlength="8" required>
             <span class="form-icon form-icon-dark" ng-click="auth.togglePasswordVisibility()">
-                <i ng-if="!showEyeIcon" class="fa fa-eye"></i>
-                <i ng-if="showEyeIcon" class="fa fa-eye-slash"></i>
+                <i ng-if="!canShowPassword" class="fa fa-eye"></i>
+                <i ng-if="canShowPassword" class="fa fa-eye-slash"></i>
             </span>
             <label for="password">Password (min 8 characters) *</label>
             <div class="wrn-msg text-highlight" ng-messages="loginForm.password.$error" ng-if="loginForm.password.$touched || loginForm.$submitted">
