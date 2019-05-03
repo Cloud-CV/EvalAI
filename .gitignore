@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 
@@ -58,3 +59,8 @@ ssl/
 
 # Code editors
 .vscode
+.idea/
+*.iws
+out/
+.idea_modules/
+

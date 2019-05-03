@@ -1,4 +1,4 @@
-<p align="center"><img width="65%" src="docs/source/\_static/img/evalai_logo.png" /></p>
+<p align="center"><img width="65%" src="docs/source/_static/img/evalai_logo.png"/></p>
 
 ------------------------------------------------------------------------------------------
 
@@ -10,156 +10,87 @@
 [![Code Climate](https://codeclimate.com/github/Cloud-CV/EvalAI/badges/gpa.svg)](https://codeclimate.com/github/Cloud-CV/EvalAI)
 [![Documentation Status](https://readthedocs.org/projects/markdown-guide/badge/?version=latest)](http://evalai.readthedocs.io/en/latest/)
 
-
-EvalAI is an open source web application that helps researchers, students and data-scientists to create, collaborate and participate in various AI challenges organized round the globe.
+EvalAI is an open source platform for evaluating and comparing machine learning (ML) and artificial intelligence (AI) algorithms at scale. 
 
 In recent years, it has become increasingly difficult to compare an algorithm solving a given task with other existing approaches. These comparisons suffer from minor differences in algorithm implementation, use of non-standard dataset splits and different evaluation metrics. By providing a central leaderboard and submission interface, we make it easier for researchers to reproduce the results mentioned in the paper and perform reliable & accurate quantitative analysis. By providing swift and robust backends based on map-reduce frameworks that speed up evaluation on the fly, EvalAI aims to make it easier for researchers to reproduce results from technical papers and perform reliable and accurate analyses.
 
-<p align="center"><img width="65%" src="docs/source/\_static/img/kaggle_comparison.png" /></p>
+## Features
 
-A question we’re often asked is: Doesn’t Kaggle already do this? The central differences are:
+- **Custom evaluation protocols and phases**: We allow creation of an arbitrary number of evaluation phases and dataset splits, compatibility using any programming language, and organizing results in both public and private leaderboards.
 
-- **Custom Evaluation Protocols and Phases**: We have designed versatile backend framework that can support user-defined evaluation metrics, various evaluation phases, private and public leaderboard.
+- **Remote evaluation**: Certain large-scale challenges need special compute capabilities for evaluation. If the challenge needs extra computational power, challenge organizers can easily add their own cluster of worker nodes to process participant submissions while we take care of hosting the challenge, handling user submissions, and maintaining the leaderboard.
 
-- **Faster Evaluation**: The backend evaluation pipeline is engineered so that submissions can be evaluated parallelly using multiple cores on multiple machines via mapreduce frameworks offering a significant performance boost over similar web AI-challenge platforms.
+- **Evaluation inside environments**: EvalAI lets participants submit code for their agent in the form of docker images which are evaluated against test environments on the evaluation server. During evaluation, the worker fetches the image, test environment, and the model snapshot and spins up a new container to perform evaluation.
 
-- **Portability**: Since the platform is open-source, users have the freedom to host challenges on their own private servers rather than having to explicitly depend on Cloud Services such as AWS, Azure, etc.
+- **CLI support**: [evalai-cli](https://github.com/Cloud-CV/evalai-cli) is designed to extend the functionality of the EvalAI web application to your command line to make the platform more accessible and terminal-friendly.
 
-- **Easy Hosting**: Hosting a challenge is streamlined. One can create the challenge on EvalAI using the intuitive UI (work-in-progress) or using zip configuration file.
+- **Portability**: EvalAI is designed with keeping in mind scalability and portability of such a system from the very inception of the idea. Most of the components rely heavily on open-source technologies – Docker, Django, Node.js, and PostgreSQL.
 
-- **Centralized Leaderboard**: Challenge Organizers whether host their challenge on EvalAI or forked version of EvalAI, they can send the results to main EvalAI server. This helps to build a centralized platform to keep track of different challenges.
+- **Faster evaluation**: We warm-up the worker nodes at start-up by importing the challenge code and pre-loading the dataset in memory. We also split the dataset into small chunks that are simultaneously evaluated on multiple cores. These simple tricks result in faster evaluation and reduces the evaluation time by an order of magnitude in some cases.
+
+## Platform Comparison
+|          Features          |          OpenML          |         TopCoder         |          Kaggle          |          CrowdAI         |          ParlAI          |          Codalab         |       EvalAI       |
+|:--------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------------:|:------------------:|
+|    AI challenge hosting    | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    |    :white_check_mark:    | :heavy_multiplication_x: |    :white_check_mark:    | :white_check_mark: |
+|       Custom metrics       | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    |    :white_check_mark:    | :white_check_mark: |
+|   Multiple phases/splits   | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    | :heavy_multiplication_x: |    :white_check_mark:    | :white_check_mark: |
+|         Open source        |    :white_check_mark:    | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    |    :white_check_mark:    | :white_check_mark: |
+|      Remote evaluation     | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    | :white_check_mark: |
+|      Human evaluation      | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    | :heavy_multiplication_x: | :white_check_mark: |
+| Evaluation in Environments | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    | :heavy_multiplication_x: | :heavy_multiplication_x: | :white_check_mark: |
 
 ## Goal
 
 Our ultimate goal is to build a centralized platform to host, participate and collaborate in AI challenges organized around the globe and we hope to help in benchmarking progress in AI.
 
-## Performance comparison
+## Installation instructions
 
-Some background: Last year, the [Visual Question Answering Challenge (VQA) 2016](http://www.visualqa.org/vqa_v1_challenge.html) was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview). This year, the dataset for the [VQA Challenge 2017](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
+Setting up EvalAI on your local machine is really easy. You can setup EvalAI using docker:
+The steps are:
 
-## Installation Instructions
+1. Install [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and [docker-compose](https://docs.docker.com/compose/install/) on your machine.
 
-Setting up EvalAI on your local machine is really easy. You can setup EvalAI using two methods:
-
-### Using Docker
-
-You can also use Docker Compose to run all the components of EvalAI together. The steps are:
-
-1. Get the source code on to your machine via git.
+2. Get the source code on to your machine via git.
 
     ```shell
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
     ```
-    Use your postgres username and password for fields `USER` and `PASSWORD` in `settings/dev.py` file.
 
-2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
+3. Build and run the Docker containers. This might take a while.
 
     ```
     docker-compose up --build
     ```
-3. That's it. Open web browser and hit the url [http://127.0.0.1:8888].
+
+4. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
     
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
-    **PARTICIPANT USER-** username: `participant` password: `password`   
+    **PARTICIPANT USER-** username: `participant` password: `password`
 
-### Using Virtual Environment
+If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
 
-1. Install [python] 2.7.10 or above, [git], [postgresql] version >= 10.1, have ElasticMQ installed (Amazon SQS is used in production) and [virtualenv], in your computer, if you don't have it already.
-*If you are having trouble with postgresql on Windows check this link [postgresqlhelp].*
+## Citing EvalAI
+If you are using EvalAI for hosting challenges, please cite the following technical report:
 
-2. Get the source code on your machine via git.
+```
+@article{EvalAI,
+    title   =  {EvalAI: Towards Better Evaluation Systems for AI Agents},
+    author  =  {Deshraj Yadav and Rishabh Jain and Harsh Agrawal and Prithvijit
+                Chattopadhyay and Taranjeet Singh and Akash Jain and Shiv Baran
+                Singh and Stefan Lee and Dhruv Batra},
+    year    =  {2019},
+    volume  =  arXiv:1902.03570
+}
+```
+<p>
+    <a href="https://arxiv.org/abs/1902.03570"><img src="docs/source/_static/img/evalai-paper.jpg"/></a>
+</p>
 
-    ```shell
-    git clone https://github.com/Cloud-CV/EvalAI.git evalai
-    ```
+## Team
 
-3. Create a python virtual environment and install python dependencies.
-
-    ```shell
-    cd evalai
-    virtualenv venv
-    source venv/bin/activate  # run this command everytime before working on project
-    pip install -r requirements/dev.txt
-    ```
-
-4. Create an empty postgres database.
-
-    ```
-    sudo -i -u (username)
-    createdb evalai
-    ```
-
-5. Change Postgresql credentials in `settings/dev.py` and run migrations
-
-
-    Use your postgres username and password for fields `USER` and `PASSWORD` in `dev.py` file. After changing credentials, run migrations using the following command:
-
-    ```
-    python manage.py migrate --settings=settings.dev
-    ```
-
-
-6. Seed the database with some fake data to work with.
-
-    ```
-    python manage.py seed --settings=settings.dev
-    ```
-    This command also creates a `superuser(admin)`, a `host user` and a `participant user` with following credentials.
-
-    **SUPERUSER-** username: `admin` password: `password`  
-    **HOST USER-** username: `host` password: `password`  
-    **PARTICIPANT USER-** username: `participant` password: `password`    
-
-7. That's it. Now you can run development server at [http://127.0.0.1:8000] (for serving backend)
-
-    ```
-    python manage.py runserver --settings=settings.dev
-    ```
-
-
-8. Please make sure that node(`>=7.x.x`), npm(`>=5.x.x`) and bower(`>=1.8.x`) are installed globally on your machine.
-
-    Install npm and bower dependencies by running
-
-    ```
-    npm install
-    bower install
-    ```
-
-    If you running npm install behind a proxy server, use
-
-    ```
-    npm config set proxy http://proxy:port
-    ```
-
-9. Now to connect to dev server at [http://127.0.0.1:8888] (for serving frontend)
-
-    ```
-    gulp dev:runserver
-    ```
-
-10. That's it, Open web browser and hit the url [http://127.0.0.1:8888].
-
-11. (Optional) If you want to see the whole game into play, then install the ElasticMQ Queue service and start the worker in a new terminal window using the following command that consumes the submissions done for every challenge:
-
-    ```
-    python scripts/workers/submission_worker.py
-    ```
-
-## The Team
-
-EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io), [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](http://taranjeet.github.io/), [Shiv Baran Singh](http://www.shivbaran.in/) and [Rishabh Jain](https://rishabhjain2018.github.io/). A non-exhaustive list of other major contributors includes: Harsh Agarwal, Prithvijit Chattopadhyay, Devi Parikh and Dhruv Batra.
+EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io) and [Rishabh Jain](https://rishabhjain2018.github.io/). A non-exhaustive list of other major contributors includes: [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](http://taranjeet.github.io/), [Shiv Baran Singh](http://www.shivbaran.in/), [Harsh Agarwal](https://dexter1691.github.io/), [Prithvijit Chattopadhyay](https://prithv1.github.io/), [Devi Parikh](https://www.cc.gatech.edu/~parikh/) and [Dhruv Batra](https://www.cc.gatech.edu/~dbatra/).
 
 ## Contribution guidelines
 
 If you are interested in contributing to EvalAI, follow our [contribution guidelines](https://github.com/Cloud-CV/EvalAI/blob/master/.github/CONTRIBUTING.md).
-
-[python]: https://www.python.org/download/releases/2.7/
-[git]: https://git-scm.com/downloads
-[virtualenv]: https://virtualenv.pypa.io/
-[postgresql]: http://www.postgresql.org/download/
-[postgresqlhelp]: http://bobbyong.com/blog/installing-postgresql-on-windoes/
-[amazon SQS]: https://aws.amazon.com/sqs/
-[http://127.0.0.1:8888]: http://127.0.0.1:8888
-[http://127.0.0.1:8000]: http://127.0.0.1:8000
