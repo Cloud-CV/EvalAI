@@ -52,6 +52,10 @@
                     } else {
                         vm.currentList[i].isLarge = "";
                     }
+                    var qwerty=new Date(vm.currentList[i].start_date).toString();
+                    vm.currentList[i].start_zone=qwerty.split('(')[1].split(')')[0];
+                    var qwerty=new Date(vm.currentList[i].end_date).toString();
+                    vm.currentList[i].end_zone=qwerty.split('(')[1].split(')')[0];
 
                     var id = vm.currentList[i].id;
                     vm.challengeCreator[id] = vm.currentList[i].creator.id;
@@ -83,7 +87,13 @@
                             } else {
                                 vm.upcomingList[i].isLarge = "";
                             }
+                            
+                            var qwerty=new Date(vm.upcomingList[i].start_date).toString();
+                            vm.upcomingList[i].start_zone=qwerty.split('(')[1].split(')')[0];
+                            var qwerty=new Date(vm.upcomingList[i].end_date).toString();
+                            vm.upcomingList[i].end_zone=qwerty.split('(')[1].split(')')[0];
 
+                            
                             var id = vm.upcomingList[i].id;
                             vm.challengeCreator[id] = vm.upcomingList[i].creator.id;
                             utilities.storeData("challengeCreator", vm.challengeCreator);
@@ -115,6 +125,12 @@
                                     } else {
                                         vm.pastList[i].isLarge = "";
                                     }
+
+                                    var qwerty=new Date(vm.pastList[i].start_date).toString();
+                                    vm.pastList[i].start_zone=qwerty.split('(')[1].split(')')[0];
+                                    var qwerty=new Date(vm.pastList[i].end_date).toString();
+                                    vm.pastList[i].end_zone=qwerty.split('(')[1].split(')')[0];
+
                                     var id = vm.pastList[i].id;
                                     vm.challengeCreator[id] = vm.pastList[i].creator.id;
                                     utilities.storeData("challengeCreator", vm.challengeCreator);

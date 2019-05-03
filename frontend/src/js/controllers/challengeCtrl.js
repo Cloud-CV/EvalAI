@@ -425,6 +425,13 @@
                         vm.phases.results[i].showPrivate = true;
                     }
                 }
+                for(var i=0;i<vm.phases.results.length;i++){
+                    var qwerty=new Date(vm.phases.results[i].start_date).toString();
+                    vm.phases.results[i].start_zone=qwerty.split('(')[1].split(')')[0];
+                    var qwerty=new Date(vm.phases.results[i].end_date).toString();
+                    vm.phases.results[i].end_zone=qwerty.split('(')[1].split(')')[0];
+                }
+                
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
