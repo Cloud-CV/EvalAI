@@ -42,6 +42,7 @@
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
+        vm.disableSubmit = true;
         // save initial ranking
         vm.initial_ranking = {};
       // loader for existing teams
@@ -379,7 +380,8 @@
                             vm.projectUrl = "";
                             vm.publicationUrl = "";
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
-
+                            vm.disableSubmit = true;
+                            vm.showSubmissionNumbers = false;
                             vm.stopLoader();
                         },
                         onError: function(response) {
@@ -1082,10 +1084,28 @@
                 "is_public": vm.submissionVisibility[submission_id]
             };
             parameters.callback = {
-                onSuccess: function() {},
-                onError: function() {}
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var message = "";
+                    if(status === 200) {
+                      var detail = response.data;
+                      if (detail['is_public'] == true) {
+                        message = "The submission is made public.";
+                      }
+                      else {
+                        message = "The submission is made private.";
+                      }
+                      $rootScope.notify("success", message);
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    var status = response.status;
+                    if(status === 400 || status === 403 ) {
+                       $rootScope.notify("error", error.error);
+                    }
+                }
             };
-
             utilities.sendRequest(parameters);
         };
 
@@ -1123,13 +1143,16 @@
                         if (details.submission_limit_exceeded === true) {
                             vm.maxExceeded = true;
                             vm.maxExceededMessage = details.message;
+                            vm.disableSubmit = true;
                         }
                         else if (details.remaining_submissions_today_count > 0) {
                             vm.remainingSubmissions = details;
                             vm.showSubmissionNumbers = true;
+                            vm.disableSubmit = false;
                         } else {
                             vm.message = details;
                             vm.showClock = true;
+                            vm.disableSubmit = true;
                             vm.countDownTimer = function() {
                                 vm.remainingTime = vm.message.remaining_time;
                                 vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
@@ -1477,6 +1500,7 @@
 
         // Edit Evaluation Script
         vm.evaluationScriptDialog = function(ev) {
+            vm.tempEvaluationCriteria = vm.page.evaluation_details;
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,

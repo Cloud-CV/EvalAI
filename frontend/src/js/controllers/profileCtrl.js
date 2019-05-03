@@ -79,7 +79,7 @@
             },
             onError: function(response) {
                 var details = response.data;
-                $rootScope.notify("error", details.error);
+                $rootScope.notify("error", details['detail']);
             }
         };
 
