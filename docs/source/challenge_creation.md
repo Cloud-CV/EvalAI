@@ -147,7 +147,7 @@ If you have issues in creating a challenge on EvalAI, please feel free to create
 
 ## Challenge configuration examples
 
-Please see this [repository](https://github.com/Cloud-CV/EvalAI-Examples) to see different types of challenge configurations you can have for your challenge.
+Please see this [repository](https://github.com/Cloud-CV/EvalAI-Starters) to see different types of challenge configurations you can have for your challenge.
 
 ## Create challenge using web interface
 
