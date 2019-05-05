@@ -1,15 +1,18 @@
 import base64
 import boto3
 import botocore
+import json
 import logging
 import os
 import re
+import requests
 import sendgrid
 import uuid
 
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
 
+from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 
@@ -198,3 +201,23 @@ def get_queue_name(param):
         :80
     ]  # The max-length for queue-name is 80 in SQS
     return queue_name
+
+
+def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=""):
+    """
+    Send slack notification to any workspace
+    Keyword Arguments:
+        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEBHOOKS['default']})
+        message {str} -- JSON/Text message to be sent to slack (default: {""})
+    """
+    response = requests.post(
+        webhook,
+        data=json.dumps({'text': str(message)}),
+        headers={'Content-Type': 'application/json'}
+    )
+    if type(response) == requests.models.Response and response.status_code == status.HTTP_200_OK:
+        return response
+    else:
+        logger.info(
+            'Exception raised while sending slack notification "{}".'
+            .format(message))

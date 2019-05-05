@@ -28,6 +28,7 @@ from drf_yasg.utils import swagger_auto_schema
 from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     paginated_queryset,
+    send_slack_notification,
     StandardResultSetPagination,
     get_sqs_queue_object,
     get_boto3_client,
@@ -245,6 +246,16 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             publish_submission_message(
                 challenge_id, challenge_phase_id, submission.id
             )
+            slack_submission_details = {
+                'challenge_phase': challenge_phase.name,
+                'challenge': challenge.title,
+                'event': challenge_id,
+                'participant': request.user.username,
+            }
+            send_slack_notification(
+                message="A *new submission* has been uploaded.\n *Submission details*: {}"
+                .format(slack_submission_details))
+
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(
             serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE

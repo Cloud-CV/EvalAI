@@ -8,6 +8,8 @@ from django.shortcuts import render
 
 from smtplib import SMTPException
 
+from base.utils import send_slack_notification
+
 from .models import Team
 from .serializers import ContactSerializer, TeamSerializer
 
@@ -110,6 +112,9 @@ def contact_us(request):
             response_data = {
                 "message": "We have received your request and will contact you shortly."
             }
+            send_slack_notification(
+                message="A *new contact message* is received. \n *Contact details*: {}"
+                .format(request_data))
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

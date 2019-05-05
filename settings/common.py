@@ -273,6 +273,12 @@ REST_AUTH_SERIALIZERS = {
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
+slack_webhook = os.environ.get('SLACK_WEBHOOK', 'https://hooks.slack.com/services/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')
+
+SLACK_WEBHOOKS = {
+    'default': slack_webhook,
+}
+
 SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "evalai.urls.swagger_api_info",
     "SECURITY_DEFINITIONS": {
