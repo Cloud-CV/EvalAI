@@ -30,8 +30,11 @@
         </div>
         <!-- password -->
         <div class="input-field align-left">
-            <input type="password" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.regUser.password" ng-minlength="8" ng-change="auth.checkStrength(auth.regUser.password)" required>
-            <span class="form-icon form-icon-dark"><i class="fa fa-key"></i></span>
+            <input type="{{canShowPassword ? 'text' : 'password'}}" id="password" onpaste="return false;" class="dark-autofill" name="password" ng-model="auth.regUser.password" ng-minlength="8" ng-change="auth.checkStrength(auth.regUser.password)" required>
+            <span class="form-icon form-icon-dark" ng-click="auth.togglePasswordVisibility()">
+                <i ng-if="!canShowPassword" class="fa fa-eye pointer"></i>
+                <i ng-if="canShowPassword" class="fa fa-eye-slash pointer"></i>
+            </span>
             <label for="password">
                 <strong>Password-minlength:8 required</strong>
                 <span ng-style="{color: auth.color}">{{auth.message}}</span>
@@ -43,8 +46,11 @@
         </div>
         <!-- confirm password -->
         <div class="input-field align-left">
-            <input type="password" id="confirm_password" onpaste="return false;" class="dark-autofill" name="confirm_password" ng-model="auth.regUser.confirm_password" ng-minlength="8" compare-to="auth.regUser.password" required>
-            <span class="form-icon form-icon-dark"><i class="fa fa-check-circle"></i></span>
+            <input type="{{canShowConfirmPassword ? 'text' : 'password'}}" id="confirm_password" onpaste="return false;" class="dark-autofill" name="confirm_password" ng-model="auth.regUser.confirm_password" ng-minlength="8" compare-to="auth.regUser.password" required>
+            <span class="form-icon form-icon-dark" ng-click="auth.toggleConfirmPasswordVisibility()">
+                <i ng-if="!canShowConfirmPassword" class="fa fa-eye pointer"></i>
+                <i ng-if="canShowConfirmPassword" class="fa fa-eye-slash pointer"></i>
+            </span>
             <label for="confirm_password">Confirm Password *</label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.confirm_password.$error" ng-if="signupForm.confirm_password.$touched || signupForm.$submitted">
                 <p ng-message="compareTo">Passwords do not match</p>
