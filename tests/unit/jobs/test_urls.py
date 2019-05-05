@@ -1,9 +1,11 @@
 import os
+import responses
 import json
 import shutil
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.urlresolvers import reverse_lazy, resolve
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
@@ -154,7 +156,9 @@ class TestJobsUrls(BaseAPITestClass):
             resolver.view_name, "jobs:change_submission_data_and_visibility"
         )
 
+    @responses.activate
     def test_challenge_submisson_url(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={

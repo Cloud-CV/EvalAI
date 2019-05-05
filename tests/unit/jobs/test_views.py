@@ -1,10 +1,12 @@
 import collections
 import json
 import os
+import responses
 import shutil
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
@@ -28,7 +30,10 @@ from participants.models import ParticipantTeam, Participant
 
 
 class BaseAPITestClass(APITestCase):
+
+    @responses.activate
     def setUp(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.client = APIClient(enforce_csrf_checks=True)
 
         self.user = User.objects.create(
@@ -174,7 +179,9 @@ class BaseAPITestClass(APITestCase):
     def tearDown(self):
         shutil.rmtree("/tmp/evalai")
 
+    @responses.activate
     def test_challenge_submission_when_challenge_does_not_exist(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -195,7 +202,9 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    @responses.activate
     def test_challenge_submission_when_challenge_is_not_active(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -217,7 +226,9 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    @responses.activate
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -238,7 +249,9 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    @responses.activate
     def test_challenge_submission_when_challenge_phase_is_not_public(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -261,9 +274,11 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @responses.activate
     def test_challenge_submission_when_user_does_not_exist_in_allowed_emails(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -285,7 +300,9 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @responses.activate
     def test_challenge_submission_when_user_exist_in_allowed_emails(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -308,9 +325,11 @@ class BaseAPITestClass(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    @responses.activate
     def test_challenge_submission_when_user_does_not_exist_in_allowed_emails_and_is_host(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -329,9 +348,11 @@ class BaseAPITestClass(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    @responses.activate
     def test_challenge_submission_when_challenge_phase_is_private_and_user_is_host(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -351,9 +372,11 @@ class BaseAPITestClass(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    @responses.activate
     def test_challenge_submission_when_challenge_phase_is_private_and_user_is_not_host(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -378,7 +401,9 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @responses.activate
     def test_challenge_submission_when_participant_team_is_none(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -399,9 +424,11 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @responses.activate
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -421,7 +448,9 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @responses.activate
     def test_challenge_submission_when_status_and_file_is_not_submitted(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -442,7 +471,9 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    @responses.activate
     def test_challenge_submission_when_form_encoding_is_wrong(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -466,7 +497,9 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    @responses.activate
     def test_challenge_submission_when_status_is_not_correct(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -488,7 +521,9 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    @responses.activate
     def test_challenge_submission_for_successful_submission(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -507,7 +542,9 @@ class BaseAPITestClass(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    @responses.activate
     def test_challenge_submission_when_maximum_limit_exceeded(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -530,7 +567,9 @@ class BaseAPITestClass(APITestCase):
         self.challenge_phase.max_submissions = actual_maxinmum_submissions
         self.challenge_phase.save()
 
+    @responses.activate
     def test_challenge_submission_for_docker_based_challenges(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -576,7 +615,9 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             is_public=True,
         )
 
+    @responses.activate
     def test_challenge_submission_when_challenge_does_not_exist(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -593,7 +634,9 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    @responses.activate
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -610,7 +653,9 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    @responses.activate
     def test_challenge_submission_when_participant_team_is_none(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -627,9 +672,11 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @responses.activate
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -645,7 +692,9 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @responses.activate
     def test_get_challenge_submissions(self):
+        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
