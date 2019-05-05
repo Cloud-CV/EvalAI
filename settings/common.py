@@ -168,10 +168,9 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
-    'EXCEPTION_HANDLER': 'apps.base.utils.custom_exception_handler'
     "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute", "resend_email": "3/hour"},
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
-    "EXCEPTION_HANDLER": "apps.base.utils.custom_exception_handler",
+    "EXCEPTION_HANDLER": {"apps.base.utils.custom_exception_handler"},
 }
 
 # ALLAUTH SETTINGS
