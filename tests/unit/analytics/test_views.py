@@ -14,12 +14,12 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from analytics.serializers import ChallengeParticipantSerializer
 from challenges.models import Challenge, ChallengePhase
 from challenges.utils import get_challenge_model
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
+from participants.serializers import ChallengeParticipantSerializer
 
 
 class BaseAPITestClass(APITestCase):

@@ -36,6 +36,7 @@ from participants.serializers import (
     ParticipantCountSerializer,
     ParticipantTeamCount,
     ParticipantTeamCountSerializer,
+    ChallengeParticipantSerializer,
 )
 from .serializers import (
     ChallengePhaseSubmissionAnalytics,
@@ -44,7 +45,6 @@ from .serializers import (
     ChallengePhaseSubmissionCountSerializer,
     LastSubmissionTimestamp,
     LastSubmissionTimestampSerializer,
-    ChallengeParticipantSerializer,
 )
 
 
