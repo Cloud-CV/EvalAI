@@ -247,7 +247,7 @@
         };
 
         vm.downloadChallengeParticipantTeams = function() {
-            parameters.url = "analytics/challenge/" + vm.challengeId + "/download_all_participants/";
+            parameters.url = "analytics/challenges/" + vm.challengeId + "/download_all_participants/";
                 parameters.method = "GET";
                 parameters.callback = {
                     onSuccess: function(response) {
