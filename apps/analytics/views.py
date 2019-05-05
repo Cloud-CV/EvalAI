@@ -362,7 +362,6 @@ def download_all_participants(request, challenge_pk):
                 ]
             )
         return response
-
     else:
         response_data = {
             "error": "Sorry, you are not authorized to make this request"
