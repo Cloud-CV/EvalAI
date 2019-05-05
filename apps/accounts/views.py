@@ -6,19 +6,23 @@ from allauth.account.utils import send_email_confirmation
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import permissions, status
-from rest_framework.decorators import (api_view,
-                                       authentication_classes,
-                                       permission_classes,
-                                       throttle_classes,)
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+    throttle_classes,
+)
 from rest_framework.throttling import UserRateThrottle
-from rest_framework_expiring_authtoken.authentication import (ExpiringTokenAuthentication,)
+from rest_framework_expiring_authtoken.authentication import (
+    ExpiringTokenAuthentication,
+)
 
 from .permissions import HasVerifiedEmail
 
 from .throttles import ResendEmailThrottle
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((ExpiringTokenAuthentication,))
 def disable_user(request):
@@ -30,7 +34,7 @@ def disable_user(request):
     return Response(status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))

@@ -7,17 +7,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0006_changed_path_to_upload'),
-    ]
+    dependencies = [("challenges", "0006_changed_path_to_upload")]
 
     operations = [
         migrations.RenameModel(
-            old_name='TestEnvironment',
-            new_name='ChallengePhase',
+            old_name="TestEnvironment", new_name="ChallengePhase"
         ),
         migrations.AlterModelTable(
-            name='challengephase',
-            table='challenge_phase',
+            name="challengephase", table="challenge_phase"
         ),
     ]

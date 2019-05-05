@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('hosts', '0002_added_unique_attribute_in_team_name'),
-    ]
+    dependencies = [("hosts", "0002_added_unique_attribute_in_team_name")]
 
     operations = [
         migrations.AddField(
-            model_name='challengehostteam',
-            name='team_url',
-            field=models.CharField(default='', max_length=1000, null=True),
-        ),
+            model_name="challengehostteam",
+            name="team_url",
+            field=models.CharField(default="", max_length=1000, null=True),
+        )
     ]
