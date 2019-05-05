@@ -179,3 +179,33 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
     background-color: #ffaf4b !important;
 }
 
+#clockdiv{
+    margin-top: 25px;
+    font-family: sans-serif;
+    color: #fff;
+    display: inline-block;
+    font-weight: 50;
+    text-align: center;
+    font-size: 15px;
+}
+
+#clockdiv > div{
+    padding: 5px;
+    border-radius: 3px;
+
+    display: inline-block;
+}
+
+#clockdiv div > span{
+    padding: 8px;
+    border-radius: 3px;
+    background: #ff9800;
+    display: inline-block;
+}
+
+.smalltext{
+    padding-top: 5px;
+    font-size: 10px;
+    color: #9d9d9d;
+}
+

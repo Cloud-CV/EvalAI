@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment',];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment,) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -49,6 +49,8 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
+        vm.challengeEndTimeDifference = undefined;
+        vm.challengeEndTime = 0;
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -80,6 +82,32 @@
                 vm.isForumEnabled = details.enable_forum;
                 vm.forumURL = details.forum_url;
                 vm.cliVersion = details.cli_version;
+
+                vm.challengeEndTime = new Date(vm.page.end_date).getTime();
+                var now = new Date().getTime();
+                var oneMonthTime = 30 * 60 * 60 * 24;
+                var challengeEndTimeDifference = vm.challengeEndTime - now;
+                var remaining_seconds = Math.floor(challengeEndTimeDifference % (1000 * 60) / 1000);
+                if (remaining_seconds <= oneMonthTime) {
+                    // Update the count down every 1 second
+                    $interval(function() {
+                        now = new Date().getTime();
+                        challengeEndTimeDifference = vm.challengeEndTime - now;
+                        var days = Math.floor(challengeEndTimeDifference / (1000 * 60 * 60 * 24));
+                        var hours = Math.floor((challengeEndTimeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        var minutes = Math.floor((challengeEndTimeDifference % (1000 * 60 * 60)) / (1000 * 60));
+                        var seconds = Math.floor((challengeEndTimeDifference % (1000 * 60)) / 1000);
+
+                        $scope.days = days < 10 ? '0'+ days : days;
+                        $scope.hours = hours < 10 ? '0'+ hours : hours;
+                        $scope.minutes = minutes < 10 ? '0'+ minutes : minutes;
+                        $scope.seconds = seconds < 10 ? '0'+ seconds : seconds;
+
+                        if (remaining_seconds < 0) {
+                            $scope.countdown = "Closed";
+                        }
+                    }, 1000);
+                }
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -267,6 +295,10 @@
         };
 
         utilities.sendRequest(parameters);
+
+        // $timeout(function() {
+            
+        // }, 2000);
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge

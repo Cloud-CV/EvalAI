@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$window'];
+    ChallengeListCtrl.$inject = ['utilities', '$window', '$scope', '$interval'];
 
-    function ChallengeListCtrl(utilities, $window) {
+    function ChallengeListCtrl(utilities, $window, $scope, $interval) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -21,6 +21,35 @@
         vm.noneCurrentChallenge = false;
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
+        
+
+//         // Set the date we're counting down to
+// var countDownDate = new Date("Jan 5, 2021 15:37:25").getTime();
+
+// // Update the count down every 1 second
+// var x = $interval(function() {
+//   // Get todays date and time
+//   var now = new Date().getTime();
+    
+//   // Find the distance between now and the count down date
+//   var distance = countDownDate - now;
+    
+//   // Time calculations for days, hours, minutes and seconds
+//   var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+//   var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+//   var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+//   var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+//   // Output the result in an element with id="demo"
+//   $scope.countdown = days + "d " + hours + "h "
+//   + minutes + "m " + seconds + "s ";
+    
+//   // If the count down is over, write some text 
+//   if (distance < 0) {
+//     clearInterval(x);
+//     $scope.countdown = "EXPIRED";
+//   }
+// }, 1000);
 
         // calls for ongoing challneges
         vm.challengeCreator = {};
@@ -45,6 +74,27 @@
                 }
 
                 for (var i in vm.currentList) {
+                    // var end_time = new Date(vm.currentList[i].end_date).getTime();
+                    // var now = new Date().getTime();
+                    // var one_month_time = 30 * 60 * 60 * 24;
+                    // var difference = end_time - now;
+                    // var remaining_seconds = difference % (1000 * 60) / 1000;
+                    // if (remaining_seconds <= one_month_time) {
+                    //     // Update the count down every 1 second
+                    //     $interval(function() {
+                    //         var days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                    //         var hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    //         var minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                    //         var seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                    //         $scope.countdown = days + "d " + hours + "h "
+                    //         + minutes + "m " + seconds + "s ";
+
+                    //         if (remaining_seconds < 0) {
+                    //             $scope.countdown = "Closed";
+                    //         }
+                    //     }, 1000);
+                    // }
 
                     var descLength = vm.currentList[i].description.length;
                     if (descLength >= 50) {
