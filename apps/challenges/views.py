@@ -290,6 +290,12 @@ def add_participant_team_to_challenge(
     )
 
     for user in participant_team_user_ids:
+        if EmailAddress.objects.filter(user=user, verified=False).exists():
+            message = "Sorry, all team members must be verified through Email before participating."
+            response_data = {"error": message}
+            return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    for user in participant_team_user_ids:
         if has_user_participated_in_challenge(user, challenge_pk):
             response_data = {
                 "error": "Sorry, other team member(s) have already participated in the Challenge."
