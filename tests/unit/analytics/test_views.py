@@ -988,9 +988,9 @@ class GetParticipantTeamsTest(BaseAPITestClass):
         expected_participant_teams = csv.writer(expected)
         expected_participant_teams.writerow(
             [
-                "Participant Team",
+                "Team Name",
                 "Team Members",
-                "Team Members Email ID",
+                "Email Id",
             ]
         )
         challenge = get_challenge_model(self.challenge.pk)
