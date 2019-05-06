@@ -1,0 +1,23 @@
+<section class="ev-md-container text-center rm-overflow-y">
+    <div class="row">
+        <div class="col s12 m12">
+            <div class="ev-md-container ev-card-body update-profile-card">
+                <form name="updateChallengeHostTeamDataForm" ng-submit="challengeHostTeams.updateChallengeHostTeamData(updateChallengeHostTeamDataForm.$valid)">
+                    <div class="pass-title">Update Host Team</div>
+                    <div class="input-field align-left">
+                        <input id="teamName" name="teamName" type="text" class="text-dark-black dark-autofill w-400" ng-model="challengeHostTeams.team.TeamName" value="{{challengeHostTeams.team.TeamName}}" focus-if="challengeHostTeams.team.TeamName" required>
+                        <label class="active" for="teamName">Team Name</label>
+                    </div>
+                    <div class="input-field align-left">
+                        <input id="teamUrl" name="teamUrl" type="text" class="text-dark-black dark-autofill w-400" ng-model="challengeHostTeams.team.TeamURL" value="{{challengeHostTeams.team.TeamURL}}" focus-if="challengeHostTeams.team.TeamURL">
+                        <label for="teamUrl">Team URL (Optional)</label>
+                    </div>
+                    <ul class="inline-list pointer">
+                        <li><a class="dark-link" type="button" ng-click="challengeHostTeams.updateChallengeHostTeamData(false)"><strong>Cancel </strong></a></li>
+                        <li><button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-disabled="updateChallengeHostTeamDataForm.$pristine" type="submit" value="Submit">Submit </button></li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
