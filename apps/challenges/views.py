@@ -517,9 +517,9 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge_phase = ChallengePhase.objects.get(pk=pk)
+        challenge_phase = ChallengePhase.objects.get(challenge=challenge, pk=pk)
     except ChallengePhase.DoesNotExist:
-        response_data = {"error": "ChallengePhase does not exist"}
+        response_data = {"error": "Challenge phase {} does not exist for challenge {}".format(pk, challenge.pk)}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == "GET":
@@ -538,14 +538,14 @@ def challenge_phase_detail(request, challenge_pk, pk):
         if request.method == "PATCH":
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
-                data=request.data,
+                data=request.data.copy(),
                 context={"challenge": challenge},
                 partial=True,
             )
         else:
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
-                data=request.data,
+                data=request.data.copy(),
                 context={"challenge": challenge},
             )
         if serializer.is_valid():
@@ -912,12 +912,19 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     ]
     """
     if leaderboard_schema:
-        if "default_order_by" not in leaderboard_schema[0].get("schema"):
-            message = (
-                "There is no 'default_order_by' key in leaderboard "
-                "schema. Please add it and then try again!"
-            )
-            response_data = {"error": message}
+        if 'schema' not in leaderboard_schema[0]:
+            message = ('There is no leaderboard schema in the YAML '
+                       'configuration file. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+        if 'default_order_by' not in leaderboard_schema[0].get('schema'):
+            message = ('There is no \'default_order_by\' key in leaderboard '
+                       'schema. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         if "labels" not in leaderboard_schema[0].get("schema"):
             message = (
