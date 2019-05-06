@@ -426,10 +426,11 @@
                     }
                 }
                 for(var i=0;i<vm.phases.results.length;i++){
-                    var qwerty=new Date(vm.phases.results[i].start_date).toString();
-                    vm.phases.results[i].start_zone=qwerty.split('(')[1].split(')')[0];
-                    var qwerty=new Date(vm.phases.results[i].end_date).toString();
-                    vm.phases.results[i].end_zone=qwerty.split('(')[1].split(')')[0];
+                    var timezone=moment.tz.guess();
+                    var offset=new Date(vm.phases.results[i].start_date).getTimezoneOffset();
+                    vm.phases.results[i].start_zone= moment.tz.zone(timezone).abbr(offset);
+                    offset=new Date(vm.phases.results[i].end_date).getTimezoneOffset();
+                    vm.phases.results[i].end_zone=moment.tz.zone(timezone).abbr(offset);
                 }
                 
                 // navigate to challenge page
