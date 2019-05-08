@@ -179,33 +179,67 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
     background-color: #ffaf4b !important;
 }
 
-#clockdiv{
-    margin-top: 25px;
-    font-family: sans-serif;
-    color: #fff;
-    display: inline-block;
-    font-weight: 50;
-    text-align: center;
-    font-size: 15px;
+.flip-clock-wrapper {
+    margin: 0px;
 }
 
-#clockdiv > div{
-    padding: 5px;
+.flip-clock-wrapper ul {
+    width: 22px;
+    height: 32px;
+    margin: 0 2px;
+}
+
+.flip-clock-wrapper ul li {
+    line-height: 34px;
+}
+.flip-clock-wrapper ul li a div div.inn {
     border-radius: 3px;
-
-    display: inline-block;
+    font-size: 25px;
+}
+.flip-clock-wrapper ul li a div.down {
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+.flip-clock-wrapper ul li a div.up:after {
+    top: 38px;height: 2px;
 }
 
-#clockdiv div > span{
-    padding: 8px;
-    border-radius: 3px;
-    background: #ff9800;
-    display: inline-block;
+/* Adjust the position of the top's dot */
+.flip-clock-dot.top {
+    top: 10px;
 }
 
-.smalltext{
-    padding-top: 5px;
-    font-size: 10px;
-    color: #9d9d9d;
+/* Adjust the position of the bottom's dot */
+.flip-clock-dot.bottom {
+    bottom: 0;
+    top: 25px;
+}
+
+/* Adjust the size of both dots */
+.flip-clock-dot{
+    width: 5px;
+    height: 5px;
+}
+
+/* Adjust the space between the wrappers */
+.flip-clock-divider {
+    width: 17px;
+    height: 45px;
+}
+
+.flip-clock-divider.days .flip-clock-label {
+    right: -37px;
+}
+
+.flip-clock-divider.hours .flip-clock-label {
+    right: -38px;
+}
+
+.flip-clock-divider.minutes .flip-clock-label {
+    right: -42px;
+}
+
+.flip-clock-divider.seconds .flip-clock-label {
+    right: -45px;
 }
 

@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col s12 m3 l2">
                 <div class="image-container">
-                    <img src="{{challenge.page.image}}" width="100%">
+                    <img src="{{challenge.page.image}}" id="challenge-logo" width="100%">
                 </div>
             </div>
             <div class="col m6 l7">
@@ -11,6 +11,7 @@
                     <p>
                         <span class="fs-18">
                             <strong>
+                                <flip-clock></flip-clock>
                                 {{challenge.page.title}}
                             </strong>
                         </span>
@@ -47,24 +48,6 @@
             </div>
             <div class="col m3 l3 align-right">
                 <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.starChallenge()" ng-init="challenge.isStarred()"><i class="fa fa-star star"></i> {{challenge.data}}&nbsp;&nbsp;{{challenge.count}}</button>
-                <div id="clockdiv">
-                    <div>
-                        <span class="days">{{days}}</span>
-                        <div class="smalltext">Days</div>
-                    </div>
-                    <div>
-                        <span class="hours">{{hours}}</span>
-                        <div class="smalltext">Hours</div>
-                    </div>
-                    <div>
-                        <span class="minutes">{{minutes}}</span>
-                        <div class="smalltext">Minutes</div>
-                    </div>
-                    <div>
-                        <span class="seconds">{{seconds}}</span>
-                        <div class="smalltext">Seconds</div>
-                    </div>
-                </div>
             </div>
         </div>
         <div class="row rm-row-bot">

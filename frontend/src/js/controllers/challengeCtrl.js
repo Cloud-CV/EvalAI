@@ -2,6 +2,7 @@
 (function() {
 
     'use strict';
+    var countDownTimer;
     angular
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
@@ -49,8 +50,6 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
-        vm.challengeEndTimeDifference = undefined;
-        vm.challengeEndTime = 0;
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -83,30 +82,15 @@
                 vm.forumURL = details.forum_url;
                 vm.cliVersion = details.cli_version;
 
-                vm.challengeEndTime = new Date(vm.page.end_date).getTime();
+                var challengeEndTime = new Date(vm.page.end_date).getTime();
                 var now = new Date().getTime();
+                console.log(new Date());
                 var oneMonthTime = 30 * 60 * 60 * 24;
-                var challengeEndTimeDifference = vm.challengeEndTime - now;
-                var remaining_seconds = Math.floor(challengeEndTimeDifference % (1000 * 60) / 1000);
+                var remaining_seconds = Math.floor((challengeEndTime - now) / 1000) - 19800;
                 if (remaining_seconds <= oneMonthTime) {
-                    // Update the count down every 1 second
-                    $interval(function() {
-                        now = new Date().getTime();
-                        challengeEndTimeDifference = vm.challengeEndTime - now;
-                        var days = Math.floor(challengeEndTimeDifference / (1000 * 60 * 60 * 24));
-                        var hours = Math.floor((challengeEndTimeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        var minutes = Math.floor((challengeEndTimeDifference % (1000 * 60 * 60)) / (1000 * 60));
-                        var seconds = Math.floor((challengeEndTimeDifference % (1000 * 60)) / 1000);
-
-                        $scope.days = days < 10 ? '0'+ days : days;
-                        $scope.hours = hours < 10 ? '0'+ hours : hours;
-                        $scope.minutes = minutes < 10 ? '0'+ minutes : minutes;
-                        $scope.seconds = seconds < 10 ? '0'+ seconds : seconds;
-
-                        if (remaining_seconds < 0) {
-                            $scope.countdown = "Closed";
-                        }
-                    }, 1000);
+                    countDownTimer = remaining_seconds;
+                } else {
+                    countDownTimer = 'moreThanOneMonth';
                 }
 
                 if (vm.page.image === null) {
@@ -1527,7 +1511,7 @@
 
         // Edit Evaluation Script
         vm.evaluationScriptDialog = function(ev) {
-        	vm.tempEvaluationCriteria = vm.page.evaluation_details;
+            vm.tempEvaluationCriteria = vm.page.evaluation_details;
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
@@ -1831,5 +1815,29 @@
 
         
     }
+
+    angular.module('evalai')
+        .directive('flipClock', [function() {
+            return {
+                replace: true,
+                template: '<div></div>',
+                restrict: 'E',
+                link: function(scope, element) {
+                    setTimeout(function() {
+                        if (countDownTimer <= 0 || countDownTimer == 'moreThanOneMonth') {
+                            countDownTimer = 0;
+                            element.css("display", "none");
+                        }else {
+                            angular.element('#challenge-logo').css('height', '130px');
+                        }
+
+                        element.FlipClock(countDownTimer, {
+                            clockFace: 'DailyCounter',
+                            countdown: true
+                        });
+                    }, 2000);
+                }
+            };
+        }]);
 
 })();

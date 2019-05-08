@@ -11,11 +11,12 @@
   "dependencies": {
     "angular-mocks": "^1.6.1",
     "autoprefixer": "^8.2.0",
+    "connect-modrewrite": "^0.10.2",
     "del": "^3.0.0",
     "eslint": "^4.19.1",
     "eslint-config-angular": "^0.5.0",
     "eslint-plugin-angular": "^3.3.0",
-    "connect-modrewrite": "^0.10.2",
+    "flipclock": "^0.10.5",
     "fs": "0.0.1-security",
     "gulp": "^4.0.0",
     "gulp-clean-css": "^3.9.3",
