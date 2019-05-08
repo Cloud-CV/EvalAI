@@ -179,6 +179,7 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
     background-color: #ffaf4b !important;
 }
 
+/* CountDown Timer CSS starts here */
 .flip-clock-wrapper {
     margin: 0px;
 }
@@ -192,41 +193,46 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
 .flip-clock-wrapper ul li {
     line-height: 34px;
 }
+
 .flip-clock-wrapper ul li a div div.inn {
     border-radius: 3px;
     font-size: 25px;
 }
+
 .flip-clock-wrapper ul li a div.down {
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
 }
+
 .flip-clock-wrapper ul li a div.up:after {
-    top: 38px;height: 2px;
+    top: 38px;
+    height: 2px;
 }
 
-/* Adjust the position of the top's dot */
+/* position of the top's dot */
 .flip-clock-dot.top {
     top: 10px;
 }
 
-/* Adjust the position of the bottom's dot */
+/* position of the bottom's dot */
 .flip-clock-dot.bottom {
     bottom: 0;
     top: 25px;
 }
 
-/* Adjust the size of both dots */
+/* size of both dots */
 .flip-clock-dot{
     width: 5px;
     height: 5px;
 }
 
-/* Adjust the space between the wrappers */
+/* space between the wrappers */
 .flip-clock-divider {
     width: 17px;
     height: 45px;
 }
 
+/* days, hours, minutes & seconds text */
 .flip-clock-divider.days .flip-clock-label {
     right: -37px;
 }
@@ -242,4 +248,5 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
 .flip-clock-divider.seconds .flip-clock-label {
     right: -45px;
 }
+/* CountDown Timer CSS ends here */
 

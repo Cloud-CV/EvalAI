@@ -7,9 +7,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment',];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment,) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -84,7 +84,6 @@
 
                 var challengeEndTime = new Date(vm.page.end_date).getTime();
                 var now = new Date().getTime();
-                console.log(new Date());
                 var oneMonthTime = 30 * 60 * 60 * 24;
                 var remaining_seconds = Math.floor((challengeEndTime - now) / 1000) - 19800;
                 if (remaining_seconds <= oneMonthTime) {
@@ -279,10 +278,6 @@
         };
 
         utilities.sendRequest(parameters);
-
-        // $timeout(function() {
-            
-        // }, 2000);
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
