@@ -1696,6 +1696,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__participant_team__team_name": self.submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
+                    "error": None,
+                    "filtering_error": 0,
                     "result": self.expected_results,
                     "filtering_score": self.filtering_score,
                     "leaderboard__schema": {
@@ -1771,6 +1773,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__participant_team__team_url": self.private_submission.participant_team.team_url,
                     "challenge_phase_split": self.private_challenge_phase_split.id,
                     "result": self.expected_results,
+                    "error": None,
+                    "filtering_error": 0,
                     "filtering_score": self.filtering_score,
                     "leaderboard__schema": {
                         "default_order_by": "score",
