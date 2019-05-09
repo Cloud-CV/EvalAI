@@ -1,5 +1,8 @@
+import csv
+
 from datetime import timedelta
 
+from django.http import HttpResponse
 from django.utils import timezone
 
 from rest_framework import permissions, status
@@ -16,9 +19,9 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-
 from challenges.permissions import IsChallengeCreator
 from challenges.utils import get_challenge_model, get_challenge_phase_model
+from hosts.utils import is_user_a_host_of_challenge
 from jobs.models import Submission
 from jobs.serializers import (
     LastSubmissionDateTime,
@@ -33,6 +36,7 @@ from participants.serializers import (
     ParticipantCountSerializer,
     ParticipantTeamCount,
     ParticipantTeamCountSerializer,
+    ChallengeParticipantSerializer,
 )
 from .serializers import (
     ChallengePhaseSubmissionAnalytics,
@@ -316,4 +320,50 @@ def get_challenge_phase_submission_analysis(
         return Response(response_data, status=status.HTTP_200_OK)
     except ValueError:
         response_data = {"error": "Bad request. Please try again later!"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
+)
+@authentication_classes((ExpiringTokenAuthentication,))
+def download_all_participants(request, challenge_pk):
+    """
+        Returns the List of Participant Teams and its details in csv format
+    """
+    if is_user_a_host_of_challenge(
+            user=request.user, challenge_pk=challenge_pk
+    ):
+        challenge = get_challenge_model(challenge_pk)
+        participant_teams = challenge.participant_teams.all().order_by("-team_name")
+        teams = ChallengeParticipantSerializer(participant_teams, many=True, context={"request": request})
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename=participant_teams_{0}.csv".format(challenge_pk)
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "Team Name",
+                "Team Members",
+                "Email Id",
+            ]
+        )
+        for team in teams.data:
+            writer.writerow(
+                [
+                    team["team_name"],
+                    ",".join(
+                        team["team_members"]
+                    ),
+                    ",".join(
+                        team["team_members_email_ids"]
+                    ),
+                ]
+            )
+        return response
+    else:
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

@@ -245,6 +245,26 @@
                 vm.isTeamSelected = false;
             }
         };
+
+        vm.downloadChallengeParticipantTeams = function() {
+            parameters.url = "analytics/challenges/" + vm.challengeId + "/download_all_participants/";
+                parameters.method = "GET";
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        var anchor = angular.element('<a/>');
+                        anchor.attr({
+                            href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                            download: 'participant_teams_' + vm.challengeId + '.csv'
+                        })[0].click();
+                    },
+                    onError: function(response) {
+                        var details = response.data;
+                        $rootScope.notify('error', details.error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+        };
     }
 
 })();

@@ -36,6 +36,8 @@
         vm.isValid = {};
         vm.confirmMsg = '';
         $rootScope.loaderTitle = '';
+        $rootScope.canShowPassword = false;
+        $rootScope.canShowConfirmPassword = false;
         vm.loginContainer = angular.element('.auth-container');
 
         // show loader
@@ -52,6 +54,16 @@
             vm.loginContainer.removeClass('low-screen');
         };
 
+        // toggle password visibility
+        vm.togglePasswordVisibility = function() {
+            $rootScope.canShowPassword = !$rootScope.canShowPassword;
+        };
+
+        // toggle confirm password visibility
+        vm.toggleConfirmPasswordVisibility = function() {
+            $rootScope.canShowConfirmPassword = !$rootScope.canShowConfirmPassword;
+        };
+
         vm.resetForm = function() {
             // getUser for signup
             vm.regUser = {};
@@ -66,6 +78,10 @@
 
             //reset form when link sent for reset password
             vm.isMail = true;
+
+            // reset the eye icon and type to password 
+            $rootScope.canShowPassword = false;
+            $rootScope.canShowConfirmPassword = false;
         };
 
         // Function to signup
