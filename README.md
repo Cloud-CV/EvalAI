@@ -61,6 +61,34 @@ npm install
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
+### Backend for localhost:
+
+Setting up EvalAI on your local machine is really easy. You can setup EvalAI using docker:
+The steps are:
+
+1. Install [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and [docker-compose](https://docs.docker.com/compose/install/) on your machine.
+
+2. Get the source code on to your machine via git.
+
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    ```
+
+3. Build and run the Docker containers. This might take a while.
+
+    ```
+    docker-compose up --build
+    ```
+
+4. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
+    
+    **SUPERUSER-** username: `admin` password: `password`  
+    **HOST USER-** username: `host` password: `password`  
+    **PARTICIPANT USER-** username: `participant` password: `password`
+
+If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
+
+
 ### For deploying with [Surge](https://surge.sh/):
 
 Surge will automatically generate deployment link whenever a pull request passes Travis CI. 
