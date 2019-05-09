@@ -8,6 +8,7 @@ import { AuthService } from '../../../services/auth.service';
 import { WindowService } from '../../../services/window.service';
 import { ApiService } from '../../../services/api.service';
 import { HttpClientModule } from '@angular/common/http';
+import { EndpointsService } from '../../../services/endpoints.service';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;
@@ -19,7 +20,8 @@ describe('SignupComponent', () => {
         GlobalService,
         AuthService,
         WindowService,
-        ApiService
+        ApiService,
+        EndpointsService
       ],
       imports: [ RouterTestingModule, HttpClientModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
