@@ -22,7 +22,8 @@
       "angular-moment",
       "clipboard",
       "ngclipboard",
-      "moment-picker"
+      "moment-picker",
+      "flipclock"
     ]
   },
   "paths": {
@@ -47,6 +48,7 @@
        "angular-moment": "bower_components/angular-moment/angular-moment.js",
        "clipboard": "bower_components/clipboard/dist/clipboard.min.js",
        "ngclipboard": "bower_components/ngclipboard/dist/ngclipboard.min.js",
-       "moment-picker": "bower_components/angular-moment-picker/dist/angular-moment-picker.js"
+       "moment-picker": "bower_components/angular-moment-picker/dist/angular-moment-picker.js",
+       "flipclock": "bower_components/flipclock/compiled/flipclock.js"
      }
 }

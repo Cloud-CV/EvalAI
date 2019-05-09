@@ -1822,7 +1822,7 @@
                         if (countDownTimer <= 0 || countDownTimer == 'moreThanOneMonth') {
                             countDownTimer = 0;
                             element.css("display", "none");
-                        }else {
+                        } else {
                             angular.element('#challenge-logo').css('height', '130px');
                         }
 
