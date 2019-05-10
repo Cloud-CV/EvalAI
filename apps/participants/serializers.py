@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from rest_framework import serializers
 
+from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
 from .models import Participant, ParticipantTeam
 
@@ -145,3 +146,54 @@ class ParticipantCount(object):
 
 class ParticipantCountSerializer(serializers.Serializer):
     participant_count = serializers.IntegerField()
+
+
+class ChallengeParticipantSerializer(serializers.Serializer):
+    team_name = serializers.SerializerMethodField()
+    team_members = serializers.SerializerMethodField()
+    team_members_email_ids = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Challenge
+        fields = (
+            "team_name",
+            "team_members",
+            "team_members_email_ids",
+        )
+
+    def get_team_name(self, obj):
+        return obj.team_name
+
+    def get_team_members(self, obj):
+        try:
+            participant_team = ParticipantTeam.objects.get(
+                team_name=obj.team_name
+            )
+        except ParticipantTeam.DoesNotExist:
+            return "Participant team does not exist"
+
+        participant_ids = Participant.objects.filter(
+            team=participant_team
+        ).values_list("user_id", flat=True)
+        return list(
+            User.objects.filter(id__in=participant_ids).values_list(
+                "username", flat=True
+            )
+        )
+
+    def get_team_members_email_ids(self, obj):
+        try:
+            participant_team = ParticipantTeam.objects.get(
+                team_name=obj.team_name
+            )
+        except ParticipantTeam.DoesNotExist:
+            return "Participant team does not exist"
+
+        participant_ids = Participant.objects.filter(
+            team=participant_team
+        ).values_list("user_id", flat=True)
+        return list(
+            User.objects.filter(id__in=participant_ids).values_list(
+                "email", flat=True
+            )
+        )
