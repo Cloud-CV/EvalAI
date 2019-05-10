@@ -1112,7 +1112,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     except:  # noqa: E722
         try:
             if response_data:
-                response_data = {"error": list(response_data.values())[0]}
+                response_data = {"error": response_data.values()[0]}
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
