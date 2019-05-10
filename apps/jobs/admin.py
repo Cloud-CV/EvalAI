@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class SubmissionAdmin(ImportExportTimeStampedAdmin):
     actions = ["submit_job_to_worker"]
     list_display = (
+        "id",
         "participant_team",
         "get_challenge_name_and_id",
         "challenge_phase",
