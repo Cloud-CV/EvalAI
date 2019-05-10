@@ -101,7 +101,35 @@
                     onSuccess: function(response) {
                         var status = response.status;
                         var details = response.data;
+                        parameters.url = 'analytics/challenge/' + vm.challengeId + '/team/count';
+                        parameters.method = 'GET';
+                        parameters.token = userKey;
+                        parameters.callback = {
+                            onSuccess: function(response) {
+                                var status = response.status;
+                                var details = response.data;
+                                if (status == 200) {
+                                    vm.totalChallengeTeams = details.participant_team_count;
+                                }
+                            },
+                            onError: function(response) {
+                                var status = response.status;
+                                var error = response.data;
+                                if (status == 403) {
+                                    vm.error = error;
 
+                                    // navigate to permissions denied page
+                                    $state.go('web.permission-denied');
+                                } else if (status == 401) {
+                                    alert("Timeout, Please login again to continue!");
+                                    utilities.resetStorage();
+                                    $state.go("auth.login");
+                                    $rootScope.isAuth = false;
+
+                                }
+                            }
+                        };
+                        utilities.sendRequest(parameters);
 
                         if (status === 200) {
                             vm.currentPhase = details.results;
@@ -216,6 +244,26 @@
             } else {
                 vm.isTeamSelected = false;
             }
+        };
+
+        vm.downloadChallengeParticipantTeams = function() {
+            parameters.url = "analytics/challenges/" + vm.challengeId + "/download_all_participants/";
+                parameters.method = "GET";
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        var anchor = angular.element('<a/>');
+                        anchor.attr({
+                            href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                            download: 'participant_teams_' + vm.challengeId + '.csv'
+                        })[0].click();
+                    },
+                    onError: function(response) {
+                        var details = response.data;
+                        $rootScope.notify('error', details.error);
+                    }
+                };
+                utilities.sendRequest(parameters);
         };
     }
 

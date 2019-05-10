@@ -7,24 +7,22 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('jobs', '0003_added_method_name_field'),
-    ]
+    dependencies = [("jobs", "0003_added_method_name_field")]
 
     operations = [
         migrations.AddField(
-            model_name='submission',
-            name='method_description',
+            model_name="submission",
+            name="method_description",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='submission',
-            name='project_url',
+            model_name="submission",
+            name="project_url",
             field=models.CharField(max_length=1000, null=True),
         ),
         migrations.AddField(
-            model_name='submission',
-            name='publication_url',
+            model_name="submission",
+            name="publication_url",
             field=models.CharField(max_length=1000, null=True),
         ),
     ]
