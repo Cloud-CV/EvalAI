@@ -1047,7 +1047,7 @@ def get_submission_by_pk_or_team_name(request, challenge_pk, challenge_phase_pk,
     paginator, result_page = paginated_queryset(submissions, request)
     try:
         serializer = ChallengeSubmissionManagementSerializer(
-                result_page, many=True, context={'request': request})
+            result_page, many=True, context={'request': request})
         response_data = serializer.data
         return paginator.get_paginated_response(response_data)
     except:
