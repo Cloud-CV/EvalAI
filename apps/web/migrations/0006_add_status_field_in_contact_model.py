@@ -8,13 +8,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('web', '0005_modified_default_attribute_of_visible_field_to_false'),
+        ("web", "0005_modified_default_attribute_of_visible_field_to_false")
     ]
 
     operations = [
         migrations.AddField(
-            model_name='contact',
-            name='status',
-            field=models.CharField(choices=[('Pending', 'Pending'), ('Resolved', 'Resolved')], default='Pending', max_length=30),
-        ),
+            model_name="contact",
+            name="status",
+            field=models.CharField(
+                choices=[("Pending", "Pending"), ("Resolved", "Resolved")],
+                default="Pending",
+                max_length=30,
+            ),
+        )
     ]

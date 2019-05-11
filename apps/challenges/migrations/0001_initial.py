@@ -10,47 +10,102 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ('hosts', '0001_initial'),
-    ]
+    dependencies = [("hosts", "0001_initial")]
 
     operations = [
         migrations.CreateModel(
-            name='Challenge',
+            name="Challenge",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('modified_at', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(max_length=100)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('terms_and_conditions', models.TextField(blank=True, null=True)),
-                ('submission_guidelines', models.TextField(blank=True, null=True)),
-                ('evaluation_details', models.TextField(blank=True, null=True)),
-                ('image', models.ImageField(blank=True, null=True, upload_to='logos', verbose_name='Logo')),
-                ('start_date', models.DateTimeField(blank=True, null=True, verbose_name='Start Date (UTC)')),
-                ('end_date', models.DateTimeField(blank=True, null=True, verbose_name='End Date (UTC)')),
-                ('published', models.BooleanField(default=False, verbose_name='Publicly Available')),
-                ('enable_forum', models.BooleanField(default=True)),
-                ('anonymous_leaderboard', models.BooleanField(default=False)),
-                ('creator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='challenge_creator', to='hosts.ChallengeHostTeam')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("modified_at", models.DateTimeField(auto_now=True)),
+                ("title", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True, null=True)),
+                (
+                    "terms_and_conditions",
+                    models.TextField(blank=True, null=True),
+                ),
+                (
+                    "submission_guidelines",
+                    models.TextField(blank=True, null=True),
+                ),
+                (
+                    "evaluation_details",
+                    models.TextField(blank=True, null=True),
+                ),
+                (
+                    "image",
+                    models.ImageField(
+                        blank=True,
+                        null=True,
+                        upload_to="logos",
+                        verbose_name="Logo",
+                    ),
+                ),
+                (
+                    "start_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Start Date (UTC)"
+                    ),
+                ),
+                (
+                    "end_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="End Date (UTC)"
+                    ),
+                ),
+                (
+                    "published",
+                    models.BooleanField(
+                        default=False, verbose_name="Publicly Available"
+                    ),
+                ),
+                ("enable_forum", models.BooleanField(default=True)),
+                ("anonymous_leaderboard", models.BooleanField(default=False)),
+                (
+                    "creator",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="challenge_creator",
+                        to="hosts.ChallengeHostTeam",
+                    ),
+                ),
             ],
-            options={
-                'db_table': 'challenge',
-            },
+            options={"db_table": "challenge"},
         ),
         migrations.CreateModel(
-            name='Phase',
+            name="Phase",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('modified_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField()),
-                ('leaderboard_public', models.BooleanField(default=False)),
-                ('challenge', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='challenges.Challenge')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("modified_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField()),
+                ("leaderboard_public", models.BooleanField(default=False)),
+                (
+                    "challenge",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="challenges.Challenge",
+                    ),
+                ),
             ],
-            options={
-                'db_table': 'challenge_phase',
-            },
+            options={"db_table": "challenge_phase"},
         ),
     ]

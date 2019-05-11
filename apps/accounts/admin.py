@@ -11,11 +11,21 @@ from rest_framework.authtoken.models import Token
 class UserResource(resources.ModelResource):
     class Meta:
         model = User
-        fields = ('id', 'date_joined', 'email', 'first_name', 'last_login', 'last_name', 'staff_status', 'username',)
+        fields = (
+            "id",
+            "date_joined",
+            "email",
+            "first_name",
+            "last_login",
+            "last_name",
+            "staff_status",
+            "username",
+        )
 
 
 class UserAdmin(ExportMixin, UserAdmin):
     resource_class = UserResource
+
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
@@ -28,8 +38,9 @@ class TokenResource(resources.ModelResource):
 
 class TokenAdmin(TokenAdmin):
     resource_class = TokenResource
-    list_filter = ('created',)
-    search_fields = ('user__username',)
+    list_filter = ("created",)
+    search_fields = ("user__username",)
+
 
 admin.site.unregister(Token)
 admin.site.register(Token, TokenAdmin)

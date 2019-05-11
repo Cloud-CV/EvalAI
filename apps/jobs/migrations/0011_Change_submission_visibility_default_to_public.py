@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('jobs', '0010_Add_blank_in_submission_metadata'),
-    ]
+    dependencies = [("jobs", "0010_Add_blank_in_submission_metadata")]
 
     operations = [
         migrations.AlterField(
-            model_name='submission',
-            name='is_public',
+            model_name="submission",
+            name="is_public",
             field=models.BooleanField(default=True),
-        ),
+        )
     ]
