@@ -49,6 +49,19 @@ class BaseAPITestClass(APITestCase):
             user=self.user, email="user@test.com", primary=True, verified=True
         )
 
+        self.participant_user = User.objects.create(
+            username="someparticipantuser",
+            email="participantuser@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.participant_user,
+            email="participantuser@test.com",
+            primary=True,
+            verified=True,
+        )
+
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
@@ -67,6 +80,10 @@ class BaseAPITestClass(APITestCase):
             end_date=timezone.now() + timedelta(days=1),
             approved_by_admin=False,
         )
+        self.challenge.slug = "{}-{}".format(
+            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        )[:199]
+        self.challenge.save()
 
         self.challenge_host = ChallengeHost.objects.create(
             user=self.user,
@@ -145,6 +162,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "is_docker_based": self.challenge.is_docker_based,
                 "slug": self.challenge.slug,
                 "max_docker_image_size": self.challenge.max_docker_image_size,
+                "cli_version": self.challenge.cli_version,
             }
         ]
 
@@ -250,6 +268,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "is_docker_based": self.challenge.is_docker_based,
             "slug": self.challenge.slug,
             "max_docker_image_size": self.challenge.max_docker_image_size,
+            "cli_version": self.challenge.cli_version,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -315,8 +334,11 @@ class GetParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug,
+            "slug": "{}-{}".format(
+                new_title.replace(" ", "-").lower(), self.challenge.pk
+            )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
+            "cli_version": self.challenge.cli_version,
         }
         response = self.client.put(
             self.url, {"title": new_title, "description": new_description}
@@ -407,8 +429,12 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug,
+            "slug": "{}-{}".format(
+                self.partial_update_challenge_title.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
+            "cli_version": self.challenge.cli_version,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -448,8 +474,12 @@ class UpdateParticularChallenge(BaseAPITestClass):
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
-            "slug": self.challenge.slug,
+            "slug": "{}-{}".format(
+                self.update_challenge_title.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:199],
             "max_docker_image_size": self.challenge.max_docker_image_size,
+            "cli_version": self.challenge.cli_version,
         }
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -927,6 +957,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge3.is_docker_based,
                 "slug": self.challenge3.slug,
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
+                "cli_version": self.challenge3.cli_version,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -973,6 +1004,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1019,6 +1051,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge4.is_docker_based,
                 "slug": self.challenge4.slug,
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
+                "cli_version": self.challenge4.cli_version,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1064,6 +1097,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge4.is_docker_based,
                 "slug": self.challenge4.slug,
                 "max_docker_image_size": self.challenge4.max_docker_image_size,
+                "cli_version": self.challenge4.cli_version,
             },
             {
                 "id": self.challenge3.pk,
@@ -1098,6 +1132,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge3.is_docker_based,
                 "slug": self.challenge3.slug,
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
+                "cli_version": self.challenge3.cli_version,
             },
             {
                 "id": self.challenge2.pk,
@@ -1132,6 +1167,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             },
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1225,6 +1261,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "is_docker_based": self.challenge3.is_docker_based,
                 "slug": self.challenge3.slug,
                 "max_docker_image_size": self.challenge3.max_docker_image_size,
+                "cli_version": self.challenge3.cli_version,
             }
         ]
         response = self.client.get(self.url, {}, format="json")
@@ -1344,6 +1381,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "is_docker_based": self.challenge3.is_docker_based,
             "slug": self.challenge3.slug,
             "max_docker_image_size": self.challenge3.max_docker_image_size,
+            "cli_version": self.challenge3.cli_version,
         }
 
         response = self.client.get(self.url, {})
@@ -1402,6 +1440,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "is_docker_based": self.challenge4.is_docker_based,
             "slug": self.challenge4.slug,
             "max_docker_image_size": self.challenge4.max_docker_image_size,
+            "cli_version": self.challenge4.cli_version,
         }
 
         self.client.force_authenticate(user=self.user1)
@@ -1514,6 +1553,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             }
         ]
 
@@ -1560,6 +1600,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             }
         ]
 
@@ -1606,6 +1647,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             }
         ]
 
@@ -1650,6 +1692,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge.is_docker_based,
                 "slug": self.challenge.slug,
                 "max_docker_image_size": self.challenge.max_docker_image_size,
+                "cli_version": self.challenge.cli_version,
             },
             {
                 "id": self.challenge2.pk,
@@ -1684,6 +1727,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_docker_based": self.challenge2.is_docker_based,
                 "slug": self.challenge2.slug,
                 "max_docker_image_size": self.challenge2.max_docker_image_size,
+                "cli_version": self.challenge2.cli_version,
             },
         ]
 
@@ -1742,7 +1786,14 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions_per_day=100000,
                 max_submissions_per_month=100000,
                 max_submissions=100000,
+                codename="Phase Code Name",
             )
+            self.challenge_phase.slug = "{}-{}-{}".format(
+                self.challenge.title.split(" ")[0].lower(),
+                self.challenge_phase.codename.replace(" ", "-").lower(),
+                self.challenge.pk,
+            )[:198]
+            self.challenge_phase.save()
 
             self.private_challenge_phase = ChallengePhase.objects.create(
                 name="Private Challenge Phase",
@@ -1762,6 +1813,14 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 max_submissions=100000,
                 codename="Private Phase Code Name",
             )
+            self.private_challenge_phase.slug = "{}-{}-{}".format(
+                self.challenge.title.split(" ")[0].lower(),
+                self.private_challenge_phase.codename.replace(
+                    " ", "-"
+                ).lower(),
+                self.challenge.pk,
+            )[:198]
+            self.private_challenge_phase.save()
 
     def tearDown(self):
         shutil.rmtree("/tmp/evalai")
@@ -1795,6 +1854,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "slug": self.challenge_phase.slug,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1814,6 +1874,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
+                "slug": self.private_challenge_phase.slug,
             },
         ]
 
@@ -1841,6 +1902,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions": self.challenge_phase.max_submissions,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+                "slug": self.challenge_phase.slug,
             }
         ]
         self.client.force_authenticate(user=None)
@@ -1878,6 +1940,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.challenge_phase.max_submissions,
+                "slug": self.challenge_phase.slug,
             },
             {
                 "id": self.private_challenge_phase.id,
@@ -1897,6 +1960,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
+                "slug": self.private_challenge_phase.slug,
             },
         ]
 
@@ -2032,7 +2096,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             },
         )
 
-    def test_get_particular_challenge_phase(self):
+    def test_get_particular_challenge_phase_if_user_is_participant(self):
         expected = {
             "id": self.challenge_phase.id,
             "name": self.challenge_phase.name,
@@ -2051,7 +2115,38 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "slug": self.challenge_phase.slug,
         }
+        self.client.force_authenticate(user=self.participant_user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_particular_challenge_phase_if_user_is_challenge_host(self):
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": self.challenge_phase.name,
+            "description": self.challenge_phase.description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(
+                self.challenge_phase.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.challenge_phase.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "is_public": self.challenge_phase.is_public,
+            "is_submission_public": self.challenge_phase.is_submission_public,
+            "is_active": True,
+            "codename": "Phase Code Name",
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            "max_submissions": self.challenge_phase.max_submissions,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "test_annotation": "http://testserver%s"
+            % (self.challenge_phase.test_annotation.url),
+            "slug": self.challenge_phase.slug,
+        }
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2103,6 +2198,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "slug": self.challenge_phase.slug,
         }
         response = self.client.put(
             self.url, {"name": new_name, "description": new_description}
@@ -2111,14 +2207,13 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_phase_does_not_exist(self):
-        self.url = reverse_lazy(
-            "challenges:get_challenge_phase_detail",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "pk": self.challenge_phase.pk + 2,
-            },
-        )
-        expected = {"error": "ChallengePhase does not exist"}
+        self.url = reverse_lazy('challenges:get_challenge_phase_detail',
+                                kwargs={'challenge_pk': self.challenge.pk,
+                                        'pk': self.challenge_phase.pk + 2})
+        expected = {
+            'error': 'Challenge phase {} does not exist for challenge {}'.format(
+                (self.challenge_phase.pk + 2), self.challenge.pk)
+        }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
@@ -2191,6 +2286,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
             "max_submissions": self.challenge_phase.max_submissions,
             "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "slug": self.challenge_phase.slug,
         }
         response = self.client.patch(self.url, self.partial_update_data)
         self.assertEqual(response.data, expected)
@@ -2441,6 +2537,10 @@ class CreateChallengeUsingZipFile(APITestCase):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+        self.challenge.slug = "{}-{}".format(
+            self.challenge.title.replace(" ", "-").lower(), self.challenge.pk
+        )[:199]
+        self.challenge.save()
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             self.challenge_phase = ChallengePhase.objects.create(
@@ -3114,6 +3214,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 ).replace("+00:00", ""),
                 "is_public": self.submission1.is_public,
                 "when_made_public": self.submission1.when_made_public,
+                "is_baseline": self.submission1.is_baseline,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)

@@ -29,18 +29,6 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     vm.challengeList = response.data;
-                    var challengeCount = vm.challengeList.count;
-                    if (challengeCount === 0) {
-                        vm.isChallenge = false;
-                    } else {
-                        vm.isChallenge = true;
-                        vm.featuredChallenge = vm.challengeList.results[0];
-                        if (vm.featuredChallenge.description.length > 120) {
-                            vm.isMore = true;
-                        } else {
-                            vm.isMore = false;
-                        }
-                    }
                 },
                 onError: function() {}
             };
@@ -96,6 +84,10 @@
 
         vm.init();
         vm.getChallenge();
-
+        angular.element('.carousel').carousel({
+            duration: 200
+            // dist: 0,
+            // indicators: true
+        });
     }
 })();

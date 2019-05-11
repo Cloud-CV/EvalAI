@@ -11,6 +11,7 @@ from .models import (
     Leaderboard,
     LeaderboardData,
     StarChallenge,
+    UserInvitation,
 )
 
 
@@ -149,3 +150,41 @@ class StarChallengeAdmin(ImportExportTimeStampedAdmin):
     list_display = ("user", "challenge", "is_starred")
     list_filter = ("is_starred",)
     search_fields = ("user__username", "challenge__title")
+
+
+@admin.register(UserInvitation)
+class UserInvitationAdmin(ImportExportTimeStampedAdmin):
+    list_display = (
+        "email",
+        "invitation_key",
+        "status",
+        "get_challenge_name_and_id",
+        "get_username_and_id",
+        "get_host_team_and_member_name",
+    )
+    list_filter = ("status", "challenge__title")
+    search_fields = ("email",)
+
+    def get_challenge_name_and_id(self, obj):
+        """Return challenge name and id for a challenge"""
+        return "%s - %s" % (obj.challenge.title, obj.challenge.id)
+
+    get_challenge_name_and_id.short_description = "Challenge"
+    get_challenge_name_and_id.admin_order_field = "challenge"
+
+    def get_username_and_id(self, obj):
+        """Return username and id of a user"""
+        return "%s - %s" % (obj.user.username, obj.user.id)
+
+    get_username_and_id.short_description = "User"
+    get_username_and_id.admin_order_field = "username"
+
+    def get_host_team_and_member_name(self, obj):
+        """Returns the host team name and the member name"""
+        return "%s - %s" % (
+            obj.invited_by.team_name.team_name,
+            obj.invited_by.user.username,
+        )
+
+    get_host_team_and_member_name.short_description = "Invited by"
+    get_host_team_and_member_name.admin_order_field = "invited_by"

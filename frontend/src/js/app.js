@@ -13,7 +13,8 @@ angular
 		'toaster',
 		'angularTrix',
 		'angularMoment',
-		'ngclipboard'
+		'ngclipboard',
+		'moment-picker'
 	]).config(['$compileProvider', function($compileProvider) {
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|tel|javascript):/);
 }]);
