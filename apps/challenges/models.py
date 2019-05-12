@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
@@ -11,8 +13,15 @@ from base.models import (
     model_field_name,
     create_post_model_field,
 )
-from base.utils import RandomFileName
+from base.utils import RandomFileName, get_slug
 from participants.models import ParticipantTeam
+from hosts.models import ChallengeHost
+
+
+@receiver(pre_save, sender="challenges.Challenge")
+def save_challenge_slug(sender, instance, **kwargs):
+    title = get_slug(instance.title)
+    instance.slug = "{}-{}".format(title, instance.pk)
 
 
 class Challenge(TimeStampedModel):
@@ -80,12 +89,28 @@ class Challenge(TimeStampedModel):
     is_docker_based = models.BooleanField(
         default=False, verbose_name="Is Docker Based", db_index=True
     )
-    slug = models.CharField(max_length=200, db_index=True, default="")
+    slug = models.SlugField(max_length=200, null=True, unique=True)
     max_docker_image_size = models.BigIntegerField(
         default=42949672960, null=True, blank=True
     )  # Default is 40 GB
     max_concurrent_submission_evaluation = models.PositiveIntegerField(
         default=100000
+    )
+    aws_account_id = models.CharField(
+        max_length=200, default="", null=True, blank=True
+    )
+    aws_access_key_id = models.CharField(
+        max_length=200, default="", null=True, blank=True
+    )
+    aws_secret_access_key = models.CharField(
+        max_length=200, default="", null=True, blank=True
+    )
+    aws_region = models.CharField(
+        max_length=50, default="us-east-1", null=True, blank=True
+    )
+    use_host_credentials = models.BooleanField(default=False)
+    cli_version = models.CharField(
+        max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
 
     class Meta:
@@ -186,6 +211,7 @@ class ChallengePhase(TimeStampedModel):
         blank=True,
         null=True,
     )
+    slug = models.SlugField(max_length=200, null=True, unique=True)
 
     class Meta:
         app_label = "challenges"
@@ -283,6 +309,7 @@ class LeaderboardData(TimeStampedModel):
     submission = models.ForeignKey("jobs.Submission")
     leaderboard = models.ForeignKey("Leaderboard")
     result = JSONField()
+    error = JSONField(null=True, blank=True)
 
     def __str__(self):
         return "{0} : {1}".format(self.challenge_phase_split, self.submission)
@@ -331,3 +358,30 @@ class StarChallenge(TimeStampedModel):
     class Meta:
         app_label = "challenges"
         db_table = "starred_challenge"
+
+
+class UserInvitation(TimeStampedModel):
+    """
+    Model to store invitation status
+    """
+
+    ACCEPTED = "accepted"
+    PENDING = "pending"
+
+    STATUS_OPTIONS = ((ACCEPTED, ACCEPTED), (PENDING, PENDING))
+    email = models.EmailField(max_length=200)
+    invitation_key = models.CharField(max_length=200)
+    status = models.CharField(
+        max_length=30, choices=STATUS_OPTIONS, db_index=True
+    )
+    challenge = models.ForeignKey(Challenge, related_name="challenge")
+    user = models.ForeignKey(User)
+    invited_by = models.ForeignKey(ChallengeHost)
+
+    class Meta:
+        app_label = "challenges"
+        db_table = "invite_user_to_challenge"
+
+    def __str__(self):
+        """Returns the email of the user"""
+        return self.email

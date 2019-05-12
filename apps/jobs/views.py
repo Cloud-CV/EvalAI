@@ -1,3 +1,4 @@
+import botocore
 import datetime
 import json
 import logging
@@ -13,7 +14,7 @@ from rest_framework.decorators import (
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
-from django.db.models import FloatField
+from django.db.models import FloatField, Q
 from django.utils import timezone
 
 from rest_framework_expiring_authtoken.authentication import (
@@ -25,20 +26,31 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset, StandardResultSetPagination
+from base.utils import (
+    paginated_queryset,
+    StandardResultSetPagination,
+    get_sqs_queue_object,
+    get_boto3_client,
+)
 from challenges.models import (
     ChallengePhase,
     Challenge,
     ChallengePhaseSplit,
     LeaderboardData,
 )
-from challenges.utils import get_challenge_model, get_challenge_phase_model
+from challenges.utils import (
+    get_challenge_model,
+    get_challenge_phase_model,
+    get_aws_credentials_for_challenge,
+)
 from hosts.models import ChallengeHost
 from hosts.utils import is_user_a_host_of_challenge
 from participants.models import ParticipantTeam
 from participants.utils import (
+    get_participant_team_model,
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
+    is_user_part_of_participant_team,
 )
 
 from .models import Submission
@@ -268,6 +280,11 @@ def change_submission_data_and_visibility(
                 "error": "Sorry, cannot accept submissions since challenge phase is not public"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        elif request.data.get("is_baseline"):
+            response_data = {
+                "error": "Sorry, you are not authorized to make this request"
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
         request.user, challenge_pk
@@ -435,7 +452,8 @@ def leaderboard(request, challenge_phase_split_id):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     leaderboard_data = LeaderboardData.objects.exclude(
-        submission__created_by__email__in=challenge_hosts_emails
+        Q(submission__created_by__email__in=challenge_hosts_emails)
+        & Q(submission__is_baseline=False)
     )
 
     # Get all the successful submissions related to the challenge phase split
@@ -448,32 +466,50 @@ def leaderboard(request, challenge_phase_split_id):
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL(
             "result->>%s", (default_order_by,), output_field=FloatField()
-        )
+        ),
+        filtering_error=RawSQL(
+            "error->>%s",
+            ("error_{0}".format(default_order_by),),
+            output_field=FloatField(),
+        ),
     ).values(
         "id",
         "submission__participant_team__team_name",
+        "submission__participant_team__team_url",
+        "submission__is_baseline",
         "challenge_phase_split",
         "result",
+        "error",
         "filtering_score",
+        "filtering_error",
         "leaderboard__schema",
         "submission__submitted_at",
+        "submission__method_name",
     )
 
     if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
         leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
+    for leaderboard_item in leaderboard_data:
+        if leaderboard_item["error"] is None:
+            leaderboard_item.update(filtering_error=0)
+
     sorted_leaderboard_data = sorted(
         leaderboard_data,
-        key=lambda k: float(k["filtering_score"]),
+        key=lambda k: (
+            float(k["filtering_score"]),
+            float(-k["filtering_error"]),
+        ),
         reverse=True,
     )
 
     distinct_sorted_leaderboard_data = []
     team_list = []
-
     for data in sorted_leaderboard_data:
         if data["submission__participant_team__team_name"] in team_list:
             continue
+        elif data["submission__is_baseline"] is True:
+            distinct_sorted_leaderboard_data.append(data)
         else:
             distinct_sorted_leaderboard_data.append(data)
             team_list.append(data["submission__participant_team__team_name"])
@@ -483,6 +519,11 @@ def leaderboard(request, challenge_phase_split_id):
         item["result"] = [
             item["result"][index] for index in leaderboard_labels
         ]
+        if item["error"] is not None:
+            item["error"] = [
+                item["error"]["error_{0}".format(index)]
+                for index in leaderboard_labels
+            ]
 
     paginator, result_page = paginated_queryset(
         distinct_sorted_leaderboard_data,
@@ -508,6 +549,7 @@ def get_remaining_submissions(request, challenge_pk):
         "phases": [
             {
                 "id": 1,
+                "slug": "megan-phase-1",
                 "name": "Megan Phase",
                 "start_date": "2018-10-28T14:22:53.022639Z",
                 "end_date": "2020-06-19T14:22:53.022660Z",
@@ -519,6 +561,7 @@ def get_remaining_submissions(request, challenge_pk):
             },
             {
                 "id": 2,
+                "slug": "molly-phase-2",
                 "name": "Molly Phase",
                 "start_date": "2018-10-28T14:22:53Z",
                 "end_date": "2020-06-19T14:22:53Z",
@@ -685,7 +728,7 @@ def get_submission_by_pk(request, submission_id):
         ),
     },
 )
-@api_view(["PUT"])
+@api_view(["PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -707,15 +750,15 @@ def update_submission(request, challenge_pk):
                     "split": "split1-codename",
                     "show_to_participant": True,
                     "accuracies": {
-                    "metric1": 90
+                        "metric1": 90
                     }
                 },
                 {
                     "split": "split2-codename",
                     "show_to_participant": False,
                     "accuracies": {
-                    "metric1": 50,
-                    "metric2": 40
+                        "metric1": 50,
+                        "metric2": 40
                     }
                 }
             ]
@@ -731,139 +774,163 @@ def update_submission(request, challenge_pk):
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    challenge_phase_pk = request.data.get("challenge_phase")
-    submission_pk = request.data.get("submission")
-    submission_status = request.data.get("submission_status", "").lower()
-    stdout_content = request.data.get("stdout", "")
-    stderr_content = request.data.get("stderr", "")
-    submission_result = request.data.get("result", "")
-    metadata = request.data.get("metadata", "")
-    submission = get_submission_model(submission_pk)
+    if request.method == "PUT":
+        challenge_phase_pk = request.data.get("challenge_phase")
+        submission_pk = request.data.get("submission")
+        submission_status = request.data.get("submission_status", "").lower()
+        stdout_content = request.data.get("stdout", "")
+        stderr_content = request.data.get("stderr", "")
+        submission_result = request.data.get("result", "")
+        metadata = request.data.get("metadata", "")
+        submission = get_submission_model(submission_pk)
 
-    public_results = []
-    successful_submission = (
-        True if submission_status == Submission.FINISHED else False
-    )
-    if submission_status not in [
-        Submission.FAILED,
-        Submission.CANCELLED,
-        Submission.FINISHED,
-    ]:
-        response_data = {"error": "Sorry, submission status is invalid"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    if successful_submission:
-        try:
-            results = json.loads(submission_result)
-        except ValueError:
-            response_data = {
-                "error": "`result` key contains invalid data. Please try again with correct format!"
-            }
+        public_results = []
+        successful_submission = (
+            True if submission_status == Submission.FINISHED else False
+        )
+        if submission_status not in [
+            Submission.FAILED,
+            Submission.CANCELLED,
+            Submission.FINISHED,
+        ]:
+            response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        leaderboard_data_list = []
-        for phase_result in results:
-            split = phase_result.get("split")
-            accuracies = phase_result.get("accuracies")
-            show_to_participant = phase_result.get(
-                "show_to_participant", False
-            )
+        if successful_submission:
             try:
-                challenge_phase_split = ChallengePhaseSplit.objects.get(
-                    challenge_phase__pk=challenge_phase_pk,
-                    dataset_split__codename=split,
-                )
-            except ChallengePhaseSplit.DoesNotExist:
+                results = json.loads(submission_result)
+            except (ValueError, TypeError) as exc:
                 response_data = {
-                    "error": "Challenge Phase Split does not exist with phase_id: {} and"
-                    "split codename: {}".format(challenge_phase_pk, split)
+                    "error": "`result` key contains invalid data with error {}."
+                    "Please try again with correct format.".format(str(exc))
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
 
-            leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
-                "labels"
-            )
-            missing_metrics = []
-            malformed_metrics = []
-            for metric, value in accuracies.items():
-                if metric not in leaderboard_metrics:
-                    missing_metrics.append(metric)
+            leaderboard_data_list = []
+            for phase_result in results:
+                split = phase_result.get("split")
+                accuracies = phase_result.get("accuracies")
+                show_to_participant = phase_result.get(
+                    "show_to_participant", False
+                )
+                try:
+                    challenge_phase_split = ChallengePhaseSplit.objects.get(
+                        challenge_phase__pk=challenge_phase_pk,
+                        dataset_split__codename=split,
+                    )
+                except ChallengePhaseSplit.DoesNotExist:
+                    response_data = {
+                        "error": "Challenge Phase Split does not exist with phase_id: {} and"
+                        "split codename: {}".format(challenge_phase_pk, split)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
 
-                if not (isinstance(value, float) or isinstance(value, int)):
-                    malformed_metrics.append((metric, type(value)))
+                leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
+                    "labels"
+                )
+                missing_metrics = []
+                malformed_metrics = []
+                for metric, value in accuracies.items():
+                    if metric not in leaderboard_metrics:
+                        missing_metrics.append(metric)
 
-            if len(missing_metrics):
+                    if not (
+                        isinstance(value, float) or isinstance(value, int)
+                    ):
+                        malformed_metrics.append((metric, type(value)))
+
+                if len(missing_metrics):
+                    response_data = {
+                        "error": "Following metrics are missing in the"
+                        "leaderboard data: {}".format(missing_metrics)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                if len(malformed_metrics):
+                    response_data = {
+                        "error": "Values for following metrics are not of"
+                        "float/int: {}".format(malformed_metrics)
+                    }
+                    return Response(
+                        response_data, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                data = {"result": accuracies}
+                serializer = CreateLeaderboardDataSerializer(
+                    data=data,
+                    context={
+                        "challenge_phase_split": challenge_phase_split,
+                        "submission": submission,
+                        "request": request,
+                    },
+                )
+                if serializer.is_valid():
+                    leaderboard_data_list.append(serializer)
+                else:
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                # Only after checking if the serializer is valid, append the public split results to results file
+                if show_to_participant:
+                    public_results.append(accuracies)
+
+            try:
+                with transaction.atomic():
+                    for serializer in leaderboard_data_list:
+                        serializer.save()
+            except IntegrityError:
+                logger.exception(
+                    "Failed to update submission_id {} related metadata".format(
+                        submission_pk
+                    )
+                )
                 response_data = {
-                    "error": "Following metrics are missing in the"
-                    "leaderboard data: {}".format(missing_metrics)
+                    "error": "Failed to update submission_id {} related metadata".format(
+                        submission_pk
+                    )
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
 
-            if len(malformed_metrics):
-                response_data = {
-                    "error": "Values for following metrics are not of"
-                    "float/int: {}".format(malformed_metrics)
-                }
-                return Response(
-                    response_data, status=status.HTTP_400_BAD_REQUEST
-                )
+        submission.status = submission_status
+        submission.completed_at = timezone.now()
+        submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
+        submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
+        submission.submission_result_file.save(
+            "submission_result.json", ContentFile(str(public_results))
+        )
+        submission.submission_metadata_file.save(
+            "submission_metadata_file.json", ContentFile(str(metadata))
+        )
+        submission.save()
+        response_data = {
+            "success": "Submission result has been successfully updated"
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
-            data = {"result": accuracies}
-            serializer = CreateLeaderboardDataSerializer(
-                data=data,
-                context={
-                    "challenge_phase_split": challenge_phase_split,
-                    "submission": submission,
-                    "request": request,
-                },
-            )
-            if serializer.is_valid():
-                leaderboard_data_list.append(serializer)
-            else:
-                return Response(
-                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # Only after checking if the serializer is valid, append the public split results to results file
-            if show_to_participant:
-                public_results.append(accuracies)
-
-        try:
-            with transaction.atomic():
-                for serializer in leaderboard_data_list:
-                    serializer.save()
-        except IntegrityError:
-            logger.exception(
-                "Failed to update submission_id {} related metadata".format(
-                    submission_pk
-                )
-            )
-            response_data = {
-                "error": "Failed to update submission_id {} related metadata".format(
-                    submission_pk
-                )
-            }
+    if request.method == "PATCH":
+        submission_pk = request.data.get("submission")
+        submission_status = request.data.get("submission_status", "").lower()
+        submission = get_submission_model(submission_pk)
+        if submission_status not in [Submission.RUNNING]:
+            response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    submission.status = submission_status
-    submission.completed_at = timezone.now()
-    submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
-    submission.stderr_file.save("stderr.txt", ContentFile(stderr_content))
-    submission.submission_result_file.save(
-        "submission_result.json", ContentFile(str(public_results))
-    )
-    submission.submission_metadata_file.save(
-        "submission_metadata_file.json", ContentFile(str(metadata))
-    )
-    submission.save()
-    response_data = {
-        "success": "Submission result has been successfully updated"
-    }
-    return Response(response_data, status=status.HTTP_200_OK)
+        data = {"status": submission_status, "started_at": timezone.now()}
+        serializer = SubmissionSerializer(
+            submission, data=data, partial=True, context={"request": request}
+        )
+        if serializer.is_valid():
+            submission.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST', ])
@@ -963,3 +1030,163 @@ def get_submissions_for_challenge(request, challenge_pk):
     )
 
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_submission_message_from_queue(request, queue_name):
+    """
+    API to fetch submission message from AWS SQS queue
+    Arguments:
+        queue_name  -- The unique authentication token provided by challenge hosts
+    """
+    try:
+        challenge = Challenge.objects.get(queue=queue_name)  # noqa
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": "Challenge with queue name {} does not exist".format(
+                queue_name
+            )
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    queue = get_sqs_queue_object()
+    try:
+        messages = queue.receive_messages()
+        if len(messages):
+            message_receipt_handle = messages[0].receipt_handle
+            message_body = eval(messages[0].body)
+            logger.info(
+                "A submission is received with pk {}".format(
+                    message_body.get("submission_pk")
+                )
+            )
+        else:
+            logger.info("No submission received")
+            message_receipt_handle = None
+            message_body = None
+
+        response_data = {
+            "body": message_body,
+            "receipt_handle": message_receipt_handle,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+    except botocore.exceptions.ClientError as ex:
+        response_data = ex
+        logger.exception("Exception raised: {}".format(ex))
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def delete_submission_message_from_queue(request, queue_name, receipt_handle):
+    """
+    API to delete submission message from AWS SQS queue
+    Arguments:
+        queue_name  -- The unique authentication token provided by challenge hosts
+        receipt_handle -- The receipt handle of the message to be deleted
+    """
+    try:
+        challenge = Challenge.objects.get(queue=queue_name)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": "Challenge with queue name {} does not exists".format(
+                queue_name
+            )
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    challenge_pk = challenge.pk
+    if not is_user_a_host_of_challenge(request.user, challenge_pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    queue = get_sqs_queue_object()
+    try:
+        message = queue.Message(receipt_handle)
+        message.delete()
+        response_data = {
+            "success": "Message deleted successfully from the queue: {}".format(
+                queue_name
+            )
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+    except botocore.exceptions.ClientError as ex:
+        response_data = ex
+        logger.exception(
+            "SQS message is not deleted due to {}".format(response_data)
+        )
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_signed_url_for_submission_related_file(request):
+    """Returns S3 signed URL for a particular file residing on S3 bucket
+
+    Arguments:
+        request {object} -- Request object
+
+    Returns:
+        Response object -- Response object with appropriate response code (200/400/403/404)
+    """
+
+    # Assumption: file will be stored in this format: 'team_{id}/submission_{id}/.../file.log'
+    bucket = request.query_params.get("bucket", None)
+    key = request.query_params.get("key", None)
+
+    if not bucket or not key:
+        response_data = {"error": "key and bucket names can't be empty"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        splits = key.split("/")
+        participant_team_id, submission_id = (
+            splits[0].replace("team_", ""),
+            splits[1].replace("submission_", ""),
+        )
+    except Exception:
+        response_data = {
+            "error": "Invalid file path format. Please try again with correct file path format."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    participant_team = get_participant_team_model(participant_team_id)
+    submission = get_submission_model(submission_id)
+    challenge_pk = submission.challenge_phase.challenge.pk
+
+    if submission.participant_team != participant_team:
+        response_data = {
+            "error": "You are not authorized to access this file."
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if is_user_part_of_participant_team(
+        request.user, participant_team
+    ) or is_user_a_host_of_challenge(request.user, challenge_pk):
+        aws_keys = get_aws_credentials_for_challenge(challenge_pk)
+        s3 = get_boto3_client("s3", aws_keys)
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object", Params={"Bucket": bucket, "Key": key}
+        )
+        response_data = {"signed_url": url}
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = {
+            "error": "You are not authorized to access this file."
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
