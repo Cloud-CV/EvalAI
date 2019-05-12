@@ -21,6 +21,7 @@ before_cache:
 - rm -f $HOME/.cache/pip/log/debug.log
 before_script:
 - npm install
+- bower install
 - sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/10/main/postgresql.conf
 - sudo cp /etc/postgresql/{9.4,10}/main/pg_hba.conf
 - sudo service postgresql restart
@@ -36,7 +37,7 @@ install:
 - pip install -r requirements/dev.txt
 - pip install awscli==1.16.57 coveralls
 script:
-- flake8 ./ --exclude node_modules
+- flake8 ./
 - node_modules/karma/bin/karma start karma.conf.js --single-run
 - py.test --cov . --cov-config .coveragerc
 after_success:
