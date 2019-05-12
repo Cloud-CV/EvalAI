@@ -7,15 +7,13 @@ module.exports = function(config) {
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
-    // plugins starting with karma- are autoloaded
-    plugins: ['karma-chrome-launcher', 'karma-jasmine'],
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['jasmine'],
 
     // Config values to allow TravisCI to run chrome in it's container
-    browsers: ['Chrome', 'ChromeCanary'],
+    browsers: ['Chrome'],
     customLaunchers: {
         // tell TravisCI to use chromium when testing
         Chrome_travis_ci: {

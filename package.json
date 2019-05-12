@@ -39,8 +39,8 @@
     "url": "https://github.com/Cloud-CV/EvalAI.git"
   },
   "devDependencies": {
+    "angular-mocks": "1.7.0",
     "jasmine-core": "^3.4.0",
-    "angular-mocks": "^1.7.0",
     "karma": "^4.1.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-jasmine": "^2.0.1"
