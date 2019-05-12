@@ -22,3 +22,5 @@ omit =
     frontend/
     settings/prod.py
     scripts/seed.py
+    node_modules/
+    bower_components/
