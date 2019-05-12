@@ -175,7 +175,14 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
     color: white;
 }
 
+.md-checkbox-enabled.md-default-theme[selected] .md-icon, .md-checkbox-enabled[selected] .md-icon {
+    background-color: #ffaf4b;
+}
+
 .orange-background {
     background-color: #ffaf4b !important;
 }
 
+#option-text-color {
+    color: #252833;
+}

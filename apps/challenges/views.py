@@ -1206,7 +1206,7 @@ def get_all_submissions_of_challenge(
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -1230,128 +1230,192 @@ def download_all_submissions(
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    if file_type == "csv":
-        if is_user_a_host_of_challenge(
-            user=request.user, challenge_pk=challenge_pk
-        ):
-            submissions = Submission.objects.filter(
-                challenge_phase__challenge=challenge
-            ).order_by("-submitted_at")
-            submissions = ChallengeSubmissionManagementSerializer(
-                submissions, many=True, context={"request": request}
-            )
-            response = HttpResponse(content_type="text/csv")
-            response[
-                "Content-Disposition"
-            ] = "attachment; filename=all_submissions.csv"
-            writer = csv.writer(response)
-            writer.writerow(
-                [
-                    "id",
-                    "Team Name",
-                    "Team Members",
-                    "Team Members Email Id",
-                    "Challenge Phase",
-                    "Status",
-                    "Created By",
-                    "Execution Time(sec.)",
-                    "Submission Number",
-                    "Submitted File",
-                    "Stdout File",
-                    "Stderr File",
-                    "Submitted At",
-                    "Submission Result File",
-                    "Submission Metadata File",
-                ]
-            )
-            for submission in submissions.data:
+    if request.method == "GET":
+        if file_type == "csv":
+            if is_user_a_host_of_challenge(
+                user=request.user, challenge_pk=challenge_pk
+            ):
+                submissions = Submission.objects.filter(
+                    challenge_phase__challenge=challenge
+                ).order_by("-submitted_at")
+                submissions = ChallengeSubmissionManagementSerializer(
+                    submissions, many=True, context={"request": request}
+                )
+                response = HttpResponse(content_type="text/csv")
+                response[
+                    "Content-Disposition"
+                ] = "attachment; filename=all_submissions.csv"
+                writer = csv.writer(response)
                 writer.writerow(
                     [
-                        submission["id"],
-                        submission["participant_team"],
-                        ",".join(
-                            username["username"]
-                            for username in submission[
-                                "participant_team_members"
-                            ]
-                        ),
-                        ",".join(
-                            email["email"]
-                            for email in submission["participant_team_members"]
-                        ),
-                        submission["challenge_phase"],
-                        submission["status"],
-                        submission["created_by"],
-                        submission["execution_time"],
-                        submission["submission_number"],
-                        submission["input_file"],
-                        submission["stdout_file"],
-                        submission["stderr_file"],
-                        submission["created_at"],
-                        submission["submission_result_file"],
-                        submission["submission_metadata_file"],
+                        "id",
+                        "Team Name",
+                        "Team Members",
+                        "Team Members Email Id",
+                        "Challenge Phase",
+                        "Status",
+                        "Created By",
+                        "Execution Time(sec.)",
+                        "Submission Number",
+                        "Submitted File",
+                        "Stdout File",
+                        "Stderr File",
+                        "Submitted At",
+                        "Submission Result File",
+                        "Submission Metadata File",
                     ]
                 )
-            return response
+                for submission in submissions.data:
+                    writer.writerow(
+                        [
+                            submission["id"],
+                            submission["participant_team"],
+                            ",".join(
+                                username["username"]
+                                for username in submission[
+                                    "participant_team_members"
+                                ]
+                            ),
+                            ",".join(
+                                email["email"]
+                                for email in submission["participant_team_members"]
+                            ),
+                            submission["challenge_phase"],
+                            submission["status"],
+                            submission["created_by"],
+                            submission["execution_time"],
+                            submission["submission_number"],
+                            submission["input_file"],
+                            submission["stdout_file"],
+                            submission["stderr_file"],
+                            submission["created_at"],
+                            submission["submission_result_file"],
+                            submission["submission_metadata_file"],
+                        ]
+                    )
+                return response
 
-        elif has_user_participated_in_challenge(
-            user=request.user, challenge_id=challenge_pk
-        ):
+            elif has_user_participated_in_challenge(
+                user=request.user, challenge_id=challenge_pk
+            ):
 
-            # get participant team object for the user for a particular challenge.
-            participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-                request.user, challenge_pk
-            )
+                # get participant team object for the user for a particular challenge.
+                participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+                    request.user, challenge_pk
+                )
 
-            # Filter submissions on the basis of challenge phase for a participant.
-            submissions = Submission.objects.filter(
-                participant_team=participant_team_pk,
-                challenge_phase=challenge_phase,
-            ).order_by("-submitted_at")
-            submissions = ChallengeSubmissionManagementSerializer(
-                submissions, many=True, context={"request": request}
-            )
-            response = HttpResponse(content_type="text/csv")
-            response[
-                "Content-Disposition"
-            ] = "attachment; filename=all_submissions.csv"
-            writer = csv.writer(response)
-            writer.writerow(
-                [
-                    "Team Name",
-                    "Method Name",
-                    "Status",
-                    "Execution Time(sec.)",
-                    "Submitted File",
-                    "Result File",
-                    "Stdout File",
-                    "Stderr File",
-                    "Submitted At",
-                ]
-            )
-            for submission in submissions.data:
+                # Filter submissions on the basis of challenge phase for a participant.
+                submissions = Submission.objects.filter(
+                    participant_team=participant_team_pk,
+                    challenge_phase=challenge_phase,
+                ).order_by("-submitted_at")
+                submissions = ChallengeSubmissionManagementSerializer(
+                    submissions, many=True, context={"request": request}
+                )
+                response = HttpResponse(content_type="text/csv")
+                response[
+                    "Content-Disposition"
+                ] = "attachment; filename=all_submissions.csv"
+                writer = csv.writer(response)
                 writer.writerow(
                     [
-                        submission["participant_team"],
-                        submission["method_name"],
-                        submission["status"],
-                        submission["execution_time"],
-                        submission["input_file"],
-                        submission["submission_result_file"],
-                        submission["stdout_file"],
-                        submission["stderr_file"],
-                        submission["created_at"],
+                        "Team Name",
+                        "Method Name",
+                        "Status",
+                        "Execution Time(sec.)",
+                        "Submitted File",
+                        "Result File",
+                        "Stdout File",
+                        "Stderr File",
+                        "Submitted At",
                     ]
                 )
-            return response
+                for submission in submissions.data:
+                    writer.writerow(
+                        [
+                            submission["participant_team"],
+                            submission["method_name"],
+                            submission["status"],
+                            submission["execution_time"],
+                            submission["input_file"],
+                            submission["submission_result_file"],
+                            submission["stdout_file"],
+                            submission["stderr_file"],
+                            submission["created_at"],
+                        ]
+                    )
+                return response
+            else:
+                response_data = {
+                    "error": "You are neither host nor participant of the challenge!"
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         else:
-            response_data = {
-                "error": "You are neither host nor participant of the challenge!"
-            }
+            response_data = {"error": "The file type requested is not valid!"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        response_data = {"error": "The file type requested is not valid!"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'POST':
+        if file_type == "csv":
+            if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
+                fields_to_export = {
+                    'participant_team': 'Team Name',
+                    'participant_team_members': 'Team Members',
+                    'participant_team_members_email': 'Team Members Email Id',
+                    'challenge_phase': 'Challenge Phase',
+                    'status': 'Status',
+                    'created_by': 'Created By',
+                    'execution_time': 'Execution Time(sec.)',
+                    'submission_number': 'Submission Number',
+                    'input_file': 'Submitted File',
+                    'stdout_file': 'Stdout File',
+                    'stderr_file': 'Stderr File',
+                    'created_at': 'Submitted At (mm/dd/yyyy hh:mm:ss)',
+                    'submission_result_file': 'Submission Result File',
+                    'submission_metadata_file': 'Submission Metadata File',
+                }
+                submissions = Submission.objects.filter(
+                    challenge_phase__challenge=challenge
+                ).order_by('-submitted_at')
+                submissions = ChallengeSubmissionManagementSerializer(
+                    submissions, many=True, context={'request': request}
+                )
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
+                writer = csv.writer(response)
+                fields = [fields_to_export[field] for field in request.data]
+                fields.insert(0, 'id')
+                writer.writerow(fields)
+                for submission in submissions.data:
+                    row = [submission['id']]
+                    for field in request.data:
+                        if field == 'participant_team_members':
+                            row.append(
+                                ",".join(
+                                    username['username']
+                                    for username in submission['participant_team_members']
+                                )
+                            )
+                        elif field == 'participant_team_members_email':
+                            row.append(
+                                ",".join(
+                                    email['email']
+                                    for email in submission['participant_team_members']
+                                )
+                            )
+                        elif field == 'created_at':
+                            row.append(submission['created_at'].strftime('%m/%d/%Y %H:%M:%S'))
+                        else:
+                            row.append(submission[field])
+                    writer.writerow(row)
+                return response
+
+            else:
+                response_data = {'error': 'Sorry, you do not belong to this Host Team!'}
+                return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+        else:
+            response_data = {"error": "The file type requested is not valid!"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
