@@ -169,7 +169,7 @@
                                                     name="challenge.input_file" accept=".json, .zip, .txt">
                                             </div>
                                             <div class="file-path-wrapper">
-                                                <input class="file-path validate" type="text">
+                                                <input class="file-path validate" type="text" readonly>
                                             </div>
                                         </div>
                                     </div>
@@ -212,6 +212,7 @@
                                             <div class="col s12 m12">
                                                 <div class="align-left ">
                                                     <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14"
+                                                        ng-disabled="challenge.disableSubmit || !challenge.input_file"
                                                         type="submit" value="Submit">Submit</button>
                                                     <br>
                                                     <br>
