@@ -42,6 +42,7 @@
         vm.sortColumn = 'rank';
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
+        vm.disableSubmit = true;
         // save initial ranking
         vm.initial_ranking = {};
       // loader for existing teams
@@ -379,7 +380,8 @@
                             vm.projectUrl = "";
                             vm.publicationUrl = "";
                             $rootScope.notify("success", "Your submission has been recorded succesfully!");
-
+                            vm.disableSubmit = true;
+                            vm.showSubmissionNumbers = false;
                             vm.stopLoader();
                         },
                         onError: function(response) {
@@ -1082,10 +1084,28 @@
                 "is_public": vm.submissionVisibility[submission_id]
             };
             parameters.callback = {
-                onSuccess: function() {},
-                onError: function() {}
+                onSuccess: function(response) {
+                    var status = response.status;
+                    var message = "";
+                    if(status === 200) {
+                      var detail = response.data;
+                      if (detail['is_public'] == true) {
+                        message = "The submission is made public.";
+                      }
+                      else {
+                        message = "The submission is made private.";
+                      }
+                      $rootScope.notify("success", message);
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    var status = response.status;
+                    if(status === 400 || status === 403 ) {
+                       $rootScope.notify("error", error.error);
+                    }
+                }
             };
-
             utilities.sendRequest(parameters);
         };
 
@@ -1123,13 +1143,16 @@
                         if (details.submission_limit_exceeded === true) {
                             vm.maxExceeded = true;
                             vm.maxExceededMessage = details.message;
+                            vm.disableSubmit = true;
                         }
                         else if (details.remaining_submissions_today_count > 0) {
                             vm.remainingSubmissions = details;
                             vm.showSubmissionNumbers = true;
+                            vm.disableSubmit = false;
                         } else {
                             vm.message = details;
                             vm.showClock = true;
+                            vm.disableSubmit = true;
                             vm.countDownTimer = function() {
                                 vm.remainingTime = vm.message.remaining_time;
                                 vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
@@ -1164,26 +1187,97 @@
         };
 
         vm.fileTypes = [{ 'name': 'csv' }];
+        vm.fields = [{
+            'label': 'Team Name',
+            'id': 'participant_team' 
+        },{
+            'label': 'Team Members',
+            'id': 'participant_team_members' 
+        },{
+            'label': 'Team Members Email Id',
+            'id': 'participant_team_members_email' 
+        },{
+            'label': 'Challenge Phase',
+            'id': 'challenge_phase' 
+        },{
+            'label': 'Status',
+            'id': 'status' 
+        },{
+            'label': 'Created By',
+            'id': 'created_by' 
+        },{
+            'label': 'Execution Time',
+            'id': 'execution_time' 
+        },{
+            'label': 'Submission Number',
+            'id': 'submission_number' 
+        },{
+            'label': 'Submitted File',
+            'id': 'input_file' 
+        },{
+            'label': 'Stdout File',
+            'id': 'stdout_file' 
+        },{
+            'label': 'Stderr File',
+            'id': 'stderr_file' 
+        },{
+            'label': 'Submitted At',
+            'id': 'created_at' 
+        },{
+            'label': 'Submission Result File',
+            'id': 'submission_result_file' 
+        },{
+            'label': 'Submission Metadata File',
+            'id': 'submission_metadata_file' 
+        }];
 
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
-                parameters.method = "GET";
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
-                        var anchor = angular.element('<a/>');
-                        anchor.attr({
-                            href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                            download: 'all_submissions.csv'
-                        })[0].click();
-                    },
-                    onError: function(response) {
-                        var details = response.data;
-                        $rootScope.notify('error', details.error);
+                if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
+                    parameters.method = "GET";
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var details = response.data;
+                            var anchor = angular.element('<a/>');
+                            anchor.attr({
+                                href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                                download: 'all_submissions.csv'
+                            })[0].click();
+                        },
+                        onError: function(response) {
+                            var details = response.data;
+                            $rootScope.notify('error', details.error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                }
+                else {
+                    parameters.method = "POST";
+                    var fieldsExport = [];
+                    for(var i = 0 ; i < vm.fields.length ; i++) {
+                        if (vm.fieldsToGet.includes(vm.fields[i].id)) {
+                            fieldsExport.push(vm.fields[i].id);
+                        }
                     }
-                };
-                utilities.sendRequest(parameters);
+                    parameters.data = fieldsExport;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var details = response.data;
+                            var anchor = angular.element('<a/>');
+                            anchor.attr({
+                                href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                                download: 'all_submissions.csv'
+                            })[0].click();
+                        },
+                        onError: function(response) {
+                            var details = response.data;
+                            $rootScope.notify('error', details.error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                }
+                
             } else {
                 $rootScope.notify("error", "Please select a challenge phase!");
             }
@@ -1477,6 +1571,7 @@
 
         // Edit Evaluation Script
         vm.evaluationScriptDialog = function(ev) {
+            vm.tempEvaluationCriteria = vm.page.evaluation_details;
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
