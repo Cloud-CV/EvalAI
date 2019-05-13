@@ -35,59 +35,27 @@ Our ultimate goal is to build a centralized platform to host, participate and co
 
 Some background: Last year, the [Visual Question Answering Challenge (VQA) 2016](http://www.visualqa.org/vqa_v1_challenge.html) was hosted on some other platform, and on average evaluation would take **~10 minutes**. EvalAI hosted this year's [VQA Challenge 2017](https://evalai.cloudcv.org/featured-challenges/1/overview). This year, the dataset for the [VQA Challenge 2017](http://www.visualqa.org/challenge.html) is twice as large. Despite this, we’ve found that our parallelized backend only takes **~130 seconds** to evaluate on the whole test set VQA 2.0 dataset.
 
-## Installation Instructions
+## Development setup
 
-Setting up EvalAI-ngx on your local machine is really easy.
-Follow this guide to setup your development machine.
+Use [Docker Compose](https://docs.docker.com/compose/install/) to run all the components of EvalAI-ngx together. The steps are:
 
-Get the source code on your machine via git
-```
-git clone git@github.com:Cloud-CV/EvalAI-ngx.git
-```
-If you have not added [ssh key](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/) to your GitHub account then get the source code by running the following command
-```
-git clone https://github.com/Cloud-CV/EvalAI-ngx
-```
-
-```
-npm install -g @angular/cli
-cd EvalAI-ngx/
-npm install
-```
-
-## Development
-
-### For Running on localhost:
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-### Backend for localhost:
-
-Setting up EvalAI on your local machine is really easy. You can setup EvalAI using docker:
-The steps are:
-
-1. Install [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and [docker-compose](https://docs.docker.com/compose/install/) on your machine.
-
-2. Get the source code on to your machine via git.
+1. Get the source code on to your machine via git.
 
     ```shell
-    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    git clone https://github.com/Cloud-CV/EvalAI-ngx.git && cd evalai-ngx
     ```
 
-3. Build and run the Docker containers. This might take a while.
+2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
 
     ```
-    docker-compose up --build
+    docker-compose up
     ```
 
-4. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
-    
+3. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
+
     **SUPERUSER-** username: `admin` password: `password`  
     **HOST USER-** username: `host` password: `password`  
     **PARTICIPANT USER-** username: `participant` password: `password`
-
-If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
-
 
 ### For deploying with [Surge](https://surge.sh/):
 
@@ -130,22 +98,6 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 ## Running end-to-end tests
 
 Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-### Setup using Docker
-
-You can also use Docker Compose to run all the components of EvalAI-ngx together. The steps are:
-
-1. Get the source code on to your machine via git.
-
-    ```shell
-    git clone https://github.com/Cloud-CV/EvalAI-ngx.git && cd EvalAI-ngx
-    ```
-
-2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
-
-    ```
-    docker-compose -f docker-compose.dev.yml up -d --build
-    ```
 
 ## The Team
 
