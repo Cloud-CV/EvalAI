@@ -37,7 +37,7 @@ fabfile/
 package-lock.json
 .sass-cache/
 node_modules/
-bower_components
+bower_components/
 frontend/dist/
 frontend/index.html
 yarn.lock
