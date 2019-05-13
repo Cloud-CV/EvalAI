@@ -211,7 +211,7 @@ class RemainingSubmissionDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChallengePhase
-        fields = ("slug", "name", "start_date", "end_date", "limits")
+        fields = ("slug", "name", "start_date", "end_date", "limits", "id")
 
     def get_limits(self, obj):
         return self.context.get("limits")

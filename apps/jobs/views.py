@@ -466,14 +466,22 @@ def leaderboard(request, challenge_phase_split_id):
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL(
             "result->>%s", (default_order_by,), output_field=FloatField()
-        )
+        ),
+        filtering_error=RawSQL(
+            "error->>%s",
+            ("error_{0}".format(default_order_by),),
+            output_field=FloatField(),
+        ),
     ).values(
         "id",
         "submission__participant_team__team_name",
+        "submission__participant_team__team_url",
         "submission__is_baseline",
         "challenge_phase_split",
         "result",
+        "error",
         "filtering_score",
+        "filtering_error",
         "leaderboard__schema",
         "submission__submitted_at",
         "submission__method_name",
@@ -482,9 +490,16 @@ def leaderboard(request, challenge_phase_split_id):
     if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
         leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
+    for leaderboard_item in leaderboard_data:
+        if leaderboard_item["error"] is None:
+            leaderboard_item.update(filtering_error=0)
+
     sorted_leaderboard_data = sorted(
         leaderboard_data,
-        key=lambda k: float(k["filtering_score"]),
+        key=lambda k: (
+            float(k["filtering_score"]),
+            float(-k["filtering_error"]),
+        ),
         reverse=True,
     )
 
@@ -504,6 +519,11 @@ def leaderboard(request, challenge_phase_split_id):
         item["result"] = [
             item["result"][index] for index in leaderboard_labels
         ]
+        if item["error"] is not None:
+            item["error"] = [
+                item["error"]["error_{0}".format(index)]
+                for index in leaderboard_labels
+            ]
 
     paginator, result_page = paginated_queryset(
         distinct_sorted_leaderboard_data,
@@ -528,6 +548,7 @@ def get_remaining_submissions(request, challenge_pk):
         "participant_team_id": 2,
         "phases": [
             {
+                "id": 1,
                 "slug": "megan-phase-1",
                 "name": "Megan Phase",
                 "start_date": "2018-10-28T14:22:53.022639Z",
@@ -539,6 +560,7 @@ def get_remaining_submissions(request, challenge_pk):
                 }
             },
             {
+                "id": 2,
                 "slug": "molly-phase-2",
                 "name": "Molly Phase",
                 "start_date": "2018-10-28T14:22:53Z",
@@ -777,9 +799,10 @@ def update_submission(request, challenge_pk):
         if successful_submission:
             try:
                 results = json.loads(submission_result)
-            except ValueError:
+            except (ValueError, TypeError) as exc:
                 response_data = {
-                    "error": "`result` key contains invalid data. Please try again with correct format!"
+                    "error": "`result` key contains invalid data with error {}."
+                    "Please try again with correct format.".format(str(exc))
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
