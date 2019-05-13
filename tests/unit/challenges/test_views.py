@@ -3767,7 +3767,7 @@ class GetChallengePhasesByChallengePk(BaseChallengePhaseClass):
             },
         ]
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
+        self.assertEqual(response.data["results"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phases_by_challenge_pk_when_user_is_not_challenge_host(self):
