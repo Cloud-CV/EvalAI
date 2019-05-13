@@ -3743,29 +3743,6 @@ class GetChallengePhasesByChallengePk(BaseChallengePhaseClass):
     def test_get_challenge_phases_by_challenge_pk(self):
         expected = [
             {
-                "id": self.challenge_phase.id,
-                "name": self.challenge_phase.name,
-                "description": self.challenge_phase.description,
-                "leaderboard_public": self.challenge_phase.leaderboard_public,
-                "start_date": "{0}{1}".format(
-                    self.challenge_phase.start_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "end_date": "{0}{1}".format(
-                    self.challenge_phase.end_date.isoformat(), "Z"
-                ).replace("+00:00", ""),
-                "challenge": self.challenge_phase.challenge.pk,
-                "is_public": self.challenge_phase.is_public,
-                "is_submission_public": self.challenge_phase.is_submission_public,
-                "is_active": True,
-                "codename": "Phase Code Name",
-                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-                "max_submissions": self.challenge_phase.max_submissions,
-                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
-                "test_annotation": "http://testserver%s"
-                % (self.challenge_phase.test_annotation.url),
-                "slug": self.challenge_phase.slug,
-            },
-            {
                 "id": self.private_challenge_phase.id,
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
@@ -3777,13 +3754,13 @@ class GetChallengePhasesByChallengePk(BaseChallengePhaseClass):
                     self.private_challenge_phase.end_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "challenge": self.private_challenge_phase.challenge.pk,
-                "is_public": self.private_challenge_phase.is_public,
-                "is_submission_public": self.challenge_phase.is_submission_public,
-                "is_active": True,
-                "codename": self.private_challenge_phase.codename,
                 "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
                 "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
                 "max_submissions": self.private_challenge_phase.max_submissions,
+                "is_public": self.private_challenge_phase.is_public,
+                "is_active": True,
+                "is_submission_public": False,
+                "codename": self.private_challenge_phase.codename,
                 "test_annotation": "http://testserver%s"
                 % (self.challenge_phase.test_annotation.url),
                 "slug": self.private_challenge_phase.slug,
