@@ -3735,20 +3735,24 @@ class GetChallengePhasesByChallengePk(BaseChallengePhaseClass):
 
     def test_get_challenge_phases_by_challenge_pk(self):
         expected = {
-            "id": self.challenge_phase.id,
-            "name": self.challenge_phase.name,
-            "description": self.challenge_phase.description,
-            "leaderboard_public": self.challenge_phase.leaderboard_public,
-            "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
-            "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
-            "challenge": self.challenge_phase.challenge.pk,
-            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-            'max_submissions_per_month': self.challenge_phase.max_submissions_per_month,
-            "max_submissions": self.challenge_phase.max_submissions,
-            "is_public": self.challenge_phase.is_public,
+            "id": self.private_challenge_phase.id,
+            "name": self.private_challenge_phase.name,
+            "description": self.private_challenge_phase.description,
+            "leaderboard_public": self.private_challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(
+                self.private_challenge_phase.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.private_challenge_phase.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "challenge": self.private_challenge_phase.challenge.pk,
+            "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+            "max_submissions": self.private_challenge_phase.max_submissions,
+            "is_public": self.private_challenge_phase.is_public,
             "is_active": True,
-            "codename": self.challenge_phase.codename,
-            "slug": self.challenge_phase.slug,
+            "codename": self.private_challenge_phase.codename,
+            "slug": self.private_challenge_phase.slug,
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -3759,7 +3763,7 @@ class GetChallengePhasesByChallengePk(BaseChallengePhaseClass):
         This is the case in which a user is not a challenge host
         """
         self.url = reverse_lazy(
-            "challenges:get_challenge_by_pk", kwargs={"pk": self.challenge.pk}
+            "challenges:get_challenge_phases_by_challenge_pk", kwargs={"pk": self.challenge.pk}
         )
         self.client.force_authenticate(user=self.user1)
         expected = {"error": "Sorry, you are not authorized to access these challenge phases."}
