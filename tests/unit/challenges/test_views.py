@@ -3790,16 +3790,13 @@ class GetChallengePhasesByChallengePk(BaseChallengePhaseClass):
             },
         ]
         response = self.client.get(self.url, {})
-        self.assertEqual(response.data["results"], expected)
+        self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phases_by_challenge_pk_when_user_is_not_challenge_host(self):
         """
         This is the case in which a user is not a challenge host
         """
-        self.url = reverse_lazy(
-            "challenges:get_challenge_phases_by_challenge_pk", kwargs={"pk": self.challenge3.pk}
-        )
         self.client.force_authenticate(user=self.user1)
         expected = {"error": "Sorry, you are not authorized to access these challenge phases."}
 
