@@ -1187,26 +1187,97 @@
         };
 
         vm.fileTypes = [{ 'name': 'csv' }];
+        vm.fields = [{
+            'label': 'Team Name',
+            'id': 'participant_team' 
+        },{
+            'label': 'Team Members',
+            'id': 'participant_team_members' 
+        },{
+            'label': 'Team Members Email Id',
+            'id': 'participant_team_members_email' 
+        },{
+            'label': 'Challenge Phase',
+            'id': 'challenge_phase' 
+        },{
+            'label': 'Status',
+            'id': 'status' 
+        },{
+            'label': 'Created By',
+            'id': 'created_by' 
+        },{
+            'label': 'Execution Time',
+            'id': 'execution_time' 
+        },{
+            'label': 'Submission Number',
+            'id': 'submission_number' 
+        },{
+            'label': 'Submitted File',
+            'id': 'input_file' 
+        },{
+            'label': 'Stdout File',
+            'id': 'stdout_file' 
+        },{
+            'label': 'Stderr File',
+            'id': 'stderr_file' 
+        },{
+            'label': 'Submitted At',
+            'id': 'created_at' 
+        },{
+            'label': 'Submission Result File',
+            'id': 'submission_result_file' 
+        },{
+            'label': 'Submission Metadata File',
+            'id': 'submission_metadata_file' 
+        }];
 
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
-                parameters.method = "GET";
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
-                        var anchor = angular.element('<a/>');
-                        anchor.attr({
-                            href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                            download: 'all_submissions.csv'
-                        })[0].click();
-                    },
-                    onError: function(response) {
-                        var details = response.data;
-                        $rootScope.notify('error', details.error);
+                if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
+                    parameters.method = "GET";
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var details = response.data;
+                            var anchor = angular.element('<a/>');
+                            anchor.attr({
+                                href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                                download: 'all_submissions.csv'
+                            })[0].click();
+                        },
+                        onError: function(response) {
+                            var details = response.data;
+                            $rootScope.notify('error', details.error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                }
+                else {
+                    parameters.method = "POST";
+                    var fieldsExport = [];
+                    for(var i = 0 ; i < vm.fields.length ; i++) {
+                        if (vm.fieldsToGet.includes(vm.fields[i].id)) {
+                            fieldsExport.push(vm.fields[i].id);
+                        }
                     }
-                };
-                utilities.sendRequest(parameters);
+                    parameters.data = fieldsExport;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var details = response.data;
+                            var anchor = angular.element('<a/>');
+                            anchor.attr({
+                                href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                                download: 'all_submissions.csv'
+                            })[0].click();
+                        },
+                        onError: function(response) {
+                            var details = response.data;
+                            $rootScope.notify('error', details.error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                }
+                
             } else {
                 $rootScope.notify("error", "Please select a challenge phase!");
             }
