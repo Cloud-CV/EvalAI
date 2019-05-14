@@ -1,3 +1,6 @@
+const puppeteer = require('puppeteer');
+process.env.CHROME_BIN = puppeteer.executablePath();
+
 // Karma configuration
 // Generated on Thu Apr 18 2019 11:48:30 GMT+0530 (India Standard Time)
 
@@ -12,19 +15,17 @@ module.exports = function(config) {
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['jasmine'],
 
-    // Config values to allow TravisCI to run chrome in it's container
-    browsers: ['Chrome'],
     customLaunchers: {
-        // tell TravisCI to use chromium when testing
-        Chrome_travis_ci: {
-            base: 'Chrome',
-            flags: ['--no-sandbox']
-        }
+        ChromeWithNoSandbox: {
+            base: 'ChromeHeadless',
+            flags: ['--no-sandbox'],
+        },
     },
+    browsers: ['ChromeWithNoSandbox'],
 
     // list of files / patterns to load in the browser
     files: [
-    	'frontend/dist/vendors/*.js',
+        'frontend/dist/vendors/*.js',
         'frontend/dist/js/config.js',
         'node_modules/angular-mocks/angular-mocks.js',
         'frontend/src/js/app.js',
@@ -67,11 +68,6 @@ module.exports = function(config) {
     autoWatch: true,
 
 
-    // start these browsers
-    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
-
-
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
     singleRun: false,
@@ -83,7 +79,7 @@ module.exports = function(config) {
 
   // Detect if this is TravisCI running the tests and tell it to use chromium
   if(process.env.TRAVIS){
-      configuration.browsers = ['Chrome_travis_ci'];
+      configuration.browsers = ['ChromeWithNoSandbox'];
   }
 
   config.set(configuration);
