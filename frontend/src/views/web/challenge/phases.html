@@ -11,9 +11,9 @@
                 <div class="row">
                     <div class="col s12">
                         <p><strong class="text-light-black fs-12">Starts on</strong>
-                            <br> <strong>{{item.start_date | date:'medium'}}</strong></p>
+                            <br> <strong>{{item.start_date | date:'medium'}} {{item.start_zone}}</strong></p>
                         <p><strong class="text-light-black fs-12">Ends on</strong>
-                            <br> <strong>{{item.end_date | date:'medium'}}</strong></p>
+                            <br> <strong>{{item.end_date | date:'medium'}} {{item.end_zone}}</strong></p>
                         <div ng-bind-html="item.description"></div>
                         <p><strong class="text-light-black fs-12">Max number of submissions/day</strong>
                             <br> <strong>{{item.max_submissions_per_day}}</strong></p>

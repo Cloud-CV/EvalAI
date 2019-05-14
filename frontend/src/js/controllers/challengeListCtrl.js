@@ -44,6 +44,7 @@
                     vm.noneCurrentChallenge = false;
                 }
 
+                var timezone = moment.tz.guess();
                 for (var i in vm.currentList) {
 
                     var descLength = vm.currentList[i].description.length;
@@ -52,6 +53,10 @@
                     } else {
                         vm.currentList[i].isLarge = "";
                     }
+                    var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
+                    vm.currentList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
+                    offset = new Date(vm.currentList[i].end_date).getTimezoneOffset();
+                    vm.currentList[i].end_zone = moment.tz.zone(timezone).abbr(offset);
 
                     var id = vm.currentList[i].id;
                     vm.challengeCreator[id] = vm.currentList[i].creator.id;
@@ -74,6 +79,7 @@
                             vm.noneUpcomingChallenge = false;
                         }
 
+                        var timezone = moment.tz.guess();
                         for (var i in vm.upcomingList) {
 
                             var descLength = vm.upcomingList[i].description.length;
@@ -83,7 +89,13 @@
                             } else {
                                 vm.upcomingList[i].isLarge = "";
                             }
+                            
+                            var offset = new Date(vm.upcomingList[i].start_date).getTimezoneOffset();
+                            vm.upcomingList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
+                            offset = new Date(vm.upcomingList[i].end_date).getTimezoneOffset();
+                            vm.upcomingList[i].end_zone = moment.tz.zone(timezone).abbr(offset);
 
+                            
                             var id = vm.upcomingList[i].id;
                             vm.challengeCreator[id] = vm.upcomingList[i].creator.id;
                             utilities.storeData("challengeCreator", vm.challengeCreator);
@@ -105,7 +117,7 @@
                                     vm.nonePastChallenge = false;
                                 }
 
-
+                                var timezone = moment.tz.guess();
                                 for (var i in vm.pastList) {
 
 
@@ -115,6 +127,12 @@
                                     } else {
                                         vm.pastList[i].isLarge = "";
                                     }
+
+                                    var offset = new Date(vm.pastList[i].start_date).getTimezoneOffset();
+                                    vm.pastList[i].start_zone = moment.tz.zone(timezone).abbr(offset);
+                                    offset = new Date(vm.pastList[i].end_date).getTimezoneOffset();
+                                    vm.pastList[i].end_zone = moment.tz.zone(timezone).abbr(offset);
+
                                     var id = vm.pastList[i].id;
                                     vm.challengeCreator[id] = vm.pastList[i].creator.id;
                                     utilities.storeData("challengeCreator", vm.challengeCreator);
