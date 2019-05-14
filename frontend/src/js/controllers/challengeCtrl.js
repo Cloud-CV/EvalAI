@@ -420,11 +420,19 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
+                var timezone = moment.tz.guess();
                 for (var i=0; i<details.count; i++) {
                     if (details.results[i].is_public == false) {
                         vm.phases.results[i].showPrivate = true;
                     }
                 }
+                for(var i=0; i<vm.phases.results.length; i++){
+                    var offset = new Date(vm.phases.results[i].start_date).getTimezoneOffset();
+                    vm.phases.results[i].start_zone = moment.tz.zone(timezone).abbr(offset);
+                    offset = new Date(vm.phases.results[i].end_date).getTimezoneOffset();
+                    vm.phases.results[i].end_zone = moment.tz.zone(timezone).abbr(offset);
+                }
+                
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
