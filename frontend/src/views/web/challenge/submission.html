@@ -144,20 +144,20 @@
                                                 class="text-med-black">Phase: </strong>{{item.name}}
                                             <br>
                                             <strong class="text-med-black">Start date:
-                                            </strong>{{item.start_date | date:'medium'}}
+                                            </strong>{{item.start_date | date:'medium'}} {{item.start_zone}}
                                             <br>
                                             <strong class="text-med-black">End date:
-                                            </strong>{{item.end_date | date:'medium'}}
+                                            </strong>{{item.end_date | date:'medium'}} {{item.end_zone}}
                                         </div>
                                         <div class="show-member-title pointer" ng-if="item.showPrivate"><strong
                                                 class="text-highlight">Phase: </strong> <span class="text-highlight">
                                                 {{item.name}}</span>
                                             <br>
                                             <strong class="text-highlight">Start date: </strong><span
-                                                class="text-highlight">{{item.start_date | date:'medium'}}</span>
+                                                class="text-highlight">{{item.start_date | date:'medium'}} {{item.start_zone}}</span>
                                             <br>
                                             <strong class="text-highlight">End date: </strong><span
-                                                class="text-highlight">{{item.end_date | date:'medium'}}</span>
+                                                class="text-highlight">{{item.end_date | date:'medium'}} {{item.end_zone}}</span>
                                         </div>
                                         <div class="clearfix"></div>
                                     </li>
