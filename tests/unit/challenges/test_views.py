@@ -3681,10 +3681,10 @@ class StarChallengesTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
-class GetChallengePhaseByPk(BaseChallengePhaseClass):
+class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
 
     def setUp(self):
-        super(GetChallengePhaseByPk, self).setUp()
+        super(GetChallengePhaseByPkTest, self).setUp()
         self.url = reverse_lazy('challenges:get_challenge_phase_by_pk',
                                 kwargs={'pk': self.challenge_phase.pk})
 
@@ -3709,7 +3709,7 @@ class GetChallengePhaseByPk(BaseChallengePhaseClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_phase_by_pk_does_not_exist(self):
+    def test_get_challenge_phase_by_pk_if_pk_does_not_exist(self):
         self.url = reverse_lazy('challenges:get_challenge_phase_by_pk',
                                 kwargs={'pk': self.challenge_phase.pk + 2})
         expected = {
@@ -3720,10 +3720,10 @@ class GetChallengePhaseByPk(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-class GetChallengePhasesByChallengePk(BaseChallengePhaseClass):
+class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
 
     def setUp(self):
-        super(GetChallengePhasesByChallengePk, self).setUp()
+        super(GetChallengePhasesByChallengePkTest, self).setUp()
         self.url = reverse_lazy('challenges:get_challenge_phases_by_challenge_pk',
                                 kwargs={"challenge_pk": self.challenge.pk},)
 
@@ -3793,13 +3793,27 @@ class GetChallengePhasesByChallengePk(BaseChallengePhaseClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_challenge_phases_by_challenge_pk_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy(
+            'challenges:get_challenge_phases_by_challenge_pk',
+            kwargs={"challenge_pk": self.challenge.pk + 10},
+        )
+
+        expected = {
+            "detail": "Challenge {} does not exist".format(
+                self.challenge.pk + 10
+            )
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_get_challenge_phases_by_challenge_pk_when_user_is_not_challenge_host(self):
         """
         This is the case in which a user is not a challenge host
         """
         self.client.force_authenticate(user=self.user1)
         expected = {"error": "Sorry, you are not authorized to access these challenge phases."}
-
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
