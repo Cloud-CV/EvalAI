@@ -28,10 +28,10 @@
                     </span>
                     <ol>
                         <li>Install evalai-cli<br>
-                            <code>$ pip install evalai</code>
+                            <code>$ pip install evalai{{challenge.cliVersion}}</code>
                             <button class="btn ev-btn-dark waves-effect waves-dark grad-btn code-btn"
                                 ng-click="challenge.showConfirmation('Command copied to clipboard')" ngclipboard
-                                data-clipboard-text="pip install evalai">
+                                data-clipboard-text='pip install "evalai{{challenge.cliVersion}}"'>
                                 <i class="fa fa-clipboard" aria-hidden="true" alt="Copy to clipboard."></i>
                             </button>
                         </li>
@@ -144,20 +144,20 @@
                                                 class="text-med-black">Phase: </strong>{{item.name}}
                                             <br>
                                             <strong class="text-med-black">Start date:
-                                            </strong>{{item.start_date | date:'medium'}}
+                                            </strong>{{item.start_date | date:'medium'}} {{item.start_zone}}
                                             <br>
                                             <strong class="text-med-black">End date:
-                                            </strong>{{item.end_date | date:'medium'}}
+                                            </strong>{{item.end_date | date:'medium'}} {{item.end_zone}}
                                         </div>
                                         <div class="show-member-title pointer" ng-if="item.showPrivate"><strong
                                                 class="text-highlight">Phase: </strong> <span class="text-highlight">
                                                 {{item.name}}</span>
                                             <br>
                                             <strong class="text-highlight">Start date: </strong><span
-                                                class="text-highlight">{{item.start_date | date:'medium'}}</span>
+                                                class="text-highlight">{{item.start_date | date:'medium'}} {{item.start_zone}}</span>
                                             <br>
                                             <strong class="text-highlight">End date: </strong><span
-                                                class="text-highlight">{{item.end_date | date:'medium'}}</span>
+                                                class="text-highlight">{{item.end_date | date:'medium'}} {{item.end_zone}}</span>
                                         </div>
                                         <div class="clearfix"></div>
                                     </li>
@@ -169,7 +169,7 @@
                                                     name="challenge.input_file" accept=".json, .zip, .txt">
                                             </div>
                                             <div class="file-path-wrapper">
-                                                <input class="file-path validate" type="text">
+                                                <input class="file-path validate" type="text" readonly>
                                             </div>
                                         </div>
                                     </div>
@@ -212,6 +212,7 @@
                                             <div class="col s12 m12">
                                                 <div class="align-left ">
                                                     <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14"
+                                                        ng-disabled="challenge.disableSubmit || !challenge.input_file"
                                                         type="submit" value="Submit">Submit</button>
                                                     <br>
                                                     <br>

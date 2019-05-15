@@ -1,3 +1,5 @@
+import csv
+import io
 import os
 import shutil
 
@@ -13,9 +15,11 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge, ChallengePhase
+from challenges.utils import get_challenge_model
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from participants.models import ParticipantTeam, Participant
+from participants.serializers import ChallengeParticipantSerializer
 
 
 class BaseAPITestClass(APITestCase):
@@ -953,3 +957,67 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
         }
         self.assertEqual(response_data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class GetParticipantTeamsTest(BaseAPITestClass):
+    def setUp(self):
+        super(GetParticipantTeamsTest, self).setUp()
+        self.url = reverse_lazy(
+            "analytics:download_all_participants",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.participant_teams.add(self.participant_team3)
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+        )
+
+    def test_host_downloads_participant_team(self):
+        expected = io.StringIO()
+        expected_participant_teams = csv.writer(expected)
+        expected_participant_teams.writerow(
+            [
+                "Team Name",
+                "Team Members",
+                "Email Id",
+            ]
+        )
+        challenge = get_challenge_model(self.challenge.pk)
+        participant_team = challenge.participant_teams.all().order_by("-team_name")
+        participant_teams = ChallengeParticipantSerializer(participant_team, many=True)
+        for team in participant_teams.data:
+            expected_participant_teams.writerow(
+                [
+                    team["team_name"],
+                    ",".join(
+                        team["team_members"]
+                    ),
+                    ",".join(
+                        team["team_members_email_ids"]
+                    ),
+                ]
+            )
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.content.decode("utf-8"), expected.getvalue())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_not_host_downloads_participant_team(self):
+        expected = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

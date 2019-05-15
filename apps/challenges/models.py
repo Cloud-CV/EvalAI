@@ -13,16 +13,15 @@ from base.models import (
     model_field_name,
     create_post_model_field,
 )
-from base.utils import RandomFileName
+from base.utils import RandomFileName, get_slug
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
 
 
 @receiver(pre_save, sender="challenges.Challenge")
 def save_challenge_slug(sender, instance, **kwargs):
-    instance.slug = "{}-{}".format(
-        instance.title.replace(" ", "-").lower(), instance.pk
-    )[:199]
+    title = get_slug(instance.title)
+    instance.slug = "{}-{}".format(title, instance.pk)
 
 
 class Challenge(TimeStampedModel):
@@ -110,6 +109,9 @@ class Challenge(TimeStampedModel):
         max_length=50, default="us-east-1", null=True, blank=True
     )
     use_host_credentials = models.BooleanField(default=False)
+    cli_version = models.CharField(
+        max_length=20, verbose_name="evalai-cli version", null=True, blank=True
+    )
 
     class Meta:
         app_label = "challenges"
@@ -307,6 +309,7 @@ class LeaderboardData(TimeStampedModel):
     submission = models.ForeignKey("jobs.Submission")
     leaderboard = models.ForeignKey("Leaderboard")
     result = JSONField()
+    error = JSONField(null=True, blank=True)
 
     def __str__(self):
         return "{0} : {1}".format(self.challenge_phase_split, self.submission)
