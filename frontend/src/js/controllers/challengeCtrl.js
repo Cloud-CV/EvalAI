@@ -20,6 +20,8 @@
         vm.publicationUrl = "";
         vm.wrnMsg = {};
         vm.page = {};
+         // message for not verified users
+        vm.emailError = "Please verify your email first!";
         vm.isParticipated = false;
         vm.isActive = false;
         vm.phases = {};
