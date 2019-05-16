@@ -21,8 +21,7 @@ urlpatterns = [
         name="get_remaining_submissions",
     ),
     url(
-        r'^challenge/(?P<challenge_id>[0-9]+)/'
-        r'challenge_phase/(?P<challenge_phase_id>[0-9]+)/re_run_submission/(?P<submission_number>[0-9]+)$',
+        r'^re_run_submission/(?P<submission_number>[0-9]+)$',
         views.re_run_submission, name='re_run_submission'
     ),
     url(

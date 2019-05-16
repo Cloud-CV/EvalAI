@@ -937,33 +937,34 @@ def update_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle, ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def re_run_submission(request, challenge_id, challenge_phase_id, submission_number):
+def re_run_submission(request, submission_number):
     """
     API endpoint to re-run a submission.
     Only challenge host has access to this endpoint.
     """
-    # check if the challenge exists or not
-    try:
-        challenge = Challenge.objects.get(pk=challenge_id)
-    except Challenge.DoesNotExist:
-        response_data = {'error': 'Challenge does not exist'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    # check if the challenge phase exists or not
-    try:
-        challenge_phase = ChallengePhase.objects.get(
-            pk=challenge_phase_id, challenge=challenge)
-    except ChallengePhase.DoesNotExist:
-        response_data = {'error': 'Challenge Phase does not exist'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     try:
         submission = Submission.objects.get(submission_number=submission_number)
-        logger.info('Submission found with challenge ID {}, submission number {}'
-                    .format(challenge_id, submission_number))
+        logger.info('Submission found with submission number {}'
+                    .format(submission_number))
     except Submission.DoesNotExist:
         response_data = {'error': 'Submission with submission number {} does not exist'.format(submission_number)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # check if the challenge phase exists or not
+    try:
+        challenge_phase = submission.challenge_phase
+        challenge_phase_id = challenge_phase.id
+    except Exception as e:
+        response_data = {'error': 'Challenge Phase does not exist'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    # check if the challenge exists or not
+    try:
+        challenge = challenge_phase.challenge
+        challenge_id = challenge.id
+    except Exception as e:
+        response_data = {'error': 'Challenge does not exist'}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if not is_user_a_host_of_challenge(request.user, challenge_id):
         response_data = {

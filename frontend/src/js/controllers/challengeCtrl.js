@@ -883,7 +883,7 @@
         };
 
         vm.rerunSubmission = function(submission_number) {
-            parameters.url = 'jobs/challenge/' + vm.challengeId +'/challenge_phase/' + vm.phaseId + '/re_run_submission/' + submission_number;
+            parameters.url = 'jobs/re_run_submission/' + submission_number;
             parameters.method = 'POST';
             var formData = new FormData();
             parameters.data = formData;
