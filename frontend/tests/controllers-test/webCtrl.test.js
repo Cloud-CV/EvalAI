@@ -1,0 +1,66 @@
+'use strict';
+
+describe('Unit tests for Web Controller', function () {
+	beforeEach(angular.mock.module('evalai'));
+
+	var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, vm;
+
+	beforeEach(inject(function(_$controller_, _$injector_, _$rootScope_, _utilities_, _$state_, _$stateParams_) {
+		$controller = _$controller_;
+        $rootScope = _$rootScope_;
+        utilities = _utilities_;
+        $state =_$state_;
+        $stateParams = _$stateParams_;
+
+        $scope = $rootScope.$new();
+        createController = function () {
+            return $controller('WebCtrl', { $scope: $scope });
+        };
+        vm = createController();
+	}));
+
+	describe('Global Variables', function() {
+        beforeEach(function () {
+            spyOn(utilities, 'hideLoader');
+            spyOn(utilities, 'getData');
+        });
+
+		it('has default values', function() {
+            vm = createController();
+			expect(vm.user).toEqual({});
+            expect(utilities.hideLoader).toHaveBeenCalled();
+            utilities.storeData('userKey', 'encrypted');
+            expect(utilities.getData).toHaveBeenCalledWith('userKey');
+		});
+	});
+
+	describe('Unit tests for global backend call `auth/user/`', function () {
+        var success, success_response, error_response;
+
+        beforeEach(function () { 
+            utilities.sendRequest = function (parameters) {
+                if (success) {
+                    parameters.callback.onSuccess({
+                        data: success_response,
+                        status: 200
+                    });
+                } else {
+                    parameters.callback.onError({
+                        data: error_response
+                    });
+                }
+            };
+        });
+
+        it('successfully get the user details', function () {
+            success = true;
+            success_response = {
+                username: "user",
+                first_name: "firstname",
+                last_name: "lastname"
+            };
+            vm = createController();
+            expect(vm.name).toEqual(success_response.username);
+        });
+    });
+});
