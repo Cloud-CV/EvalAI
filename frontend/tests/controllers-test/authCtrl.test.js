@@ -62,7 +62,7 @@ describe('Unit Tests for auth controller', function () {
         });
     });
 
-    describe('Unit test for userSignUp function', function () {
+    describe('Unit test for userSignUp function `auth/registration/`', function () {
         var errors = {
             username: 'username error',
             email: 'email error',
@@ -151,7 +151,7 @@ describe('Unit Tests for auth controller', function () {
         });
     });
 
-    describe('Unit test for userLogin function', function () {
+    describe('Unit test for userLogin function `auth/login/`', function () {
         var nonFieldErrors, token;
 
         beforeEach(function () {
@@ -211,7 +211,7 @@ describe('Unit Tests for auth controller', function () {
         });
     });
 
-    describe('checkPassWordStrength', function () {
+    describe('Unit tests for checkPasswordStrength', function () {
 
         var passWordsTestsList = [
             {
@@ -282,7 +282,7 @@ describe('Unit Tests for auth controller', function () {
         });
     });
 
-    describe('verifyEmail', function () {
+    describe('Unit tests for verifyEmail function `auth/registration/account-confirm-email/<email_conf_key>/`', function () {
         var verified;
 
         beforeEach(function () {
@@ -308,7 +308,7 @@ describe('Unit Tests for auth controller', function () {
         });
     });
 
-    describe('resetPassword', function () {
+    describe('Unit tests for resetPassword function `auth/password/reset/`', function () {
         var success;
 
         var mailSent = 'mail sent';
@@ -346,7 +346,7 @@ describe('Unit Tests for auth controller', function () {
         });
     });
 
-    describe('resetPasswordConfirm', function () {
+    describe('Unit tests for resetPasswordConfirm function `auth/password/reset/confirm/`', function () {
         var success;
 
         var resetConfirm = 'password reset confirmed';

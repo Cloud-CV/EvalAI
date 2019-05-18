@@ -52,12 +52,12 @@ describe('Unit Tests for challenge create controller', function() {
             };
         });
 
-    	it('host team not selected', function() {
+    	it('when host team not selected `vm.hostTeamId=null`', function() {
     		vm.challengeCreate();
     		expect(vm.infoMsg).toEqual("Please select a challenge host team!");
     	});
 
-    	it('on success', function() {
+    	it('on success of `challenges/challenge/challenge_host_team/<host_team_id>/zip_upload/`', function() {
     		success = true;
     		vm.hostTeamId = 1;
     		vm.input_file = 'challenge_conf.zip'
@@ -68,7 +68,7 @@ describe('Unit Tests for challenge create controller', function() {
     		expect($state.go).toHaveBeenCalledWith('home');
     	});
 
-    	it('on error', function() {
+    	it('on error of `challenges/challenge/challenge_host_team/<host_team_id>/zip_upload/`', function() {
     		success = false;
     		vm.hostTeamId = 1;
     		vm.input_file = 'challenge_conf.zip'
