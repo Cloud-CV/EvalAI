@@ -20,6 +20,12 @@ cache:
 before_cache:
 - rm -f $HOME/.cache/pip/log/debug.log
 before_script:
+- npm install
+- npm install -g bower
+- npm install -g gulp
+- npm install -g karma-cli
+- bower install
+- gulp dev
 - sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/10/main/postgresql.conf
 - sudo cp /etc/postgresql/{9.4,10}/main/pg_hba.conf
 - sudo service postgresql restart
@@ -28,11 +34,15 @@ before_script:
 - java -jar elasticmq-server-0.14.2.jar &
 before_install:
 - sudo rm -f /etc/boto.cfg
+- export CHROME_BIN=chromium-browser
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
 install:
 - pip install -r requirements/dev.txt
 - pip install awscli==1.16.57 coveralls
 script:
 - flake8 ./
+- karma start --single-run
 - py.test --cov . --cov-config .coveragerc
 after_success:
 - coveralls --rcfile=.coveragerc
