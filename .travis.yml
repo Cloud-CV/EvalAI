@@ -41,7 +41,7 @@ install:
 - pip install awscli==1.16.57 coveralls
 script:
 - flake8 ./
-- node_modules/karma/bin/karma start karma.conf.js --single-run
+- karma start --single-run
 - py.test --cov . --cov-config .coveragerc
 after_success:
 - coveralls --rcfile=.coveragerc
