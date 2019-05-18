@@ -13,7 +13,11 @@ ADD ./karma.conf.js /code
 RUN npm install -g bower gulp
 
 # This enables `apt` to run from the new sources
-RUN printf "deb http://archive.debian.org/debian/ jessie main\ndeb-src http://archive.debian.org/debian/ jessie main\ndeb http://security.debian.org jessie/updates main\ndeb-src http://security.debian.org jessie/updates main" > /etc/apt/sources.list
+RUN printf "deb http://archive.debian.org/debian/ \
+jessie main\ndeb-src http://archive.debian.org/debian/ \
+jessie main\ndeb http://security.debian.org jessie/updates \
+main\ndeb-src http://security.debian.org \
+jessie/updates main" > /etc/apt/sources.list
 
 # Install the latest chrome dev package
 RUN apt-get update && \
