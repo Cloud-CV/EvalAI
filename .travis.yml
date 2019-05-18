@@ -23,6 +23,7 @@ before_script:
 - npm install
 - npm install -g bower
 - npm install -g gulp
+- npm install -g karma-cli
 - bower install
 - gulp dev
 - sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/10/main/postgresql.conf

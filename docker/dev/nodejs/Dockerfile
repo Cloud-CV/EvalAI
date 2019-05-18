@@ -28,6 +28,7 @@ RUN npm link gulp
 
 RUN npm cache clean -f
 RUN npm install
+RUN npm install -g karma-cli
 RUN bower install --allow-root
 
 CMD ["gulp", "dev:runserver"]
