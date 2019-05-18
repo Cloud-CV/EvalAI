@@ -137,7 +137,7 @@ describe('Unit Tests for analytics controller', function() {
 		});
 	});
 
-	describe('Unit Tests for `showChallengeAnalysis` function `challenges/challenge/<challenge_id>/challenge_phase`', function() {
+	describe('Unit tests for `showChallengeAnalysis` function `challenges/challenge/<challenge_id>/challenge_phase`', function() {
 		var success, participant_team_count = 10;
 
 		beforeEach(function() {

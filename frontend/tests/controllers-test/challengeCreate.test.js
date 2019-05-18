@@ -32,7 +32,7 @@ describe('Unit Tests for challenge create controller', function() {
         });
     });
 
-    describe('Unit Tests for challengeCreate function', function() {
+    describe('Unit tests for challengeCreate function', function() {
     	var success;
 
     	beforeEach(function() {
@@ -57,7 +57,7 @@ describe('Unit Tests for challenge create controller', function() {
     		expect(vm.infoMsg).toEqual("Please select a challenge host team!");
     	});
 
-    	it('on success of `challenges/challenge/challenge_host_team/<host_team_id>/zip_upload/`', function() {
+    	it('success of `challenges/challenge/challenge_host_team/<host_team_id>/zip_upload/`', function() {
     		success = true;
     		vm.hostTeamId = 1;
     		vm.input_file = 'challenge_conf.zip'
@@ -68,7 +68,7 @@ describe('Unit Tests for challenge create controller', function() {
     		expect($state.go).toHaveBeenCalledWith('home');
     	});
 
-    	it('on error of `challenges/challenge/challenge_host_team/<host_team_id>/zip_upload/`', function() {
+    	it('error of `challenges/challenge/challenge_host_team/<host_team_id>/zip_upload/`', function() {
     		success = false;
     		vm.hostTeamId = 1;
     		vm.input_file = 'challenge_conf.zip'

@@ -62,7 +62,7 @@ describe('Unit Tests for auth controller', function () {
         });
     });
 
-    describe('Unit test for userSignUp function `auth/registration/`', function () {
+    describe('Unit tests for userSignUp function `auth/registration/`', function () {
         var errors = {
             username: 'username error',
             email: 'email error',
@@ -151,7 +151,7 @@ describe('Unit Tests for auth controller', function () {
         });
     });
 
-    describe('Unit test for userLogin function `auth/login/`', function () {
+    describe('Unit tests for userLogin function `auth/login/`', function () {
         var nonFieldErrors, token;
 
         beforeEach(function () {
