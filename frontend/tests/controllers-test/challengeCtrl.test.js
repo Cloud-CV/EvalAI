@@ -1,11 +1,11 @@
 'use strict';
 
 describe('Unit tests for challenge controller', function () {
-	beforeEach(angular.mock.module('evalai'));
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $injector, $rootScope, $state, $scope, utilities, $http, $interval, $mdDialog, moment, vm;
+    var $controller, createController, $injector, $rootScope, $state, $scope, utilities, $http, $interval, $mdDialog, moment, vm;
 
-	beforeEach(inject(function(_$controller_, _$injector_,  _$rootScope_, _$state_, _utilities_, _$http_, _$interval_, _$mdDialog_, _moment_) {
+    beforeEach(inject(function (_$controller_, _$injector_,  _$rootScope_, _$state_, _utilities_, _$http_, _$interval_, _$mdDialog_, _moment_) {
         $controller = _$controller_;
         $injector = _$injector_;
         $rootScope = _$rootScope_;
@@ -18,7 +18,7 @@ describe('Unit tests for challenge controller', function () {
         
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('ChallengeCtrl', { $scope: $scope });
+            return $controller('ChallengeCtrl', {$scope: $scope});
         };
         vm = createController();
     }));
@@ -221,7 +221,8 @@ describe('Unit tests for challenge controller', function () {
             });
         });
 
-        it('success of selectExistTeam function `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
+        it('success of selectExistTeam function \
+        `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
             success = true;
             successResponse = {
                 // pagination response
@@ -250,7 +251,8 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        it('404 backend error of selectExistTeam function `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
+        it('404 backend error of selectExistTeam function \
+        `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
             success = true;
             status = 404
             successResponse = {
@@ -283,7 +285,8 @@ describe('Unit tests for challenge controller', function () {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        it('other backend error of selectExistTeam function `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
+        it('other backend error of selectExistTeam function \
+        `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
             success = true;
             status = !404
             successResponse = {
