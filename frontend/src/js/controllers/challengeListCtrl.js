@@ -22,7 +22,7 @@
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
 
-        // calls for ongoing challneges
+        // calls for ongoing challenges
         vm.challengeCreator = {};
         var parameters = {};
         parameters.method = 'GET';
@@ -102,7 +102,7 @@
                         }
 
                         // dependent api
-                        // calls for upcoming challneges
+                        // calls for past challneges
                         parameters.url = 'challenges/challenge/past';
                         parameters.method = 'GET';
 
