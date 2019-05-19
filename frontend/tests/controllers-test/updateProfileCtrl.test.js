@@ -1,29 +1,28 @@
 'use strict';
 
-describe('Unit Tests for Update Profile Controller', function() {
-	beforeEach(angular.mock.module('evalai'));
+describe('Unit Tests for Update Profile Controller', function () {
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, $rootScope, $scope, utilities, $state, $http, vm;
+    var $controller, $rootScope, $scope, utilities, $state, vm;
 
-	beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_, _$state_, _$http_,) {
-		$controller = _$controller_;
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$state_,) {
+        $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $state =_$state_;
-        $http = _$http_;
 
         $scope = $rootScope.$new();
-        vm = $controller('updateProfileCtrl', { $scope: $scope });
-	}));
+        vm = $controller('updateProfileCtrl', {$scope: $scope});
+    }));
 
-	describe('Global Variables', function() {
-		it('has default values', function() {
-			expect(vm.wrnMsg).toEqual({});
-			expect(vm.isValid).toEqual({});
+    describe('Global Variables', function () {
+        it('has default values', function () {
+            expect(vm.wrnMsg).toEqual({});
+            expect(vm.isValid).toEqual({});
             expect(vm.user).toEqual({});
             expect(vm.isFormError).toBeFalsy();
-		});
-	});
+        });
+    });
 
     describe('Validate helper functions', function () {
         it('startLoader', function () {
@@ -41,7 +40,7 @@ describe('Unit Tests for Update Profile Controller', function() {
         });
     });
 
-	describe('Unit Tests for `updateProfile` function', function () {
+    describe('Unit Tests for `updateProfile` function', function () {
         var success, tryClauseResponse;
         var usernameInvalid  = {
             username: ["username error"],
