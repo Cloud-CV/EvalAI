@@ -42,20 +42,17 @@ describe('Unit Tests for Update Profile Controller', function() {
     });
 
 	describe('Unit Tests for `updateProfile` function', function () {
-        var success, try_response;
-        var response = {
-            message: "Some Message",
-        };
-        var username_valid  = {
+        var success, tryClauseResponse;
+        var usernameInvalid  = {
             username: ["username error"],
         };
-        var firstname_valid = {
+        var firstnameInvalid = {
             first_name: ["firstname error"],
         };
-        var lastname_valid = {
+        var lastnameInvalid = {
             last_name: ["lastname error"]
         };
-        var affiliation_valid = {
+        var affiliationInvalid = {
             affiliation: ["affiliation error"]
         };
 
@@ -82,7 +79,7 @@ describe('Unit Tests for Update Profile Controller', function() {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: try_response,
+                        data: tryClauseResponse,
                         status: 400
                     });
                 }
@@ -99,61 +96,61 @@ describe('Unit Tests for Update Profile Controller', function() {
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        it('when username is valid', function () {
+        it('when username is invalid', function () {
             var resetconfirmFormValid = true;
-            try_response = username_valid;
+            tryClauseResponse = usernameInvalid;
             success = false;
 
             vm.updateProfile(resetconfirmFormValid);
             expect(vm.startLoader).toHaveBeenCalledWith("Updating Your Profile");
             expect(vm.stopLoader).toHaveBeenCalled();
             expect(vm.isFormError).toBeTruthy();
-            expect(vm.FormError).toEqual(try_response.username[0]);
+            expect(vm.FormError).toEqual(tryClauseResponse.username[0]);
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        it('when firstname is valid', function () {
+        it('when firstname is invalid', function () {
             var resetconfirmFormValid = true;
-            try_response = firstname_valid;
+            tryClauseResponse = firstnameInvalid;
             success = false;
 
             vm.updateProfile(resetconfirmFormValid);
             expect(vm.startLoader).toHaveBeenCalledWith("Updating Your Profile");
             expect(vm.stopLoader).toHaveBeenCalled();
             expect(vm.isFormError).toBeTruthy();
-            expect(vm.FormError).toEqual(try_response.first_name[0]);
+            expect(vm.FormError).toEqual(tryClauseResponse.first_name[0]);
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        it('when lastname is valid', function () {
+        it('when lastname is invalid', function () {
             var resetconfirmFormValid = true;
-            try_response = lastname_valid;
+            tryClauseResponse = lastnameInvalid;
             success = false;
 
             vm.updateProfile(resetconfirmFormValid);
             expect(vm.startLoader).toHaveBeenCalledWith("Updating Your Profile");
             expect(vm.stopLoader).toHaveBeenCalled();
             expect(vm.isFormError).toBeTruthy();
-            expect(vm.FormError).toEqual(try_response.last_name[0]);
+            expect(vm.FormError).toEqual(tryClauseResponse.last_name[0]);
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        it('when affiliation is valid', function () {
+        it('when affiliation is invalid', function () {
             var resetconfirmFormValid = true;
-            try_response = affiliation_valid;
+            tryClauseResponse = affiliationInvalid;
             success = false;
 
             vm.updateProfile(resetconfirmFormValid);
             expect(vm.startLoader).toHaveBeenCalledWith("Updating Your Profile");
             expect(vm.stopLoader).toHaveBeenCalled();
             expect(vm.isFormError).toBeTruthy();
-            expect(vm.FormError).toEqual(try_response.affiliation[0]);
+            expect(vm.FormError).toEqual(tryClauseResponse.affiliation[0]);
             expect(vm.stopLoader).toHaveBeenCalled();
         });
 
         it('other backend error in try clause', function () {
             var resetconfirmFormValid = true;
-            try_response = {};
+            tryClauseResponse = {};
             success = false;
 
             vm.updateProfile(resetconfirmFormValid);
