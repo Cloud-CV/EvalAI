@@ -370,8 +370,8 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    vm.team.name = response.data.team_name;
-                    vm.team.url = response.data.team_url;
+                    vm.team.TeamName = response.data.team_name;
+                    vm.team.TeamURL = response.data.team_url;
                 },
                 onError: function(response) {
                     var error = response.data['error'];
