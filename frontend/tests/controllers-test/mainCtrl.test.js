@@ -1,39 +1,39 @@
 'use strict';
 
 describe('Unit tests for Main Controller', function () {
-	beforeEach(angular.mock.module('evalai'));
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $rootScope, $scope, utilities, $state, vm;
+    var $controller, createController, $rootScope, $scope, utilities, $state, vm;
 
-	beforeEach(inject(function(_$controller_, _$rootScope_, _$state_, _utilities_,) {
-		$controller = _$controller_;
+    beforeEach(inject(function (_$controller_, _$rootScope_, _$state_, _utilities_,) {
+        $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $state = _$state_;
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('MainCtrl', { $scope: $scope });
+            return $controller('MainCtrl', {$scope: $scope});
         };
         vm = createController();
-	}));
+    }));
 
-	describe('Global variables', function() {
-		it('has default values', function() {
+    describe('Global variables', function () {
+        it('has default values', function () {
             vm = createController();
-			expect(vm.user).toEqual({});
-			expect(vm.challengeList).toEqual([]);
-			expect(vm.isChallenge).toBeTruthy({});
-			expect(vm.isMore).toBeFalsy();
+            expect(vm.user).toEqual({});
+            expect(vm.challengeList).toEqual([]);
+            expect(vm.isChallenge).toBeTruthy({});
+            expect(vm.isMore).toBeFalsy();
             expect(vm.redirectUrl).toEqual({});
-		});
-	});
+        });
+    });
 
-	describe('Unit tests for getChallenge function `challenges/featured/`', function () {
-    	var success, successResponse;
+    describe('Unit tests for getChallenge function `challenges/featured/`', function () {
+        var success, successResponse;
         var errorResponse = 'error';
 
-    	beforeEach(function () {
+        beforeEach(function () {
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({

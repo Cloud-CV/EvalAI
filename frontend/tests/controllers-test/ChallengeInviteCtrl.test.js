@@ -1,11 +1,11 @@
 'use strict';
 
 describe('Unit tests for Challenge Invite Controller', function () {
-	beforeEach(angular.mock.module('evalai'));
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $rootScope, $state, $scope, utilities, vm;
+    var $controller, createController, $rootScope, $state, $scope, utilities, vm;
 
-	beforeEach(inject(function(_$controller_,  _$rootScope_, _$state_, _utilities_,) {
+    beforeEach(inject(function (_$controller_,  _$rootScope_, _$state_, _utilities_,) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         $state = _$state_;
@@ -13,12 +13,13 @@ describe('Unit tests for Challenge Invite Controller', function () {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('ChallengeInviteCtrl', { $scope: $scope });
+            return $controller('ChallengeInviteCtrl', {$scope: $scope});
         };
         vm = createController();
     }));
 
-    describe('Unit tests for registerChallengeParticipant function `challenges/<invitation_key>/accept-invitation/`', function () {
+    describe('Unit tests for registerChallengeParticipant function \
+    `challenges/<invitation_key>/accept-invitation/`', function () {
         var success;
         var errorResponse = 'error';
 
