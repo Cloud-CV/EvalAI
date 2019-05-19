@@ -1,23 +1,23 @@
 'use strict';
 
-describe('Unit tests for Challenge Host Team Controller', function () {
-	beforeEach(angular.mock.module('evalai'));
+describe('Unit tests for Hosted Challenge Controller', function () {
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $rootScope, $scope, utilities, vm;
+    var $controller, createController, $rootScope, $scope, utilities, vm;
 
-	beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_,) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_,) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('HostedChallengesCtrl', { $scope: $scope });
+            return $controller('HostedChallengesCtrl', {$scope: $scope});
         };
         vm = createController();
     }));
 
-    describe('Global Variables', function () {
+    describe('Global variables', function () {
         it('has default values', function () {
             utilities.storeData('userKey', 'encrypted key');
             spyOn(utilities, 'getData');
@@ -64,7 +64,8 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
-        it('get the details of the hosted challenge `challenges/challenge_host_team/<host_team_id>/challenge`', function () {
+        it('get the details of the hosted challenge \
+        `challenges/challenge_host_team/<host_team_id>/challenge`', function () {
             hostTeamSuccess = true;
             hostedChallengeSuccess = true;
             successResponse = {

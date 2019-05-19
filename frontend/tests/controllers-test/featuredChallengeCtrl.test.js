@@ -1,11 +1,11 @@
 'use strict';
 
-describe('Unit tests for Challenge Host Team Controller', function () {
-	beforeEach(angular.mock.module('evalai'));
+describe('Unit tests for Featured Challenge Controller', function () {
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $rootScope, $state, $stateParams, $scope, utilities, vm;
+    var $controller, createController, $rootScope, $state, $stateParams, $scope, utilities, vm;
 
-	beforeEach(inject(function(_$controller_, _$rootScope_, _$stateParams_, _$state_, _utilities_, _moment_) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _$stateParams_, _$state_, _utilities_, _moment_) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         $state = _$state_;
@@ -14,7 +14,7 @@ describe('Unit tests for Challenge Host Team Controller', function () {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('FeaturedChallengeCtrl', { $scope: $scope });
+            return $controller('FeaturedChallengeCtrl', {$scope: $scope});
         };
         vm = createController();
     }));
