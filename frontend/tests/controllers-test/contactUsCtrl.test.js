@@ -33,22 +33,22 @@ describe('Unit tests for ContactUs Controller', function () {
 
     describe('Unit tests for global backend call', function () {
         var success;
-        var success_response = {
+        var successResponse = {
             name: "Some Name",
             email: "abc@gmail.com"
         };
-        var error_response = 'error';
+        var errorResponse = 'error';
 
         beforeEach(function (){
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data: success_response,
+                        data: successResponse,
                         status: 200
                     });
                 } else {
                     parameters.callback.onError({
-                        data: error_response
+                        data: errorResponse
                     });
                 }
             };
@@ -57,23 +57,23 @@ describe('Unit tests for ContactUs Controller', function () {
         it('get the previous profile data `web/contact/`', function () {
             success = true;
             vm = createController();
-            expect(vm.user).toEqual(success_response);
+            expect(vm.user).toEqual(successResponse);
             expect(vm.isDisabled).toBeTruthy();
         });
     });
 
 	describe('Unit tests for contactUs function `web/contact/`', function () {
-    	var success, try_response = {};
-        var success_response = {
+    	var success, tryClauseResponse = {};
+        var successResponse = {
             message: "Some Message",
         };
-        var username_valid  = {
+        var usernameInvalid  = {
         	name: ["xyz"],
         };
-        var email_valid = {
+        var emailInvalid = {
         	email: ["xyz@gmail.com"],
         };
-        var message_valid = {
+        var messageInvalid = {
         	message: ["New Message"]
         };
 
@@ -86,7 +86,7 @@ describe('Unit tests for ContactUs Controller', function () {
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data: success_response,
+                        data: successResponse,
                         status: 201
                     });
                 } else if (success == null){
@@ -96,7 +96,7 @@ describe('Unit tests for ContactUs Controller', function () {
                     });
                 } else {
                     parameters.callback.onError({
-                        data: try_response,
+                        data: tryClauseResponse,
                         status: 400
                     });
                 }
@@ -112,14 +112,14 @@ describe('Unit tests for ContactUs Controller', function () {
 
         	vm.contactUs(resetconfirmFormValid);
         	expect(vm.isDisabled).toBeFalsy();
-        	expect($rootScope.notify).toHaveBeenCalledWith("success", success_response.message);
+        	expect($rootScope.notify).toHaveBeenCalledWith("success", successResponse.message);
         	expect($state.go).toHaveBeenCalledWith('home');
         	expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        it('when username is valid', function () {
+        it('when username is invalid', function () {
         	var resetconfirmFormValid = true;
-        	try_response = username_valid;
+        	tryClauseResponse = usernameInvalid;
         	success = false;
         	vm.user.name = "abc";
         	vm.user.email = "abc@gmail.com";
@@ -128,13 +128,13 @@ describe('Unit tests for ContactUs Controller', function () {
         	vm.contactUs(resetconfirmFormValid);
         	expect(vm.isDisabled).toBeFalsy();
         	expect(vm.isFormError).toBeTruthy();
-        	expect(vm.FormError).toEqual(try_response.name[0]);
+        	expect(vm.FormError).toEqual(tryClauseResponse.name[0]);
         	expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        it('when email is valid', function () {
+        it('when email is invalid', function () {
         	var resetconfirmFormValid = true;
-        	try_response = email_valid;
+        	tryClauseResponse = emailInvalid;
         	success = false;
         	vm.user.name = "abc";
         	vm.user.email = "abc@gmail.com";
@@ -143,13 +143,13 @@ describe('Unit tests for ContactUs Controller', function () {
         	vm.contactUs(resetconfirmFormValid);
         	expect(vm.isDisabled).toBeFalsy();
         	expect(vm.isFormError).toBeTruthy();
-        	expect(vm.FormError).toEqual(try_response.email[0]);
+        	expect(vm.FormError).toEqual(tryClauseResponse.email[0]);
         	expect(vm.stopLoader).toHaveBeenCalled();
         });
 
-        it('when message is valid', function () {
+        it('when message is invalid', function () {
         	var resetconfirmFormValid = true;
-        	try_response = message_valid;
+        	tryClauseResponse = messageInvalid;
         	success = false;
         	vm.user.name = "abc";
         	vm.user.email = "abc@gmail.com";
@@ -158,13 +158,13 @@ describe('Unit tests for ContactUs Controller', function () {
         	vm.contactUs(resetconfirmFormValid);
         	expect(vm.isDisabled).toBeFalsy();
         	expect(vm.isFormError).toBeTruthy();
-        	expect(vm.FormError).toEqual(try_response.message[0]);
+        	expect(vm.FormError).toEqual(tryClauseResponse.message[0]);
         	expect(vm.stopLoader).toHaveBeenCalled();
         });
 
         it('other backend error in try clause', function () {
         	var resetconfirmFormValid = true;
-        	try_response = {};
+        	tryClauseResponse = {};
         	success = false;
         	vm.user.name = "abc";
         	vm.user.email = "abc@gmail.com";

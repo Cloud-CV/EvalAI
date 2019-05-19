@@ -32,10 +32,10 @@ describe('Unit tests for Submission Files Controller', function() {
 
 	describe('Unit tests for backend calls on load of controller', function () {
         var success, status;
-        var error_response = {
+        var errorResponse = {
             error: 'error'
         };
-        var success_response = {
+        var successResponse = {
             signed_url: "http://example.com"
         };
 
@@ -46,12 +46,12 @@ describe('Unit tests for Submission Files Controller', function() {
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data: success_response,
+                        data: successResponse,
                         status: status
                     });
                 } else {
                     parameters.callback.onError({
-                        data: error_response
+                        data: errorResponse
                     });
                 }
             };
@@ -67,8 +67,8 @@ describe('Unit tests for Submission Files Controller', function() {
         it('backend error `jobs/submission_files/?bucket=<bucket>&key=<key>`', function () {
             success = false;
             vm = createController();
-            expect(vm.data).toEqual(error_response);
-            expect($rootScope.notify).toHaveBeenCalledWith('error', error_response.error);
+            expect(vm.data).toEqual(errorResponse);
+            expect($rootScope.notify).toHaveBeenCalledWith('error', errorResponse.error);
         });
     });
 });
