@@ -79,7 +79,7 @@ section.bg-section {
 #mobile-demo {
     li {
         a {
-            color: $med-black;
+
         }
     }
 }
@@ -138,8 +138,9 @@ section.bg-section {
           }
       }
       a.active {
-	  color: #ffaf4b;
-	  background-color: rgba(0, 0, 0, 0);
+	  color: rgba(0, 0, 0, 0.87);
+      font-weight: 500;
+	  background-color: rgba(0, 0, 0, 0.4);
       }
       nav.grad-shadow-1 {
 	  box-shadow: 0 0 10px #9d9d9d;
