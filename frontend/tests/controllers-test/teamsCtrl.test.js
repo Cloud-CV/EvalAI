@@ -3,18 +3,16 @@
 describe('Unit tests for Teams Controller', function() {
 	beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $injector, $rootScope, $scope, utilities, $mdDialog, loaderService, $state, $http, vm;
+	var $controller, createController, $injector, $rootScope, $scope, utilities, $mdDialog, $state, $http, vm;
 
 	beforeEach(inject(function(_$controller_, _$rootScope_, _$injector_, _utilities_, _$mdDialog_, _loaderService_, _$state_, _$http_, ) {
 		$controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $mdDialog = _$mdDialog_;
-        loaderService = _loaderService_;
         $state =_$state_;
         $http = _$http_;
         $injector = _$injector_;
-
 
         $scope = $rootScope.$new();
         createController = function () {
@@ -144,6 +142,11 @@ describe('Unit tests for Teams Controller', function() {
         it('backend error of selectExistTeam function \
         `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
             success = true;
+            // for the team pagination response
+            success_response = {
+                next: 'page=4',
+                previous: 'page=2',
+            };
             error_response = {
                 next: 'page=4',
                 previous: 'page=2',
@@ -166,7 +169,7 @@ describe('Unit tests for Teams Controller', function() {
         it('to load data with pagination `load` function', function () {
             success = true;
             success_response = {
-                // for the pagination response
+                // for the team pagination response
                 next: 'page=4',
                 previous: 'page=2',
             };        
@@ -325,30 +328,14 @@ describe('Unit tests for Teams Controller', function() {
     });
 
     describe('Unit tests for inviteOthers function', function () {
-        var success;
-
         beforeEach(function () {
             spyOn($mdDialog, 'show').and.callFake(function () {
                 var deferred = $injector.get('$q').defer();
                 return deferred.promise;
             });
-
-            utilities.sendRequest = function (parameters) {
-                if (success) {
-                    parameters.callback.onSuccess({
-                        data: success_response,
-                        status: 200
-                    });
-                } else {
-                    parameters.callback.onError({
-                        data: error_response
-                    });
-                }
-            };
         });
 
         it('open dialog to invite others', function () {
-            success = true;
             var participantTeamId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.prompt()
