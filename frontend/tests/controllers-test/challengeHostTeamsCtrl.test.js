@@ -1,11 +1,11 @@
 'use strict';
 
 describe('Unit tests for Challenge Host Team Controller', function () {
-	beforeEach(angular.mock.module('evalai'));
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $injector, $mdDialog, $rootScope, $state, $scope, loaderService, utilities,$http, $compile, vm;
+    var $controller, createController, $injector, $mdDialog, $rootScope, $state, $scope, loaderService, utilities,$http, $compile, vm;
 
-	beforeEach(inject(function(_$controller_, _$injector_, _$mdDialog_,  _$rootScope_, _$state_, _utilities_, _loaderService_, _$http_, _$compile_) {
+    beforeEach(inject(function (_$controller_, _$injector_, _$mdDialog_,  _$rootScope_, _$state_, _utilities_, _loaderService_, _$http_, _$compile_) {
         $controller = _$controller_;
         $injector = _$injector_;
         $rootScope = _$rootScope_;
@@ -18,7 +18,7 @@ describe('Unit tests for Challenge Host Team Controller', function () {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('ChallengeHostTeamsCtrl', { $scope: $scope });
+            return $controller('ChallengeHostTeamsCtrl', {$scope: $scope});
         };
         vm = createController();
     }));
