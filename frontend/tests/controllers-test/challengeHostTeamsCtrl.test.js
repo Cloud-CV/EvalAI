@@ -65,8 +65,8 @@ describe('Unit tests for Challenge Host Team Controller', function () {
     });
 
     describe('Unit tests for global backend calls', function () {
-        var success, success_response, error_response;
-        var host_team_list = [
+        var success, successResponse, errorResponse;
+        var hostTeamList = [
             {
                 next: null,
                 previous: null,
@@ -97,24 +97,24 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data: success_response,
+                        data: successResponse,
                         status: 200
                     });
                 } else {
                     parameters.callback.onError({
-                        data: error_response
+                        data: errorResponse
                     });
                 }
             };
         });
 
-        host_team_list.forEach(response => {
+        hostTeamList.forEach(response => {
             it('when pagination next is ' + response.next + 'and previous is ' + response.previous + '\
             `hosts/challenge_host_team/`', function () {;
                 success = true;
-                success_response = response;
+                successResponse = response;
                 vm = createController();
-                expect(vm.existTeam).toEqual(success_response);
+                expect(vm.existTeam).toEqual(successResponse);
                 expect(vm.showPagination).toBeTruthy();
                 expect(vm.paginationMsg).toEqual('');
                 expect(utilities.deleteData).toHaveBeenCalledWith('emailError');
@@ -143,19 +143,19 @@ describe('Unit tests for Challenge Host Team Controller', function () {
 
         it('backend error of listing challenge host team `hosts/challenge_host_team/`', function () {
             success = false;
-            error_response = {
+            errorResponse = {
                 detail: 'email error'
             };
             spyOn($state, 'go');
             vm = createController();
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', error_response.detail);
+            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
             expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
         it('to load data with pagination `load` function', function () {
             success = true;
-            success_response = {
+            successResponse = {
                 // host team pagination response
                 next: 'page=4',
                 previous: 'page=2',
@@ -179,11 +179,11 @@ describe('Unit tests for Challenge Host Team Controller', function () {
 
     describe('Unit tests for showMdDialog function `hosts/challenge_host_team/<host_team_id>`', function () {
         var success;
-        var success_response = {
+        var successResponse = {
             team_name: "Team Name",
             team_url: "Team Url"
         };
-        var error_response = {
+        var errorResponse = {
             error: 'error'
         }; 
 
@@ -194,11 +194,11 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data: success_response
+                        data: successResponse
                     });
                 } else {
                     parameters.callback.onError({
-                        data: error_response
+                        data: errorResponse
                     });
                 }
             };
@@ -215,8 +215,8 @@ describe('Unit tests for Challenge Host Team Controller', function () {
 
             vm.showMdDialog(ev, hostTeamId);
             expect(vm.hostTeamId).toEqual(hostTeamId);
-            expect(vm.team.TeamName).toEqual(success_response.team_name);
-            expect(vm.team.TeamURL).toEqual(success_response.team_url);
+            expect(vm.team.TeamName).toEqual(successResponse.team_name);
+            expect(vm.team.TeamURL).toEqual(successResponse.team_url);
             expect($mdDialog.show).toHaveBeenCalled();
             expect($mdDialogOpened).toBeTruthy();
         });
@@ -233,15 +233,15 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             vm.showMdDialog(ev, hostTeamId);
             expect(vm.hostTeamId).toEqual(hostTeamId);
             expect(vm.stopLoader).toHaveBeenCalled();
-            expect($rootScope.notify).toHaveBeenCalledWith("error", error_response.error);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
             expect($mdDialog.show).toHaveBeenCalled();
             expect($mdDialogOpened).toBeTruthy();
         });
     });
 
     describe('Unit tests for updateChallengeHostTeamData function', function () {
-        var success, error_response = {};
-        var success_response = {
+        var success, errorResponse = {};
+        var successResponse = {
             results: {
                 team_name: "Team Name",
                 team_url: "Team Url"
@@ -256,11 +256,11 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data: success_response
+                        data: successResponse
                     });
                 } else {
                     parameters.callback.onError({
-                        data: error_response
+                        data: errorResponse
                     });
                 }
             };
@@ -280,24 +280,24 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             success = true;
             var updateChallengeHostTeamDataForm = true;
             vm.updateChallengeHostTeamData(updateChallengeHostTeamDataForm);
-            expect(vm.existTeam.results).toEqual(success_response.results);
+            expect(vm.existTeam.results).toEqual(successResponse.results);
         });
 
         it('when team_name in response backend error `hosts/challenge_host_team/<host_team_id>`', function () {
             success = false;
-            error_response.team_name = ["error in team name"];
+            errorResponse.team_name = ["error in team name"];
             var updateChallengeHostTeamDataForm = true;
             vm.updateChallengeHostTeamData(updateChallengeHostTeamDataForm);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", error_response.team_name[0]);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.team_name[0]);
         });
 
         it('when error in response backend error `hosts/challenge_host_team/<host_team_id>`', function () {
             success = false;
-            error_response = {};
-            error_response.error = ["error"];
+            errorResponse = {};
+            errorResponse.error = ["error"];
             var updateChallengeHostTeamDataForm = true;
             vm.updateChallengeHostTeamData(updateChallengeHostTeamDataForm);
-            expect($rootScope.notify).toHaveBeenCalledWith("error", error_response.error[0]);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error[0]);
         });
 
         it('invalid form submission', function () {
@@ -308,8 +308,8 @@ describe('Unit tests for Challenge Host Team Controller', function () {
     });
 
     describe('Unit tests for createNewTeam function `hosts/create_challenge_host_team`', function () {
-        var success, success_response;
-        var team_name_list = [
+        var success, successResponse;
+        var hostTeamList = [
             {
                 next: null,
                 previous: null,
@@ -331,7 +331,7 @@ describe('Unit tests for Challenge Host Team Controller', function () {
                 previous: 'page=2',
             }
         ];
-        var error_response = {
+        var errorResponse = {
             team_name: ['error']
         };
 
@@ -346,21 +346,21 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data: success_response,
+                        data: successResponse,
                         status: 200
                     });
                 } else {
                     parameters.callback.onError({
-                        data: error_response
+                        data: errorResponse
                     });
                 }
             };
         });
 
-        team_name_list.forEach(response => {
+        hostTeamList.forEach(response => {
             it('create new host team when pagination next is ' + response.next + 'and previous is ' + response.previous, function () {
                 success = true;
-                success_response = response;
+                successResponse = response;
                 
                 vm.createNewTeam();
                 expect(vm.isLoader).toEqual(true);
@@ -372,7 +372,7 @@ describe('Unit tests for Challenge Host Team Controller', function () {
                 expect(vm.team).toEqual({});
 
                 expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
-                expect(vm.existTeam).toEqual(success_response);
+                expect(vm.existTeam).toEqual(successResponse);
                 expect(vm.showPagination).toEqual(true);
                 expect(vm.paginationMsg).toEqual('');
 
@@ -402,7 +402,7 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             expect(vm.startLoader("Loading Teams"));
             expect(vm.team.error).toEqual('error')
             expect(vm.stopLoader).toHaveBeenCalled();
-            expect($rootScope.notify).toHaveBeenCalledWith("error", error_response.team_name[0]);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.team_name[0]);
         });
     });
 
