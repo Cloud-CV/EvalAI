@@ -1,43 +1,43 @@
 'use strict';
 
-describe('Unit Tests for Change PWD controller', function() {
-	beforeEach(angular.mock.module('evalai'));
-
-	var $controller, createController, $rootScope, $scope, utilities, $state, vm;
-
-	beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_, _$state_,) {
-		$controller = _$controller_;
+describe('Unit tests for Change PWD controller', function () {
+    beforeEach(angular.mock.module('evalai'));
+    
+    var $controller, createController, $rootScope, $scope, utilities, $state, vm;
+    
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$state_,) {
+        $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $state = _$state_;
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('ChangePwdCtrl', { $scope: $scope });
+            return $controller('ChangePwdCtrl', {$scope: $scope});
         };
         vm = createController();
-	}));
-
-	describe('Global Variables', function() {
-		it('has default values', function() {
+    }));
+    
+    describe('Global variables', function () {
+        it('has default values', function () {
             utilities.storeData('userKey', 'encrypted key');
             spyOn(utilities, 'getData');
             spyOn(angular, 'element');
 
             vm = createController();
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
-			expect(vm.wrnMsg).toEqual({});
-			expect(vm.isValid).toEqual({});
-			expect(vm.user).toEqual({});
-			expect(vm.isFormError).toBeFalsy();
+            expect(vm.wrnMsg).toEqual({});
+            expect(vm.isValid).toEqual({});
+            expect(vm.user).toEqual({});
+            expect(vm.isFormError).toBeFalsy();
             expect($rootScope.canShowOldPassword).toBeFalsy();
             expect($rootScope.canShowNewPassword).toBeFalsy();
             expect($rootScope.canShowNewConfirmPassword).toBeFalsy();
-			expect(angular.element).toHaveBeenCalledWith('.change-passowrd-card');
+            expect(angular.element).toHaveBeenCalledWith('.change-passowrd-card');
 		});
-	});
-
-	describe('Validate helper functions', function () {
+    });
+    
+    describe('Validate helper functions', function () {
         it('startLoader', function () {
             var message = 'Start Loader';
             vm.startLoader(message);
@@ -71,11 +71,11 @@ describe('Unit Tests for Change PWD controller', function() {
         });
     });
 
-    describe('Unit Tests for changePassword function `auth/password/change/`', function () {
-    	var success;
+    describe('Unit tests for changePassword function `auth/password/change/`', function () {
+        var success;
         var try_response;
-
-    	beforeEach(function () {
+        
+        beforeEach(function () {
             spyOn($rootScope, 'notify');
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
@@ -101,9 +101,9 @@ describe('Unit Tests for Change PWD controller', function() {
         });
 
         it('successfully change password', function () {
-        	var resetconfirmFormValid = true;
-        	success = true;
-        	$state.params.user_id = 1;
+            var resetconfirmFormValid = true;
+            success = true;
+            $state.params.user_id = 1;
 
             vm.changePassword(resetconfirmFormValid);
             expect(vm.user.error).toBeFalsy();
