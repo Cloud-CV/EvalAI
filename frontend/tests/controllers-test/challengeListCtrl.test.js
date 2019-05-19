@@ -37,46 +37,46 @@ describe('Unit tests for Challenge List Controller', function () {
     });
 
     describe('Unit tests for global backend calls', function () {
-        var present_success, upcoming_success, past_success, success_response, error_response;
+        var isPresentChallengeSuccess, isUpcomingChallengeSucess, isPastChallengeSuccess, successResponse, errorResponse;
 
         beforeEach(function () {
             spyOn(utilities, 'hideLoader');
             spyOn(utilities, 'storeData');
 
             utilities.sendRequest = function (parameters) {
-                if ((present_success == true && parameters.url == 'challenges/challenge/present') ||
-                (upcoming_success == true && parameters.url == 'challenges/challenge/future') ||
-                (past_success == true && parameters.url == 'challenges/challenge/past')) {
+                if ((isPresentChallengeSuccess == true && parameters.url == 'challenges/challenge/present') ||
+                (isUpcomingChallengeSucess == true && parameters.url == 'challenges/challenge/future') ||
+                (isPastChallengeSuccess == true && parameters.url == 'challenges/challenge/past')) {
                     parameters.callback.onSuccess({
-                        data: success_response
+                        data: successResponse
                     });
-                } else if ((present_success == false && parameters.url == 'challenges/challenge/present') ||
-                (upcoming_success == false && parameters.url == 'challenges/challenge/future') ||
-                (past_success == false && parameters.url == 'challenges/challenge/past')){
+                } else if ((isPresentChallengeSuccess == false && parameters.url == 'challenges/challenge/present') ||
+                (isUpcomingChallengeSucess == false && parameters.url == 'challenges/challenge/future') ||
+                (isPastChallengeSuccess == false && parameters.url == 'challenges/challenge/past')){
                     parameters.callback.onError({
-                        data: error_response
+                        data: errorResponse
                     });
                 }
             };
         });
 
         it('when no ongoing challenge found `challenges/challenge/present`', function () {
-            present_success = true;
-            upcoming_success = null;
-            past_success = null;
-            success_response = {
+            isPresentChallengeSuccess = true;
+            isUpcomingChallengeSucess = null;
+            isPastChallengeSuccess = null;
+            successResponse = {
                 results: []
             };
             vm = createController();
-            expect(vm.currentList).toEqual(success_response.results);
+            expect(vm.currentList).toEqual(successResponse.results);
             expect(vm.noneCurrentChallenge).toBeTruthy();
         });
 
         it('check description length and calculate timezone of ongoing challenge `challenges/challenge/present`', function () {
-            present_success = true;
-            upcoming_success = null;
-            past_success = null;
-            success_response = {
+            isPresentChallengeSuccess = true;
+            isUpcomingChallengeSucess = null;
+            isPastChallengeSuccess = null;
+            successResponse = {
                 results: [
                     {
                         id: 1,
@@ -99,7 +99,7 @@ describe('Unit tests for Challenge List Controller', function () {
                 ]
             };
             vm = createController();
-            expect(vm.currentList).toEqual(success_response.results);
+            expect(vm.currentList).toEqual(successResponse.results);
             expect(vm.noneCurrentChallenge).toBeFalsy();
 
             var timezone = moment.tz.guess();
@@ -120,10 +120,10 @@ describe('Unit tests for Challenge List Controller', function () {
         });
 
         it('ongoing challenge backend error `challenges/challenge/present`', function () {
-            present_success = false; 
-            upcoming_success = null;
-            past_success = null;
-            error_response = {
+            isPresentChallengeSuccess = false; 
+            isUpcomingChallengeSucess = null;
+            isPastChallengeSuccess = null;
+            errorResponse = {
                 error: 'error'
             };
             vm = createController();
@@ -131,22 +131,22 @@ describe('Unit tests for Challenge List Controller', function () {
         });
 
         it('when no upcoming `challenges/challenge/present`challenge found `challenges/challenge/future`', function () {
-            upcoming_success = true;
-            present_success = true;
-            past_success = null;
-            success_response = {
+            isUpcomingChallengeSucess = true;
+            isPresentChallengeSuccess = true;
+            isPastChallengeSuccess = null;
+            successResponse = {
                 results: []
             };
             vm = createController();
-            expect(vm.upcomingList).toEqual(success_response.results);
+            expect(vm.upcomingList).toEqual(successResponse.results);
             expect(vm.noneUpcomingChallenge).toBeTruthy();
         });
 
         it('check description length and calculate timezone of upcoming challenge `challenges/challenge/future`', function () {
-            upcoming_success = true;
-            present_success = true;
-            past_success = null;
-            success_response = {
+            isUpcomingChallengeSucess = true;
+            isPresentChallengeSuccess = true;
+            isPastChallengeSuccess = null;
+            successResponse = {
                 results: [
                     {
                         id: 1,
@@ -169,7 +169,7 @@ describe('Unit tests for Challenge List Controller', function () {
                 ]
             };
             vm = createController();
-            expect(vm.upcomingList).toEqual(success_response.results);
+            expect(vm.upcomingList).toEqual(successResponse.results);
             expect(vm.noneUpcomingChallenge).toBeFalsy();
 
             var timezone = moment.tz.guess();
@@ -190,14 +190,14 @@ describe('Unit tests for Challenge List Controller', function () {
         });
 
         it('upcoming challenge backend error `challenges/challenge/future`', function () {
-            upcoming_success = false;
-            present_success = true; 
-            past_success = null;
+            isUpcomingChallengeSucess = false;
+            isPresentChallengeSuccess = true; 
+            isPastChallengeSuccess = null;
             // success response for the ongoing challenge
-            success_response = {
+            successResponse = {
                 results: []
             };
-            error_response = {
+            errorResponse = {
                 error: 'error'
             };
             vm = createController();
@@ -205,22 +205,22 @@ describe('Unit tests for Challenge List Controller', function () {
         });
 
         it('when no past challenge found `challenges/challenge/past`', function () {
-            past_success = true;
-            present_success = true;
-            upcoming_success = true;
-            success_response = {
+            isPastChallengeSuccess = true;
+            isPresentChallengeSuccess = true;
+            isUpcomingChallengeSucess = true;
+            successResponse = {
                 results: []
             };
             vm = createController();
-            expect(vm.pastList).toEqual(success_response.results);
+            expect(vm.pastList).toEqual(successResponse.results);
             expect(vm.nonePastChallenge).toBeTruthy();
         });
 
         it('check description length and calculate timezone of past challenge `challenges/challenge/past`', function () {
-            past_success = true;
-            present_success = true;
-            upcoming_success = true;
-            success_response = {
+            isPastChallengeSuccess = true;
+            isPresentChallengeSuccess = true;
+            isUpcomingChallengeSucess = true;
+            successResponse = {
                 results: [
                     {
                         id: 1,
@@ -243,7 +243,7 @@ describe('Unit tests for Challenge List Controller', function () {
                 ]
             };
             vm = createController();
-            expect(vm.pastList).toEqual(success_response.results);
+            expect(vm.pastList).toEqual(successResponse.results);
             expect(vm.nonePastChallenge).toBeFalsy();
 
             var timezone = moment.tz.guess();
@@ -265,14 +265,14 @@ describe('Unit tests for Challenge List Controller', function () {
         });
 
         it('past challenge backend error `challenges/challenge/past`', function () {
-            past_success = false;
-            present_success = true;
-            upcoming_success = true;
+            isPastChallengeSuccess = false;
+            isPresentChallengeSuccess = true;
+            isUpcomingChallengeSucess = true;
             // success response for the ongoing and upcoming challenge
-            success_response = {
+            successResponse = {
                 results: []
             };
-            error_response = {
+            errorResponse = {
                 error: 'error'
             };
             vm = createController();
