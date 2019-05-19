@@ -1,18 +1,18 @@
 'use strict';
 
 describe('Unit tests for Challenge List Controller', function () {
-	beforeEach(angular.mock.module('evalai'));
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $rootScope, $scope, utilities, vm;
+    var $controller, createController, $rootScope, $scope, utilities, vm;
 
-	beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_,) {
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_,) {
         $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('ChallengeListCtrl', { $scope: $scope });
+            return $controller('ChallengeListCtrl', {$scope: $scope});
         };
         vm = createController();
     }));
