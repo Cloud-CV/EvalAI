@@ -41,9 +41,9 @@ describe('Unit tests for Profile Controller', function() {
 	});
 
 	describe('Unit tests for global backend call', function () {
-		var success, result;
+		var success, successResponse;
 		var response = ["", null, "abc", undefined, "xyz"];
-		var details = {
+		var errorResponse = {
 			error: 'error'
 		};
 
@@ -51,12 +51,12 @@ describe('Unit tests for Profile Controller', function() {
 			utilities.sendRequest = function (parameters) {
 				if (success) {
 					parameters.callback.onSuccess({
-						data: result,
+						data: successResponse,
 						status: 200
 					});
 				} else {
 					parameters.callback.onError({
-						data: details
+						data: errorResponse
 					});
 				}
 			};
@@ -64,18 +64,18 @@ describe('Unit tests for Profile Controller', function() {
 
 		it('getting the user profile details `auth/user/`', function () {
 			success = true;
-			result = response;
+			successResponse = response;
 			var count = 0;
 			vm = createController();
-			for (var i = 0; i < result.length; i++) {
-				if (result[i] === "" || result[i] === undefined || result[i] === null) {
-					result[i] = "-";
+			for (var i = 0; i < successResponse.length; i++) {
+				if (successResponse[i] === "" || successResponse[i] === undefined || successResponse[i] === null) {
+					successResponse[i] = "-";
 					expect(vm.countLeft).toEqual(vm.countLeft + 1);
 				}
 				count = count + 1;
 			}
 			expect(vm.compPerc).toEqual(parseInt((vm.countLeft / count) * 100));
-			expect(vm.user).toEqual(result);
+			expect(vm.user).toEqual(successResponse);
 			expect(vm.user.complete).toEqual(100 - vm.compPerc);
 		});
 
@@ -83,27 +83,27 @@ describe('Unit tests for Profile Controller', function() {
 			success = false;
 			spyOn($rootScope, 'notify');
 			vm = createController();
-			expect($rootScope.notify).toHaveBeenCalledWith("error", details.error);
+			expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error);
 		});
 
 		it('get auth token `accounts/user/get_auth_token`', function () {
 			success = true;
-			result = {
+			successResponse = {
 				token: 'abcdef01234'
 			};
 			vm = createController();
-			expect(vm.jsonResponse).toEqual(result);
-			expect(vm.token).toEqual(result.token);
+			expect(vm.jsonResponse).toEqual(successResponse);
+			expect(vm.token).toEqual(successResponse.token);
 		});
 
 		it('backend error on getting auth token `accounts/user/get_auth_token`', function () {
 			success = false;
-			details = {
+			errorResponse = {
 				detail: 'error'
 			};
 			spyOn($rootScope, 'notify');
 			vm = createController();
-			expect($rootScope.notify).toHaveBeenCalledWith("error", details.detail);
+			expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.detail);
 		});
 	});
 

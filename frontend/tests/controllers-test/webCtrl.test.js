@@ -35,18 +35,18 @@ describe('Unit tests for Web Controller', function () {
 	});
 
 	describe('Unit tests for global backend call `auth/user/`', function () {
-        var success, success_response, error_response;
+        var success, successResponse, errorResponse;
 
         beforeEach(function () { 
             utilities.sendRequest = function (parameters) {
                 if (success) {
                     parameters.callback.onSuccess({
-                        data: success_response,
+                        data: successResponse,
                         status: 200
                     });
                 } else {
                     parameters.callback.onError({
-                        data: error_response
+                        data: errorResponse
                     });
                 }
             };
@@ -54,13 +54,13 @@ describe('Unit tests for Web Controller', function () {
 
         it('successfully get the user details', function () {
             success = true;
-            success_response = {
+            successResponse = {
                 username: "user",
                 first_name: "firstname",
                 last_name: "lastname"
             };
             vm = createController();
-            expect(vm.name).toEqual(success_response.username);
+            expect(vm.name).toEqual(successResponse.username);
         });
     });
 });
