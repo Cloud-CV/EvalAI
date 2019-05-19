@@ -1,12 +1,12 @@
 'use strict';
 
-describe('Unit tests for Submission Files Controller', function() {
-	beforeEach(angular.mock.module('evalai'));
+describe('Unit tests for Submission Files Controller', function () {
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, vm;
+    var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, vm;
 
-	beforeEach(inject(function(_$controller_, _$rootScope_, _utilities_, _$state_, _$stateParams_) {
-		$controller = _$controller_;
+    beforeEach(inject(function (_$controller_, _$rootScope_, _utilities_, _$state_, _$stateParams_) {
+        $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $state =_$state_;
@@ -14,23 +14,23 @@ describe('Unit tests for Submission Files Controller', function() {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('SubmissionFilesCtrl', { $scope: $scope });
+            return $controller('SubmissionFilesCtrl', {$scope: $scope});
         };
         vm = createController();
-	}));
+    }));
 
-	describe('Global variables', function() {
-		it('has default values', function() {
+    describe('Global variables', function () {
+        it('has default values', function () {
             utilities.storeData('userKey', 'encrypted key');
             spyOn(utilities, 'getData');
             vm = createController();
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
-			expect(vm.bucket).toEqual($stateParams.bucket);
-			expect(vm.key).toEqual($stateParams.key);
-		});
-	});
+            expect(vm.bucket).toEqual($stateParams.bucket);
+            expect(vm.key).toEqual($stateParams.key);
+        });
+    });
 
-	describe('Unit tests for backend calls on load of controller', function () {
+    describe('Unit tests for backend calls on load of controller', function () {
         var success, status;
         var errorResponse = {
             error: 'error'
