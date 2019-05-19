@@ -1,12 +1,12 @@
 'use strict';
 
 describe('Unit tests for Web Controller', function () {
-	beforeEach(angular.mock.module('evalai'));
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, vm;
+    var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, vm;
 
-	beforeEach(inject(function(_$controller_, _$injector_, _$rootScope_, _utilities_, _$state_, _$stateParams_) {
-		$controller = _$controller_;
+    beforeEach(inject(function (_$controller_, _$injector_, _$rootScope_, _utilities_, _$state_, _$stateParams_) {
+        $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $state =_$state_;
@@ -14,27 +14,27 @@ describe('Unit tests for Web Controller', function () {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('WebCtrl', { $scope: $scope });
+            return $controller('WebCtrl', {$scope: $scope});
         };
         vm = createController();
-	}));
+    }));
 
-	describe('Global Variables', function() {
+    describe('Global variables', function () {
         beforeEach(function () {
             spyOn(utilities, 'hideLoader');
             spyOn(utilities, 'getData');
         });
 
-		it('has default values', function() {
+        it('has default values', function () {
             vm = createController();
-			expect(vm.user).toEqual({});
+            expect(vm.user).toEqual({});
             expect(utilities.hideLoader).toHaveBeenCalled();
             utilities.storeData('userKey', 'encrypted');
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
-		});
-	});
+        });
+    });
 
-	describe('Unit tests for global backend call `auth/user/`', function () {
+    describe('Unit tests for global backend call `auth/user/`', function () {
         var success, successResponse, errorResponse;
 
         beforeEach(function () { 
