@@ -1,12 +1,12 @@
 'use strict';
 
-describe('Unit tests for Teams Controller', function() {
-	beforeEach(angular.mock.module('evalai'));
+describe('Unit tests for Teams Controller', function () {
+    beforeEach(angular.mock.module('evalai'));
 
-	var $controller, createController, $injector, $rootScope, $scope, utilities, $mdDialog, $state, $http, vm;
+    var $controller, createController, $injector, $rootScope, $scope, utilities, $mdDialog, $state, $http, vm;
 
-	beforeEach(inject(function(_$controller_, _$rootScope_, _$injector_, _utilities_, _$mdDialog_, _loaderService_, _$state_, _$http_, ) {
-		$controller = _$controller_;
+    beforeEach(inject(function (_$controller_, _$rootScope_, _$injector_, _utilities_, _$mdDialog_, _loaderService_, _$state_, _$http_, ) {
+        $controller = _$controller_;
         $rootScope = _$rootScope_;
         utilities = _utilities_;
         $mdDialog = _$mdDialog_;
@@ -16,13 +16,13 @@ describe('Unit tests for Teams Controller', function() {
 
         $scope = $rootScope.$new();
         createController = function () {
-            return $controller('TeamsCtrl', { $scope: $scope });
+            return $controller('TeamsCtrl', {$scope: $scope});
         };
         vm = createController();
-	}));
+    }));
 
-	describe('Global variables', function() {
-		it('has default values', function() {
+    describe('Global variables', function () {
+        it('has default values', function () {
             spyOn(utilities, 'showLoader');
             spyOn(utilities, 'getData');
             utilities.storeData('userKey', 'encrypted key');
@@ -30,21 +30,21 @@ describe('Unit tests for Teams Controller', function() {
 
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
             expect(utilities.showLoader).toHaveBeenCalled();
-			expect(vm.teamId).toBeNull();
-			expect(vm.existTeam).toEqual({});
-			expect(vm.currentPage).toEqual('');
-			expect(vm.isNext).toEqual('');
-			expect(vm.isPrev).toEqual('');
-			expect(vm.team.error).toBeFalsy();
-			expect(vm.showPagination).toBeFalsy();
-			expect(vm.isExistLoader).toBeFalsy();
-			expect(vm.loaderTitle).toEqual('');
-		});
-	});
+            expect(vm.teamId).toBeNull();
+            expect(vm.existTeam).toEqual({});
+            expect(vm.currentPage).toEqual('');
+            expect(vm.isNext).toEqual('');
+            expect(vm.isPrev).toEqual('');
+            expect(vm.team.error).toBeFalsy();
+            expect(vm.showPagination).toBeFalsy();
+            expect(vm.isExistLoader).toBeFalsy();
+            expect(vm.loaderTitle).toEqual('');
+        });
+    });
 
     describe('Unit tests for global backend calls', function () {
         var success, successResponse, errorResponse;
-        var team_list = [
+        var teamList = [
             {
                 next: null,
                 previous: null,
@@ -86,7 +86,7 @@ describe('Unit tests for Teams Controller', function() {
             };
         });
 
-        team_list.forEach(response => {
+        teamList.forEach(response => {
             it('when pagination next is ' + response.next + 'and previous is ' + response.previous + '\
             `participants/participant_team`', function () {
                 success = true;
@@ -203,12 +203,12 @@ describe('Unit tests for Teams Controller', function() {
         });
     });
 
-	describe('Unit tests for createNewTeam function', function () {
+    describe('Unit tests for createNewTeam function', function () {
         var success, successResponse;
         var errorResponse = {
             team_name: ['error']
         };
-        var team_name_list = [
+        var teamList = [
             {
                 next: null,
                 previous: null,
@@ -252,7 +252,7 @@ describe('Unit tests for Teams Controller', function() {
             };
         });
 
-        team_name_list.forEach(response => {
+        teamList.forEach(response => {
             it('when pagination next is ' + response.next + 'and previous is ' + response.previous + '\
             `participants/participant_team`', function () {;
                 success = true;
@@ -352,14 +352,14 @@ describe('Unit tests for Teams Controller', function() {
     });
 
     describe('Unit tests for showMdDialog function `participants/participant_team/`', function () {
-    	var success;
-    	var successResponse = {
-    		team_name: "Team Name",
-    		team_url: "Team Url"
-    	}
-    	var errorResponse = {
-    		error: 'error'
-    	};
+        var success;
+        var successResponse = {
+            team_name: "Team Name",
+            team_url: "Team Url"
+        }
+        var errorResponse = {
+            error: 'error'
+        };
 
         beforeEach(function () {
             spyOn(vm, 'stopLoader');
@@ -379,22 +379,22 @@ describe('Unit tests for Teams Controller', function() {
         });
 
         it('successfully get the team details', function () {
-        	success = true;
-        	var participantTeamId = 1;
-        	var ev = new Event('click');
-        	vm.showMdDialog(ev, participantTeamId);
-        	expect(vm.participantTeamId).toEqual(participantTeamId);
-        	expect(vm.team.name).toEqual(successResponse.team_name);
-        	expect(vm.team.url).toEqual(successResponse.team_url);
+            success = true;
+            var participantTeamId = 1;
+            var ev = new Event('click');
+            vm.showMdDialog(ev, participantTeamId);
+            expect(vm.participantTeamId).toEqual(participantTeamId);
+            expect(vm.team.name).toEqual(successResponse.team_name);
+            expect(vm.team.url).toEqual(successResponse.team_url);
         });
 
         it('backend error', function () {
-        	success = false;
-        	var participantTeamId = 1;
-        	var ev = new Event('click');
-        	vm.showMdDialog(ev, participantTeamId);
-        	expect(vm.stopLoader).toHaveBeenCalled();
-        	expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse['error']);
+            success = false;
+            var participantTeamId = 1;
+            var ev = new Event('click');
+            vm.showMdDialog(ev, participantTeamId);
+            expect(vm.stopLoader).toHaveBeenCalled();
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse['error']);
         });
 
         it('show dialog', function () {
@@ -403,17 +403,17 @@ describe('Unit tests for Teams Controller', function() {
                 $mdDialogOpened = true;
             });
             var participantTeamId = 1;
-        	var ev = new Event('click');
+            var ev = new Event('click');
 
-        	vm.showMdDialog(ev, participantTeamId);
+            vm.showMdDialog(ev, participantTeamId);
             expect($mdDialog.show).toHaveBeenCalled();
             expect($mdDialogOpened).toBe(true);
         });
     });
 
     describe('Unit tests for updateParticipantTeamData `participants/participant_team/<participant_team_id>`', function () {
-    	var success, successResponse, errorResponse;
-    	var successResponse = {
+        var success, successResponse, errorResponse;
+        var successResponse = {
             results: {
                 team_name: "Team Name",
                 team_url: "Team Url",
@@ -426,7 +426,7 @@ describe('Unit tests for Teams Controller', function() {
             spyOn($rootScope, 'notify');
             spyOn($mdDialog, 'hide');
             vm.team.name = "Team Name";
-        	vm.team.url = "Team Url";
+            vm.team.url = "Team Url";
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
@@ -442,46 +442,46 @@ describe('Unit tests for Teams Controller', function() {
         });
 
         it('successfully updated participant team data', function () {
-        	var updateParticipantTeamDataForm = true;
-        	success = true;
-        	vm.updateParticipantTeamData(updateParticipantTeamDataForm);
-        	expect($mdDialog.hide).toHaveBeenCalled();
-        	expect(vm.team).toEqual({});
-        	expect($rootScope.notify).toHaveBeenCalledWith("success", "Participant Team updated!");
+            var updateParticipantTeamDataForm = true;
+            success = true;
+            vm.updateParticipantTeamData(updateParticipantTeamDataForm);
+            expect($mdDialog.hide).toHaveBeenCalled();
+            expect(vm.team).toEqual({});
+            expect($rootScope.notify).toHaveBeenCalledWith("success", "Participant Team updated!");
         });
 
         it('retrieves the updated lists', function () {
-        	var updateParticipantTeamDataForm = true;
-        	success = true;
-        	vm.updateParticipantTeamData(updateParticipantTeamDataForm);
-        	expect(vm.existTeam.results).toEqual(successResponse.results);
+            var updateParticipantTeamDataForm = true;
+            success = true;
+            vm.updateParticipantTeamData(updateParticipantTeamDataForm);
+            expect(vm.existTeam.results).toEqual(successResponse.results);
         });
 
         it('error when `team_name` in response', function () {
-        	var updateParticipantTeamDataForm = true;
-        	success = false;
-        	errorResponse = {
-	    		team_name:['team name error'],
-	    		error: ['error']	
-	    	};
-        	vm.updateParticipantTeamData(updateParticipantTeamDataForm);
-        	expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.team_name[0]);
+            var updateParticipantTeamDataForm = true;
+            success = false;
+            errorResponse = {
+                team_name:['team name error'],
+                error: ['error']	
+            };
+            vm.updateParticipantTeamData(updateParticipantTeamDataForm);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.team_name[0]);
         });
 
         it('other backend error', function () {
-        	var updateParticipantTeamDataForm = true;
-        	success = false;
-        	errorResponse = {
-	    		error: ['error']	
-	    	};
-        	vm.updateParticipantTeamData(updateParticipantTeamDataForm);
-        	expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error[0]);
+            var updateParticipantTeamDataForm = true;
+            success = false;
+            errorResponse = {
+                error: ['error']	
+            };
+            vm.updateParticipantTeamData(updateParticipantTeamDataForm);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.error[0]);
         });
 
         it('invalid form submission', function () {
-        	var updateParticipantTeamDataForm = false;
-        	vm.updateParticipantTeamData(updateParticipantTeamDataForm);
-        	expect($mdDialog.hide).toHaveBeenCalled();
+            var updateParticipantTeamDataForm = false;
+            vm.updateParticipantTeamData(updateParticipantTeamDataForm);
+            expect($mdDialog.hide).toHaveBeenCalled();
         });
     });
 });
