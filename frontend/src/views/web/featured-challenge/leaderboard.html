@@ -11,6 +11,14 @@
                         <div></div>
                     </div>
                 </div>
+                <div class="ev-md-container ev-panel-title" ng-if="featured_challenge.page.leaderboard_description">
+                    <div class="row">
+                        <div class="col xs12 s12">
+                            <strong>Description</strong>
+                        </div>
+                        <div class="col s12 md-body-1" ng-bind-html="featured_challenge.page.leaderboard_description"></div>
+                    </div>
+                </div>
                 <div class="ev-md-container ev-panel-title">
                     <div class="row">
                         <div class="col s12">
@@ -43,7 +51,7 @@
                                         <tr ng-repeat="key in featured_challenge.leaderboard">
                                             <td class="align-left">{{$index+1}}</td>
                                             <td class="font-weight-b align-left">{{key.submission__participant_team__team_name}}</td>
-                                            <td class="align-right" ng-repeat="score in key.result track by $index">{{score | number : 2}}</td>
+                                            <td class="align-right" ng-repeat="(i, score) in key.result track by $index">{{score | number : 2}}<span ng-if = "key.error != nil">±{{key.error[i] | number : 2}}</span></td>
                                             <td class="align-right"> {{key.submission__submitted_at | number: 0}}&nbsp; {{key.timeSpan}} ago</td>
                                         </tr>
                                     </tbody>

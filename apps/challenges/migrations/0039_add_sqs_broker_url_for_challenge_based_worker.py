@@ -7,14 +7,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0038_challenge_remote_evaluation'),
-    ]
+    dependencies = [("challenges", "0038_challenge_remote_evaluation")]
 
     operations = [
         migrations.AddField(
-            model_name='challenge',
-            name='broker_url',
-            field=models.CharField(db_index=True, default='', max_length=200, verbose_name='SQS queue name'),
-        ),
+            model_name="challenge",
+            name="broker_url",
+            field=models.CharField(
+                db_index=True,
+                default="",
+                max_length=200,
+                verbose_name="SQS queue name",
+            ),
+        )
     ]
