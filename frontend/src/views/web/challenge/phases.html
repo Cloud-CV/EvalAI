@@ -1,3 +1,10 @@
+<div ng-if="challenge.isChallengeHost" class="ev-sm-container ev-view challenge-container">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view phase-card">
+        <div class="pointer btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="challenge.challengePhaseDialog2($event)">
+            Create New Phase
+        </div>
+    </div>
+</div>
 <section ng-repeat="item in challenge.phases.results" class="ev-sm-container ev-view challenge-container">
     <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view phase-card">
         <div class="row">

@@ -1,0 +1,139 @@
+<section class="text-center pd-20">
+    <div class="row">
+        <div class="col s12 m12 l12">
+            <div class="ev-card-body pd-20 w-300">
+                <form name="createChallengePhase"
+                    ng-submit="challenge.createChallengePhase(createChallengePhaseForm.$valid)">
+                    <div class="row">
+                        <div class="col s6 m6 l6">
+                            <div class="input-field align-left">
+                                <span class="fs-16 w-400 text-med-black">Title</label>
+                                    <input type="text" id="title" name="title"
+                                        ng-model="challenge.page.challenge_phase.name"
+                                        value="{{challenge.page.challenge_phase.name}}"
+                                        focus-if="challenge.page.challenge_phase.name" required>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 m12 l12">
+                            <div class="fs-16 w-400 text-med-black">Description</div>
+                            <div class="input-field align-left">
+                                <trix-editor class="editor" ng-model-options="{ updateOn: 'blur' }" spellcheck="false"
+                                    class="trix-content" ng-model="challenge.page.challenge_phase.description"
+                                    angular-trix trix-initialize="trixInitialize(e, editor);"
+                                    trix-change="trixChange(e, editor);"
+                                    trix-selection-change="trixSelectionChange(e, editor);"
+                                    trix-focus="trixFocus(e, editor);" trix-blur="trixBlur(e, editor);"
+                                    trix-file-accept="trixFileAccept(e, editor);"
+                                    trix-attachment-add="trixAttachmentAdd(e, editor);"
+                                    trix-attachment-remove="trixAttachmentRemove(e, editor);"
+                                    prevent-trix-file-accept="true" placeholder="Challenge Phase Description">
+                                </trix-editor>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 m3 l3">
+                            <div class="input-field align-left">
+                                <span class="text-med-black w-400 fs-16">Start date and time</span>
+                                <input id="start_date" name="start_date" format="MM-DD-YYYY hh:mm a" locale="en"
+                                    value="{{challenge.phaseStartDate}}" ng-model="challenge.phaseStartDate"
+                                    start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="Start date"
+                                    moment-picker="challenge.phaseStartDate" start-date="challenge.phaseStartDate"
+                                    required>
+                                <span class="form-icon"><i class="fa fa-text"></i></span>
+                            </div>
+                        </div>
+                        <div class="col s12 m3 l3">
+                            <div class="input-field align-left">
+                                <span class="text-med-black w-400 fs-16">End date and time</span>
+                                <input id="end_date" name="end_date" format="MM-DD-YYYY hh:mm a" locale="en"
+                                    value="{{challenge.phaseEndDate}}" ng-model="challenge.phaseEndDate"
+                                    start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="End date"
+                                    moment-picker="challenge.phaseEndDate" min-date="challenge.phaseStartDate" required>
+                                <span class="form-icon"><i class="fa fa-text"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row"></div>
+                    <div class="col s12 m4 l4">
+                        <div class="input-field align-left">
+                            <span class="text-med-black w-400 fs-16">Submissions/day</span>
+                            <input type="number" step="1" min="0" id="max_submissions_per_day"
+                                name="max_submissions_per_day"
+                                ng-model="challenge.page.challenge_phase.max_submissions_per_day"
+                                value="{{challenge.page.challenge_phase.max_submissions_per_day}}" required>
+                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                        </div>
+                    </div>
+                    <div class="col s12 m4 l4">
+                        <div class="input-field align-left">
+                            <span class="text-med-black w-400 fs-16">Submissions/month</span>
+                            <input type="number" step="1" min="challenge.page.challenge_phase.max_submissions_per_day"
+                                id="max_submissions" name="max_submissions"
+                                ng-model="challenge.page.challenge_phase.max_submissions_per_month"
+                                value="{{challenge.page.challenge_phase.max_submissions_per_month}}" required>
+                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                        </div>
+                    </div>
+                    <div class="col s12 m4 l4">
+                        <div class="input-field align-left">
+                            <span class="text-med-black w-400 fs-16">Total submissions</span>
+                            <input type="number" step="1" min="challenge.page.challenge_phase.max_submissions_per_month"
+                                id="max_submissions" name="max_submissions"
+                                ng-model="challenge.page.challenge_phase.max_submissions"
+                                value="{{challenge.page.challenge_phase.max_submissions}}" required>
+                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                        </div>
+                    </div>
+                    <div class="col s12 m4 l4">
+                        <div class="input-field align-left">
+                            <span class="text-med-black w-400 fs-16">Phase Code Name</span>
+                            <input type="text"
+                               name="phase_codename"
+                                ng-model="challenge.page.challenge_phase.phase_codename"
+                                value="{{challenge.page.challenge_phase.phase_codename}}" required>
+                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                        </div>
+                    </div>
+
+            <div class="row">
+                <div class="col s12 m6 l6">
+                    <div class="file-field input-field">
+                        <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-16">
+                            <span> File </span>
+                            <input name="challenge.testAnnotationFile" ngf-select type="file"
+                                class="text-dark-black dark-autofill w-50" ng-model="challenge.testAnnotationFile">
+                        </div>
+                        <div class="file-path-wrapper">
+                            <input class="file-path" type="text" class="input-field"
+                                ng-model="challenge.testAnnotationFile" ng-value="challenge.testAnnotationFile.name">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m12">
+                    <div class="align-left text-med-black w-400">
+                        <ul class="inline-list hide-on-med-and-down">
+                            <li>
+                                <a ng-click="challenge.createChallengePhase(false)"
+                                    class="dark-link pointer"><strong>Cancel</strong></a>
+                            </li>
+                            <li>
+                                <button ng-click="challenge.createChallengePhase(true)" class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
+                                    type="submit" value="submit">
+                                    Submit
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+    </div>
+</section>

@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment', '$window'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $window) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -1766,6 +1766,87 @@
                         if (status === 200) {
                             $mdDialog.hide();
                             $rootScope.notify("success", "The challenge phase details are successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        utilities.hideLoader();
+                        $mdDialog.hide();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+                utilities.showLoader();
+                utilities.sendRequest(parameters, 'header', 'upload');
+            } else {
+                parameters.url = 'challenges/challenge/' + vm.challengeId + '/challenge_phase';
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        vm.phases = details;
+                        utilities.hideLoader();
+                    },
+                    onError: function(response) {
+                        var error = response.data;
+                        utilities.storeData('emailError', error.detail);
+                        $state.go('web.permission-denied');
+                        utilities.hideLoader();
+                    }
+                };
+                utilities.sendRequest(parameters);
+                $mdDialog.hide();
+            }
+        };
+
+
+        vm.challengePhaseDialog2 = function(ev) {
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/create-challenge-phase.html',
+                escapeToClose: false
+            });
+            vm.page.challenge_phase.name = "";
+            vm.page.challenge_phase.description = "";
+            vm.phaseStartDate = "";
+            vm.phaseEndDate = "";
+            vm.page.challenge_phase.max_submissions_per_day = "";
+            vm.page.challenge_phase.max_submissions_per_month = "";
+            vm.page.challenge_phase.max_submissions = "";
+            vm.testAnnotationFile = null;
+        };
+
+
+        vm.createChallengePhase = function(createChallengePhaseForm) {
+            if (createChallengePhaseForm) {
+                parameters.url = "challenges/challenge/" + vm.challengeId + "/challenge_phase";
+                parameters.method = 'POST';
+                var formData = new FormData();
+                formData.append("name", vm.page.challenge_phase.name);
+                formData.append("description", vm.page.challenge_phase.description);
+                formData.append("start_date", vm.phaseStartDate.toISOString());
+                formData.append("end_date", vm.phaseEndDate.toISOString());
+                formData.append("max_submissions_per_day", vm.page.challenge_phase.max_submissions_per_day);
+                formData.append("max_submissions_per_month", vm.page.challenge_phase.max_submissions_per_month);
+                formData.append("max_submissions", vm.page.challenge_phase.max_submissions);
+                formData.append("is_public", true);
+                formData.append("leaderboard_public", true);
+                formData.append("codename", vm.page.challenge_phase.phase_codename);
+                if (vm.testAnnotationFile) {
+                    formData.append("test_annotation", vm.testAnnotationFile);
+                }
+                parameters.data = formData;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        utilities.hideLoader();
+                        if (status === 201) {
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The challenge phase details are successfully updated!");
+                            vm.page.challenge_phase.name = "";
+                            vm.createChallengePhase(false);
                         }
                     },
                     onError: function(response) {
