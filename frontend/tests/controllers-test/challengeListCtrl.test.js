@@ -103,6 +103,7 @@ describe('Unit tests for Challenge List Controller', function () {
             expect(vm.noneCurrentChallenge).toBeFalsy();
 
             var timezone = moment.tz.guess();
+            var zone = moment.tz.zone(timezone);
             for (var i in vm.currentList) {
                 if (vm.currentList[i].description.length >= 50) {
                     expect(vm.currentList[i].isLarge).toEqual("...");
@@ -110,9 +111,9 @@ describe('Unit tests for Challenge List Controller', function () {
                     expect(vm.currentList[i].isLarge).toEqual("");
                 }
                 var offset = new Date(vm.currentList[i].start_date).getTimezoneOffset();
-                expect(vm.currentList[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.currentList[i].start_zone).toEqual(zone.abbr(offset));
                 offset = new Date(vm.currentList[i].end_date).getTimezoneOffset();
-                expect(vm.currentList[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.currentList[i].end_zone).toEqual(zone.abbr(offset));
 
                 expect(vm.challengeCreator[vm.currentList[i].id]).toEqual(vm.currentList[i].creator.id);
                 expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
@@ -173,6 +174,7 @@ describe('Unit tests for Challenge List Controller', function () {
             expect(vm.noneUpcomingChallenge).toBeFalsy();
 
             var timezone = moment.tz.guess();
+            var zone = moment.tz.zone(timezone);
             for (var i in vm.upcomingList) {
                 if (vm.upcomingList[i].description.length >= 50) {
                     expect(vm.upcomingList[i].isLarge).toEqual("...");
@@ -180,9 +182,9 @@ describe('Unit tests for Challenge List Controller', function () {
                     expect(vm.upcomingList[i].isLarge).toEqual("");
                 }
                 var offset = new Date(vm.upcomingList[i].start_date).getTimezoneOffset();
-                expect(vm.upcomingList[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.upcomingList[i].start_zone).toEqual(zone.abbr(offset));
                 offset = new Date(vm.upcomingList[i].end_date).getTimezoneOffset();
-                expect(vm.upcomingList[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.upcomingList[i].end_zone).toEqual(zone.abbr(offset));
 
                 expect(vm.challengeCreator[vm.upcomingList[i].id]).toEqual(vm.upcomingList[i].creator.id);
                 expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
@@ -247,6 +249,7 @@ describe('Unit tests for Challenge List Controller', function () {
             expect(vm.nonePastChallenge).toBeFalsy();
 
             var timezone = moment.tz.guess();
+            var zone = moment.tz.zone(timezone);
             for (var i in vm.pastList) {
                 if (vm.pastList[i].description.length >= 50) {
                     expect(vm.pastList[i].isLarge).toEqual("...");
@@ -254,9 +257,9 @@ describe('Unit tests for Challenge List Controller', function () {
                     expect(vm.pastList[i].isLarge).toEqual("");
                 }
                 var offset = new Date(vm.pastList[i].start_date).getTimezoneOffset();
-                expect(vm.pastList[i].start_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.pastList[i].start_zone).toEqual(zone.abbr(offset));
                 offset = new Date(vm.pastList[i].end_date).getTimezoneOffset();
-                expect(vm.pastList[i].end_zone).toEqual(moment.tz.zone(timezone).abbr(offset));
+                expect(vm.pastList[i].end_zone).toEqual(zone.abbr(offset));
 
                 expect(vm.challengeCreator[vm.pastList[i].id]).toEqual(vm.pastList[i].creator.id);
                 expect(utilities.storeData).toHaveBeenCalledWith("challengeCreator", vm.challengeCreator);
