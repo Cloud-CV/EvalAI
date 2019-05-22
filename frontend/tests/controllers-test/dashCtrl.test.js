@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit tests for Dashboard Controller', function () {
+describe('Unit tests for dashboard controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, createController, $rootScope, $state, $scope, utilities, vm;
@@ -172,13 +172,13 @@ describe('Unit tests for Dashboard Controller', function () {
                     id: 1,
                     team_name: "Host team name 1",
                     created_by: "user 1",
-                    team_url: "Team url 1"
+                    team_url: "https://team1.url"
                 },
                 {
                     id: 2,
                     team_name: "Host team name 2",
                     created_by: "user 2",
-                    team_url: "Team url 2"
+                    team_url: "https://team2.url"
                 },
             ];
             vm = createController();
@@ -225,13 +225,13 @@ describe('Unit tests for Dashboard Controller', function () {
                     id: 1,
                     team_name: "Participants team name 1",
                     created_by: "user 1",
-                    team_url: "Team url 1"
+                    team_url: "https://team1.url"
                 },
                 {
                     id: 2,
                     team_name: "Participants team name 2",
                     created_by: "user 2",
-                    team_url: "Team url 2"
+                    team_url: "https://team2.url"
                 },
             ];
             vm = createController();
