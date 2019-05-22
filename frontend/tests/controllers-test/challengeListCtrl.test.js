@@ -199,10 +199,8 @@ describe('Unit tests for Challenge List Controller', function () {
             successResponse = {
                 results: []
             };
-            errorResponse = {
-                error: 'error'
-            };
             vm = createController();
+            expect(vm.currentList).toEqual(successResponse.results);
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
@@ -275,10 +273,9 @@ describe('Unit tests for Challenge List Controller', function () {
             successResponse = {
                 results: []
             };
-            errorResponse = {
-                error: 'error'
-            };
             vm = createController();
+            expect(vm.currentList).toEqual(successResponse.results);
+            expect(vm.upcomingList).toEqual(successResponse.results);
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
     });
