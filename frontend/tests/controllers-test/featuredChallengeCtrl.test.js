@@ -92,6 +92,8 @@ describe('Unit tests for Featured Challenge Controller', function () {
                 image: null
             };
             vm = createController();
+            expect(vm.page).toEqual(successResponse);
+            expect(vm.isActive).toEqual(successResponse.is_active);
             expect(vm.page.image).toEqual("dist/images/logo.png");
         });
 
