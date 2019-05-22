@@ -84,6 +84,7 @@ describe('Unit tests for Main Controller', function () {
                 username: 'abc123'
             };
             vm.init();
+            expect(utilities.resetStorage).not.toHaveBeenCalled();
             expect(vm.user.name).toEqual(successResponse.username);
         });
 
