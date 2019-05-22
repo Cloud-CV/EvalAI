@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit tests for Change PWD controller', function () {
+describe('Unit tests for change password controller', function () {
     beforeEach(angular.mock.module('evalai'));
     
     var $controller, createController, $rootScope, $scope, utilities, $state, vm;
