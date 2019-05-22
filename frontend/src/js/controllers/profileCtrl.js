@@ -127,7 +127,13 @@
             anchor.attr({
                 href: 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(vm.jsonResponse)),
                 download: 'token.json'
-            })[0].click();
+            });
+
+            // Create Event
+            var ev = document.createEvent("MouseEvents");
+                ev.initMouseEvent("click", true, false, self, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                // Fire event
+                anchor[0].dispatchEvent(ev);
 
         };
     }
