@@ -87,7 +87,7 @@ def send_email(email="", message=""):
         message {string} -- The message which is to be sent to the email
     """
     try:
-        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+        sg = sendgrid.SendGridAPIClient(apikey='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')
         from_email = Email(settings.ADMIN_EMAIL)
         to_email = Email(email)
         subject = "Challenge creation"

@@ -28,6 +28,7 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from yaml.scanner import ScannerError
+from django.template.loader import render_to_string
 
 from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset, send_email
@@ -483,26 +484,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     user = User.objects.get(username=request.user)
     email = user.email
-    challenge_creation_error_message = """
-    Hi,
-
-    We noticed that you tried to create a challenge on EvalAI recently and you could not create it due to some reason.
-    Please let us know if you need help in creating the challenge configuration for your challenge.
-    We would be more than happy to help in creating the challenge.
-
-    Thanks,
-    EvalAI Team
-    """
-    challenge_creation_success_message = """
-    Hi,
-
-    We noticed that you created a challenge on EvalAI recently and the challenge you created is in review.
-    Please contact us for details regarding the challenge hosting process.
-    We would be more than happy to help in hosting the challenge.
-
-    Thanks,
-    EvalAI Team
-    """
+    challenge_creation_error_message = render_to_string('challenge_creation_error_message.html', {})
+    challenge_creation_success_message = render_to_string('challenge_creation_success_message.html', {})
+    
 
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
