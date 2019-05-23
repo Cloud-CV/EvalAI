@@ -21,7 +21,7 @@ describe('Unit Tests for Permission Controller', function () {
             spyOn(utilities, 'getData');
         });
 
-        it('has default values', function () {
+        it('permission controller has default values', function () {
             vm = createController();
             expect(utilities.getData).toHaveBeenCalledWith('emailError');
             expect(vm.emailError).toEqual(utilities.getData('emailError'));
