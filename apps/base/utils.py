@@ -13,7 +13,7 @@ from django.utils.deconstruct import deconstructible
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 
-from sendgrid.helpers.mail import Email, Mail, Content, Personalization
+from sendgrid.helpers.mail import Email, Mail, Personalization
 
 logger = logging.getLogger(__name__)
 
