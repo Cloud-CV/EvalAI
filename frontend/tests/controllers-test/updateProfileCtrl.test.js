@@ -42,6 +42,7 @@ describe('Unit Tests for Update Profile Controller', function () {
 
     describe('Unit Tests for `updateProfile` function', function () {
         var success, tryClauseResponse;
+        var updateProfileLoaderMessage = "Updating Your Profile";
         var usernameInvalid  = {
             username: ["username error"],
         };
@@ -89,7 +90,7 @@ describe('Unit Tests for Update Profile Controller', function () {
             var resetconfirmFormValid = true;
             success = true;
             vm.updateProfile(resetconfirmFormValid);
-            expect(vm.startLoader).toHaveBeenCalledWith("Updating Your Profile");
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Profile updated successfully!");
             expect($state.go).toHaveBeenCalledWith('web.profile');
             expect(vm.stopLoader).toHaveBeenCalled();
@@ -101,7 +102,7 @@ describe('Unit Tests for Update Profile Controller', function () {
             success = false;
 
             vm.updateProfile(resetconfirmFormValid);
-            expect(vm.startLoader).toHaveBeenCalledWith("Updating Your Profile");
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
             expect(vm.stopLoader).toHaveBeenCalled();
             expect(vm.isFormError).toBeTruthy();
             expect(vm.FormError).toEqual(tryClauseResponse.username[0]);
@@ -114,7 +115,7 @@ describe('Unit Tests for Update Profile Controller', function () {
             success = false;
 
             vm.updateProfile(resetconfirmFormValid);
-            expect(vm.startLoader).toHaveBeenCalledWith("Updating Your Profile");
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
             expect(vm.stopLoader).toHaveBeenCalled();
             expect(vm.isFormError).toBeTruthy();
             expect(vm.FormError).toEqual(tryClauseResponse.first_name[0]);
@@ -127,7 +128,7 @@ describe('Unit Tests for Update Profile Controller', function () {
             success = false;
 
             vm.updateProfile(resetconfirmFormValid);
-            expect(vm.startLoader).toHaveBeenCalledWith("Updating Your Profile");
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
             expect(vm.stopLoader).toHaveBeenCalled();
             expect(vm.isFormError).toBeTruthy();
             expect(vm.FormError).toEqual(tryClauseResponse.last_name[0]);
@@ -140,7 +141,7 @@ describe('Unit Tests for Update Profile Controller', function () {
             success = false;
 
             vm.updateProfile(resetconfirmFormValid);
-            expect(vm.startLoader).toHaveBeenCalledWith("Updating Your Profile");
+            expect(vm.startLoader).toHaveBeenCalledWith(updateProfileLoaderMessage);
             expect(vm.stopLoader).toHaveBeenCalled();
             expect(vm.isFormError).toBeTruthy();
             expect(vm.FormError).toEqual(tryClauseResponse.affiliation[0]);
