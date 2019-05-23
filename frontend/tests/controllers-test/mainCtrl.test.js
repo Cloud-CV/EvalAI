@@ -24,7 +24,6 @@ describe('Unit tests for Main Controller', function () {
             expect(vm.user).toEqual({});
             expect(vm.challengeList).toEqual([]);
             expect(vm.isChallenge).toBeTruthy({});
-            expect(vm.isMore).toBeFalsy();
             expect(vm.redirectUrl).toEqual({});
         });
     });
