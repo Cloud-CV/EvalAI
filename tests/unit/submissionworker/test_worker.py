@@ -86,8 +86,8 @@ class BaseAPITestClass(APITestCase):
 
         self.zipped = zipfile.ZipFile(join(self.BASE_TEMP_DIR, 'test_zip.zip'), 'w')
         self.zipped.write(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), 'dummy_input.txt')
-        #bad = self.zipped.testzip()  # Returns name of any bad files in the zip, if any.
-        #self.assertTrue(bad == None)  # This passeed when I ran it.
+        # bad = self.zipped.testzip()  # Returns name of any bad files in the zip, if any.
+        # self.assertTrue(bad == None)  # This passeed when I ran it.
         self.zipped.close()
         file = open(join(self.BASE_TEMP_DIR, 'test_zip.zip'), 'rb')
         self.z = SimpleUploadedFile(join(self.BASE_TEMP_DIR, 'test_zip.zip'), file.read(), content_type='application/zip')
@@ -121,7 +121,7 @@ class BaseAPITestClass(APITestCase):
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
                 test_annotation=SimpleUploadedFile('test_sample_file.txt',
-                                                   b'Dummy file content', 
+                                                   b'Dummy file content',
                                                    content_type='text/plain')
             )
 
@@ -146,7 +146,6 @@ class BaseAPITestClass(APITestCase):
             publication_url="http://testserver/",
             is_public=True,
         )
-
 
     def tearDown(self):
         shutil.rmtree('/tmp/evalai')
@@ -195,7 +194,7 @@ class BaseAPITestClass(APITestCase):
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
         client.create_queue(QueueName="test_queue")
-        queue = get_or_create_sqs_queue("test_queue")
+        get_or_create_sqs_queue("test_queue")
         queue_url = client.get_queue_url(QueueName='test_queue')['QueueUrl']
         self.assertTrue(queue_url)
         client.delete_queue(QueueUrl=queue_url)
