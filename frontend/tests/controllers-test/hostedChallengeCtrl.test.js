@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit tests for Hosted Challenge Controller', function () {
+describe('Unit tests for hosted challenge Controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, createController, $rootScope, $scope, utilities, vm;
@@ -98,7 +98,7 @@ describe('Unit tests for Hosted Challenge Controller', function () {
                     {
                         id: 1,
                         team_name: "Host team name",
-                        team_url: "Host team url",
+                        team_url: "https://host_team.url",
                         created_by: "hostchallenge descriptionUser"
                     }
                 ]
