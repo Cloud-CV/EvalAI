@@ -1,4 +1,3 @@
-import mock
 import boto3
 import os
 import shutil
@@ -11,7 +10,6 @@ from os.path import join
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse_lazy
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -21,11 +19,9 @@ from rest_framework.test import APITestCase, APIClient
 from challenges.models import (
     Challenge,
     ChallengePhase,
-    Leaderboard,
-    StarChallenge,
 )
 from participants.models import Participant, ParticipantTeam
-from hosts.models import ChallengeHost, ChallengeHostTeam
+from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 
 from scripts.workers.submission_worker import (
