@@ -7,13 +7,11 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('challenges', '0012_added_code_name_field'),
-    ]
+    dependencies = [("challenges", "0012_added_code_name_field")]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='challengephase',
-            unique_together=set([('code_name', 'challenge')]),
-        ),
+            name="challengephase",
+            unique_together=set([("code_name", "challenge")]),
+        )
     ]
