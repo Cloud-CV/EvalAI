@@ -103,7 +103,7 @@ def send_email(
     """
     try:
         sg = sendgrid.SendGridAPIClient(
-            apikey='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'
+            apikey=('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')
         )
         sender = Email(sender)
         mail = Mail()

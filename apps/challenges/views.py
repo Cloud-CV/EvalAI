@@ -37,14 +37,6 @@ from django.template.loader import render_to_string
 
 from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
-<<<<<<< HEAD
-from base.utils import paginated_queryset, send_email
-from challenges.utils import (get_challenge_model,
-                              get_challenge_phase_model,
-                              get_challenge_phase_split_model,
-                              get_dataset_split_model,
-                              get_leaderboard_model)
-=======
 from accounts.serializers import UserDetailsSerializer
 from base.utils import (
     paginated_queryset,
@@ -59,7 +51,6 @@ from challenges.utils import (
     get_dataset_split_model,
     get_leaderboard_model,
 )
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
     get_challenge_host_teams_for_user,
@@ -617,7 +608,37 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     email = user.email
     challenge_creation_error_message = render_to_string('challenge_creation_error_message.html', {})
     challenge_creation_success_message = render_to_string('challenge_creation_success_message.html', {})
-    
+    template_id = 'd-28017bce8329465a921312bb059f3880'
+    challenge_creation_success_template_data = {
+        'subject': "CloudCV/EvalAI - Challenge Creation",
+        'username': user.username,
+        'message': challenge_creation_success_message,
+        'is_button': True,
+        'button_text': "Go to hosted challenges",
+        'button_url': "https://evalai.cloudcv.org/web/hosted-challenges",
+        "aboutus_url": "https://evalai.cloudcv.org/about",
+        "contactus_url": "https://evalai.cloudcv.org/contact",
+        "ourteam_url": "https://evalai.cloudcv.org/team",
+        "get_involved_url": "https://evalai.cloudcv.org/get-involved",
+        "privacy_policy_url": "https://evalai.cloudcv.org/privacy-policy",
+        "cloudcv_url": "https://cloudcv.org/",
+        "evalai_url": "https://evalai.cloudcv.org/"
+    }
+    challenge_creation_error_template_data = {
+        'subject': "CloudCV/EvalAI - Challenge Creation",
+        'username': user.username,
+        'message': challenge_creation_error_message,
+        'is_button': True,
+        'button_text': 'Create challenge',
+        'button_url': "https://evalai.cloudcv.org/web/challenge-host-teams",
+        "aboutus_url": "https://evalai.cloudcv.org/about",
+        "contactus_url": "https://evalai.cloudcv.org/contact",
+        "ourteam_url": "https://evalai.cloudcv.org/team",
+        "get_involved_url": "https://evalai.cloudcv.org/get-involved",
+        "privacy_policy_url": "https://evalai.cloudcv.org/privacy-policy",
+        "cloudcv_url": "https://cloudcv.org/",
+        "evalai_url": "https://evalai.cloudcv.org/"
+    }
 
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
@@ -629,7 +650,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         uploaded_zip_file_path = serializer.data["zip_configuration"]
     else:
         response_data = serializer.errors
-        send_email(email=email, message=challenge_creation_error_message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # All files download and extract location.
@@ -655,7 +676,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             )
             response_data = {"error": message}
             logger.exception(message)
-            send_email(email=email, message=challenge_creation_error_message)
+            send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     except requests.exceptions.RequestException:
@@ -665,7 +686,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         response_data = {"error": message}
         logger.exception(message)
-        send_email(email=email, message=challenge_creation_error_message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Extract zip file
@@ -674,20 +695,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         zip_ref.extractall(join(BASE_LOCATION, unique_folder_name))
         zip_ref.close()
     except zipfile.BadZipfile:
-<<<<<<< HEAD
-        message = ('The zip file contents cannot be extracted. '
-                   'Please check the format!')
-        response_data = {
-            'error': message
-        }
-        send_email(email=email, message=challenge_creation_error_message)
-=======
         message = (
             "The zip file contents cannot be extracted. "
             "Please check the format!"
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Search for yaml file
@@ -704,7 +717,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         message = "There is no YAML file in zip file you uploaded!"
         response_data = {"error": message}
         logger.info(message)
-        send_email(email=email, message=challenge_creation_error_message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if yaml_file_count > 1:
@@ -713,7 +726,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         response_data = {"error": message}
         logger.info(message)
-        send_email(email=email, message=challenge_creation_error_message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -722,14 +735,6 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         ) as stream:
             yaml_file_data = yaml.safe_load(stream)
     except (yaml.YAMLError, ScannerError) as exc:
-<<<<<<< HEAD
-        message = 'Error in creating challenge. Please check the yaml configuration!'
-        response_data = {
-            'error': message
-        }
-        logger.exception(exc)
-        send_email(email=email, message=challenge_creation_error_message)
-=======
         # To get the problem description
         if hasattr(exc, "problem"):
             error_description = exc.problem
@@ -744,7 +749,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             error_description, line_number, column_number
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script path in yaml file.
@@ -757,21 +762,12 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             evaluation_script,
         )
     except KeyError:
-<<<<<<< HEAD
-        message = ('There is no key for evaluation script in YAML file. '
-                   'Please add it and then try again!')
-        response_data = {
-            'error': message
-        }
-        logger.exception(message)
-        send_email(email=email, message=challenge_creation_error_message)
-=======
         message = (
             "There is no key for evaluation script in YAML file. "
             "Please add it and then try again!"
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for evaluation script file in extracted zip folder.
@@ -781,42 +777,26 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 challenge_evaluation_script.read(), evaluation_script_path
             )
     else:
-<<<<<<< HEAD
-        message = ('No evaluation script is present in the zip file. '
-                   'Please add it and then try again!')
-        response_data = {
-            'error': message
-        }
-        logger.exception(message)
-        send_email(email=email, message=challenge_creation_error_message)
-=======
         message = (
             "No evaluation script is present in the zip file. "
             "Please add it and then try again!"
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        logger.exception(message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for test annotation file path in yaml file.
     try:
         challenge_phases_data = yaml_file_data["challenge_phases"]
     except KeyError:
-<<<<<<< HEAD
-        message = ('No challenge phase key found. '
-                   'Please add challenge phases in YAML file and try again!')
-        response_data = {
-            'error': message
-        }
-        logger.exception(message)
-        send_email(email=email, message=challenge_creation_error_message)
-=======
         message = (
             "No challenge phase key found. "
             "Please add challenge phases in YAML file and try again!"
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        logger.exception(message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     for data in challenge_phases_data:
@@ -829,45 +809,27 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 test_annotation_file,
             )
         else:
-<<<<<<< HEAD
-            message = ('There is no key for test annotation file for'
-                       'challenge phase {} in yaml file. Please add it'
-                       ' and then try again!'.format(data['name']))
-            response_data = {
-                'error': message
-            }
-            logger.exception(message)
-            send_email(email=email, message=challenge_creation_error_message)
-=======
             message = (
                 "There is no key for test annotation file for"
                 "challenge phase {} in yaml file. Please add it"
                 " and then try again!".format(data["name"])
             )
             response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+            logger.exception(message)
+            send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
         if not isfile(test_annotation_file_path):
-<<<<<<< HEAD
-            message = ('No test annotation file found in zip file'
-                       'for challenge phase \'{}\'. Please add it and '
-                       ' then try again!'.format(data['name']))
-            response_data = {
-                'error': message
-            }
-            logger.exception(message)
-            send_email(email=email, message=challenge_creation_error_message)
-=======
             message = (
                 "No test annotation file found in zip file"
                 "for challenge phase '{}'. Please add it and "
                 " then try again!".format(data["name"])
             )
             response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+            logger.exception(message)
+            send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
@@ -908,21 +870,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         else:
             yaml_file_data["description"] = None
     except KeyError:
-<<<<<<< HEAD
-        message = ('There is no key for description. '
-                   'Please add it and then try again!')
-        response_data = {
-            'error': message
-        }
-        logger.exception(message)
-        send_email(email=email, message=challenge_creation_error_message)
-=======
         message = (
             "There is no key for description. "
             "Please add it and then try again!"
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        logger.exception(message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for evaluation details file
@@ -943,21 +897,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         else:
             yaml_file_data["evaluation_details"] = None
     except KeyError:
-<<<<<<< HEAD
-        message = ('There is no key for evalutaion details. '
-                   'Please add it and then try again!')
-        response_data = {
-            'error': message
-        }
-        logger.exception(message)
-        send_email(email=email, message=challenge_creation_error_message)
-=======
         message = (
             "There is no key for evalutaion details. "
             "Please add it and then try again!"
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        logger.exception(message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for terms and conditions file
@@ -977,21 +923,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         else:
             yaml_file_data["terms_and_conditions"] = None
     except KeyError:
-<<<<<<< HEAD
-        message = ('There is no key for terms and conditions. '
-                   'Please add it and then try again!')
-        response_data = {
-            'error': message
-        }
-        logger.exception(message)
-        send_email(email=email, message=challenge_creation_error_message)
-=======
         message = (
             "There is no key for terms and conditions. "
             "Please add it and then try again!"
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        logger.exception(message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # check for submission guidelines file
@@ -1011,21 +949,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         else:
             yaml_file_data["submission_guidelines"] = None
     except KeyError:
-<<<<<<< HEAD
-        message = ('There is no key for submission guidelines. '
-                   'Please add it and then try again!')
-        response_data = {
-            'error': message
-        }
-        logger.exception(message)
-        send_email(email=email, message=challenge_creation_error_message)
-=======
         message = (
             "There is no key for submission guidelines. "
             "Please add it and then try again!"
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        logger.exception(message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     # Check for leaderboard schema in YAML file
@@ -1049,11 +979,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-<<<<<<< HEAD
             logger.exception(message)
-            send_email(email=email, message=challenge_creation_error_message)
-=======
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+            send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         if 'default_order_by' not in leaderboard_schema[0].get('schema'):
             message = ('There is no \'default_order_by\' key in leaderboard '
@@ -1061,19 +988,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 'error': message
             }
-<<<<<<< HEAD
             logger.exception(message)
-            send_email(email=email, message=challenge_creation_error_message)
-            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
-    else:
-        message = ('There is no key \'leaderboard\' '
-                   'in the YAML file. Please add it and then try again!')
-        response_data = {
-            'error': message
-        }
-        logger.exception(message)
-        send_email(email=email, message=challenge_creation_error_message)
-=======
+            send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         if "labels" not in leaderboard_schema[0].get("schema"):
             message = (
@@ -1081,6 +997,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 "schema. Please add it and then try again!"
             )
             response_data = {"error": message}
+            logger.exception(message)
+            send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
     else:
         message = (
@@ -1088,7 +1006,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             "in the YAML file. Please add it and then try again!"
         )
         response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+        logger.exception(message)
+        send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
         return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
@@ -1198,21 +1117,13 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     "challenge_phase_splits"
                 ]
             except KeyError:
-<<<<<<< HEAD
-                message = ('There is no key for challenge phase splits. '
-                           'Please add it and then try again!')
-                response_data = {
-                    'error': message
-                }
-                logger.exception(message)
-                send_email(email=email, message=challenge_creation_error_message)
-=======
                 message = (
                     "There is no key for challenge phase splits. "
                     "Please add it and then try again!"
                 )
                 response_data = {"error": message}
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+                logger.exception(message)
+                send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
                 return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
 
             for data in challenge_phase_splits_data:
@@ -1264,30 +1175,17 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             zip_config.challenge = challenge
             zip_config.save()
             response_data = {
-<<<<<<< HEAD
-                'success': 'Challenge {} has been created successfully and'
-                ' sent for review to EvalAI Admin.'.format(challenge.title)}
-            send_email(email=email, message=challenge_creation_success_message)
-=======
                 "success": "Challenge {} has been created successfully and"
                 " sent for review to EvalAI Admin.".format(challenge.title)
             }
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+            send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_success_template_data)
             return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:  # noqa: E722
         try:
             if response_data:
-<<<<<<< HEAD
-                response_data = {'error': response_data.values()[0]}
-                send_email(email=email, message=challenge_creation_error_message)
-                return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-        except:
-            response_data = {
-                'error': 'Error in creating challenge. Please check the yaml configuration!'}
-            send_email(email=email, message=challenge_creation_error_message)
-=======
                 response_data = {"error": response_data.values()[0]}
+                send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
@@ -1295,7 +1193,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             response_data = {
                 "error": "Error in creating challenge. Please check the yaml configuration!"
             }
->>>>>>> 94ac9d3b83d18d0d7509960bf4782db3cfcd99b2
+            send_email(settings.CLOUDCV_TEAM_EMAIL, email, template_id, challenge_creation_error_template_data)
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         finally:
             try:
