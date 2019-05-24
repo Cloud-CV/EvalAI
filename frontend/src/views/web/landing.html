@@ -85,7 +85,7 @@
                     <h4 class="w-300 center">Popular challenges</h4>
                 </div>
                 <div class="row">
-                    <div class="col s12 m3 l3" ng-repeat="challenge in main.challengeList.results track by $index" ng-if="$index < 4"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+                    <div class="col s12 m3 l3" ng-repeat="challenge in main.challengeList.results track by $index" ng-if="$index < 4"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeSlug:challenge.slug})">
                             <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                                 <div class="card-image ev-card-image">
                                     <img class="bg-img" ng-src="{{challenge.image}}">

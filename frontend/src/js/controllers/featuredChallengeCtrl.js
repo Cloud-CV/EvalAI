@@ -10,7 +10,8 @@
 
     function FeaturedChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, moment) {
         var vm = this;
-        vm.challengeId = $stateParams.challengeId;
+        var slugUrl = ($stateParams.challengeSlug).replace(/\'/g, '').split(/(\d+)/).filter(Boolean);
+        vm.challengeId = slugUrl[slugUrl.length - 1];
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.phaseId = null;
         vm.wrnMsg = {};

@@ -10,7 +10,8 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
         var vm = this;
-        vm.challengeId = $stateParams.challengeId;
+        var slugUrl = ($stateParams.challengeSlug).replace(/\'/g, '').split(/(\d+)/).filter(Boolean);
+        vm.challengeId = slugUrl[slugUrl.length - 1];
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
