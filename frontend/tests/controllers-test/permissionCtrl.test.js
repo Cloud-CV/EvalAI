@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit Tests for Permission Controller', function () {
+describe('Unit Tests for permission controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, createController, $rootScope, $scope, utilities, vm;
