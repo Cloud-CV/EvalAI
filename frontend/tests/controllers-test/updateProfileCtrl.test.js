@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit Tests for Update Profile Controller', function () {
+describe('Unit tests for update profile controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, $rootScope, $scope, utilities, $state, vm;
