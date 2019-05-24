@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit tests for Featured Challenge Controller', function () {
+describe('Unit tests for featured challenge controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, createController, $rootScope, $state, $stateParams, $scope, utilities, vm;
