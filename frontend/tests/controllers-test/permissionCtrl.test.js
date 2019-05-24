@@ -16,7 +16,7 @@ describe('Unit tests for permission controller', function () {
         };
     }));
 
-    describe('Global Variables', function () {
+    describe('Global variables', function () {
         beforeEach(function () {
             spyOn(utilities, 'getData');
         });
