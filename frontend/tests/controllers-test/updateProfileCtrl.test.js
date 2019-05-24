@@ -15,7 +15,7 @@ describe('Unit tests for update profile controller', function () {
         vm = $controller('updateProfileCtrl', {$scope: $scope});
     }));
 
-    describe('Global Variables', function () {
+    describe('Global variables', function () {
         it('has default values', function () {
             expect(vm.wrnMsg).toEqual({});
             expect(vm.isValid).toEqual({});
@@ -40,7 +40,7 @@ describe('Unit tests for update profile controller', function () {
         });
     });
 
-    describe('Unit Tests for `updateProfile` function', function () {
+    describe('Unit tests for `updateProfile` function', function () {
         var success, tryClauseResponse;
         var updateProfileLoaderMessage = "Updating Your Profile";
         var usernameInvalid  = {
