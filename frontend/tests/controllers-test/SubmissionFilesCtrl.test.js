@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit tests for Submission Files Controller', function () {
+describe('Unit tests for submission files controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, vm;
