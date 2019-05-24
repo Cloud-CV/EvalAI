@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit tests for Main Controller', function () {
+describe('Unit tests for main controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, createController, $rootScope, $scope, utilities, $state, vm;
