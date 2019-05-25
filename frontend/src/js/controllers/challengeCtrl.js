@@ -890,26 +890,33 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.rerunSubmission = function(submission_number) {
-            parameters.url = 'jobs/re_run_submission/' + submission_number;
+        vm.rerunSubmission = function(submissionObject) {
+            submissionObject.classList = ['spin', 'progress-indicator'];
+            parameters.url = 'jobs/re_run_submission/' + submissionObject.id;
             parameters.method = 'POST';
             var formData = new FormData();
             parameters.data = formData;
 
             parameters.token = userKey;
             parameters.callback = {
-                onSuccess: function() {
+                onSuccess: function(response) {
                     $rootScope.notify("success", "Your submission has been re-run succesfully!");
-                    vm.stopLoader();
+                    submissionObject.status = response.data.submission_status;
+                    submissionObject.execution_time = response.data.submission_execution_time;
+                    submissionObject.submission_number = response.data.submission_number;
+                    submissionObject.classList = [''];
+                    $scope.reRunSubmission = 'false';
+                    // vm.stopLoader();
                 },
                 onError: function(response) {
                     var status = response.status;
                     var error = response.data;
                     $rootScope.notify("error", error);
-                    vm.stopLoader();
+                    submissionObject.classList = [''];
+                    // vm.stopLoader();
                 }
             };
-            vm.startLoader("Loading Submissions");
+            // vm.startLoader("Loading Submissions");
             utilities.sendRequest(parameters);
         };
 

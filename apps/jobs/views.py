@@ -2,6 +2,7 @@ import botocore
 import datetime
 import json
 import logging
+import time
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -937,17 +938,17 @@ def update_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle, ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def re_run_submission(request, submission_number):
+def re_run_submission(request, submission_id):
     """
     API endpoint to re-run a submission.
     Only challenge host has access to this endpoint.
     """
     try:
-        submission = Submission.objects.get(submission_number=submission_number)
+        submission = Submission.objects.get(id=submission_id)
         logger.info('Submission found with submission number {}'
-                    .format(submission_number))
+                    .format(submission_id))
     except Submission.DoesNotExist:
-        response_data = {'error': 'Submission with submission number {} does not exist'.format(submission_number)}
+        response_data = {'error': 'Submission with submission number {} does not exist'.format(submission_id)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # check if the challenge phase exists or not
@@ -983,7 +984,14 @@ def re_run_submission(request, submission_number):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
     try:
         publish_submission_message(challenge_id, challenge_phase_id, submission.id)
-        response_data = {'success': 'Submission result has been successfully updated'}
+        time.sleep(1)
+        submission = Submission.objects.get(id=submission_id)
+        response_data = {
+            'submission_status': submission.status,
+            'submission_execution_time': submission.execution_time,
+            'submission_number': submission.submission_number,
+            'success': 'Submission result has been successfully updated'
+        }
         return Response(response_data, status=status.HTTP_200_OK)
     except Exception as e:
         logger.info('Error occured while sending to queue:  {}'.format(str(e)))
