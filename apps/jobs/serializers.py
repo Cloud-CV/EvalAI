@@ -203,6 +203,7 @@ class CreateLeaderboardDataSerializer(serializers.ModelSerializer):
             "submission",
             "result",
             "leaderboard",
+            "error"
         )
 
 

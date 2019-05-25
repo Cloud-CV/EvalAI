@@ -751,6 +751,9 @@ def update_submission(request, challenge_pk):
                     "show_to_participant": True,
                     "accuracies": {
                         "metric1": 90
+                    },
+                    "error": {
+                        "error_metric1": 10
                     }
                 },
                 {
@@ -759,6 +762,10 @@ def update_submission(request, challenge_pk):
                     "accuracies": {
                         "metric1": 50,
                         "metric2": 40
+                    },
+                    "error":{
+                        "error_metric1": 9,
+                        "error_metric2": 1
                     }
                 }
             ]
@@ -812,6 +819,7 @@ def update_submission(request, challenge_pk):
             for phase_result in results:
                 split = phase_result.get("split")
                 accuracies = phase_result.get("accuracies")
+                errors = phase_result.get("error", "")
                 show_to_participant = phase_result.get(
                     "show_to_participant", False
                 )
@@ -861,7 +869,10 @@ def update_submission(request, challenge_pk):
                         response_data, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                data = {"result": accuracies}
+                data = {
+                    "result": accuracies,
+                    "error": errors,
+                }
                 serializer = CreateLeaderboardDataSerializer(
                     data=data,
                     context={
