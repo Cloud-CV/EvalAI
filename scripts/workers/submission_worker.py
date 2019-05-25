@@ -402,6 +402,8 @@ def run_submission(
                 submission_metadata=submission_serializer.data,
             )
         """
+        ``result``: contains accuracies for each metric, (**required**)
+        ``error``: contains error for each key (**Optional**)
         A submission will be marked successful only if it is of the format
             {
                "result":[
@@ -421,6 +423,26 @@ def run_submission(
                      "split_codename_3":{
                         "key1":100,
                         "key2":45,
+                     }
+                  }
+               ],
+               "error":[
+                  {
+                     "split_codename_1":{
+                        "error_key1":30,
+                        "error_key2":50,
+                     }
+                  },
+                  {
+                     "split_codename_2":{
+                        "error_key1":90,
+                        "error_key2":10,
+                     }
+                  },
+                  {
+                     "split_codename_3":{
+                        "error_key1":100,
+                        "error_key2":45,
                      }
                   }
                ],
