@@ -925,7 +925,7 @@ def update_submission(request, challenge_pk):
             data = {"status": submission_status}
         elif submission_status not in [Submission.RUNNING]:
             response_data = {"error": "Sorry, submission status is invalid"}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)  
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         serializer = SubmissionSerializer(
             submission, data=data, partial=True, context={"request": request}
         )
