@@ -1,6 +1,7 @@
 import datetime
 from rest_framework import status
 from django.utils import timezone
+from rest_framework.response import Response
 
 from challenges.utils import get_challenge_model, get_challenge_phase_model
 
@@ -133,3 +134,38 @@ def get_remaining_submission_for_a_phase(
             "remaining_submissions_count": remaining_submission_count,
         }
         return response_data, status.HTTP_200_OK
+
+
+def validate_numerical_values_in_result(
+    leaderboard_metrics, result_field
+):
+    missing_metrics = []
+    malformed_metrics = []
+    for metric, value in result_field.items():
+        if metric not in leaderboard_metrics:
+            missing_metrics.append(metric)
+
+        if not (
+            isinstance(value, float) or isinstance(value, int)
+        ):
+            malformed_metrics.append((metric, type(value)))
+
+    if len(missing_metrics):
+        response_data = {
+            "error": "Following metrics are missing in the"
+            "leaderboard data: {}".format(missing_metrics)
+        }
+        return Response(
+            response_data, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if len(malformed_metrics):
+        response_data = {
+            "error": "Values for following metrics are not of"
+            "float/int: {}".format(malformed_metrics)
+        }
+        return Response(
+            response_data, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return None

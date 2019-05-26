@@ -1977,6 +1977,96 @@ class UpdateSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_update_submission_for_successful_submission_with_error_bars(self):
+        self.url = reverse_lazy(
+            "jobs:update_submission",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.data = {
+            "challenge_phase": self.challenge_phase.id,
+            "submission": self.submission.id,
+            "submission_status": "FINISHED",
+            "stdout": "qwerty",
+            "stderr": "qwerty",
+            "result": json.dumps(
+                [
+                    {
+                        "split": self.datasetSplit.codename,
+                        "show_to_participant": True,
+                        "accuracies": {"metric1": 60, "metric2": 30},
+                        "error": {"error_metric1": 3, "error_metric2": 8}
+                    }
+                ]
+            ),
+        }
+        expected = {
+            "success": "Submission result has been successfully updated"
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_submission_for_submission_with_error_bars_wrong_labels(self):
+        self.url = reverse_lazy(
+            "jobs:update_submission",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.data = {
+            "challenge_phase": self.challenge_phase.id,
+            "submission": self.submission.id,
+            "submission_status": "FINISHED",
+            "stdout": "qwerty",
+            "stderr": "qwerty",
+            "result": json.dumps(
+                [
+                    {
+                        "split": self.datasetSplit.codename,
+                        "show_to_participant": True,
+                        "accuracies": {"metric1": 60, "metric2": 30},
+                        "error": {"error_metric0": 3, "error_metric2": 8}
+                    }
+                ]
+            ),
+        }
+        expected = {
+            "error": "Following metrics are missing in theleaderboard data: ['error_metric0']"
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_submission_for_submission_with_error_bars_non_numerical(self):
+        self.url = reverse_lazy(
+            "jobs:update_submission",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.data = {
+            "challenge_phase": self.challenge_phase.id,
+            "submission": self.submission.id,
+            "submission_status": "FINISHED",
+            "stdout": "qwerty",
+            "stderr": "qwerty",
+            "result": json.dumps(
+                [
+                    {
+                        "split": self.datasetSplit.codename,
+                        "show_to_participant": True,
+                        "accuracies": {"metric1": 60, "metric2": 30},
+                        "error": {"error_metric1": 3, "error_metric2": "8"}
+                    }
+                ]
+            ),
+        }
+        expected = {
+            "error": "Values for following metrics are not offloat/int: [('error_metric2', <class 'str'>)]"
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.put(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_update_submission_for_invalid_data_in_result_key(self):
         self.url = reverse_lazy(
             "jobs:update_submission",

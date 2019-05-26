@@ -60,7 +60,11 @@ from .serializers import (
     CreateLeaderboardDataSerializer,
     RemainingSubmissionDataSerializer,
 )
-from .utils import get_submission_model, get_remaining_submission_for_a_phase
+from .utils import (
+    get_submission_model,
+    get_remaining_submission_for_a_phase,
+    validate_numerical_values_in_result,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -780,7 +784,6 @@ def update_submission(request, challenge_pk):
             "error": "Sorry, you are not authorized to make this request!"
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
     if request.method == "PUT":
         challenge_phase_pk = request.data.get("challenge_phase")
         submission_pk = request.data.get("submission")
@@ -802,7 +805,6 @@ def update_submission(request, challenge_pk):
         ]:
             response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
         if successful_submission:
             try:
                 results = json.loads(submission_result)
@@ -819,7 +821,7 @@ def update_submission(request, challenge_pk):
             for phase_result in results:
                 split = phase_result.get("split")
                 accuracies = phase_result.get("accuracies")
-                errors = phase_result.get("error", "")
+                errors = phase_result.get("error", None)
                 show_to_participant = phase_result.get(
                     "show_to_participant", False
                 )
@@ -840,34 +842,17 @@ def update_submission(request, challenge_pk):
                 leaderboard_metrics = challenge_phase_split.leaderboard.schema.get(
                     "labels"
                 )
-                missing_metrics = []
-                malformed_metrics = []
-                for metric, value in accuracies.items():
-                    if metric not in leaderboard_metrics:
-                        missing_metrics.append(metric)
 
-                    if not (
-                        isinstance(value, float) or isinstance(value, int)
-                    ):
-                        malformed_metrics.append((metric, type(value)))
-
-                if len(missing_metrics):
-                    response_data = {
-                        "error": "Following metrics are missing in the"
-                        "leaderboard data: {}".format(missing_metrics)
-                    }
-                    return Response(
-                        response_data, status=status.HTTP_400_BAD_REQUEST
-                    )
-
-                if len(malformed_metrics):
-                    response_data = {
-                        "error": "Values for following metrics are not of"
-                        "float/int: {}".format(malformed_metrics)
-                    }
-                    return Response(
-                        response_data, status=status.HTTP_400_BAD_REQUEST
-                    )
+                for field in [
+                    (leaderboard_metrics, accuracies),
+                    (["error_{0}".format(i) for i in leaderboard_metrics], errors)
+                ]:
+                    if field[1]:
+                        response = validate_numerical_values_in_result(
+                            field[0], field[1]
+                        )
+                        if response:
+                            return response
 
                 data = {
                     "result": accuracies,
