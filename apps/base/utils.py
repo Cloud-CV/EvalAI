@@ -1,7 +1,9 @@
 import base64
 import boto3
+import botocore
 import logging
 import os
+import re
 import sendgrid
 import uuid
 
@@ -138,10 +140,61 @@ def get_boto3_client(resource, aws_keys):
     Returns:
         Boto3 client object for the resource
     """
-    client = boto3.client(
-        resource,
-        region_name=aws_keys.get("AWS_REGION"),
-        aws_access_key_id=aws_keys.get("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=aws_keys.get("AWS_SECRET_ACCESS_KEY"),
-    )
-    return client
+    try:
+        client = boto3.client(
+            resource,
+            region_name=aws_keys["AWS_REGION"],
+            aws_access_key_id=aws_keys["AWS_ACCESS_KEY_ID"],
+            aws_secret_access_key=aws_keys["AWS_SECRET_ACCESS_KEY"],
+        )
+        return client
+    except Exception as e:
+        logger.exception(e)
+
+
+def get_sqs_queue_object():
+    if settings.DEBUG or settings.TEST:
+        queue_name = "evalai_submission_queue"
+        sqs = boto3.resource(
+            "sqs",
+            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
+            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
+        )
+    else:
+        sqs = boto3.resource(
+            "sqs",
+            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+        )
+    # Check if the queue exists. If no, then create one
+    try:
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
+    except botocore.exceptions.ClientError as ex:
+        if (
+            ex.response["Error"]["Code"]
+            != "AWS.SimpleQueueService.NonExistentQueue"
+        ):
+            logger.exception("Cannot get queue: {}".format(queue_name))
+        queue = sqs.create_queue(QueueName=queue_name)
+    return queue
+
+
+def get_slug(param):
+    slug = param.replace(" ", "-").lower()
+    slug = re.sub(r"\W+", "-", slug)
+    slug = slug[
+        :180
+    ]  # The max-length for slug is 200, but 180 is used here so as to append pk
+    return slug
+
+
+def get_queue_name(param):
+    queue_name = param.replace(" ", "-").lower()
+    queue_name = re.sub(r"\W+", "-", queue_name)
+    queue_name = "{}-{}".format(queue_name, uuid.uuid4())[
+        :80
+    ]  # The max-length for queue-name is 80 in SQS
+    return queue_name

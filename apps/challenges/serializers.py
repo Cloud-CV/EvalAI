@@ -54,6 +54,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "is_docker_based",
             "slug",
             "max_docker_image_size",
+            "cli_version",
         )
 
 
@@ -85,6 +86,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_public",
             "is_active",
             "codename",
+            "slug",
         )
 
 
@@ -189,6 +191,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "is_docker_based",
             "slug",
             "max_docker_image_size",
+            "cli_version",
         )
 
 
@@ -241,6 +244,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_submission_public",
             "codename",
             "test_annotation",
+            "slug",
         )
 
 

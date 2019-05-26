@@ -28,14 +28,21 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col s1 align-left">
+                        <div class="col s2 align-left">
                             <span>
                                 <md-select ng-model="challenge.fileSelected" placeholder="File" class="rm-margin">
                                     <md-option ng-repeat="key in challenge.fileTypes" value={{key.name}}>{{key.name}}</md-option>
                                 </md-select>
                             </span>
                         </div>
-                        <div class="align-left">
+                        <div class="col s4 align-left">
+                            <span>
+                                <md-select multiple="multiple" ng-model="challenge.fieldsToGet" placeholder="Custom Fields to Export (Optional)" class="rm-margin">
+                                    <md-option ng-repeat="key in challenge.fields" id="option-text-color" value={{key.id}}>{{key.label}}</md-option>
+                                </md-select>
+                            </span>
+                        </div>
+                        <div class="col s2 align-left">
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
                         </div>
                     </div>
@@ -78,8 +85,10 @@
                                         <td ng-if="key.editStatus" class="val-style capitalize width-0">
                                             <div class="flex-display">
                                                 <span>
-                                                    <md-select ng-model="key.selectedStatus" placeholder="Status" class="m-0">
-                                                        <md-option class="capitalize" ng-repeat="status in challenge.availableStatus" value={{status}}>{{status}}</md-option>
+                                                    <md-select ng-model="key.selectedStatus" ng-init="key.selectedStatus = key.status" placeholder="{{key.selectedStatus}}" class="m-0">
+                                                        <md-option class="capitalize" ng-repeat="status in challenge.availableStatus">
+                                                            {{status}} <i ng-if="status == key.selectedStatus" class="fa fa-check" aria-hidden="true"></i>
+                                                        </md-option>
                                                     </md-select>
                                                 </span>
                                                 <span class="flex-display valign-wrapper">

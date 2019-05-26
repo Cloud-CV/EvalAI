@@ -10,13 +10,6 @@ urlpatterns = [
         name="change_submission_data_and_visibility",
     ),
     url(
-        r"^challenge/(?P<challenge_pk>[0-9]+)/"
-        r"challenge_phase/(?P<challenge_phase_pk>[0-9]+)/submission/(?P<submission_pk>[0-9]+)/"
-        r"status/$",
-        views.change_submission_status,
-        name="change_submission_status"
-    ),
-    url(
         r"^challenge/(?P<challenge_id>[0-9]+)/"
         r"challenge_phase/(?P<challenge_phase_id>[0-9]+)/submission/$",
         views.challenge_submission,
@@ -46,5 +39,20 @@ urlpatterns = [
         r"^challenge/(?P<challenge_pk>[0-9]+)/submission/",
         views.get_submissions_for_challenge,
         name="get_submissions_for_challenge",
+    ),
+    url(
+        r"^queues/(?P<queue_name>[\w-]+)/receipt/(?P<receipt_handle>[\w-]+)/$",
+        views.delete_submission_message_from_queue,
+        name="delete_submission_message_from_queue",
+    ),
+    url(
+        r"^challenge/queues/(?P<queue_name>[\w-]+)/$",
+        views.get_submission_message_from_queue,
+        name="get_submission_message_from_queue",
+    ),
+    url(
+        r"^submission_files/$",
+        views.get_signed_url_for_submission_related_file,
+        name="get_signed_url_for_submission_related_file",
     ),
 ]

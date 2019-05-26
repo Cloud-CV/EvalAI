@@ -37,7 +37,12 @@ from yaml.scanner import ScannerError
 from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
-from base.utils import paginated_queryset, send_email, get_url_from_hostname
+from base.utils import (
+    paginated_queryset,
+    send_email,
+    get_url_from_hostname,
+    get_queue_name,
+)
 from challenges.utils import (
     get_challenge_model,
     get_challenge_phase_model,
@@ -304,22 +309,6 @@ def add_participant_team_to_challenge(
         }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
-        # Create ECR Repository for the participant team if challenge is docker based
-        if challenge.is_docker_based:
-            aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-            ecr_repository_name = "{}-{}".format(
-                challenge.slug, participant_team.team_name
-            )
-            ecr_repository_name = convert_to_aws_ecr_compatible_format(
-                ecr_repository_name
-            )
-            repository, created = get_or_create_ecr_repository(
-                ecr_repository_name, aws_keys
-            )
-            participant_team.docker_repository_uri = repository[
-                "repositoryUri"
-            ]
-            participant_team.save()
         challenge.participant_teams.add(participant_team)
         return Response(status=status.HTTP_201_CREATED)
 
@@ -528,28 +517,35 @@ def challenge_phase_detail(request, challenge_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge_phase = ChallengePhase.objects.get(pk=pk)
+        challenge_phase = ChallengePhase.objects.get(challenge=challenge, pk=pk)
     except ChallengePhase.DoesNotExist:
-        response_data = {"error": "ChallengePhase does not exist"}
+        response_data = {"error": "Challenge phase {} does not exist for challenge {}".format(pk, challenge.pk)}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == "GET":
-        serializer = ChallengePhaseSerializer(challenge_phase)
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
+        if not is_user_a_host_of_challenge(request.user, challenge.id):
+            serializer = ChallengePhaseSerializer(challenge_phase)
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            serializer = ChallengePhaseCreateSerializer(
+                challenge_phase, context={"request": request}
+            )
+            response_data = serializer.data
+            return Response(response_data, status=status.HTTP_200_OK)
 
     elif request.method in ["PUT", "PATCH"]:
         if request.method == "PATCH":
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
-                data=request.data,
+                data=request.data.copy(),
                 context={"challenge": challenge},
                 partial=True,
             )
         else:
             serializer = ChallengePhaseCreateSerializer(
                 challenge_phase,
-                data=request.data,
+                data=request.data.copy(),
                 context={"challenge": challenge},
             )
         if serializer.is_valid():
@@ -916,12 +912,19 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     ]
     """
     if leaderboard_schema:
-        if "default_order_by" not in leaderboard_schema[0].get("schema"):
-            message = (
-                "There is no 'default_order_by' key in leaderboard "
-                "schema. Please add it and then try again!"
-            )
-            response_data = {"error": message}
+        if 'schema' not in leaderboard_schema[0]:
+            message = ('There is no leaderboard schema in the YAML '
+                       'configuration file. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
+            return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
+        if 'default_order_by' not in leaderboard_schema[0].get('schema'):
+            message = ('There is no \'default_order_by\' key in leaderboard '
+                       'schema. Please add it and then try again!')
+            response_data = {
+                'error': message
+            }
             return Response(response_data, status.HTTP_406_NOT_ACCEPTABLE)
         if "labels" not in leaderboard_schema[0].get("schema"):
             message = (
@@ -952,13 +955,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if serializer.is_valid():
                 serializer.save()
                 challenge = serializer.instance
-                challenge_title = challenge.title.split(" ")
-                challenge_title = "-".join(challenge_title).lower()
-                random_challenge_id = uuid.uuid4()
-                challenge_queue_name = "{}-{}".format(
-                    challenge_title, random_challenge_id
-                )
-                challenge.queue = challenge_queue_name
+                queue_name = get_queue_name(challenge.title)
+                challenge.queue = queue_name
                 challenge.save()
             else:
                 response_data = serializer.errors
@@ -996,6 +994,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     data["description"] = None
 
                 test_annotation_file = data["test_annotation_file"]
+                data["slug"] = "{}-{}-{}".format(
+                    challenge.title.split(" ")[0].lower(),
+                    data["codename"].replace(" ", "-").lower(),
+                    challenge.pk,
+                )[:198]
                 if test_annotation_file:
                     test_annotation_file_path = join(
                         BASE_LOCATION,
@@ -1203,7 +1206,7 @@ def get_all_submissions_of_challenge(
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -1227,128 +1230,192 @@ def download_all_submissions(
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    if file_type == "csv":
-        if is_user_a_host_of_challenge(
-            user=request.user, challenge_pk=challenge_pk
-        ):
-            submissions = Submission.objects.filter(
-                challenge_phase__challenge=challenge
-            ).order_by("-submitted_at")
-            submissions = ChallengeSubmissionManagementSerializer(
-                submissions, many=True, context={"request": request}
-            )
-            response = HttpResponse(content_type="text/csv")
-            response[
-                "Content-Disposition"
-            ] = "attachment; filename=all_submissions.csv"
-            writer = csv.writer(response)
-            writer.writerow(
-                [
-                    "id",
-                    "Team Name",
-                    "Team Members",
-                    "Team Members Email Id",
-                    "Challenge Phase",
-                    "Status",
-                    "Created By",
-                    "Execution Time(sec.)",
-                    "Submission Number",
-                    "Submitted File",
-                    "Stdout File",
-                    "Stderr File",
-                    "Submitted At",
-                    "Submission Result File",
-                    "Submission Metadata File",
-                ]
-            )
-            for submission in submissions.data:
+    if request.method == "GET":
+        if file_type == "csv":
+            if is_user_a_host_of_challenge(
+                user=request.user, challenge_pk=challenge_pk
+            ):
+                submissions = Submission.objects.filter(
+                    challenge_phase__challenge=challenge
+                ).order_by("-submitted_at")
+                submissions = ChallengeSubmissionManagementSerializer(
+                    submissions, many=True, context={"request": request}
+                )
+                response = HttpResponse(content_type="text/csv")
+                response[
+                    "Content-Disposition"
+                ] = "attachment; filename=all_submissions.csv"
+                writer = csv.writer(response)
                 writer.writerow(
                     [
-                        submission["id"],
-                        submission["participant_team"],
-                        ",".join(
-                            username["username"]
-                            for username in submission[
-                                "participant_team_members"
-                            ]
-                        ),
-                        ",".join(
-                            email["email"]
-                            for email in submission["participant_team_members"]
-                        ),
-                        submission["challenge_phase"],
-                        submission["status"],
-                        submission["created_by"],
-                        submission["execution_time"],
-                        submission["submission_number"],
-                        submission["input_file"],
-                        submission["stdout_file"],
-                        submission["stderr_file"],
-                        submission["created_at"],
-                        submission["submission_result_file"],
-                        submission["submission_metadata_file"],
+                        "id",
+                        "Team Name",
+                        "Team Members",
+                        "Team Members Email Id",
+                        "Challenge Phase",
+                        "Status",
+                        "Created By",
+                        "Execution Time(sec.)",
+                        "Submission Number",
+                        "Submitted File",
+                        "Stdout File",
+                        "Stderr File",
+                        "Submitted At",
+                        "Submission Result File",
+                        "Submission Metadata File",
                     ]
                 )
-            return response
+                for submission in submissions.data:
+                    writer.writerow(
+                        [
+                            submission["id"],
+                            submission["participant_team"],
+                            ",".join(
+                                username["username"]
+                                for username in submission[
+                                    "participant_team_members"
+                                ]
+                            ),
+                            ",".join(
+                                email["email"]
+                                for email in submission["participant_team_members"]
+                            ),
+                            submission["challenge_phase"],
+                            submission["status"],
+                            submission["created_by"],
+                            submission["execution_time"],
+                            submission["submission_number"],
+                            submission["input_file"],
+                            submission["stdout_file"],
+                            submission["stderr_file"],
+                            submission["created_at"],
+                            submission["submission_result_file"],
+                            submission["submission_metadata_file"],
+                        ]
+                    )
+                return response
 
-        elif has_user_participated_in_challenge(
-            user=request.user, challenge_id=challenge_pk
-        ):
+            elif has_user_participated_in_challenge(
+                user=request.user, challenge_id=challenge_pk
+            ):
 
-            # get participant team object for the user for a particular challenge.
-            participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-                request.user, challenge_pk
-            )
+                # get participant team object for the user for a particular challenge.
+                participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+                    request.user, challenge_pk
+                )
 
-            # Filter submissions on the basis of challenge phase for a participant.
-            submissions = Submission.objects.filter(
-                participant_team=participant_team_pk,
-                challenge_phase=challenge_phase,
-            ).order_by("-submitted_at")
-            submissions = ChallengeSubmissionManagementSerializer(
-                submissions, many=True, context={"request": request}
-            )
-            response = HttpResponse(content_type="text/csv")
-            response[
-                "Content-Disposition"
-            ] = "attachment; filename=all_submissions.csv"
-            writer = csv.writer(response)
-            writer.writerow(
-                [
-                    "Team Name",
-                    "Method Name",
-                    "Status",
-                    "Execution Time(sec.)",
-                    "Submitted File",
-                    "Result File",
-                    "Stdout File",
-                    "Stderr File",
-                    "Submitted At",
-                ]
-            )
-            for submission in submissions.data:
+                # Filter submissions on the basis of challenge phase for a participant.
+                submissions = Submission.objects.filter(
+                    participant_team=participant_team_pk,
+                    challenge_phase=challenge_phase,
+                ).order_by("-submitted_at")
+                submissions = ChallengeSubmissionManagementSerializer(
+                    submissions, many=True, context={"request": request}
+                )
+                response = HttpResponse(content_type="text/csv")
+                response[
+                    "Content-Disposition"
+                ] = "attachment; filename=all_submissions.csv"
+                writer = csv.writer(response)
                 writer.writerow(
                     [
-                        submission["participant_team"],
-                        submission["method_name"],
-                        submission["status"],
-                        submission["execution_time"],
-                        submission["input_file"],
-                        submission["submission_result_file"],
-                        submission["stdout_file"],
-                        submission["stderr_file"],
-                        submission["created_at"],
+                        "Team Name",
+                        "Method Name",
+                        "Status",
+                        "Execution Time(sec.)",
+                        "Submitted File",
+                        "Result File",
+                        "Stdout File",
+                        "Stderr File",
+                        "Submitted At",
                     ]
                 )
-            return response
+                for submission in submissions.data:
+                    writer.writerow(
+                        [
+                            submission["participant_team"],
+                            submission["method_name"],
+                            submission["status"],
+                            submission["execution_time"],
+                            submission["input_file"],
+                            submission["submission_result_file"],
+                            submission["stdout_file"],
+                            submission["stderr_file"],
+                            submission["created_at"],
+                        ]
+                    )
+                return response
+            else:
+                response_data = {
+                    "error": "You are neither host nor participant of the challenge!"
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         else:
-            response_data = {
-                "error": "You are neither host nor participant of the challenge!"
-            }
+            response_data = {"error": "The file type requested is not valid!"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        response_data = {"error": "The file type requested is not valid!"}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'POST':
+        if file_type == "csv":
+            if is_user_a_host_of_challenge(user=request.user, challenge_pk=challenge_pk):
+                fields_to_export = {
+                    'participant_team': 'Team Name',
+                    'participant_team_members': 'Team Members',
+                    'participant_team_members_email': 'Team Members Email Id',
+                    'challenge_phase': 'Challenge Phase',
+                    'status': 'Status',
+                    'created_by': 'Created By',
+                    'execution_time': 'Execution Time(sec.)',
+                    'submission_number': 'Submission Number',
+                    'input_file': 'Submitted File',
+                    'stdout_file': 'Stdout File',
+                    'stderr_file': 'Stderr File',
+                    'created_at': 'Submitted At (mm/dd/yyyy hh:mm:ss)',
+                    'submission_result_file': 'Submission Result File',
+                    'submission_metadata_file': 'Submission Metadata File',
+                }
+                submissions = Submission.objects.filter(
+                    challenge_phase__challenge=challenge
+                ).order_by('-submitted_at')
+                submissions = ChallengeSubmissionManagementSerializer(
+                    submissions, many=True, context={'request': request}
+                )
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename=all_submissions.csv'
+                writer = csv.writer(response)
+                fields = [fields_to_export[field] for field in request.data]
+                fields.insert(0, 'id')
+                writer.writerow(fields)
+                for submission in submissions.data:
+                    row = [submission['id']]
+                    for field in request.data:
+                        if field == 'participant_team_members':
+                            row.append(
+                                ",".join(
+                                    username['username']
+                                    for username in submission['participant_team_members']
+                                )
+                            )
+                        elif field == 'participant_team_members_email':
+                            row.append(
+                                ",".join(
+                                    email['email']
+                                    for email in submission['participant_team_members']
+                                )
+                            )
+                        elif field == 'created_at':
+                            row.append(submission['created_at'].strftime('%m/%d/%Y %H:%M:%S'))
+                        else:
+                            row.append(submission[field])
+                    writer.writerow(row)
+                return response
+
+            else:
+                response_data = {'error': 'Sorry, you do not belong to this Host Team!'}
+                return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+        else:
+            response_data = {"error": "The file type requested is not valid!"}
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
@@ -1505,7 +1572,7 @@ def star_challenge(request, challenge_pk):
     if request.method == "POST":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user, challenge=challenge
+                user=request.user.pk, challenge=challenge
             )
             starred_challenge.is_starred = not starred_challenge.is_starred
             starred_challenge.save()
@@ -1532,7 +1599,7 @@ def star_challenge(request, challenge_pk):
     if request.method == "GET":
         try:
             starred_challenge = StarChallenge.objects.get(
-                user=request.user, challenge=challenge
+                user=request.user.pk, challenge=challenge
             )
             serializer = StarChallengeSerializer(starred_challenge)
             response_data = serializer.data
@@ -1636,29 +1703,23 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    name = str(uuid.uuid4())[:32]
-    federated_user = create_federated_user(
-        name, participant_team.get_docker_repository_name(), aws_keys
+    ecr_repository_name = "{}-participant-team-{}".format(
+        challenge.slug, participant_team.pk
     )
+    ecr_repository_name = convert_to_aws_ecr_compatible_format(
+        ecr_repository_name
+    )
+    repository, created = get_or_create_ecr_repository(
+        ecr_repository_name, aws_keys
+    )
+    name = str(uuid.uuid4())[:32]
+    docker_repository_uri = repository["repositoryUri"]
+    federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
     data = {
         "federated_user": federated_user,
-        "docker_repository_uri": participant_team.docker_repository_uri,
+        "docker_repository_uri": docker_repository_uri,
     }
     response_data = {"success": data}
-    return Response(response_data, status=status.HTTP_200_OK)
-
-
-@api_view(["GET"])
-@throttle_classes([AnonRateThrottle])
-def get_challenge_phase_by_pk(request, pk):
-    """
-    Returns a particular challenge phase details by pk
-    """
-    challenge_phase = get_challenge_phase_model(pk)
-    serializer = ChallengePhaseSerializer(
-        challenge_phase, context={"request": request}
-    )
-    response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -1800,3 +1861,99 @@ def accept_challenge_invitation(request, invitation_key):
                 serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_by_queue_name(request, queue_name):
+    """
+    API endpoint to fetch the challenge details by using pk
+    Arguments:
+        queue_name -- Challenge queue name for which the challenge deatils are fetched
+    Returns:
+        Response Object -- An object containing challenge details
+    """
+
+    try:
+        challenge = Challenge.objects.get(queue=queue_name)
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": "Challenge with queue name {} does not exist".format(
+                queue_name
+            )
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this challenge."
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    serializer = ZipChallengeSerializer(
+        challenge, context={"request": request}
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_phases_by_challenge_pk(request, challenge_pk):
+    """
+    API endpoint to fetch all challenge phase details corresponding to a challenge using challenge pk
+    Arguments:
+        challenge_pk -- Challenge Id for which the details is to be fetched
+    Returns:
+        Response Object -- An object containing all challenge phases for the challenge
+    """
+    challenge = get_challenge_model(challenge_pk)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access these challenge phases."
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    challenge_phases = ChallengePhase.objects.filter(challenge=challenge_pk)
+    serializer = ChallengePhaseCreateSerializer(
+        challenge_phases, context={"request": request}, many=True
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_pk(request, pk):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    challenge_phase = get_challenge_phase_model(pk)
+    serializer = ChallengePhaseSerializer(
+        challenge_phase, context={"request": request}
+    )
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+def get_challenge_phase_by_slug(request, slug):
+    """
+    Returns a particular challenge phase details by pk
+    """
+    try:
+        challenge_phase = ChallengePhase.objects.get(slug=slug)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            "error": "Challenge phase with slug {} does not exist".format(slug)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ChallengePhaseSerializer(challenge_phase)
+    response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
