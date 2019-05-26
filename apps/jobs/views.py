@@ -775,7 +775,6 @@ def update_submission(request, challenge_pk):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "PUT":
-        print('coming')
         challenge_phase_pk = request.data.get("challenge_phase")
         submission_pk = request.data.get("submission")
         submission_status = request.data.get("submission_status", "").lower()

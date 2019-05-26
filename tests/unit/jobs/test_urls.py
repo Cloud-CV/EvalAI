@@ -154,26 +154,6 @@ class TestJobsUrls(BaseAPITestClass):
             resolver.view_name, "jobs:change_submission_data_and_visibility"
         )
 
-    def test_change_submission_status_url(self):
-        self.url = reverse_lazy(
-            "jobs:change_submission_status",
-            kwargs={
-                "challenge_pk": self.challenge.pk,
-                "challenge_phase_pk": self.challenge_phase.pk,
-                "submission_pk": self.submission.pk,
-            },
-        )
-        self.assertEqual(
-            self.url,
-            "/api/jobs/challenge/{}/challenge_phase/{}/submission/{}/status/".format(
-                self.challenge.pk, self.challenge_phase.pk, self.submission.pk
-            ),
-        )
-        resolver = resolve(self.url)
-        self.assertEqual(
-            resolver.view_name, "jobs:change_submission_status"
-        )
-
     def test_challenge_submisson_url(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
