@@ -4,18 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "karma start --single-run"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "angular-mocks": "^1.6.1",
     "autoprefixer": "^8.2.0",
+    "connect-modrewrite": "^0.10.2",
     "del": "^3.0.0",
     "eslint": "^4.19.1",
     "eslint-config-angular": "^0.5.0",
     "eslint-plugin-angular": "^3.3.0",
-    "connect-modrewrite": "^0.10.2",
     "fs": "0.0.1-security",
     "gulp": "^4.0.0",
     "gulp-clean-css": "^3.9.3",
@@ -38,5 +37,14 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Cloud-CV/EvalAI.git"
+  },
+  "devDependencies": {
+    "angular-mocks": "1.7.0",
+    "jasmine-core": "^3.4.0",
+    "karma": "^4.1.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-cli": "^2.0.0",
+    "karma-jasmine": "^2.0.1",
+    "puppeteer": "^1.16.0"
   }
 }
