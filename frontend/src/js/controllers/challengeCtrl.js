@@ -1130,7 +1130,7 @@
 
         vm.toggleSubmissionsVisibility = function (submissionVisibility) {
             vm.startLoader("Toggle submissions visibility");
-            parameters.url = "challenges/challenge/phase/" + vm.phaseId + '/';
+            parameters.url = "challenges/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId;
             parameters.method = 'PATCH';
             parameters.data = {
                 'is_submission_public': submissionVisibility

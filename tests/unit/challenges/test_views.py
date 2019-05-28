@@ -1773,6 +1773,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 name="Challenge Phase",
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
+                is_submission_public=True,
                 is_public=True,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
@@ -1798,6 +1799,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 name="Private Challenge Phase",
                 description="Description for Private Challenge Phase",
                 leaderboard_public=False,
+                is_submission_public=False,
                 is_public=False,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
@@ -1840,6 +1842,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.challenge_phase.name,
                 "description": self.challenge_phase.description,
                 "leaderboard_public": self.challenge_phase.leaderboard_public,
+                "is_submission_public": self.challenge_phase.is_submission_public,
                 "start_date": "{0}{1}".format(
                     self.challenge_phase.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -1860,6 +1863,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
                 "leaderboard_public": self.private_challenge_phase.leaderboard_public,
+                "is_submission_public": self.private_challenge_phase.is_submission_public,
                 "start_date": "{0}{1}".format(
                     self.private_challenge_phase.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -1888,6 +1892,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.challenge_phase.name,
                 "description": self.challenge_phase.description,
                 "leaderboard_public": self.challenge_phase.leaderboard_public,
+                "is_submission_public": self.challenge_phase.is_submission_public,
                 "start_date": "{0}{1}".format(
                     self.challenge_phase.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -1926,6 +1931,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.challenge_phase.name,
                 "description": self.challenge_phase.description,
                 "leaderboard_public": self.challenge_phase.leaderboard_public,
+                "is_submission_public": self.challenge_phase.is_submission_public,
                 "start_date": "{0}{1}".format(
                     self.challenge_phase.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -1946,6 +1952,7 @@ class GetChallengePhaseTest(BaseChallengePhaseClass):
                 "name": self.private_challenge_phase.name,
                 "description": self.private_challenge_phase.description,
                 "leaderboard_public": self.private_challenge_phase.leaderboard_public,
+                "is_submission_public": self.private_challenge_phase.is_submission_public,
                 "start_date": "{0}{1}".format(
                     self.private_challenge_phase.start_date.isoformat(), "Z"
                 ).replace("+00:00", ""),
@@ -2101,6 +2108,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "name": self.challenge_phase.name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "is_submission_public": self.challenge_phase.is_submission_public,
             "start_date": "{0}{1}".format(
                 self.challenge_phase.start_date.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -2127,6 +2135,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "name": self.challenge_phase.name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "is_submission_public": self.challenge_phase.is_submission_public,
             "start_date": "{0}{1}".format(
                 self.challenge_phase.start_date.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -2184,6 +2193,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "name": new_name,
             "description": new_description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "is_submission_public": self.challenge_phase.is_submission_public,
             "start_date": "{0}{1}".format(
                 self.challenge_phase.start_date.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -2272,6 +2282,7 @@ class UpdateParticularChallengePhase(BaseChallengePhaseClass):
             "name": self.partial_update_challenge_phase_name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "is_submission_public": self.challenge_phase.is_submission_public,
             "start_date": "{0}{1}".format(
                 self.challenge_phase.start_date.isoformat(), "Z"
             ).replace("+00:00", ""),
