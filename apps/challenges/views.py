@@ -1935,10 +1935,10 @@ def get_or_update_challenge_phase_by_pk(request, pk):
     """
     challenge_phase = get_challenge_phase_model(pk)
     challenge_id = challenge_phase.challenge.id
-    
+
     # check if user is a challenge host
     is_host_user = is_user_a_host_of_challenge(request.user, challenge_id)
-    
+
     if request.method == 'PATCH':
         if is_host_user:
             is_submission_public = request.data.get("is_submission_public", "")
