@@ -1138,27 +1138,23 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var all_phases = vm.phases.results;
+                    var message = "";
                     for (var i = 0; i < vm.phases.results.length; i++) {
                         if (all_phases[i].id == vm.phaseId) {
                             all_phases[i].is_submission_public = submissionVisibility;
                             break;
                         }
                     }
-
                     if (submissionVisibility == false) {
                         vm.phaseSubmissionVisibility = 'Private';
+                        message = "The submission is made private.";
                     } else {
                         vm.phaseSubmissionVisibility = 'Public';
+                        message = "The submission is made public.";
                     }
                     var status = response.status;
-                    var message = "";
                     if(status === 200) {
                         var detail = response.data;
-                        if (detail['is_submission_public'] == true) {
-                            message = "The submission is made public.";
-                        } else {
-                            message = "The submission is made private.";
-                        }
                         $rootScope.notify("success", message);
                         vm.stopLoader();
                     }

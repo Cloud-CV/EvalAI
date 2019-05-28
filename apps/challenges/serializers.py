@@ -77,7 +77,6 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "leaderboard_public",
-            "is_submission_public",
             "start_date",
             "end_date",
             "challenge",
