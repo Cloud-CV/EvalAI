@@ -46,6 +46,22 @@
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
                         </div>
                     </div>
+                    <br>
+                    <div ng-if="challenge.isResult" class="row">
+                        <div class="col s12">
+                            <strong>Make submissions</strong>
+                        </div>
+                    </div>
+                    <div ng-if="challenge.isResult" class="row">
+                        <div class="col s3">
+                            <span>
+                                <md-select ng-model="challenge.phaseSubmissionVisibility" placeholder="{{challenge.phaseSubmissionVisibility}}" class="rm-margin">
+                                    <md-option ng-click="challenge.toggleSubmissionsVisibility(true)">Public</md-option>
+                                    <md-option ng-click="challenge.toggleSubmissionsVisibility(false)">Private</md-option>
+                                </md-select>
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">

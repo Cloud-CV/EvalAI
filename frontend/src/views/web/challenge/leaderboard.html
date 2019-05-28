@@ -57,7 +57,7 @@
                                     class="result-wrn"><span id="baseline-badge-desc"
                                         class="new badge orange-background w-400" data-badge-caption="B"></span>
                                     <span class="w-400"> - Baseline submission</span></div>
-                                <table ng-if="challenge.isResult && challenge.leaderboard.length"
+                                <table ng-if="challenge.isResult && challenge.leaderboard.length && challenge.allLeaderboardEntriesPrivate"
                                     class="centered highlight">
                                     <thead>
                                         <tr>
@@ -110,7 +110,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
+                                        <tr ng-if="key.is_submission_public" ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
                                             class="fs-16">
                                             <td>{{challenge.initial_ranking[key.id]}}</td>
                                             <td><a ng-if="key.submission__participant_team__team_url"
@@ -135,6 +135,10 @@
                                 <div
                                     ng-if="challenge.isResult && !challenge.leaderboard.length && !challenge.leaderboard.error">
                                     <p>No results to show!</p>
+                                </div>
+                                <div
+                                    ng-if="!challenge.allLeaderboardEntriesPrivate">
+                                    <p>Results have been made private!</p>
                                 </div>
                             </div>
                         </div>

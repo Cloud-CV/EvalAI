@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment', '$timeout'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $timeout) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -50,6 +50,8 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
+        vm.phaseSubmissionVisibility = '';
+        vm.allLeaderboardEntriesPrivate = true;
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -537,67 +539,92 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.leaderboard = details.results;
-                    for (var i=0; i<vm.leaderboard.length; i++) {
-                        vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
-                        vm.initial_ranking[vm.leaderboard[i].id] = i+1;
-                        var dateTimeNow = moment(new Date());
-                        var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
-                        var duration = moment.duration(dateTimeNow.diff(submissionTime));
-                        if (duration._data.years != 0) {
-                            var years = duration.asYears();
-                            vm.leaderboard[i].submission__submitted_at = years;
-                            if (years.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'year';
-                            } else {
-                                vm.leaderboard[i].timeSpan= 'years';
+                    var privateEntriesCount = 0;
+                    $timeout(function () {
+                        for (var i=0; i<vm.leaderboard.length; i++) {
+                            for (var j=0; j<vm.phaseSplits.length; j++) {
+                                if (vm.phaseSplits[j].id == vm.leaderboard[i].challenge_phase_split) {
+                                    var phaseSplits = vm.phaseSplits[j];
+                                    break;
+                                }
+                            }
+                            var phaseId = phaseSplits.challenge_phase;
+                            var all_phases = vm.phases.results;
+                            for (var j=0; j<vm.phases.results.length; j++) {
+                                if (all_phases[j].id == phaseId) {
+                                    vm.leaderboard[i]['is_submission_public'] = all_phases[j].is_submission_public;
+                                    if (vm.leaderboard[i]['is_submission_public'] == false) {
+                                        privateEntriesCount = privateEntriesCount + 1;
+                                    }
+                                    break;
+                                }
+                            }
+                            
+                            vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
+                            vm.initial_ranking[vm.leaderboard[i].id] = i+1;
+                            var dateTimeNow = moment(new Date());
+                            var submissionTime = moment(vm.leaderboard[i].submission__submitted_at);
+                            var duration = moment.duration(dateTimeNow.diff(submissionTime));
+                            if (duration._data.years != 0) {
+                                var years = duration.asYears();
+                                vm.leaderboard[i].submission__submitted_at = years;
+                                if (years.toFixed(0)==1) {
+                                    vm.leaderboard[i].timeSpan = 'year';
+                                } else {
+                                    vm.leaderboard[i].timeSpan= 'years';
+                                }
+                            }
+                            else if (duration._data.months !=0) {
+                                var months = duration.months();
+                                vm.leaderboard[i].submission__submitted_at = months;
+                                if (months.toFixed(0)==1) {
+                                    vm.leaderboard[i].timeSpan = 'month';
+                                } else {
+                                    vm.leaderboard[i].timeSpan = 'months';
+                                }
+                            }
+                            else if (duration._data.days !=0) {
+                                var days = duration.asDays();
+                                vm.leaderboard[i].submission__submitted_at = days;
+                                if (days.toFixed(0)==1) {
+                                    vm.leaderboard[i].timeSpan = 'day';
+                                } else {
+                                    vm.leaderboard[i].timeSpan = 'days';
+                                }
+                            }
+                            else if (duration._data.hours !=0) {
+                                var hours = duration.asHours();
+                                vm.leaderboard[i].submission__submitted_at = hours;
+                                if (hours.toFixed(0)==1) {
+                                    vm.leaderboard[i].timeSpan = 'hour';
+                                } else {
+                                    vm.leaderboard[i].timeSpan = 'hours';
+                                }                        
+                            } 
+                            else if (duration._data.minutes !=0) {
+                                var minutes = duration.asMinutes();
+                                vm.leaderboard[i].submission__submitted_at = minutes;
+                                if (minutes.toFixed(0)==1) {
+                                    vm.leaderboard[i].timeSpan = 'minute';
+                                } else {
+                                    vm.leaderboard[i].timeSpan = 'minutes';
+                                }
+                            }
+                            else if (duration._data.seconds != 0) {
+                                var second = duration.asSeconds();
+                                vm.leaderboard[i].submission__submitted_at = second;
+                                if (second.toFixed(0)==1) {
+                                    vm.leaderboard[i].timeSpan = 'second';
+                                } else {
+                                    vm.leaderboard[i].timeSpan = 'seconds';
+                                }
                             }
                         }
-                        else if (duration._data.months !=0) {
-                            var months = duration.months();
-                            vm.leaderboard[i].submission__submitted_at = months;
-                            if (months.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'month';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'months';
-                            }
+                        if (vm.leaderboard.length == privateEntriesCount) {
+                            vm.allLeaderboardEntriesPrivate = false;
                         }
-                        else if (duration._data.days !=0) {
-                            var days = duration.asDays();
-                            vm.leaderboard[i].submission__submitted_at = days;
-                            if (days.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'day';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'days';
-                            }
-                        }
-                        else if (duration._data.hours !=0) {
-                            var hours = duration.asHours();
-                            vm.leaderboard[i].submission__submitted_at = hours;
-                            if (hours.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'hour';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'hours';
-                            }                        
-                        } 
-                        else if (duration._data.minutes !=0) {
-                            var minutes = duration.asMinutes();
-                            vm.leaderboard[i].submission__submitted_at = minutes;
-                            if (minutes.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'minute';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'minutes';
-                            }
-                        }
-                        else if (duration._data.seconds != 0) {
-                            var second = duration.asSeconds();
-                            vm.leaderboard[i].submission__submitted_at = second;
-                            if (second.toFixed(0)==1) {
-                                vm.leaderboard[i].timeSpan = 'second';
-                            } else {
-                                vm.leaderboard[i].timeSpan = 'seconds';
-                            }
-                        }
-                    }
+                    }, 2000);
+                    
                     vm.phaseName = vm.phaseSplitId;
                     vm.startLeaderboard();
                     vm.stopLoader();
@@ -654,6 +681,11 @@
             for (var i = 0; i < vm.phases.results.length; i++) {
                 if (all_phases[i].id == phaseId) {
                     vm.currentPhaseLeaderboardPublic = all_phases[i].leaderboard_public;
+                    if (all_phases[i].is_submission_public) {
+                        vm.isSubmissionPublic = true;
+                    } else {
+                        vm.isSubmissionPublic = false;
+                    }
                     break;
                 }
             }
@@ -1009,6 +1041,17 @@
                 onSuccess: function(response) {
                     var details = response.data;
                     vm.submissionResult = details;
+                    var all_phases = vm.phases.results;
+                    for (var i = 0; i < vm.phases.results.length; i++) {
+                        if (all_phases[i].id == phaseId) {
+                            if (all_phases[i].is_submission_public) {
+                                vm.phaseSubmissionVisibility = 'Public';
+                            } else {
+                                vm.phaseSubmissionVisibility = 'Private';
+                            }
+                            break;
+                        }
+                    }
 
                     if (vm.submissionResult.count === 0) {
                         vm.showPagination = false;
@@ -1080,6 +1123,53 @@
                     utilities.storeData('emailError', error.detail);
                     $state.go('web.permission-denied');
                     vm.stopLoader();
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
+        vm.toggleSubmissionsVisibility = function (submissionVisibility) {
+            vm.startLoader("Toggle submissions visibility");
+            parameters.url = "challenges/challenge/phase/" + vm.phaseId + '/';
+            parameters.method = 'PATCH';
+            parameters.data = {
+                'is_submission_public': submissionVisibility
+            };
+            parameters.callback = {
+                onSuccess: function(response) {
+                    var all_phases = vm.phases.results;
+                    for (var i = 0; i < vm.phases.results.length; i++) {
+                        if (all_phases[i].id == vm.phaseId) {
+                            all_phases[i].is_submission_public = submissionVisibility;
+                            break;
+                        }
+                    }
+
+                    if (submissionVisibility == false) {
+                        vm.phaseSubmissionVisibility = 'Private';
+                    } else {
+                        vm.phaseSubmissionVisibility = 'Public';
+                    }
+                    var status = response.status;
+                    var message = "";
+                    if(status === 200) {
+                        var detail = response.data;
+                        if (detail['is_submission_public'] == true) {
+                            message = "The submission is made public.";
+                        } else {
+                            message = "The submission is made private.";
+                        }
+                        $rootScope.notify("success", message);
+                        vm.stopLoader();
+                    }
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    var status = response.status;
+                    if(status === 400 || status === 403 ) {
+                       $rootScope.notify("error", error.error);
+                       vm.stopLoader();
+                    }
                 }
             };
             utilities.sendRequest(parameters);

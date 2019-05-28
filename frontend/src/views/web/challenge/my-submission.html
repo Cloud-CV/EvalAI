@@ -72,7 +72,7 @@
                                             <th data-field="file">Stdout File</th>
                                             <th data-field="file">Stderr File</th>
                                             <th class="align-center" data-field="file">Submitted At</th>
-                                            <th class="align-center" ng-if="challenge.currentPhaseLeaderboardPublic" data-field="file">Show on Leaderboard</th>
+                                            <th class="align-center" ng-if="challenge.currentPhaseLeaderboardPublic && challenge.isSubmissionPublic" data-field="file">Show on Leaderboard</th>
                                             <th data-field="isBaseline" ng-if="challenge.isChallengeHost">Baseline</th>
                                             <th>Edit</th>
                                         </tr>
@@ -108,7 +108,7 @@
 
                                             <td>{{key.submitted_at | date:'medium'}}</td>
 
-                                            <td ng-if="challenge.currentPhaseLeaderboardPublic" class="center">
+                                            <td ng-if="challenge.currentPhaseLeaderboardPublic && challenge.isSubmissionPublic" class="center">
                                                 <input ng-checked="key.is_public" ng-if="key.status == 'finished'" ng-model="challenge.submissionVisibility[key.id]" type="checkbox" id="isPublic{{ key.id }}" ng-change="challenge.changeSubmissionVisibility(key.id)" />
                                                 <label for="isPublic{{ key.id }}"></label>
                                                 <span ng-if="key.status !== 'finished'" class="center"> N/A </span>

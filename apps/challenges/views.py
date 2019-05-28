@@ -1927,18 +1927,34 @@ def get_challenge_phases_by_challenge_pk(request, challenge_pk):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(["GET", "PATCH"])
 @throttle_classes([AnonRateThrottle])
-def get_challenge_phase_by_pk(request, pk):
+def get_or_update_challenge_phase_by_pk(request, pk):
     """
     Returns a particular challenge phase details by pk
     """
     challenge_phase = get_challenge_phase_model(pk)
-    serializer = ChallengePhaseSerializer(
-        challenge_phase, context={"request": request}
-    )
-    response_data = serializer.data
-    return Response(response_data, status=status.HTTP_200_OK)
+    challenge_id = challenge_phase.challenge.id
+    
+    # check if user is a challenge host
+    is_host_user = is_user_a_host_of_challenge(request.user, challenge_id)
+    
+    if request.method == 'PATCH':
+        if is_host_user:
+            is_submission_public = request.data.get("is_submission_public", "")
+            data = {"is_submission_public": is_submission_public}
+            serializer = ChallengePhaseSerializer(
+                challenge_phase, data=data, partial=True, context={"request": request}
+            )
+            if serializer.is_valid():
+                serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
+        serializer = ChallengePhaseSerializer(
+            challenge_phase, context={"request": request}
+        )
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
