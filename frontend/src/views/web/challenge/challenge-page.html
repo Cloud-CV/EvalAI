@@ -45,8 +45,16 @@
                     </p>
                 </div>
             </div>
-            <div class="col m3 l3 align-right">
+            <div class="align-right">
                 <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" type="submit" ng-click="challenge.starChallenge()" ng-init="challenge.isStarred()"><i class="fa fa-star star"></i> {{challenge.data}}&nbsp;&nbsp;{{challenge.count}}</button>
+            </div>
+            <div ng-if="challenge.isChallengeHost" style="padding-top: 30px;" class="align-right">
+                <div style="display: inline-block;" ng-click="challenge.toggleParticipation($event, challenge.canParticipate)"
+                    class="btn-switch" ng-class="{'btn-switch--on':challenge.canParticipate}" ng-model="challenge.canParticipate">
+                    <div class="btn-switch-circle" ng-class="{'btn-switch-circle--on': challenge.canParticipate}"
+                    ng-model="challenge.canParticipate"></div>
+                </div>
+                <div style="display: inline-block; padding-left: 10px; margin-top: 0px;"><strong>Toggle Participation</strong></div>
             </div>
         </div>
         <div class="row rm-row-bot">
@@ -55,7 +63,7 @@
                     <li><a ui-sref=".overview" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-info"></i> Overview</a></li>
                     <li><a ui-sref=".evaluation" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-bar-chart-o"></i> Evaluation</a></li>
                     <li><a ui-sref=".phases" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-level-up"></i> Phases</a></li>
-                    <li ng-if="!challenge.isParticipated"><a ui-sref=".participate" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-free-code-camp"></i> Participate</a></li>
+                    <li ng-if="(challenge.canParticipate && challenge.isParticipated) || (!challenge.isParticipated && challenge.canParticipate)"><a ui-sref=".participate" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-free-code-camp"></i> Participate</a></li>
                     <li ng-if="challenge.isParticipated"><a ui-sref=".submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-upload"></i> Submit</a></li>
                     <li ng-if="challenge.isParticipated"><a ui-sref=".my-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i> My Submissions</a></li>
                     <li ng-if="challenge.isChallengeHost"><a ui-sref=".my-challenge-all-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i>View All Submissions</a></li>

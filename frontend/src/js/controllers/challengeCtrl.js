@@ -81,6 +81,7 @@
                 vm.isForumEnabled = details.enable_forum;
                 vm.forumURL = details.forum_url;
                 vm.cliVersion = details.cli_version;
+                vm.canParticipate = details.can_participate;
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -268,6 +269,54 @@
         };
 
         utilities.sendRequest(parameters);
+
+        vm.toggleParticipation = function (ev, canParticipate) {
+            // ev.stopPropagation();
+            var participationState;
+            if (canParticipate) {
+                participationState = 'close';
+            } else {
+                participationState = 'open';
+            }
+            var confirm = $mdDialog.confirm()
+                          .title('You really want to ' + participationState + ' the participation?')
+                          .ariaLabel('')
+                          .targetEvent(ev)
+                          .ok('I\'m sure')
+                          .cancel('No.');
+
+            $mdDialog.show(confirm).then(function () {
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge == vm.challengeId) {
+                        vm.challengeHostId = challengeHostList[challenge];
+                        break;
+                    }
+                }
+                parameters.method = "PATCH";
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.data = {
+                    "can_participate": !canParticipate
+                };
+                parameters.callback = {
+                    onSuccess: function() {
+                        vm.canParticipate = !vm.canParticipate;
+                        $rootScope.notify('success', 'Participation is ' + participationState + 'ed successfully');
+                    },
+                    onError: function(response) {
+                        var details = response.data;
+                        $rootScope.notify('error', details.error);
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }, function() {
+                // if (canParticipate) {
+                //     angular.element('.paticipation-toggle-switch').addClass('md-checked');
+                // } else {
+                //     angular.element('.paticipation-toggle-switch').removeClass('md-checked');
+                // }
+            });
+        };
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
