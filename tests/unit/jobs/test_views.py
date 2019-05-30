@@ -1859,7 +1859,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__method_name": self.submission.method_name,
                     "submission__method_description": self.submission.method_description,
                     "submission__project_url": self.submission.project_url,
-                    "submission_publication_url": self.submission.publication_url,
+                    "submission__publication_url": self.submission.publication_url,
                 }
             ],
         }
@@ -1906,7 +1906,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__method_name": self.host_participant_team_submission.method_name,
                     "submission__method_description": self.host_participant_team_submission.method_description,
                     "submission__project_url": self.host_participant_team_submission.project_url,
-                    "submission_publication_url": self.host_participant_team_submission.publication_url
+                    "submission__publication_url": self.host_participant_team_submission.publication_url
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -1926,7 +1926,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__method_name": self.submission.method_name,
                     "submission__method_description": self.submission.method_description,
                     "submission__project_url": self.submission.project_url,
-                    "submission_publication_url": self.submission.publication_url
+                    "submission__publication_url": self.submission.publication_url
                 }
             ],
         }
@@ -1979,7 +1979,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__method_name": self.host_participant_team_submission.method_name,
                     "submission__method_description": self.host_participant_team_submission.method_description,
                     "submission__project_url": self.host_participant_team_submission.project_url,
-                    "submission_publication_url": self.host_participant_team_submission.publication_url,
+                    "submission__publication_url": self.host_participant_team_submission.publication_url,
                 },
                 {
                     "id": self.leaderboard_data.id,
@@ -1999,7 +1999,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__method_name": self.submission.method_name,
                     "submission__method_description": self.submission.method_description,
                     "submission__project_url": self.submission.project_url,
-                    "submission_publication_url": self.submission.publication_url,
+                    "submisssubmission__publication_urlion_publication_url": self.submission.publication_url,
                 },
                 {
                     "id": self.host_participant_leaderboard_data_2.id,
@@ -2020,7 +2020,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__method_name": self.host_participant_team_submission_2.method_name,
                     "submission__method_description": self.host_participant_team_submission_2.method_description,
                     "submission__project_url": self.host_participant_team_submission_2.project_url,
-                    "submission_publication_url": self.host_participant_team_submission_2.publication_url,
+                    "submission__publication_url": self.host_participant_team_submission_2.publication_url,
                 }
             ],
         }
@@ -2103,7 +2103,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__method_name": self.submission.method_name,
                     "submission__method_description": self.submission.method_description,
                     "submission__project_url": self.submission.project_url,
-                    "submission_publication_url": self.submission.publication_url,
+                    "submission__publication_url": self.submission.publication_url,
                 }
             ],
         }
