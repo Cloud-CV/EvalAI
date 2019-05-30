@@ -38,3 +38,37 @@
 		background-color: #fcfcfa;
 	}
 }
+
+.challenge-create-option-title {
+	margin-bottom: 20px;
+	margin-left: 11px;
+	margin-top: 20px;
+}
+
+.wrapper {
+	position: relative;
+	height: 500px;
+}
+
+.vr-line {
+	position: absolute;
+	width: 1px;
+	left: 50%;
+	top: 0;
+	bottom: 0;
+	background: #ccc;
+    z-index: 1;
+}
+
+.or-text {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	right: 0;
+	text-align: center;
+	text-transform: uppercase;
+	padding: 3px;
+	color: #818078;
+    background-color: #fcfcfa;
+	z-index: 2;
+}

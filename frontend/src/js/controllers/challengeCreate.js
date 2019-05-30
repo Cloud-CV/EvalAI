@@ -17,6 +17,8 @@
         vm.isValid = {};
         vm.isFormError = false;
         vm.isSyntaxErrorInYamlFile = false;
+        vm.disableProceed = true;
+        vm.challengePhaseSplit = null;
         vm.input_file = null;
         vm.formError = {};
         vm.syntaxErrorInYamlFile = {};
@@ -91,6 +93,19 @@
                 angular.element(".file-path").val(null);
                 vm.infoMsg = "Please select a challenge host team!";
                 $rootScope.notify("info", vm.infoMsg);
+            }
+        };
+
+        vm.selectChallengePhaseSplit = function (challengePhaseSplit) {
+            if (challengePhaseSplit) {
+                var challengePhase = challengePhaseSplit.split(",")[0];
+                var challengeSplit = challengePhaseSplit.split(",")[1];
+                utilities.storeData('challengePhase', challengePhase);
+                utilities.storeData('challengeSplit', challengeSplit);
+
+                $state.go('web.challenge-create-using-ui-step-1');
+            } else {
+                $rootScope.notify('error', 'Please select one of the challenge phase split')
             }
         };
     }

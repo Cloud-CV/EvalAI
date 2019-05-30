@@ -170,6 +170,35 @@
             authenticate: true
         };
 
+        var challenge_create_using_ui = {
+            name: "web.challenge-create-using-ui-step-1",
+            parent: "web",
+            url: "/challenge-create-step-1",
+            templateUrl: baseUrl + "/web/challenge-create-using-ui/challenge-create-step-1.html",
+            title: 'Challenge Create Using UI Step 1',
+            controller: 'ChallengeCreateUsingUICtrl',
+            controllerAs: 'challengeCreateUsingUI',
+            authenticate: true
+        };
+
+        var challenge_create_using_ui_step_2 = {
+            name: "web.challenge-create-using-ui-step-2",
+            parent: "web.challenge-create-using-ui-step-1",
+            url: "/challenge-create-step-2",
+            templateUrl: baseUrl + "/web/challenge-create-using-ui/challenge-create-step-2.html",
+            title: 'Challenge Create Using UI Step 2',
+            authenticate: true
+        };
+
+        var challenge_create_using_ui_step_3 = {
+            name: "web.challenge-create-using-ui-step-3",
+            parent: "web.challenge-create-using-ui-step-1",
+            url: "/challenge-create-step-3",
+            templateUrl: baseUrl + "/web/challenge-create-using-ui/challenge-create-step-3.html",
+            title: 'Challenge Create Using UI Step 3',
+            authenticate: true
+        };
+
         var challenge_main = {
             name: "web.challenge-main",
             parent: "web",
@@ -479,6 +508,9 @@
 
         // challenge create page
         $stateProvider.state(challenge_create);
+        $stateProvider.state(challenge_create_using_ui);
+        $stateProvider.state(challenge_create_using_ui_step_2);
+        $stateProvider.state(challenge_create_using_ui_step_3);
 
         // challenge details
         $stateProvider.state(challenge_page);
