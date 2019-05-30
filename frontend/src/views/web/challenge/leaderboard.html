@@ -110,8 +110,8 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
-                                            class="fs-16">
+                                        <tr ng-repeat-start="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort" ng-click="challenge.toggleCollapsibility(challenge.initial_ranking[key.id], key)"
+                                            class="pointer fs-16">
                                             <td>{{challenge.initial_ranking[key.id]}}</td>
                                             <td><a ng-if="key.submission__participant_team__team_url"
                                                     class="orange-text" target="_blank"
@@ -125,6 +125,61 @@
                                             <td ng-repeat="(i, score) in key.result track by $index" >{{score | number : 2}}<span ng-if = "key.error != nil"> ± {{key.error[i] | number : 2}}</span>
                                             </td>
                                             <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
+                                            </td>
+                                        </tr>
+
+                                        <tr ng-repeat-end class="collapsible-content_{{challenge.initial_ranking[key.id]}} pointer collapsible-content" style="position: absolute; left: -999em; height: 0px">
+                                            <td style="padding-top: 0px;" colspan="{{key.result.length + 3}}">
+                                                <table class="leaderboard-collapse-table">
+                                                    <thead>
+                                                        <th>Method Name</th>
+                                                        <th>Method Description</th>
+                                                        <th>Project Url</th>
+                                                        <th>Publication Url</th>
+                                                    </thead>
+                                                    <tbody>
+                                                        <td ng-if="key.submission__method_name != ''" ng-init="key.methodNameLength = 40">
+                                                            {{key.submission__method_name | limitTo: key.methodNameLength}}
+                                                            {{key.methodNameLength > 40 ? '' : '...'}}
+                                                            <a ng-if="key.submission__method_name.length > 40 && key.methodNameLength == 40"
+                                                                class="pointer" ng-click="challenge.showMoreMethodName(key)"><strong>see more</strong></a>
+                                                            <a ng-if="key.methodNameLength > 40" class="pointer"
+                                                                ng-click="challenge.showLessMethodName(key)"><strong>see less</strong></a>
+                                                        </td>
+                                                        <td ng-if="key.submission__method_name == ''"> None </td>
+
+                                                        <td ng-if="key.submission__method_description != ''" ng-init="key.methodDescriptionLength = 40">
+                                                            {{key.submission__method_description | limitTo: key.methodDescriptionLength}}
+                                                            {{key.methodDescriptionLength > 40 ? '' : '...'}}
+                                                            <a ng-if="key.submission__method_description.length > 40 && key.methodDescriptionLength == 40"
+                                                                class="pointer" ng-click="challenge.showMoreMethodDescription(key, 'methodDescriptionLength')">
+                                                                <strong>see more</strong></a>
+                                                            <a ng-if="key.methodDescriptionLength > 40" class="pointer"
+                                                                ng-click="challenge.showLessMethodDescription(key, 'methodDescriptionLength')"><strong>see less</strong></a>
+                                                        </td>
+                                                        <td ng-if="key.submission__method_description == ''"> None </td>
+
+                                                        <td ng-if="key.submission__project_url != ''" ng-init="key.projectUrlLength = 40">
+                                                            {{key.submission__project_url | limitTo: key.projectUrlLength}}
+                                                            {{key.projectUrlLength > 40 ? '' : '...'}}
+                                                            <a ng-if="key.submission__project_url.length > 40 && key.projectUrlLength == 40"
+                                                                class="pointer" ng-click="challenge.showMoreProjectUrl(key)"><strong>see more</strong></a>
+                                                            <a ng-if="key.projectUrlLength > 40" class="pointer"
+                                                                ng-click="challenge.showLessProjectUrl(key)"><strong>see less</strong></a>
+                                                        </td>
+                                                        <td ng-if="key.submission__project_url == ''"> None </td>
+
+                                                        <td ng-if="key.submission__publication_url != ''" ng-init="key.publicationUrlLength = 40">
+                                                            {{key.submission__publication_url | limitTo: key.publicationUrlLength}}
+                                                            {{key.publicationUrlLength > 40 ? '' : '...'}}
+                                                            <a ng-if="key.submission__publication_url.length > 40 && key.publicationUrlLength == 40"
+                                                                class="pointer" ng-click="challenge.showMorePublicationUrl(key)"><strong>see more</strong></a>
+                                                            <a ng-if="key.publicationUrlLength > 40" class="pointer"
+                                                                ng-click="challenge.showLessPublicationUrl(key)"><strong>see less</strong></a>
+                                                        </td>
+                                                        <td ng-if="key.submission__publication_url == ''"> None </td>
+                                                    </tbody>
+                                                </table>
                                             </td>
                                         </tr>
                                     </tbody>

@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment', '$timeout'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $timeout) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -62,6 +62,57 @@
         vm.subErrors = {};
 
         utilities.showLoader();
+
+        vm.toggleCollapsibility = function (rank, leaderboard) {
+            leaderboard.isCollapsed = !leaderboard.isCollapsed;
+
+            if (leaderboard.isCollapsed == false) {
+                vm.currentRank = 0;
+                angular.element('.collapsible-content_' + rank).css('height', '0px');
+                $timeout(function () {
+                    angular.element('.collapsible-content_' + rank).css('position', 'absolute');
+                    angular.element('.collapsible-content_' + rank).css('left', '-999em');
+                }, 1000);
+            } else {
+                angular.element('.collapsible-content_' + rank).css('height', '180px');
+                $timeout(function () {
+                    angular.element('.collapsible-content_' + rank).css('position', '');
+                    angular.element('.collapsible-content_' + rank).css('left', '');
+                }, 50);
+            }
+        };
+
+        vm.showMoreMethodName = function (leaderboard) {
+            leaderboard.methodNameLength = leaderboard.submission__method_name.length;
+        }
+
+        vm.showMoreMethodDescription = function (leaderboard) {
+            leaderboard.methodDescriptionLength = leaderboard.submission__method_description.length;
+        }
+
+        vm.showMoreProjectUrl = function (leaderboard) {
+            leaderboard.projectUrlLength = leaderboard.submission__project_url.length;
+        }
+
+        vm.showMorePublicationUrl = function (leaderboard) {
+            leaderboard.publicationUrlLength = leaderboard.submission__publication_url.length;
+        }
+
+        vm.showLessMethodName = function (leaderboard) {
+            leaderboard.methodNameLength = 30;
+        }
+
+        vm.showLessMethodDescription = function (leaderboard) {
+            leaderboard.methodDescriptionLength = 30;
+        }
+
+        vm.showLessProjectUrl = function (leaderboard) {
+            leaderboard.projectUrlLength = 30;
+        }
+
+        vm.showLessPublicationUrl = function (leaderboard) {
+            leaderboard.publicationUrlLength = 30;
+        }
 
         // get details of the particular challenge
         var parameters = {};
@@ -538,6 +589,7 @@
                     var details = response.data;
                     vm.leaderboard = details.results;
                     for (var i=0; i<vm.leaderboard.length; i++) {
+                        vm.leaderboard[i]['isCollapsed'] = false;
                         vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
                         var dateTimeNow = moment(new Date());
@@ -1883,5 +1935,50 @@
 
         
     }
+
+    // angular.module('evalai').directive('slideable', function () {
+    //     return {
+    //         restrict:'C',
+    //         compile: function (element, attr) {
+    //             // wrap tag
+    //             var contents = element.html();
+    //             element.html('<div class="slideable_content" style="margin:0 !important; padding:0 !important" >' + contents + '</div>');
+    
+    //             return function postLink($scope, element, attrs) {
+    //                 // default properties
+    //                 attrs.duration = (!attrs.duration) ? '1s' : attrs.duration;
+    //                 attrs.easing = (!attrs.easing) ? 'ease-in-out' : attrs.easing;
+    //                 element.css({
+    //                     'overflow': 'hidden',
+    //                     'height': '0px',
+    //                     'transitionProperty': 'height',
+    //                     'transitionDuration': attrs.duration,
+    //                     'transitionTimingFunction': attrs.easing
+    //                 });
+    //             };
+    //         }
+    //     };
+    // })
+    // angular.module('evalai').directive('slideToggle', function() {
+    //     return {
+    //         restrict: 'A',
+    //         link: function($scope, element, attrs) {
+    //             var target = document.querySelector(attrs.slideToggle);
+    //             attrs.expanded = false;
+    //             element.bind('click', function() {
+    //                 var content = target.querySelector('.slideable_content');
+    //                 if(!attrs.expanded) {
+    //                     content.style.border = '1px solid rgba(0,0,0,0)';
+    //                     var y = content.clientHeight;
+    //                     content.style.border = 0;
+    //                     target.style.height = y + 'px';
+    //                 } else {
+    //                     target.style.height = '0px';
+    //                 }
+    //                 attrs.expanded = !attrs.expanded;
+    //             });
+    //         }
+    //     }
+    // });
 
 })();

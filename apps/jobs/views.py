@@ -485,6 +485,9 @@ def leaderboard(request, challenge_phase_split_id):
         "leaderboard__schema",
         "submission__submitted_at",
         "submission__method_name",
+        "submission__method_description",
+        "submission__project_url",
+        "submission__publication_url"
     )
 
     if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:

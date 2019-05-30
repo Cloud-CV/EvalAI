@@ -1,9 +1,22 @@
 /* Styles for leaderboard page */
-
-.horizontal-scroll {
-	overflow-x: auto;
+a:hover {
+	color: blue;
+	text-decoration: underline;
 }
 
+.collapsible-content {
+	box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+	overflow: hidden;
+	transition-property: height !important;
+	transition-duration: 1s !important;
+	transition-timing-function: ease-in-out !important;
+}
+
+table.leaderboard-collapse-table {
+	border-collapse: collapse;
+	width: 100%;    
+  	background-color: #f1f1c1;
+}
 
 #baseline-badge {
 	font-weight: 300;
