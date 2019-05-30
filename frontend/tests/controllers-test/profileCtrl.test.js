@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit tests for Profile Controller', function () {
+describe('Unit tests for profile controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, createController, $rootScope, $scope, utilities, $mdDialog, vm;
@@ -18,7 +18,7 @@ describe('Unit tests for Profile Controller', function () {
         vm = createController();
     }));
 
-    describe('Global Variables', function () {
+    describe('Global variables', function () {
         beforeEach(function () {
             spyOn(utilities, 'hideLoader');
             spyOn(utilities, 'storeData');
