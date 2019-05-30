@@ -128,7 +128,7 @@ describe('Unit tests for profile controller', function () {
             spyOn($rootScope, 'notify');
         });
 
-        it('successfully token copied', function () {
+        it('successfully token copied to clipboard', function () {
             vm.showConfirmation();
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Token copied to your clipboard.");
         });
