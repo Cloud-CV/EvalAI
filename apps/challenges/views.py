@@ -233,7 +233,7 @@ def add_participant_team_to_challenge(
     except Challenge.DoesNotExist:
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    
+
     if not challenge.is_registration_open:
         response_data = {
             "error": "Registration is closed for this challenge!"

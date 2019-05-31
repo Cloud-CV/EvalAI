@@ -608,6 +608,21 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             team=self.participant_team3,
         )
 
+    def test_registration_is_closed_for_a_particular_challenge(self):
+        self.challenge2.is_registration_open = False
+        self.challenge2.save()
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team3.pk,
+            },
+        )
+        expected = {"error": "Registration is closed for this challenge!"}
+        response = self.client.post(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
     def test_map_challenge_and_participant_team_together(self):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
