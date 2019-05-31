@@ -12,14 +12,14 @@
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="ev-card-body pd-20 w-300">
-                    <form name="" ng-submit="">
+                    <form name="challengeDetailsForm" ng-submit="challengeCreateUsingUI.submitChallengeDetails(challengeDetailsForm.$valid)">
                         <div class="row">
                             <div class="col s6 m6 l6">
                                 <div class="input-field align-left">
                                     <span class="fs-16 w-400 text-med-black">Challenge title</span>
                                         <input type="text" id="title" name="title"
-                                            ng-model="challenge.page.challenge_phase.name"
-                                            value="" placeholder="Challenge title"
+                                            ng-model="challengeCreateUsingUI.challengeTitle"
+                                            value="{{challengeCreateUsingUI.challengeTitle}}" placeholder="Challenge title"
                                             focus-if="challenge.page.challenge_phase.name" required>
                                 </div>
                             </div>
@@ -29,9 +29,12 @@
                                 <div class="input-field align-left">
                                     <span class="text-med-black w-400 fs-16">Challenge start date & time</span>
                                     <input id="start_date" name="start_date" format="MM-DD-YYYY hh:mm a" locale="en"
-                                        value="" ng-model="challenge.phaseStartDate"
-                                        start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="Challenge start date"
-                                        moment-picker="challenge.phaseStartDate" start-date="challenge.phaseStartDate"
+                                        value="{{challengeCreateUsingUI.challengeStartDate}}"
+                                        ng-model="challengeCreateUsingUI.challengeStartDate"
+                                        start-view="year" ng-model-options="{ updateOn: 'blur' }"
+                                        placeholder="Challenge start date"
+                                        moment-picker="challengeCreateUsingUI.challengeStartDate"
+                                        start-date="challengeCreateUsingUI.challengeStartDate"
                                         required>
                                     <span class="form-icon"><i class="fa fa-text"></i></span>
                                 </div>
@@ -40,9 +43,11 @@
                                 <div class="input-field align-left">
                                     <span class="text-med-black w-400 fs-16">Challenge end date & time</span>
                                     <input id="end_date" name="end_date" format="MM-DD-YYYY hh:mm a" locale="en"
-                                        value="" ng-model="challenge.phaseEndDate"
+                                        value="{{challengeCreateUsingUI.challengeEndDate}}"
+                                        ng-model="challengeCreateUsingUI.challengeEndDate"
                                         start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="Challenge end date"
-                                        moment-picker="challenge.phaseEndDate" min-date="challenge.phaseStartDate" required>
+                                        moment-picker="challengeCreateUsingUI.challengeEndDate"
+                                        min-date="challengeCreateUsingUI.challengeEndDate" required>
                                     <span class="form-icon"><i class="fa fa-text"></i></span>
                                 </div>
                             </div>
@@ -53,12 +58,14 @@
                                 <div class="file-field input-field">
                                     <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-16">
                                         <span> Evaluation script file </span>
-                                        <input name="challenge.testAnnotationFile" ngf-select type="file"
-                                            class="text-dark-black dark-autofill w-50" ng-model="challenge.testAnnotationFile">
+                                        <input name="challengeCreateUsingUI.challengeEvaluationScript" ngf-select type="file"
+                                            class="text-dark-black dark-autofill w-50"
+                                            ng-model="challengeCreateUsingUI.challengeEvaluationScript" required>
                                     </div>
                                     <div class="file-path-wrapper">
                                         <input class="file-path" type="text" class="input-field"
-                                            ng-model="challenge.testAnnotationFile" ng-value="challenge.testAnnotationFile.name">
+                                            ng-model="challengeCreateUsingUI.challengeEvaluationScript"
+                                            ng-value="challengeCreateUsingUI.challengeEvaluationScript" required>
                                     </div>
                                 </div>
                             </div>
@@ -68,7 +75,8 @@
                                 <div class="align-center text-med-black w-400">
                                     <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
                                         type="submit" value="submit"
-                                        ng-disabled="!challenge.sanityCheckPass">Next</button>
+                                        ng-disabled="!challengeCreateUsingUI.challengeTitle || !challengeCreateUsingUI.challengeStartDate
+                                        || !challengeCreateUsingUI.challengeEndDate || !challengeCreateUsingUI.challengeEvaluationScript">Next</button>
                                 </div>
                             </div>
                         </div>
