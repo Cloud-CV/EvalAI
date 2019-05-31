@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit tests for Teams Controller', function () {
+describe('Unit tests for teams controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, createController, $injector, $rootScope, $scope, utilities, $mdDialog, $state, $http, vm;
@@ -258,7 +258,7 @@ describe('Unit tests for Teams Controller', function () {
                 success = true;
                 successResponse = response;
                 vm.team.name = "Team Name";
-                vm.team.url = "Team Url";
+                vm.team.url = "https://team.url";
                 vm.createNewTeam();
                 expect(vm.isExistLoader).toBeTruthy();
                 expect(vm.loaderTitle).toEqual('');
@@ -355,7 +355,7 @@ describe('Unit tests for Teams Controller', function () {
         var success;
         var successResponse = {
             team_name: "Team Name",
-            team_url: "Team Url"
+            team_url: "https://team.url"
         }
         var errorResponse = {
             error: 'error'
@@ -416,7 +416,7 @@ describe('Unit tests for Teams Controller', function () {
         var successResponse = {
             results: {
                 team_name: "Team Name",
-                team_url: "Team Url",
+                team_url: "https://team.url",
                 created_by: "user"
             }
         }
@@ -426,7 +426,7 @@ describe('Unit tests for Teams Controller', function () {
             spyOn($rootScope, 'notify');
             spyOn($mdDialog, 'hide');
             vm.team.name = "Team Name";
-            vm.team.url = "Team Url";
+            vm.team.url = "https://team.url";
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
