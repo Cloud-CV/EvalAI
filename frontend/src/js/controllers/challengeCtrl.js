@@ -81,7 +81,7 @@
                 vm.isForumEnabled = details.enable_forum;
                 vm.forumURL = details.forum_url;
                 vm.cliVersion = details.cli_version;
-                vm.canParticipate = details.can_participate;
+                vm.isRegistrationOpen = details.is_registration_open;
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -270,10 +270,10 @@
 
         utilities.sendRequest(parameters);
 
-        vm.toggleParticipation = function (ev, canParticipate) {
+        vm.toggleParticipation = function (ev, isRegistrationOpen) {
             // ev.stopPropagation();
             var participationState;
-            if (canParticipate) {
+            if (isRegistrationOpen) {
                 participationState = 'close';
             } else {
                 participationState = 'open';
@@ -296,11 +296,11 @@
                 parameters.method = "PATCH";
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.data = {
-                    "can_participate": !canParticipate
+                    "is_registration_open": !isRegistrationOpen
                 };
                 parameters.callback = {
                     onSuccess: function() {
-                        vm.canParticipate = !vm.canParticipate;
+                        vm.isRegistrationOpen = !vm.isRegistrationOpen;
                         $rootScope.notify('success', 'Participation is ' + participationState + 'ed successfully');
                     },
                     onError: function(response) {
