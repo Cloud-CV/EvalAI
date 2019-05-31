@@ -274,16 +274,16 @@
             // ev.stopPropagation();
             var participationState;
             if (isRegistrationOpen) {
-                participationState = 'close';
+                participationState = 'Close';
             } else {
-                participationState = 'open';
+                participationState = 'Open';
             }
             var confirm = $mdDialog.confirm()
-                          .title('You really want to ' + participationState + ' the participation?')
+                          .title(participationState + ' participation in the challenge?')
                           .ariaLabel('')
                           .targetEvent(ev)
-                          .ok('I\'m sure')
-                          .cancel('No.');
+                          .ok('Yes, I\'m sure')
+                          .cancel('No');
 
             $mdDialog.show(confirm).then(function () {
                 var challengeHostList = utilities.getData("challengeCreator");
