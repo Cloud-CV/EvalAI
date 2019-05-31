@@ -25,6 +25,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "end_date",
         "creator",
         "published",
+        "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",
         "featured",
@@ -34,6 +35,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     )
     list_filter = (
         "published",
+        "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",
         "featured",
