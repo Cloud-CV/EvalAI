@@ -1,12 +1,16 @@
 import mock
 import os
 import shutil
+import tempfile
 import time
 import json
+import zipfile
 
 from allauth.account.models import EmailAddress
 
 from datetime import timedelta
+
+from os.path import join
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse_lazy
@@ -69,6 +73,18 @@ class BaseAPITestClass(APITestCase):
             user=self.user1,
             status=Participant.SELF,
             team=self.participant_team)
+
+        self.BASE_TEMP_DIR = tempfile.mkdtemp()
+
+        f = open(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), "x")
+        f = open(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), "w")
+        f.write("file_content")
+
+        self.zipped = zipfile.ZipFile(join(self.BASE_TEMP_DIR, 'test_zip.zip'), 'w')
+        self.zipped.write(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), 'dummy_input.txt')
+        self.zipped.close()
+        file = open(join(self.BASE_TEMP_DIR, 'test_zip.zip'), 'rb')
+        self.z = SimpleUploadedFile(join(self.BASE_TEMP_DIR, 'test_zip.zip'), file.read(), content_type='application/zip')
 
         self.challenge = Challenge.objects.create(
             title='Test Challenge',
@@ -354,9 +370,6 @@ class RunSubmissionTestClass(APITestCase):
             os.makedirs("/tmp/evalai")
         except OSError:
             pass
-
-        self.test_annotation_file = open("tests/integration/worker/data/test_annotation.txt", "rb")
-        self.user_annotation_file = open("tests/integration/worker/data/user_annotation.txt", "rb")
 
         with self.settings(MEDIA_ROOT='/tmp/evalai'):
             self.challenge_phase = ChallengePhase.objects.create(
