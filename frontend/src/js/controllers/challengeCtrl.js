@@ -309,13 +309,7 @@
                     }
                 };
                 utilities.sendRequest(parameters);
-            }, function() {
-                // if (canParticipate) {
-                //     angular.element('.paticipation-toggle-switch').addClass('md-checked');
-                // } else {
-                //     angular.element('.paticipation-toggle-switch').removeClass('md-checked');
-                // }
-            });
+            }, function() {});
         };
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
