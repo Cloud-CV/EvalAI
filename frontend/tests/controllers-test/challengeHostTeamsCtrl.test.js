@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Unit tests for Challenge Host Team Controller', function () {
+describe('Unit tests for challenge host team controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
     var $controller, createController, $injector, $mdDialog, $rootScope, $state, $scope, loaderService, utilities,$http, $compile, vm;
@@ -181,7 +181,7 @@ describe('Unit tests for Challenge Host Team Controller', function () {
         var success;
         var successResponse = {
             team_name: "Team Name",
-            team_url: "Team Url"
+            team_url: "https://team.url"
         };
         var errorResponse = {
             error: 'error'
@@ -244,7 +244,7 @@ describe('Unit tests for Challenge Host Team Controller', function () {
         var successResponse = {
             results: {
                 team_name: "Team Name",
-                team_url: "Team Url"
+                team_url: "https://team.url"
             }
         };
 
@@ -270,7 +270,7 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             success = true;
             var updateChallengeHostTeamDataForm = true;
             vm.team.TeamName = "Team Name";
-            vm.team.TeamURL = "Team Url";
+            vm.team.TeamURL = "https://team.url";
             vm.updateChallengeHostTeamData(updateChallengeHostTeamDataForm);
             expect($mdDialog.hide).toHaveBeenCalled();
             expect($rootScope.notify).toHaveBeenCalledWith("success", "Host Team updated!");
@@ -341,7 +341,7 @@ describe('Unit tests for Challenge Host Team Controller', function () {
             spyOn(angular, 'element');
             spyOn($rootScope, 'notify');
             vm.team.name = "team_name";
-            vm.team.url = "team_url";
+            vm.team.url = "https://team.url";
 
             utilities.sendRequest = function (parameters) {
                 if (success) {
