@@ -285,8 +285,44 @@
             }
         };
 
+        vm.oauthLogin = function(){
+            vm.startLoader("Logging you in");
+            var code = location.search;
+            code =  code.split('?code=')[1]
+            console.log(code)
+
+            var parameters = {};
+            parameters.url = 'auth/oauth/github/';
+            parameters.method = 'POST';
+            parameters.data = {
+                "code": code,
+            };
+            console.log(parameters)
+            parameters.callback = {
+                onSuccess: function(response){
+                    if (response.status == 200) {
+                        utilities.storeData('userKey', response.data.key);
+                        if ($rootScope.previousState) {
+                            $state.go($rootScope.previousState);
+                            vm.stopLoader();
+                        } else {
+                            $state.go('web.dashboard');
+                        }
+                    } else {
+                        alert("Something went wrong");
+                    }
+                },
+                onError: function(response){
+                    console.log(response)
+                }
+            }
+            utilities.sendRequest(parameters, "no-header");
+            
+        };
+        
+
         $rootScope.$on('$stateChangeStart', function() {
-            vm.resetForm();
+            vm.resetForm();            
         });
     }
 })();

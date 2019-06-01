@@ -215,6 +215,52 @@ img.auth-logo {
     }
 }
 
+
+
+.social_or{
+    overflow: hidden;
+    text-align: center;
+    margin:2rem 0;
+
+    &:before,
+    &:after {
+        background-color: #4d4d4d;
+        content: "";
+        display: inline-block;
+        height: 1px;
+        position: relative;
+        vertical-align: middle;
+        width: 50%;
+    }
+
+    &:before {
+        right: 0.5em;
+        margin-left: -50%;
+    }
+
+    &:after {
+        left: 0.5em;
+        margin-right: -50%;
+    }   
+}
+
+
+.social-login{
+
+    .social-github{
+        display: inline-block;
+        width: auto;
+        border:1px solid rgba(0,0,0,0.2);
+        padding:0.5em 1em;
+        img{
+            width:2em;
+            vertical-align: middle;
+            margin-right: 2px;
+        }
+    }
+}
+
+
 /*media queries*/
 
 @media only screen and (max-width: $med-screen) {

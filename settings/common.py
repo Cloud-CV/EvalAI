@@ -60,6 +60,8 @@ OUR_APPS = [
 THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.github',
     "corsheaders",
     "django_ses",
     "import_export",
@@ -165,6 +167,9 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ),
+    "DEFAULT_RENDERER_CLASSES":(
+         'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
     "DEFAULT_THROTTLE_RATES": {"anon": "100/minute", "user": "100/minute"},
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
@@ -179,13 +184,22 @@ ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = (
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = (
     "/api/auth/email-confirmed/"
 )
-
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
     # `allauth` specific authentication methods, such as login by e-mail
     "allauth.account.auth_backends.AuthenticationBackend",
 )
+SOCIALACCOUNT_PROVIDERS = {
+    'github': {
+        'SCOPE': [
+            'user',
+            'read:user'
+        ],
+    }
+}
+ 
+
 
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True

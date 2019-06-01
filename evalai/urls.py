@@ -27,6 +27,8 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from web import views
+from accounts import views as accountViews
+
 
 handler404 = "web.views.page_not_found"
 handler500 = "web.views.internal_server_error"
@@ -44,7 +46,8 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    url(r"^$", views.home, name="home"),
+    #url(r"^$", views.home, name="home"),
+    url(r'^api-auth/', include('rest_framework.urls')),
     url(r"^accounts/", include("allauth.urls")),
     url(r"^admin/", admin.site.urls),
     url(
@@ -64,6 +67,7 @@ urlpatterns = [
         TemplateView.as_view(template_name="password_reset_confirm.html"),
         name="password_reset_confirm",
     ),
+    url(r'^api/auth/oauth/github/', accountViews.GithubLogin.as_view(), name='github_login'),
     url(
         r"^api/auth/email-confirmed/$",
         TemplateView.as_view(template_name="account/email_confirm.html"),

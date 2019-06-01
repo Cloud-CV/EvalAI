@@ -94,6 +94,16 @@
             title: 'Logout'
         };
 
+
+        var oauth_login = {
+            name: "auth.oauth-login",
+            parent: "auth",
+            url: "/oauth-redirect",
+            templateUrl: baseUrl + "/web/auth/oauth-redirect.html",
+            title: "Logging you in",
+            authpage: true
+        };
+
         // main app 'web'
         var web = {
             name: "web",
@@ -462,6 +472,8 @@
         $stateProvider.state(reset_password);
         $stateProvider.state(reset_password_confirm);
         $stateProvider.state(logout);
+        $stateProvider.state(oauth_login);
+    
 
         // web main configs.
         $stateProvider.state(web);

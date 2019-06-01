@@ -18,6 +18,18 @@ from rest_framework_expiring_authtoken.authentication import (
 from .permissions import HasVerifiedEmail
 
 
+from allauth.socialaccount.providers.github.views import GitHubOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from rest_auth.registration.views import SocialLoginView
+
+
+class GithubLogin(SocialLoginView):
+    adapter_class = GitHubOAuth2Adapter
+    callback_url = "http://localhost:8888/auth/oauth-redirect/"
+    client_class = OAuth2Client
+
+
+
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -49,3 +61,10 @@ def get_auth_token(request):
 
     response_data = {"token": "{}".format(token)}
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+
+
+
+
