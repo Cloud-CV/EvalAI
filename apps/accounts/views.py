@@ -21,11 +21,12 @@ from .permissions import HasVerifiedEmail
 from allauth.socialaccount.providers.github.views import GitHubOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from rest_auth.registration.views import SocialLoginView
+from settings.common import FRONTEND_URL
 
 
 class GithubLogin(SocialLoginView):
     adapter_class = GitHubOAuth2Adapter
-    callback_url = "http://localhost:8888/auth/oauth-redirect/"
+    callback_url = FRONTEND_URL + "/auth/oauth-redirect/github/"
     client_class = OAuth2Client
 
 

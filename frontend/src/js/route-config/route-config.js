@@ -95,11 +95,11 @@
         };
 
 
-        var oauth_login = {
-            name: "auth.oauth-login",
+        var oauth_login_github = {
+            name: "auth.oauth-login-github",
             parent: "auth",
-            url: "/oauth-redirect",
-            templateUrl: baseUrl + "/web/auth/oauth-redirect.html",
+            url: "/oauth-redirect/github",
+            templateUrl: baseUrl + "/web/auth/oauth-redirect-github.html",
             title: "Logging you in",
             authpage: true
         };
@@ -472,7 +472,7 @@
         $stateProvider.state(reset_password);
         $stateProvider.state(reset_password_confirm);
         $stateProvider.state(logout);
-        $stateProvider.state(oauth_login);
+        $stateProvider.state(oauth_login_github);
     
 
         // web main configs.

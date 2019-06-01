@@ -285,7 +285,7 @@
             }
         };
 
-        vm.oauthLogin = function(){
+        vm.oauthLoginGithub = function(){
             vm.startLoader("Logging you in");
             var code = location.search;
             code =  code.split('?code=')[1]
