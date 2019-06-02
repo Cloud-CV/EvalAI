@@ -92,7 +92,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
           self.globalService.showToast('success', 'Registered successfully. Please verify your email address!', 5);
         }, 1000);
-        self.router.navigate(['auth/login']);
+        self.router.navigate(['/auth/login']);
       },
       err => {
         self.globalService.handleFormError(self.ALL_FORMS[self.signupForm], err);

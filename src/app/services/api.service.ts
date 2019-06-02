@@ -109,7 +109,7 @@ export class ApiService {
    */
   loadingWrapper(httpCall) {
     const SELF = this;
-    setTimeout(this.globalService.toggleLoading(true), 100);
+    setTimeout(() => {this.globalService.toggleLoading(true); }, 100);
     let success = (params) => {};
     let error = (params) => {};
     let final = () => {};
@@ -125,11 +125,11 @@ export class ApiService {
         success(data);
       },
       (err) => {
-        setTimeout(this.globalService.toggleLoading(false), 100);
+        setTimeout(() => {this.globalService.toggleLoading(false); }, 100);
         error(err);
       },
       () => {
-        setTimeout(this.globalService.toggleLoading(false), 100);
+        setTimeout(() => {this.globalService.toggleLoading(false); } , 100);
         final();
       }
     );

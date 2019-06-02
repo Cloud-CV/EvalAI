@@ -73,7 +73,7 @@ describe('AppComponent', () => {
 
   // mocking routes location
   it('navigate to "" set location to root', fakeAsync(() => {
-    router.navigate(['']);
+    router.navigate(['/']);
     tick(50);
     expect(location.path()).toBe('/');
   }));

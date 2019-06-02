@@ -11,29 +11,55 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { WindowService } from '../../services/window.service';
 import { HttpClientModule } from '@angular/common/http';
+import {Router, Routes} from '@angular/router';
+import {NotFoundComponent} from '../not-found/not-found.component';
+import {LoginComponent} from '../auth/login/login.component';
+
+
+const routes: Routes = [
+  {
+    path: '',
+    component: ProfileComponent,
+  },
+  {
+    path: 'auth/login',
+    component: LoginComponent
+  },
+  {
+    path: '404',
+    component: NotFoundComponent
+  },
+  {
+    path: '**',
+    redirectTo: '/404',
+    pathMatch: 'full'
+  }
+];
 
 
 describe('ProfileComponent', () => {
   let component: ProfileComponent;
   let fixture: ComponentFixture<ProfileComponent>;
+  let router: Router;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ProfileComponent, HeaderStaticComponent, FooterComponent ],
+      declarations: [ ProfileComponent, HeaderStaticComponent, FooterComponent, NotFoundComponent, LoginComponent ],
       providers: [ GlobalService, AuthService, WindowService, ApiService, EndpointsService],
-      imports: [ HttpClientModule, RouterTestingModule ],
+      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes) ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
+    router = TestBed.get(Router);
     fixture = TestBed.createComponent(ProfileComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+      fixture.detectChanges();
+      expect(component).toBeTruthy();
   });
 });

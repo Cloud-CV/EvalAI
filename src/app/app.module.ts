@@ -113,7 +113,7 @@ import { FeaturedChallengesComponent } from './components/home/featured-challeng
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    NgxTwitterTimelineModule.forRoot()
+    NgxTwitterTimelineModule
   ],
   providers: [
     AuthService,
