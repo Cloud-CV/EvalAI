@@ -42,7 +42,7 @@ Use [Docker Compose](https://docs.docker.com/compose/install/) to run all the co
 1. Get the source code on to your machine via git.
 
     ```shell
-    git clone https://github.com/Cloud-CV/EvalAI-ngx.git && cd evalai-ngx
+    git clone https://github.com/Cloud-CV/EvalAI-ngx.git evalai-ngx && cd evalai-ngx
     ```
 
 2. Build and run the Docker containers. This might take a while. You should be able to access EvalAI at `localhost:8888`.
