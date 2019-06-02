@@ -10,15 +10,41 @@ import { EndpointsService } from '../../services/endpoints.service';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { HttpClientModule } from '@angular/common/http';
+import {Router, Routes} from '@angular/router';
+import {NotFoundComponent} from '../not-found/not-found.component';
+import {LoginComponent} from '../auth/login/login.component';
+
+
+const routes: Routes = [
+  {
+    path: '',
+    component: DashboardComponent,
+  },
+  {
+    path: 'auth/login',
+    component: LoginComponent
+  },
+  {
+    path: '404',
+    component: NotFoundComponent
+  },
+  {
+    path: '**',
+    redirectTo: '/404',
+    pathMatch: 'full'
+  }
+];
+
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
+  let router: Router;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DashboardComponent, FooterComponent, HeaderStaticComponent ],
-      imports: [ HttpClientModule, RouterTestingModule ],
+      declarations: [ DashboardComponent, FooterComponent, HeaderStaticComponent, NotFoundComponent, LoginComponent ],
+      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes) ],
       providers: [ GlobalService, AuthService, EndpointsService, ApiService],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
@@ -26,12 +52,13 @@ describe('DashboardComponent', () => {
   }));
 
   beforeEach(() => {
+    router = TestBed.get(Router);
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+      fixture.detectChanges();
+      expect(component).toBeTruthy();
   });
 });

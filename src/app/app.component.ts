@@ -1,12 +1,14 @@
+
+import {mergeMap, map, filter} from 'rxjs/operators';
 import { Component, OnInit, OnDestroy, HostListener, Inject } from '@angular/core';
 import { GlobalService } from './services/global.service';
 import { AuthService } from './services/auth.service';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Title } from '@angular/platform-browser';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/mergeMap';
+
+
+
 
 @Component({
   selector: 'app-root',
@@ -93,21 +95,21 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     // set page title form routes data
-    this.router.events
+    this.router.events.pipe(
         // filter for navigation end
-      .filter((event) => event instanceof NavigationEnd)
+      filter((event) => event instanceof NavigationEnd),
       // check it with current activated route
-      .map(() => this.activatedRoute)
+      map(() => this.activatedRoute),
       // loop state routes to get the last activated route, first child and return it
-      .map((route) => {
+      map((route) => {
             while (route.firstChild) {
               route = route.firstChild;
             }
             return route;
-          })
+          }),
           // filter for primary route
-          .filter((route) => route.outlet === 'primary')
-        .mergeMap((route) => route.data)
+          filter((route) => route.outlet === 'primary'),
+        mergeMap((route) => route.data), )
         // set platform based title service
       .subscribe((event) => this.titleService.setTitle(event['title']));
   }

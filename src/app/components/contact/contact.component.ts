@@ -101,7 +101,7 @@ export class ContactComponent implements OnInit, AfterViewInit {
       data => {
         // Success Message in data.message
         setTimeout(() => self.globalService.showToast('success', data.message, 5), 1000);
-        self.router.navigate(['']);
+        self.router.navigate(['/']);
       },
       err => {
         self.globalService.handleFormError(self.components, err, false);

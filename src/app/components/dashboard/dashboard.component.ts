@@ -51,7 +51,7 @@ export class DashboardComponent implements OnInit {
    */
   ngOnInit() {
     if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['auth/login']);
+      this.router.navigate(['/auth/login']);
     }
     this.fetchChallengesFromApi(this.endpointsService.allChallengesURL('present'));
     this.fetchTeams(this.endpointsService.allParticipantTeamsURL());
