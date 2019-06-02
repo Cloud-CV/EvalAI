@@ -64,4 +64,3 @@ ssl/
 out/
 .idea_modules/
 
-sendgrid.env
