@@ -920,7 +920,6 @@ def update_submission(request, challenge_pk):
         submission_pk = request.data.get("submission")
         submission_status = request.data.get("submission_status", "").lower()
         submission = get_submission_model(submission_pk)
-        data = {"status": submission_status, "started_at": timezone.now()}
         if 'change_submission_status' in request.data:
             data = {"status": submission_status}
             serializer = SubmissionSerializer(
@@ -933,6 +932,7 @@ def update_submission(request, challenge_pk):
         elif submission_status not in [Submission.RUNNING]:
             response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        data = {"status": submission_status, "started_at": timezone.now()}
         serializer = SubmissionSerializer(
             submission, data=data, partial=True, context={"request": request}
         )
