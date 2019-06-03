@@ -948,7 +948,6 @@
                     submissionObject.execution_time = response.data.submission_execution_time;
                     submissionObject.submission_number = response.data.submission_number;
                     submissionObject.classList = [''];
-                    $scope.reRunSubmission = 'false';
                 },
                 onError: function(response) {
                     var status = response.status;
