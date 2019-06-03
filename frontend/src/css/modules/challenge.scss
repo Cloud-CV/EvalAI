@@ -186,3 +186,40 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
 #option-text-color {
     color: #252833;
 }
+
+.btn-switch {
+    position: relative;
+    display: block;
+    width: 30px;
+    height: 15px;
+    cursor: pointer;
+    background-color: rgb(167, 163, 163);
+    border: 2px solid rgb(167, 163, 163);
+    border-radius: 40px;
+    
+    .btn-switch-circle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: block;
+        height: 10px;
+        width: 10px;
+        background-color: #fff;
+        border-radius: 40px;
+    }
+}
+
+.btn-switch--on {
+    background-color: #ffaf4b;
+    border: 2px solid #ffaf4b;;
+    
+    .btn-switch-circle--on {
+        left: auto;
+        right: 0;
+    }
+}
+
+.toggle-participation-text {
+    display: inline-block;
+    padding-left: 10px;
+}
