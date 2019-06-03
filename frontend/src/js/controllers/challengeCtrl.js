@@ -890,7 +890,7 @@
             utilities.sendRequest(parameters);
         };
 
-        vm.rerunSubmission = function(submissionObject) {
+        vm.reRunSubmission = function(submissionObject) {
             submissionObject.classList = ['spin', 'progress-indicator'];
             parameters.url = 'jobs/re_run_submission/' + submissionObject.id;
             parameters.method = 'POST';
