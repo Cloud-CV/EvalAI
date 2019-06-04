@@ -457,17 +457,7 @@ def run_submission(
                     successful_submission_flag = False
                     break
 
-                # Check if the dataset_split exists for the codename in the result
-                try:
-                    dataset_split = challenge_phase_split.dataset_split
-                except Exception:
-                    stderr.write(
-                        "ORGINIAL EXCEPTION: The codename specified by your Challenge Host doesn't match"
-                        " with that in the evaluation Script.\n"
-                    )
-                    stderr.write(traceback.format_exc())
-                    successful_submission_flag = False
-                    break
+                dataset_split = challenge_phase_split.dataset_split
 
                 leaderboard_data = LeaderboardData()
                 leaderboard_data.challenge_phase_split = challenge_phase_split
