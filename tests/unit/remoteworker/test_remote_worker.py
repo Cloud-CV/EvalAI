@@ -1,7 +1,5 @@
 import mock
 
-# import scripts.workers.remote_submission_worker as remote_submission_worker
-
 from unittest import TestCase
 
 from scripts.workers.remote_submission_worker import (
