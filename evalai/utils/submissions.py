@@ -213,13 +213,12 @@ def pretty_print_submission_details(submission):
     echo(submission)
 
 
-def display_submission_details(submission_id):
+def submission_details_request(submission_id):
     """
-    Function to display details of a particular submission
+    Function to request details of a particular submission
     """
     url = "{}{}".format(get_host_url(), URLS.get_submission.value)
     url = url.format(submission_id)
-
     headers = get_request_header()
     try:
         response = requests.get(url, headers=headers)
@@ -251,9 +250,32 @@ def display_submission_details(submission_id):
             )
         )
         sys.exit(1)
-    response = response.json()
+    return response
 
+
+def display_submission_details(submission_id):
+    """
+    Function to display details of a particular submission
+    """
+    response = submission_details_request(submission_id).json()
     pretty_print_submission_details(response)
+
+
+def display_submission_result(submission_id):
+    """
+    Function to display result of a particular submission
+    """
+    try:
+        response = submission_details_request(submission_id).json()
+        echo(requests.get(response['submission_result_file']).text)
+    except requests.exceptions.MissingSchema:
+        echo(
+            style(
+                "\nThe Submission is yet to be evaluated.\n",
+                bold=True,
+                fg="yellow",
+            )
+        )
 
 
 def convert_bytes_to(byte, to, bsize=1024):

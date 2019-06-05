@@ -27,6 +27,13 @@ class TestGetSubmissionDetails(BaseTestClass):
             status=200,
         )
 
+        responses.add(
+            responses.GET,
+            self.submission["submission_result_file"],
+            json=json.loads(submission_response.submission_result_file),
+            status=200,
+        )
+
     @responses.activate
     def test_display_submission_details(self):
         team_title = "\n{}".format(self.submission["participant_team_name"])
@@ -79,6 +86,14 @@ class TestGetSubmissionDetails(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(submission)
         response = result.output
+        assert response == expected
+
+    @responses.activate
+    def test_display_submission_result(self):
+        expected = "{}\n".format(submission_response.submission_result_file).strip()
+        runner = CliRunner()
+        result = runner.invoke(submission, ["9", "result"])
+        response = result.output.strip()
         assert response == expected
 
 
