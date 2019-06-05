@@ -34,7 +34,7 @@ install_requires = [
 
 setup(
     name=PROJECT,
-    version="1.2.3",
+    version="1.3.0",
     description="Use EvalAI through command line interface",
     long_description=long_description,
     long_description_content_type="text/markdown",

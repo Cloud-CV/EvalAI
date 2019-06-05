@@ -11,6 +11,7 @@ from .get_token import get_token
 from .login import login
 
 
+@click.version_option()
 @click.group(invoke_without_command=True)
 @click.pass_context
 def main(ctx):
