@@ -30,6 +30,20 @@ Our central development branch is development. Coding is done on feature branche
 2. Commit and push code to your branch:
 
     - Commits should be self-contained and contain a descriptive commit message.
+        ##### Rules for a great git commit message style
+        - Separate subject from body with a blank line
+        - Do not end the subject line with a period
+        - Capitalize the subject line and each paragraph
+        - Use the imperative mood in the subject line
+        - Wrap lines at 72 characters
+        - Use the body to explain what and why you have done something. In most cases, you can leave out details about how a change has been made.
+
+        ##### Example for a commit message
+            Subject of the commit message
+
+            Body of the commit message...
+            ....
+
     - Please make sure your code is well-formatted and adheres to PEP8 conventions (for Python) and the airbnb style guide (for JavaScript). For others (Lua, prototxt etc.) please ensure that the code is well-formatted and the style consistent.
     - Please ensure that your code is well tested.
     - We highly encourage to use `autopep8` to follow the PEP8 styling. Run the following command before creating the pull request:
