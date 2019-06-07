@@ -215,19 +215,6 @@ class NormalTestClass(BaseAPITestClass):
 
         self.assertEqual(submission_worker.process_submission_message(message), None)
 
-    @mock.patch("scripts.workers.submission_worker.logger.exception")
-    def test_process_submission_message_when_challenge_phase_does_not_exist(self, mock_logger):
-        message = {
-            "challenge_pk": self.challenge.pk,
-            "phase_pk": 1000,
-            "submission_pk": self.submission.id
-        }
-        phase_id = 1000
-
-        submission_worker.process_submission_message(message)
-
-        mock_logger.assert_called_with("Challenge Phase {} does not exist".format(phase_id))
-
     @mock.patch("scripts.workers.submission_worker.logger.critical")
     def test_extract_submission_data_when_submission_does_not_exist(self, mock_logger):
         value = submission_worker.extract_submission_data(-1)
@@ -256,6 +243,21 @@ class NormalTestClass(BaseAPITestClass):
         submission_input_file_path = "mocked/dir/submission_{}/{}".format(self.submission.id, name)
         mock_down_ext.assert_called_with(submission_input_file_url, submission_input_file_path)
 
+    @mock.patch("scripts.workers.submission_worker.extract_submission_data")
+    @mock.patch("scripts.workers.submission_worker.logger.exception")
+    def test_process_submission_message_when_challenge_phase_does_not_exist(self, mock_logger, mock_esd):
+        message = {
+            "challenge_pk": self.challenge.pk,
+            "phase_pk": 1000,
+            "submission_pk": self.submission.id
+        }
+        mock_esd.return_value = self.submission
+        phase_id = 1000
+        with self.assertRaises(Exception):
+            submission_worker.process_submission_message(message)
+
+        mock_logger.assert_called_with("Challenge Phase {} does not exist".format(phase_id))
+
     @mock.patch("scripts.workers.submission_worker.CHALLENGE_DATA_BASE_DIR", "mock/dir")
     @mock.patch("scripts.workers.submission_worker.create_dir_as_python_package")
     @mock.patch("scripts.workers.submission_worker.extract_challenge_data")
@@ -263,8 +265,7 @@ class NormalTestClass(BaseAPITestClass):
         submission_worker.load_challenge(self.challenge)
         mock_create.assert_called_with("mock/dir")
         phases = ChallengePhase.objects.filter(name="Challenge Phase")
-        self.assertEqual(mock_ecd.call_args_list[0], mock.call(self.challenge, phases))
-        #mock_ecd.assert_called_with(self.challenge, phases)
+        mock_ecd.assert_called_with(self.challenge, phases)
 
     @mock.patch("scripts.workers.submission_worker.PHASE_DATA_BASE_DIR", "mocked/dir/challenge_data/challenge_{challenge_id}/phase_data")
     @mock.patch("scripts.workers.submission_worker.PHASE_DATA_DIR", "mocked/dir/challenge_data/challenge_{challenge_id}/phase_data/phase_{phase_id}")
@@ -307,9 +308,6 @@ class NormalTestClass(BaseAPITestClass):
 
         expected_mock_createdir_call_list = [mock.call(phase_data_base_directory), mock.call(phase_data_directory)]
         self.assertEqual(mock_createdir.call_args_list, expected_mock_createdir_call_list)
-        '''AssertionError: [call[48 chars]ta'),
-E        call('mocked/dir/challenge_data/challen[147 chars]_2')] != [call[48 chars]ta'), call('mocked/dir/challenge_data/challeng[20 chars]_2')]
-        ''' # How?
 
         mock_down_ext_zip.assert_called_with(evaluation_script_url, challenge_zip_file, challenge_data_directory)
         mock_down_ext.assert_called_with(annotation_file_url, annotation_file_path)
@@ -324,10 +322,14 @@ E        call('mocked/dir/challenge_data/challen[147 chars]_2')] != [call[48 cha
         challenge = self.challenge
 
         mock_import.side_effect = ImportError
-        submission_worker.extract_challenge_data(challenge, phases)
-        mock_logger.assert_called_with("Exception raised while creating Python module for challenge_id: {}".format(self.challene.id))
+
+        with self.assertRaises(Exception):
+            submission_worker.extract_challenge_data(challenge, phases)
+            mock_logger.assert_called_with("Exception raised while creating Python module for challenge_id: {}".format(self.challenge.id))
 
 
+@mock.patch("scripts.workers.submission_worker.ContentFile")
+@mock.patch("scripts.workers.submission_worker.open")
 @mock.patch("scripts.workers.submission_worker.SubmissionSerializer.data", "")
 @mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", "mocked/dir/submission_{submission_id}")
 @mock.patch("scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_PATH", "mocked/dir/challenge_data/challenge_{challenge_id}/phase_data/phase_{phase_id}/test_annotation_file.txt")
@@ -554,7 +556,8 @@ class RunSubmissionTestClass(APITestCase):
 
     def test_run_submission_when_challenge_phase_split_does_not_exist(self, mock_map, mock_script_dict,
                                                                       mock_createdir, mock_lb,
-                                                                      mock_shutil, mock_timezone):
+                                                                      mock_shutil, mock_timezone,
+                                                                      mock_open, mock_cf):
         challenge_id = self.challenge.id
         phase_id = self.challenge_phase.id
         user_annotation_file_path = "tests/integration/worker/data/user_annotation.txt"
@@ -579,6 +582,10 @@ class RunSubmissionTestClass(APITestCase):
 
         submission_worker.run_submission(challenge_id, self.challenge_phase, self.submission, user_annotation_file_path)
 
+        self.assertEqual(mock_open.return_value.write.call_args_list[0],
+                         mock.call("ORGINIAL EXCEPTION: No such relation between Challenge Phase and DatasetSplit"
+                                   " specified by Challenge Host \n"))
+
         annotation_file_path = "mocked/dir/challenge_data/challenge_{}/phase_data/phase_{}/test_annotation_file.txt".format(
             challenge_id, phase_id)
 
@@ -591,16 +598,13 @@ class RunSubmissionTestClass(APITestCase):
             submission_metadata="",
         )
 
-        getattr(submission_worker.run_submission, 'stderr').write.assert_called_with("ORGINIAL EXCEPTION: No such relation between Challenge Phase and DatasetSplit"
-                                                                                     " specified by Challenge Host \n")
-
         mock_lb.objects.bulk_create.assert_not_called()
 
         self.assertEqual(self.submission.started_at, starting_time)
         self.assertEqual(self.submission.status, Submission.FAILED)
         self.assertEqual(self.submission.completed_at, ending_time)
 
-        expected_output = {"result": {"split2": {"metric1": 10}}}
+        expected_output = {"result": [{"split2": {"metric1": 10}}]}
         self.assertEqual(self.submission.output, expected_output)
 
         mock_shutil.rmtree.assert_called_with(temp_run_dir)
