@@ -153,16 +153,6 @@ class BaseAPITestClass(APITestCase):
         self.assertTrue(os.path.isfile(download_location))
         os.remove(download_location)
 
-    def test_download_and_extract_zip_file(self):
-        self.url = return_file_url_per_environment(self.challenge.evaluation_script.url)
-        download_location = join(self.BASE_TEMP_DIR, "zip_download_location.zip")
-        extract_location = join(self.BASE_TEMP_DIR, "zip_extract_location")
-        download_and_extract_zip_file(self.url, download_location, extract_location)
-        self.assertTrue(os.path.isfile(download_location))
-        self.assertTrue(os.path.isfile(os.join(extract_location, "dummy_input.txt")))
-        os.remove(download_location)
-        shutil.rmtree(extract_location)
-
     def test_create_dir(self):
         directory = join(self.BASE_TEMP_DIR, "temp_dir")
         create_dir(directory)
