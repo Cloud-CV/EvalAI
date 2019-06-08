@@ -43,6 +43,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "end_date",
             "creator",
             "published",
+            "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
             "is_active",
@@ -54,6 +55,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "is_docker_based",
             "slug",
             "max_docker_image_size",
+            "cli_version",
         )
 
 
@@ -85,6 +87,7 @@ class ChallengePhaseSerializer(serializers.ModelSerializer):
             "is_public",
             "is_active",
             "codename",
+            "slug",
         )
 
 
@@ -176,6 +179,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "creator",
             "evaluation_details",
             "published",
+            "is_registration_open",
             "enable_forum",
             "anonymous_leaderboard",
             "leaderboard_description",
@@ -189,6 +193,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "is_docker_based",
             "slug",
             "max_docker_image_size",
+            "cli_version",
         )
 
 
@@ -241,6 +246,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "is_submission_public",
             "codename",
             "test_annotation",
+            "slug",
         )
 
 

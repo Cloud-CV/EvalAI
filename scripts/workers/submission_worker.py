@@ -38,6 +38,9 @@ DJANGO_SETTINGS_MODULE = os.environ.get(
     "DJANGO_SETTINGS_MODULE", "settings.dev"
 )
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
+LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
+    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
+)
 
 from challenges.models import (
     Challenge,
@@ -425,6 +428,13 @@ def run_submission(
                "submission_result": ['foo', 'bar'],
             }
         """
+
+        error_bars_dict = dict()
+        if "error" in submission_output:
+            for split_error in submission_output["error"]:
+                split_code_name = list(split_error.keys())[0]
+                error_bars_dict[split_code_name] = split_error[split_code_name]
+
         if "result" in submission_output:
 
             leaderboard_data_list = []
@@ -468,6 +478,11 @@ def run_submission(
                 leaderboard_data.result = split_result.get(
                     dataset_split.codename
                 )
+
+                if "error" in submission_output:
+                    leaderboard_data.error = error_bars_dict.get(
+                        dataset_split.codename
+                    )
 
                 leaderboard_data_list.append(leaderboard_data)
 
@@ -625,6 +640,21 @@ def get_or_create_sqs_queue(queue_name):
     return queue
 
 
+def load_challenge_and_return_max_submissions(q_params):
+    try:
+        challenge = Challenge.objects.get(**q_params)
+    except Challenge.DoesNotExist:
+        logger.exception(
+            "Challenge with pk {} doesn't exist".format(q_params["pk"])
+        )
+        raise
+    load_challenge(challenge)
+    maximum_concurrent_submissions = (
+        challenge.max_concurrent_submission_evaluation
+    )
+    return maximum_concurrent_submissions, challenge
+
+
 def main():
     killer = GracefulKiller()
     logger.info(
@@ -641,27 +671,56 @@ def main():
     if challenge_pk:
         q_params["pk"] = challenge_pk
 
-    challenges = Challenge.objects.filter(**q_params)
-    for challenge in challenges:
-        load_challenge(challenge)
+    if settings.DEBUG or settings.TEST:
+        if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+            if not challenge_pk:
+                logger.exception(
+                    "Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file."
+                )
+                sys.exit(1)
+            maximum_concurrent_submissions, challenge = load_challenge_and_return_max_submissions(
+                q_params
+            )
+        else:
+            challenges = Challenge.objects.filter(**q_params)
+            for challenge in challenges:
+                load_challenge(challenge)
+    else:
+        maximum_concurrent_submissions, challenge = load_challenge_and_return_max_submissions(
+            q_params
+        )
 
     # create submission base data directory
     create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name)
-
-    maximum_concurrent_submissions = (
-        challenge.max_concurrent_submission_evaluation
-    )
     while True:
         for message in queue.receive_messages():
             if settings.DEBUG or settings.TEST:
-                logger.info(
-                    "Processing message body: {0}".format(message.body)
-                )
-                process_submission_callback(message.body)
-                # Let the queue know that the message is processed
-                message.delete()
+                if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+                    current_running_submissions_count = Submission.objects.filter(
+                        challenge_phase__challenge=challenge.id,
+                        status="running",
+                    ).count()
+                    if (
+                        current_running_submissions_count
+                        == maximum_concurrent_submissions
+                    ):
+                        pass
+                    else:
+                        logger.info(
+                            "Processing message body: {0}".format(message.body)
+                        )
+                        process_submission_callback(message.body)
+                        # Let the queue know that the message is processed
+                        message.delete()
+                else:
+                    logger.info(
+                        "Processing message body: {0}".format(message.body)
+                    )
+                    process_submission_callback(message.body)
+                    # Let the queue know that the message is processed
+                    message.delete()
             else:
                 current_running_submissions_count = Submission.objects.filter(
                     challenge_phase__challenge=challenge.id, status="running"

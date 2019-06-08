@@ -576,12 +576,17 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             submission_guidelines="Submission guidelines for test challenge 1",
             creator=self.challenge_host_team,
             published=False,
+            is_registration_open=True,
             enable_forum=True,
             leaderboard_description="Lorem ipsum dolor sit amet, consectetur adipiscing elit",
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+        self.challenge1.slug = "{}-{}".format(
+            self.challenge1.title.replace(" ", "-").lower(), self.challenge1.pk
+        )[:199]
+        self.challenge1.save()
 
         self.challenge2 = Challenge.objects.create(
             title="Test Challenge 2",
@@ -591,6 +596,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
             submission_guidelines="Submission guidelines for test challenge 2",
             creator=self.challenge_host_team,
             published=False,
+            is_registration_open=True,
             enable_forum=True,
             anonymous_leaderboard=False,
             start_date=timezone.now() - timedelta(days=2),
@@ -634,6 +640,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                             "team_url": self.challenge_host_team.team_url,
                         },
                         "published": self.challenge1.published,
+                        "is_registration_open": self.challenge1.is_registration_open,
                         "enable_forum": self.challenge1.enable_forum,
                         "leaderboard_description": self.challenge1.leaderboard_description,
                         "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
@@ -645,6 +652,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                         "is_docker_based": self.challenge1.is_docker_based,
                         "slug": self.challenge1.slug,
                         "max_docker_image_size": self.challenge1.max_docker_image_size,
+                        "cli_version": self.challenge1.cli_version,
                     },
                     "participant_team": {
                         "id": self.participant_team.id,
@@ -695,6 +703,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                     "team_url": self.challenge_host_team.team_url,
                 },
                 "published": self.challenge1.published,
+                "is_registration_open": self.challenge1.is_registration_open,
                 "enable_forum": self.challenge1.enable_forum,
                 "leaderboard_description": self.challenge1.leaderboard_description,
                 "anonymous_leaderboard": self.challenge1.anonymous_leaderboard,
@@ -706,6 +715,7 @@ class GetTeamsAndCorrespondingChallengesForAParticipant(BaseAPITestClass):
                 "is_docker_based": self.challenge1.is_docker_based,
                 "slug": self.challenge1.slug,
                 "max_docker_image_size": self.challenge1.max_docker_image_size,
+                "cli_version": self.challenge1.cli_version,
             }
         ]
 
@@ -792,6 +802,7 @@ class RemoveSelfFromParticipantTeamTest(BaseAPITestClass):
             submission_guidelines="Submission guidelines for some test challenge",
             creator=self.challenge_host_team,
             published=False,
+            is_registration_open=True,
             enable_forum=True,
             leaderboard_description="Fusce quis sapien eget sem accumsan euismod",
             anonymous_leaderboard=False,
