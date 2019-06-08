@@ -266,7 +266,7 @@ def add_participant_team_to_challenge(
                 }
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-                )         
+                )
 
     # Check if user is in allowed list.
     user_email = request.user.email

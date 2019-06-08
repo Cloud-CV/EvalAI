@@ -205,7 +205,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "error": "You haven't participated in the challenge"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-        
+
         all_participants_email = participant_team.get_all_participants_email()
         for i in all_participants_email:
             if i in challenge.banned_email_ids:
@@ -450,7 +450,7 @@ def leaderboard(request, challenge_phase_split_id):
     challenge_host_user = is_user_a_host_of_challenge(
         request.user, challenge_obj.pk
     )
-    
+
     all_banned_email_ids = challenge_obj.banned_email_ids
 
     # Check if challenge phase leaderboard is public for participant user or not
@@ -525,8 +525,10 @@ def leaderboard(request, challenge_phase_split_id):
     distinct_sorted_leaderboard_data = []
     team_list = []
     for data in sorted_leaderboard_data:
-        if (data["submission__participant_team__team_name"] in team_list or
-            data['submission__participant_team'] in all_banned_participant_team):
+        if (
+            data["submission__participant_team__team_name"] in team_list or
+            data['submission__participant_team'] in all_banned_participant_team
+        ):
             continue
         elif data["submission__is_baseline"] is True:
             distinct_sorted_leaderboard_data.append(data)
