@@ -255,6 +255,24 @@ def add_participant_team_to_challenge(
         response_data = {"error": "ParticipantTeam does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    # Check if user is banned
+    if len(challenge.banned_email_ids) > 0:
+        present = False
+        for participant_email in participant_team.get_all_participants_email():
+            if participant_email in challenge.banned_email_ids:
+                present = True
+                break
+        if present:
+            message = "Sorry, users with {} emails are not allowed to participate in this challenge."
+            domains = ""
+            for email in challenge.banned_email_ids:
+                domains = "{}{}{}".format(domains, "/", email)
+            domains = domains[1:]
+            response_data = {"error": message.format(domains)}
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
     # Check if user is in allowed list.
     user_email = request.user.email
     if len(challenge.allowed_email_domains) > 0:
