@@ -1896,14 +1896,14 @@
             else
                 vm.togglePhaseSplitState = "public";
 
-            var confirm = $mdDialog.confirm()
+            var confirmDialog = $mdDialog.confirm()
                           .title('Make the phase split state ' + vm.togglePhaseSplitState + '?')
                           .ariaLabel('')
                           .targetEvent(ev)
                           .ok('I\'m sure')
                           .cancel('No.');
 
-            $mdDialog.show(confirm).then(function () {
+            $mdDialog.show(confirmDialog).then(function () {
                 parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
                 parameters.method = 'PATCH';
                 if (vm.phaseSplitVisibility) {
