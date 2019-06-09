@@ -50,10 +50,7 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
-        vm.phaseSplitVisibility = {
-            "state": "Private",
-            "icon": "fa-eye-slash red-text"
-        }
+        vm.phaseSplitVisibility = {};
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -1964,6 +1961,9 @@
                     if (details["visibility"]===3) {
                         vm.phaseSplitVisibility.state = "Public";
                         vm.phaseSplitVisibility.icon = "fa-eye green-text";
+                    } else {
+                        vm.phaseSplitVisibility.state = "Private";
+                        vm.phaseSplitVisibility.icon = "fa-eye-slash red-text";
                     }
                     utilities.hideLoader();
                 },
