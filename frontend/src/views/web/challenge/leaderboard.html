@@ -50,17 +50,10 @@
                             </span>
                         </div>
                         <div class="col xs12 s6" ng-if="challenge.isChallengeHost">
-                            <span ng-if="challenge.phaseSplitVisibility && challenge.phaseSplitId!==undefined" ng-init="challenge.isPhaseSplitVisible()">
+                            <span ng-if="challenge.phaseSplitId!==undefined" ng-init="challenge.isPhaseSplitVisible()">
                                 <a class="pointer" ng-click="challenge.togglePhaseSplitVisibility($event)">
-                                    <strong class="text-light-black">Public</strong>
-
-                                    <i class="fa fa-eye green-text" aria-hidden="true"></i>
-                                </a>
-                            </span>
-                            <span ng-if="!challenge.phaseSplitVisibility && challenge.phaseSplitId!==undefined" ng-init="challenge.isPhaseSplitVisible()">
-                                <a class="pointer" ng-click="challenge.togglePhaseSplitVisibility($event)">
-                                    <strong class="text-light-black">Private</strong>
-                                    <i class="fa fa-eye red-text" aria-hidden="true"></i>
+                                    <strong class="text-light-black">{{challenge.phaseSplitVisibility.state}}</strong>
+                                    <i class="{{challenge.phaseSplitVisibility.icon}}" aria-hidden="true"></i>
                                 </a>
                             </span>
                         </div>

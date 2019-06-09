@@ -24,7 +24,6 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
-        vm.phaseSplitVisibility = false;
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
         vm.phaseRemainingSubmissionsCountdown = {};
@@ -51,6 +50,10 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
+        vm.phaseSplitVisibility = {
+            "state": "Private",
+            "icon": "fa fa-eye-slash red-text"
+        }
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -1890,23 +1893,23 @@
 
         vm.togglePhaseSplitVisibility = function (ev) {
             ev.stopPropagation();
-            vm.togglePhaseSplitState = null;
-            if(vm.phaseSplitVisibility)
-                vm.togglePhaseSplitState = "private";
+            var togglePhaseSplitState;
+            if(vm.phaseSplitVisibility.state == "Public")
+                togglePhaseSplitState = "private";
             else
-                vm.togglePhaseSplitState = "public";
+                togglePhaseSplitState = "public";
 
             var confirmDialog = $mdDialog.confirm()
-                          .title('Make the phase split state ' + vm.togglePhaseSplitState + '?')
+                          .title('Make the phase split state ' + togglePhaseSplitState + '?')
                           .ariaLabel('')
                           .targetEvent(ev)
-                          .ok('I\'m sure')
-                          .cancel('No.');
+                          .ok('Yes, I\'m sure')
+                          .cancel('No');
 
             $mdDialog.show(confirmDialog).then(function () {
                 parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
                 parameters.method = 'PATCH';
-                if (vm.phaseSplitVisibility) {
+                if (vm.phaseSplitVisibility.state == "Public") {
                     parameters.data = {
                         "visibility": 1,
                     };
@@ -1920,7 +1923,13 @@
                     onSuccess: function(response) {
                         var status = response.status;
                         if (status === 200) {
-                            vm.phaseSplitVisibility = !vm.phaseSplitVisibility;
+                            if(vm.phaseSplitVisibility.state == "Public"){
+                                vm.phaseSplitVisibility.state = "Private";
+                                vm.phaseSplitVisibility.icon = "fa fa-eye-slash red-text";
+                            } else{
+                                vm.phaseSplitVisibility.state = "Public";
+                                vm.phaseSplitVisibility.icon = "fa fa-eye green-text";
+                            }
                             for(var i=0; i < vm.phaseSplits.length; i++) {
                                 if (vm.phaseSplits[i].id == vm.phaseSplitId) {
                                     vm.phaseSplits[i].showPrivate = !vm.phaseSplits[i].showPrivate;
@@ -1928,7 +1937,7 @@
                                 }
                             }
                             $mdDialog.hide();
-                            $rootScope.notify("success", "The challenge phase split was successfully made " + vm.togglePhaseSplitState);
+                            $rootScope.notify("success", "The challenge phase split was successfully made " + togglePhaseSplitState);
                         }
                     },
                     onError: function (response) {
@@ -1952,8 +1961,10 @@
             parameters.callback = {
                 onSuccess: function(response) {
                     var details = response.data;
-                    if(details["visibility"]===3)
-                        vm.phaseSplitVisibility = true;
+                    if (details["visibility"]===3) {
+                        vm.phaseSplitVisibility.state = "Public";
+                        vm.phaseSplitVisibility.icon = "fa fa-eye green-text";
+                    }
                     utilities.hideLoader();
                 },
                 onError: function(response) {
