@@ -52,7 +52,7 @@
         vm.termsAndConditions = false;
         vm.phaseSplitVisibility = {
             "state": "Private",
-            "icon": "fa fa-eye-slash red-text"
+            "icon": "fa-eye-slash red-text"
         }
 
         // show loader
@@ -1925,10 +1925,10 @@
                         if (status === 200) {
                             if(vm.phaseSplitVisibility.state == "Public"){
                                 vm.phaseSplitVisibility.state = "Private";
-                                vm.phaseSplitVisibility.icon = "fa fa-eye-slash red-text";
+                                vm.phaseSplitVisibility.icon = "fa-eye-slash red-text";
                             } else{
                                 vm.phaseSplitVisibility.state = "Public";
-                                vm.phaseSplitVisibility.icon = "fa fa-eye green-text";
+                                vm.phaseSplitVisibility.icon = "fa-eye green-text";
                             }
                             for(var i=0; i < vm.phaseSplits.length; i++) {
                                 if (vm.phaseSplits[i].id == vm.phaseSplitId) {
@@ -1963,7 +1963,7 @@
                     var details = response.data;
                     if (details["visibility"]===3) {
                         vm.phaseSplitVisibility.state = "Public";
-                        vm.phaseSplitVisibility.icon = "fa fa-eye green-text";
+                        vm.phaseSplitVisibility.icon = "fa-eye green-text";
                     }
                     utilities.hideLoader();
                 },
