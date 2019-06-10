@@ -1978,6 +1978,10 @@
 
         };
 
+        if (vm.phaseSplitId) {
+            vm.isPhaseSplitVisible();
+        }
+
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();

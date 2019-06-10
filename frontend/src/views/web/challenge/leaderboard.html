@@ -50,7 +50,7 @@
                             </span>
                         </div>
                         <div class="col xs12 s6" ng-if="challenge.isChallengeHost">
-                            <span ng-if="challenge.phaseSplitId!==undefined" ng-init="challenge.isPhaseSplitVisible()">
+                            <span ng-if="challenge.phaseSplitId!==undefined">
                                 <a class="pointer" ng-click="challenge.togglePhaseSplitVisibility($event)">
                                     <strong class="text-light-black">{{challenge.phaseSplitVisibility.state}}</strong>
                                     <i class="fa {{challenge.phaseSplitVisibility.icon}}" aria-hidden="true"></i>
