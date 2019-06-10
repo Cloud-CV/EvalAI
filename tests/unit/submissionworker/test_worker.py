@@ -9,7 +9,6 @@ from moto import mock_sqs
 from os.path import join
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -26,7 +25,6 @@ from jobs.models import Submission
 
 from scripts.workers.submission_worker import (
     download_and_extract_file,
-    download_and_extract_zip_file,
     create_dir,
     create_dir_as_python_package,
     return_file_url_per_environment,
@@ -37,6 +35,7 @@ from scripts.workers.submission_worker import (
 class BaseAPITestClass(APITestCase):
 
     def setUp(self):
+
         self.client = APIClient(enforce_csrf_checks=True)
 
         self.user = User.objects.create(
@@ -61,6 +60,8 @@ class BaseAPITestClass(APITestCase):
             primary=True,
             verified=True)
 
+        self.client.force_authenticate(user=self.user1)
+
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name='Test Challenge Host Team',
             created_by=self.user)
@@ -82,8 +83,6 @@ class BaseAPITestClass(APITestCase):
 
         self.zipped = zipfile.ZipFile(join(self.BASE_TEMP_DIR, 'test_zip.zip'), 'w')
         self.zipped.write(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), 'dummy_input.txt')
-        # bad = self.zipped.testzip()  # Returns name of any bad files in the zip, if any.
-        # self.assertTrue(bad == None)  # This passeed when I ran it.
         self.zipped.close()
         file = open(join(self.BASE_TEMP_DIR, 'test_zip.zip'), 'rb')
         self.z = SimpleUploadedFile(join(self.BASE_TEMP_DIR, 'test_zip.zip'), file.read(), content_type='application/zip')
@@ -121,11 +120,7 @@ class BaseAPITestClass(APITestCase):
                                                    content_type='text/plain')
             )
 
-        self.url = reverse_lazy('jobs:challenge_submission',
-                                kwargs={'challenge_id': self.challenge.pk,
-                                        'challenge_phase_id': self.challenge_phase.pk})
-
-        self.client.force_authenticate(user=self.user1)
+        self.url = ""
 
         self.input_file = SimpleUploadedFile(
             "test_file.txt", b"file_content", content_type="text/plain")
@@ -143,6 +138,16 @@ class BaseAPITestClass(APITestCase):
             is_public=True,
         )
 
+        self.sqs_client = boto3.client(
+            "sqs",
+            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
+            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+        )
+
+        self.directory = join(self.BASE_TEMP_DIR, "temp_dir")
+
     def tearDown(self):
         shutil.rmtree('/tmp/evalai')
 
@@ -154,16 +159,14 @@ class BaseAPITestClass(APITestCase):
         os.remove(download_location)
 
     def test_create_dir(self):
-        directory = join(self.BASE_TEMP_DIR, "temp_dir")
-        create_dir(directory)
-        self.assertTrue(os.path.isdir(directory))
-        shutil.rmtree(directory)
+        create_dir(self.directory)
+        self.assertTrue(os.path.isdir(self.directory))
+        shutil.rmtree(self.directory)
 
     def test_create_dir_as_python_package(self):
-        directory = join(self.BASE_TEMP_DIR, "temp_dir")
-        create_dir_as_python_package(directory)
-        self.assertTrue(os.path.isfile(join(directory, "__init__.py")))
-        shutil.rmtree(directory)
+        create_dir_as_python_package(self.directory)
+        self.assertTrue(os.path.isfile(join(self.directory, "__init__.py")))
+        shutil.rmtree(self.directory)
 
     def test_return_file_url_per_environment(self):
         self.url = "/test/url"
@@ -172,29 +175,15 @@ class BaseAPITestClass(APITestCase):
 
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
-        client = boto3.client(
-            "sqs",
-            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
-        client.create_queue(QueueName="test_queue")
+        self.sqs_client.create_queue(QueueName="test_queue")
         get_or_create_sqs_queue("test_queue")
-        queue_url = client.get_queue_url(QueueName='test_queue')['QueueUrl']
+        queue_url = self.sqs_client.get_queue_url(QueueName='test_queue')['QueueUrl']
         self.assertTrue(queue_url)
-        client.delete_queue(QueueUrl=queue_url)
+        self.sqs_client.delete_queue(QueueUrl=queue_url)
 
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_non_existing_queue(self):
-        client = boto3.client(
-            "sqs",
-            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
         get_or_create_sqs_queue("test_queue_2")
-        queue_url = client.get_queue_url(QueueName='test_queue_2')['QueueUrl']
+        queue_url = self.sqs_client.get_queue_url(QueueName='test_queue_2')['QueueUrl']
         self.assertTrue(queue_url)
-        client.delete_queue(QueueUrl=queue_url)
+        self.sqs_client.delete_queue(QueueUrl=queue_url)
