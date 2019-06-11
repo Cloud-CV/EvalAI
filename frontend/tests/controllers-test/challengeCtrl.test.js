@@ -58,7 +58,9 @@ describe('Unit tests for challenge controller', function () {
     });
 
     describe('Unit tests for all the global backend calls', function () {
-        var success, successResponse, errorResponse, status;
+        var challengeSuccess, successResponse, errorResponse, status, challengePhaseSuccess;
+        var challengePhaseSplitSuccess, participantTeamChallengeSuccess, participantTeamSuccess, selectExistTeamSuccess;
+        var challengeSuccessResponse, participantTeamSuccessResponse, participantTeamChallengeSuccessResponse
         var challengePhaseSplit = false;
         var team_list = [
             {
@@ -87,22 +89,33 @@ describe('Unit tests for challenge controller', function () {
             spyOn(utilities, 'deleteData');
 
             utilities.sendRequest = function (parameters) {
-                if (parameters.url == 'participants/participant_team') {
-                    successResponse.next = "page=4";
-                    successResponse.results = [
-                        {
-                            is_public: false,
-                            start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                            end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                        },
-                    ];
+                // set successResponse according to the requested url
+                if (participantTeamSuccess == true && parameters.url == 'participants/participant_team') {
+                    successResponse = participantTeamSuccessResponse;
+                } else if (challengeSuccess == true && parameters.url == 'challenges/challenge/undefined/') {
+                    successResponse = challengeSuccessResponse;
+                } else if (participantTeamChallengeSuccess == true && parameters.url == 'participants/participant_teams/challenges/undefined/user') {
+                    successResponse = participantTeamChallengeSuccessResponse;
                 }
-                if (success) {
+
+                if ((challengePhaseSuccess == true && parameters.url == 'challenges/challenge/undefined/challenge_phase') ||
+                (challengeSuccess == true && parameters.url == 'challenges/challenge/undefined/') ||
+                (challengePhaseSplitSuccess == true && parameters.url == 'challenges/undefined/challenge_phase_split') ||
+                (participantTeamChallengeSuccess == true && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
+                (participantTeamSuccess == true && parameters.url == 'participants/participant_team') ||
+                (selectExistTeamSuccess == true && parameters.url == 'challenges/challenge/undefined/participant_team/null')) {
+
                     parameters.callback.onSuccess({
                         status: 200,
                         data: successResponse
                     });
-                } else {
+                } else if ((challengePhaseSuccess == false && parameters.url == 'challenges/challenge/undefined/challenge_phase') ||
+                (challengeSuccess == false && parameters.url == 'challenges/challenge/undefined/') ||
+                (challengePhaseSplitSuccess == false && parameters.url == 'challenges/undefined/challenge_phase_split') ||
+                (participantTeamChallengeSuccess == false && parameters.url == 'participants/participant_teams/challenges/undefined/user') ||
+                (participantTeamSuccess == false && parameters.url == 'participants/participant_team') ||
+                (selectExistTeamSuccess == false && parameters.url == 'challenges/challenge/undefined/participant_team/null')){
+
                     parameters.callback.onError({
                         data: errorResponse,
                         status: status
@@ -113,8 +126,14 @@ describe('Unit tests for challenge controller', function () {
 
         it('get the details of the particular challenge \
             `challenges/challenge/<challenge_id>/`', function () {
-            success = true;
-            successResponse = {
+            challengeSuccess = true;
+            challengePhaseSuccess = null;
+            challengePhaseSplitSuccess = null;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+
+            challengeSuccessResponse = {
                 is_active: true,
                 published: false,
                 enable_forum: true,
@@ -123,17 +142,23 @@ describe('Unit tests for challenge controller', function () {
                 image: 'logo.png',
             };
             vm = createController();
-            expect(vm.page).toEqual(successResponse);
-            expect(vm.isActive).toEqual(successResponse.is_active);
-            expect(vm.isPublished).toEqual(successResponse.published);
-            expect(vm.isForumEnabled).toEqual(successResponse.enable_forum);
-            expect(vm.forumURL).toEqual(successResponse.forum_url);
-            expect(vm.cliVersion).toEqual(successResponse.cli_version);
+            expect(vm.page).toEqual(challengeSuccessResponse);
+            expect(vm.isActive).toEqual(challengeSuccessResponse.is_active);
+            expect(vm.isPublished).toEqual(challengeSuccessResponse.published);
+            expect(vm.isForumEnabled).toEqual(challengeSuccessResponse.enable_forum);
+            expect(vm.forumURL).toEqual(challengeSuccessResponse.forum_url);
+            expect(vm.cliVersion).toEqual(challengeSuccessResponse.cli_version);
         });
 
         it('when challenge logo image is null', function () {
-            success = true;
-            successResponse = {
+            challengeSuccess = true;
+            challengePhaseSuccess = null;
+            challengePhaseSplitSuccess = null;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+
+            challengeSuccessResponse = {
                 is_active: true,
                 published: false,
                 enable_forum: true,
@@ -147,8 +172,26 @@ describe('Unit tests for challenge controller', function () {
 
         it('get details of challenges corresponding to participant teams of that user \
             `participants/participant_teams/challenges/<challenge_id>/user`', function () {
-            success = true;
-            successResponse = {
+            challengeSuccess = true;
+            participantTeamChallengeSuccess = true;
+            challengePhaseSuccess = null;
+            challengePhaseSplitSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+            utilities.storeData('userKey', 'encrypted key');
+
+            // get challenge details response
+            challengeSuccessResponse = {
+                is_active: true,
+                published: false,
+                enable_forum: true,
+                forum_url: "http://example.com",
+                cli_version: "evalai-cli version",
+                image: 'logo.png',
+            };
+
+            // get details of challenges corresponding to participant teams response
+            participantTeamChallengeSuccessResponse = {
                 challenge_participant_team_list: {
                     first_object: {
                         challenge: {
@@ -160,61 +203,82 @@ describe('Unit tests for challenge controller', function () {
                 },
                 datetime_now: "timezone.now",
                 is_challenge_host: true,
-                // particular challenge phase
-                results: [
-                    {
-                        is_public: false,
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    },
-                ],
             };
 
             vm = createController();
-            expect(vm.currentDate).toEqual(successResponse.datetime_now);
-            for (var i in successResponse.challenge_participant_team_list) {
-                if (successResponse.challenge_participant_team_list[i].challenge != null &&
-                    successResponse.challenge_participant_team_list[i].challenge.id == vm.challengeId) {
-                    expect(vm.isParticipated).toBeTruthy();
-                }
-            }
+            expect(vm.currentDate).toEqual(participantTeamChallengeSuccessResponse.datetime_now);
+            expect(vm.isParticipated).toBeTruthy();
             expect(vm.isChallengeHost).toBeTruthy();
         });
 
         team_list.forEach(response => {
-            it('pagination next is ' + response.next + 'and previous is ' + response.previous + '\
+            it('pagination next is ' + response.next + ' and previous is ' + response.previous + '\
                 `participants/participant_team`', function () {;
-                success = true;
-                successResponse = response;
-                successResponse.results = [
+                challengeSuccess = true;    
+                participantTeamChallengeSuccess = true;
+                participantTeamSuccess = true;
+                selectExistTeamSuccess = null;
+                challengePhaseSuccess = null;
+                challengePhaseSplitSuccess = null;
+
+                // get challenge details response
+                challengeSuccessResponse = {
+                    is_active: true,
+                    published: false,
+                    enable_forum: true,
+                    forum_url: "http://example.com",
+                    cli_version: "evalai-cli version",
+                    image: 'logo.png',
+                };
+
+                // get details of challenges corresponding to participant teams response
+                participantTeamChallengeSuccessResponse = {
+                    challenge_participant_team_list: {
+                        first_object: {
+                            challenge: {
+                                id: 3,
+                                title: "Challenge title",
+                                description: "Challenge description"
+                            },
+                        }
+                    },
+                    datetime_now: "timezone.now",
+                    is_challenge_host: true,
+                };
+
+                // participant team details response
+                participantTeamSuccessResponse = response;
+                participantTeamSuccessResponse.results = [
                     {
                         is_public: false,
                         start_date: "Fri June 12 2018 22:41:51 GMT+0530",
                         end_date: "Fri June 12 2099 22:41:51 GMT+0530"
                     },
                 ];
+                utilities.storeData('userKey', 'encrypted key');
+
                 vm = createController();
-                expect(vm.existTeam).toEqual(successResponse);
+                expect(vm.existTeam).toEqual(participantTeamSuccessResponse);
                 expect(vm.showPagination).toBeTruthy();
                 expect(vm.paginationMsg).toEqual('');
                 expect(utilities.deleteData).toHaveBeenCalledWith('emailError');
 
-                if (successResponse.next == null) {
+                if (participantTeamSuccessResponse.next == null) {
                     expect(vm.isNext).toEqual('disabled');
                     expect(vm.currentPage).toEqual(1);
                 } else {
                     expect(vm.isNext).toEqual('');
-                    expect(vm.currentPage).toEqual(successResponse.next.split('page=')[1] - 1);
+                    expect(vm.currentPage).toEqual(participantTeamSuccessResponse.next.split('page=')[1] - 1);
                 }
 
-                if (successResponse.previous == null) {
+                if (participantTeamSuccessResponse.previous == null) {
                     expect(vm.isPrev).toEqual('disabled');
                 } else {
                     expect(vm.isPrev).toEqual('');
                 }
 
-                if (successResponse.next !== null) {
-                    expect(vm.currentPage).toEqual(successResponse.next.split('page=')[1] - 1);
+                if (participantTeamSuccessResponse.next !== null) {
+                    expect(vm.currentPage).toEqual(participantTeamSuccessResponse.next.split('page=')[1] - 1);
                 } else {
                     expect(vm.currentPage).toEqual(1);
                 }
@@ -223,20 +287,46 @@ describe('Unit tests for challenge controller', function () {
 
         it('success of selectExistTeam function \
         `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
-            success = true;
-            successResponse = {
-                // pagination response
+            challengeSuccess = true;
+            participantTeamChallengeSuccess = true;
+            participantTeamSuccess = true;
+            selectExistTeamSuccess = true;
+            challengePhaseSuccess = null;
+            challengePhaseSplitSuccess = null;
+
+            // get challenge details response
+            challengeSuccessResponse = {
+                is_active: true,
+                published: false,
+                enable_forum: true,
+                forum_url: "http://example.com",
+                cli_version: "evalai-cli version",
+                image: 'logo.png',
+            };
+
+            // get details of challenges corresponding to participant teams response
+            participantTeamChallengeSuccessResponse = {
+                challenge_participant_team_list: {
+                    first_object: {
+                        challenge: null
+                    }
+                },
+                datetime_now: "timezone.now",
+                is_challenge_host: true,
+            };
+
+            // get participant team details response
+            participantTeamSuccessResponse = {
                 next: 'page=4',
                 previous: 'page=2',
-                // particular challenge phase
-                results: [
-                    {
-                        is_public: false,
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    },
-                ],
+                results: {
+                    is_public: false,
+                    start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                    end_date: "Fri June 12 2099 22:41:51 GMT+0530"
+                }
             };
+            utilities.storeData('userKey', 'encrypted key');
+
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
@@ -253,64 +343,57 @@ describe('Unit tests for challenge controller', function () {
 
         it('404 backend error of selectExistTeam function \
         `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
-            success = true;
-            status = 404
-            successResponse = {
+            challengeSuccess = true;
+            participantTeamChallengeSuccess = true;
+            participantTeamSuccess = true;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = null;
+            challengePhaseSplitSuccess = null;
+
+            // get challenge details response
+            challengeSuccessResponse = {
+                is_active: true,
+                published: false,
+                enable_forum: true,
+                forum_url: "http://example.com",
+                cli_version: "evalai-cli version",
+                image: 'logo.png',
+            };
+
+            // get details of challenges corresponding to participant teams response
+            participantTeamChallengeSuccessResponse = {
+                challenge_participant_team_list: {
+                    first_object: {
+                        challenge: null
+                    }
+                },
+                datetime_now: "timezone.now",
+                is_challenge_host: true,
+            };
+
+            // get participant team details response
+            participantTeamSuccessResponse = {
                 next: 'page=4',
                 previous: 'page=2',
-                // particular challenge phase
-                results: [
-                    {
-                        is_public: false,
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    },
-                ],
+                results: {
+                    is_public: false,
+                    start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                    end_date: "Fri June 12 2099 22:41:51 GMT+0530"
+                }
             };
-            errorResponse = {
-                error: 'error'
-            };
-            vm = createController();
-            success = false;
-            spyOn(vm, 'startLoader');
-            spyOn(vm, 'stopLoader');
-            spyOn($rootScope, 'notify');
-            spyOn(angular, 'element');
+            utilities.storeData('userKey', 'encrypted key');
 
-            vm.selectExistTeam();
-            expect(vm.loaderTitle).toEqual('');
-            expect(angular.element).toHaveBeenCalledWith('.exist-team-card');
-            expect(vm.startLoader).toHaveBeenCalledWith("Loading Teams");
-            expect($rootScope.notify).toHaveBeenCalledWith("error", "Please select a team first!");
-            expect(vm.stopLoader).toHaveBeenCalled();
-        });
-
-        it('other backend error of selectExistTeam function \
-        `challenges/challenge/<challenge_id>/participant_team/<team_id>`', function () {
-            success = true;
             status = !404
-            successResponse = {
-                next: 'page=4',
-                previous: 'page=2',
-                // particular challenge phase
-                results: [
-                    {
-                        is_public: false,
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    },
-                ],
-            };
             errorResponse = {
                 error: 'error'
             };
             vm = createController();
-            success = false;
             spyOn(vm, 'startLoader');
             spyOn(vm, 'stopLoader');
             spyOn($rootScope, 'notify');
             spyOn(angular, 'element');
 
+            selectExistTeamSuccess = false;
             vm.selectExistTeam();
             expect(vm.loaderTitle).toEqual('');
             expect(angular.element).toHaveBeenCalledWith('.exist-team-card');
@@ -320,20 +403,50 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('to load data with pagination', function () {
-            success = true;
-            successResponse = {
-                // pagination response
+            challengeSuccess = true;
+            participantTeamChallengeSuccess = true;
+            participantTeamSuccess = true;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = null;
+            challengePhaseSplitSuccess = null;
+
+            // get challenge details response
+            challengeSuccessResponse = {
+                is_active: true,
+                published: false,
+                enable_forum: true,
+                forum_url: "http://example.com",
+                cli_version: "evalai-cli version",
+                image: 'logo.png',
+            };
+
+            // get details of challenges corresponding to participant teams response
+            participantTeamChallengeSuccessResponse = {
+                challenge_participant_team_list: {
+                    first_object: {
+                        challenge: {
+                            id: 1,
+                            title: "Challenge title",
+                            description: "Challenge description"
+                        },
+                    }
+                },
+                datetime_now: "timezone.now",
+                is_challenge_host: true,
+            };
+
+            // get participant team details response
+            participantTeamSuccessResponse = {
                 next: 'page=4',
                 previous: 'page=2',
-                // particular challenge phase
-                results: [
-                    {
-                        is_public: false,
-                        start_date: "Fri June 12 2018 22:41:51 GMT+0530",
-                        end_date: "Fri June 12 2099 22:41:51 GMT+0530"
-                    },
-                ],
-            };        
+                results: {
+                    is_public: false,
+                    start_date: "Fri June 12 2018 22:41:51 GMT+0530",
+                    end_date: "Fri June 12 2099 22:41:51 GMT+0530"
+                }
+            };
+            utilities.storeData('userKey', 'encrypted key');
+       
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn($http, 'get').and.callFake(function () {
@@ -351,7 +464,13 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('backend error of the particular challenge `challenges/challenge/<challenge_id>/', function () {
-            success = false;
+            challengeSuccess = false;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = null;
+            challengePhaseSplitSuccess = null;
+
             status = 404;
             errorResponse = {
                 error: 'email error'
@@ -366,7 +485,14 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('get details of the particular challenge phase `challenges/challenge/<challenge_id>/challenge_phase`', function () {
-            success = true;
+            challengeSuccess = null;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = true;
+            challengePhaseSplitSuccess = null;
+
+            // get challenge phase details response
             successResponse = {
                 results: [
                     {
@@ -375,9 +501,6 @@ describe('Unit tests for challenge controller', function () {
                         end_date: "Fri June 12 2099 22:41:51 GMT+0530"
                     },
                 ],
-                // participant team pagination response
-                next: 'page=4',
-                previous: 'page=2',
             };
             spyOn(utilities, 'hideLoader');
             vm = createController();
@@ -398,7 +521,13 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('backend error of particular challenge phase `challenges/challenge/<challenge_id>/challenge_phase`', function () {
-            success = false;
+            challengeSuccess = null;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = false;
+            challengePhaseSplitSuccess = null;
+
             status = 404;
             errorResponse = {
                 detail: 'error'
@@ -413,8 +542,15 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('get details of the particular challenge phase split `challenges/<challenge_id>/challenge_phase_split`', function () {
-            success = true;
+            challengeSuccess = null;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = null;
+            challengePhaseSplitSuccess = true;
+
             challengePhaseSplit = true;
+            // get challenge phase split details response
             successResponse = [
                 {
                     visibility: 2,
@@ -439,7 +575,13 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('backend error of particular challenge phase split `challenges/<challenge_id>/challenge_phase_split`', function () {
-            success = false;
+            challengeSuccess = null;
+            participantTeamChallengeSuccess = null;
+            participantTeamSuccess = null;
+            selectExistTeamSuccess = null;
+            challengePhaseSuccess = null;
+            challengePhaseSplitSuccess = false;
+
             status = 404;
             errorResponse = {
                 detail: 'error'
@@ -547,7 +689,6 @@ describe('Unit tests for challenge controller', function () {
                 expect(vm.phaseRemainingSubmissionsFlags[details[i].id]).toEqual('showClock');
 
                 // Unit tests for `countDownTimer` function
-                vm.countDownTimer();
                 expect(vm.remainingTime).toEqual(vm.eachPhase.limits.remaining_time);
                 expect(vm.days).toEqual(Math.floor(vm.remainingTime / 24 / 60 / 60));
                 expect(vm.hoursLeft).toEqual(Math.floor((vm.remainingTime) - (vm.days * 86400)));
@@ -1401,29 +1542,8 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
             vm.showRemainingSubmissions();
-            if (successResponse.phases.first_object.limits.submission_limit_exceeded == true) {
-                expect(vm.maxExceeded).toEqual(true);
-                expect(vm.maxExceededMessage).toEqual(successResponse.phases.first_object.limits.message);
-            }
-            else if (successResponse.phases.first_object.limits.remaining_submissions_today_count > 0) {
-                expect(vm.remainingSubmissions).toEqual(successResponse.phases.first_object.limits);
-                expect(vm.showSubmissionNumbers).toEqual(true);
-            } else {
-                expect(vm.message).toEqual(successResponse.phases.first_object.limits);
-                expect(vm.showClock).toEqual(true);
-
-                setInterval(function () {
-                    vm.countDownTimer();
-                }, 1000);
-                vm.countDownTimer();
-
-                expect(vm.remainingTime).toEqual(response.limits.remaining_time);
-                expect(vm.days).toEqual(Math.floor(vm.remainingTime / 24 / 60 / 60));
-                expect(vm.hoursLeft).toEqual(Math.floor((vm.remainingTime) - (vm.days * 86400)));
-                expect(vm.hours).toEqual(Math.floor(vm.hoursLeft / 3600));
-                expect(vm.minutesLeft).toEqual(Math.floor((vm.hoursLeft) - (vm.hours * 3600)));
-                expect(vm.minutes).toEqual(Math.floor(vm.minutesLeft / 60));
-            }
+            expect(vm.maxExceeded).toEqual(true);
+            expect(vm.maxExceededMessage).toEqual(successResponse.phases.first_object.limits.message);
         });
 
         it('when today remaining submission greater than 0', function () {
@@ -1462,11 +1582,6 @@ describe('Unit tests for challenge controller', function () {
             vm.showRemainingSubmissions();
             expect(vm.message).toEqual(successResponse.phases.first_object.limits);
             expect(vm.showClock).toEqual(true);
-
-            setInterval(function () {
-                vm.countDownTimer();
-            }, 1000);
-            vm.countDownTimer();
 
             expect(vm.remainingTime).toEqual(successResponse.phases.first_object.limits.remaining_time);
             expect(vm.days).toEqual(Math.floor(vm.remainingTime / 24 / 60 / 60));
