@@ -14,7 +14,7 @@ before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
   - export DEPLOY_DOMAIN=https://pr-${TRAVIS_PULL_REQUEST}-evalai.surge.sh
-  - sh -e /etc/init.d/xvfb start
+  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16
 
 before_script:
   - npm install -g --silent @angular/cli
@@ -22,6 +22,9 @@ before_script:
 script:
   - ng lint
   - ng test --watch=false --progress=false --code-coverage > test-log
+  - grep Executed test-log
+  - grep ERROR test-log
+  - grep LOGE test-log
   - ng e2e
   - ng build --prod
 
