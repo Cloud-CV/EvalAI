@@ -9,11 +9,17 @@ import { HeaderStaticComponent } from '../../components/nav/header-static/header
 import { ActivatedRoute, Router } from '@angular/router';
 import { FooterComponent } from '../../components/nav/footer/footer.component';
 import { RouterTestingModule } from '@angular/router/testing';
+import { By } from '@angular/platform-browser';
+import { DebugElement } from '@angular/core';
 
 
 describe('PrivacyPolicyComponent', () => {
   let component: PrivacyPolicyComponent;
   let fixture: ComponentFixture<PrivacyPolicyComponent>;
+  let de: DebugElement;
+  let ALL_NAV;
+  let ALL_TARGET;
+
   const fakeActivatedRoute = {
     snapshot: { data: { } }
   } as ActivatedRoute;
@@ -37,10 +43,29 @@ describe('PrivacyPolicyComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(PrivacyPolicyComponent);
     component = fixture.componentInstance;
+    de = fixture.debugElement;
     fixture.detectChanges();
+    ALL_NAV = de.queryAll(By.css('.privacy-nav'));
+    ALL_TARGET = de.queryAll(By.css('.privacy-section-title'));
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should have equal number of section-title elements as nav elements', () => {
+
+    expect(ALL_NAV.length).toBeGreaterThan(0);
+    expect(ALL_TARGET.length).toBeGreaterThan(0);
+    expect(ALL_TARGET.length).toBe(ALL_NAV.length);
+  });
+
+  it('should have same section title as nav element title', () => {
+    ALL_NAV.forEach((ele, index) => {
+      console.log(`LOGE: TARGET: ${ALL_TARGET[index].nativeElement.innerText}`);
+      console.log(`LOGE: NAV: ${ele.nativeElement.innerText}`);
+      expect(ALL_TARGET[index].nativeElement.innerText).toBe(ele.nativeElement.innerText);
+    });
+  });
+
 });
