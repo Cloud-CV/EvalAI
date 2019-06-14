@@ -13,11 +13,12 @@
     position: absolute;
     right: 0;
     top: 10px;
+    color: $wild-blue;
+    font-size: .9em;
   }
   label {
-    color: $gray-medium;
-    font-size: $fs-14;
-    font-weight: $fw-light;
+    color: $wild-blue !important;
+    font-size: 0.8rem;
     position: absolute;
     pointer-events: none;
     left: 0px;
@@ -40,16 +41,17 @@
   .input-field {
     font-size: $fs-16;
     padding: 10px 10px 10px 5px;
+    margin: 0 0 12px 0;
     display: block;
     width: 100%;
     border: none;
-    color: white;
-    border-bottom: 1px solid $gray-medium;
+    border-bottom: 1px solid $gray-dark;
     background: transparent;
     padding-bottom: 10px;
     font-weight: $fw-light;
     &:focus {
       outline: none;
+      border-bottom: 1px solid $yellow;
     }
     &.theme-dark {
       color: $gray-darker;
@@ -57,22 +59,45 @@
     }
   }
   input:focus~label {
-    top: -10px;
-    font-size: $fs-14;
-    color: white;
+    top: -20px;
+    color: $wild-blue !important;
+    font-weight: 400;
+    font-size: 0.8rem;
+    -webkit-transform: translateY(-10%);
+    transform: translateY(-10%);
+  }
+  textarea {
+    overflow: hidden;
+    resize: none;
+    min-height: 5rem;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    width: 100%;
+    margin: 0 0 25px 0;
+    transition: all 0.3s;
+  }
+  textarea:focus~label {
+    top: -20px;
+    color: $wild-blue !important;
+    font-weight: 400;
+    font-size: 0.8rem;
+    -webkit-transform: translateY(-10%);
+    transform: translateY(-10%);
   }
   input:focus~label.theme-dark {
     color: $gray-dark !important;
   }
   .input-message {
-    position: absolute;
-    bottom: 0;
+    position: relative;
+    top: 2px;
     left: 0;
     text-align: left;
     margin-top: 10px;
-    font-style: italic;
+    font-size: 12px;
     font-weight: $fw-light;
-    color: $red-light;
+    color: $yellow;
     &.hidden {
       opacity: 0;
     }
@@ -121,6 +146,23 @@
     .input-message {
       position:relative;
     }
+  }
+}
+
+
+/* media queries for rocket container */
+@media only screen and (max-width: $screen-sm-md) {
+
+  .input-group {	
+    width: 100% !important;
+  }
+
+  .input-group input {
+    width: 100% !important;
+  }
+
+  .input-group textarea {
+    width: 100% !important;
   }
 }
 

@@ -2,6 +2,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
+import { TextareaAutosizeModule } from 'ngx-textarea-autosize';
 
 // Import serivces
 import { AuthService } from './services/auth.service';
@@ -113,6 +114,7 @@ import { FeaturedChallengesComponent } from './components/home/featured-challeng
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    TextareaAutosizeModule,
     NgxTwitterTimelineModule
   ],
   providers: [

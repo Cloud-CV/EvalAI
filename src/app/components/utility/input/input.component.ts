@@ -169,7 +169,7 @@ export class InputComponent implements OnInit {
     } else if (this.isEmail) {
        this.isValid = this.globalService.validateEmail(e);
        this.isValid ? this.message = '' : this.message = 'Enter a valid email';
-    } else if (this.type === 'text') {
+    } else if (this.type === 'text' || this.type === 'textarea') {
        this.isValid = this.globalService.validateText(e);
        this.isValid ? this.message = '' : this.message = 'Enter a valid text';
     } else if (this.type === 'password') {
@@ -196,5 +196,13 @@ export class InputComponent implements OnInit {
    */
   transferClick(id) {
     this.document.getElementById(id).click();
+  }
+
+  toggleErrorMessage () {
+    if (((this.isRequired && this.isEmpty) || (!this.isValid && !this.isEmpty)) && this.isDirty) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }
