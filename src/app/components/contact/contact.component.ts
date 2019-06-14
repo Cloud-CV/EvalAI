@@ -40,11 +40,6 @@ export class ContactComponent implements OnInit, AfterViewInit {
   componentlist: any;
 
   /**
-   * Google object (initialized after Google maps JS is loaded)
-   */
-  google: any;
-
-  /**
    * Constructor.
    * @param document  Window document Injection.
    * @param route  ActivatedRoute Injection.
@@ -65,7 +60,6 @@ export class ContactComponent implements OnInit, AfterViewInit {
    * Component on initialized.
    */
   ngOnInit() {
-    this.loadMapContactPage();
     this.globalService.scrollToTop();
   }
 
@@ -108,42 +102,6 @@ export class ContactComponent implements OnInit, AfterViewInit {
       },
       () => console.log('CONTACT-FORM-SUBMITTED')
     );
-  }
-
-  /**
-   * Loading Map on the contact page.
-   */
-  loadMapContactPage() {
-    // TODO: Replace this with CloudCV's Google Maps API Key
-    const MAP_API_KEY = 'AIzaSyDlXSVBOW9fl96oY4oyTo055jUVd9Y-6dA';
-
-    this.windowService.loadJS('https://maps.googleapis.com/maps/api/js?key=' + MAP_API_KEY,
-      this.callBack, this.document.body, this);
-  }
-
-  /**
-   * Initialize Map parameters.
-   */
-  initMap() {
-    const MAP_CENTER = {lat: 33.779478, lng: -84.434887};
-    const MAP_GATECH = {lat: 33.780398, lng: -84.395513};
-    const MAP_OBJ = new this.google.maps.Map(document.getElementById('contact-map'), {
-          zoom: 13,
-          center: MAP_CENTER
-    });
-    const MAP_MARKER = new this.google.maps.Marker({
-      position: MAP_GATECH,
-      map: MAP_OBJ
-    });
-  }
-
-  /**
-   * Callback called when Google Map JS is loaded.
-   * @param self  context value of this
-   */
-  callBack(self) {
-    self.google = self.windowService.nativeWindow().google;
-    self.initMap();
   }
 
 }
