@@ -92,11 +92,8 @@ from .serializers import (
     ZipChallengePhaseSplitSerializer,
 )
 from .utils import (
-    create_federated_user,
-    convert_to_aws_ecr_compatible_format,
-    get_aws_credentials_for_challenge,
     get_file_content,
-    get_or_create_ecr_repository,
+    get_aws_credentials_for_submission,
 )
 
 logger = logging.getLogger(__name__)
@@ -1707,24 +1704,7 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
             "error": "You have not participated in this challenge."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    ecr_repository_name = "{}-participant-team-{}".format(
-        challenge.slug, participant_team.pk
-    )
-    ecr_repository_name = convert_to_aws_ecr_compatible_format(
-        ecr_repository_name
-    )
-    repository, created = get_or_create_ecr_repository(
-        ecr_repository_name, aws_keys
-    )
-    name = str(uuid.uuid4())[:32]
-    docker_repository_uri = repository["repositoryUri"]
-    federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
-    data = {
-        "federated_user": federated_user,
-        "docker_repository_uri": docker_repository_uri,
-    }
+    data = get_aws_credentials_for_submission(challenge, participant_team)
     response_data = {"success": data}
     return Response(response_data, status=status.HTTP_200_OK)
 

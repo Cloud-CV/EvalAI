@@ -1,11 +1,16 @@
 import os
-
 import json
 import logging
+import uuid
 
 from botocore.exceptions import ClientError
+from moto import mock_ecr, mock_sts
 
-from base.utils import get_model_object, get_boto3_client
+from base.utils import (
+    get_model_object,
+    get_boto3_client,
+    if_non_prod_aws_mocker,
+)
 
 from .models import (
     Challenge,
@@ -66,7 +71,7 @@ def convert_to_aws_federated_user_format(string):
 def get_aws_credentials_for_challenge(challenge_pk):
     """
     Return the AWS credentials for a challenge using challenge pk
-    Arguments:
+    Arguments:get_aws_credentials_for_challenge
         challenge_pk {int} -- challenge pk for which credentails are to be fetched
     Returns:
         aws_key {dict} -- Dict containing aws keys for a challenge
@@ -81,8 +86,8 @@ def get_aws_credentials_for_challenge(challenge_pk):
         }
     else:
         aws_keys = {
-            "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID"),
-            "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID"),
+            "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
+            "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
             "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY"),
             "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         }
@@ -119,7 +124,8 @@ def get_or_create_ecr_repository(name, aws_keys):
         )
         repository = response["repositories"][0]
     except ClientError as e:
-        if e.response["Error"]["Code"] == "RepositoryNotFoundException":
+        if e.response["Error"]["Code"] == "RepositoryNotFoundException" or\
+           e.response["Error"]["Code"] == "400":
             response = client.create_repository(repositoryName=name)
             repository = response["repository"]
             created = True
@@ -189,3 +195,25 @@ def create_federated_user(name, repository, aws_keys):
         DurationSeconds=43200,
     )
     return response
+
+
+@if_non_prod_aws_mocker(mock_ecr)
+@if_non_prod_aws_mocker(mock_sts)
+def get_aws_credentials_for_submission(challenge, participant_team):
+    aws_keys = get_aws_credentials_for_challenge(challenge.pk)
+    ecr_repository_name = "{}-participant-team-{}".format(
+        challenge.slug, participant_team.pk
+    )
+    ecr_repository_name = convert_to_aws_ecr_compatible_format(
+        ecr_repository_name
+    )
+    repository, created = get_or_create_ecr_repository(
+        ecr_repository_name, aws_keys
+    )
+    name = str(uuid.uuid4())[:32]
+    docker_repository_uri = repository["repositoryUri"]
+    federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
+    return {
+        "federated_user": federated_user,
+        "docker_repository_uri": docker_repository_uri,
+    }

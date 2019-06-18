@@ -198,3 +198,11 @@ def get_queue_name(param):
         :80
     ]  # The max-length for queue-name is 80 in SQS
     return queue_name
+
+
+def if_non_prod_aws_mocker(mocker):
+    def decorator(func):
+        if not (settings.DEBUG or settings.TEST):
+            return func
+        return mocker(func)
+    return decorator
