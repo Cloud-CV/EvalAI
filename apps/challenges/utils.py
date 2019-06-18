@@ -88,7 +88,7 @@ def get_aws_credentials_for_challenge(challenge_pk):
         aws_keys = {
             "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
             "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
-            "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
             "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         }
     return aws_keys
