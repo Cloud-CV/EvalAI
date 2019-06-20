@@ -13,9 +13,9 @@ from base.utils import get_boto3_client
 
 task_definition = """
 [
-    "family":"",
-    "taskRoleArn":"",  # Used by the container itself. (Not needed if passing env vars)
-    "executionRoleArn":"",  # Used by the container agent. Also used for logs.
+    "family":"{queue_name}",
+    "taskRoleArn":"{task_role_arn}",
+    "executionRoleArn":"{execution_role_arn}",
     "networkMode":"awsvpc",
     "containerDefinitions":[
         {
@@ -24,22 +24,20 @@ task_definition = """
             "repositoryCredentials": {
                 "credentialsParameter": ""
             },
-            "memoryReservation": 0,  # in MiB
             "portMappings": [
                 {
-                    "containerPort": 0, # Might use this for healthcheck (?)
+                    "containerPort": 0,
                 }
             ],
             "essential": true,
             "environment": [
-                {  # Not req I think, because used in dockerfile 
-                   # already & image is already built.
+                {
                     "name": "PYTHONUNBUFFERED",
                     "value": "1"
                 },
                 {  # If we pass here, they are visible on console.
                     "name": "AWS_DEFAULT_REGION",
-                    "value": "{AWS_DEFAULT_REGION}" # This still needs to be passed as env var?
+                    "value": "{AWS_DEFAULT_REGION}"
                 },
                 {
                     "name": "DJANGO_SERVER",
@@ -58,28 +56,19 @@ task_definition = """
                     "value": "{queue_name}"
                 },
             ],
-            "secrets": [  # use this for passing env vars? No.
-                {
-                    "name": "",
-                    "valueFrom": ""
-                }
-            ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": false,
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
                     "awslogs-create-group": true,
-                    # Your IAM policy must include the logs:CreateLogGroup permission
-                    # before you attempt to use awslogs-create-group.
                     "awslogs-region": "us-east-1",
                     "awslogs-group": "{log_group}",
-                    "awslogs-stream-prefix": "{queue_name}"  
-                    # log stream format: prefix-name/container-name/ecs-task-id
+                    "awslogs-stream-prefix": "{queue_name}"  # log stream format: prefix-name/container-name/ecs-task-id
                 },
             },
             "healthCheck": {
-                "command": [
+                "command": [  # Need healthcheck command.
                     ""
                 ],
                 "interval": 30,
@@ -87,19 +76,12 @@ task_definition = """
                 "retries": 3,
                 "startPeriod": 0
             },
-            "resourceRequirements": [  # Not required I think. 
-                                       # We're not gonna use GPUs.
-                {
-                    "value": "",
-                    "type": "GPU"
-                }
-            ]
         }
     ],
     "requiresCompatibilities":[
         "FARGATE"
     ],
-    "cpu":"",  # Hard limits
+    "cpu":"",  # Need hard limits.
     "memory":"",
 ]
 """
@@ -109,21 +91,11 @@ service_definition = """
     cluster:'Challenge_Cluster',
     serviceName:'{service_name}',
     taskDefinition:'{task_def_arn}',
-    loadBalancers:[  # Gotta create an application load balancer through boto3. Not even required right?
-                     # Not required since no incoming reqs. But needed for outgoing evalai API calls?
-        {
-            'targetGroupArn': 'string',
-            'loadBalancerName': 'string',
-            'containerName': 'string',
-            'containerPort': 123
-        },
-    ],
     desiredCount:1,
     clientToken:'{client_token}',
     launchType='FARGATE',
     platformVersion:'LATEST',
-    role:'string',  # if and only if using a load balancer. 
-    networkConfiguration={
+    networkConfiguration={ # Need to create VPC before filling this.
         'awsvpcConfiguration': {
             'subnets': [
                 'string',
@@ -157,7 +129,7 @@ def client_token_generator():
 
 def worker_scaling_callback(sender, instance, **kwargs):
     if not (getattr(instance, "_original_workers") == instance.workers):
-        if (getattr(instance, "scaling_action")):  # Change the flag to true in the admin action method or the view the form redirects to & back to false at end of this method.
+        if (getattr(instance, "scaling_action")):
             num_of_tasks = instance.workers
             service_manager(challenge=instance, num_of_tasks=num_of_tasks)
             instance.scaling_action = False
@@ -168,8 +140,13 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge_pk):
     AWS_DEFAULT_REGION = os.environ.get(AWS_DEFAULT_REGION)
     log_group = "{}_logs".format(queue_name)
 
-    definition = str(task_definition).format(queue_name=queue_name, container_name=container_name, image=image,
-                                        AWS_DEFAULT_REGION=AWS_DEFAULT_REGION, challenge_pk=challenge_pk,log_group=log_group)
+    task_role_arn = os.environ.get("TASK_ROLE_ARN")
+    execution_role_arn = os.environ.get("TASK_EXECUTION_ROLE_ARN")
+
+    definition = str(task_definition).format(queue_name=queue_name, task_role_arn= task_role_arn, 
+                                             execution_role_arn= execution_role_arn,container_name=container_name, 
+                                             image=image, AWS_DEFAULT_REGION=AWS_DEFAULT_REGION, 
+                                             challenge_pk=challenge_pk, log_group=log_group)
     definition = eval(definition)
 
     response = client.register_task_definition(**definition)
