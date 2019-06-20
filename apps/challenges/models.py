@@ -17,6 +17,8 @@ from base.utils import RandomFileName, get_slug
 from participants.models import ParticipantTeam
 from hosts.models import ChallengeHost
 
+from .aws_utils import worker_scaling_callback
+
 
 @receiver(pre_save, sender="challenges.Challenge")
 def save_challenge_slug(sender, instance, **kwargs):
@@ -31,6 +33,8 @@ class Challenge(TimeStampedModel):
     def __init__(self, *args, **kwargs):
         super(Challenge, self).__init__(*args, **kwargs)
         self._original_evaluation_script = self.evaluation_script
+        self._original_workers = self.workers
+        self.scaling_action = False
 
     title = models.CharField(max_length=100, db_index=True)
     short_description = models.TextField(null=True, blank=True)
@@ -113,6 +117,10 @@ class Challenge(TimeStampedModel):
     cli_version = models.CharField(
         max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
+    workers = models.IntegerField(
+        null=True, blank=True, default=None
+    )
+    task_def_arn = models.CharField(max_length=2048, default="")
 
     class Meta:
         app_label = "challenges"
@@ -152,6 +160,11 @@ class Challenge(TimeStampedModel):
 
 signals.post_save.connect(
     model_field_name(field_name="evaluation_script")(create_post_model_field),
+    sender=Challenge,
+    weak=False,
+)
+signals.post_save.connect(
+    worker_scaling_callback,
     sender=Challenge,
     weak=False,
 )
