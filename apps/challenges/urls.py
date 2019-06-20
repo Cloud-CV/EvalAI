@@ -151,4 +151,9 @@ urlpatterns = [
         views.get_challenge_phase_by_slug,
         name="get_challenge_phase_by_slug",
     ),
+    url(
+        r"^challenge/worker_update/(?P<num_of_workers>[0-9]+)/$",
+        views.update_num_of_workers,
+        name="update_num_of_workers",
+    )
 ]

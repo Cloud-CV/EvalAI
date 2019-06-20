@@ -14,6 +14,11 @@ from .models import (
     UserInvitation,
 )
 
+from .aws_utils import (
+    start_workers, 
+    stop_workers,
+)
+
 
 @admin.register(Challenge)
 class ChallengeAdmin(ImportExportTimeStampedAdmin):
@@ -32,6 +37,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "created_at",
         "is_docker_based",
         "slug",
+        "workers",
     )
     list_filter = (
         "published",
@@ -41,8 +47,24 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "featured",
         "start_date",
         "end_date",
+        "workers",
     )
     search_fields = ("title", "creator", "creator__team_name", "slug")
+
+    actions = ["start_selected_workers", "stop_selected_workers"]
+
+    def start_selected_workers(self, request, queryset):
+        start_workers(queryset)
+    start_selected_workers.short_description = "Start all selected workers."
+
+    def stop_selected_workers(self, request, queryset):
+        stop_workers(queryset)
+    stop_selected_workers.short_description = "Stop all selected workers."
+
+    '''
+    def scale_selected_workers(self, request, queryset):
+    scale_selected_workers.short_description = "Scale selected workers to a given number."
+    '''
 
 
 @admin.register(ChallengeConfiguration)
