@@ -11,7 +11,9 @@
     function FeaturedChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, moment) {
         var vm = this;
         var slugUrl = $stateParams.challengeSlug;
-        vm.challengeId = slugUrl.split("-").pop();
+        if (slugUrl !== undefined) {
+            vm.challengeId = slugUrl.split("-").pop();
+        }
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.phaseId = null;
         vm.wrnMsg = {};
