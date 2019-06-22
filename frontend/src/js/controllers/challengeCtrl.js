@@ -99,19 +99,19 @@
         }
 
         vm.showLessMethodName = function (leaderboard) {
-            leaderboard.methodNameLength = 30;
+            leaderboard.methodNameLength = 40;
         }
 
         vm.showLessMethodDescription = function (leaderboard) {
-            leaderboard.methodDescriptionLength = 30;
+            leaderboard.methodDescriptionLength = 40;
         }
 
         vm.showLessProjectUrl = function (leaderboard) {
-            leaderboard.projectUrlLength = 30;
+            leaderboard.projectUrlLength = 40;
         }
 
         vm.showLessPublicationUrl = function (leaderboard) {
-            leaderboard.publicationUrlLength = 30;
+            leaderboard.publicationUrlLength = 40;
         }
 
         // get details of the particular challenge
