@@ -1,7 +1,7 @@
 /* Styles for leaderboard page */
-a:hover {
-	color: blue;
-	text-decoration: underline;
+a.truncated-text:hover {
+		color: blue;
+		text-decoration: underline;
 }
 
 .collapsible-content {
@@ -14,8 +14,7 @@ a:hover {
 
 table.leaderboard-collapse-table {
 	border-collapse: collapse;
-	width: 100%;    
-  	background-color: #f1f1c1;
+	width: 100%;
 }
 
 #baseline-badge {

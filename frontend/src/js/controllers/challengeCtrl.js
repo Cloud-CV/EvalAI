@@ -69,50 +69,46 @@
             if (leaderboard.isCollapsed == false) {
                 vm.currentRank = 0;
                 angular.element('.collapsible-content_' + rank).css('height', '0px');
-                $timeout(function () {
-                    angular.element('.collapsible-content_' + rank).css('position', 'absolute');
-                    angular.element('.collapsible-content_' + rank).css('left', '-999em');
-                }, 1000);
+                angular.element('.collapsible-content_' + rank).css('position', 'absolute');
+                angular.element('.collapsible-content_' + rank).css('left', '-999em');
             } else {
-                angular.element('.collapsible-content_' + rank).css('height', '180px');
-                $timeout(function () {
-                    angular.element('.collapsible-content_' + rank).css('position', '');
-                    angular.element('.collapsible-content_' + rank).css('left', '');
-                }, 50);
+                angular.element('.collapsible-content_' + rank).css('height', 'auto');
+                angular.element('.collapsible-content_' + rank).css('position', '');
+                angular.element('.collapsible-content_' + rank).css('left', '');
             }
         };
 
         vm.showMoreMethodName = function (leaderboard) {
             leaderboard.methodNameLength = leaderboard.submission__method_name.length;
-        }
+        };
 
         vm.showMoreMethodDescription = function (leaderboard) {
             leaderboard.methodDescriptionLength = leaderboard.submission__method_description.length;
-        }
+        };
 
         vm.showMoreProjectUrl = function (leaderboard) {
             leaderboard.projectUrlLength = leaderboard.submission__project_url.length;
-        }
+        };
 
         vm.showMorePublicationUrl = function (leaderboard) {
             leaderboard.publicationUrlLength = leaderboard.submission__publication_url.length;
-        }
+        };
 
         vm.showLessMethodName = function (leaderboard) {
             leaderboard.methodNameLength = 40;
-        }
+        };
 
         vm.showLessMethodDescription = function (leaderboard) {
             leaderboard.methodDescriptionLength = 40;
-        }
+        };
 
         vm.showLessProjectUrl = function (leaderboard) {
             leaderboard.projectUrlLength = 40;
-        }
+        };
 
         vm.showLessPublicationUrl = function (leaderboard) {
             leaderboard.publicationUrlLength = 40;
-        }
+        };
 
         // get details of the particular challenge
         var parameters = {};
