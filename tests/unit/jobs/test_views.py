@@ -1843,6 +1843,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.leaderboard_data.id,
+                    "submission__participant_team": self.submission.participant_team,
                     "submission__participant_team__team_name": self.submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
@@ -1886,6 +1887,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.host_participant_leaderboard_data.id,
+                    "submission__participant_team": self.host_participant_team_submission.participant_team,
                     "submission__participant_team__team_name":
                         self.host_participant_team_submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
@@ -1953,6 +1955,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.host_participant_leaderboard_data.id,
+                    "submission__participant_team": self.host_participant_team_submission.participant_team,
                     "submission__participant_team__team_name":
                         self.host_participant_team_submission.participant_team.team_name,
                         "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
@@ -2069,6 +2072,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.private_leaderboard_data.id,
+                    "submission__participant_team": self.private_submission.participant_team,
                     "submission__participant_team__team_name": self.private_submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.private_submission.participant_team.team_url,
                     "challenge_phase_split": self.private_challenge_phase_split.id,
