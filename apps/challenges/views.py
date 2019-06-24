@@ -69,8 +69,6 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
 )
 
-from .aws_utils import worker_scaling_callback
-
 from .models import (
     Challenge,
     ChallengePhase,
@@ -1965,14 +1963,3 @@ def get_challenge_phase_by_slug(request, slug):
     serializer = ChallengePhaseSerializer(challenge_phase)
     response_data = serializer.data
     return Response(response_data, status=status.HTTP_200_OK)
-
-
-@api_view(["POST"])
-def update_num_of_workers(request, num_of_workers):
-    data = request.data
-    challenges = data["challenges"]
-    for pk in challenges:
-        challenge = Challenge.objects.get(pk=pk)
-        challenge.scaling_action = True
-        challenge.workers = num_of_workers
-        challenge.save()

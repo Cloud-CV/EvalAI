@@ -1,6 +1,9 @@
 from django.contrib import admin
-
+from django import forms
 from base.admin import ImportExportTimeStampedAdmin
+
+from django.contrib.admin.helpers import ActionForm
+from django.contrib import messages
 
 from .models import (
     Challenge,
@@ -15,9 +18,14 @@ from .models import (
 )
 
 from .aws_utils import (
-    start_workers, 
+    start_workers,
     stop_workers,
+    scale_workers,
 )
+
+
+class UpdateNumOfWorkersForm(ActionForm):
+    num_of_tasks = forms.IntegerField(initial=-1, label=" Number of Workers. (Enter a whole number while scaling. Otherwise, ignore.)")
 
 
 @admin.register(Challenge)
@@ -38,6 +46,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "is_docker_based",
         "slug",
         "workers",
+        "task_def_arn"
     )
     list_filter = (
         "published",
@@ -51,20 +60,48 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     )
     search_fields = ("title", "creator", "creator__team_name", "slug")
 
-    actions = ["start_selected_workers", "stop_selected_workers"]
+    actions = ["start_selected_workers", "stop_selected_workers", "scale_selected_workers"]
+
+    action_form = UpdateNumOfWorkersForm
 
     def start_selected_workers(self, request, queryset):
-        start_workers(queryset)
+        response = start_workers(queryset)
+        count = response["count"]
+        message = response["message"]
+
+        if(count == queryset.count()):
+            messages.success(request, message)
+        else:
+            messages.success(request, "{} workers were succesfully started.".format(count))
+            messages.error(request, message)
     start_selected_workers.short_description = "Start all selected workers."
 
     def stop_selected_workers(self, request, queryset):
-        stop_workers(queryset)
+        response = stop_workers(queryset)
+        count = response["count"]
+        message = response["message"]
+
+        if(count == queryset.count()):
+            messages.success(request, message)
+        else:
+            messages.success(request, "{} workers were succesfully stopped.".format(count))
+            messages.error(request, message)
     stop_selected_workers.short_description = "Stop all selected workers."
 
-    '''
     def scale_selected_workers(self, request, queryset):
-    scale_selected_workers.short_description = "Scale selected workers to a given number."
-    '''
+        num_of_tasks = int(request.POST['num_of_tasks'])
+        if (num_of_tasks >= 0):
+            response = scale_workers(queryset, num_of_tasks)
+            count = response["count"]
+            message = response["message"]
+            if(count == queryset.count()):
+                messages.success(request, message)
+            else:
+                messages.success(request, "{} workers were succesfully scaled.".format(count))
+                messages.error(request, message)
+        else:
+            messages.warning(request, "Please enter a valid whole number to scale.")
+    scale_selected_workers.short_description = "Scale all selected workers to a given number."
 
 
 @admin.register(ChallengeConfiguration)
