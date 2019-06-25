@@ -50,6 +50,7 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
+        vm.isLeaderboardLoaded = false;
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -62,18 +63,18 @@
         vm.subErrors = {};
 
         utilities.showLoader();
-        
-        // get unique rank number from the url & if exists hightlight the entry
-        var elementId = $location.absUrl().split('?')[0].split('#')[1];
-        if (elementId) {
-            $timeout(function () {
+
+        vm.scrollToEntryAfterLeaderboardLoads = function () {
+            // get unique rank number from the url & if exists hightlight the entry
+            var elementId = $location.absUrl().split('?')[0].split('#')[1];
+            if (elementId) {
                 $anchorScroll(elementId);
                 $scope.currentEntryLink = elementId;
                 $anchorScroll.yOffset = 90;
                 $scope.isHighlight = elementId.split("leaderboardrank-")[1];
-            }, 2000);
+            }
         }
-
+      
         // scroll to the specific entry of the leaderboard
         vm.scrollToSpecificEntryLeaderboard = function (elementId) {
             var newHash = elementId.toString();
@@ -634,9 +635,13 @@
             };
 
             utilities.sendRequest(parameters);
-            vm.startLeaderboard = function() {
-                vm.stopLeaderboard();
+            vm.startLeaderboard = function() {             
+                vm.stopLeaderboard();           
                 vm.poller = $interval(function() {
+                    if (vm.isLeaderboardLoaded === false) {
+                        vm.scrollToEntryAfterLeaderboardLoads();
+                    }
+                    vm.isLeaderboardLoaded = true;
                     parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
                     parameters.method = 'GET';
                     parameters.data = {};
