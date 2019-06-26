@@ -85,14 +85,14 @@ task_definition = """
 
 service_definition = """
 {{
-    cluster:"Challenge_Cluster",
-    serviceName:"{service_name}",
-    taskDefinition:"{task_def_arn}",
-    desiredCount:1,
-    clientToken:"{client_token}",
-    launchType="FARGATE",
-    platformVersion:"LATEST",
-    networkConfiguration={{ # Need to create VPC before filling this.
+    "cluster":"Challenge_Cluster",
+    "serviceName":"{service_name}",
+    "taskDefinition":"{task_def_arn}",
+    "desiredCount":1,
+    "clientToken":"{client_token}",
+    "launchType"="FARGATE",
+    "platformVersion":"LATEST",
+    "networkConfiguration"={{ # Need to create VPC before filling this.
         "awsvpcConfiguration": {{
             "subnets": [
                 # "string",
@@ -103,23 +103,23 @@ service_definition = """
             "assignPublicIp": "ENABLED"
         }}
     }},
-    healthCheckGracePeriodSeconds:30,
-    schedulingStrategy:"REPLICA",
-    deploymentController={{
+    "healthCheckGracePeriodSeconds":30,
+    "schedulingStrategy":"REPLICA",
+    "deploymentController"={{
         "type": "ECS"
     }},
-    enableECSManagedTags:True,
-    propagateTags:"SERVICE"
+    "enableECSManagedTags":True,
+    "propagateTags":"SERVICE"
 }}
 """
 
 update_service_args = """
 {{
-    cluster="Challenge_Cluster",
-    service="{service_name}",
-    desiredCount="num_of_tasks",
-    taskDefinition="{task_def_arn}",
-    forceNewDeployment=False
+    "cluster":"Challenge_Cluster",
+    "service":"{service_name}",
+    "desiredCount":num_of_tasks,  # Test if this translates properly.
+    "taskDefinition":"{task_def_arn}",
+    "forceNewDeployment":False
 }}
 """
 
@@ -184,7 +184,7 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks):
     service_name = "{}_service".format(queue_name)
     task_def_arn = challenge.task_def_arn
 
-    definition = update_service_args.format(service_name=service_name, number_of_tasks=num_of_tasks, task_def_arn=task_def_arn)
+    definition = update_service_args.format(service_name=service_name, task_def_arn=task_def_arn)
     definition = eval(definition)
 
     try:
@@ -229,7 +229,7 @@ def stop_workers(queryset):
     ecs = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
-        if(challenge.workers is not None) and (challenge.workers > 0):  # Account for new challenges.
+        if (challenge.workers is not None) and (challenge.workers > 0):  # Account for new challenges.
             response = service_manager(client=ecs, challenge=challenge, num_of_tasks=0)
             if "Success" not in response:
                 return {"count": count, "message": response}
@@ -245,6 +245,8 @@ def scale_workers(queryset, num_of_tasks):
     ecs = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
+        if(num_of_tasks == challenge.workers):
+            return {"count": count, "message": "Please scale to a different number than current worker count."}
         response = service_manager(client=ecs, challenge=challenge, num_of_tasks=num_of_tasks)
         if "Success" not in response:
             return {"count": count, "message": response}
