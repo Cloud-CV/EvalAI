@@ -8,7 +8,6 @@ from os.path import join
 from unittest import TestCase
 
 from scripts.workers.submission_worker import (
-    download_and_extract_file,
     create_dir,
     create_dir_as_python_package,
     return_file_url_per_environment,
@@ -21,7 +20,7 @@ class BaseAPITestClass(TestCase):
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
         self.directory = join(self.BASE_TEMP_DIR, "temp_dir")
         self.url = "/test/url"
-        self.input_file = open(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), "w")
+        self.input_file = open(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), "w+")
         self.input_file.write("file_content")
         self.input_file.close()
         self.sqs_client = boto3.client(
@@ -31,13 +30,6 @@ class BaseAPITestClass(TestCase):
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
-
-    def test_download_and_extract_file(self):
-        download_location = join(self.BASE_TEMP_DIR, "test_file.txt")
-        self.url = return_file_url_per_environment(join(self.BASE_TEMP_DIR, 'dummy_input.txt'))
-        download_and_extract_file(self.url, download_location)
-        self.assertTrue(os.path.isfile(download_location))
-        os.remove(download_location)
 
     def test_create_dir(self):
         create_dir(self.directory)
