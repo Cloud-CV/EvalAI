@@ -18,17 +18,43 @@ from scripts.workers.remote_submission_worker import (
 
 class BaseTestClass(TestCase):
     def setUp(self):
-        self.url = "/test/url"
         self.submission_pk = 1
         self.challenge_pk = 1
         self.challenge_phase_pk = 1
         self.data = {"test": "data"}
         self.headers = {"Authorization": "Token test_token"}
 
+    def make_request_url(self):
+        return "/test/url"
+
+    def get_message_from_sqs_queue_url(self, queue_name):
+        return "/api/jobs/challenge/queues/{}/".format(queue_name)
+
+    def delete_message_from_sqs_queue_url(self, queue_name, receipt_handle):
+        return "/api/jobs/queues/{}/receipt/{}/".format(queue_name, receipt_handle)
+
+    def get_submission_by_pk_url(self, submission_pk):
+        return "/api/jobs/submission/{}".format(submission_pk)
+
+    def get_challenge_phases_by_challenge_pk_url(self, challenge_pk):
+        return "/api/challenges/{}/phases/".format(challenge_pk)
+
+    def get_challenge_by_queue_name_url(self, queue_name):
+        return "/api/challenges/challenge/queues/{}/".format(queue_name)
+
+    def get_challenge_phase_by_pk_url(self, challenge_pk, challenge_phase_pk):
+        return "/api/challenges/challenge/{}/challenge_phase/{}".format(challenge_pk, challenge_phase_pk)
+
+    def update_submission_data_url(self, challenge_pk):
+        return "/api/jobs/challenge/{}/update_submission/".format(challenge_pk)
+
 
 @mock.patch("scripts.workers.remote_submission_worker.AUTH_TOKEN", "test_token")
 @mock.patch("scripts.workers.remote_submission_worker.requests")
 class MakeRequestTestClass(BaseTestClass):
+    def setUp(self):
+        super(MakeRequestTestClass, self).setUp()
+        self.url = super(MakeRequestTestClass, self).make_request_url()
 
     def test_make_request_get(self, mock_make_request):
         make_request(self.url, "GET")
@@ -49,61 +75,61 @@ class MakeRequestTestClass(BaseTestClass):
 class APICallsTestClass(BaseTestClass):
 
     def test_get_message_from_sqs_queue(self, mock_make_request, mock_url):
-        self.url = "/api/jobs/challenge/queues/evalai_submission_queue/"
+        url = self.get_message_from_sqs_queue_url("evalai_submission_queue")
         get_message_from_sqs_queue()
-        mock_url.assert_called_with(self.url)
-        self.url = mock_url(self.url)
-        mock_make_request.assert_called_with(self.url, "GET")
+        mock_url.assert_called_with(url)
+        url = mock_url(url)
+        mock_make_request.assert_called_with(url, "GET")
 
     def test_delete_message_from_sqs_queue(self, mock_make_request, mock_url):
         test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
+        url = self.delete_message_from_sqs_queue_url("evalai_submission_queue", test_receipt_handle)
         delete_message_from_sqs_queue(test_receipt_handle)
-        self.url = "/api/jobs/queues/evalai_submission_queue/receipt/{}/".format(test_receipt_handle)
-        mock_url.assert_called_with(self.url)
-        self.url = mock_url(self.url)
-        mock_make_request.assert_called_with(self.url, "GET")
+        mock_url.assert_called_with(url)
+        url = mock_url(url)
+        mock_make_request.assert_called_with(url, "GET")
 
     def test_get_challenge_by_queue_name(self, mock_make_request, mock_url):
-        self.url = "/api/challenges/challenge/queues/evalai_submission_queue/"
+        url = self.get_challenge_by_queue_name_url("evalai_submission_queue")
         get_challenge_by_queue_name()
-        mock_url.assert_called_with(self.url)
-        self.url = mock_url(self.url)
-        mock_make_request.assert_called_with(self.url, "GET")
+        mock_url.assert_called_with(url)
+        url = mock_url(url)
+        mock_make_request.assert_called_with(url, "GET")
 
     def test_get_submission_by_pk(self, mock_make_request, mock_url):
         get_submission_by_pk(self.submission_pk)
-        self.url = "/api/jobs/submission/{}".format(self.submission_pk)
-        mock_url.assert_called_with(self.url)
-        self.url = mock_url(self.url)
-        mock_make_request.assert_called_with(self.url, "GET")
+        url = self.get_submission_by_pk_url(self.submission_pk)
+        mock_url.assert_called_with(url)
+        url = mock_url(url)
+        mock_make_request.assert_called_with(url, "GET")
 
     def test_get_challenge_phases_by_challenge_pk(self, mock_make_request, mock_url):
         get_challenge_phases_by_challenge_pk(self.challenge_pk)
-        self.url = "/api/challenges/{}/phases/".format(self.challenge_pk)
-        mock_url.assert_called_with(self.url)
-        self.url = mock_url(self.url)
-        mock_make_request.assert_called_with(self.url, "GET")
+        url = self.get_challenge_phases_by_challenge_pk_url(self.challenge_pk)
+        mock_url.assert_called_with(url)
+        url = mock_url(url)
+        mock_make_request.assert_called_with(url, "GET")
 
     def test_get_challenge_phase_by_pk(self, mock_make_request, mock_url):
         get_challenge_phase_by_pk(self.challenge_pk, self.challenge_phase_pk)
-        self.url = "/api/challenges/challenge/{}/challenge_phase/{}".format(self.challenge_pk, self.challenge_phase_pk)
-        mock_url.assert_called_with(self.url)
-        self.url = mock_url(self.url)
-        mock_make_request.assert_called_with(self.url, "GET")
+        url = self.get_challenge_phase_by_pk_url(self.challenge_pk, self.challenge_phase_pk)
+        mock_url.assert_called_with(url)
+        url = mock_url(url)
+        mock_make_request.assert_called_with(url, "GET")
 
     def test_update_submission_data(self, mock_make_request, mock_url):
         update_submission_data(self.data, self.challenge_pk, self.submission_pk)
-        self.url = "/api/jobs/challenge/{}/update_submission/".format(self.challenge_pk)
-        mock_url.assert_called_with(self.url)
-        self.url = mock_url(self.url)
-        mock_make_request.assert_called_with(self.url, "PUT", data=self.data)
+        url = self.update_submission_data_url(self.challenge_pk)
+        mock_url.assert_called_with(url)
+        url = mock_url(url)
+        mock_make_request.assert_called_with(url, "PUT", data=self.data)
 
     def test_update_submission_status(self, mock_make_request, mock_url):
         update_submission_status(self.data, self.challenge_pk)
-        self.url = "/api/jobs/challenge/{}/update_submission/".format(self.challenge_pk)
-        mock_url.assert_called_with(self.url)
-        self.url = mock_url(self.url)
-        mock_make_request.assert_called_with(self.url, "PATCH", data=self.data)
+        url = self.update_submission_data_url(self.challenge_pk)
+        mock_url.assert_called_with(url)
+        url = mock_url(url)
+        mock_make_request.assert_called_with(url, "PATCH", data=self.data)
 
 
 @mock.patch("scripts.workers.remote_submission_worker.DJANGO_SERVER_PORT", "80")
@@ -111,6 +137,7 @@ class APICallsTestClass(BaseTestClass):
 class URLFormatTestCase(BaseTestClass):
 
     def test_return_url_per_environment(self):
-        expected_url = "http://testserver:80{}".format(self.url)
-        returned_url = return_url_per_environment(self.url)
+        url = "/test/url"
+        expected_url = "http://testserver:80{}".format(url)
+        returned_url = return_url_per_environment(url)
         self.assertEqual(returned_url, expected_url)
