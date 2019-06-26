@@ -461,12 +461,17 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_phase_split=challenge_phase_split,
         submission__is_flagged=False,
         submission__status=Submission.FINISHED,
-    ).order_by("created_at")
+    ).order_by("-created_at")
 
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL(
             "result->>%s", (default_order_by,), output_field=FloatField()
-        )
+        ),
+        filtering_error=RawSQL(
+            "error->>%s",
+            ("error_{0}".format(default_order_by),),
+            output_field=FloatField(),
+        ),
     ).values(
         "id",
         "submission__participant_team__team_name",
@@ -474,7 +479,9 @@ def leaderboard(request, challenge_phase_split_id):
         "submission__is_baseline",
         "challenge_phase_split",
         "result",
+        "error",
         "filtering_score",
+        "filtering_error",
         "leaderboard__schema",
         "submission__submitted_at",
         "submission__method_name",
@@ -483,9 +490,16 @@ def leaderboard(request, challenge_phase_split_id):
     if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
         leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
+    for leaderboard_item in leaderboard_data:
+        if leaderboard_item["error"] is None:
+            leaderboard_item.update(filtering_error=0)
+
     sorted_leaderboard_data = sorted(
         leaderboard_data,
-        key=lambda k: float(k["filtering_score"]),
+        key=lambda k: (
+            float(k["filtering_score"]),
+            float(-k["filtering_error"]),
+        ),
         reverse=True,
     )
 
@@ -493,7 +507,15 @@ def leaderboard(request, challenge_phase_split_id):
     team_list = []
     for data in sorted_leaderboard_data:
         if data["submission__participant_team__team_name"] in team_list:
-            continue
+            for key, team in enumerate(distinct_sorted_leaderboard_data):
+                if (
+                    team["submission__participant_team__team_name"]
+                    == data["submission__participant_team__team_name"]
+                ):
+                    if data["id"] > team["id"]:
+                        distinct_sorted_leaderboard_data[key] = data
+                    else:
+                        continue
         elif data["submission__is_baseline"] is True:
             distinct_sorted_leaderboard_data.append(data)
         else:
@@ -505,6 +527,11 @@ def leaderboard(request, challenge_phase_split_id):
         item["result"] = [
             item["result"][index] for index in leaderboard_labels
         ]
+        if item["error"] is not None:
+            item["error"] = [
+                item["error"]["error_{0}".format(index)]
+                for index in leaderboard_labels
+            ]
 
     paginator, result_page = paginated_queryset(
         distinct_sorted_leaderboard_data,
