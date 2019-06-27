@@ -494,33 +494,33 @@ def leaderboard(request, challenge_phase_split_id):
         if leaderboard_item["error"] is None:
             leaderboard_item.update(filtering_error=0)
 
-    distinct_leaderboard_data = []
-    team_list = []
-    for data in leaderboard_data:
-        if data["submission__participant_team__team_name"] in team_list:
-            for key, team in enumerate(distinct_leaderboard_data):
-                if (
-                    team["submission__participant_team__team_name"]
-                    == data["submission__participant_team__team_name"]
-                ):
-                    if data["id"] > team["id"]:
-                        distinct_leaderboard_data[key] = data
-                    else:
-                        continue
-        elif data["submission__is_baseline"] is True:
-            distinct_leaderboard_data.append(data)
-        else:
-            distinct_leaderboard_data.append(data)
-            team_list.append(data["submission__participant_team__team_name"])
-
-    distinct_sorted_leaderboard_data = sorted(
-        distinct_leaderboard_data,
+    sorted_leaderboard_data = sorted(
+        leaderboard_data,
         key=lambda k: (
             float(k["filtering_score"]),
             float(-k["filtering_error"]),
         ),
         reverse=True,
     )
+
+    distinct_sorted_leaderboard_data = []
+    team_list = []
+    for data in sorted_leaderboard_data:
+        if data["submission__participant_team__team_name"] in team_list:
+            for key, team in enumerate(distinct_sorted_leaderboard_data):
+                if (
+                    team["submission__participant_team__team_name"]
+                    == data["submission__participant_team__team_name"]
+                ):
+                    if data["id"] > team["id"]:
+                        distinct_sorted_leaderboard_data[key] = data
+                    else:
+                        continue
+        elif data["submission__is_baseline"] is True:
+            distinct_sorted_leaderboard_data.append(data)
+        else:
+            distinct_sorted_leaderboard_data.append(data)
+            team_list.append(data["submission__participant_team__team_name"])
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
     for item in distinct_sorted_leaderboard_data:
