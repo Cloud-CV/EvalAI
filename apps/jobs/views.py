@@ -526,7 +526,7 @@ def leaderboard(request, challenge_phase_split_id):
     team_list = []
     for data in sorted_leaderboard_data:
         if (
-            data["submission__participant_team__team_name"] in team_list or 
+            data["submission__participant_team__team_name"] in team_list or
             data['submission__participant_team'] in all_banned_participant_team
         ):
             continue
