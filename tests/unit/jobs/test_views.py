@@ -54,19 +54,6 @@ class BaseAPITestClass(APITestCase):
             verified=True,
         )
 
-        self.user2 = User.objects.create(
-            username="someuser2",
-            email="user2@test.com",
-            password="secret_password2",
-        )
-
-        EmailAddress.objects.create(
-            user=self.user1,
-            email="user2@test.com",
-            primary=True,
-            verified=True,
-        )
-
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
@@ -97,16 +84,6 @@ class BaseAPITestClass(APITestCase):
             user=self.user1,
             status=Participant.SELF,
             team=self.participant_team,
-        )
-
-        self.participant_team_2 = ParticipantTeam.objects.create(
-            team_name="Participant Team 2 for Challenge", created_by=self.user2
-        )
-
-        self.participant_2 = Participant.objects.create(
-            user=self.user2,
-            status=Participant.SELF,
-            team=self.participant_team_2,
         )
 
         self.challenge = Challenge.objects.create(
@@ -1479,7 +1456,9 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_toggle_baseline_when_user_is_not_a_host(self):
+    def test_toggle_baseline_when_user_is_not_a_host(
+        self
+    ):
         self.url = reverse_lazy(
             "jobs:change_submission_data_and_visibility",
             kwargs={
@@ -1491,14 +1470,14 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.data = {"is_baseline": True}
         self.challenge.save()
         self.client.force_authenticate(user=self.user1)
-        expected = {
-            "error": "Sorry, you are not authorized to make this request"
-        }
+        expected = {"error": "Sorry, you are not authorized to make this request"}
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_toggle_baseline_when_user_is_host(self):
+    def test_toggle_baseline_when_user_is_host(
+        self
+    ):
         self.url = reverse_lazy(
             "jobs:change_submission_data_and_visibility",
             kwargs={
@@ -1528,13 +1507,11 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "stderr_file": None,
             "submission_result_file": None,
             "submitted_at": "{0}{1}".format(
-                self.host_participant_team_submission.submitted_at.isoformat(),
-                "Z",
+                self.host_participant_team_submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_public": self.host_participant_team_submission.is_public,
             "when_made_public": "{0}{1}".format(
-                self.host_participant_team_submission.when_made_public.isoformat(),
-                "Z",
+                self.host_participant_team_submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": True,
         }
@@ -1723,19 +1700,6 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             is_public=False,
         )
 
-        self.submission_3 = Submission.objects.create(
-            participant_team=self.participant_team_2,
-            challenge_phase=self.challenge_phase,
-            created_by=self.user2,
-            status="submitted",
-            input_file=self.challenge_phase.test_annotation,
-            method_name="Test Method",
-            method_description="Test Description",
-            project_url="http://testserver/",
-            publication_url="http://testserver/",
-            is_public=True,
-        )
-
         self.private_submission = Submission.objects.create(
             participant_team=self.host_participant_team,
             challenge_phase=self.private_challenge_phase,
@@ -1784,10 +1748,6 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.submission_2.status = Submission.FINISHED
         self.submission_2.save()
 
-        self.submission_3.is_public = True
-        self.submission_3.status = Submission.FINISHED
-        self.submission_3.save()
-
         self.private_submission.is_public = False
         self.private_submission.status = Submission.FINISHED
         self.private_submission.save()
@@ -1804,26 +1764,13 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
 
         self.result_json_2 = {"score": 10.0, "test-score": 20.0}
 
-        self.result_json_3 = {"score": 10.0, "test-score": 20.0}
+        self.result_json_host_participant_team = {"score": 52.0, "test-score": 80.0}
 
-        self.result_json_host_participant_team = {
-            "score": 52.0,
-            "test-score": 80.0,
-        }
-
-        self.result_json_host_participant_team_2 = {
-            "score": 20.0,
-            "test-score": 60.0,
-        }
+        self.result_json_host_participant_team_2 = {"score": 20.0, "test-score": 60.0}
 
         self.expected_results = [
             self.result_json["score"],
             self.result_json["test-score"],
-        ]
-
-        self.expected_results_3 = [
-            self.result_json_3["score"],
-            self.result_json_3["test-score"],
         ]
 
         self.expected_results_host_participant_team = [
@@ -1837,10 +1784,6 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         ]
 
         self.filtering_score = self.result_json[
-            self.leaderboard.schema["default_order_by"]
-        ]
-
-        self.filtering_score_3 = self.result_json_3[
             self.leaderboard.schema["default_order_by"]
         ]
 
@@ -1861,23 +1804,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
 
         self.leaderboard_data_2 = LeaderboardData.objects.create(
             challenge_phase_split=self.challenge_phase_split,
-            submission=self.submission_2,
+            submission=self.submission,
             leaderboard=self.leaderboard,
             result=self.result_json_2,
-        )
-
-        self.leaderboard_data_3 = LeaderboardData.objects.create(
-            challenge_phase_split=self.challenge_phase_split,
-            submission=self.submission_3,
-            leaderboard=self.leaderboard,
-            result=self.result_json_3,
-        )
-
-        self.leaderboard_data_4 = LeaderboardData.objects.create(
-            challenge_phase_split=self.challenge_phase_split,
-            submission=self.submission_3,
-            leaderboard=self.leaderboard,
-            result=self.result_json_3,
         )
 
         self.private_leaderboard_data = LeaderboardData.objects.create(
@@ -1908,7 +1837,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         )
 
         expected = {
-            "count": 2,
+            "count": 1,
             "next": None,
             "previous": None,
             "results": [
@@ -1928,24 +1857,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__submitted_at": self.submission.submitted_at,
                     "submission__is_baseline": False,
                     "submission__method_name": self.submission.method_name,
-                },
-                {
-                    "id": self.leaderboard_data_4.id,
-                    "submission__participant_team__team_name": self.submission_3.participant_team.team_name,
-                    "submission__participant_team__team_url": self.submission_3.participant_team.team_url,
-                    "challenge_phase_split": self.challenge_phase_split.id,
-                    "error": None,
-                    "filtering_error": 0,
-                    "result": self.expected_results_3,
-                    "filtering_score": self.filtering_score_3,
-                    "leaderboard__schema": {
-                        "default_order_by": "score",
-                        "labels": ["score", "test-score"],
-                    },
-                    "submission__submitted_at": self.submission_3.submitted_at,
-                    "submission__is_baseline": False,
-                    "submission__method_name": self.submission_3.method_name,
-                },
+                }
             ],
         }
         expected = collections.OrderedDict(expected)
@@ -1968,13 +1880,14 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.host_participant_team_submission.save()
 
         expected = {
-            "count": 3,
+            "count": 2,
             "next": None,
             "previous": None,
             "results": [
                 {
                     "id": self.host_participant_leaderboard_data.id,
-                    "submission__participant_team__team_name": self.host_participant_team_submission.participant_team.team_name,
+                    "submission__participant_team__team_name":
+                        self.host_participant_team_submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team,
@@ -2005,24 +1918,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__submitted_at": self.submission.submitted_at,
                     "submission__is_baseline": False,
                     "submission__method_name": self.submission.method_name,
-                },
-                {
-                    "id": self.leaderboard_data_4.id,
-                    "submission__participant_team__team_name": self.submission_3.participant_team.team_name,
-                    "submission__participant_team__team_url": self.submission_3.participant_team.team_url,
-                    "challenge_phase_split": self.challenge_phase_split.id,
-                    "error": None,
-                    "filtering_error": 0,
-                    "result": self.expected_results_3,
-                    "filtering_score": self.filtering_score_3,
-                    "leaderboard__schema": {
-                        "default_order_by": "score",
-                        "labels": ["score", "test-score"],
-                    },
-                    "submission__submitted_at": self.submission_3.submitted_at,
-                    "submission__is_baseline": False,
-                    "submission__method_name": self.submission_3.method_name,
-                },
+                }
             ],
         }
         expected = collections.OrderedDict(expected)
@@ -2051,14 +1947,15 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         self.host_participant_team_submission_2.save()
 
         expected = {
-            "count": 4,
+            "count": 3,
             "next": None,
             "previous": None,
             "results": [
                 {
                     "id": self.host_participant_leaderboard_data.id,
-                    "submission__participant_team__team_name": self.host_participant_team_submission.participant_team.team_name,
-                    "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
+                    "submission__participant_team__team_name":
+                        self.host_participant_team_submission.participant_team.team_name,
+                        "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team,
                     "filtering_score": self.filtering_score_host_participant_team,
@@ -2091,7 +1988,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 },
                 {
                     "id": self.host_participant_leaderboard_data_2.id,
-                    "submission__participant_team__team_name": self.host_participant_team_submission_2.participant_team.team_name,
+                    "submission__participant_team__team_name":
+                        self.host_participant_team_submission_2.participant_team.team_name,
                     "submission__participant_team__team_url": self.host_participant_team_submission_2.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team_2,
@@ -2105,24 +2003,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__submitted_at": self.host_participant_team_submission_2.submitted_at,
                     "submission__is_baseline": True,
                     "submission__method_name": self.host_participant_team_submission_2.method_name,
-                },
-                {
-                    "id": self.leaderboard_data_4.id,
-                    "submission__participant_team__team_name": self.submission_3.participant_team.team_name,
-                    "submission__participant_team__team_url": self.submission_3.participant_team.team_url,
-                    "challenge_phase_split": self.challenge_phase_split.id,
-                    "error": None,
-                    "filtering_error": 0,
-                    "result": self.expected_results_3,
-                    "filtering_score": self.filtering_score_3,
-                    "leaderboard__schema": {
-                        "default_order_by": "score",
-                        "labels": ["score", "test-score"],
-                    },
-                    "submission__submitted_at": self.submission_3.submitted_at,
-                    "submission__is_baseline": False,
-                    "submission__method_name": self.submission_3.method_name,
-                },
+                }
             ],
         }
         expected = collections.OrderedDict(expected)

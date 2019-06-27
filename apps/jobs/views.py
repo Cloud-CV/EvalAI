@@ -507,15 +507,7 @@ def leaderboard(request, challenge_phase_split_id):
     team_list = []
     for data in sorted_leaderboard_data:
         if data["submission__participant_team__team_name"] in team_list:
-            for key, team in enumerate(distinct_sorted_leaderboard_data):
-                if (
-                    team["submission__participant_team__team_name"]
-                    == data["submission__participant_team__team_name"]
-                ):
-                    if data["id"] > team["id"]:
-                        distinct_sorted_leaderboard_data[key] = data
-                    else:
-                        continue
+            continue
         elif data["submission__is_baseline"] is True:
             distinct_sorted_leaderboard_data.append(data)
         else:
