@@ -516,7 +516,9 @@ def leaderboard(request, challenge_phase_split_id):
     distinct_leaderboard_data = []
     team_list = []
     for data in leaderboard_data:
-        if data["submission__participant_team__team_name"] in team_list:
+        if data['submission__participant_team'] in all_banned_participant_team:
+            continue
+        elif data["submission__participant_team__team_name"] in team_list:
             for key, team in enumerate(distinct_leaderboard_data):
                 if (
                     team["submission__participant_team__team_name"]
@@ -540,20 +542,6 @@ def leaderboard(request, challenge_phase_split_id):
         ),
         reverse=True,
     )
-
-    distinct_sorted_leaderboard_data = []
-    team_list = []
-    for data in sorted_leaderboard_data:
-        if (
-            data["submission__participant_team__team_name"] in team_list or
-            data['submission__participant_team'] in all_banned_participant_team
-        ):
-            continue
-        elif data["submission__is_baseline"] is True:
-            distinct_sorted_leaderboard_data.append(data)
-        else:
-            distinct_sorted_leaderboard_data.append(data)
-            team_list.append(data["submission__participant_team__team_name"])
 
     leaderboard_labels = challenge_phase_split.leaderboard.schema["labels"]
     for item in distinct_sorted_leaderboard_data:
