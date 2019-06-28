@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 The 3 strings below are converted to dictionaries and passed as keword args to the respective
 boto3 methods.
 """
+
 task_definition = """
 {{
     "family":"{queue_name}",
@@ -165,6 +166,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
         try:
             response = client.register_task_definition(**definition)
             task_def_arn = response["taskDefinition"].get("taskDefinitionArn")
+            # To store the task definition arn which will be needed for creating or updating the service later.
             challenge.task_def_arn = task_def_arn
             challenge.save()
             return task_def_arn

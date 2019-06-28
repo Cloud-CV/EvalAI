@@ -114,9 +114,11 @@ class Challenge(TimeStampedModel):
     cli_version = models.CharField(
         max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
+    # The number of active workers on Fargate of the challenge.
     workers = models.IntegerField(
         null=True, blank=True, default=None
     )
+    # The task definition ARN for the challenge, used for updating and creating service.
     task_def_arn = models.CharField(blank=True, max_length=2048, default="")
 
     class Meta:
