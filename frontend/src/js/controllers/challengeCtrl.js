@@ -50,7 +50,6 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
-        vm.isLeaderboardLoaded = false;
 
         // show loader
         vm.startLoader = loaderService.startLoader;
@@ -64,23 +63,24 @@
 
         utilities.showLoader();
 
+        // scroll to the selected entry after page has been rendered
         vm.scrollToEntryAfterLeaderboardLoads = function () {
             // get unique rank number from the url & if exists hightlight the entry
-            var elementId = $location.absUrl().split('?')[0].split('#')[1];
-            if (elementId) {
-                $anchorScroll(elementId);
-                $scope.currentEntryLink = elementId;
-                $anchorScroll.yOffset = 90;
-                $scope.isHighlight = elementId.split("leaderboardrank-")[1];
-            }
-        }
+            $timeout(function() {
+                const elementId = $location.absUrl().split('?')[0].split('#')[1];
+                if (elementId) {
+                    $anchorScroll.yOffset = 90;
+                    $anchorScroll(elementId);
+                    $scope.isHighlight = elementId.split("leaderboardrank-")[1];
+                }
+            }, 500);
+        };
       
         // scroll to the specific entry of the leaderboard
         vm.scrollToSpecificEntryLeaderboard = function (elementId) {
             var newHash = elementId.toString();
             if ($location.hash() !== newHash) {
                 $location.hash(elementId);
-                $scope.currentEntryLink = elementId;
             } else {
                 $anchorScroll();
             }
@@ -669,6 +669,7 @@
                     vm.phaseName = vm.phaseSplitId;
                     vm.startLeaderboard();
                     vm.stopLoader();
+                    vm.scrollToEntryAfterLeaderboardLoads();
                 },
                 onError: function(response) {
                     var error = response.data;
@@ -678,13 +679,9 @@
             };
 
             utilities.sendRequest(parameters);
-            vm.startLeaderboard = function() {             
-                vm.stopLeaderboard();           
+            vm.startLeaderboard = function() {
+                vm.stopLeaderboard();
                 vm.poller = $interval(function() {
-                    if (vm.isLeaderboardLoaded === false) {
-                        vm.scrollToEntryAfterLeaderboardLoads();
-                    }
-                    vm.isLeaderboardLoaded = true;
                     parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
                     parameters.method = 'GET';
                     parameters.data = {};

@@ -62,7 +62,7 @@
                                     <thead>
                                         <tr>
                                             <td data-field="rank" class="align-center">
-                                                <a href="#{{currentEntryLink}}" ng-click="challenge.sortLeaderboard(challenge, 'rank');">
+                                                <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'rank');">
                                                     <span class="w-400 fs-18">Rank</span>
                                                     <span class="fa-stack fa-1x">
                                                         <i class="fa fa-sort-asc fa-stack-1x"
@@ -73,7 +73,7 @@
                                                 </a>
                                             </td>
                                             <td data-field="team" class="align-center">
-                                                <a href="#{{currentEntryLink}}" ng-click="challenge.sortLeaderboard(challenge, 'string');">
+                                                <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'string');">
                                                     <span class="w-400 fs-18">Participant team</span>
                                                     <span class="fa-stack fa-1x">
                                                         <i class="fa fa-sort-asc fa-stack-1x"
@@ -85,7 +85,7 @@
                                             </td>
                                             <td ng-repeat="key in challenge.leaderboard[0].leaderboard__schema.labels"
                                                 class="align-center">
-                                                <a href="#{{currentEntryLink}}"
+                                                <a href="#"
                                                     ng-click="$parent.challenge.sortLeaderboard($parent.challenge, 'number', $index);">
                                                     <span class="w-400 fs-18">{{key}}</span>
                                                     <span class="fa-stack fa-1x">
@@ -97,7 +97,7 @@
                                                 </a>
                                             </td>
                                             <td data-field="submission_time" class="align-center">
-                                                <a href="#{{currentEntryLink}}" ng-click="challenge.sortLeaderboard(challenge, 'date');">
+                                                <a href="#" ng-click="challenge.sortLeaderboard(challenge, 'date');">
                                                     <span class="fs-18 w-400">Last submission at</span>
                                                     <span class="fa-stack fa-1x">
                                                         <i class="fa fa-sort-asc fa-stack-1x"
