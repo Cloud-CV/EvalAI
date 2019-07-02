@@ -18,7 +18,7 @@ from scripts.workers.submission_worker import (
 class BaseAPITestClass(TestCase):
     def setUp(self):
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
-        self.directory = join(self.BASE_TEMP_DIR, "temp_dir")
+        self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
         self.url = "/test/url"
         self.input_file = open(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), "w+")
         self.input_file.write("file_content")
@@ -32,14 +32,14 @@ class BaseAPITestClass(TestCase):
         )
 
     def test_create_dir(self):
-        create_dir(self.directory)
-        self.assertTrue(os.path.isdir(self.directory))
-        shutil.rmtree(self.directory)
+        create_dir(self.temp_directory)
+        self.assertTrue(os.path.isdir(self.temp_directory))
+        shutil.rmtree(self.temp_directory)
 
     def test_create_dir_as_python_package(self):
-        create_dir_as_python_package(self.directory)
-        self.assertTrue(os.path.isfile(join(self.directory, "__init__.py")))
-        shutil.rmtree(self.directory)
+        create_dir_as_python_package(self.temp_directory)
+        self.assertTrue(os.path.isfile(join(self.temp_directory, "__init__.py")))
+        shutil.rmtree(self.temp_directory)
 
     def test_return_file_url_per_environment(self):
         returned_url = return_file_url_per_environment(self.url)
