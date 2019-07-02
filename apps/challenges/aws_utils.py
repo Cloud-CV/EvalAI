@@ -263,7 +263,7 @@ def start_workers(queryset):
         else:
             response = {"Error": "Please select only inactive workers."}
             return {"count": count, "message": response}
-    message = "{} workers were succesfully started.".format(count)
+    message = "All selected workers succesfully started.".format(count)
     return {"count": count, "message": message}
 
 
@@ -281,7 +281,7 @@ def stop_workers(queryset):
         else:
             response = {"Error": "Please select running workers."}
             return {"count": count, "message": response}
-    message = "{} workers were succesfully stopped.".format(count)
+    message = "All selected workers succesfully stopped.".format(count)
     return {"count": count, "message": message}
 
 
@@ -297,5 +297,5 @@ def scale_workers(queryset, num_of_tasks):
             # 1)Num of succesful stops before error. 2)The error if any for the first failure.
             return {"count": count, "message": response}
         count += 1
-    message = "{} workers were succesfully scaled.".format(count)
+    message = "All selected workers succesfully scaled.".format(count)
     return {"count": count, "message": message}
