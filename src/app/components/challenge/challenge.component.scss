@@ -2,123 +2,63 @@
 @import './mixins.scss';
 
 .challenge-container {
-  
-  width:90%;
+  width: 83.5%;
   margin: 0 auto;
-  margin-top:50px;
   margin-bottom:50px;
-  .challenge-image-container {
-  	z-index:5;
-    margin: 0 auto;
-    width:100%;
-    height:300px;
-    border-radius:10px;
-    background:rgba(0,0,0,0.5);
-    position:relative;
-    @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
-    .challenge-cover-image {
-      border-radius:10px;
-      width:100%;
-      height:300px;
-    }
-  }
-  .challenge-content-container {
-  	position:relative;
-  	z-index:10;
-  	@include box-shadow(0px, 0px, 15px, 5px, $overlay-light);
-  	border-radius:10px;
-  	width:80%;
-  	margin:0 auto;
-  	margin-top:-200px;
-  	color:$gray-darker;
-  	background:white;
-  	.challenge-header {
-      text-align:center;
-      .challenge-img-parent {
-        position: relative;
-        display:inline-table;
-        width: 150px;
-        height: 100px;
-        position: relative;
-        @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
-        margin:20px;
-        text-align:center;
-        .challenge-img-wrap {
-          display: table-cell;
-          position: relative;
-          vertical-align:middle;
-          margin:0 auto;
-          .challenge-img {
-          max-width: 150px;
-          max-height: 100px;
-          display: inline-block;
-          position: relative;
-          }
-        }
-        
-      }
-      
-      .challenge-title {
-      	text-align: center;
-      	margin:10px;
-      	.stars {
-      	  font-size:$fs-12;
-          color:white;
-          background:$red-light;
-          border-radius:5px;
-          padding:5px;
-          position: absolute;
-	        right: 50px;
-	        margin-top:5px;
-	        padding: 3px 10px 3px 10px;
-          &.is-starred {
-            color: $yellow-light;
-          }
-          i {
-          	margin-right: 10px;
-          }
-          &.is-clickable {
-            cursor:pointer;
-          }
-      	}
-      	.title {
-      		font-size: $fs-24;
-      		color:$gray-darker;
-      	}
-      }
-      .challenge-host {
-      display: inline-block;
-      margin: 10px;
-      font-weight: $fw-light;
-      font-size: $fs-18;
-      color: $gray-dark;
-      span {
-        color: $gray-darker;
-      }
-    }
-  	}  	
-  }
+  padding-top: 70px;
 }
+
 @include screen-medium {
   .challenge-container {
-    .challenge-content-container {
-      width:90%;
-    }
+    width: 90%;
   }
 }
 
 @include screen-small {
-	.challenge-container {
-		.challenge-content-container {
-			width:90%;
-			.challenge-header {
-				.challenge-title {
-					.stars {
-						right: 5px;
-						margin-top: -25px;
-					}
-				}
-			}
-		}
-	}
+  .challenge-container {
+    width: 95%;
+  }
+}
+
+.mid-container {
+  background-color: #fafafa;
+}
+
+.card-content p {
+  padding-bottom: 10px;
+}
+
+.top-card-container {
+  padding: 40px 40px 0 40px;
+}
+
+.toggle-participation-text {
+  display: inline-block;
+  padding-left: 10px;
+}
+
+.top-card-container {
+  .stars {
+    cursor: default;
+    &.is-clickable {
+      cursor:pointer;
+    }
+  }
+
+  .card-img-row {
+    margin-bottom: 20px;
+    padding: 0 15px 0 15px;
+  }
+
+  .card-tab-row {
+    padding: 0 12px 0 12px;
+  }
+}
+
+.top-card-container ul.inline-list {
+  margin: 0px;
+}
+.top-card-container ul.inline-list li {
+  margin: 0 40px 1.5% 0;
+  min-height: 40px;
 }

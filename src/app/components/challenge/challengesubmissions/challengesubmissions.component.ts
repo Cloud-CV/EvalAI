@@ -88,6 +88,11 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   submissionHighlighted: any = null;
 
   /**
+   * To call the API inside modal for editing the submission
+   */
+  apiCall: any;
+
+  /**
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  GlobalService Injection.
@@ -324,7 +329,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   editSubmission(submission) {
     const SELF = this;
-    const apiCall = (params) => {
+    SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
       SELF.apiService.patchUrl(
         SELF.endpointsService.challengeSubmissionUpdateURL(SELF.challenge.id, submission.challenge_phase, submission.id),
@@ -376,7 +381,7 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
           value: submission['publication_url']
         }
       ],
-      confirmCallback: apiCall
+      confirmCallback: SELF.apiCall
     };
     SELF.globalService.showModal(PARAMS);
   }

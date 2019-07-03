@@ -1,6 +1,6 @@
 <div class="input-group">
   <div *ngIf="type!='file' && type!='textarea'">
-    <input class="input-field" (input)="validateInput($event.target.value)" [class.isValid]="isValid" [class.theme-dark]="theme=='dark'" type="{{type}}" [value]="value" [readonly]="isReadonly">
+    <input class="input-field" (input)="validateInput($event.target.value)" [class.isValid]="isValid" name="{{name}}" [class.theme-dark]="theme=='dark'" type="{{type}}" [value]="value" [readonly]="isReadonly">
     <span class="input-bar"></span>
     <label [class.is-not-empty]="!isEmpty" [class.theme-dark]="theme=='dark'">{{placeholder}}</label>
     <i class="input-icon {{icon}}" *ngIf="isIconPresent"></i>

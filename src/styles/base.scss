@@ -22,6 +22,8 @@ body {
 .content {
   line-height: 24px;
   letter-spacing: 0.1px;
+  font-size: 15px;
+  color: rgba(0, 0, 0, 0.87);
 }
 
 .go {
@@ -118,6 +120,10 @@ body {
   font-size: $fs-14;
 }
 
+.fs-15 {
+  font-size: $fs-15;
+}
+
 .fs-16 {
   font-size: $fs-16;
 }
@@ -148,21 +154,90 @@ body {
 
 
 
+/*card styles*/
+
+.ev-card-panel {
+  position: relative;
+  display: block;
+  background-color: #fff;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 0px 12px $shadow-black;
+}
+
+
+/*grad button style*/
+
+.grad-btn {
+  border-radius: 20px;
+}
+
+.grad-btn-dark {
+  background: $med-gray;
+  font-weight: $fw-regular;
+  color: #fff;
+  box-shadow: 0px 4px 8px #9d9d9d;
+  &:hover {
+      box-shadow: 0px 0px 8px #9d9d9d;
+  }
+}
+
+.grad-btn-light {
+  background: $highlight;
+  font-weight: $fw-regular;
+  color: #fff;
+  box-shadow: 0px 4px 8px #9d9d9d;
+  &:hover {
+      box-shadow: 0px 0px 8px #9d9d9d;
+      background: $highlight;
+  }
+}
+
+.grad-btn-transparent {
+  background-color: rgba(0,0,0,0);
+  font-weight: $fw-regular;
+  color: $med-gray;
+  border: 1px solid $med-gray;
+  box-shadow: 0px 4px 8px transparent;
+  &:hover {
+      box-shadow: 0px 0px 8px #9d9d9d;
+      background: $med-gray;
+      color: #fff;
+  }
+}
+
+
+/*icon colors*/
+
+.red-text {
+  color: #F44336;
+}
+
+.green-text {
+  color: #4CAF50;
+}
+
 
 /*anchors*/
 
 a {
-  color: $red-light;
+  color: #3c3e49;
   transition: all 0.2s ease-in-out;
   text-decoration: none;
   cursor: pointer;
   &:hover {
-    color: $red-dark;
+    // color: $red-dark;
   }
   &:focus,
   &:active {
     text-decoration: none;
   }
+}
+
+a:active, a:hover {
+  outline: 0;
 }
 
 a.light-link {
@@ -171,6 +246,22 @@ a.light-link {
   &:hover {
     color: white;
   }
+}
+
+a.dark-link:hover {
+  color: #ffaf4b;
+}
+
+a.text-light-black:hover {
+  color: #ffaf4b;
+}
+
+a.active-challenge {
+  color: #4d4d4d;
+  display: block;
+  height: 40px;
+  box-sizing: border-box;
+  border-bottom: 2px solid #ffaf4b;
 }
 
 .pointer {
@@ -432,12 +523,19 @@ ul {
   border-radius: 20px;
   margin-right: 10px;
   margin-top: 5px;
-  margin-bottom: 0 !important;
+  margin-bottom: 5px !important;
   text-align: center;
   cursor: pointer;
   display: inline-block;
   transition: all 0.3s ease;
   font-size: $fs-14;
+}
+
+.btn:disabled {
+  background-color: #DFDFDF !important;
+  box-shadow: none;
+  color: #9F9F9F !important;
+  cursor: default;
 }
 
 .btn-nofill {
@@ -542,23 +640,18 @@ ul {
 }
 
 .btn-filter {
-  padding: 10px 30px 10px 30px;
-  border: 1px solid $red-light;
   color: $gray-darker;
   &.selected {
-    color: white;
-    background: $red-light;
+    background-color: rgba(0,0,0,0);
+    font-weight: $fw-regular;
+    color: $med-gray;
+    border: 1px solid $med-gray;
+    box-shadow: 0px 4px 8px transparent;
     &:hover {
-      color: white;
+        box-shadow: 0px 0px 8px #9d9d9d;
+        background: $med-gray;
+        color: #fff;
     }
-  }
-  &:hover {
-    @include box-shadow(0px,
-    0px,
-    5px,
-    0px,
-    $overlay-light);
-    color: $red-light;
   }
 }
 
@@ -644,6 +737,7 @@ ul {
     color: $gray-darker;
     padding: 30px;
     .title {
+      color: $med-black;
       padding: 10px;
       font-size: $fs-18;
       font-weight: $fw-bold;
@@ -792,4 +886,59 @@ ul {
 
 .cbx:disabled~.cbx-label:after {
   background: $gray-lighter;
+}
+
+.text-light-black {
+  color: #9d9d9d;
+}
+
+.orange-text {
+  color: $orange;
+}
+
+.btn-waves-effect {
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  overflow: hidden;
+  user-select: none;
+  height: 36px;
+  -webkit-tap-highlight-color: transparent;
+  vertical-align: middle;
+  z-index: 1;
+  will-change: opacity, transform;
+  transition: .3s ease-out;
+}
+
+ .grad-rec-btn {
+  border-radius: 2px;
+}
+
+ .grad-btn-dark {
+  background: #3c3e49;
+  font-weight: 400;
+  color: #fff;
+  box-shadow: 0 4px 8px #9d9d9d;
+}
+
+ .ev-btn-dark {
+  padding: 0 32px;
+  border: none;
+  background: #252833;
+}
+
+ .ev-btn-dark:hover {
+  background: #3c3e49;
+}
+
+.challenge-card {
+  margin: 0 10px -30px 10px;
+  padding: 20px;
+}
+
+.selected {
+  height: 30px;
+  border-bottom: 2px solid #ffaf4b;
+  display: block;
+  color: #4d4d4d;
 }

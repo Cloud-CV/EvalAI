@@ -6,4 +6,13 @@
   .confirm-card {
     z-index: 111;
   }
+
+  .btn-inline {
+    display: -webkit-inline-box;
+  }
+}
+
+.row ul.confirm-buttons li {
+  display: inline-block;
+  margin: 9px 9px;
 }
