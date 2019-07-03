@@ -5,7 +5,7 @@
 
 $blue-dark: #33526e;
 $blue-darker: #273e54;
-$blue-light: #adc8e0;
+$blue-light: #adb4d0;
 $blue-medium: #32485d;
 $blue-lighter: #2196F3;
 $blue-medium-dark: #056cf0;
@@ -21,7 +21,7 @@ $purple-medium: #a178b7;
 
 /* Red Shades */
 
-$red-dark: #cb8474;
+$red-dark: #252833;
 $red-light: #eb8474;
 
 
@@ -56,6 +56,7 @@ $gray-medium: #d4d4d4;
 $gray-dark: #9d9d9d;
 $gray-darker: #273e54;
 $gray-lighter: #fafafa;
+$dark-black: #4d4d4d;
 
 /* fire shades */
 
@@ -72,13 +73,15 @@ $overlay-medium: rgba(0, 0, 0, 0.5);
 $white-overlay-light: rgba(255, 255, 255, 0.2);
 $white-overlay-medium: rgba(255, 255, 255, 0.5);
 $white-overlay-dark: rgba(255, 255, 255, 0.7);
-$blue-overlay-dark: rgba(39, 62, 84, 0.8);
+$blue-overlay-dark: #252833;
 
 
 /* Font sizes */
 
 $fs-12: 12px;
+$fs-13: 13px;
 $fs-14: 14px;
+$fs-15: 15px;
 $fs-16: 16px;
 $fs-18: 18px;
 $fs-20: 20px;
