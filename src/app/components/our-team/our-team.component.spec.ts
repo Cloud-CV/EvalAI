@@ -14,6 +14,11 @@ import { HttpClientModule } from '@angular/common/http';
 describe('OurTeamComponent', () => {
   let component: OurTeamComponent;
   let fixture: ComponentFixture<OurTeamComponent>;
+  let endpointsService;
+  let apiService;
+  let endpointsServiceSpy;
+  let fetchOurTeamMembersSpy;
+  let apiServiceSpy;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -27,11 +32,26 @@ describe('OurTeamComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(OurTeamComponent);
+    endpointsService = TestBed.get(EndpointsService);
+    apiService = TestBed.get(ApiService);
     component = fixture.componentInstance;
+    fetchOurTeamMembersSpy = spyOn(component, 'fetchOurTeamMembers').and.callThrough();
+    endpointsServiceSpy = spyOn(endpointsService, 'ourTeamURL').and.callThrough();
+    apiServiceSpy = spyOn(apiService, 'getUrl').and.callThrough();
+
+    expect(fetchOurTeamMembersSpy).not.toHaveBeenCalled();
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should call fetchOurTeamMembers method on init', () => {
+    expect(fetchOurTeamMembersSpy).toHaveBeenCalledTimes(1);
+    expect(endpointsServiceSpy).toHaveBeenCalled();
+    const expectedTeamUrl = 'web/team/';
+    expect(apiServiceSpy).toHaveBeenCalledWith(expectedTeamUrl);
+  });
+
 });

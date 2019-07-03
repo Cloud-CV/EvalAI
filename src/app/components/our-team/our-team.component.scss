@@ -13,9 +13,10 @@
   padding:20px;
   text-align:center;
   .our-team-title {
-  	font-size:$fs-24;
+    color: $gray-dark;
+  	font-size:$fs-36;
   	margin-top:20px;
-  	margin-bottom:30px;
+  	margin-bottom: 20px;
   }
 
   .exist-team-card {
@@ -87,14 +88,14 @@
       max-width: 235px;
       height: 270px;
       border-radius: 6px;
-      @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+      @include box-shadow(0px, 0px, 10px, 5px, $overlay-light);  
       overflow: hidden;
       margin-bottom: 30px;
       margin-left: auto;
       margin-right: auto;
       transition: all 0.2s ease-in-out;
       &:hover {
-      	@include box-shadow(0px, 0px, 10px, 5px, $overlay-light);
+        @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
       }
   }
 
@@ -140,18 +141,33 @@
       text-align: right;
       padding-left: 50px;
       right: 15px;
+      .text-dark-black {
+          color: $dark-black;
+          font-size: $fs-15;
+          font-weight: $fw-semibold;
+      }
+      .text-med-black {
+          color: $dark-black;
+          font-size: $fs-13;
+      }
       h4 {
-          font-size: 16px;
+          font-size: $fs-16;
       }
   }
 
   .team-link-head {
-      padding: 10px 15px;
+      padding: 10px 5px 10px 5px;
       position: absolute;
       width: 100%;
       top: 0;
-      left: 0;
       z-index: 10;
+      margin-left: 0px;
+      .link-team-user {
+          color: $blue-light;
+          padding-right: 0px;
+          font-size: 12px;
+          line-height: 25px;
+      }
       span {
           padding-right: 10px;
           a {
@@ -163,12 +179,6 @@
           font-size: 14px;
           transition: all 0.2s ease-in-out;
       }
-  }
-
-  span.link-team-user {
-      padding-right: 0px;
-      font-size: 12px;
-      line-height: 25px;
   }
 
   .team-heading {

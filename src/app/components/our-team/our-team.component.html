@@ -1,24 +1,32 @@
 <app-header-static></app-header-static>
 <div class="container-top">
-	<div class="our-team-container ">
-	<div class="our-team-title">
-		{{coreTeamType}}
-	</div>
+    <div class="our-team-container">
+        <div class="our-team-title">
+            {{coreTeamType}}
+        </div>
         <div class="row">
             <h3 ng-if="noTeamDisplay" class="team-heading">{{noTeamDisplay}}</h3>
             <!-- This card is for Core Team -->
-            <div class="col-lg-3 col-md-3 col-sm-12" *ngFor="let data of coreTeamDetails">
+            <div class="col-lg-3 col-md-3 col-sm-12" *ngFor="let data of
+                coreTeamDetails">
                 <div class="team-card">
                     <div class="team-link-head">
-                        <span>
-                <a ng-if="data.linkedin_url !== 'null'" href="{{data.linkedin_url}}" target="_blank"><i class="fab fa-linkedin"></i></a>
-            </span>
-                        <span>
-                <a ng-if="data.github_url !== 'null'" href="{{data.github_url}}" target="_blank"><i class="fab fa-github"></i></a>
-            </span>
-                        <span class="right link-team-user">
-                <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}" target="_blank">Personal Website</a>
-            </span>
+                        <span class="col-md-1 col-sm-1 col-xs-1">
+                            <a ng-if="data.linkedin_url !== 'null'"
+                                href="{{data.linkedin_url}}" target="_blank"><i
+                                    class="fab fa-linkedin"></i></a>
+                        </span>
+                        <span class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
+                            <a ng-if="data.github_url !== 'null'"
+                                href="{{data.github_url}}" target="_blank"><i
+                                    class="fab fa-github"></i></a>
+                        </span>
+                        <span class="col-lg-6 col-md-7 col-sm-7 col-xs-6 right
+                            link-team-user">
+                            <a ng-if="data.personal_website !== 'null'"
+                                href="{{data.personal_website}}"
+                                target="_blank">Personal Website</a>
+                        </span>
                     </div>
                     <div class="team-bg">
                         <img src="{{data.background_image || '#'}}">
@@ -38,21 +46,28 @@
         </div>
         <!-- This card is for Contributing Team -->
         <div class="our-team-title">
-        	{{contributingTeamType}}
+            {{contributingTeamType}}
         </div>
         <div class="row">
-            <div class="col-lg-3 col-md-3 col-sm-12" *ngFor="let data of contributingTeamDetails">
+            <div class="col-lg-3 col-md-3 col-sm-12" *ngFor="let data of
+                contributingTeamDetails">
                 <div class="team-card contributor">
                     <div class="team-link-head">
                         <span>
-                <a ng-if="data.linkedin_url !== 'null'" href="{{data.linkedin_url}}" target="_blank"><i class="fab fa-linkedin"></i></a>
-            </span>
+                            <a ng-if="data.linkedin_url !== 'null'"
+                                href="{{data.linkedin_url}}" target="_blank"><i
+                                    class="fab fa-linkedin"></i></a>
+                        </span>
                         <span>
-                <a ng-if="data.github_url !== 'null'" href="{{data.github_url}}" target="_blank"><i class="fab fa-github"></i></a>
-            </span>
+                            <a ng-if="data.github_url !== 'null'"
+                                href="{{data.github_url}}" target="_blank"><i
+                                    class="fab fa-github"></i></a>
+                        </span>
                         <span class="right link-team-user">
-                <a ng-if="data.personal_website !== 'null'" href="{{data.personal_website}}" target="_blank">Personal Website</a>
-            </span>
+                            <a ng-if="data.personal_website !== 'null'"
+                                href="{{data.personal_website}}"
+                                target="_blank">Personal Website</a>
+                        </span>
                     </div>
                     <div class="team-bg">
                         <img src="{{data.background_image || '#'}}">
@@ -70,7 +85,7 @@
                 </div>
             </div>
         </div>
-	</div>
+    </div>
 </div>
 
 <app-footer></app-footer>
