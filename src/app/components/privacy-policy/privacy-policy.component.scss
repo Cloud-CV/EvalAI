@@ -3,15 +3,13 @@
 
 .privacy-container {
   * {
-    color: $gray-darker;
     transition: all 0.2s ease;
-    font-weight:$fw-light;
-    font-size:$fs-16;
   }
   .privacy-nav-container {
     margin-top: 30px;
     top: 10%;
     bottom: 0;
+    max-height: 600px !important;
     overflow-y: scroll;
     
   position: relative;
@@ -37,8 +35,8 @@
       }
 
       li.scroll-selected {
-        color: $red-light;
-        border-left: 5px solid $red-light;
+        color: $yellow;
+        border-left: 5px solid $yellow;
       }
     }
   }
@@ -46,12 +44,12 @@
     margin-top: 30px;
     padding-right: 50px;
     a {
-      color: $red-light;
+      color: $blue-lighter !important;
       font-weight: $fw-regular;
     }
     .scroll-to-top {
       position: fixed;
-      top: 50%;
+      top: 80%;
       right: 4%;
       height: 50px;
       cursor: pointer;
@@ -61,11 +59,13 @@
       }
     }
     .privacy-title {
-      font-size: $fs-24;
-      color: $gray-darker;
+      margin-top: 10px;
+      font-size: $fs-34;
+      color: $med-black;
       font-weight: $fw-semibold;
     }
     .privacy-section-content {
+      color: $med-black;
       font-size: $fs-16;
       margin-top: 20px;
       line-height: 20px;
@@ -75,15 +75,17 @@
       }
     }
     .privacy-section-title {
-      font-size: $fs-18;
-      font-weight: $fw-regular;
+      font-size: $fs-20;
+      color: $med-black;
+      font-weight: $fw-bold;
       margin-top: 20px;
       &.scroll-selected {
-        color: $red-light;
+        color: $yellow;
       }
     }
   }
 }
+
 
 
 @include screen-small-medium {

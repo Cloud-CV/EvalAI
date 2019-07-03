@@ -53,6 +53,17 @@ describe('PrivacyPolicyComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should have only one scroll-selected element after page loads', () => {
+    const scrollSelected = de.queryAll(By.css('.scroll-selected'));
+    expect(scrollSelected.length).toBe(1);
+  });
+
+  it('should have the first title of the privacy nav of scroll-selected element', () => {
+    const scrollSelected = de.query(By.css('.scroll-selected'));
+    const expectedPrivacyNavTitle = 'What personal information do we collect ?';
+    expect(scrollSelected.nativeElement.innerText).toBe(expectedPrivacyNavTitle);
+  });
+
   it('should have equal number of section-title elements as nav elements', () => {
 
     expect(ALL_NAV.length).toBeGreaterThan(0);
@@ -65,6 +76,17 @@ describe('PrivacyPolicyComponent', () => {
       console.log(`LOGE: TARGET: ${ALL_TARGET[index].nativeElement.innerText}`);
       console.log(`LOGE: NAV: ${ele.nativeElement.innerText}`);
       expect(ALL_TARGET[index].nativeElement.innerText).toBe(ele.nativeElement.innerText);
+    });
+  });
+
+  it('should have called the scroll function when scroll selected element is called', () => {
+    const scrollSelected = de.query(By.css('.scroll-selected'));
+    scrollSelected.nativeElement.click();
+
+    fixture.whenStable().then(() => {
+      expect(component.scroll).toHaveBeenCalled();
+      expect(component.highlightNav).toHaveBeenCalled();
+      expect(component.highlightSectionTitle).toHaveBeenCalled();
     });
   });
 
