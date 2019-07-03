@@ -8,11 +8,18 @@
     </div>
     <div class="form">
       <div *ngFor="let item of form">
-        <app-input [isRequired]="item['isRequired']" [label]="item['label']" [placeholder]="item['placeholder']" [type]="item['type']" [theme]="'dark'" [icon]="item['icon']" [value]="item['value']" #formmodal></app-input>
+        <app-input [name]="item['name']" (input)="validateModalInput($event)" [isRequired]="item['isRequired']" [label]="item['label']" [placeholder]="item['placeholder']" [type]="item['type']" [theme]="'dark'" [icon]="item['icon']" [value]="item['value']" #formmodal></app-input>
       </div>
     </div>
     <div class="buttons">
-      <span class="btn btn-filter" appClickstop (click)="denied()">{{deny}}</span> <span class="btn btn-filter selected" appClickstop (click)="formValidate()">{{confirm}}</span>
+      <ul style="margin-right: 20px;" class="inline-list pointer">
+          <li>
+              <a appClickstop (click)="denied()" class="dark-link pointer"><strong class="fw-semibold">{{deny}}</strong></a>
+          </li>
+          <li>
+              <button [disabled]="isDisabled" appClickstop (click)="formValidate()" class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn grad-btn-dark fs-14">{{confirm}}</button>
+          </li>
+      </ul>
     </div>
   </div>
 </div>

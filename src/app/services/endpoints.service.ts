@@ -220,4 +220,21 @@ export class EndpointsService {
   challengeSubmissionsRemainingURL(challenge, phase) {
     return `${this.jobs}${challenge}/phases/${phase}/remaining_submissions`;
   }
+
+  /**
+   * Edit challenge details
+   * @param hostTeam challenge host team id
+   * @param challenge challenge id
+   */
+  editChallengeDetailsURL(hostTeam, challenge) {
+    return `${this.challenges}challenge_host_team/${hostTeam}/${this.challenge}${challenge}`;
+  }
+
+  /**
+   * Delete challenge
+   * @param challenge challenge id
+   */
+  deleteChallengeURL(challenge) {
+    return `${this.challenges}${this.challenge}${challenge}/disable`;
+  }
 }

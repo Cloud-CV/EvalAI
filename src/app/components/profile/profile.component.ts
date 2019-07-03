@@ -49,6 +49,11 @@ export class ProfileComponent implements OnInit {
   isTokenModalVisible = false;
 
   /**
+   * To call the API inside modal for updating the user details and password
+   */
+  apiCall: any;
+
+  /**
    * Form components from 'formtoken'
    */
   @ViewChildren('formtoken')
@@ -121,7 +126,7 @@ export class ProfileComponent implements OnInit {
    */
   updateUserDetails() {
     const SELF = this;
-    const apiCall = (params) => {
+    SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
       console.log(params);
       SELF.apiService.putUrl(SELF.endpointsService.userDetailsURL(),
@@ -165,7 +170,7 @@ export class ProfileComponent implements OnInit {
           value: this.user['affiliation']
         }
       ],
-      confirmCallback: apiCall
+      confirmCallback: SELF.apiCall
     };
     SELF.globalService.showModal(PARAMS);
 
@@ -194,7 +199,7 @@ export class ProfileComponent implements OnInit {
    */
   updatePassword() {
     const SELF = this;
-    const apiCall = (params) => {
+    SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
       console.log(params);
       SELF.apiService.postUrl(SELF.endpointsService.changePasswordURL(),
@@ -241,7 +246,7 @@ export class ProfileComponent implements OnInit {
           type: 'password'
         }
       ],
-      confirmCallback: apiCall
+      confirmCallback: SELF.apiCall
     };
     SELF.globalService.showModal(PARAMS);
   }

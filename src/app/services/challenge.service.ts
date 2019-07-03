@@ -9,6 +9,10 @@ import { EndpointsService } from './endpoints.service';
 export class ChallengeService {
   private defaultChallenge: any = { 'creator': {}};
   private defaultStars: any = { 'count': 0, 'is_starred': false};
+  private defaultPublishChallenge: any = {
+    'state': 'Not Published',
+    'icon': 'fa fa-eye-slash red-text'
+  };
   private isLoggedIn = false;
   private challengeSource = new BehaviorSubject(this.defaultChallenge);
   currentChallenge = this.challengeSource.asObservable();
@@ -24,6 +28,10 @@ export class ChallengeService {
   currentParticipationStatus = this.challengeParticipationSource.asObservable();
   private hostTeamSource = new BehaviorSubject(null);
   currentHostTeam = this.hostTeamSource.asObservable();
+  private challengeHostSource = new BehaviorSubject(false);
+  isChallengeHost = this.challengeHostSource.asObservable();
+  private challengePublishSource = new BehaviorSubject(this.defaultPublishChallenge);
+  currentChallengePublishState = this.challengePublishSource.asObservable();
 
   /**
    * Constructor.
@@ -40,6 +48,22 @@ export class ChallengeService {
    */
   changeCurrentChallenge(challenge: object) {
     this.challengeSource.next(challenge);
+  }
+
+  /**
+   * Update user's challenge host status for current challenge.
+   * @param isChallengeHost  new challenge host status.
+   */
+  changeChallengeHostStatus(isChallengeHost: any) {
+    this.challengeHostSource.next(isChallengeHost);
+  }
+
+  /**
+   * Update challenge publish state and icon for current challenge.
+   * @param publishChallenge  new challenge publish status and icon.
+   */
+  changeChallengePublish(publishChallenge: any) {
+    this.challengePublishSource.next(publishChallenge);
   }
 
   /**
@@ -116,6 +140,18 @@ export class ChallengeService {
         if (data['id'] === parseInt(id, 10)) {
           SELF.changeCurrentChallenge(data);
         }
+        const challengePublish = {
+          state: '',
+          icon: ''
+        };
+        if (data['published']) {
+          challengePublish.state = 'Published';
+          challengePublish.icon = 'fa fa-eye green-text';
+        } else {
+          challengePublish.state = 'Not Published';
+          challengePublish.icon = 'fa fa-eye-slash red-text';
+        }
+        this.changeChallengePublish(challengePublish);
       },
       err => {
         SELF.globalService.handleApiError(err);
@@ -190,6 +226,9 @@ export class ChallengeService {
       data => {
         let teams = [];
         let participated = false;
+        if (data['is_challenge_host']) {
+          SELF.changeChallengeHostStatus(true);
+        }
         if (data['challenge_participant_team_list']) {
           teams = data['challenge_participant_team_list'];
           this.changeCurrentParticipantTeams(teams);
