@@ -65,7 +65,27 @@ body {
 }
 
 
+/*scrollbar customization*/
+::-webkit-scrollbar {
+  width: 4px;
+  border-radius: 10px;
+  height: 3px;
+}
 
+::-webkit-scrollbar-track-piece {
+  background-color: #252833;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  background-color: #adb4d0;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+  background-color: #adb4d0;
+  border-radius: 10px;
+}
 
 
 /*Font weights*/
