@@ -6,12 +6,18 @@
 Welcome to EvalAI's documentation!
 ==================================
 
+
+EvalAI_ is an open source platform for evaluating and comparing machine learning (ML) and artificial intelligence algorithms (AI) at scale.
+
+It is built to provide a scalable solution to the research community to fulfill the critical need of evaluating machine learning models and agents acting in an environment against annotations or with a human-in-the-loop.
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-   setup
+   intro
+   installation
    challenge_creation
    evaluation_scripts
    approve_challenge
@@ -24,6 +30,7 @@ Contents:
    migrations
    contribution
    pull_request
+   cite
    glossary
 
 Indices and tables
@@ -32,3 +39,6 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. _EvalAI: http://evalai.cloudcv.org/
+.. _EvalAI-CLI: http://evalai-cli.cloudcv.org/
