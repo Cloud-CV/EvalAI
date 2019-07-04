@@ -6,12 +6,21 @@ import logging
 from botocore.exceptions import ClientError
 from base.utils import get_boto3_client
 
+from http import HTTPStatus
+
 logger = logging.getLogger(__name__)
 
-"""
-The 3 strings below are converted to dictionaries and passed as keword args to the respective
-boto3 methods.
-"""
+
+DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
+ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
+aws_keys = {
+    "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
+    "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
+    "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+    "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+}
+TASK_ROLE_ARN = os.environ.get("TASK_ROLE_ARN", "")
+TASK_EXECUTION_ROLE_ARN = os.environ.get("TASK_EXECUTION_ROLE_ARN", "")
 
 task_definition = """
 {{
@@ -47,7 +56,7 @@ task_definition = """
                 }},
                 {{
                     "name": "DJANGO_SETTINGS_MODULE",
-                    "value": "settings.prod"
+                    "value": "settings.{env}"
                 }},
                 {{
                     "name": "CHALLENGE_PK",
@@ -128,83 +137,107 @@ update_service_args = """
 }}
 """
 
-aws_keys = {
-    "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
-    "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
-    "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
-    "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-}
-
 
 def client_token_generator():
+    """
+    Returns a 32 characters long client token to ensure idempotency with create_service boto3 requests.
+
+    Parameters: None
+
+    Returns:
+    str: string of size 32 composed of digits and letters
+    """
+
     client_token = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
     return client_token
 
-"""
-Called by: create_service_by_challenge_pk (below).
-
-Registers the task definition for a new challenge, and raises a custom exception
-if the worker service is already active (which is caught by the create_service custom method.).
-"""
-
 
 def register_task_def_by_challenge_pk(client, queue_name, challenge):
+    """
+    Registers the task definition of the worker for a challenge, before creating a service.
+
+    Parameters:
+    client (boto3.client): the client used for making requests to ECS.
+    queue_name (str): queue_name is the queue field of the Challenge model used in many parameters fof the task def.
+    challenge (<class 'challenges.models.Challenge'>): The challenge object for whom the task definition is being registered.
+
+    Returns:
+    dict: A dict of the task definition and it's ARN if succesful, and an error dictionary if not
+    """
+
     container_name = "worker_{}".format(queue_name)
-    image = "{AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-worker:latest".format(AWS_ACCOUNT_ID=aws_keys["AWS_ACCOUNT_ID"])
+    image = "{AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-{env}-worker:latest".format(AWS_ACCOUNT_ID=aws_keys["AWS_ACCOUNT_ID"], env=ENV)
     AWS_DEFAULT_REGION = aws_keys["AWS_REGION"]
     log_group = "{}_logs".format(queue_name)
 
-    task_role_arn = os.environ.get("TASK_ROLE_ARN", "")
-    execution_role_arn = os.environ.get("TASK_EXECUTION_ROLE_ARN", "")
-
-    definition = task_definition.format(queue_name=queue_name, task_role_arn=task_role_arn,
-                                        execution_role_arn=execution_role_arn, container_name=container_name,
-                                        image=image, AWS_DEFAULT_REGION=AWS_DEFAULT_REGION,
-                                        challenge_pk=challenge.pk, log_group=log_group)
-    definition = eval(definition)
-    if challenge.task_def_arn is "":
-        try:
-            response = client.register_task_definition(**definition)
-            task_def_arn = response["taskDefinition"].get("taskDefinitionArn")
-            # To store the task definition arn which will be needed for creating or updating the service later.
-            challenge.task_def_arn = task_def_arn
-            challenge.save()
-            return task_def_arn
-        except Exception as e:
-            logger.info(e)
-            raise
-    error = "Error. Task definition already registered for challenge {}.".format(challenge.pk)
-    raise Exception(error)
+    if TASK_ROLE_ARN and TASK_EXECUTION_ROLE_ARN:
+        definition = task_definition.format(queue_name=queue_name, task_role_arn=TASK_ROLE_ARN,
+                                            execution_role_arn=TASK_EXECUTION_ROLE_ARN, container_name=container_name,
+                                            image=image, AWS_DEFAULT_REGION=AWS_DEFAULT_REGION, env=ENV,
+                                            challenge_pk=challenge.pk, log_group=log_group)
+        definition = eval(definition)
+        if challenge.task_def_arn is "":
+            try:
+                response = client.register_task_definition(**definition)
+                return response
+            except ClientError as e:
+                logger.info(e)
+                return e.response
+        else:
+            message = "Error. Task definition already registered for challenge {}.".format(challenge.pk)
+            return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": None}}
+    else:
+        message = "Please ensure that the TASK_ROLE_ARN & TASK_EXECUTION_ROLE_ARN are appropriately passed as environment varibles."
+        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": None}}
 
 
-# Called by the service_manager.
 def create_service_by_challenge_pk(client, challenge, client_token):
+    """
+    Creates the worker service for a challenge, and sets the number of workers to one.
+
+    Parameters:
+    client (boto3.client): the client used for making requests to ECS
+    challenge (<class 'challenges.models.Challenge'>): The challenge object for whom the task definition is being registered.
+    client_token (str): The client token generated by client_token_generator()
+
+    Returns:
+    dict: The response returned by the create_service method from boto3. If unsuccesful, returns an error dictionary
+    """
+
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
+    task_def_arn = challenge.task_def_arn
     if challenge.workers is None:  # Verify if the challenge is new (i.e, service not yet created.).
-        try:
-            task_def_arn = register_task_def_by_challenge_pk(client, queue_name, challenge)
-        except Exception as e:
-            return e.response["Error"]
-
+        response = register_task_def_by_challenge_pk(client, queue_name, challenge)
+        if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
+            task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+        else:
+            return response
         definition = service_definition.format(service_name=service_name, task_def_arn=task_def_arn, client_token=client_token)
         definition = eval(definition)
         try:
             response = client.create_service(**definition)
-            # To verify if the service has been created on AWS.
-            if (response["ResponseMetadata"]["HTTPStatusCode"] == 200) and (response["service"]["serviceName"] == service_name):
-                challenge.workers = 1
-                challenge.save()
-                message = {"Success": "Service created succesfully."}
-                return message
-            return "Creation for challenge {}.".format(challenge.pk)
+            return response
         except ClientError as e:
-                return e.response["Error"]
-    return "Worker service for challenge {} already exists. Please scale, stop or delete.".format(challenge.pk)
+            return e.response
+    else:
+        message = "Worker service for challenge {} already exists. Please scale, stop or delete.".format(challenge.pk)
+        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": None}}
 
 
-# Called by the service_manager.
 def update_service_by_challenge_pk(client, challenge, num_of_tasks):
+    """
+    Registers the task definition of the worker for a challenge, before creating a service.
+
+    Parameters:
+    client (boto3.client): the client used for making requests to ECS.
+    queue_name (str): queue_name is the queue field of the Challenge model used in many parameters fof the task def.
+    challenge (<class 'challenges.models.Challenge'>): The challenge object for whom the task definition is being registered.
+
+    Returns:
+    dict: The response returned by the update_service method from boto3
+    """
+
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
     task_def_arn = challenge.task_def_arn
@@ -214,25 +247,27 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks):
 
     try:
         response = client.update_service(**definition)
-        # To verify if the service has been updated on AWS.
-        if (response["ResponseMetadata"]["HTTPStatusCode"] == 200) and (response["service"]["serviceName"] == service_name):
-            challenge.workers = num_of_tasks
-            challenge.save()
-            message = {"Success": "Service updated succesfully."}
-            return message
-        return "Update failed for challenge {}.".format(challenge.pk)
+        return response
     except ClientError as e:
-        return e.response['Error']
-
-"""
-Called by: Start, Stop & Scale methods for multiple workers. (Below)
-
-This method determines if the challenge is new or not, and accordingly
-calls the create or update custom method.
-"""
+        return e.response
 
 
 def service_manager(client, challenge, num_of_tasks=None):
+    """
+    This method determines if the challenge is new or not, and accordingly calls <update or create>_by_challenge_pk.
+
+    Called by: Start, Stop & Scale methods for multiple workers.
+
+    Parameters:
+    client (boto3.client): the client used for making requests to ECS.
+    challenge (): The challenge object for whom the task definition is being registered.
+    num_of_tasks: The number of workers to scale to (relevant only if the challenge is not new).
+                  default: None
+
+    Returns:
+    dict: The response returned by the respective functions update_service_by_challenge_pk or create_service_by_challenge_pk
+    """
+
     if challenge.workers is not None:
         response = update_service_by_challenge_pk(client, challenge, num_of_tasks)
         return response
@@ -241,61 +276,87 @@ def service_manager(client, challenge, num_of_tasks=None):
         response = create_service_by_challenge_pk(client, challenge, client_token)
         return response
 
-"""
-The 3 functions below are used directly in the admin action methods and the response returned by
-these are displayed as success or error messages on the admin page
-
-Called by: their respective admin action methods in apps/challenges/admin.py.
-"""
-
 
 def start_workers(queryset):
+    """
+    The function called by the admin action method to start all the selected workers.
+
+    Calls the service_manager method. Before calling, checks if all the workers are incactive.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully started.
+                 'message': the message to be displayed on the django admin page
+    """
+
     ecs = get_boto3_client("ecs", aws_keys)
-    count = 0   # Num of succesful starts.
+    count = 0
     for challenge in queryset:
-        if (challenge.workers == 0) or (challenge.workers is None):  # To verify if the challenge is inactive or new.
+        if (challenge.workers == 0) or (challenge.workers is None):
             response = service_manager(client=ecs, challenge=challenge, num_of_tasks=1)
-            if "Success" not in response:
-                # This response is formatted in the admin page to give 2 messages
-                # 1)Num of succesful starts before error. 2)The error if any for the first failure.
-                return {"count": count, "message": response}
+            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+                return {"count": count, "message": response['Error']}
             count += 1
         else:
             response = {"Error": "Please select only inactive workers."}
             return {"count": count, "message": response}
-    message = "All selected workers succesfully started.".format(count)
+    message = "All selected workers successfully started.".format(count)
     return {"count": count, "message": message}
 
 
 def stop_workers(queryset):
+    """
+    The function called by the admin action method to stop all the selected workers.
+
+    Calls the service_manager method. Before calling, verifies that the challenge is not new, and is active.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully stopped.
+                 'message': the message to be displayed on the django admin page
+    """
+
     ecs = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
-        if (challenge.workers is not None) and (challenge.workers > 0):  # To verify if the challenge is not new and active.
+        if (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(client=ecs, challenge=challenge, num_of_tasks=0)
-            if "Success" not in response:
-                # This response is formatted in the admin page to give 2 messages
-                # 1)Num of succesful stops before error. 2)The error if any for the first failure.
-                return {"count": count, "message": response}
+            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+                return {"count": count, "message": response['Error']}
             count += 1
         else:
             response = {"Error": "Please select running workers."}
             return {"count": count, "message": response}
-    message = "All selected workers succesfully stopped.".format(count)
+    message = "All selected workers successfully stopped.".format(count)
     return {"count": count, "message": message}
 
 
 def scale_workers(queryset, num_of_tasks):
+    """
+    The function called by the admin action method to scale all the selected workers.
+
+    Calls the service_manager method. Before calling, checks if the target scaling number is different than current.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully started.
+                 'message': the message to be displayed on the django admin page
+    """
+
     ecs = get_boto3_client("ecs", aws_keys)
-    count = 0  # Num of succesful scales.
+    count = 0
     for challenge in queryset:
-        if(num_of_tasks == challenge.workers):  # To check if target number is same as current.
+        if (num_of_tasks == challenge.workers):
             return {"count": count, "message": "Please scale to a different number than current worker count."}
         response = service_manager(client=ecs, challenge=challenge, num_of_tasks=num_of_tasks)
-        if "Success" not in response:
-            # This response is formatted in the admin page to give 2 messages
-            # 1)Num of succesful stops before error. 2)The error if any for the first failure.
-            return {"count": count, "message": response}
+        if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+            return {"count": count, "message": response['Error']}
         count += 1
-    message = "All selected workers succesfully scaled.".format(count)
+    message = "All selected workers successfully scaled.".format(count)
     return {"count": count, "message": message}
