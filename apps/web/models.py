@@ -56,4 +56,3 @@ class Team(models.Model):
     class Meta:
         app_label = "web"
         db_table = "teams"
-        unique_together = (("position", "team_type"),)
