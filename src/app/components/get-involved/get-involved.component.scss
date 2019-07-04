@@ -3,9 +3,14 @@
 
 .get-involved-container {
   overflow-x: hidden;
-  * {
-    color: $gray-darker;
-    font-weight: $fw-light;
+  .get-involved-title {
+    font-size: $fs-34;
+    margin-top: 0px;
+    margin-bottom: 13px;
+    font-weight: $fw-semibold;
+    color: #4d4d4d;
+    box-sizing: border-box;
+    line-height: 110%;
   }
   hr {
     margin-left: 100px;
@@ -15,12 +20,8 @@
     border-bottom:0px;
     border-top:1px solid $overlay-light;
   }
-  .get-involved-title {
-    font-size: $fs-24;
-    margin-top:50px;
-    font-weight:$fw-semibold;
-  }
   .get-involved-description {
+    color: #4d4d4d;
     font-size: $fs-16;
     margin-top: 30px;
     margin-bottom:50px;
@@ -28,6 +29,10 @@
     padding-right: 100px;
     line-height: 20px;
     letter-spacing: 0.5px;
+
+    .content-section {
+      color: #4d4d4d;
+    }
   }
   .get-involved-section {
     margin-top: 30px;
@@ -36,23 +41,26 @@
     overflow: auto;
     div {
       .get-involved-section-title {
-        font-size: $fs-18;
+        line-height: 2em;
         font-weight: $fw-semibold;
-        margin-bottom: 30px;
         margin-top: 100px;
+        font-size: $fs-24;
+        color: #4d4d4d;
+        box-sizing: border-box;
       }
       .get-involved-section-body {
+        color: #4d4d4d;
         font-size: $fs-16;
         text-align: left;
         line-height: 20px;
         letter-spacing: 0.5px;
         a {
-          color: $red-light;
-
+          color: $yellow;
           transition: all 0.2s ease-in-out;
-          &:hover {
-            color: $red-dark;
-          }
+        }
+
+        .content-section {
+          color: #4d4d4d;
         }
       }
     }
@@ -69,10 +77,15 @@
 
 
 @include screen-medium {
+  .get-involved-container {
+    .get-involved-title {
+      margin: 0px;
+    }
+  }
   .get-involved-section {
     div {
       .get-involved-section-title {
-        margin-top: 50px;
+        margin: 0px !important;
       }
     }
   }
@@ -94,7 +107,7 @@
       padding-right: 30px;
       div {
         .get-involved-section-title {
-          margin-top: 30px;
+          margin: 0px;
         }
       }
       img {
