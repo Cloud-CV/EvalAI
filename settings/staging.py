@@ -1,6 +1,6 @@
 from .prod import *  # noqa: ignore=F405
 
-ALLOWED_HOSTS = ["staging-evalai.cloudcv.org"]
+ALLOWED_HOSTS = ["staging-evalai.cloudcv.org", ".surge.sh"]
 
 CORS_ORIGIN_ALLOW_ALL = False
 
