@@ -19,8 +19,10 @@ aws_keys = {
     "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
     "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
 }
-TASK_ROLE_ARN = os.environ.get("TASK_ROLE_ARN", "")
-TASK_EXECUTION_ROLE_ARN = os.environ.get("TASK_EXECUTION_ROLE_ARN", "")
+task_roles = {
+    "TASK_ROLE_ARN": os.environ.get("TASK_ROLE_ARN", ""),
+    "TASK_EXECUTION_ROLE_ARN": os.environ.get("TASK_EXECUTION_ROLE_ARN", ""),
+}
 
 task_definition = """
 {{
@@ -170,9 +172,12 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     AWS_DEFAULT_REGION = aws_keys["AWS_REGION"]
     log_group = "{}_logs".format(queue_name)
 
-    if TASK_ROLE_ARN and TASK_EXECUTION_ROLE_ARN:
-        definition = task_definition.format(queue_name=queue_name, task_role_arn=TASK_ROLE_ARN,
-                                            execution_role_arn=TASK_EXECUTION_ROLE_ARN, container_name=container_name,
+    task_role_arn = task_roles["TASK_ROLE_ARN"]
+    execution_role_arn = task_roles["TASK_EXECUTION_ROLE_ARN"]
+
+    if task_role_arn and execution_role_arn:
+        definition = task_definition.format(queue_name=queue_name, task_role_arn=task_role_arn,
+                                            execution_role_arn=execution_role_arn, container_name=container_name,
                                             image=image, AWS_DEFAULT_REGION=AWS_DEFAULT_REGION, env=ENV,
                                             challenge_pk=challenge.pk, log_group=log_group)
         definition = eval(definition)
@@ -302,7 +307,7 @@ def start_workers(queryset):
         else:
             response = {"Error": "Please select only inactive challenges."}
             return {"count": count, "message": response}
-    message = "All selected workers successfully started.".format(count)
+    message = "All selected workers successfully started."
     return {"count": count, "message": message}
 
 
@@ -329,9 +334,9 @@ def stop_workers(queryset):
                 return {"count": count, "message": response['Error']}
             count += 1
         else:
-            response = {"Error": "Please select running workers."}
+            response = {"Error": "Please select only active challenges."}
             return {"count": count, "message": response}
-    message = "All selected workers successfully stopped.".format(count)
+    message = "All selected workers successfully stopped."
     return {"count": count, "message": message}
 
 
@@ -353,10 +358,11 @@ def scale_workers(queryset, num_of_tasks):
     count = 0
     for challenge in queryset:
         if (num_of_tasks == challenge.workers):
-            return {"count": count, "message": "Please scale to a different number than current worker count."}
+            message = "Please scale to a different number than current worker count for challenge {}".format(challenge.pk)
+            return {"count": count, "message": message}
         response = service_manager(client=ecs, challenge=challenge, num_of_tasks=num_of_tasks)
         if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
             return {"count": count, "message": response['Error']}
         count += 1
-    message = "All selected workers successfully scaled.".format(count)
+    message = "All selected workers successfully scaled."
     return {"count": count, "message": message}
