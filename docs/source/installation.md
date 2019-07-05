@@ -25,7 +25,7 @@ Once you have installed [docker] and [docker-compose], please follow these steps
 | User type   | Username    | Password   | Permissions                                                                            |
 | ----------- | ----------- | ---------- | -------------------------------------------------------------------------------------- |
 | Superuser   | admin       | `password` | Perform CRUD operations on all tables in the database<br /> through django admin panel |
-| Host        | host        | `password` | Create and manage challenge details                                                    |
+| Host        | host        | `password` | Create and manage challenges                                                           |
 | Participant | participant | `password` | Participate in different challenges and make submissions                               |
 
 If you are facing any issue during installation, please see our [common errors during installation page](</faq(developers).html#common-errors-during-installation>).

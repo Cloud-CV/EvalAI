@@ -18,7 +18,8 @@ Contents:
 
    intro
    installation
-   challenge_creation
+   host_challenge
+   configuration
    evaluation_scripts
    approve_challenge
    submission

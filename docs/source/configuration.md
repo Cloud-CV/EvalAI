@@ -1,10 +1,6 @@
-# Host challenge
+# Challenge configuration
 
-Hosting a challenge on EvalAI is a three step process. To make life easier for the challenge hosts, we provide a sample challenge configuration that you can use to get started. Fork and clone [EvalAI-Starters] repository to start.
-
-#### 1. Create challenge configuration file
-
-First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) if you have cloned the [EvalAI-Starters] repository or create one. This file will define the start date, end date, number of phases and many more details of the challenge. Start editing this file according to your needs. For reference to the fields, refer to the following description:
+Following fields are required (and can be customized) in the [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml).
 
 - **title**: Title of the challenge
 
@@ -20,24 +16,24 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
 
 - **submission_guidelines**: Submission guidelines of the challenge (use a relative path for the HTML file, e.g. `challenge_details/submission_guidelines.html`)
 
-- **evaluation_script**: The evaluation script using which the submissions will be evaluated (path of the evaluation script file or folder relative to this YAML file.)
+- **evaluation_script**: Python script which will decide how to evaluate submissions in different phases (path of the evaluation script file or folder relative to this YAML file. For e.g. `evaluation_script/`)
 
-- **remote_evaluation**: True/False (specify whether evaluation will happen on private machine or not. Default is `False`)
+- **remote_evaluation**: True/False (specify whether evaluation will happen on a remote machine or not. Default is `False`)
 
 - **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` timezone
 
 - **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` timezone
 
-- **published**: True/False (a Boolean field that gives the flexibility to publish the challenge once approved by EvalAI Admin. Default is `False`)
+- **published**: True/False (boolean field that gives the flexibility to publish the challenge once approved by EvalAI admin. Default is `False`)
 
-- **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants in these email domains will only be allowed to participate.)
+- **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will only be allowed to participate.)
 
-- **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` The participants with these email domains will not be allowed to participate.)
+- **blocked_emails_domains**: A list of domains not allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will not be allowed to participate.)
 
 - **leaderboard**:
   A leaderboard for a challenge on EvalAI consists of following subfields:
 
-  - **id**: Unique integer field for each leaderboard entry
+  - **id**: Unique positive integer field for each leaderboard entry
 
   - **schema**: Schema field contains the information about the rows of the leaderboard. A schema contains two keys in the leaderboard:
 
@@ -126,27 +122,3 @@ First of all, open the [`challenge_config.yml`](https://github.com/Cloud-CV/Eval
     - OWNER AND HOST: 2
 
     - PUBLIC: 3
-
-#### 2. Write evaluation script
-
----
-
-Please refer to the [writing evaluation script section](evaluation_scripts.html) to know more.
-
-#### 3. Add challenge details and upload
-
----
-
-We are almost there. Now, you just need to update the HTML templates. EvalAI supports all kinds of HTML tags which means you can add images, videos, tables etc. Moreover, you can add inline CSS to add custom styling to your challenge details.
-
-#### Next Steps
-
----
-
-The next step is to create a zip file that contains the YAML config file, all the HTML templates for the challenge description, challenge phase description, evaluation criteria, submission guidelines, evaluation script, test annotation file(s) and challenge logo (optional).
-
-The final step is to create a challenge host team for the challenge on EvalAI. After that, just upload the zip folder created in the above steps and the challenge will be created.
-
-If you have issues in creating a challenge on EvalAI, please feel free to create an issue on our [Github Issues Page](https://github.com/Cloud-CV/EvalAI/issues/new).
-
-[evalai-starters]: https://github.com/cloud-CV/evalai-starters
