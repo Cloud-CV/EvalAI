@@ -207,10 +207,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         all_participants_email = participant_team.get_all_participants_email()
-        for i in all_participants_email:
-            if i in challenge.banned_email_ids:
+        for participant_email in all_participants_email:
+            if participant_email in challenge.banned_email_ids:
+                message = "You're a part of {} team and it has been banned from this challenge. \
+                Please contact the challenge host.".format(participant_team.team_name)
                 response_data = {
-                    "error": "Sorry, You cannot make submissions in this challenge due to the inappropriate behaviour"
+                    "error": message
                 }
                 return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
