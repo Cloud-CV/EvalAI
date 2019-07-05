@@ -1843,6 +1843,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.leaderboard_data.id,
+                    "submission__participant_team": self.submission.participant_team.id,
                     "submission__participant_team__team_name": self.submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
@@ -1863,7 +1864,6 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         expected = collections.OrderedDict(expected)
 
         response = self.client.get(self.url, {})
-
         self.assertEqual(response.data["count"], expected["count"])
         self.assertEqual(response.data["next"], expected["next"])
         self.assertEqual(response.data["previous"], expected["previous"])
@@ -1886,8 +1886,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.host_participant_leaderboard_data.id,
-                    "submission__participant_team__team_name":
-                        self.host_participant_team_submission.participant_team.team_name,
+                    "submission__participant_team": self.host_participant_team_submission.participant_team.id,
+                    "submission__participant_team__team_name": self.host_participant_team_submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team,
@@ -1904,6 +1904,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 },
                 {
                     "id": self.leaderboard_data.id,
+                    "submission__participant_team": self.submission.participant_team.id,
                     "submission__participant_team__team_name": self.submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
@@ -1953,9 +1954,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.host_participant_leaderboard_data.id,
-                    "submission__participant_team__team_name":
-                        self.host_participant_team_submission.participant_team.team_name,
-                        "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
+                    "submission__participant_team": self.host_participant_team_submission.participant_team.id,
+                    "submission__participant_team__team_name": self.host_participant_team_submission.participant_team.team_name,
+                    "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team,
                     "filtering_score": self.filtering_score_host_participant_team,
@@ -1971,6 +1972,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 },
                 {
                     "id": self.leaderboard_data.id,
+                    "submission__participant_team": self.submission.participant_team.id,
                     "submission__participant_team__team_name": self.submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
@@ -1988,8 +1990,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 },
                 {
                     "id": self.host_participant_leaderboard_data_2.id,
-                    "submission__participant_team__team_name":
-                        self.host_participant_team_submission_2.participant_team.team_name,
+                    "submission__participant_team": self.host_participant_team_submission_2.participant_team.id,
+                    "submission__participant_team__team_name": self.host_participant_team_submission_2.participant_team.team_name,
                     "submission__participant_team__team_url": self.host_participant_team_submission_2.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team_2,
@@ -2069,6 +2071,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.private_leaderboard_data.id,
+                    "submission__participant_team": self.private_submission.participant_team.id,
                     "submission__participant_team__team_name": self.private_submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.private_submission.participant_team.team_url,
                     "challenge_phase_split": self.private_challenge_phase_split.id,
