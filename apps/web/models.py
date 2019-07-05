@@ -48,6 +48,7 @@ class Team(models.Model):
         upload_to="bg-images", null=True, blank=True
     )
     team_type = models.CharField(choices=TEAM_TYPE_OPTIONS, max_length=50)
+    position = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name
