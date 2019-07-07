@@ -172,7 +172,7 @@ class BaseAPITestClass(APITestCase):
         )
 
         self.rl_submission_file = SimpleUploadedFile(
-            "dummy_input.txt", b'{"submitted_image_uri": "github.com"}', content_type="text/plain"
+            "submission.json", b'{"submitted_image_uri": "evalai-repo.com"}',
         )
 
     def tearDown(self):

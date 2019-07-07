@@ -237,29 +237,30 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "request": request,
             },
         )
+        message = dict()
+        if challenge.is_docker_based:
+            try:
+                file_content = json.loads(
+                    request.FILES['input_file'].read()
+                )
+                message["submitted_image_uri"] = file_content["submitted_image_uri"]
+            except:
+                response_data = {
+                    "error": "Error in deserializing submitted_image_uri from submission file"
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
             submission = serializer.instance
-            message = {
+            message.update({
                 "challenge_pk": challenge_id,
                 "phase_pk": challenge_phase_id,
                 "submission_pk": submission.id
-            }
+            })
             # publish message in the queue
-            if challenge.is_docker_based:
-                try:
-                    file_content = json.loads(
-                        request.FILES['input_file'].read()
-                    )
-                    message["submitted_image_uri"] = file_content["submitted_image_uri"]
-                except:
-                    response_data = {
-                        "error": "Error in deserializing submitted_image_uri from submission file"
-                    }
-                    return Response(
-                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
-                    )
             publish_submission_message(message)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(
