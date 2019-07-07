@@ -14,6 +14,8 @@ omit =
     settings/dev.py
     settings/prod.py
     scripts/seed.py
+    node_modules/
+    bower_components/
 source = evalai/
 
 [report]
