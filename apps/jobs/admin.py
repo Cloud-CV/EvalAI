@@ -65,9 +65,11 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
                     challenge_id, challenge_phase_id, submission_id
                 )
             )
-            publish_submission_message(
-                challenge_id, challenge_phase_id, submission.id
-            )
+            publish_submission_message({
+                    "challenge_pk": challenge_id,
+                    "phase_pk": challenge_phase_id,
+                    "submission_pk": submission.id
+            })
             queryset.update(status=Submission.SUBMITTED)
 
     submit_job_to_worker.short_description = "Run selected submissions"
