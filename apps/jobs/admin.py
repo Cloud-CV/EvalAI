@@ -66,9 +66,9 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
                 )
             )
             publish_submission_message({
-                    "challenge_pk": challenge_id,
-                    "phase_pk": challenge_phase_id,
-                    "submission_pk": submission.id
+                "challenge_pk": challenge_id,
+                "phase_pk": challenge_phase_id,
+                "submission_pk": submission.id
             })
             queryset.update(status=Submission.SUBMITTED)
 
