@@ -50,9 +50,8 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
-        vm.participant_team_name = '';
-
-        filter_my_submission_by_team_name = '';
+        vm.filter_all_submission_by_team_name = '';
+        vm.filter_my_submission_by_team_name = '';
         // show loader
         vm.startLoader = loaderService.startLoader;
         // stop loader
@@ -732,7 +731,7 @@
             vm.currentPage = '';
             vm.showPagination = false;
 
-            if (filter_my_submission_by_team_name === '') {
+            if (vm.filter_my_submission_by_team_name === '') {
                 parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
                 vm.phaseId + "/submission/";
             } else {
@@ -1054,12 +1053,12 @@
             vm.isPrev = '';
             vm.currentPage = '';
             vm.showPagination = false;
-            if (vm.participant_team_name === '') {
-                parameters.url = "challenges/" + vm.challengeId +
-                "/challenge_phase/" + vm.phaseId + "/submissions";
+            if (vm.filter_all_submission_by_team_name === '') {
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submissions";
             } else {
-                parameters.url = "challenges/" + vm.challengeId +
-                "/challenge_phase/" + vm.phaseId + "/submissions?participant_team__team_name=" + vm.participant_team_name;
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submissions?participant_team__team_name=" + vm.filter_all_submission_by_team_name;
             }
             parameters.method = 'GET';
             parameters.data = {};
