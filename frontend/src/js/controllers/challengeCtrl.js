@@ -686,7 +686,6 @@
         }
 
         vm.getResults = function(phaseId) {
-            console.log('now');
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };

@@ -70,7 +70,6 @@ from participants.utils import (
 )
 
 from jobs.filters import SubmissionFilter
-from django.core import serializers
 
 from .models import (
     Challenge,
@@ -1180,10 +1179,12 @@ def get_all_submissions_of_challenge(
             )
         }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
     # To check for the user as a host of the challenge from the request and challenge_pk.
     if is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     ):
+
         # Filter submissions on the basis of challenge for host for now. Later on, the support for query
         # parameters like challenge phase, date is to be added.
         submissions = Submission.objects.filter(
@@ -1201,6 +1202,7 @@ def get_all_submissions_of_challenge(
     elif has_user_participated_in_challenge(
         user=request.user, challenge_id=challenge_pk
     ):
+
         # get participant team object for the user for a particular challenge.
         participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
             request.user, challenge_pk

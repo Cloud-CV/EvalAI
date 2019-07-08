@@ -1,6 +1,5 @@
 import django_filters
 from .models import Submission
-from django.db import models
 
 
 class SubmissionFilter(django_filters.FilterSet):
