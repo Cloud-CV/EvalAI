@@ -16,14 +16,12 @@ EvalAI supports hosting challenges with different configurations. Challenge orga
 
 We have hosted challenges from different domains such as:
 
-- Machine learning
-- Computer vision
-- Deep learning
-- Natural language processing
-- Healthcare
-- Self-driving cars
-
-<!-- TODO: Add a collage image to show what all challenges we have hosted till now. -->
+- Machine learning ([2019 SIOP Machine Learning Competition](https://evalai.cloudcv.org/web/challenges/challenge-page/160/leaderboard/481))
+- Deep learning ([Visual Dialog Challenge 2019 ](https://evalai.cloudcv.org/web/challenges/challenge-page/161/leaderboard/483))
+- Computer vision ([Vision and Language Navigation](https://evalai.cloudcv.org/web/challenges/challenge-page/97/leaderboard/270))
+- Natural language processing ([VQA Challenge 2019](https://evalai.cloudcv.org/web/challenges/challenge-page/163/leaderboard/498))
+- Healthcare ([fastMRI Image Reconstruction ](https://evalai.cloudcv.org/web/challenges/challenge-page/153/leaderboard/447))
+- Self-driving cars ([CARLA Autonomous Driving Challenge](https://evalai.cloudcv.org/web/challenges/challenge-page/246/leaderboard/817))
 
 We categorize the challenges in two categories:
 
