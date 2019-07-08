@@ -52,7 +52,7 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
 )
-
+from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
 from .serializers import (
@@ -147,7 +147,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             participant_team=participant_team_id,
             challenge_phase=challenge_phase,
         ).order_by("-submitted_at")
-        paginator, result_page = paginated_queryset(submission, request)
+        filtered_submissions = SubmissionFilter(request.GET, queryset=submission)
+        paginator, result_page = paginated_queryset(filtered_submissions.qs, request)
         serializer = SubmissionSerializer(
             result_page, many=True, context={"request": request}
         )
