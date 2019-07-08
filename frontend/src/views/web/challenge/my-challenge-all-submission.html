@@ -46,10 +46,27 @@
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
                         </div>
                     </div>
+                    <br>
+                    <div ng-if="challenge.isResult">
+                        <div class="row rm-margin">
+                            <div class="col s12">
+                                <strong>Filter Submissions by Team name</strong>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="input-field align-left col s6">
+                                <form method="GET">
+                                    <input type="text" name="participant_team__team_name" ng-keyup="challenge.getAllSubmissionResults(key.id)" ng-model="challenge.participant_team_name" id="participant_team__team_name" /></td></tr>
+                                    <label for="participant_team__team_name">Team name</label>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
                         <div class="col s12 all-submission-table-scroll">
+                            <div ng-if="(challenge.showPagination == false) && (challenge.isResult == true)" class="result-wrn">No results found.</div>
                             <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
                             <table ng-if="challenge.isResult" class="highlight all-submission-table responsive-table">
                                 <thead>
