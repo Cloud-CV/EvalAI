@@ -22,16 +22,16 @@ Contents:
    configuration
    evaluation_scripts
    approve_challenge
-   submission
+   participate
+   pull_request
+   contribution
    architecture
    architecture_decisions
    directory_structure
-   participate
-   faq(developers)
+   submission
    migrations
-   contribution
-   pull_request
    cite
+   faq(developers)
    glossary
 
 Indices and tables

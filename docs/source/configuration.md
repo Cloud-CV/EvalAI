@@ -41,7 +41,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
     2. `default_order_by`: This key decides the default sorting of the leaderboard based on one of the labels defined above.
 
-  The leaderboard schema for the sample challenge configuration given [here](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) looks like this:
+  The leaderboard schema for the [sample challenge configuration](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) looks like this:
 
   ```yaml
   leaderboard:
@@ -53,13 +53,13 @@ Following fields are required (and can be customized) in the [`challenge_config.
         }
   ```
 
-  The above schema of the leaderboard for Random Number Generator Challenge creates the leaderboard web interface like this:
+  The above leaderboard schema will look something like this on leaderboard UI:
 
-  ![Leaderboard](_static/img/leaderboard.png "Random Number Generator Challenge - Leaderboard")
+  ![](_static/img/leaderboard.png "Random Number Generator Challenge - Leaderboard")
 
-- **challenge_phases**:
+* **challenge_phases**:
 
-  There can be multiple challenge phases in a challenge. A challenge phase in a challenge contains the following subfields:
+  There can be multiple [challenge phases](/glossary.html#challenge-phase) in a challenge. A challenge phase in a challenge contains the following subfields:
 
   - **id**: Unique integer identifier for the challenge phase
 
@@ -79,7 +79,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **test_annotation_file**: This file is used for ranking the submission made by a participant. An annotation file can be shared by more than one challenge phase. (Path of the test annotation file relative to this YAML file, e.g. `challenge_details/test_annotation.txt`)
 
-  - **codename**: Challenge phase codename. Note that the codename of a challenge phase is used to map the results returned by the evaluation script to a particular challenge phase. The codename specified here should match with the codename specified in the evaluation script to perfect mapping.
+  - **codename**: Unique id for each challenge phase. Note that the codename of a challenge phase is used to map the results returned by the evaluation script to a particular challenge phase. The codename specified here should match with the codename specified in the evaluation script to perfect mapping.
 
   - **max_submissions_per_day**: Positive integer which tells the maximum number of submissions per day to a challenge phase.
 
@@ -89,36 +89,33 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **dataset_splits**:
 
-  Many of the AI challenges are based on static datasets. A dataset related to a challenge generally has 3 dataset splits:
+  Dataset splits define the the subset of test-set on which the submissions will be evaluated on. Generally, most challenges have two splits:
 
-  1. Training set
-  2. Validation set
-  3. Test set
-
-  While creating splits for a challenge, you can have any number of splits where you can use some splits for checking if some participant team is cheating or not by doing some extra analysis on that split. The possibilities are endless.
+  1. **test-dev** (Allow participants to make large number of submissions, let them see how they are doing, and let them overfit)
+  2. **test-challenge** (Allow small number of submissions so that they cannot mimic test-set. Use this split to decide the winners for the challenge)
 
   A dataset split has the following subfields:
 
-  - **id**: Unique integer identifier for the dataset split
+  - **id**: Unique integer identifier for the split
 
-  - **name**: Name of the dataset split (it must be unique for every dataset split)
+  - **name**: Name of the split (it must be unique for every split)
 
-  - **codename**: Codename of dataset split. Note that the codename of a dataset split is used to map the results returned by the evaluation script to a particular dataset split in EvalAI's database. Please make sure that no two dataset splits have the same codename. Again, make sure that the dataset split's codename match with what is in the evaluation script provided by the challenge host.
+  - **codename**: Unique id for each split. Note that the codename of a dataset split is used to map the results returned by the evaluation script to a particular dataset split in EvalAI's database. Please make sure that no two dataset splits have the same codename. Again, make sure that the dataset split's codename match with what is in the evaluation script provided by the challenge host.
 
 - **challenge_phase_splits**:
 
   A challenge phase split is a relation between a challenge phase and dataset splits for a challenge (many to many relation). This is used to set the privacy of submissions (public/private) to different dataset splits for different challenge phases.
 
-  - **challenge_phase_id**: Id of challenge_phase (Gets the challenge phase details to map with)
+  - **challenge_phase_id**: Id of `challenge_phase` to map with
 
-  - **leaderboard_id**: Id of leaderboard (Given above)
+  - **leaderboard_id**: Id of `leaderboard`
 
-  - **dataset_split_id**: Id of dataset split (Given above)
+  - **dataset_split_id**: Id of `dataset_split`
 
-  - **visibility**: Enter any of the positive integers given below.
+  - **visibility**: It will set the visibility of the numbers corresponding to metrics for this `challenge_phase_split`. Select one of the following positive integers based on the visibility level you want:
 
-    - HOST: 1
-
-    - OWNER AND HOST: 2
-
-    - PUBLIC: 3
+  | Visibility | Description                                                             |
+  | ---------- | ----------------------------------------------------------------------- |
+  | 1          | Only visible to challenge host                                          |
+  | 2          | Only visible to challenge host and participant who made that submission |
+  | 3          | Visible to everyone on leaderboard                                      |
