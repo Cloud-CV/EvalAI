@@ -135,7 +135,7 @@ update_service_args = """
     "service":"{service_name}",
     "desiredCount":num_of_tasks,
     "taskDefinition":"{task_def_arn}",
-    "forceNewDeployment":False
+    "forceNewDeployment":{forceNewDeployment}
 }}
 """
 
@@ -251,17 +251,33 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks):
     service_name = "{}_service".format(queue_name)
     task_def_arn = challenge.task_def_arn
 
-    definition = update_service_args.format(service_name=service_name, task_def_arn=task_def_arn)
-    definition = eval(definition)
+    kwargs = update_service_args.format(service_name=service_name, task_def_arn=task_def_arn, forceNewDeployment=False)
+    kwargs = eval(kwargs)
 
     try:
-        response = client.update_service(**definition)
+        response = client.update_service(**kwargs)
         if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
             challenge.workers = num_of_tasks
             challenge.save()
         return response
     except ClientError as e:
         return e.response
+
+def delete_service_by_challenge_pk(client, challenge):
+    queue_name = challenge.queue
+    service_name = "{}_service".format(queue_name)
+    kwargs = delete_service_args.format(service_name=service_name, force=True)
+    kwargs = eval(kwargs)
+    try:
+        client.deregister_task_definition(taskDefinition=challenge.task_def_arn)
+        response = client.delete_service(**kwargs)
+        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+            challenge.workers = None
+            challenge.task_def_arn = ""
+            challenge.save()
+        return response
+    except ClientError as e:
+            return e.response
 
 
 def service_manager(client, challenge, num_of_tasks=None):
@@ -279,14 +295,16 @@ def service_manager(client, challenge, num_of_tasks=None):
     Returns:
     dict: The response returned by the respective functions update_service_by_challenge_pk or create_service_by_challenge_pk
     """
-
-    if challenge.workers is not None:
-        response = update_service_by_challenge_pk(client, challenge, num_of_tasks)
-        return response
+    if challenge.is_active:
+        if challenge.workers is not None:
+            response = update_service_by_challenge_pk(client, challenge, num_of_tasks)
+            return response
+        else:
+            client_token = client_token_generator()
+            response = create_service_by_challenge_pk(client, challenge, client_token)
+            return response
     else:
-        client_token = client_token_generator()
-        response = create_service_by_challenge_pk(client, challenge, client_token)
-        return response
+        response = delete_service_by_challenge_pk(client, challenge)
 
 
 def start_workers(queryset):
@@ -343,7 +361,7 @@ def stop_workers(queryset):
         else:
             response = {"Error": "Please select only active challenges."}
             return {"count": count, "message": response}
-    message = "All selected workers successfully stopped."
+    message = "All selected challenge workers successfully stopped."
     return {"count": count, "message": message}
 
 
@@ -371,5 +389,67 @@ def scale_workers(queryset, num_of_tasks):
         if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
             return {"count": count, "message": response['Error']}
         count += 1
-    message = "All selected workers successfully scaled."
+    message = "All selected challenge workers successfully scaled."
     return {"count": count, "message": message}
+
+def delete_workers(queryset):
+    ecs = get_boto3_client("ecs", aws_keys)
+    count = 0
+    for challenge in queryset:
+        if challenge.workers is not None:
+        response = service_manager(client=ecs, challenge=challenge, num_of_tasks=num_of_tasks)
+        else:
+            response = {"Error": "Please select only active challenges."}
+            return {"count": count, "message": response}
+
+        if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+            return {"count": count, "message": response['Error']}
+        count += 1
+    message = "All selected challenge workers successfully deleted."
+    return {"count": count, "message": message}
+
+def restart_service_by_pk(client, challenge):  # Call this automatically on any changes in relevant config of the model.
+    queue_name = challenge.queue
+    service_name = "{}_service".format(queue_name)
+    task_def_arn = challenge.task_def_arn
+    num_of_tasks = challenge.workers
+
+    kwargs = update_service_args.format(service_name=service_name, task_def_arn=task_def_arn, forceNewDeployment=True)
+    kwargs = eval(kwargs)
+
+    try:
+        response = client.update_service(**kwargs)
+        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+            challenge.workers = num_of_tasks
+            challenge.save()
+        return response
+    except ClientError as e:
+        return e.response
+
+def restart_workers(queryset):
+    ecs = get_boto3_client("ecs", aws_keys)
+    count = 0
+    for challenge in queryset:
+        if (challenge.workers is not None) and (challenge.workers > 0):
+            response = restart_worker_by_pk(challenge)
+        else:
+            message = "Please select only active challenges."
+            return {"count": count, "message": message}
+
+        if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+            return {"count": count, "message": response['Error']}
+        count += 1
+    message = "All selected challenge workers successfully restarted."
+    return {"count": count, "message": message}
+
+
+def restart_service_signal_callback(sender, instance, field_name, **kwargs):
+    """
+    Called when either evaluation_script or test_annotation_script for challenge
+    is updated, to restart the challenge workers.
+    """
+    prev = getattr(instance, "_original_{}".format(field_name))
+    curr = getattr(instance, "{}".format(field_name))
+    if prev != curr:
+        restart_workers([instance])
+        logger.info("The worker service for challenge {} was restarted.".format(instance.pk))
