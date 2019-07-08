@@ -20,7 +20,7 @@ aws_keys = {
     "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
 }
 
-TASK_ROLE_ARN =  os.environ.get("TASK_ROLE_ARN", ""),
+TASK_ROLE_ARN = os.environ.get("TASK_ROLE_ARN", ""),
 TASK_EXECUTION_ROLE_ARN = os.environ.get("TASK_EXECUTION_ROLE_ARN", "")
 
 
@@ -136,6 +136,14 @@ update_service_args = """
     "desiredCount":num_of_tasks,
     "taskDefinition":"{task_def_arn}",
     "forceNewDeployment":{forceNewDeployment}
+}}
+"""
+
+delete_service_args = """
+{{
+    cluster: Challenge_Cluster,
+    service: {service_name},
+    force: {force}
 }}
 """
 
@@ -263,6 +271,7 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks):
     except ClientError as e:
         return e.response
 
+
 def delete_service_by_challenge_pk(client, challenge):
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
@@ -304,7 +313,7 @@ def service_manager(client, challenge, num_of_tasks=None):
             response = create_service_by_challenge_pk(client, challenge, client_token)
             return response
     else:
-        response = delete_service_by_challenge_pk(client, challenge)
+        return {"Error": "Challenge is inactive."}
 
 
 def start_workers(queryset):
@@ -392,12 +401,13 @@ def scale_workers(queryset, num_of_tasks):
     message = "All selected challenge workers successfully scaled."
     return {"count": count, "message": message}
 
+
 def delete_workers(queryset):
     ecs = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
         if challenge.workers is not None:
-        response = service_manager(client=ecs, challenge=challenge, num_of_tasks=num_of_tasks)
+            response = delete_service_by_challenge_pk(client=ecs, challenge=challenge)
         else:
             response = {"Error": "Please select only active challenges."}
             return {"count": count, "message": response}
@@ -408,7 +418,8 @@ def delete_workers(queryset):
     message = "All selected challenge workers successfully deleted."
     return {"count": count, "message": message}
 
-def restart_service_by_pk(client, challenge):  # Call this automatically on any changes in relevant config of the model.
+
+def restart_workers_by_pk(client, challenge):  # Call this automatically on any changes in relevant config of the model.
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
     task_def_arn = challenge.task_def_arn
@@ -426,12 +437,13 @@ def restart_service_by_pk(client, challenge):  # Call this automatically on any 
     except ClientError as e:
         return e.response
 
+
 def restart_workers(queryset):
     ecs = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
         if (challenge.workers is not None) and (challenge.workers > 0):
-            response = restart_worker_by_pk(challenge)
+            response = restart_workers_by_pk(ecs, challenge)
         else:
             message = "Please select only active challenges."
             return {"count": count, "message": message}
@@ -443,7 +455,7 @@ def restart_workers(queryset):
     return {"count": count, "message": message}
 
 
-def restart_service_signal_callback(sender, instance, field_name, **kwargs):
+def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     """
     Called when either evaluation_script or test_annotation_script for challenge
     is updated, to restart the challenge workers.
