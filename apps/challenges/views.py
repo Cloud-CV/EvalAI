@@ -56,6 +56,7 @@ from hosts.utils import (
     is_user_a_host_of_challenge,
     get_challenge_host_team_model,
 )
+from jobs.filters import SubmissionFilter
 from jobs.models import Submission
 from jobs.serializers import (
     SubmissionSerializer,
@@ -68,8 +69,6 @@ from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge,
     get_participant_team_of_user_for_a_challenge,
 )
-
-from jobs.filters import SubmissionFilter
 
 from .models import (
     Challenge,
