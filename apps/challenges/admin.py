@@ -21,6 +21,7 @@ from .aws_utils import (
     start_workers,
     stop_workers,
     scale_workers,
+    delete_workers,
 )
 
 
@@ -73,9 +74,9 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         if(count == queryset.count()):
             messages.success(request, message)
         else:
-            messages.success(request, "{} workers were succesfully started.".format(count))
+            messages.success(request, "{} challenge workers were succesfully started.".format(count))
             messages.error(request, message)
-    start_selected_workers.short_description = "Start all selected workers."
+    start_selected_workers.short_description = "Start all selected challenge workers."
 
     def stop_selected_workers(self, request, queryset):
         response = stop_workers(queryset)
@@ -85,9 +86,9 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         if(count == queryset.count()):
             messages.success(request, message)
         else:
-            messages.success(request, "{} workers were succesfully stopped.".format(count))
+            messages.success(request, "{} challenge workers were succesfully stopped.".format(count))
             messages.error(request, message)
-    stop_selected_workers.short_description = "Stop all selected workers."
+    stop_selected_workers.short_description = "Stop all selected challenge workers."
 
     def scale_selected_workers(self, request, queryset):
         num_of_tasks = int(request.POST['num_of_tasks'])
@@ -98,11 +99,23 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
             if(count == queryset.count()):
                 messages.success(request, message)
             else:
-                messages.success(request, "{} workers were succesfully scaled.".format(count))
+                messages.success(request, "{} challenge workers were succesfully scaled.".format(count))
                 messages.error(request, message)
         else:
             messages.warning(request, "Please enter a valid whole number to scale.")
-    scale_selected_workers.short_description = "Scale all selected workers to a given number."
+    scale_selected_workers.short_description = "Scale all selected challenge workers to a given number."
+
+    def delet_selected_workers(self, request, queryset):
+        response = delete_workers(queryset)
+        count = response["count"]
+        message = response["message"]
+
+        if(count == queryset.count()):
+            messages.success(request, message)
+        else:
+            messages.success(request, "{} challenge workers were succesfully deleted.".format(count))
+            messages.error(request, message)
+    delet_selected_workers.short_description = "Delete all selected challenge workers."
 
 
 @admin.register(ChallengeConfiguration)
