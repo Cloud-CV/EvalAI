@@ -30,6 +30,26 @@ export class ModalComponent implements OnInit {
   content = '';
 
   /**
+   * If rich text editor required
+   */
+  isEditorRequired = false;
+
+  /**
+   * Modal edit content
+   */
+  editorContent = '';
+
+  /**
+   * If editor error message
+   */
+  isInputMessage = false;
+
+  /**
+   * Editor validation message
+   */
+  editorValidationMessage = '';
+
+  /**
    * Modal accept button
    */
   confirm = 'Yes';
@@ -84,6 +104,12 @@ export class ModalComponent implements OnInit {
       if (this.params['title']) {
         this.title = this.params['title'];
       }
+      if (this.params['isEditorRequired']) {
+        this.isEditorRequired = this.params['isEditorRequired'];
+      }
+      if (this.params['editorContent']) {
+        this.editorContent = this.params['editorContent'];
+      }
       if (this.params['content']) {
         this.content = this.params['content'];
       }
@@ -102,6 +128,9 @@ export class ModalComponent implements OnInit {
       if (this.params['form'] && this.params['form'].length > 0) {
         this.form = this.params['form'];
       }
+    }
+    if (this.isEditorRequired) {
+      this.isDisabled = false;
     }
 
     this.challengeService.currentChallenge.subscribe(challenge => this.challenge = challenge);
@@ -122,9 +151,23 @@ export class ModalComponent implements OnInit {
    * Modal Confirmed.
    */
   confirmed(self) {
-    self.globalService.hideModal();
-    const PARAMS = self.globalService.formFields(self.formComponents);
-    self.confirmCallback(PARAMS);
+    const content_text = document.createElement('div');
+    content_text.innerHTML = this.editorContent;
+    const actual_text = content_text.textContent || content_text.innerText || '';
+    if (actual_text.trim() === '') {
+      this.denyCallback();
+      this.isInputMessage = true;
+      this.editorValidationMessage = 'Challenge description cannot be empty!';
+    } else {
+      self.globalService.hideModal();
+      let PARAMS = self.globalService.formFields(self.formComponents);
+      if (this.isEditorRequired) {
+        PARAMS = {
+          description: this.editorContent
+        };
+      }
+      self.confirmCallback(PARAMS);
+    }
   }
 
   /**

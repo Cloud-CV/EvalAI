@@ -6,6 +6,8 @@
     <div class="content">
       {{content}}
     </div>
+    <div class="editor-validation-message" *ngIf="isEditorRequired && isInputMessage">{{editorValidationMessage}}</div>
+    <div *ngIf="isEditorRequired" [froalaEditor] [(froalaModel)]="editorContent"></div>
     <div class="form">
       <div *ngFor="let item of form">
         <app-input [name]="item['name']" (input)="validateModalInput($event)" [isRequired]="item['isRequired']" [label]="item['label']" [placeholder]="item['placeholder']" [type]="item['type']" [theme]="'dark'" [icon]="item['icon']" [value]="item['value']" #formmodal></app-input>
