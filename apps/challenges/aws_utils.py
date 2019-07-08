@@ -19,10 +19,10 @@ aws_keys = {
     "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
     "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
 }
-task_roles = {
-    "TASK_ROLE_ARN": os.environ.get("TASK_ROLE_ARN", ""),
-    "TASK_EXECUTION_ROLE_ARN": os.environ.get("TASK_EXECUTION_ROLE_ARN", ""),
-}
+
+TASK_ROLE_ARN =  os.environ.get("TASK_ROLE_ARN", ""),
+TASK_EXECUTION_ROLE_ARN = os.environ.get("TASK_EXECUTION_ROLE_ARN", "")
+
 
 task_definition = """
 {{
@@ -172,8 +172,8 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     AWS_DEFAULT_REGION = aws_keys["AWS_REGION"]
     log_group = "{}_logs".format(queue_name)
 
-    task_role_arn = task_roles["TASK_ROLE_ARN"]
-    execution_role_arn = task_roles["TASK_EXECUTION_ROLE_ARN"]
+    task_role_arn = TASK_ROLE_ARN
+    execution_role_arn = TASK_EXECUTION_ROLE_ARN
 
     if task_role_arn and execution_role_arn:
         definition = task_definition.format(queue_name=queue_name, task_role_arn=task_role_arn,
@@ -211,11 +211,12 @@ def create_service_by_challenge_pk(client, challenge, client_token):
 
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
-    task_def_arn = challenge.task_def_arn
     if challenge.workers is None:  # Verify if the challenge is new (i.e, service not yet created.).
         response = register_task_def_by_challenge_pk(client, queue_name, challenge)
         if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
             task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+            challenge.task_def_arn = task_def_arn
+            challenge.save()
         else:
             return response
         definition = service_definition.format(service_name=service_name, task_def_arn=task_def_arn, client_token=client_token)
