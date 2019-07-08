@@ -50,6 +50,7 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
+        vm.participant_team_name = '';
 
         filter_my_submission_by_team_name = '';
         // show loader
@@ -686,7 +687,6 @@
         }
 
         vm.getResults = function(phaseId) {
-
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
@@ -1035,14 +1035,15 @@
         };
 
         vm.getAllSubmissionResults = function(phaseId) {
-
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
 
             vm.stopFetchingSubmissions();
             vm.isResult = true;
-            vm.phaseId = phaseId;
+            if (phaseId !== undefined) {
+                vm.phaseId = phaseId;
+            }
 
             // loader for loading submissions.
             vm.startLoader = loaderService.startLoader;
@@ -1053,8 +1054,13 @@
             vm.isPrev = '';
             vm.currentPage = '';
             vm.showPagination = false;
-
-            parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submissions";
+            if (vm.participant_team_name === '') {
+                parameters.url = "challenges/" + vm.challengeId +
+                "/challenge_phase/" + vm.phaseId + "/submissions";
+            } else {
+                parameters.url = "challenges/" + vm.challengeId +
+                "/challenge_phase/" + vm.phaseId + "/submissions?participant_team__team_name=" + vm.participant_team_name;
+            }
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
