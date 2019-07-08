@@ -24,6 +24,7 @@
     "@angular/platform-browser": "^7.2.15",
     "@angular/platform-browser-dynamic": "^7.2.15",
     "@angular/router": "^7.2.15",
+    "angular-froala-wysiwyg": "^3.0.0-rc.2-1",
     "core-js": "^2.4.1",
     "ngx-textarea-autosize": "^2.0.3",
     "ngx-twitter-timeline": "^0.1.5",

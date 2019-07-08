@@ -57,13 +57,13 @@ export class ChallengeoverviewComponent implements OnInit {
 
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      SELF.apiService.postUrl(
+      SELF.apiService.patchUrl(
         SELF.endpointsService.editChallengeDetailsURL(SELF.challenge.creator.id, SELF.challenge.id),
         BODY
       ).subscribe(
           data => {
-            SELF.globalService.showToast('success', 'The challenge title is  successfully updated!', 5);
-
+            SELF.challenge.description = data.description;
+            SELF.globalService.showToast('success', 'The description is successfully updated!', 5);
           },
           err => {
             SELF.globalService.handleApiError(err, true);
@@ -75,7 +75,8 @@ export class ChallengeoverviewComponent implements OnInit {
 
     const PARAMS = {
       title: 'Edit Challenge Description',
-      content: 'asdasdasd \n\nasdasdasdasd',
+      isEditorRequired: true,
+      editorContent: this.challenge.description,
       confirm: 'Submit',
       deny: 'Cancel',
       confirmCallback: SELF.apiCall
