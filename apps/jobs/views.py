@@ -53,7 +53,6 @@ from participants.utils import (
     is_user_part_of_participant_team,
 )
 
-from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
 from .serializers import (
@@ -62,7 +61,6 @@ from .serializers import (
     RemainingSubmissionDataSerializer,
 )
 from .utils import get_submission_model, get_remaining_submission_for_a_phase
-from jobs.serializers import ChallengeSubmissionManagementSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -144,6 +142,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "error": "You haven't participated in the challenge"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
         submission = Submission.objects.filter(
             participant_team=participant_team_id,
             challenge_phase=challenge_phase,

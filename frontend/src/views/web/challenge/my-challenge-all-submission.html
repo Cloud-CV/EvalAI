@@ -46,27 +46,20 @@
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <strong>Filter Submissions</strong>
+                    <br>
+                    <div ng-if="challenge.isResult">
+                        <div class="row rm-margin">
+                            <div class="col s12">
+                                <strong>Filter Submissions by Team name</strong>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="input-field align-left col s5">
-                            <form action="" method="GET">
-                                <tr><th><label for="id_participant_team__team_name">Participant team team name:</label></th><td>
-                                    <input type="text" name="participant_team__team_name" id="id_participant_team__team_name" /></td></tr>
-                                <input type="submit"/>
-                            </form>
-                            <!-- <input type="text" id="filterSubmissions" name="filterSubmissions" ng-model="challenge.filterQuery" ng-keyup="challenge.getFilteredSubmissionResults(key.id)"> -->
-                            <label for="filterSubmissions">Filter Submissions</label>
-                        </div>
-                        <div class="col s3">    
-                            <md-select ng-model="challenge.filterBy" ng-change="challenge.getFilteredSubmissionResults()" placeholder="Filter By">
-                                <md-option selected="selected" value="globalQuery"></md-option>
-                                <md-option value="submissionId">Submission Id</md-option>
-                                <md-option value="teamName">Team Name</md-option>
-                            </md-select> 
+                        <div class="row">
+                            <div class="input-field align-left col s6">
+                                <form method="GET">
+                                    <input type="text" name="participant_team__team_name" ng-keyup="challenge.getAllSubmissionResults(key.id)" ng-model="challenge.participant_team_name" id="participant_team__team_name" /></td></tr>
+                                    <label for="participant_team__team_name">Team name</label>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -75,7 +68,7 @@
                         <div class="col s12 all-submission-table-scroll">
                             <div ng-if="(challenge.showPagination == false) && (challenge.isResult == true)" class="result-wrn">No results found.</div>
                             <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                            <table ng-if="(challenge.isResult == true) && (challenge.showPagination == true)" class="highlight all-submission-table responsive-table">
+                            <table ng-if="challenge.isResult" class="highlight all-submission-table responsive-table">
                                 <thead>
                                     <tr>
                                         <th class="align-center" data-field="team">Team</th>
