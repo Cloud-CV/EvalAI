@@ -8,6 +8,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
+from .aws_utils import restart_service_callback
 from base.models import (
     TimeStampedModel,
     model_field_name,
@@ -161,7 +162,11 @@ signals.post_save.connect(
     sender=Challenge,
     weak=False,
 )
-
+signals.post_save.connect(
+    model_field_name(field_name="evaluation_script")(restart_service_callback),
+    sender=Challenge,
+    weak=False,
+)
 
 class DatasetSplit(TimeStampedModel):
     name = models.CharField(max_length=100)
@@ -263,6 +268,11 @@ class ChallengePhase(TimeStampedModel):
 
 signals.post_save.connect(
     model_field_name(field_name="test_annotation")(create_post_model_field),
+    sender=ChallengePhase,
+    weak=False,
+)
+signals.post_save.connect(
+    model_field_name(field_name="test_annotation")(restart_service_callback),
     sender=ChallengePhase,
     weak=False,
 )
