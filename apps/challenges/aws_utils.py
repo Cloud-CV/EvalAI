@@ -223,6 +223,9 @@ def create_service_by_challenge_pk(client, challenge, client_token):
         definition = eval(definition)
         try:
             response = client.create_service(**definition)
+            if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+                challenge.workers = 1
+                challenge.save()
             return response
         except ClientError as e:
             return e.response
@@ -253,6 +256,9 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks):
 
     try:
         response = client.update_service(**definition)
+        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+            challenge.workers = num_of_tasks
+            challenge.save()
         return response
     except ClientError as e:
         return e.response
