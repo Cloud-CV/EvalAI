@@ -53,7 +53,12 @@
                     </div>
                     <div class="row">
                         <div class="input-field align-left col s5">
-                            <input type="text" id="filterSubmissions" name="filterSubmissions" ng-model="challenge.filterQuery" ng-keyup="challenge.getFilteredSubmissionResults(key.id)">
+                            <form method="get">
+                                <tr><th><label for="id_participant_team__team_name">Participant team team name:</label></th><td>
+                                    <input type="text" name="participant_team__team_name" id="id_participant_team__team_name" /></td></tr>
+                                <button type="submit">Filter</button>
+                            </form>
+                            <!-- <input type="text" id="filterSubmissions" name="filterSubmissions" ng-model="challenge.filterQuery" ng-keyup="challenge.getFilteredSubmissionResults(key.id)"> -->
                             <label for="filterSubmissions">Filter Submissions</label>
                         </div>
                         <div class="col s3">    

@@ -69,6 +69,9 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
 )
 
+from jobs.filters import SubmissionFilter
+from django.core import serializers
+
 from .models import (
     Challenge,
     ChallengePhase,
@@ -1188,12 +1191,13 @@ def get_all_submissions_of_challenge(
         submissions = Submission.objects.filter(
             challenge_phase=challenge_phase
         ).order_by("-submitted_at")
-        paginator, result_page = paginated_queryset(submissions, request)
-        serializer = ChallengeSubmissionManagementSerializer(
-            result_page, many=True, context={"request": request}
-        )
-        response_data = serializer.data
-        return paginator.get_paginated_response(response_data)
+        filtered_submissions = SubmissionFilter(request.GET, queryset=submissions)
+        serialized_filtered_object = serializers.serialize("json", [filtered_submissions])
+        paginator, result_page = paginated_queryset(filtered_submissions.qs, request)
+        response_data = {
+            'filtered_submissions': serialized_filtered_object
+        }
+        return Response(response_data)
 
     # To check for the user as a participant of the challenge from the request and challenge_pk.
     elif has_user_participated_in_challenge(
