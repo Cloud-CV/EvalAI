@@ -155,7 +155,6 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
 
         mock_logger.assert_called_with("Exception while receiving message from submission queue with error test error")
 
-
     @mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", "mocked/dir/submission_{submission_id}")
     @mock.patch("scripts.workers.submission_worker.os.path.basename", return_value="user_annotation_file.txt")
     @mock.patch("scripts.workers.submission_worker.run_submission")
@@ -174,7 +173,6 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
         submission_worker.process_submission_message(message)
 
         mock_rs.assert_called_with(self.challenge.pk, self.challenge_phase, self.submission, user_annotation_file_path)
-
 
     @mock.patch("scripts.workers.submission_worker.extract_submission_data")
     def test_process_submission_message_when_submission_does_not_exist(self, mock_esd):
@@ -288,9 +286,9 @@ class RunSubmissionTestClass(BaseTestClass):
         )
 
     def test_run_submission_when_result_key_is_not_present_in_output(self, mock_map, mock_script_dict,
-                                                                   mock_createdir, mock_lb,
-                                                                   mock_shutil, mock_timezone,
-                                                                   mock_open, mock_cf):
+                                                                     mock_createdir, mock_lb,
+                                                                     mock_shutil, mock_timezone,
+                                                                     mock_open, mock_cf):
         challenge_pk = self.challenge.pk
         phase_pk = self.challenge_phase.pk
         user_annotation_file_path = "tests/integration/worker/data/user_annotation.txt"
