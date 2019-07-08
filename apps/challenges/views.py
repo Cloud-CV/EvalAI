@@ -56,6 +56,7 @@ from hosts.utils import (
     is_user_a_host_of_challenge,
     get_challenge_host_team_model,
 )
+from jobs.filters import SubmissionFilter
 from jobs.models import Submission
 from jobs.serializers import (
     SubmissionSerializer,
@@ -1188,7 +1189,8 @@ def get_all_submissions_of_challenge(
         submissions = Submission.objects.filter(
             challenge_phase=challenge_phase
         ).order_by("-submitted_at")
-        paginator, result_page = paginated_queryset(submissions, request)
+        filtered_submissions = SubmissionFilter(request.GET, queryset=submissions)
+        paginator, result_page = paginated_queryset(filtered_submissions.qs, request)
         serializer = ChallengeSubmissionManagementSerializer(
             result_page, many=True, context={"request": request}
         )

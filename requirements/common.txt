@@ -3,6 +3,7 @@ boto3==1.9.88
 botocore==1.12.88
 commonmark==0.5.4
 django==1.11.20
+django-filter==2.1.0
 django-import-export==0.5.1
 djangorestframework==3.9.3
 djangorestframework-expiring-authtoken==0.1.4
