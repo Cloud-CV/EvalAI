@@ -56,6 +56,7 @@ class Challenge(TimeStampedModel):
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )
+    is_registration_open = models.BooleanField(default=True)
     enable_forum = models.BooleanField(default=True)
     forum_url = models.URLField(max_length=100, blank=True, null=True)
     leaderboard_description = models.TextField(null=True, blank=True)
@@ -76,6 +77,12 @@ class Challenge(TimeStampedModel):
     )
     blocked_email_domains = ArrayField(
         models.CharField(max_length=50, blank=True), default=[], blank=True
+    )
+    banned_email_ids = ArrayField(
+        models.TextField(null=True, blank=True),
+        default=[],
+        blank=True,
+        null=True
     )
     remote_evaluation = models.BooleanField(
         default=False, verbose_name="Remote Evaluation", db_index=True
@@ -309,6 +316,7 @@ class LeaderboardData(TimeStampedModel):
     submission = models.ForeignKey("jobs.Submission")
     leaderboard = models.ForeignKey("Leaderboard")
     result = JSONField()
+    error = JSONField(null=True, blank=True)
 
     def __str__(self):
         return "{0} : {1}".format(self.challenge_phase_split, self.submission)

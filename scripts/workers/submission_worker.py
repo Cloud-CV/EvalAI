@@ -428,6 +428,13 @@ def run_submission(
                "submission_result": ['foo', 'bar'],
             }
         """
+
+        error_bars_dict = dict()
+        if "error" in submission_output:
+            for split_error in submission_output["error"]:
+                split_code_name = list(split_error.keys())[0]
+                error_bars_dict[split_code_name] = split_error[split_code_name]
+
         if "result" in submission_output:
 
             leaderboard_data_list = []
@@ -471,6 +478,11 @@ def run_submission(
                 leaderboard_data.result = split_result.get(
                     dataset_split.codename
                 )
+
+                if "error" in submission_output:
+                    leaderboard_data.error = error_bars_dict.get(
+                        dataset_split.codename
+                    )
 
                 leaderboard_data_list.append(leaderboard_data)
 
