@@ -40,6 +40,7 @@ Refer to [MarkDown Guide](https://guides.github.com/features/mastering-markdown/
 Coverage decreases when the existing test cases don't test the new code you wrote. If you click coverage, you can see exactly which all parts aren't covered and you can write new tests to test the parts.
 
 #### Q. How to setup EvalAI using virtualenv?
+
 We have removed the documentation for setting up using virtual environment since the project has grown and different developers face different dependency issues. We recommend to setup EvalAI using docker based environment.
 
 ### Common Errors during installation
@@ -226,18 +227,22 @@ ERROR: for db Cannot start service db: driver failed programming external connec
 The following solution only works on Linux.
 
 Execute :
-```sudo netstat -lpn |grep :5432```
+`sudo netstat -lpn |grep :5432`
 
 The output of the above would be in the following form:
+
 ```
 tcp 0 0 127.0.0.1:5432 0.0.0.0:* LISTEN 25273/postgres
 ```
+
 Execute the following command:
+
 ```
 sudo kill 25273 ## This would vary and you can change with the output in the first step
 ```
 
 #### Q. Getting the following error :
+
 ```
 ERROR : Version in "./docker-compose.yml" is unsupported. You might be seeing this error becasue you are using wrong Compose file version.
 ```
@@ -245,6 +250,7 @@ ERROR : Version in "./docker-compose.yml" is unsupported. You might be seeing th
 Since, the version of compose file is 3. You might be using a docker version which is not compatible. You can upgrade your docker engine and try again.
 
 #### Q. Getting the following error while runnig `python manage.py runserver --settings=settings.dev`
+
 ```
 Starting the database seeder. Hang on...
 Are you sure you want to wipe the existing development database and reseed it? (Y/N)
@@ -254,14 +260,16 @@ Exception while running run() in 'scripts.seed'
 Try clearing the postgres database manually and try again.
 
 #### Q. Getting the following error while executing `gulp dev:runserver`:
+
 ```
 /usr/lib//nodejs/gulp//bin/gulp.js:132
 	gulpInst.start.apply(gulpInst, toRun)l
-				   ^	
+				   ^
 TypeError: Cannot read properly 'apply of undefined'
 ```
 
 Execute the following command:
+
 ```
 rm -rf node_modules/
 rm -rf bower_components

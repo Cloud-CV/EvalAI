@@ -1,4 +1,4 @@
-## Architectural Decisions
+## Architectural decisions
 
 This is a collection of records for architecturally significant decisions.
 
@@ -8,17 +8,17 @@ We follow a very basic, yet strong convention for URLs, so that our rest APIs ar
 
 For example, to perform **CRUD** operation on _Challenge Host Model_, the following URL patterns will be used.
 
-* `GET /hosts/challenge_host_team` - Retrieves a list of challenge host teams
+- `GET /hosts/challenge_host_team` - Retrieves a list of challenge host teams
 
-* `POST /hosts/challenge_host_team` - Creates a new challenge host team
+- `POST /hosts/challenge_host_team` - Creates a new challenge host team
 
-* `GET /hosts/challenge_host_team/<challenge_host_team_id>` - Retrieves a specific challenge host team
+- `GET /hosts/challenge_host_team/<challenge_host_team_id>` - Retrieves a specific challenge host team
 
-* `PUT /hosts/challenge_host_team/<challenge_host_team_id>` - Updates a specific challenge host team
+- `PUT /hosts/challenge_host_team/<challenge_host_team_id>` - Updates a specific challenge host team
 
-* `PATCH /hosts/challenge_host_team/<challenge_host_team_id>` - Partially updates a specific challenge host team
+- `PATCH /hosts/challenge_host_team/<challenge_host_team_id>` - Partially updates a specific challenge host team
 
-* `DELETE /hosts/challenge_host_team/<challenge_host_team_id>` - Deletes a specific challenge host team
+- `DELETE /hosts/challenge_host_team/<challenge_host_team_id>` - Deletes a specific challenge host team
 
 Also, we have namespaced the URL patterns on a per-app basis, so URLs for _Challenge Host Model_, which is in the _hosts_ app, will be
 
@@ -28,7 +28,7 @@ Also, we have namespaced the URL patterns on a per-app basis, so URLs for _Chall
 
 This way, one can easily identify where a particular API is located.
 
-We use underscore **_** in URL patterns.
+We use underscore **\_** in URL patterns.
 
 ### Processing submission messages asynchronously
 
