@@ -94,6 +94,16 @@ export class ApiService {
   }
 
   /**
+   * HTTP PATCH (file upload) wrapper.
+   * @param path  path of API call.
+   * @param body  stringified json body.
+   */
+  patchFileUrl(path: string, formData: any) {
+    this.prepareHttpOptions(true);
+    return this.loadingWrapper(this.http.patch(this.API + path, formData, this.HTTP_OPTIONS));
+  }
+
+  /**
    * HTTP DELETE wrapper.
    * @param path  path of API call.
    */

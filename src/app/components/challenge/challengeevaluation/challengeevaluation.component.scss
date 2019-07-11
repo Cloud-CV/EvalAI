@@ -1,28 +1,24 @@
 @import './variables.scss';
 @import './mixins.scss';
 
-.challenge-evaluation-container {
-	padding:20px;
-	overflow:auto;
-	.card {
-		&:hover {
-			@include box-shadow(0px, 0px, 10px, 1px, $overlay-light);
-		}
-		.card-content {
-			line-height: 20px;
-        	letter-spacing: 0.5px;
-		}
-	}
-	* {
-		transition: all 0.3s ease;
-	}
+.ev-pad {
+	padding-left: 15px;
+	padding-right: 10px;
+	margin-bottom: 20px;
+}
+
+.tnc-pad {
+	padding-left: 10px;
+	padding-right: 15px;
+	margin-bottom: 20px;
 }
 
 @include screen-small {
-	.challenge-evaluation-container {
-	.card {
-		margin-left:0;
-		margin-right:0;
-		}
+	.ev-pad {
+		padding-right: 15px;
+	}
+
+	.tnc-pad {
+		padding-left: 15px;
 	}
 }
