@@ -25,6 +25,11 @@ export class ModalComponent implements OnInit {
   title = 'Are you sure ?';
 
   /**
+   * Modal field label
+   */
+  label = '';
+
+  /**
    * Modal body
    */
   content = '';
@@ -104,6 +109,9 @@ export class ModalComponent implements OnInit {
       if (this.params['title']) {
         this.title = this.params['title'];
       }
+      if (this.params['label']) {
+        this.label = this.params['label'];
+      }
       if (this.params['isEditorRequired']) {
         this.isEditorRequired = this.params['isEditorRequired'];
       }
@@ -151,23 +159,23 @@ export class ModalComponent implements OnInit {
    * Modal Confirmed.
    */
   confirmed(self) {
-    const content_text = document.createElement('div');
-    content_text.innerHTML = this.editorContent;
-    const actual_text = content_text.textContent || content_text.innerText || '';
-    if (actual_text.trim() === '') {
-      this.denyCallback();
-      this.isInputMessage = true;
-      this.editorValidationMessage = 'Challenge description cannot be empty!';
-    } else {
-      self.globalService.hideModal();
-      let PARAMS = self.globalService.formFields(self.formComponents);
-      if (this.isEditorRequired) {
-        PARAMS = {
-          description: this.editorContent
-        };
+    let PARAMS = {};
+    if (self.isEditorRequired) {
+      const content_text = document.createElement('div');
+      content_text.innerHTML = this.editorContent;
+      const actual_text = content_text.textContent || content_text.innerText || '';
+      if (actual_text.trim() === '') {
+        self.denyCallback();
+        self.isInputMessage = true;
+        self.editorValidationMessage = 'This field cannot be empty!';
+        return;
       }
-      self.confirmCallback(PARAMS);
+      PARAMS[self.label] = self.editorContent;
+    } else {
+      PARAMS = self.globalService.formFields(self.formComponents);
     }
+    self.globalService.hideModal();
+    self.confirmCallback(PARAMS);
   }
 
   /**
@@ -194,4 +202,11 @@ export class ModalComponent implements OnInit {
     }
   }
 
+  validateFileInput(e) {
+    if (e.target.value !== '') {
+      this.isDisabled = false;
+    } else {
+      this.isDisabled = true;
+    }
+  }
 }

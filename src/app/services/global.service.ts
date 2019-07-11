@@ -213,8 +213,11 @@ export class GlobalService {
   formFields(components) {
     const TEMP = {};
     components.map((item) => {
-      console.log(item);
-      TEMP[item.label.toLowerCase()] = item.value;
+      if (item.type === 'file') {
+        TEMP[item.label] = item.fileSelected;
+      } else {
+        TEMP[item.label.toLowerCase()] = item.value;
+      }
     });
     return TEMP;
   }
