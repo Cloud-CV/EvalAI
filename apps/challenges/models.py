@@ -8,7 +8,7 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
-from .aws_utils import restart_service_callback
+from .aws_utils import restart_workers_signal_callback
 from base.models import (
     TimeStampedModel,
     model_field_name,
@@ -169,7 +169,7 @@ signals.post_save.connect(
     weak=False,
 )
 signals.post_save.connect(
-    model_field_name(field_name="evaluation_script")(restart_service_callback),
+    model_field_name(field_name="evaluation_script")(restart_workers_signal_callback),
     sender=Challenge,
     weak=False,
 )
@@ -278,7 +278,7 @@ signals.post_save.connect(
     weak=False,
 )
 signals.post_save.connect(
-    model_field_name(field_name="test_annotation")(restart_service_callback),
+    model_field_name(field_name="test_annotation")(restart_workers_signal_callback),
     sender=ChallengePhase,
     weak=False,
 )
