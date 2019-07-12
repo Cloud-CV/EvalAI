@@ -22,6 +22,7 @@ from .aws_utils import (
     stop_workers,
     scale_workers,
     delete_workers,
+    restart_workers,
 )
 
 
@@ -62,7 +63,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
     )
     search_fields = ("title", "creator", "creator__team_name", "slug")
 
-    actions = ["start_selected_workers", "stop_selected_workers", "scale_selected_workers"]
+    actions = ["start_selected_workers", "stop_selected_workers", "scale_selected_workers", "restart_selected_workers", "delete_selected_workers"]
 
     action_form = UpdateNumOfWorkersForm
 
@@ -105,7 +106,19 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
             messages.warning(request, "Please enter a valid whole number to scale.")
     scale_selected_workers.short_description = "Scale all selected challenge workers to a given number."
 
-    def delet_selected_workers(self, request, queryset):
+    def restart_selected_workers(self, request, queryset):
+        response = restart_workers(queryset)
+        count = response["count"]
+        message = response["message"]
+
+        if(count == queryset.count()):
+            messages.success(request, message)
+        else:
+            messages.success(request, "{} challenge workers were succesfully restarted.".format(count))
+            messages.error(request, message)
+    restart_selected_workers.short_description = "Restart all selected challenge workers."
+
+    def delete_selected_workers(self, request, queryset):
         response = delete_workers(queryset)
         count = response["count"]
         message = response["message"]
@@ -115,7 +128,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         else:
             messages.success(request, "{} challenge workers were succesfully deleted.".format(count))
             messages.error(request, message)
-    delet_selected_workers.short_description = "Delete all selected challenge workers."
+    delete_selected_workers.short_description = "Delete all selected challenge workers."
 
 
 @admin.register(ChallengeConfiguration)
