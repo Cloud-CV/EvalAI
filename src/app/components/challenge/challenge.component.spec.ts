@@ -22,28 +22,51 @@ import { TeamlistComponent } from '../../components/publiclists/teamlist/teamlis
 import { SelectphaseComponent } from '../../components/utility/selectphase/selectphase.component';
 import { InputComponent } from '../../components/utility/input/input.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Observable, of } from 'rxjs';
 
 describe('ChallengeComponent', () => {
   let component: ChallengeComponent;
   let fixture: ComponentFixture<ChallengeComponent>;
+  let router, authService, authServiceSpy;
+  const fakeActivatedRoute = {
+    id: 1
+  };
+  let challengeService, challengeServiceSpy;
+  let globalService, apiService, endpointsService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChallengeComponent,
-                      HeaderStaticComponent,
-                      ChallengeoverviewComponent,
-                      ChallengeevaluationComponent,
-                      ChallengephasesComponent,
-                      ChallengeparticipateComponent,
-                      ChallengeleaderboardComponent,
-                      ChallengesubmitComponent,
-                      ChallengesubmissionsComponent,
-                      PhasecardComponent,
-                      ForceloginComponent,
-                      FooterComponent,
-                      TeamlistComponent,
-                      SelectphaseComponent ],
-      providers: [ ApiService, GlobalService, ChallengeService, AuthService, EndpointsService ],
+      declarations: [
+        ChallengeComponent,
+        HeaderStaticComponent,
+        ChallengeoverviewComponent,
+        ChallengeevaluationComponent,
+        ChallengephasesComponent,
+        ChallengeparticipateComponent,
+        ChallengeleaderboardComponent,
+        ChallengesubmitComponent,
+        ChallengesubmissionsComponent,
+        PhasecardComponent,
+        ForceloginComponent,
+        FooterComponent,
+        TeamlistComponent,
+        SelectphaseComponent
+      ],
+      providers: [
+        ApiService,
+        GlobalService,
+        ChallengeService,
+        AuthService,
+        EndpointsService,
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {},
+            params: of(fakeActivatedRoute),
+          },
+        },
+      ],
       imports: [ HttpClientModule, RouterTestingModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
@@ -52,11 +75,212 @@ describe('ChallengeComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ChallengeComponent);
+    router = TestBed.get(Router);
+    challengeService = TestBed.get(ChallengeService);
+    globalService = TestBed.get(GlobalService);
+    authService = TestBed.get(AuthService);
+    apiService = TestBed.get(ApiService);
+    endpointsService = TestBed.get(EndpointsService);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+
+    spyOn(router, 'navigate');
+    spyOn(globalService, 'handleApiError');
+    spyOn(globalService, 'showToast');
+    spyOn(globalService, 'showModal');
+    spyOn(globalService, 'showConfirm');
+    spyOn(endpointsService, 'editChallengeDetailsURL');
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('Global variables', () => {
+    expect(component.isStarred).toBeFalsy();
+    expect(component.isChallengeHost).toBeFalsy();
+    expect(component.publishChallenge).toEqual({
+      'state': 'Not Published',
+      'icon': 'fa fa-eye-slash red-text'
+    });
+    expect(component.isParticipated).toBeFalsy();
+    expect(component.isLoggedIn).toBeFalsy();
+  });
+
+  it('check if user is logged in', () => {
+    authServiceSpy = spyOn(authService, 'isLoggedIn').and.returnValue(true);
+    fixture.detectChanges();
+    expect(authServiceSpy).toHaveBeenCalled();
+    expect(component.isLoggedIn).toBeTruthy();
+  });
+
+  it('check activated routed subscribe method called on init', async(() => {
+    challengeServiceSpy = spyOn(challengeService, 'fetchChallenge');
+    fixture.detectChanges();
+    expect(component.id).toBe(fakeActivatedRoute['id']);
+    expect(challengeServiceSpy).toHaveBeenCalledWith(fakeActivatedRoute['id']);
+  }));
+
+  it('should call `starToggle` method when user is logged in', () => {
+    challengeServiceSpy = spyOn(challengeService, 'starToggle');
+    const challengeId = 1;
+    component.isLoggedIn = true;
+    component.starToggle(challengeId);
+    expect(challengeServiceSpy).toHaveBeenCalledWith(challengeId);
+  });
+
+  it('should show login to star the challenge message when user is not logged in', () => {
+    const challengeId = 1;
+    component.isLoggedIn = false;
+    component.starToggle(challengeId);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', 'Please login to star the challenge!', 5);
+  });
+
+  it('should toggle the publish challenge state from public to private', async(() => {
+    component.publishChallenge = {
+      state: 'Published',
+      icon: 'fa fa-eye green-text'
+    };
+    const expectedSuccessMsg = 'The challenge was successfully made private';
+    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
+      observer.next({'results': [{}]});
+      observer.complete();
+      return {unsubscribe() {}};
+    }));
+
+    component.togglePublishChallengeState();
+    fixture.detectChanges();
+    expect(globalService.showConfirm).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.publishChallenge.state).toEqual('Not Published');
+    expect(component.publishChallenge.icon).toEqual('fa fa-eye-slash red-text');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should toggle the publish challenge state from private to public', async(() => {
+    component.publishChallenge = {
+      state: 'Not Published',
+      icon: 'fa fa-eye-slash red-text'
+    };
+    const expectedSuccessMsg = 'The challenge was successfully made public';
+    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
+      observer.next({results: [{}]});
+      observer.complete();
+      return {unsubscribe() {}};
+    }));
+
+    component.togglePublishChallengeState();
+    fixture.detectChanges();
+    expect(globalService.showConfirm).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.publishChallenge.state).toEqual('Published');
+    expect(component.publishChallenge.icon).toEqual('fa fa-eye green-text');
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should handle the API error for `togglePublishChallengeState` method', async(() => {
+    const expectedApiError = {
+      error: 'Api error'
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
+      observer.error({error: expectedApiError.error});
+      observer.complete();
+      return {unsubscribe() {}};
+    }));
+
+    component.togglePublishChallengeState();
+    fixture.detectChanges();
+    expect(globalService.showConfirm).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
+  }));
+
+  it('should show the modal and successfully edit the title of a challenge', async(() => {
+    component.challenge = {
+      id: 1,
+      title: 'Challenge title',
+      creator: 'Host user',
+      description: 'Challenge description'
+    };
+    const expectedUpdateTitle = 'Updated challenge title';
+    const expectedSuccessMsg = 'The challenge title is  successfully updated!';
+    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
+      observer.next({title: expectedUpdateTitle});
+      observer.complete();
+      return {unsubscribe() {}};
+    }));
+
+    component.editChallengeTitle();
+    fixture.detectChanges();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(component.challenge.title).toEqual(expectedUpdateTitle);
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should handle the API error for `editChallengeTitle` method', async(() => {
+    component.challenge = {
+      id: 1,
+      title: 'Challenge title',
+      creator: 'Host user',
+      description: 'Challenge description'
+    };
+    const expectedApiError = {
+      error: 'Api error'
+    };
+    spyOn(apiService, 'patchUrl').and.returnValue(new Observable((observer) => {
+      observer.error({error: expectedApiError.error});
+      observer.complete();
+      return {unsubscribe() {}};
+    }));
+
+    component.editChallengeTitle();
+    fixture.detectChanges();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.patchUrl).toHaveBeenCalled();
+    expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
+  }));
+
+  it('should show the modal with the form fields and successfully delete the challenge', async(() => {
+    const expectedSuccessMsg = 'The Challenge is successfully deleted!';
+    spyOn(apiService, 'postUrl').and.returnValue(new Observable((observer) => {
+      observer.next({results: [{}]});
+      observer.complete();
+      return {unsubscribe() {}};
+    }));
+
+    component.deleteChallenge();
+    fixture.detectChanges();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.postUrl).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+    expect(globalService.showToast).toHaveBeenCalledWith('success', expectedSuccessMsg, 5);
+  }));
+
+  it('should handle the API error for `deleteChallenge` method', async(() => {
+    const expectedApiError = {
+      error: 'Api error'
+    };
+    spyOn(apiService, 'postUrl').and.returnValue(new Observable((observer) => {
+      observer.error({error: expectedApiError.error});
+      observer.complete();
+      return {unsubscribe() {}};
+    }));
+
+    component.deleteChallenge();
+    fixture.detectChanges();
+    expect(globalService.showModal).toHaveBeenCalled();
+    component.apiCall();
+    expect(apiService.postUrl).toHaveBeenCalled();
+    expect(globalService.handleApiError).toHaveBeenCalledWith(expectedApiError, true);
+    expect(globalService.showToast).toHaveBeenCalledWith('error', expectedApiError);
+  }));
+
 });
