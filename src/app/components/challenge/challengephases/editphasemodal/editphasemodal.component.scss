@@ -1,0 +1,42 @@
+@import './mixins.scss';
+@import './variables.scss';
+
+.modal-container {
+    .modal-card {
+        width: 800px;
+        max-height: 600px;
+        overflow:auto;
+
+        .editor-validation-message {
+            margin-top: 20px;
+        }
+
+        .row-lr-margin {
+            margin-bottom: 20px;
+        }
+    }
+}
+
+@include screen-small-medium {
+    .modal-container {
+        .modal-card {
+            width: 720px;
+        }
+    }
+}
+
+@include screen-small {
+    .modal-container {
+        .modal-card {
+            width: 400px;
+        }
+    }
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}

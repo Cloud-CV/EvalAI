@@ -1,6 +1,8 @@
 <div class="input-group">
-  <div *ngIf="type!='file' && type!='textarea'">
-    <input class="input-field" (input)="validateInput($event.target.value)" [class.isValid]="isValid" name="{{name}}" [class.theme-dark]="theme=='dark'" type="{{type}}" [value]="value" [readonly]="isReadonly">
+  <div *ngIf="type!='file' && type!='textarea' && type!='datetime'">
+    <input class="input-field" (input)="validateInput($event.target.value)"
+      [class.isValid]="isValid" [class.theme-dark]="theme=='dark'"
+      name="{{name}}" type="{{type}}" [value]="value" [readonly]="isReadonly">
     <span class="input-bar"></span>
     <label [class.is-not-empty]="!isEmpty" [class.theme-dark]="theme=='dark'">{{placeholder}}</label>
     <i class="input-icon {{icon}}" *ngIf="isIconPresent"></i>
@@ -8,7 +10,23 @@
   </div>
 
   <div *ngIf="type=='textarea'">
-    <textarea autosize class="input-field" (input)="validateInput($event.target.value)" [class.isValid]="isValid" [class.theme-dark]="theme=='dark'" [value]="value" [readonly]="isReadonly"></textarea>
+    <textarea autosize class="input-field"
+      (input)="validateInput($event.target.value)" [class.isValid]="isValid"
+      [class.theme-dark]="theme=='dark'" [value]="value"
+      [readonly]="isReadonly"></textarea>
+    <span class="input-bar"></span>
+    <label [class.is-not-empty]="!isEmpty" [class.theme-dark]="theme=='dark'">{{placeholder}}</label>
+    <i class="input-icon {{icon}}" *ngIf="isIconPresent"></i>
+    <div class="input-message" [class.hidden]="toggleErrorMessage()">{{message}}</div>
+  </div>
+
+  <div *ngIf="type=='datetime'">
+    <input class="input-field" [(ngModel)]="value" [min]="mindatetime"
+      [owlDateTime]="datetime" [owlDateTimeTrigger]="datetime"
+      (input)="validateInput($event.target.value)" [class.isValid]="isValid"
+      [class.theme-dark]="theme=='dark'" type="{{type}}"
+      [readonly]="isReadonly">
+    <owl-date-time [hour12Timer] = "true" #datetime></owl-date-time>
     <span class="input-bar"></span>
     <label [class.is-not-empty]="!isEmpty" [class.theme-dark]="theme=='dark'">{{placeholder}}</label>
     <i class="input-icon {{icon}}" *ngIf="isIconPresent"></i>
@@ -16,13 +34,16 @@
   </div>
 
   <div class="file-field" *ngIf="type=='file'">
-    <div class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn-transparent fs-16">
+    <div class="btn ev-file-btn-dark btn-waves-effect waves-dark
+      grad-btn-transparent fs-16">
       <span> File </span>
-      <input name="fileUpload" id="file-upload-custom" (change)="handleFileInput($event.target.files)" type="file" class="text-dark-black" [readonly]="isReadonly"/>
+      <input name="fileUpload" id="file-upload-custom"
+        (change)="handleFileInput($event.target.files)" type="file"
+        class="text-dark-black" [readonly]="isReadonly" />
     </div>
     <div class="file-path-wrapper">
       <input type="text" value="{{placeholder}}" disabled>
     </div>
-    <div class="input-message" #textValue [class.hidden]="!(((isRequired && isEmpty)||(!isValid && !isEmpty))  && isDirty)">{{message}}</div>
+    <div class="input-message" #textValue [class.hidden]="toggleErrorMessage()">{{message}}</div>
   </div>
 </div>

@@ -90,6 +90,18 @@ body {
 }
 
 
+/** Pad and margin*/
+.row-lr-margin {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+.col-lr-pad {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+
 /*Font weights*/
 
 .fw-light {
@@ -154,13 +166,26 @@ body {
 
 
 /**Rich text editor styles*/
-.fr-box.fr-basic .fr-element {
+.reusable-editor.fr-box.fr-basic .fr-element {
+  height: 320px;
+}
+
+.edit-phase-editor.fr-box.fr-basic .fr-element {
+  height: 220px;
+}
+
+.edit-global-modal.fr-box.fr-basic .fr-element {
   width: 800px;
   height: 320px;
 }
 
 .second-toolbar a {
   display: none;
+}
+
+.editor-validation-message {
+  color: $highlight;
+  margin-bottom: 20px;
 }
 
 /**File field styles*/
@@ -171,7 +196,7 @@ body {
 .file-field .btn {
   float: left;
   height: 3rem;
-  line-height: 1.5rem;
+  line-height: 3rem;
 }
 
 .file-field input[type=file] {
@@ -227,6 +252,10 @@ body {
   padding: 30px 30px 40px 40px;
 }
 
+.bottom-card-container {
+  padding: 40px;
+}
+
 .no-pad-lr {
   padding-left: 0px;
   padding-right: 0px;
@@ -240,14 +269,7 @@ body {
 }
 
 .grad-rec-btn {
-  border-radius: 2px !important;
-}
-
-.grad-btn-dark {
-  background: #3c3e49;
-  font-weight: 400;
-  color: #fff;
-  box-shadow: 0 4px 8px #9d9d9d;
+  border-radius: 2px;
 }
 
 .grad-btn-dark {
@@ -285,6 +307,8 @@ body {
 }
 
 .btn-waves-effect {
+  padding: 13px 33px 13px 33px;
+  border: none;
   position: relative;
   cursor: pointer;
   display: inline-block;
@@ -297,15 +321,14 @@ body {
   transition: .3s ease-out;
 }
 
-.grad-btn {
-  border-radius: 2px;
+.ev-file-btn-dark {
+  padding: 0 32px;
+  border: none;
+  background: #252833;
 }
 
-.grad-btn-dark {
+.ev-btn-dark:hover {
   background: #3c3e49;
-  font-weight: 400;
-  color: #fff;
-  box-shadow: 0 4px 8px $gray-dark;
 }
 
 .ev-btn-dark {
@@ -689,10 +712,6 @@ ul {
   }
 }
 
-.ev-btn-dark:hover {
-  background: #3c3e49;
-}
-
 .btn-fill {
   padding: 10px 30px 10px 30px;
   border: 1.5px solid white;
@@ -817,6 +836,7 @@ ul {
       padding: 10px;
       font-size: $fs-18;
       font-weight: $fw-bold;
+      margin-bottom: 30px;
     }
     .content {
       padding: 10px;

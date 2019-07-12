@@ -14,6 +14,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { FooterComponent } from '../../components/nav/footer/footer.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import Global = NodeJS.Global;
+import { FormsModule } from '@angular/forms';
+import { OwlDateTimeModule } from 'ng-pick-datetime';
 
 const routes: Routes = [
   {
@@ -41,7 +43,7 @@ describe('ContactComponent', () => {
     // Mocking the loadJS function in window service to prevent that.
     const MOCK_SERVICE = new MockWindowService(null);
     TestBed.configureTestingModule({
-      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes) ],
+      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes), FormsModule, OwlDateTimeModule ],
       declarations: [ ContactComponent, HeaderStaticComponent, InputComponent, ToastComponent, FooterComponent ],
       providers: [
         GlobalService,
