@@ -1,27 +1,38 @@
-<div class="phase-container">
-	<div class="phase-title">
-		{{phase['name']}}
-	</div>
-	<div class="phase-section">
-		<div class="start">
-			<span class="phase-heading">Starts on</span> <br>
-			<span>{{startDate}}</span>
+<div class="bottom-card-container ev-card-panel ev-md-container phase-card">
+	<div class="row row-lr-margin">
+		<div class="col-md-11 col-sm-11 col-xs-10 col-lr-pad">
+			<div class="row row-lr-margin">
+				<div class="col-sm-12 col-lr-pad">
+					<span class="fs-18 text-med-black">
+						<strong class="fw-semibold">{{phase['name']}}</strong>
+					</span>
+				</div>
+			</div>
+			<div class="row row-lr-margin">
+				<div class="col-sm-12 col-lr-pad">
+					<p><strong class="text-light-black fw-semibold fs-12">Starts on</strong>
+						<br> <strong class="fw-semibold fs-14 phase-value">{{startDate}}
+							{{phase['start_zone']}}</strong></p>
+					<p><strong class="text-light-black fw-semibold fs-12">Ends on</strong>
+						<br> <strong class="fw-semibold fs-14 phase-value">{{endDate}}
+							{{phase['end_zone']}}</strong></p>
+					<div [innerHTML]="phase['description']" class="content"></div>
+					<p><strong class="text-light-black fw-semibold fs-12">Max number of
+							submissions/day</strong>
+						<br> <strong class="fs-14 phase-value">{{phase['max_submissions_per_day']}}</strong></p>
+					<p><strong class="text-light-black fw-semibold fs-12">Max number of
+							submissions/month</strong>
+						<br> <strong class="fs-14 phase-value">{{phase['max_submissions_per_month']}}</strong></p>
+					<p><strong class="text-light-black fw-semibold fs-12">Max total submissions</strong>
+						<br> <strong class="fs-14 phase-value">{{phase['max_submissions']}}</strong></p>
+				</div>
+			</div>
 		</div>
-		<div class="end">
-		    <span class="phase-heading">Ends on</span><br>
-			<span>{{endDate}}</span>
-		</div>
-	</div>
-	<div class="phase-description" [innerHTML]="phase['description']">
-	</div>
-	<div class="phase-section">
-		<div class="start">
-			<span class="phase-heading">Max number of submissions/day</span> <br>
-			<span>{{phase['max_submissions_per_day']}}</span>
-		</div>
-		<div class="end">
-		    <span class="phase-heading">Max total submissions</span><br>
-			<span>{{phase['max_submissions']}}</span>
+		<div *ngIf="isChallengeHost" class="col-sm-1 col-xs-2 col-lr-pad">
+			<a class="pointer" (click)="editChallengePhase()">
+				<i class="fa fa-pencil" aria-hidden="true">
+				</i>
+			</a>
 		</div>
 	</div>
 </div>

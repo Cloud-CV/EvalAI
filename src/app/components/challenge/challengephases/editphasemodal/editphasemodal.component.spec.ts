@@ -1,36 +1,31 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { PhasecardComponent } from './phasecard.component';
-import { GlobalService } from '../../../../services/global.service';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
+import { EditphasemodalComponent } from './editphasemodal.component';
+import { InputComponent } from '../../../utility/input/input.component';
+import { GlobalService } from '../../../../services/global.service';
 import { ChallengeService } from '../../../../services/challenge.service';
 import { EndpointsService } from '../../../../services/endpoints.service';
 import { ApiService } from '../../../../services/api.service';
 import { AuthService } from '../../../../services/auth.service';
 
-describe('PhasecardComponent', () => {
-  let component: PhasecardComponent;
-  let fixture: ComponentFixture<PhasecardComponent>;
+describe('EditphasemodalComponent', () => {
+  let component: EditphasemodalComponent;
+  let fixture: ComponentFixture<EditphasemodalComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PhasecardComponent ],
+      declarations: [ EditphasemodalComponent, InputComponent ],
       providers: [ GlobalService, ChallengeService, EndpointsService, ApiService, AuthService ],
-      imports: [ HttpClientModule ]
+      imports: [ HttpClientModule ],
+      schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PhasecardComponent);
+    fixture = TestBed.createComponent(EditphasemodalComponent);
     component = fixture.componentInstance;
-    component['phase'] = {
-      name: 'test',
-      start_date: '2018-03-13T00:00:00Z',
-      end_date: '2099-12-31T00:00:00Z',
-      max_submissions_per_day: 90,
-      max_submissions: 100
-    };
     fixture.detectChanges();
   });
 

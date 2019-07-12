@@ -8,7 +8,7 @@
     </div>
     <div class="editor-validation-message fs-12" *ngIf="isEditorRequired &&
       isInputMessage">{{editorValidationMessage}}</div>
-    <div *ngIf="isEditorRequired" [froalaEditor]
+    <div *ngIf="isEditorRequired" class="edit-global-modal" [froalaEditor]
       [(froalaModel)]="editorContent"></div>
     <div class="form">
       <div *ngFor="let item of form">

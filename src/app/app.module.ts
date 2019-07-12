@@ -1,9 +1,12 @@
 // Import Modules
 import { BrowserModule } from '@angular/platform-browser';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { FroalaEditorModule, FroalaViewModule } from 'angular-froala-wysiwyg';
 import { TextareaAutosizeModule } from 'ngx-textarea-autosize';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 
 // Import serivces
 import { AuthService } from './services/auth.service';
@@ -62,6 +65,7 @@ import { PartnersComponent } from './components/home/partners/partners.component
 import { RulesComponent } from './components/home/rules/rules.component';
 import { TestimonialsComponent } from './components/home/testimonials/testimonials.component';
 import { FeaturedChallengesComponent } from './components/home/featured-challenges/featured-challenges.component';
+import { EditphasemodalComponent } from './components/challenge/challengephases/editphasemodal/editphasemodal.component';
 
 @NgModule({
   declarations: [
@@ -109,16 +113,21 @@ import { FeaturedChallengesComponent } from './components/home/featured-challeng
     PartnersComponent,
     RulesComponent,
     TestimonialsComponent,
-    FeaturedChallengesComponent
+    FeaturedChallengesComponent,
+    EditphasemodalComponent
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AppRoutingModule,
     HttpClientModule,
+    FormsModule,
+    NgxTwitterTimelineModule,
     FroalaEditorModule.forRoot(),
     FroalaViewModule.forRoot(),
     TextareaAutosizeModule,
-    NgxTwitterTimelineModule
+    OwlDateTimeModule,
+    OwlNativeDateTimeModule
   ],
   providers: [
     AuthService,

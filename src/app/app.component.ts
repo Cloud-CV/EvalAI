@@ -20,11 +20,13 @@ export class AppComponent implements OnInit, OnDestroy {
   isLoading = false;
   confirmParams = { isConfirming: false};
   modalParams = { isModalVisible: false};
+  editPhaseModalParams = { isEditPhaseModalVisible: false};
   globalServiceSubscription: any;
   globalLogoutTrigger: any;
   globalLoadingSubscription: any;
   globalConfirmSubscription: any;
   globalModalSubscription: any;
+  globalEditPhaseModalSubscription: any;
   globalServiceSubscriptionScrollTop: any;
 
   /**
@@ -88,6 +90,10 @@ export class AppComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         this.modalParams = params;
       }, 0);
+    });
+
+    this.globalEditPhaseModalSubscription = this.globalService.editPhaseModalParams.subscribe(params => {
+      this.editPhaseModalParams = params;
     });
 
     this.globalServiceSubscriptionScrollTop = this.globalService.scrolltop.subscribe(() => {

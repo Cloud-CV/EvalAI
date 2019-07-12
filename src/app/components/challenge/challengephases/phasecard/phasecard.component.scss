@@ -1,63 +1,17 @@
 @import './variables.scss';
 @import './mixins.scss';
 
-.phase-container {
-	background:white;
-	border-radius:10px;
-	padding:30px;
-	color: $gray-darker;
-	font-weight: $fw-light;
-	font-size:$fs-16;
-	margin-top:20px;
-	margin-bottom:40px;
-	overflow:auto;
-	@include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
-	.phase-title {
-		font-size:$fs-24;
-		font-weight:$fw-regular;
-		padding:20px 0px 20px 0px;
-	}
-	.phase-description {
-      padding:20px 0px 20px 0px;
-      display:block;
-      position:relative;
-      line-height: 20px;
-      letter-spacing: 0.5px;
-	}
-	.phase-section {
-      position:relative;
-      display:block;
-      overflow:auto;
-      line-height: 20px;
-      letter-spacing: 0.5px;
-      .start {
-      	padding:20px 0px 20px 0px;
-      	position:relative;
-      	float:left;
-      	text-align:left;
-      	display:inline-block;
-      	margin-right:20px;
-      }
-      .end {
-      	padding:20px 0px 20px 0px;
-      	position:relative;
-      	float:right;
-      	text-align:left;
-      	display:inline-block;
-      }
-	}
-	.phase-heading {
-		color:$red-light;
-		font-weight:$fw-regular;
-	}
+.phase-card {
+	margin-bottom: 20px;
+	padding-bottom: 1px;
 }
 
-@include screen-small {
-	.phase-container {
-		.phase-section { 
-         .end {
-           float:left;
-         }
-		}
+.phase-value {
+	color: $overlay-darker;
+}
+
+.phase-card {
+	.row-lr-margin {
+		margin-bottom: 20px;
 	}
 }

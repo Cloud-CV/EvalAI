@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Inject } from '@angular/core';
+import { Injectable, Component, OnInit, Input, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { GlobalService } from '../../../services/global.service';
 
@@ -61,6 +61,16 @@ export class InputComponent implements OnInit {
    * Is field read-only
    */
   @Input() readonly: boolean;
+
+  /**
+   * Minimum datetime
+   */
+  @Input() mindatetime: string;
+
+  /**
+   * Is editing phase details
+   */
+  @Input() editPhaseDetails: boolean;
 
   /**
    * Is email flag
@@ -155,6 +165,9 @@ export class InputComponent implements OnInit {
     if (this.readonly) {
       this.isReadonly = true;
     }
+    if (this.editPhaseDetails === true) {
+      this.isValid = true;
+    }
   }
 
   /**
@@ -177,6 +190,11 @@ export class InputComponent implements OnInit {
     } else if (this.type === 'text' || this.type === 'textarea') {
        this.isValid = this.globalService.validateText(e);
        this.isValid ? this.message = '' : this.message = 'Enter a valid text';
+    } else if (this.type === 'number') {
+      this.isValid = this.globalService.validateInteger(e);
+      this.isValid ? this.message = '' : this.message = 'Enter a valid number';
+    } else if (this.type === 'datetime') {
+      this.isValid = true;
     } else if (this.type === 'password') {
        this.isValid = this.globalService.validatePassword(e);
        this.isValid ? this.message = '' : this.message = 'Password minimum 8 characters';
