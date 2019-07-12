@@ -8,6 +8,8 @@ from base.utils import get_boto3_client
 
 from http import HTTPStatus
 
+from moto import mock_ecs
+
 logger = logging.getLogger(__name__)
 
 
@@ -141,9 +143,9 @@ update_service_args = """
 
 delete_service_args = """
 {{
-    cluster: Challenge_Cluster,
-    service: {service_name},
-    force: {force}
+    "cluster": "Challenge_Cluster",
+    "service": "{service_name}",
+    "force": False
 }}
 """
 
@@ -174,7 +176,6 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     Returns:
     dict: A dict of the task definition and it's ARN if succesful, and an error dictionary if not
     """
-
     container_name = "worker_{}".format(queue_name)
     image = "{AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-{env}-worker:latest".format(AWS_ACCOUNT_ID=aws_keys["AWS_ACCOUNT_ID"], env=ENV)
     AWS_DEFAULT_REGION = aws_keys["AWS_REGION"]
@@ -189,9 +190,13 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                                             image=image, AWS_DEFAULT_REGION=AWS_DEFAULT_REGION, env=ENV,
                                             challenge_pk=challenge.pk, log_group=log_group)
         definition = eval(definition)
-        if challenge.task_def_arn is "":
+        if not challenge.task_def_arn:
             try:
                 response = client.register_task_definition(**definition)
+                if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
+                    task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+                    challenge.task_def_arn = task_def_arn
+                    challenge.save()
                 return response
             except ClientError as e:
                 logger.info(e)
@@ -221,12 +226,9 @@ def create_service_by_challenge_pk(client, challenge, client_token):
     service_name = "{}_service".format(queue_name)
     if challenge.workers is None:  # Verify if the challenge is new (i.e, service not yet created.).
         response = register_task_def_by_challenge_pk(client, queue_name, challenge)
-        if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
-            task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
-            challenge.task_def_arn = task_def_arn
-            challenge.save()
-        else:
+        if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
             return response
+        task_def_arn = challenge.task_def_arn
         definition = service_definition.format(service_name=service_name, task_def_arn=task_def_arn, client_token=client_token)
         definition = eval(definition)
         try:
@@ -242,24 +244,25 @@ def create_service_by_challenge_pk(client, challenge, client_token):
         return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": None}}
 
 
-def update_service_by_challenge_pk(client, challenge, num_of_tasks):
+def update_service_by_challenge_pk(client, challenge, num_of_tasks, forceNewDeployment=False):
     """
-    Registers the task definition of the worker for a challenge, before creating a service.
+    Updates the worker service for a challenge, and scales the number of workers to num_of_tasks.
 
     Parameters:
-    client (boto3.client): the client used for making requests to ECS.
-    queue_name (str): queue_name is the queue field of the Challenge model used in many parameters fof the task def.
-    challenge (<class 'challenges.models.Challenge'>): The challenge object for whom the task definition is being registered.
+    client (boto3.client): the client used for making requests to ECS
+    challenge (<class 'challenges.models.Challenge'>): The challenge object  for whom the task definition is being registered.
+    num_of_tasks (int): Number of workers to scale to for the challenge.
+    forceNewDeployment (bool): Set True to specify if you want to redploy with the latest image from ECR. Default is False. 
 
     Returns:
-    dict: The response returned by the update_service method from boto3
+    dict: The response returned by the update_service method from boto3. If unsuccesful, returns an error dictionary
     """
 
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
     task_def_arn = challenge.task_def_arn
 
-    kwargs = update_service_args.format(service_name=service_name, task_def_arn=task_def_arn, forceNewDeployment=False)
+    kwargs = update_service_args.format(service_name=service_name, task_def_arn=task_def_arn, forceNewDeployment=forceNewDeployment)
     kwargs = eval(kwargs)
 
     try:
@@ -272,14 +275,37 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks):
         return e.response
 
 
-def delete_service_by_challenge_pk(client, challenge):
+def delete_service_by_challenge_pk(challenge):
+    """
+    Deletes the workers service of a challenge.
+
+    Before deleting, it scales down the number of workers in the service to 0, then proceeds to delete the service.
+
+    Parameters:
+    challenge (<class 'challenges.models.Challenge'>): The challenge object for whom the task definition is being registered.
+
+    Returns:
+    dict: The response returned by the delete_service method from boto3
+    """
+    if(ENV is "dev"):
+        mock = mock_ecs()
+        mock.start()
+
+    client = get_boto3_client("ecs", aws_keys)
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
     kwargs = delete_service_args.format(service_name=service_name, force=True)
     kwargs = eval(kwargs)
     try:
+        if(challenge.workers!=0):
+            response = update_service_by_challenge_pk(client, challenge, 0, False)
+            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+                return response
+
         client.deregister_task_definition(taskDefinition=challenge.task_def_arn)
         response = client.delete_service(**kwargs)
+        if(ENV is "dev"):
+            mock.stop()
         if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
             challenge.workers = None
             challenge.task_def_arn = ""
@@ -289,7 +315,7 @@ def delete_service_by_challenge_pk(client, challenge):
             return e.response
 
 
-def service_manager(client, challenge, num_of_tasks=None):
+def service_manager(client, challenge, num_of_tasks=None, forceNewDeployment=False):
     """
     This method determines if the challenge is new or not, and accordingly calls <update or create>_by_challenge_pk.
 
@@ -304,16 +330,23 @@ def service_manager(client, challenge, num_of_tasks=None):
     Returns:
     dict: The response returned by the respective functions update_service_by_challenge_pk or create_service_by_challenge_pk
     """
-    if challenge.is_active:
-        if challenge.workers is not None:
-            response = update_service_by_challenge_pk(client, challenge, num_of_tasks)
-            return response
-        else:
-            client_token = client_token_generator()
-            response = create_service_by_challenge_pk(client, challenge, client_token)
-            return response
+    '''
+    if(ENV is "dev"):
+        mock = mock_ecs()
+        mock.start()
+        client = get_boto3_client("ecs", aws_keys)
+    '''
+    if challenge.workers is not None:
+        response = update_service_by_challenge_pk(client, challenge, num_of_tasks, forceNewDeployment)
+        # if(ENV is "dev"):
+            # mock.stop()
+        return response
     else:
-        return {"Error": "Challenge is inactive."}
+        client_token = client_token_generator()
+        response = create_service_by_challenge_pk(client, challenge, client_token)
+        if(ENV is "dev"):
+            mock.stop()
+        return response
 
 
 def start_workers(queryset):
@@ -329,19 +362,18 @@ def start_workers(queryset):
     dict: keys-> 'count': the number of workers successfully started.
                  'message': the message to be displayed on the django admin page
     """
-
-    ecs = get_boto3_client("ecs", aws_keys)
+    client = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
         if (challenge.workers == 0) or (challenge.workers is None):
-            response = service_manager(client=ecs, challenge=challenge, num_of_tasks=1)
+            response = service_manager(client, challenge=challenge, num_of_tasks=1)
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
                 return {"count": count, "message": response['Error']}
             count += 1
         else:
-            response = {"Error": "Please select only inactive challenges."}
+            response = "Please select only inactive challenges."
             return {"count": count, "message": response}
-    message = "All selected workers successfully started."
+    message = "All selected challenge workers successfully started."
     return {"count": count, "message": message}
 
 
@@ -358,17 +390,16 @@ def stop_workers(queryset):
     dict: keys-> 'count': the number of workers successfully stopped.
                  'message': the message to be displayed on the django admin page
     """
-
-    ecs = get_boto3_client("ecs", aws_keys)
+    client = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
         if (challenge.workers is not None) and (challenge.workers > 0):
-            response = service_manager(client=ecs, challenge=challenge, num_of_tasks=0)
+            response = service_manager(client, challenge=challenge, num_of_tasks=0)
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
                 return {"count": count, "message": response['Error']}
             count += 1
         else:
-            response = {"Error": "Please select only active challenges."}
+            response = "Please select only active challenges."
             return {"count": count, "message": response}
     message = "All selected challenge workers successfully stopped."
     return {"count": count, "message": message}
@@ -387,29 +418,39 @@ def scale_workers(queryset, num_of_tasks):
     dict: keys-> 'count': the number of workers successfully started.
                  'message': the message to be displayed on the django admin page
     """
-
-    ecs = get_boto3_client("ecs", aws_keys)
+    client = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
         if (num_of_tasks == challenge.workers):
-            message = "Please scale to a different number than current worker count for challenge {}".format(challenge.pk)
-            return {"count": count, "message": message}
-        response = service_manager(client=ecs, challenge=challenge, num_of_tasks=num_of_tasks)
+            response = "Please select only active challenges. Challenge {} is inactive.".format(challenge.pk)
+            return {"count": count, "message": response}
+        response = service_manager(client, challenge=challenge, num_of_tasks=num_of_tasks)
         if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-            return {"count": count, "message": response['Error']}
+            return {"count": count, "message": response}
         count += 1
     message = "All selected challenge workers successfully scaled."
     return {"count": count, "message": message}
 
 
 def delete_workers(queryset):
-    ecs = get_boto3_client("ecs", aws_keys)
+    """
+    The function called by the admin action method to delete all the selected workers.
+
+    Calls the delete_service_by_challenge_pk method. Before calling, verifies that the challenge is not new.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully stopped.
+                 'message': the message to be displayed on the django admin page
+    """
     count = 0
     for challenge in queryset:
         if challenge.workers is not None:
-            response = delete_service_by_challenge_pk(client=ecs, challenge=challenge)
+            response = delete_service_by_challenge_pk(challenge=challenge)
         else:
-            response = {"Error": "Please select only active challenges."}
+            response = "Please select only active challenges. Challenge {} is inactive.".format(challenge.pk)
             return {"count": count, "message": response}
 
         if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
@@ -419,34 +460,27 @@ def delete_workers(queryset):
     return {"count": count, "message": message}
 
 
-def restart_workers_by_pk(client, challenge):  # Call this automatically on any changes in relevant config of the model.
-    queue_name = challenge.queue
-    service_name = "{}_service".format(queue_name)
-    task_def_arn = challenge.task_def_arn
-    num_of_tasks = challenge.workers
-
-    kwargs = update_service_args.format(service_name=service_name, task_def_arn=task_def_arn, forceNewDeployment=True)
-    kwargs = eval(kwargs)
-
-    try:
-        response = client.update_service(**kwargs)
-        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
-            challenge.workers = num_of_tasks
-            challenge.save()
-        return response
-    except ClientError as e:
-        return e.response
-
-
 def restart_workers(queryset):
-    ecs = get_boto3_client("ecs", aws_keys)
+    """
+    The function called by the admin action method to restart all the selected workers.
+
+    Calls the delete_service_by_challenge_pk method. Before calling, verifies that the challenge worker(s) is(are) active.
+
+    Parameters:
+    queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
+
+    Returns:
+    dict: keys-> 'count': the number of workers successfully stopped.
+                 'message': the message to be displayed on the django admin page
+    """
+    client = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
         if (challenge.workers is not None) and (challenge.workers > 0):
-            response = restart_workers_by_pk(ecs, challenge)
+            response = service_manager(client, challenge, num_of_tasks=challenge.workers, forceNewDeployment=True)
         else:
-            message = "Please select only active challenges."
-            return {"count": count, "message": message}
+            response = "Please select only active challenges. Challenge {} is inactive.".format(challenge.pk)
+            return {"count": count, "message": response}
 
         if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
             return {"count": count, "message": response['Error']}
@@ -463,5 +497,9 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
     if prev != curr:
-        restart_workers([instance])
+        if(field_name == "test_annotation"):
+            challenge = instance.challenge
+        else:
+            challene = instance
+        restart_workers([challenge])
         logger.info("The worker service for challenge {} was restarted.".format(instance.pk))
