@@ -63,7 +63,7 @@
                     <li><a ui-sref=".overview" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-info"></i> Overview</a></li>
                     <li><a ui-sref=".evaluation" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-bar-chart-o"></i> Evaluation</a></li>
                     <li><a ui-sref=".phases" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-level-up"></i> Phases</a></li>
-                    <li ng-if="(challenge.isRegistrationOpen && challenge.isParticipated) || (!challenge.isParticipated && challenge.isRegistrationOpen)"><a ui-sref=".participate" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-free-code-camp"></i> Participate</a></li>
+                    <li ng-if="!challenge.isParticipated && challenge.isRegistrationOpen"><a ui-sref=".participate" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-free-code-camp"></i> Participate</a></li>
                     <li ng-if="challenge.isParticipated"><a ui-sref=".submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-upload"></i> Submit</a></li>
                     <li ng-if="challenge.isParticipated"><a ui-sref=".my-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i> My Submissions</a></li>
                     <li ng-if="challenge.isChallengeHost"><a ui-sref=".my-challenge-all-submission" ui-sref-active="active-challenge" class="text-light-black w-500"><i class="fa fa-eye"></i>View All Submissions</a></li>
