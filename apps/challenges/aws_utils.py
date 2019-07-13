@@ -252,7 +252,7 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks, forceNewDepl
     client (boto3.client): the client used for making requests to ECS
     challenge (<class 'challenges.models.Challenge'>): The challenge object  for whom the task definition is being registered.
     num_of_tasks (int): Number of workers to scale to for the challenge.
-    forceNewDeployment (bool): Set True to specify if you want to redploy with the latest image from ECR. Default is False. 
+    forceNewDeployment (bool): Set True (mainly for restarting) to specify if you want to redploy with the latest image from ECR. Default is False.
 
     Returns:
     dict: The response returned by the update_service method from boto3. If unsuccesful, returns an error dictionary
@@ -297,7 +297,7 @@ def delete_service_by_challenge_pk(challenge):
     kwargs = delete_service_args.format(service_name=service_name, force=True)
     kwargs = eval(kwargs)
     try:
-        if(challenge.workers!=0):
+        if(challenge.workers != 0):
             response = update_service_by_challenge_pk(client, challenge, 0, False)
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
                 return response
@@ -330,22 +330,12 @@ def service_manager(client, challenge, num_of_tasks=None, forceNewDeployment=Fal
     Returns:
     dict: The response returned by the respective functions update_service_by_challenge_pk or create_service_by_challenge_pk
     """
-    '''
-    if(ENV is "dev"):
-        mock = mock_ecs()
-        mock.start()
-        client = get_boto3_client("ecs", aws_keys)
-    '''
     if challenge.workers is not None:
         response = update_service_by_challenge_pk(client, challenge, num_of_tasks, forceNewDeployment)
-        # if(ENV is "dev"):
-            # mock.stop()
         return response
     else:
         client_token = client_token_generator()
         response = create_service_by_challenge_pk(client, challenge, client_token)
-        if(ENV is "dev"):
-            mock.stop()
         return response
 
 
@@ -500,6 +490,6 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
         if(field_name == "test_annotation"):
             challenge = instance.challenge
         else:
-            challene = instance
+            challenge = instance
         restart_workers([challenge])
         logger.info("The worker service for challenge {} was restarted.".format(instance.pk))
