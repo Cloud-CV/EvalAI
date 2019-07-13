@@ -13,7 +13,9 @@
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
-  "pre-commit": ["lint"],
+  "pre-commit": [
+    "lint"
+  ],
   "private": true,
   "dependencies": {
     "@angular/animations": "^7.2.15",
@@ -26,8 +28,10 @@
     "@angular/platform-browser": "^7.2.15",
     "@angular/platform-browser-dynamic": "^7.2.15",
     "@angular/router": "^7.2.15",
+    "@types/moment-timezone": "^0.5.12",
     "angular-froala-wysiwyg": "^3.0.0-rc.2-1",
     "core-js": "^2.4.1",
+    "moment": "^2.24.0",
     "ng-pick-datetime": "^7.0.0",
     "ngx-textarea-autosize": "^2.0.3",
     "ngx-twitter-timeline": "^0.1.5",

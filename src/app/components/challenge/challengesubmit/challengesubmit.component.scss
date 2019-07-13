@@ -1,73 +1,21 @@
 @import './variables.scss';
 @import './mixins.scss';
 
-.challenge-submit-container {
-  padding: 20px;
-  color: $gray-darker;
-  font-size: $fs-16;
-  font-weight: $fw-light;
-  .challenge-submit {
-    .btn-filter {
-      margin-left: 0;
-    }
-    .file-name {
-      margin-left: 20px;
-      font-weight: $fw-bold;
-    }
-    .hide {
-      opacity: 0;
-    }
-    .form-challenge-submit {
-      padding-left:10px;
-      width: 50%;
-      .submit-btn-div {
-        .btn {
-          margin-left: 0px;
-        }
-      }
-    }
-    .phase-submissions {
-      display: inline-block;
-      text-align: left;
-      vertical-align: top;
-      .heading {
-        margin:15px;
-      }
-    }
-    .phase-submissions {
-      float: right;
-      padding: 20px;
-      margin-top:40px;
-      background: $gray-lighter;
-      border-radius:10px;
-    .heading {
-      font-weight: $fw-regular;
-      display:inline-block;
-      margin:10px;
-      margin-right:0px;
-    }
-    .content {
-      margin:10px;
-      display:inline-block;
-    }
-    }
-  }
-  .submission-guidelines,
-  .card-content {
-    line-height: 20px;
-    letter-spacing: 0.5px;
+.ev-submission-card-body {
+  padding: 10px 30px;
+}
+
+.row .row-lr-margin {
+  margin-bottom: 20px;
+}
+
+.exist-team-card {
+  .col-lr-pad {
+    padding-left: 16px;
+    padding-right: 36px;
   }
 }
 
-@include screen-small {
-  .challenge-submit-container {
-    .challenge-submit,
-    .submission-guidelines {
-      margin-left: 0;
-      margin-right: 0;
-      .form-challenge-submit {
-        width: 220px;
-      }
-    }
-  }
+.remaining-submission-clock {
+  padding-top: 55px;
 }

@@ -224,10 +224,9 @@ export class EndpointsService {
   /**
    * Challenge Submissions Remaining
    * @param challenge  challenge id
-   * @param phase  phase id
    */
-  challengeSubmissionsRemainingURL(challenge, phase) {
-    return `${this.jobs}${challenge}/phases/${phase}/remaining_submissions`;
+  challengeSubmissionsRemainingURL(challenge) {
+    return `${this.jobs}${challenge}/remaining_submissions`;
   }
 
   /**

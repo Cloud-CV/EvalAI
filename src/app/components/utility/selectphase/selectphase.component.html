@@ -1,21 +1,33 @@
-<div class="select-phase">
-  <div class="select-title heading">Select a phase:</div>
-  <div [class.inline]="publicRouter.url.indexOf('submissions') >= 0" class="phase-div" *ngFor="let item of phases">
-    <div class="card card-light" (click)="selectPhase(item)" [class.selected]="item['is_selected']">
+<ng-container *ngIf="phaseSelectionType=='radioButton'">
+<li *ngFor="let item of phases">
+  <input
+    [disabled]="challenge['currentDate'] < item.start_date || challenge['currentDate'] >= item.end_date"
+    type="radio" name="selectPhase" class="with-gap selectPhase"
+    id="{{item.id}}" value="{{item.id}}" (click)="selectPhase(item)">
+  <label for="{{item.id}}"></label>
 
-      <div class="content selectstate left" [class.single-line]="publicRouter.url.indexOf('submissions') >= 0">
-        <i class="far fa-circle selectstate" *ngIf="!item['is_selected']"></i>
-        <i class="fa fa-check selectstate" aria-hidden="true" *ngIf="item['is_selected']"></i>
-      </div>
-      <div class="content rightside">
-      <div >
-        <span class="heading">Phase: </span><span>{{item['name']}}</span>
-        <span *ngIf="publicRouter.url.indexOf('leaderboard') >= 0"><br>
-        <span class="heading">Split: </span><span>{{item['phase_split']['dataset_split_name']}}</span>
-        </span>
-      </div>
-      <div *ngIf="publicRouter.url.endsWith('submit')"><span class="heading">End Date: </span><span>{{getFormattedDate(item['end_date'])}}</span></div>
-    </div>
-    </div>
+  <div class="radio-button-text pointer" *ngIf="!item.showPrivate">
+    <strong class="text-med-black fw-semibold fs-15">Phase: </strong>
+    <span class="content">{{item.name}}</span>
+    <br>
+    <strong class="text-med-black fw-semibold fs-15">Start date: </strong>
+    <span class="content">{{item.start_date | date:'medium'}}</span>
+    <br>
+    <strong class="text-med-black fw-semibold fs-15">End date: </strong>
+    <span class="content">{{item.end_date | date:'medium'}}</span>
   </div>
-</div>
+
+  <div class="radio-button-text pointer" *ngIf="item.showPrivate">
+    <strong class="text-highlight fw-semibold fs-15">Phase: </strong>
+    <span class="text-highlight">{{item.name}}</span>
+    <br>
+    <strong class="text-highlight fw-semibold fs-15">Start date: </strong>
+    <span class="text-highlight">{{item.start_date | date:'medium'}}</span>
+    <br>
+    <strong class="text-highlight fw-semibold fs-15">End date: </strong>
+    <span class="text-highlight">{{item.end_date | date:'medium'}}</span>
+  </div>
+
+  <div class="clearfix"></div>
+</li>
+</ng-container>

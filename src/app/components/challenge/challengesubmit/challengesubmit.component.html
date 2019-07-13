@@ -1,50 +1,149 @@
-<div class="challenge-submit-container">
-  <div class="inactive" *ngIf="!isActive">
-    Sorry, The Challenge is not active!
-  </div>
-  <div *ngIf="isActive">
-    <app-forcelogin *ngIf="!isLoggedIn" [path]="routerPublic.url">
-    </app-forcelogin>
-    <div *ngIf="isLoggedIn">
-      <div class="card card-light submission-guidelines">
-        <div class="card-title">
-          Sumission Guidelines
+<div class="challenge-card">
+  <div class="ev-card-panel ev-md-container card-bt-margin">
+    <p *ngIf="!isActive"><strong class="fw-semibold">Sorry, the challenge is not
+        active.</strong></p>
+    <div *ngIf="isActive" class="row row-lr-margin">
+      <div class="col-md-11 col-sm-11 col-lr-pad">
+        <span class="fs-20 fw-light">Submission Guidelines</span>
+        <div *ngIf="isChallengeHost">
+          <div class="fw-semibold content">
+            <p><strong class="fw-semibold">Note: </strong>Your submissions won't
+              be visible on leaderboard for
+              <strong class="fw-semibold blue-text"> Public Challenge Phases
+              </strong> since you are a challenge host
+              for this challenge.<br> This feature is only for your testing
+              purposes.</p>
+          </div>
         </div>
-        <div class="card-content" [innerHTML]="submissionGuidelines">
+        <div [innerHTML]="submissionGuidelines" class="content"></div>
+      </div>
+
+      <div *ngIf="isChallengeHost" class="col-md-1 col-sm-1 col-lr-pad">
+        <a class="pointer" (click)="editSubmissionGuideline()">
+          <i class="fa fa-pencil" aria-hidden="true">
+          </i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="ev-card-panel">
+    <div class="bottom-card-container bottom-hr-line">
+      <strong class="fw-semibold content">
+        Please fill the following fields to submit
+      </strong>
+    </div>
+    <div class="row">
+      <div class="col-md-7 col-sm-7 col-xs-12">
+        <div class="exist-team-card">
+          <ul>
+            <b class="fw-bold content fs-14">Select phase:</b>
+            <app-selectphase [phases]="filteredPhases" [phaseSelectionType]="phaseSelectionType"
+              [phaseSelected]="phaseSelected()"></app-selectphase>
+
+            <div class="form">
+              <div class="row row-lr-margin">
+                <div class="col-md-10 col-sm-10 col-lr-pad submit-upload-file">
+                  <app-input (change)="validateInput($event.target.value)"
+                    [label]="'input_file'" [accept]="'.json, .zip, .txt, .tsv, .gz'"
+                    [placeholder]="''" [type]="'file'" [value]="''"
+                    #formsubmit></app-input>
+                </div>
+              </div>
+
+              <div class="row row-lr-margin">
+                <div class="align-left col-sm-10 col-lr-pad">
+                  <div class="input-field align-left">
+                    <app-input [label]="'method_name'" [placeholder]="'Method name (Optional)'"
+                    [type]="'text'" [icon]="" [value]="''"
+                      #formsubmit></app-input>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row row-lr-margin">
+                <div class="align-left col-sm-10 col-lr-pad">
+                  <app-input [label]="'method_description'" [type]="'textarea'"
+                    [placeholder]="'Method description (Optional)'" #formsubmit></app-input><br>
+                </div>
+              </div>
+
+              <div class="row row-lr-margin">
+                <div class="align-left col-sm-10 col-lr-pad">
+                  <app-input [label]="'project_url'" [type]="'text'"
+                    [placeholder]="'Project URL (Optional)'" #formsubmit></app-input>
+                </div>
+              </div>
+
+              <div class="row row-lr-margin">
+                <div class="align-left col-sm-10 col-lr-pad">
+                  <app-input [label]="'publication_url'" [type]="'text'"
+                    [placeholder]="'Publication URL (Optional)'" #formsubmit></app-input>
+                </div>
+              </div>
+
+              <div *ngIf="submissionError" class="red-text col-lr-pad">
+                <strong class="fw-semibold">{{submissionError}}</strong><br><br>
+              </div>
+
+              <div class="pagination">
+                <div class="row rm-gut row-lr-margin">
+                  <div class="col-sm-12 col-md-12 col-lr-pad">
+                    <div class="align-left">
+                      <button class="btn btn-waves-effect grad-rec-btn
+                        waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
+                        [disabled]="disableSubmit || inputFile"
+                        (click)="formValidate()">Submit</button>
+                    </div>
+                    <br><br>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ul>
         </div>
       </div>
-      <div class="card card-light challenge-submit">
-        <div class="card-title">Please fill the following fields to submit</div>
-        <hr>
-        <div class="card-content">
-            <app-selectphase [phases]="filteredPhases" [phaseSelected]="phaseSelected()"></app-selectphase>
-        	<div class="phase-submissions" *ngIf="selectedPhase" >
-        		<div>
-              <span class="heading">Today's Remaining Submissions: </span>
-              <span class="content">{{selectedPhaseSubmissions['remaining_submissions_today_count']}}</span>
-            </div>
-            <div>
-              <span class="heading">Total Remaining Submissions: </span>
-              <span class="content">{{selectedPhaseSubmissions['remaining_submissions']}}</span>
-            </div>
-        	</div>
-        </div>
-        <div class="card-content">
-          <div class="form-challenge-submit" *ngIf="selectedPhaseSubmissions['remaining_submissions_today_count']>0">
-          <app-input [isRequired]="true" [label]="'input_file'" [placeholder]="'Upload File *'" [type]="'file'" [theme]="'dark'"  #formsubmit></app-input>
-          <app-input [isRequired]="false" [label]="'method_name'" [type]="'text'" [theme]="'dark'" [placeholder]="'Method Name (Optional)'" #formsubmit></app-input>
-          <app-input [isRequired]="false" [label]="'method_description'" [type]="'text'" [theme]="'dark'" [placeholder]="'Method Description (Optional)'" #formsubmit></app-input>
-          <app-input [isRequired]="false" [label]="'project_url'" [type]="'text'" [theme]="'dark'" [placeholder]="'Project URL (Optional)'" #formsubmit></app-input>
-          <app-input [isRequired]="false" [label]="'publication_url'" [type]="'text'" [theme]="'dark'" [placeholder]="'Publication URL (Optional)'" #formsubmit></app-input>
-          <div class="submit-btn-div">
-            <span class="btn btn-filter selected" (click)="formValidate('formsubmit')">Submit</span>
-          </div>
-          </div>
-          <div *ngIf="selectedPhaseSubmissions['remaining_submissions_today_count']==0 && selectedPhase">
-             You have exhausted today's submission limit.
-          </div>
 
-          
+      <div *ngIf="selectedPhaseSubmissions.showSubmissionDetails"
+        class="col-md-5 col-sm-5 col-xs-12">
+        <div class="ev-card-body exist-team-card ev-remaining-submission
+          remaining-submission-clock">
+          <div class="row row-lr-margin">
+            <span class="color-black">
+              <strong class="fw-semibold fs-15">
+                Today's remaining Submissions:
+              </strong>
+            </span>
+            <span class="color-black">
+              <strong class="fw-semibold fs-15">
+                {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_today_count}}
+              </strong>
+            </span>
+          </div>
+          <div class="row row-lr-margin">
+            <span class="color-black">
+              <strong class="fw-semibold fs-15">
+                Monthly remaining submissions:
+              </strong>
+            </span>
+            <span class="color-black">
+              <strong class="fw-semibold fs-15">
+                {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_this_month_count}}
+              </strong>
+            </span>
+          </div>
+          <div class="row row-lr-margin">
+            <span class="color-black">
+              <strong class="fw-semibold fs-15">
+                Total remaining submissions:
+              </strong>
+            </span>
+            <span class="color-black">
+              <strong class="fw-semibold fs-15">
+                {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_count}}
+              </strong>
+            </span>
+          </div>
         </div>
       </div>
     </div>
