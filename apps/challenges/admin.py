@@ -47,8 +47,9 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "created_at",
         "is_docker_based",
         "slug",
+        "banned_email_ids",
         "workers",
-        "task_def_arn"
+        "task_def_arn",
     )
     list_filter = (
         "published",
