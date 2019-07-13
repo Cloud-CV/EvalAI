@@ -46,7 +46,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    #url(r"^$", views.home, name="home"),
+    url(r"^$", views.home, name="home"),
     url(r'^api-auth/', include('rest_framework.urls')),
     url(r"^accounts/", include("allauth.urls")),
     url(r"^admin/", admin.site.urls),
