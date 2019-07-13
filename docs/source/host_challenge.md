@@ -29,7 +29,7 @@ We categorize the challenges in two categories:
 
    Some of the popular prediction upload based challenges that we have hosted are shown below:
 
-   <a href="https://evalai.cloudcv.org/web/challenges/list" target="_blank"><img src="/_static/img/prediction-upload-challenges.png"></a><br />
+   <a href="https://evalai.cloudcv.org/web/challenges/list" target="_blank"><img src="_static/img/prediction-upload-challenges.png"></a><br />
 
    If you are interested in hosting prediction upload based challenges, then [click here](/host_challenge.html#host-prediction-upload-based-challenge).
 
@@ -39,7 +39,7 @@ We categorize the challenges in two categories:
 
    Some of the popular code upload based challenges that we have hosted are shown below:
 
-   <a href="https://evalai.cloudcv.org/web/challenges/list" target="_blank"><img src="/_static/img/code-upload-challenges.png"></a>
+   <a href="https://evalai.cloudcv.org/web/challenges/list" target="_blank"><img src="_static/img/code-upload-challenges.png"></a>
 
    If you are interested in hosting code upload based challenges, then [click here](/host_challenge.html#host-prediction-upload-based-challenge).
 

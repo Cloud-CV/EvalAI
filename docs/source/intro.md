@@ -2,7 +2,7 @@
 
 [EvalAI] aims to build a centralized platform to host, participate, and collaborate in Artificial Intelligence (AI) challenges organized around the globe and hope to help in benchmarking progress in AI.
 
-<img src="/_static/img/teaser.png">
+<img src="_static/img/teaser.png">
 
 ## Features
 
