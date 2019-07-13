@@ -88,6 +88,10 @@ label {
   transition: .28s ease;
 }
 
+label:before, label:after {
+  box-sizing: inherit;
+}
+
 .radio-button-text {
   width: calc(100% - 35px);
   float: right;

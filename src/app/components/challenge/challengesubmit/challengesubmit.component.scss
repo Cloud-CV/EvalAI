@@ -9,6 +9,44 @@
   margin-bottom: 20px;
 }
 
+.guidelines-text-margin {
+  margin-top : 14px;
+  margin-bottom: 14px;
+}
+
+.remaining-submission-clock {
+  padding-top: 55px;
+}
+
+table, th, td {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+table {
+  width: 100%;
+}
+
+table.centered {
+  text-align: center;
+}
+
+thead {
+  border-bottom: 1px solid #d0d0d0;
+}
+
+tr {
+  border-bottom: 1px solid #d0d0d0;
+}
+
+td, th {
+  padding: 15px 5px;
+  display: table-cell;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+
 .exist-team-card {
   .col-lr-pad {
     padding-left: 16px;

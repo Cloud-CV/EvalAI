@@ -721,6 +721,31 @@ ul {
 }
 
 
+/* Code styles */
+code {
+  font-family: Roboto;
+  font-size: 14px;
+  font-weight: 300;
+  background: #eff0f1;
+  border: #eff0f1 dashed 1px;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.code-btn {
+  height: 100%!important;
+  padding: 0 .5rem!important;
+  line-height: 200%!important;
+  margin-left: 5px;
+}
+
+.code-btn {
+  .fa-clipboard {
+    color: #fff;
+  }
+}
+
+
 /*Buttons*/
 
 .btn {
