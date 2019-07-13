@@ -29,6 +29,7 @@ class GithubLogin(SocialLoginView):
     callback_url = FRONTEND_URL + "/auth/oauth-redirect/github/"
     client_class = OAuth2Client
 
+
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((ExpiringTokenAuthentication,))
