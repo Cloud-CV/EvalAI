@@ -32,8 +32,6 @@ body {
 
 
 
-
-
 /* Margins */
 
 .ev-mt-50 {
@@ -118,6 +116,10 @@ body {
 
 .fw-bold {
   font-weight: $fw-bold;
+}
+
+.fw-bolder {
+  font-weight: $fw-bolder;
 }
 
 
@@ -256,9 +258,63 @@ body {
   padding: 40px;
 }
 
+.card-bt-margin {
+  margin-bottom: 20px;
+}
+
+.bottom-hr-line {
+  border-bottom: 1px solid $gray;
+}
+
 .no-pad-lr {
   padding-left: 0px;
   padding-right: 0px;
+}
+
+
+
+/* ul list styles */
+
+ul {
+  list-style-type: none;
+}
+
+.exist-team-card ul.collapsible {
+  border: 0;
+  box-shadow: none;
+}
+.exist-team-card ul.collapsible li {
+  box-shadow: 0 0 5px #e0e0e0;
+}
+.exist-team-card ul li {
+  margin: 20px 0px;
+  min-height: 40px;
+}
+.exist-team-card ul li .collapsible-header {
+  border-bottom: 0;
+  line-height: initial;
+  min-height: initial;
+  padding: 10px 5px;
+}
+.exist-team-card ul li .collapsible-header i {
+  display: inline-block;
+  float: none;
+  font-size: initial;
+  line-height: 40px;
+  margin-right: 0;
+  text-align: center;
+  width: 2rem;
+}
+.exist-team-card ul li .collapsible-body {
+  background-color: #fafafa;
+  border-top: 1px solid #e0e0e0;
+  padding: 10px 40px;
+}
+.exist-team-card ul li .collapsible-body p {
+  padding: 3px 0;
+}
+.exist-team-card i.list-icon {
+  line-height: 25px;
 }
 
 
@@ -279,6 +335,19 @@ body {
   box-shadow: 0px 4px 8px #9d9d9d;
   &:hover {
       box-shadow: 0px 0px 8px #9d9d9d;
+  }
+}
+
+.submit-upload-file {
+  .input-group .file-field .btn {
+    border-radius: 2px !important;
+    background: $dark-gray !important;
+    color: #fff !important;
+    box-shadow: 0px 4px 8px #9d9d9d !important;
+    &:hover {
+      box-shadow: 0px 0px 8px #9d9d9d !important;
+      background: $med-gray !important;
+    }
   }
 }
 
@@ -346,6 +415,14 @@ body {
 
 .green-text {
   color: #4CAF50;
+}
+
+.text-highlight {
+  color: $yellow;
+}
+
+.blue-text {
+  color: #2196F3;
 }
 
 
@@ -644,12 +721,9 @@ ul {
 }
 
 
-
-
 /*Buttons*/
 
 .btn {
-  border-radius: 20px;
   margin-right: 10px;
   margin-top: 5px;
   margin-bottom: 5px !important;
@@ -835,7 +909,7 @@ ul {
       color: $med-black;
       padding: 10px;
       font-size: $fs-18;
-      font-weight: $fw-bold;
+      font-weight: $fw-bolder;
       margin-bottom: 30px;
     }
     .content {

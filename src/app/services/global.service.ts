@@ -294,7 +294,32 @@ export class GlobalService {
   }
 
   /**
-   * Get Form item for a label
+   * Set Form field value for a label
+   * @param components  form components
+   * @param label  label to fetch
+   * @param value new value to be set
+   * @returns value of form item
+   */
+  setFormValueForLabel(components, label, value) {
+    let valueFound = false;
+    components.map((item) => {
+      if (item.label.toLowerCase() === label.toLowerCase()) {
+        if (item.type === 'file') {
+          item.fileValue = value;
+          item.placeholder = '';
+        } else {
+          item.value = value;
+        }
+        valueFound = true;
+      }
+    });
+    if (!valueFound) {
+      console.error('Form value not found for ' + label);
+    }
+  }
+
+  /**
+   * Set Form item for a label
    * @param components  form components
    * @param label  label to fetch
    * @returns form item

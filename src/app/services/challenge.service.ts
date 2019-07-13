@@ -325,16 +325,19 @@ export class ChallengeService {
    * @param challenge  id of challenge.
    * @param phase  challenge phase id.
    * @param formData  Form Data for submission (file)
+   * @param callback callback function
    */
-  challengeSubmission(challenge, phase, formData) {
+  challengeSubmission(challenge, phase, formData, callback = () => {}) {
     const API_PATH = this.endpointsService.challengeSubmissionURL(challenge, phase);
     const SELF = this;
     this.apiService.postFileUrl(API_PATH, formData).subscribe(
       data => {
         SELF.globalService.showToast('success', 'Submission successful!');
+        callback();
       },
       err => {
         SELF.globalService.handleApiError(err);
+        callback();
       },
       () => {
         console.log('Submission Uploaded');

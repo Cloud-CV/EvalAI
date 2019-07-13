@@ -28,6 +28,11 @@ export class InputComponent implements OnInit {
   @Input() type: string;
 
   /**
+   * Supported file type for file field
+   */
+  @Input() accept: string;
+
+  /**
    * Name of input
    */
   @Input() name: string;
@@ -66,6 +71,11 @@ export class InputComponent implements OnInit {
    * Minimum datetime
    */
   @Input() mindatetime: string;
+
+  /**
+   * Input file value
+   */
+  @Input() fileValue = '';
 
   /**
    * Is editing phase details
@@ -141,6 +151,9 @@ export class InputComponent implements OnInit {
     }
     if (this.label === undefined) {
       this.label = 'Default Label';
+    }
+    if (this.accept === undefined) {
+      this.accept = '';
     }
     if (this.isRequired === undefined) {
       this.isRequired = false;
