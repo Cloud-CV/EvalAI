@@ -215,8 +215,6 @@ img.auth-logo {
     }
 }
 
-
-
 .social_or{
     overflow: hidden;
     text-align: center;
@@ -246,7 +244,6 @@ img.auth-logo {
 
 
 .social-login{
-
     .social-github{
         display: inline-block;
         width: auto;
@@ -260,9 +257,7 @@ img.auth-logo {
     }
 }
 
-
 /*media queries*/
-
 @media only screen and (max-width: $med-screen) {
     .graphic-cont {
         position: absolute;

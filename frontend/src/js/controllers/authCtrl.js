@@ -289,15 +289,13 @@
             vm.startLoader("Logging you in");
             var code = location.search;
             code =  code.split('?code=')[1]
-            console.log(code)
-
             var parameters = {};
             parameters.url = 'auth/oauth/github/';
             parameters.method = 'POST';
             parameters.data = {
                 "code": code,
             };
-            console.log(parameters)
+            
             parameters.callback = {
                 onSuccess: function(response){
                     if (response.status == 200) {
@@ -316,13 +314,10 @@
                     console.log(response)
                 }
             }
-            utilities.sendRequest(parameters, "no-header");
-            
+            utilities.sendRequest(parameters, "no-header");    
         };
-        
-
         $rootScope.$on('$stateChangeStart', function() {
-            vm.resetForm();            
+            vm.resetForm();
         });
     }
 })();

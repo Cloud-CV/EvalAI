@@ -29,8 +29,6 @@ class GithubLogin(SocialLoginView):
     callback_url = FRONTEND_URL + "/auth/oauth-redirect/github/"
     client_class = OAuth2Client
 
-
-
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((ExpiringTokenAuthentication,))
@@ -62,10 +60,3 @@ def get_auth_token(request):
 
     response_data = {"token": "{}".format(token)}
     return Response(response_data, status=status.HTTP_200_OK)
-
-
-
-
-
-
-
