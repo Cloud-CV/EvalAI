@@ -38,8 +38,8 @@ DJANGO_SETTINGS_MODULE = os.environ.get(
     "DJANGO_SETTINGS_MODULE", "settings.dev"
 )
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
-LIMIT_CONCURRENT_SUBMISSION_PROCESSING = os.environ.get(
-    "LIMIT_CONCURRENT_SUBMISSION_PROCESSING"
+LIMIT_CONCURRENT_SUBMISSION_PROCESSING = eval(
+    os.environ.get("LIMIT_CONCURRENT_SUBMISSION_PROCESSING")
 )
 
 from challenges.models import (
@@ -245,6 +245,7 @@ def extract_challenge_data(challenge, phases):
 
     try:
         # import the challenge after everything is finished
+        importlib.invalidate_caches()
         challenge_module = importlib.import_module(
             CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id)
         )
