@@ -1,33 +1,57 @@
 <ng-container *ngIf="phaseSelectionType=='radioButton'">
-<li *ngFor="let item of phases">
-  <input
-    [disabled]="challenge['currentDate'] < item.start_date || challenge['currentDate'] >= item.end_date"
-    type="radio" name="selectPhase" class="with-gap selectPhase"
-    id="{{item.id}}" value="{{item.id}}" (click)="selectPhase(item)">
-  <label for="{{item.id}}"></label>
+  <li *ngFor="let item of phases">
+    <input
+      [disabled]="challenge['currentDate'] < item.start_date || challenge['currentDate'] >= item.end_date"
+      type="radio" name="selectPhase" class="with-gap selectPhase"
+      id="{{item.id}}" value="{{item.id}}" (click)="selectPhase(item)">
+    <label for="{{item.id}}"></label>
 
-  <div class="radio-button-text pointer" *ngIf="!item.showPrivate">
-    <strong class="text-med-black fw-semibold fs-15">Phase: </strong>
-    <span class="content">{{item.name}}</span>
-    <br>
-    <strong class="text-med-black fw-semibold fs-15">Start date: </strong>
-    <span class="content">{{item.start_date | date:'medium'}}</span>
-    <br>
-    <strong class="text-med-black fw-semibold fs-15">End date: </strong>
-    <span class="content">{{item.end_date | date:'medium'}}</span>
-  </div>
+    <div class="radio-button-text pointer" *ngIf="!item.showPrivate">
+      <strong class="text-med-black fw-semibold fs-15">Phase: </strong>
+      <span class="content">{{item.name}}</span>
+      <br>
+      <strong class="text-med-black fw-semibold fs-15">Start date: </strong>
+      <span class="content">{{item.start_date | date:'medium'}}</span>
+      <br>
+      <strong class="text-med-black fw-semibold fs-15">End date: </strong>
+      <span class="content">{{item.end_date | date:'medium'}}</span>
+    </div>
 
-  <div class="radio-button-text pointer" *ngIf="item.showPrivate">
-    <strong class="text-highlight fw-semibold fs-15">Phase: </strong>
-    <span class="text-highlight">{{item.name}}</span>
-    <br>
-    <strong class="text-highlight fw-semibold fs-15">Start date: </strong>
-    <span class="text-highlight">{{item.start_date | date:'medium'}}</span>
-    <br>
-    <strong class="text-highlight fw-semibold fs-15">End date: </strong>
-    <span class="text-highlight">{{item.end_date | date:'medium'}}</span>
-  </div>
+    <div class="radio-button-text pointer" *ngIf="item.showPrivate">
+      <strong class="text-highlight fw-semibold fs-15">Phase: </strong>
+      <span class="text-highlight">{{item.name}}</span>
+      <br>
+      <strong class="text-highlight fw-semibold fs-15">Start date: </strong>
+      <span class="text-highlight">{{item.start_date | date:'medium'}}</span>
+      <br>
+      <strong class="text-highlight fw-semibold fs-15">End date: </strong>
+      <span class="text-highlight">{{item.end_date | date:'medium'}}</span>
+    </div>
 
-  <div class="clearfix"></div>
-</li>
+    <div class="clearfix"></div>
+  </li>
+</ng-container>
+
+<ng-container *ngIf="phaseSelectionType=='selectBox'">
+  <mat-form-field>
+    <mat-label>Phase</mat-label>
+    <mat-select class="rm-margin">
+      <mat-select-trigger>
+        <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">{{phaseName}} </span>
+        <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+          <mat-chip-list *ngIf="phaseVisibility">
+            <mat-chip>Private</mat-chip>
+          </mat-chip-list>
+        </span>
+      </mat-select-trigger>
+      <mat-option (click)="selectPhase(key)" [value]="key" *ngFor="let key of phases">
+        <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">{{key.name}} </span>
+        <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+          <mat-chip-list *ngIf="key.showPrivate">
+            <mat-chip>Private</mat-chip>
+          </mat-chip-list>
+        </span>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
 </ng-container>
