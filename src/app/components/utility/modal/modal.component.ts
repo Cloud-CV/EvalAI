@@ -35,6 +35,11 @@ export class ModalComponent implements OnInit {
   content = '';
 
   /**
+   * Modal name
+   */
+  isButtonDisabled: boolean;
+
+  /**
    * If rich text editor required
    */
   isEditorRequired = false;
@@ -112,6 +117,9 @@ export class ModalComponent implements OnInit {
       if (this.params['label']) {
         this.label = this.params['label'];
       }
+      if (this.params['isButtonDisabled']) {
+        this.isButtonDisabled = this.params['isButtonDisabled'];
+      }
       if (this.params['isEditorRequired']) {
         this.isEditorRequired = this.params['isEditorRequired'];
       }
@@ -137,10 +145,10 @@ export class ModalComponent implements OnInit {
         this.form = this.params['form'];
       }
     }
-    if (this.isEditorRequired) {
+
+    if (this.isEditorRequired || this.isButtonDisabled) {
       this.isDisabled = false;
     }
-
     this.challengeService.currentChallenge.subscribe(challenge => this.challenge = challenge);
   }
 

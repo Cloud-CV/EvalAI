@@ -64,9 +64,9 @@ const routes: Routes = [
       {path: 'phases', component: ChallengephasesComponent},
       {path: 'participate', component: ChallengeparticipateComponent},
       {path: 'submit', component: ChallengesubmitComponent},
-      {path: 'submissions', component: ChallengesubmissionsComponent},
-      {path: 'submissions/:phase', component: ChallengesubmissionsComponent},
-      {path: 'submissions/:phase/:submission', component: ChallengesubmissionsComponent},
+      {path: 'my-submissions', component: ChallengesubmissionsComponent},
+      {path: 'my-submissions/:phase', component: ChallengesubmissionsComponent},
+      {path: 'mysubmissions/:phase/:submission', component: ChallengesubmissionsComponent},
       {path: 'leaderboard', component: ChallengeleaderboardComponent},
       {path: 'leaderboard/:split', component: ChallengeleaderboardComponent},
       {path: 'leaderboard/:split/:entry', component: ChallengeleaderboardComponent}

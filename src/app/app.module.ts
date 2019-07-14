@@ -7,6 +7,8 @@ import { FormsModule } from '@angular/forms';
 import { FroalaEditorModule, FroalaViewModule } from 'angular-froala-wysiwyg';
 import { TextareaAutosizeModule } from 'ngx-textarea-autosize';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
 
 // Import serivces
 import { AuthService } from './services/auth.service';
@@ -127,7 +129,9 @@ import { EditphasemodalComponent } from './components/challenge/challengephases/
     FroalaViewModule.forRoot(),
     TextareaAutosizeModule,
     OwlDateTimeModule,
-    OwlNativeDateTimeModule
+    OwlNativeDateTimeModule,
+    MatSelectModule,
+    MatChipsModule
   ],
   providers: [
     AuthService,

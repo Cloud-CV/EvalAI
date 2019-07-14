@@ -198,8 +198,8 @@ export class EndpointsService {
    * @param challenge  challenge id
    * @param phase  phase id
    */
-  challengeSubmissionDownloadURL(challenge, phase) {
-    return `${this.challenges}${challenge}/phase/${phase}/download_all_submissions/csv/`;
+  challengeSubmissionDownloadURL(challenge, phase, fileSelected) {
+    return `${this.challenges}${challenge}/phase/${phase}/download_all_submissions/${fileSelected}/`;
   }
 
   /**

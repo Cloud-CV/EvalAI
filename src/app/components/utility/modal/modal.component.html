@@ -6,8 +6,8 @@
     <div class="content">
       {{content}}
     </div>
-    <div class="editor-validation-message fs-12" *ngIf="isEditorRequired &&
-      isInputMessage">{{editorValidationMessage}}</div>
+    <div class="editor-validation-message fs-12" *ngIf="isEditorRequired && isInputMessage">
+      {{editorValidationMessage}}</div>
     <div *ngIf="isEditorRequired" class="edit-global-modal" [froalaEditor]
       [(froalaModel)]="editorContent"></div>
     <div class="form">
@@ -15,20 +15,20 @@
         <app-input *ngIf="item['type'] != 'file'" [name]="item['name']"
           (input)="validateModalInput($event)" [isRequired]="item['isRequired']"
           [label]="item['label']" [placeholder]="item['placeholder']"
-          [type]="item['type']" [theme]="'dark'" [icon]="item['icon']"
-          [value]="item['value']" #formmodal></app-input>
+          [type]="item['type']" [icon]="item['icon']" [value]="item['value']"
+          #formmodal></app-input>
         <app-input *ngIf="item['type'] == 'file'" [name]="item['name']"
           (change)="validateFileInput($event)" [isRequired]="item['isRequired']"
           [label]="item['label']" [placeholder]="item['placeholder']"
-          [type]="item['type']" [theme]="'dark'" [icon]="item['icon']"
-          [value]="item['value']" #formmodal></app-input>
+          [type]="item['type']" [icon]="item['icon']" [value]="item['value']"
+          #formmodal></app-input>
       </div>
     </div>
     <div class="buttons">
       <ul style="margin-right: 20px;" class="inline-list pointer">
         <li>
-          <a appClickstop (click)="denied()" class="dark-link pointer"><strong
-              class="fw-semibold">{{deny}}</strong></a>
+          <a appClickstop (click)="denied()" class="dark-link pointer">
+            <strong class="fw-semibold">{{deny}}</strong></a>
         </li>
         <li>
           <button [disabled]="isDisabled" appClickstop (click)="formValidate()"

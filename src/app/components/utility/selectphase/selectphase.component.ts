@@ -23,6 +23,16 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() phaseSelected: any;
 
   /**
+   * Selected phase name
+   */
+  phaseName = '';
+
+  /**
+   * Selected phase visibility
+   */
+  phaseVisibility = false;
+
+  /**
    * Phase selection type (radio button or select box)
    */
   @Input() phaseSelectionType: string;
@@ -61,6 +71,8 @@ export class SelectphaseComponent implements OnInit, OnChanges {
    * @param phase  phase to be selected.
    */
   selectPhase(phase) {
+    this.phaseName = phase.name;
+    this.phaseVisibility = phase.showPrivate;
     this.phaseSelected(phase);
   }
 

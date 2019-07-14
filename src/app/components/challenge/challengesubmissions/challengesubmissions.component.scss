@@ -1,62 +1,47 @@
 @import './variables.scss';
 @import './mixins.scss';
 
-.challenge-submissions-container {
-  padding: 20px;
-  overflow: auto;
-  color: $gray-darker;
-  font-size: $fs-16;
-  font-weight: $fw-light;
-  position: relative;
-  .select-phase-container {
-    display: inline-block;
-    overflow: auto;
+.ev-md-container {
+  .phase-title {
+    margin-bottom: 20px;
   }
-  .submissions-empty {
-    margin: 20px;
-    text-align: center;
-  }
-  .download-btn-div {
-    position: relative;
-    display: block;
-    margin-left: 10px;
-    padding-bottom: 20px;
+}
 
-    .btn {
-      margin-left: 0;
-      position: relative;
-    }
-    .total-submissions {
-      font-weight: $fw-regular;
-      position: relative;
-      margin-left:20px;
-      padding:10px;
-      border-radius:5px;
-      display: inline-block;
-      background: $gray-lighter;
-    }
+.show-submission-count {
+  background: #252833;
+  text-align: center;
+  color: white;
+  padding: 2px 5px 2px 5px;
+  border-radius: 3px 3px 3px 3px;
+  font-weight: 300;
+  transition: all 0.2s ease-in-out;
+}
+
+@include screen-small-medium {
+  .download-submissions {
+    margin-left: 20px;
+    margin-right: 20px;
   }
-  .submission-table-div {
-    top: 20px;
-    width: 100%;
-    position: relative;
-    display: block;
-    padding: 30px;
-    padding-top: 40px;
-    overflow-x: scroll;
-    max-height: 500px;
-    text-align: center;
-    .submission-table {
-      width: 100%;
-      tr {
-        &.highlight {
-          background: $red-lighter;
-        }
-        th {
-          background: $gray-lighter;
-          color: $gray-dark;
-        }
-      }
-    }
-  }
+}
+
+.add-line-height {
+	line-height: 51px;
+}
+
+.result-wrn {
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 160% !important;
+}
+
+.cbx-label {
+  margin-left: 55px;
+  margin-right: 55px;
+}
+
+.cbx:checked ~ .cbx-label {
+  background: #4CAF50;
 }

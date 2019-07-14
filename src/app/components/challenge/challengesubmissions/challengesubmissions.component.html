@@ -1,67 +1,168 @@
-<div class="challenge-submissions-container">
-  <div class="select-phase-container">
-    <app-selectphase [phases]="filteredPhases" [phaseSelected]="phaseSelected()" #phaseselect></app-selectphase>
-    <div *ngIf="!selectedPhase" class="fw-bold">
-      Please select a phase.
+<div class="challenge-card">
+  <div class="ev-card-panel card-bt-margin">
+    <div class="ev-md-container bottom-hr-line">
+      <div (click)="challenge.refreshSubmissionData()" class="pointer
+        update-page" *ngIf="challenge.showUpdate">
+        <span class="text-white">Page is Outdated, Click to update&nbsp;
+          <i class="fa fa-refresh text-highlight"></i></span>
+      </div>
+      <div class="row row-lr-margin phase-title">
+        <div *ngIf="!selectedPhase" class="col-sm-12">
+          <strong class="fw-semibold content fs-15">
+            Please select a phase to get list of submissions!</strong>
+        </div>
+      </div>
+      <div class="row row-lr-margin">
+        <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
+          <app-selectphase [phases]="filteredPhases"
+            [phaseSelectionType]="phaseSelectionType"
+            [phaseSelected]="phaseSelected()" #phaseselect></app-selectphase>
+        </div>
+      </div>
+      <div class="row row-lr-margin">
+        <div class="col-md-1 col-sm-1 col-xs-6 align-left col-lr-pad
+          file-select-box">
+          <mat-form-field>
+            <mat-label>File</mat-label>
+            <mat-select [(ngModel)]="fileSelected" class="rm-margin">
+              <mat-option *ngFor="let key of fileTypes" value={{key.name}}>{{key.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
+          <a class="ev-btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark
+            grad-btn-dark fw-light fs-14" (click)='downloadSubmission()'>Download</a>
+        </div>
+        <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12 col-lr-pad"
+             *ngIf="selectedPhase">
+          <div class="add-line-height">
+            <span>
+              <strong class="fw-semibold text-med-black">
+                Total Submissions Done:
+              </strong>
+            </span>
+            <span class="show-submission-count text-highlight">
+              {{submissionCount || 0}}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-    <div class="download-btn-div" *ngIf="selectedPhase">
-      <span (click)='downloadSubmission()' class="btn btn-filter selected">DOWNLOAD</span>
-      <span class="total-submissions"> Total submissions done: {{submissionCount}}</span>
+
+    <div class="ev-card-body exist-team-card">
+      <div class="row row-lr-margin">
+        <div class="col-md-12 col-lr-pad">
+          <div *ngIf="!isPhaseSelected" class="result-wrn">No phase selected.</div>
+          <div *ngIf="paginationDetails.showPagination == false && isPhaseSelected"
+               class="result-wrn">No results found.</div>
+          <div *ngIf="paginationDetails.showPagination == true && submissions.length > 0"
+               class="table-scroll">
+            <table class="centered highlight all-submission-table">
+              <thead>
+                <tr class="content">
+                  <th data-field="team">Team Name</th>
+                  <th data-field="method-name">Method Name</th>
+                  <th data-field="method-description">Method Description</th>
+                  <th data-field="project-url">Project Url</th>
+                  <th data-field="publication-url">Publication Url </th>
+                  <th data-field="status">Status</th>
+                  <th data-field="status">Execution Time (sec.)</th>
+                  <th data-field="file">Submitted File</th>
+                  <th data-field="file">Result File</th>
+                  <th data-field="file">Stdout File</th>
+                  <th data-field="file">Stderr File</th>
+                  <th data-field="file">Submitted At</th>
+                  <th *ngIf="selectedPhase['leaderboard_public']"
+                    data-field="file">Show on Leaderboard</th>
+                  <th data-field="isBaseline" *ngIf="isChallengeHost">Baseline</th>
+                  <th>Edit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let key of submissions" class="result-val content">
+                  <td>{{key.participant_team_name}}</td>
+                  <td *ngIf="key.method_name != ''">{{key.method_name}}</td>
+                  <td *ngIf="key.method_name == ''"> None </td>
+
+                  <td *ngIf="key.method_description != ''">{{key.method_description}}</td>
+                  <td *ngIf="key.method_description == ''"> None </td>
+
+                  <td *ngIf="key.project_url != ''">{{key.project_url}}</td>
+                  <td *ngIf="key.project_url == ''"> None </td>
+
+                  <td *ngIf="key.publication_url != ''">{{key.publication_url}}</td>
+                  <td *ngIf="key.publication_url == ''"> None </td>
+
+                  <td class="mb-10 capitalize" [ngClass]="key.status">{{key.status}}</td>
+                  <td>{{key.execution_time > 0 ? key.execution_time : "None"}}</td>
+                  <td><a href="{{key.input_file}}" target="_blank"
+                      class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                  <td *ngIf="key.submission_result_file"><a
+                      href="{{key.submission_result_file}}" target="_blank"
+                      class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                  <td *ngIf="!key.submission_result_file">None</td>
+
+                  <td *ngIf="key.stdout_file"><a href="{{key.stdout_file}}"
+                      target="_blank" class="blue-text">
+                      <i class="fa fa-external-link"></i> Link</a></td>
+                  <td *ngIf="!key.stdout_file">None</td>
+
+                  <td *ngIf="key.stderr_file"><a href="{{key.stderr_file}}"
+                      target="_blank" class="blue-text">
+                      <i class="fa fa-external-link"></i> Link</a></td>
+                  <td *ngIf="!key.stderr_file">None</td>
+
+                  <td>{{key.submitted_at | date:'medium'}}</td>
+
+                  <td *ngIf="selectedPhase['leaderboard_public']"><div>
+                    <input [checked]="key.is_public" *ngIf="key.status == 'finished'"
+                      type="checkbox" id="isPublic{{ key.id }}"
+                      (change)="changeSubmissionVisibility(key.id,
+                      key.is_public)" class="cbx hidden" />
+                    <label for="isPublic{{ key.id }}" class="cbx-label"></label>
+                    <div *ngIf="key.status !== 'finished'" class="center"> N/A
+                    </div></div>
+                  </td>
+                  <td *ngIf="isChallengeHost">
+                    <input [checked]="key.is_baseline" *ngIf="key.status == 'finished'"
+                      type="checkbox" id="baselineSubmission{{ key.id }}"
+                      (change)="changeBaselineStatus(key.id, key.is_baseline)"
+                      class="cbx hidden" />
+                    <label for="baselineSubmission{{ key.id }}"
+                      class="cbx-label"></label>
+                    <span *ngIf="key.status !== 'finished'" class="center"> N/A
+                    </span>
+                  </td>
+                  <td><a class="pointer" (click)="editSubmission(key)">
+                      <i class="fa fa-pencil" aria-hidden="true"></i></a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
-    <div *ngIf="submissions.length <= 0" class="submissions-empty">
-      <!-- <img src="assets/images/sadcloud.png" /> -->
-      <i class="fas fa-clipboard" aria-hidden="true"></i> No Results..
+
+    <div class="pagination" *ngIf="paginationDetails.showPagination && submissions.length > 0">
+      <div class="row row-lr-margin">
+        <div class="col-sm-12 left-align col-lr-pad">
+          <button [ngClass]="paginationDetails.isPrev" class="btn-floating
+            btn-pagination waves-effect waves-light"
+            (click)="loadPaginationData(paginationDetails.previous)">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <span class="pagination-title">
+            <strong class="text-med-black fw-semibold content">
+              Page {{paginationDetails.currentPage}} of {{paginationDetails.totalPage}}
+            </strong>
+          </span>
+          <button [ngClass]="paginationDetails.isNext" class="btn-floating
+            btn-pagination waves-effect waves-light"
+            (click)="loadPaginationData(paginationDetails.next)">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="submission-table-div" *ngIf="submissions.length > 0">
-    <table class="submission-table table-light">
-      <thead>
-        <tr>
-          <th><div>Team Name</div></th>
-          <th><div>Method Name</div></th>
-          <th><div>Method Description</div></th>
-          <th><div>Project Url</div></th>
-          <th><div>Publication Url</div> </th>
-          <th><div>Status</div></th>
-          <th><div>Execution Time (sec.)</div></th>
-          <th><div>Submitted File</div></th>
-          <th><div>Result File</div></th>
-          <th><div>Stdout File</div></th>
-          <th><div>Stderr File</div></th>
-          <th><div>Submitted At</div></th>
-          <th *ngIf="selectedPhase['leaderboard_public']"><div>Show on Leaderboard</div></th>
-          <th><div>Edit</div></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let key of submissions" class="result-val" class="pointer" [routerLink]="routerPublic.url.split('/').length == 6 ? ['../' + key.submitted_at] : [key.submitted_at]" [class.highlight] = "key.is_highlighted">
-          <td><div>{{key.participant_team_name}}</div></td>
-          <td *ngIf="key.method_name != ''"><div>{{key.method_name}}</div></td>
-          <td *ngIf="key.method_name == ''"><div>None</div></td>
-          <td *ngIf="key.method_description != ''"><div>{{key.method_description}}</div></td>
-          <td *ngIf="key.method_description == ''"><div>None</div></td>
-          <td *ngIf="key.project_url != ''"><div>{{key.project_url}}</div></td>
-          <td *ngIf="key.project_url == ''"><div>None</div></td>
-          <td *ngIf="key.publication_url != ''"><div>{{key.publication_url}}</div></td>
-          <td *ngIf="key.publication_url == ''"><div>None</div></td>
-          <td class="val-style capitalize red-dark"><div>{{key.status}}</div></td>
-          <td class="align-center"><div>{{key.execution_time}}</div></td>
-          <td><div><a href="{{key.input_file}}" target="_blank" class="blue-text"><i class="fas fa-external-link-square-alt"></i> Link</a></div></td>
-          <td *ngIf="key.submission_result_file"><div><a href="{{key.submission_result_file}}" target="_blank" class="blue-text"><i class="fas fa-external-link-square-alt"></i> Link</a></div></td>
-          <td *ngIf="!key.submission_result_file"><div>None</div></td>
-          <td *ngIf="key.stdout_file"><div><a href="{{key.stdout_file}}" target="_blank" class="blue-text"><i class="fas fa-external-link-square-alt"></i> Link</a></div></td>
-          <td *ngIf="!key.stdout_file"><div>None</div></td>
-          <td *ngIf="key.stderr_file"><div><a href="{{key.stderr_file}}" target="_blank" class="blue-text"><i class="fas fa-external-link-square-alt"></i> Link</a></div></td>
-          <td *ngIf="!key.stderr_file"><div>None</div></td>
-          <td><div>{{key.submitted_at | date:'medium'}}</div></td>
-          <td *ngIf="selectedPhase['leaderboard_public']" class="center"><div>
-            <input [checked]="key.is_public" *ngIf="key.status == 'finished'" type="checkbox" id="isPublic{{ key.id }}" (change)="changeSubmissionVisibility(key.id, key.is_public)" class="cbx hidden"/>
-            <label for="isPublic{{ key.id }}" class="cbx-label"></label>
-            <div *ngIf="key.status !== 'finished'" class="center"> N/A </div></div>
-          </td>
-          <td><div><a (click)="editSubmission(key)"><i class="fas fa-pencil-alt"></i></a></div></td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </div>

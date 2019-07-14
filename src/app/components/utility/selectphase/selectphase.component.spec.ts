@@ -8,6 +8,7 @@ import { AuthService } from '../../../services/auth.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientModule } from '@angular/common/http';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('SelectphaseComponent', () => {
   let component: SelectphaseComponent;
@@ -17,7 +18,8 @@ describe('SelectphaseComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ SelectphaseComponent ],
       providers: [ GlobalService, ChallengeService, ApiService, AuthService, EndpointsService ],
-      imports: [ RouterTestingModule, HttpClientModule ]
+      imports: [ RouterTestingModule, HttpClientModule ],
+      schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
   }));

@@ -10,6 +10,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { ForceloginComponent } from '../../../components/utility/forcelogin/forcelogin.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { EndpointsService } from '../../../services/endpoints.service';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('ChallengeleaderboardComponent', () => {
   let component: ChallengeleaderboardComponent;
@@ -19,7 +20,8 @@ describe('ChallengeleaderboardComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ChallengeleaderboardComponent, SelectphaseComponent ],
       providers: [ ChallengeService, AuthService, GlobalService, ApiService, EndpointsService ],
-      imports: [ HttpClientModule, RouterTestingModule ]
+      imports: [ HttpClientModule, RouterTestingModule ],
+      schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
   }));
