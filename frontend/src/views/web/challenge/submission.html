@@ -124,6 +124,15 @@
                     </tbody>
                 </table>
             </div>
+            <div class="loader-container card-loader-container" id="loader" ng-show="challenge.isExistLoader" class="fade">
+                <div class="loader">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
             <div class=" ev-card-panel ev-z-depth-5 ">
                 <div class="ev-md-container ev-panel-title" ng-if="!challenge.page.is_docker_based"><strong>Please fill
                         the following fields to submit</strong></div>
@@ -166,7 +175,7 @@
                                             <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
                                                 <span>Upload file</span>
                                                 <input type="file" ngf-select ng-model="challenge.input_file"
-                                                    name="challenge.input_file" accept=".json, .zip, .txt">
+                                                    name="challenge.input_file" accept=".json, .zip, .txt, .tsv, .gz">
                                             </div>
                                             <div class="file-path-wrapper">
                                                 <input class="file-path validate" type="text" readonly>

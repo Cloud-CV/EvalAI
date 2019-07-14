@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeListCtrl', ChallengeListCtrl);
 
-    ChallengeListCtrl.$inject = ['utilities', '$window'];
+    ChallengeListCtrl.$inject = ['utilities', '$window', 'moment'];
 
-    function ChallengeListCtrl(utilities, $window) {
+    function ChallengeListCtrl(utilities, $window, moment) {
         var vm = this;
         var userKey = utilities.getData('userKey');
 
@@ -22,7 +22,7 @@
         vm.noneUpcomingChallenge = false;
         vm.nonePastChallenge = false;
 
-        // calls for ongoing challneges
+        // calls for ongoing challenges
         vm.challengeCreator = {};
         var parameters = {};
         parameters.method = 'GET';
@@ -102,7 +102,7 @@
                         }
 
                         // dependent api
-                        // calls for upcoming challneges
+                        // calls for past challneges
                         parameters.url = 'challenges/challenge/past';
                         parameters.method = 'GET';
 
