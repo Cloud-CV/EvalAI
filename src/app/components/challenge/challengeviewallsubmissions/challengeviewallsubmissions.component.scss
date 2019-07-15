@@ -1,0 +1,47 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.ev-md-container {
+  .phase-title {
+    margin-bottom: 20px;
+  }
+}
+
+.show-submission-count {
+  background: #252833;
+  text-align: center;
+  color: white;
+  padding: 2px 5px 2px 5px;
+  border-radius: 3px 3px 3px 3px;
+  font-weight: 300;
+  transition: all 0.2s ease-in-out;
+}
+
+@include screen-small-medium {
+  .download-submissions {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+}
+
+.add-line-height {
+	line-height: 51px;
+}
+
+.result-wrn {
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 160% !important;
+}
+
+.cbx-label {
+  margin-left: 55px;
+  margin-right: 55px;
+}
+
+.cbx:checked ~ .cbx-label {
+  background: #4CAF50;
+}

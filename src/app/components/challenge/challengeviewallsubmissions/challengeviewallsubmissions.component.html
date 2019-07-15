@@ -1,0 +1,135 @@
+<div class="challenge-card">
+  <div class="ev-card-panel card-bt-margin">
+    <div class="ev-md-container bottom-hr-line">
+      <div class="row row-lr-margin phase-title">
+        <div *ngIf="!selectedPhase" class="col-sm-12">
+          <strong class="fw-semibold content fs-15">
+            Please select a phase to get list of submissions!
+          </strong>
+        </div>
+      </div>
+      <div class="row row-lr-margin">
+        <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
+          <app-selectphase [phases]="filteredPhases"
+            [phaseSelectionType]="phaseSelectionType"
+            [phaseSelected]="phaseSelected()" #phaseselect></app-selectphase>
+        </div>
+      </div>
+      <div class="row row-lr-margin">
+        <div class="col-md-2 col-sm-2 col-xs-6 align-left col-lr-pad
+          all-submissions-file">
+          <mat-form-field>
+            <mat-label>File</mat-label>
+            <mat-select [(ngModel)]="fileSelected" class="rm-margin">
+              <mat-option *ngFor="let key of fileTypes" value={{key.name}}>
+                {{key.name}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
+          <a class="ev-btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark
+            grad-btn-dark fw-light fs-14" (click)='downloadSubmission()'>Download</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ev-card-body exist-team-card">
+      <div class="row row-lr-margin">
+        <div class="col-md-12 col-lr-pad">
+          <div *ngIf="!isPhaseSelected" class="result-wrn">No phase selected.</div>
+          <div *ngIf="paginationDetails.showPagination == false && isPhaseSelected"
+            class="result-wrn">No results found.</div>
+          <div *ngIf="submissions.length > 0" class="table-scroll">
+            <table class="centered highlight all-submission-table">
+              <thead>
+                <tr class="content">
+                  <th data-field="team">Team</th>
+                  <th data-field="created-by">Created By</th>
+                  <th data-field="status">Status</th>
+                  <th data-field="status">Execution Time (sec)</th>
+                  <th data-field="file">Submission No.</th>
+                  <th data-field="file">Submitted at</th>
+                  <th data-field="file">Submitted File</th>
+                  <th data-field="file">Stdout File</th>
+                  <th data-field="file">Stderr File</th>
+                  <th data-field="file">Result File</th>
+                  <th data-field="file">Metadata File</th>
+                  <th *ngIf="selectedPhase['leaderboard_public']"
+                    data-field="file">Show on Leaderboard</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let key of submissions" class="result-val content">
+                  <td>{{key.participant_team}}</td>
+
+                  <td>{{key.created_by}}</td>
+
+                  <td class="val-style capitalize" [ngClass]="key.status">{{key.status}}</td>
+                  <td>{{key.execution_time}}</td>
+
+                  <td>{{key.submission_number}}</td>
+
+                  <td>{{key.submitted_at | date:'medium'}}</td>
+
+                  <td><a href="{{key.input_file}}" target="_blank" class="blue-text">
+                    <i class="fa fa-external-link"></i> Link</a></td>
+                  <td *ngIf="key.stdout_file">
+                    <a href="{{key.stdout_file}}" target="_blank" class="blue-text">
+                      <i class="fa fa-external-link"></i> Link</a></td>
+                  <td *ngIf="!key.stdout_file">None</td>
+
+                  <td *ngIf="key.stderr_file">
+                    <a href="{{key.stderr_file}}" target="_blank" class="blue-text">
+                      <i class="fa fa-external-link"></i> Link</a></td>
+                  <td *ngIf="!key.stderr_file">None</td>
+
+                  <td *ngIf="key.submission_result_file">
+                    <a href="{{key.submission_result_file}}" target="_blank"
+                      class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                  <td *ngIf="!key.submission_result_file">None</td>
+
+                  <td *ngIf="key.submission_metadata_file">
+                    <a href="{{key.submission_metadata_file}}" target="_blank"
+                      class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
+                  <td *ngIf="!key.submission_metadata_file">None</td>
+
+                  <td *ngIf="selectedPhase['leaderboard_public']">
+                    <input [checked]="key.is_public" *ngIf="key.status == 'finished'"
+                    type="checkbox" id="isPublic{{ key.id }}"
+                      (change)="changeSubmissionVisibility(key.id, key.is_public)"
+                      class="cbx hidden" />
+                    <label for="isPublic{{ key.id }}" class="cbx-label"></label>
+                    <span *ngIf="key.status !== 'finished'"> N/A </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="paginationDetails.showPagination && submissions.length > 0">
+      <div class="row row-lr-margin">
+        <div class="col-sm-12 left-align col-lr-pad">
+          <button [ngClass]="paginationDetails.isPrev" class="btn-floating
+            btn-pagination waves-effect waves-light"
+            (click)="loadPaginationData(paginationDetails.previous)">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <span class="pagination-title">
+            <strong class="text-med-black fw-semibold content">
+              Page {{paginationDetails.currentPage}} of
+              {{paginationDetails.totalPage}}
+            </strong></span>
+          <button [ngClass]="paginationDetails.isNext" class="btn-floating
+            btn-pagination waves-effect waves-light"
+            (click)="loadPaginationData(paginationDetails.next)">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

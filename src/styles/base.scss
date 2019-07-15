@@ -202,6 +202,13 @@ mat-label {
   }
 }
 
+.mat-select-trigger {
+  line-height: 24px;
+  letter-spacing: 0.1px;
+  font-size: 15px;
+  color: rgba(0, 0, 0, 0.87);
+}
+
 @include screen-medium {
   .phase-select-box {
     .mat-form-field-infix {
@@ -231,6 +238,55 @@ mat-label {
     width: 61px !important;
   }
 }
+
+.all-submissions-file {
+  .mat-form-field-infix {
+    width: 144px !important;
+  }
+}
+
+.custom-field-export {
+  .mat-form-field-infix {
+    width: 311px !important;
+  }
+}
+
+@include screen-medium {
+  .download-submissions {
+    margin-left: 50px;
+  }
+
+  .custom-field-export {
+    .mat-form-field-infix {
+      width: 270px !important;
+    }
+  }
+
+  .all-submissions-file {
+    .mat-form-field-infix {
+      width: 110px !important;
+    }
+  }
+}
+
+@include screen-small-medium {
+  .download-submissions {
+    margin-left: 40px;
+  }
+
+  .custom-field-export {
+    .mat-form-field-infix {
+      width: 195px !important;
+    }
+  }
+
+  .all-submissions-file {
+    .mat-form-field-infix {
+      width: 75px !important;
+    }
+  }
+}
+
 
 /**Rich text editor styles*/
 .reusable-editor.fr-box.fr-basic .fr-element {
