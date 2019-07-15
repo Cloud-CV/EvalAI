@@ -1,3 +1,6 @@
+# Limit to only Pull Request
+only: pulls
+
 # Number of days of inactivity a Pull Request becomes stale
 daysUntilStale: 60
 
