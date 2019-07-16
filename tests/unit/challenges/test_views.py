@@ -2953,6 +2953,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver1/",
                 publication_url="http://testserver1/",
                 is_public=True,
+                is_flagged=True,
             )
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
@@ -3111,6 +3112,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     self.submission1.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "is_public": self.submission1.is_public,
+                "is_flagged": self.submission1.is_flagged,
                 "when_made_public": self.submission1.when_made_public,
                 "is_baseline": self.submission1.is_baseline,
             }

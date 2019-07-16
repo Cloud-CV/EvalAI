@@ -46,6 +46,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "project_url",
             "publication_url",
             "is_public",
+            "is_flagged",
             "submission_result_file",
             "when_made_public",
             "is_baseline",
