@@ -969,8 +969,6 @@ def re_run_submission(request, submission_pk):
     """
     try:
         submission = Submission.objects.get(pk=submission_pk)
-        logger.info('Submission found with submission number {}'
-                    .format(submission_pk))
     except Submission.DoesNotExist:
         response_data = {'error': 'Submission {} does not exist'.format(submission_pk)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
@@ -979,7 +977,7 @@ def re_run_submission(request, submission_pk):
     challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
-    if not is_user_a_host_of_challenge(request.user, challenge.id):
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
             "error": "Only challenge hosts are allowed to re-run a submission"
         }
@@ -989,7 +987,7 @@ def re_run_submission(request, submission_pk):
         response_data = {'error': 'Challenge {} is not active'.format(challenge.title)}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    publish_submission_message(challenge.id, challenge_phase.id, submission.id)
+    publish_submission_message(challenge.pk, challenge_phase.pk, submission.pk)
     response_data = {
         'success': 'Submission is successfully submitted for re-running'
     }
