@@ -102,6 +102,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "created_by",
             "status",
             "is_public",
+            "is_flagged",
             "submission_number",
             "submitted_at",
             "execution_time",
