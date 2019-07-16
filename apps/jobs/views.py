@@ -975,13 +975,8 @@ def re_run_submission(request, submission_pk):
         response_data = {'error': 'Submission {} does not exist'.format(submission_pk)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-    # check if the challenge phase exists or not
-    try:
-        challenge_phase = submission.challenge_phase
-    except Exception as e:
-        response_data = {'error': 'Challenge Phase does not exist'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
+    # get the challenge and challenge phase object
+    challenge_phase = submission.challenge_phase
     challenge = challenge_phase.challenge
 
     if not is_user_a_host_of_challenge(request.user, challenge.id):
