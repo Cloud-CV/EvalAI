@@ -935,18 +935,12 @@
 
         vm.reRunSubmission = function(submissionObject) {
             submissionObject.classList = ['spin', 'progress-indicator'];
-            parameters.url = 'jobs/re_run_submission/' + submissionObject.id;
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run/';
             parameters.method = 'POST';
-            var formData = new FormData();
-            parameters.data = formData;
-
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
                     $rootScope.notify("success", "Your submission has been re-run succesfully!");
-                    submissionObject.status = response.data.submission_status;
-                    submissionObject.execution_time = response.data.submission_execution_time;
-                    submissionObject.submission_number = response.data.submission_number;
                     submissionObject.classList = [''];
                 },
                 onError: function(response) {

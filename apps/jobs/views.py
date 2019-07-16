@@ -938,65 +938,43 @@ def update_submission(request, challenge_pk):
 @throttle_classes([UserRateThrottle, ])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def re_run_submission(request, submission_id):
+def re_run_submission(request, submission_pk):
     """
     API endpoint to re-run a submission.
     Only challenge host has access to this endpoint.
     """
     try:
-        submission = Submission.objects.get(id=submission_id)
+        submission = Submission.objects.get(pk=submission_pk)
         logger.info('Submission found with submission number {}'
-                    .format(submission_id))
+                    .format(submission_pk))
     except Submission.DoesNotExist:
-        response_data = {'error': 'Submission with submission number {} does not exist'.format(submission_id)}
+        response_data = {'error': 'Submission {} does not exist'.format(submission_pk)}
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # check if the challenge phase exists or not
     try:
         challenge_phase = submission.challenge_phase
-        challenge_phase_id = challenge_phase.id
     except Exception as e:
         response_data = {'error': 'Challenge Phase does not exist'}
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    # check if the challenge exists or not
-    try:
-        challenge = challenge_phase.challenge
-        challenge_id = challenge.id
-    except Exception as e:
-        response_data = {'error': 'Challenge does not exist'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge = challenge_phase.challenge
 
-    if not is_user_a_host_of_challenge(request.user, challenge_id):
+    if not is_user_a_host_of_challenge(request.user, challenge.id):
         response_data = {
-            "error": "You are not allowed to re-run the challenge submission"
+            "error": "Only challenge hosts are allowed to re-run a submission"
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     if not challenge.is_active:
-        response_data = {'error': 'Challenge is not active'}
+        response_data = {'error': 'Challenge {} is not active'.format(challenge.title)}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # check if challenge phase is active
-    if not challenge_phase.is_active:
-        response_data = {
-            'error': 'Sorry, cannot accept submissions since challenge phase is not active'}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    try:
-        publish_submission_message(challenge_id, challenge_phase_id, submission.id)
-        time.sleep(1)
-        submission = Submission.objects.get(id=submission_id)
-        response_data = {
-            'submission_status': submission.status,
-            'submission_execution_time': submission.execution_time,
-            'submission_number': submission.submission_number,
-            'success': 'Submission result has been successfully updated'
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
-    except Exception as e:
-        logger.info('Error occured while sending to queue:  {}'.format(str(e)))
-        response_data = {'error': 'Error occured while sending to queue'}
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    publish_submission_message(challenge.id, challenge_phase.id, submission.id)
+    response_data = {
+        'success': 'Submission is successfully submitted for re-running'
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
