@@ -120,6 +120,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
   paginationDetails: any = {};
 
   /**
+   * API call inside the modal
+   */
+  apiCall: any;
+
+  /**
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  GlobalService Injection.
@@ -209,6 +214,12 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     this.apiService.getUrl(API_PATH).subscribe(
       data => {
         SELF.submissions = data['results'];
+        for (let i = 0; i < SELF.submissions.length; i++) {
+          SELF.submissions[i].submissionVisibilityIcon =
+            (SELF.submissions[i].is_public) ? 'visibility' : 'visibility_off';
+          SELF.submissions[i].submissionVisibilityText =
+            (SELF.submissions[i].is_public) ? 'Public' : 'Private';
+        }
         SELF.paginationDetails.next = data.next;
         SELF.paginationDetails.previous = data.previous;
         SELF.paginationDetails.totalPage = Math.ceil(data.count / 100);
@@ -329,30 +340,29 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
 
   /**
    * Change Submission's leaderboard visibility API.
-   * @param id  Submission id
+   * @param submission  Selected submission
    * @param is_public  visibility boolean flag
    */
-  changeSubmissionVisibility(id, is_public) {
+  changeSubmissionVisibility(submission, is_public) {
     is_public = !is_public;
-    this.updateSubmissionVisibility(id);
-    if (this.challenge['id'] && this.selectedPhase && this.selectedPhase['id'] && id) {
-      const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(this.challenge['id'], this.selectedPhase['id'], id);
+    this.updateSubmissionVisibility(submission.id);
+    if (this.challenge['id'] && this.selectedPhase && this.selectedPhase['id'] && submission.id) {
+      const API_PATH = this.endpointsService.challengeSubmissionUpdateURL(
+        this.challenge['id'], this.selectedPhase['id'], submission.id
+      );
       const SELF = this;
       const BODY = JSON.stringify({is_public: is_public});
       this.apiService.patchUrl(API_PATH, BODY).subscribe(
         () => {
-          if (is_public) {
-            SELF.globalService.showToast('success', 'The submission is made public');
-          } else {
-            SELF.globalService.showToast('success', 'The submission is made private');
-          }
+          submission.submissionVisibilityIcon = (is_public) ? 'visibility' : 'visibility_off';
+          submission.submissionVisibilityText = (is_public) ? 'Public' : 'Private';
+          const toastMessage = (is_public) ? 'The submission is made public' : 'The submission is made private';
+          SELF.globalService.showToast('success', toastMessage);
         },
         err => {
           SELF.globalService.handleApiError(err);
         },
-        () => {
-          console.log('Updated submission visibility', id);
-        }
+        () => {}
       );
     }
   }
@@ -378,5 +388,30 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
         console.log('Fetched submission counts', challenge, phase);
       }
     );
+  }
+
+  /**
+   * Modal to confirm the change of submission visibility
+   * @param submission  Selected submission
+   * @param submissionVisibility current submission visibility
+   */
+  confirmSubmissionVisibility(submission, submissionVisibility) {
+    const SELF = this;
+    let toggleSubmissionVisibilityState;
+    (submissionVisibility) ?
+    (toggleSubmissionVisibilityState = 'private') :
+    (toggleSubmissionVisibilityState = 'public');
+
+    SELF.apiCall = () => {
+      SELF.changeSubmissionVisibility(submission, submissionVisibility);
+    };
+
+    const PARAMS = {
+      title: 'Make this submission ' + toggleSubmissionVisibilityState + '?',
+      confirm: 'Yes, I\'m sure',
+      deny: 'No',
+      confirmCallback: SELF.apiCall
+    };
+    SELF.globalService.showConfirm(PARAMS);
   }
 }
