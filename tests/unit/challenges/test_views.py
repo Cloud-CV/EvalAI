@@ -2972,6 +2972,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver2/",
                 publication_url="http://testserver2/",
                 is_public=True,
+                is_flagged=True,
             )
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
@@ -2990,6 +2991,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver3/",
                 publication_url="http://testserver3/",
                 is_public=True,
+                is_flagged=True,
             )
 
         self.client.force_authenticate(user=self.user6)
@@ -3055,6 +3057,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "created_by": submission.created_by.username,
                     "status": submission.status,
                     "is_public": submission.is_public,
+                    "is_flagged": submission.is_flagged,
                     "submission_number": submission.submission_number,
                     "submitted_at": "{0}{1}".format(
                         submission.submitted_at.isoformat(), "Z"
