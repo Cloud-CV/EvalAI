@@ -958,6 +958,42 @@ def update_submission(request, challenge_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST', ])
+@throttle_classes([UserRateThrottle, ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def re_run_submission(request, submission_pk):
+    """
+    API endpoint to re-run a submission.
+    Only challenge host has access to this endpoint.
+    """
+    try:
+        submission = Submission.objects.get(pk=submission_pk)
+    except Submission.DoesNotExist:
+        response_data = {'error': 'Submission {} does not exist'.format(submission_pk)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # get the challenge and challenge phase object
+    challenge_phase = submission.challenge_phase
+    challenge = challenge_phase.challenge
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Only challenge hosts are allowed to re-run a submission"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if not challenge.is_active:
+        response_data = {'error': 'Challenge {} is not active'.format(challenge.title)}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    publish_submission_message(challenge.pk, challenge_phase.pk, submission.pk)
+    response_data = {
+        'success': 'Submission is successfully submitted for re-running'
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))

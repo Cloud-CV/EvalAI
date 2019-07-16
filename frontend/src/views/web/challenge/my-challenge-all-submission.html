@@ -82,6 +82,7 @@
                                         <th data-field="file">Stderr File</th>
                                         <th data-field="file">Result File</th>
                                         <th data-field="file">Metadata File</th>
+                                        <th data-field="button">Re-run Submissions</th>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
@@ -116,6 +117,7 @@
                                             <label for="isPublic{{ key.id }}"></label>
                                             <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                         </td>
+                                        <td><center><a ng-class="key.classList" class="fa fa-refresh pointer" ng-click="challenge.reRunSubmission(key)"></a></center></td>
                                     </tr>
                                 </tbody>
                             </table>
