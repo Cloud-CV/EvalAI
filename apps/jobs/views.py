@@ -53,7 +53,7 @@ from participants.utils import (
     get_participant_team_of_user_for_a_challenge,
     is_user_part_of_participant_team,
 )
-
+from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
 from .serializers import (
@@ -148,7 +148,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             participant_team=participant_team_id,
             challenge_phase=challenge_phase,
         ).order_by("-submitted_at")
-        paginator, result_page = paginated_queryset(submission, request)
+        filtered_submissions = SubmissionFilter(request.GET, queryset=submission)
+        paginator, result_page = paginated_queryset(filtered_submissions.qs, request)
         serializer = SubmissionSerializer(
             result_page, many=True, context={"request": request}
         )
@@ -206,6 +207,16 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "error": "You haven't participated in the challenge"
             }
             return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+        all_participants_email = participant_team.get_all_participants_email()
+        for participant_email in all_participants_email:
+            if participant_email in challenge.banned_email_ids:
+                message = "You're a part of {} team and it has been banned from this challenge. \
+                Please contact the challenge host.".format(participant_team.team_name)
+                response_data = {
+                    "error": message
+                }
+                return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
         # Fetch the number of submissions under progress.
         submissions_in_progress_status = [
@@ -444,6 +455,8 @@ def leaderboard(request, challenge_phase_split_id):
         request.user, challenge_obj.pk
     )
 
+    all_banned_email_ids = challenge_obj.banned_email_ids
+
     # Check if challenge phase leaderboard is public for participant user or not
     if (
         challenge_phase_split.visibility != ChallengePhaseSplit.PUBLIC
@@ -462,7 +475,7 @@ def leaderboard(request, challenge_phase_split_id):
         challenge_phase_split=challenge_phase_split,
         submission__is_flagged=False,
         submission__status=Submission.FINISHED,
-    ).order_by("created_at")
+    ).order_by("-created_at")
 
     leaderboard_data = leaderboard_data.annotate(
         filtering_score=RawSQL(
@@ -475,6 +488,7 @@ def leaderboard(request, challenge_phase_split_id):
         ),
     ).values(
         "id",
+        "submission__participant_team",
         "submission__participant_team__team_name",
         "submission__participant_team__team_url",
         "submission__is_baseline",
@@ -491,7 +505,15 @@ def leaderboard(request, challenge_phase_split_id):
     if challenge_phase_split.visibility == ChallengePhaseSplit.PUBLIC:
         leaderboard_data = leaderboard_data.filter(submission__is_public=True)
 
+    all_banned_participant_team = []
     for leaderboard_item in leaderboard_data:
+        participant_team_id = leaderboard_item["submission__participant_team"]
+        participant_team = ParticipantTeam.objects.get(id=participant_team_id)
+        all_participants_email_ids = participant_team.get_all_participants_email()
+        for participant_email in all_participants_email_ids:
+            if participant_email in all_banned_email_ids:
+                all_banned_participant_team.append(participant_team_id)
+                break
         if leaderboard_item["error"] is None:
             leaderboard_item.update(filtering_error=0)
 
@@ -507,7 +529,10 @@ def leaderboard(request, challenge_phase_split_id):
     distinct_sorted_leaderboard_data = []
     team_list = []
     for data in sorted_leaderboard_data:
-        if data["submission__participant_team__team_name"] in team_list:
+        if (
+            data["submission__participant_team__team_name"] in team_list or
+            data['submission__participant_team'] in all_banned_participant_team
+        ):
             continue
         elif data["submission__is_baseline"] is True:
             distinct_sorted_leaderboard_data.append(data)
