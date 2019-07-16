@@ -43,7 +43,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "start_date",
         "end_date",
     )
-    search_fields = ("title", "creator", "creator__team_name", "slug")
+    search_fields = ("title", "creator__team_name", "slug")
 
 
 @admin.register(ChallengeConfiguration)
