@@ -2,7 +2,6 @@ import botocore
 import datetime
 import json
 import logging
-import time
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (

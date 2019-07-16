@@ -948,11 +948,10 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    $rootScope.notify("success", "Your submission has been re-run succesfully!");
+                    $rootScope.notify("success", response.data.success);
                     submissionObject.classList = [''];
                 },
                 onError: function(response) {
-                    var status = response.status;
                     var error = response.data;
                     $rootScope.notify("error", error);
                     submissionObject.classList = [''];
