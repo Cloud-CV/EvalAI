@@ -38,7 +38,7 @@
       grad-btn-transparent fs-14">
       <span> Upload File </span>
       <input name="fileUpload" id="file-upload-custom" [(ngModel)]="fileValue"
-        value="{{fileValue}}" accept="{{accept}}"
+        accept="{{accept}}"
         (change)="handleFileInput($event.target.files)" type="file"
         class="text-dark-black" [readonly]="isReadonly" />
     </div>

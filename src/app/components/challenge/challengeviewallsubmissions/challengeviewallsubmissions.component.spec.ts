@@ -10,6 +10,8 @@ import { EndpointsService } from '../../../services/endpoints.service';
 import { WindowService } from '../../../services/window.service';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterTestingModule } from '@angular/router/testing';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIconModule } from '@angular/material/icon';
 
 describe('ChallengeviewallsubmissionsComponent', () => {
   let component: ChallengeviewallsubmissionsComponent;
@@ -20,7 +22,7 @@ describe('ChallengeviewallsubmissionsComponent', () => {
       declarations: [ ChallengeviewallsubmissionsComponent ],
       providers: [ ChallengeService, GlobalService, AuthService, ApiService,
         EndpointsService, WindowService ],
-      imports: [ HttpClientModule, RouterTestingModule ],
+      imports: [ HttpClientModule, RouterTestingModule, MatMenuModule, MatIconModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
