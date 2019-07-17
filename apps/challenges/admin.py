@@ -61,7 +61,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "end_date",
         "workers",
     )
-    search_fields = ("title", "creator", "creator__team_name", "slug")
+    search_fields = ("title", "creator__team_name", "slug")
 
     actions = ["start_selected_workers", "stop_selected_workers", "scale_selected_workers", "restart_selected_workers", "delete_selected_workers"]
 
