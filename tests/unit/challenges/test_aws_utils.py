@@ -162,10 +162,11 @@ class TestCreateService(BaseTestClass):
         client_token = "abc123"
         self.ecs_client.create_cluster(clusterName="Challenge_Cluster")
         expected_status_code = HTTPStatus.OK
+        expected_num = 1
         response = aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, client_token)
         status_code = response["ResponseMetadata"]["HTTPStatusCode"]
         self.assertEqual(status_code, expected_status_code)
-        self.assertEqual(self.challenge.workers, 1)
+        self.assertEqual(self.challenge.workers, expected_num)
         self.assertTrue(self.challenge.task_def_arn)
 
     def test_create_service_by_challenge_pk_for_existing_service(self):
@@ -254,7 +255,7 @@ class TestStartWorkers(BaseAdminCallsClass):
     def setUp(self):
         super(TestStartWorkers, self).setUp()
 
-    def test_start_workers_1(self):  # challenge2 and challenge3 workers are inactive.
+    def test_start_workers_when_first_and_third_challenges_have_zero_workers(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
@@ -266,10 +267,11 @@ class TestStartWorkers(BaseAdminCallsClass):
         queryset = super(TestStartWorkers, self).queryset(pklist)
         expected_count = 1
         message = "Please select only inactive challenges."
+        expected_num_of_workers = [1, 1, 0]
         expected_response = {"count": expected_count, "message": message}
         response = aws_utils.start_workers(queryset)
         self.assertEqual(response, expected_response)
-        self.assertEqual(list(c.workers for c in queryset), [1, 1, 0])
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
         Challenge.objects.filter(pk=self.challenge2.pk).update(workers=0)
 
@@ -281,7 +283,7 @@ class TestStartWorkers(BaseAdminCallsClass):
         response = aws_utils.start_workers(queryset)
         self.assertEqual(response, expected_response)
 
-    def test_start_workers_2(self):  # All challenges are new.
+    def test_start_workers_for_all_new_challenges_with_no_worker_service(self):
         pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pklist)
         expected_count = 3
@@ -291,24 +293,25 @@ class TestStartWorkers(BaseAdminCallsClass):
         self.assertEqual(response, expected_response)
         self.assertTrue(all(c.workers == 1 for c in queryset))
 
-    def test_start_workers_3(self):  # challenge is new.
+    def test_start_workers_for_one_new_challenge_with_no_worker_service(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
 
         pklist = [self.challenge2.pk, self.challenge3.pk, self.challenge.pk]
         queryset = super(TestStartWorkers, self).queryset(pklist)
         expected_count = 2
+        expected_num_of_workers = [1, 1, 1]
         message = "Please select only inactive challenges."
         expected_response = {"count": expected_count, "message": message}
         response = aws_utils.start_workers(queryset)
         self.assertEqual(response, expected_response)
-        self.assertEqual(list(c.workers for c in queryset), [1, 1, 1])
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
 
 class TestStopWorkers(BaseAdminCallsClass):
     def setUp(self):
         super(TestStopWorkers, self).setUp()
 
-    def test_stop_workers_1(self):  # challenge2 worker is inactive.
+    def test_stop_workers_when_first_challenge_has_zero_workers(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
@@ -318,12 +321,13 @@ class TestStopWorkers(BaseAdminCallsClass):
         queryset = super(TestStopWorkers, self).queryset(pklist)
         expected_count = 1
         message = "Please select only active challenges."
+        expected_num_of_workers = [0, 0, 1]
         expected_response = {"count": expected_count, "message": message}
         response = aws_utils.stop_workers(queryset)
         self.assertEqual(response, expected_response)
-        self.assertEqual(list(c.workers for c in queryset), [0, 0, 1])
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
-    def test_stop_workers_2(self):  # All workers are active.
+    def test_stop_workers_for_all_challenge_workers_active(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
@@ -337,24 +341,25 @@ class TestStopWorkers(BaseAdminCallsClass):
         self.assertEqual(response, expected_response)
         self.assertTrue(all(c.workers == 0 for c in queryset))
 
-    def test_stop_workers_3(self):  # challenge2 and challenge3 are new.
+    def test_stop_workers_where_second_and_third_challenges_are_new_with_no_worker_service(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
 
         pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStopWorkers, self).queryset(pklist)
         expected_count = 1
+        expected_num_of_workers = [0, None, None]
         message = "Please select only active challenges."
         expected_response = {"count": expected_count, "message": message}
         response = aws_utils.stop_workers(queryset)
         self.assertEqual(response, expected_response)
-        self.assertEqual(list(c.workers for c in queryset), [0, None, None])
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
 
 class TestScaleWorkers(BaseAdminCallsClass):
     def setUp(self):
         super(TestScaleWorkers, self).setUp()
 
-    def test_scale_workers_1(self):  # challenge is new.
+    def test_scale_workers_when_first_challenge_is_new_with_no_worker_service(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
 
@@ -367,7 +372,7 @@ class TestScaleWorkers(BaseAdminCallsClass):
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
     '''
-    def test_scale_workers_2(self):  # challenge2 scaling number same as current workers.
+    def test_scale_workers_when_second_challenge_is_scaled_to_same_number_of_workers(self):  # challenge2 scaling number same as current workers.
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
@@ -389,7 +394,7 @@ class TestScaleWorkers(BaseAdminCallsClass):
 
 class TestDeleteWorkers(BaseAdminCallsClass):
 
-    def test_delete_workers_1(self):  # All workers active.
+    def test_delete_workers_when_all_challenges_have_active_workers(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
@@ -398,13 +403,14 @@ class TestDeleteWorkers(BaseAdminCallsClass):
         queryset = super(TestDeleteWorkers, self).queryset(pklist)
 
         expected_count = 3
+        expected_num_of_workers = [None, None, None]
         expected_message = "All selected challenge workers successfully deleted."
         response = aws_utils.delete_workers(queryset)
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
-        self.assertEqual(list(c.workers for c in queryset), [None, None, None])
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
-    def test_delete_workers_2(self):  # One inactive. Rest active.
+    def test_delete_workers_when_second_challenge_has_zero_workers(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
 
@@ -412,11 +418,12 @@ class TestDeleteWorkers(BaseAdminCallsClass):
         queryset = super(TestDeleteWorkers, self).queryset(pklist)
 
         expected_count = 1
+        expected_num_of_workers = [None, None, 1]
         expected_message = "Please select only active challenges. Challenge {} is inactive.".format(self.challenge2.pk)
         response = aws_utils.delete_workers(queryset)
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
-        self.assertEqual(list(c.workers for c in queryset), [None, None, 1])
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
     @mock.patch("challenges.aws_utils.delete_service_by_challenge_pk")
     def test_delete_worker_exception_message(self, mock_delete_by_pk):
@@ -436,12 +443,13 @@ class TestDeleteWorkers(BaseAdminCallsClass):
         response = aws_utils.delete_workers(queryset)
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
-        self.assertEqual(list(c.workers for c in queryset), [1, 1, 1])
+        expected_num_of_workers = [1, 1, 1]
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
 
 class TestRestartWorkers(BaseAdminCallsClass):
 
-    def test_restart_workers_1(self):  # All active.
+    def test_restart_workers_when_all_challenges_have_active_workers(self):  # All active.
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
@@ -450,13 +458,14 @@ class TestRestartWorkers(BaseAdminCallsClass):
         queryset = super(TestRestartWorkers, self).queryset(pklist)
 
         expected_count = 3
+        expected_num_of_workers = [1, 1, 1]
         expected_message = "All selected challenge workers successfully restarted."
         response = aws_utils.restart_workers(queryset)
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
-        self.assertEqual(list(c.workers for c in queryset), [1, 1, 1])
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
-    def test_restart_workers_2(self):  # Challenge2 worker inactive.
+    def test_restart_workers_when_challenge2_has_zero_workers(self):  # Challenge2 worker inactive.
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
@@ -466,11 +475,12 @@ class TestRestartWorkers(BaseAdminCallsClass):
         queryset = super(TestRestartWorkers, self).queryset(pklist)
 
         expected_count = 0
+        expected_num_of_workers = [0, 1, 1]
         expected_message = "Please select only active challenges. Challenge {} is inactive.".format(self.challenge.pk)
         response = aws_utils.restart_workers(queryset)
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
-        self.assertEqual(list(c.workers for c in queryset), [0, 1, 1])
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
     @mock.patch("challenges.aws_utils.restart_workers")
     def test_restart_workers_signal_callback_evaluation_script(self, mock_restart_workers):
