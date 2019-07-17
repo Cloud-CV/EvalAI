@@ -8,8 +8,8 @@ from django.shortcuts import render
 
 from smtplib import SMTPException
 
-from .models import Team
-from .serializers import ContactSerializer, TeamSerializer
+from .models import Subscribers, Team
+from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -116,6 +116,36 @@ def contact_us(request):
     elif request.method == "GET":
         response_data = {"name": name, "email": email}
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET", "POST"])
+@throttle_classes([AnonRateThrottle])
+@permission_classes((permissions.AllowAny,))
+def subscribe(request):
+    if request.method == 'GET':
+        subscribers = Subscribers.objects.all().order_by("-pk")
+        serializer = SubscribeSerializer(
+            subscribers, many=True, context={"request": request}
+        )
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        email = request.data.get('email')
+        # When user has already subscribed
+        if Subscribers.objects.filter(email=email).exists():
+            response_data = {
+                "message": "You have already subscribed to EvalAI"
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = SubscribeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            response_data = {
+                "message", "You will be notified about our latest updates at {}.".format(email)
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "POST"])
