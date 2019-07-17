@@ -203,10 +203,10 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 return e.response
         else:
             message = "Error. Task definition already registered for challenge {}.".format(challenge.pk)
-            return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": None}}
+            return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": 400}}
     else:
         message = "Please ensure that the TASK_ROLE_ARN & TASK_EXECUTION_ROLE_ARN are appropriately passed as environment varibles."
-        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": None}}
+        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": 400}}
 
 
 def create_service_by_challenge_pk(client, challenge, client_token):
@@ -241,7 +241,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             return e.response
     else:
         message = "Worker service for challenge {} already exists. Please scale, stop or delete.".format(challenge.pk)
-        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": None}}
+        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": 400}}
 
 
 def update_service_by_challenge_pk(client, challenge, num_of_tasks, forceNewDeployment=False):
