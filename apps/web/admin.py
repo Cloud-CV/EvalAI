@@ -16,8 +16,8 @@ class ContactAdmin(admin.ModelAdmin):
         "modified_at",
     )
     search_fields = ("email",)
-    
-    
+
+
 @admin.register(Subscribers)
 class SubscriberAdmin(admin.ModelAdmin):
     list_display = (

@@ -25,16 +25,16 @@ class Contact(TimeStampedModel):
     class Meta:
         app_label = "web"
         db_table = "contact"
-        
+
 
 class Subscribers(TimeStampedModel):
     """Model representing subbscribed user's email"""
-    
+
     email = models.EmailField(max_length=70)
-    
+
     def __str__(self):
         return "{}".format(self.email)
-    
+
     class Meta:
         app_label = "web"
         db_table = "subscribers"
