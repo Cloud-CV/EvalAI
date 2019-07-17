@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from base.admin import ImportExportTimeStampedAdmin
 
-from .models import Contact, Team, Subscribers
+from .models import Contact, Subscribers, Team
 
 
 @admin.register(Contact)

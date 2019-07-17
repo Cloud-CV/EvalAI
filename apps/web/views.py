@@ -8,8 +8,8 @@ from django.shortcuts import render
 
 from smtplib import SMTPException
 
-from .models import Team, Subscribers
-from .serializers import ContactSerializer, TeamSerializer, SubscribeSerializer
+from .models import Subscribers, Team
+from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (

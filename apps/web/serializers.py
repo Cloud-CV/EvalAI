@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Contact, Team, Subscribers
+from .models import Contact, Subscribers, Team
 
 
 class ContactSerializer(serializers.ModelSerializer):
