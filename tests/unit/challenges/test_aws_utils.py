@@ -133,7 +133,7 @@ class TestRegisterTaskDefinition(BaseTestClass):
     def test_register_task_def_by_challenge_pk_for_existing_service(self):
         queue_name = self.challenge2.queue
         aws_utils.register_task_def_by_challenge_pk(self.ecs_client, queue_name, self.challenge2)
-        expected_status_code 400
+        expected_status_code = 400
         expected_error_message = "Error. Task definition already registered for challenge {}.".format(self.challenge2.pk)
         response = aws_utils.register_task_def_by_challenge_pk(self.ecs_client, queue_name, self.challenge2)
         status_code = response["ResponseMetadata"]["HTTPStatusCode"]
@@ -144,7 +144,7 @@ class TestRegisterTaskDefinition(BaseTestClass):
     def test_register_task_def_by_challenge_pk_for_empty_task_role_arn(self):
         aws_utils.TASK_ROLE_ARN = ""
         queue_name = self.challenge2.queue
-        expected_status_code 400
+        expected_status_code = 400
         expected_error_message = "Please ensure that the TASK_ROLE_ARN & TASK_EXECUTION_ROLE_ARN are appropriately passed as environment varibles."
         response = aws_utils.register_task_def_by_challenge_pk(self.ecs_client, queue_name, self.challenge2)
         status_code = response["ResponseMetadata"]["HTTPStatusCode"]
@@ -174,7 +174,7 @@ class TestCreateService(BaseTestClass):
         self.ecs_client.create_cluster(clusterName="Challenge_Cluster")
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, client_token)
         client_token = "abcd1234"
-        expected_status_code 400
+        expected_status_code = 400
         expected_error_message = "Worker service for challenge {} already exists. Please scale, stop or delete.".format(self.challenge.pk)
         response = aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, client_token)
         status_code = response["ResponseMetadata"]["HTTPStatusCode"]
