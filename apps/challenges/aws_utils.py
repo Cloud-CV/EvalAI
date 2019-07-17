@@ -113,7 +113,7 @@ service_definition = """
     "networkConfiguration":{{ # Need to create VPC before filling this.
         "awsvpcConfiguration": {{
             "subnets": [
-                # "string",
+                "string",
             ],
             'securityGroups': [
                 "string",
