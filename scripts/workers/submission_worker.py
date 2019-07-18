@@ -493,24 +493,37 @@ def run_submission(
                     successful_submission_flag = False
                     break
 
-                leaderboard_data = LeaderboardData()
-                leaderboard_data.challenge_phase_split = challenge_phase_split
-                leaderboard_data.submission = submission
-                leaderboard_data.leaderboard = (
-                    challenge_phase_split.leaderboard
-                )
-                leaderboard_data.result = split_result.get(
-                    dataset_split.codename
-                )
-
-                if "error" in submission_output:
-                    leaderboard_data.error = error_bars_dict.get(
+                # Check if the leaderboard already exists for the submission
+                if LeaderboardData.objects.filter(submission=submission.id).exists():
+                    leaderboard_data = LeaderboardData.objects.get(submission=submission.id)
+                    leaderboard_data.result = split_result.get(
                         dataset_split.codename
                     )
 
-                leaderboard_data_list.append(leaderboard_data)
+                    if "error" in submission_output:
+                        leaderboard_data.error = error_bars_dict.get(
+                            dataset_split.codename
+                        )
+                    leaderboard_data.save()
+                else:
+                    leaderboard_data = LeaderboardData()
+                    leaderboard_data.challenge_phase_split = challenge_phase_split
+                    leaderboard_data.submission = submission
+                    leaderboard_data.leaderboard = (
+                        challenge_phase_split.leaderboard
+                    )
+                    leaderboard_data.result = split_result.get(
+                        dataset_split.codename
+                    )
 
-            if successful_submission_flag:
+                    if "error" in submission_output:
+                        leaderboard_data.error = error_bars_dict.get(
+                            dataset_split.codename
+                        )
+
+                    leaderboard_data_list.append(leaderboard_data)
+
+            if successful_submission_flag and len(leaderboard_data_list) != 0:
                 LeaderboardData.objects.bulk_create(leaderboard_data_list)
 
         # Once the submission_output is processed, then save the submission object with appropriate status
