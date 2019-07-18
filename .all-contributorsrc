@@ -5,9 +5,6 @@
   "repoHost": "https://github.com",
   "files": ["README.md"],
   "imageSize": 100,
-  "commit": false,
-  "commitConvention": "angular",
   "contributorsPerLine": 7,
-  "imageSize": 100,
   "contributors": []
 }
