@@ -1,4 +1,3 @@
-// Import Modules
 import { BrowserModule } from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
@@ -71,6 +70,7 @@ import { EditphasemodalComponent } from './components/challenge/challengephases/
 import {
   ChallengeviewallsubmissionsComponent
 } from './components/challenge/challengeviewallsubmissions/challengeviewallsubmissions.component';
+import { SideBarComponent } from './components/utility/side-bar/side-bar.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -120,6 +120,7 @@ import { MatIconModule } from '@angular/material/icon';
     PartnersComponent,
     RulesComponent,
     TestimonialsComponent,
+    SideBarComponent,
     FeaturedChallengesComponent,
     EditphasemodalComponent,
     ChallengeviewallsubmissionsComponent
