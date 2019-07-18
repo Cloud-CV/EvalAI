@@ -1,0 +1,10 @@
+{
+  "projectName": "EvalAI",
+  "projectOwner": "CloudCV",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["README.md"],
+  "imageSize": 100,
+  "contributorsPerLine": 7,
+  "contributors": []
+}
