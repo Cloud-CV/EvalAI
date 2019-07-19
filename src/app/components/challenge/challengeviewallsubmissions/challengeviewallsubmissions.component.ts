@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren, ViewChild, AfterViewInit, Self } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { WindowService } from '../../../services/window.service';
@@ -408,6 +408,34 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
 
     const PARAMS = {
       title: 'Make this submission ' + toggleSubmissionVisibilityState + '?',
+      confirm: 'Yes, I\'m sure',
+      deny: 'No',
+      confirmCallback: SELF.apiCall
+    };
+    SELF.globalService.showConfirm(PARAMS);
+  }
+
+  /**
+   * Modal to confirm the submission re-run
+   * @param submissionId submission id
+   */
+  reRunSubmission(submissionId) {
+    const SELF = this;
+    const API_PATH = SELF.endpointsService.reRunSubmissionURL(submissionId);
+    SELF.apiCall = () => {
+      const BODY = {};
+      SELF.apiService.postUrl(API_PATH, BODY).subscribe(
+        data => {
+          SELF.globalService.showToast('success', data.success, 5);
+        },
+        err => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {}
+      );
+    };
+    const PARAMS = {
+      title: 'Re-run this submission?',
       confirm: 'Yes, I\'m sure',
       deny: 'No',
       confirmCallback: SELF.apiCall

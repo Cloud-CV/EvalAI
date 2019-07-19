@@ -254,4 +254,12 @@ export class EndpointsService {
   deleteChallengeURL(challenge) {
     return `${this.challenges}${this.challenge}${challenge}/disable`;
   }
+
+  /**
+   * Re-run submission
+   * @param submission submission id
+   */
+  reRunSubmissionURL(submission) {
+    return `${this.jobs}submissions/${submission}/re-run/`;
+  }
 }
