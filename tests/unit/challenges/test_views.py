@@ -2476,6 +2476,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC,
+            leaderboard_order_is_descending=True
         )
 
         self.challenge_phase_split_host = ChallengePhaseSplit.objects.create(
@@ -3608,6 +3609,7 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "leaderboard": self.leaderboard.pk,
             "challenge_phase": self.challenge_phase.pk,
             "visibility": self.challenge_phase_split.visibility,
+            "leaderboard_order_is_descending": self.challenge_phase_split.leaderboard_order_is_descending
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
