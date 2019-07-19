@@ -151,7 +151,7 @@
             </strong>
           </div>
           <div class="row">
-            <div class="col-md-7 col-sm-7 col-xs-12">
+            <div class="col-md-7 col-sm-7 col-xs-10">
               <div class="exist-team-card">
                 <ul>
                   <b class="fw-bold content fs-14">Select phase:</b>
@@ -228,6 +228,19 @@
               </div>
             </div>
 
+            <div *ngIf="selectedPhaseSubmissions.maxExceeded" class="col-md-5 col-sm-4 col-xs-12">
+              <div class="ev-submission-card-body exist-team-card
+                ev-remaining-submission remaining-submission-clock">
+                <div class="row row-lr-margin">
+                  <span class="color-black">
+                    <strong class="fw-semibold fs-15 red-text">
+                      {{ selectedPhaseSubmissions.maxExceededMessage }}
+                    </strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <div *ngIf="selectedPhaseSubmissions.showSubmissionDetails"
               class="col-md-5 col-sm-5 col-xs-12">
               <div class="ev-card-body exist-team-card ev-remaining-submission
@@ -267,6 +280,24 @@
                       {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_count}}
                     </strong>
                   </span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="selectedPhaseSubmissions.showClock" class="col-md-5 col-sm-12 col-xs-12">
+              <div class="ev-card-body exist-team-card ev-remaining-submission
+                remaining-submission-clock">
+                <div class="row row-lr-margin">
+                  <strong class="text-med-black">
+                    Message:
+                  </strong> {{selectedPhaseSubmissions.clockMessage.message}}
+                </div>
+                <div>
+                  Next set of submissions will be available after:
+                </div>
+                <div>
+                  <span *ngIf="days!=0">{{days}} Days, </span>{{hours}}
+                  hours : {{minutes}} minutes : {{seconds}} seconds
                 </div>
               </div>
             </div>

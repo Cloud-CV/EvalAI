@@ -107,14 +107,21 @@ export class ChallengesubmitComponent implements OnInit {
   apiCall: any;
 
   /**
-   * Submissions remaining for the selected phase
+   * Selected phase submission conditions
+   * @param showSubmissionDetails show the selected phase submission details
+   * @param showClock when max submissions per day exceeded
+   * @param maxExceeded max submissions exceeded
+   * @param remainingSubmissions remaining submissions details
+   * @param maxExceededMessage message for max submissions exceeded
+   * @param clockMessage message for max submissions per day exceeded
    */
   selectedPhaseSubmissions = {
     showSubmissionDetails: false,
-    remainingSubmissions: {},
+    showClock: false,
     maxExceeded: false,
+    remainingSubmissions: {},
     maxExceededMessage: '',
-    message: ''
+    clockMessage: ''
   };
 
   /**
@@ -131,6 +138,30 @@ export class ChallengesubmitComponent implements OnInit {
    * Phase remaining submissions countdown (days, hours, minutes, seconds)
    */
   phaseRemainingSubmissionsCountdown = {};
+
+  /**
+   * Clock variables
+   * @param days number of days remaining
+   * @param hours number of hours remaining
+   * @param minutes number of minutes remaining
+   * @param seconds number of seconds remaining
+   * @param remainingTime remaining time (in seconds) for submission of a challenge phase
+   */
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  remainingTime: number;
+
+  /**
+   * Is clock initialised
+   */
+  isClockStarted: boolean;
+
+  /**
+   * Set interval timer
+   */
+  timer: any;
 
   /**
    * Component Class
@@ -203,29 +234,43 @@ export class ChallengesubmitComponent implements OnInit {
    * @param eachPhase particular phase of a challenge
    */
   countDownTimer(SELF, eachPhase) {
-    const remainingTime = eachPhase.limits.remaining_time;
-    const days = Math.floor(remainingTime / 24 / 60 / 60);
-    const hoursLeft = Math.floor((remainingTime) - (days * 86400));
-    const hours = Math.floor(hoursLeft / 3600);
-    const minutesLeft = Math.floor((hoursLeft) - (hours * 3600));
-    const minutes = Math.floor(minutesLeft / 60);
-    let remainingSeconds = Math.floor(remainingTime % 60);
-    let remSeconds;
-    if (remainingSeconds < 10) {
-        remSeconds = '0' + remainingSeconds;
+    if (!SELF.isClockStarted) {
+      SELF.remainingTime = parseInt(eachPhase.limits.remaining_time, 10);
     }
+    SELF.days = Math.floor(SELF.remainingTime / 24 / 60 / 60);
+    const hoursLeft = Math.floor(SELF.remainingTime - SELF.days * 86400);
+    SELF.hours = Math.floor(hoursLeft / 3600);
+    const minutesLeft = Math.floor(hoursLeft - SELF.hours * 3600);
+    SELF.minutes = Math.floor(minutesLeft / 60);
+    SELF.seconds = Math.floor(SELF.remainingTime % 60);
+
+    if (SELF.days < 10) {
+      SELF.days = '0' + SELF.days;
+    }
+    if (SELF.hours < 10) {
+      SELF.hours = '0' + SELF.hours;
+    }
+    if (SELF.minutes < 10) {
+      SELF.minutes = '0' + SELF.minutes;
+    }
+    if (SELF.seconds < 10) {
+      SELF.seconds = '0' + SELF.seconds;
+    }
+
+    // Used when the challenge is docker based
     SELF.phaseRemainingSubmissionsCountdown[eachPhase.id] = {
-        'days': days,
-        'hours': hours,
-        'minutes': minutes,
-        'seconds': remSeconds
+        'days': SELF.days,
+        'hours': SELF.hours,
+        'minutes': SELF.minutes,
+        'seconds': SELF.seconds
     };
-    if (remainingTime === 0) {
-        SELF.phaseRemainingSubmissionsFlags[eachPhase.id] = 'showSubmissionDetails';
+    if (SELF.remainingTime === 0) {
+      SELF.selectedPhaseSubmissions.showSubmissionDetails = true;
+      SELF.phaseRemainingSubmissionsFlags[eachPhase.id] = 'showSubmissionDetails';
     } else {
-        remainingSeconds--;
+      SELF.remainingTime--;
     }
-    SELF.phaseRemainingSubmissionsCountdown[eachPhase.id].seconds = remainingSeconds;
+    SELF.isClockStarted = true;
   }
 
   /**
@@ -271,11 +316,17 @@ export class ChallengesubmitComponent implements OnInit {
   fetchRemainingSubmissions(challenge, phase) {
     const API_PATH = this.endpointsService.challengeSubmissionsRemainingURL(challenge);
     const SELF = this;
+    clearInterval(SELF.timer);
+    SELF.isClockStarted = false;
+    SELF.selectedPhaseSubmissions.showClock = false;
+    SELF.selectedPhaseSubmissions.showSubmissionDetails = false;
+    SELF.selectedPhaseSubmissions.maxExceeded = false;
     this.apiService.getUrl(API_PATH).subscribe(
       data => {
-        let phaseDetails;
+        let phaseDetails, eachPhase;
         for (let i = 0; i < data.phases.length; i++) {
           if (data.phases[i].id === phase) {
+            eachPhase = data.phases[i];
             phaseDetails = data.phases[i].limits;
             break;
           }
@@ -289,8 +340,13 @@ export class ChallengesubmitComponent implements OnInit {
           this.selectedPhaseSubmissions.showSubmissionDetails = true;
           this.disableSubmit = false;
         } else {
-          this.selectedPhaseSubmissions.message = phaseDetails;
+          this.selectedPhaseSubmissions.showClock = true;
+          this.selectedPhaseSubmissions.clockMessage = phaseDetails;
           this.disableSubmit = true;
+          SELF.timer = setInterval(function () {
+            SELF.countDownTimer(SELF, eachPhase);
+          }, 1000);
+          SELF.countDownTimer(SELF, eachPhase);
         }
       },
       err => {
