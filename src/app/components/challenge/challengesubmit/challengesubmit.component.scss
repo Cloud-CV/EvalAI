@@ -57,3 +57,9 @@ td, th {
 .remaining-submission-clock {
   padding-top: 55px;
 }
+
+@include screen-small {
+  .remaining-submission-clock {
+    padding-top: 0px;
+  }
+}
