@@ -212,6 +212,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "dataset_split",
             "leaderboard",
             "visibility",
+            "leaderboard_order_is_descending"
         )
 
 

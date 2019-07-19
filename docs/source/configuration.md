@@ -114,6 +114,8 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **visibility**: It will set the visibility of the numbers corresponding to metrics for this `challenge_phase_split`. Select one of the following positive integers based on the visibility level you want:
 
+  - **leaderboard_order_is_descending**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to toggle the leaderboard sorting order. Default is `True`)
+
   | Visibility | Description                                                             |
   | ---------- | ----------------------------------------------------------------------- |
   | 1          | Only visible to challenge host                                          |
