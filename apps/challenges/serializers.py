@@ -237,6 +237,7 @@ class ChallengePhaseCreateSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "leaderboard_public",
+            "leaderboard_order_is_descending",
             "start_date",
             "end_date",
             "challenge",

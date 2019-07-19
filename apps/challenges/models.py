@@ -195,6 +195,7 @@ class ChallengePhase(TimeStampedModel):
     challenge = models.ForeignKey("Challenge")
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
+    leaderboard_order_is_descending = models.BooleanField(default=True)
     test_annotation = models.FileField(
         upload_to=RandomFileName("test_annotations"), default=False
     )
