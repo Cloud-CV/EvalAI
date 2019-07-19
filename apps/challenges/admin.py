@@ -73,7 +73,7 @@ class ChallengePhaseAdmin(ImportExportTimeStampedAdmin):
         "leaderboard_public",
         "leaderboard_order_is_descending"
     )
-    list_filter = ("leaderboard_public", "leaderboard_order_is_descending", "start_date", "end_date")
+    list_filter = ("leaderboard_public", "start_date", "end_date")
     search_fields = ("name", "challenge__title")
 
     def get_challenge_name_and_id(self, obj):
