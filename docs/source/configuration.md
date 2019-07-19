@@ -114,7 +114,9 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **visibility**: It will set the visibility of the numbers corresponding to metrics for this `challenge_phase_split`. Select one of the following positive integers based on the visibility level you want:
 
-  - **is_leaderboard_order_descending**: True/False (a Boolean field that gives the flexibility to challenge host to change the default leaderboard sorting order. It is useful in cases where you have error as a metric and want to sort the leaderboard in increasing order of error value. Default is True)
+  - **is_leaderboard_order_descending**: True/False (a Boolean field that gives the flexibility to challenge host to change the default leaderboard sorting order. It is useful in cases where you have error as a metric and want to sort the leaderboard in increasing order of error value. Default is `True`)
+
+  - **leaderboard_decimal_precision**: Positive integer which tells the leaderboard decimal precision. Default is `2`.
 
   | Visibility | Description                                                             |
   | ---------- | ----------------------------------------------------------------------- |
