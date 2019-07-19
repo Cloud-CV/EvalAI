@@ -1,52 +1,82 @@
 @import './variables.scss';
 @import './mixins.scss';
 
-.profile-container {
-	.card {
-		background: $gray-lighter;
-		padding-bottom:30px;
-		width:50%;
-		margin:0 auto;
-	}
-	font-size:$fs-16;
-	font-weight: $fw-light;
-	color:$gray-dark;
-	margin:30px;
+.mid-container {
+	background-color: #fafafa;
+	.profile-container {
+		.card {
+			background: $gray-lighter;
+			padding-bottom:30px;
+			width:50%;
+			margin:0 auto;
+		}
+		font-size:$fs-16;
+		font-weight: $fw-light;
+		color:$gray-dark;
+		margin:30px;
 
-	.dark {
-		color:$gray-darker;
+		.dark {
+			color:$gray-darker;
+		}
+		.highlight {
+			color: $yellow;
+		}
+		.item {
+			margin-bottom: 13px;
+			text-align: center;
+		}
+		.item button {
+			padding-top: 10px;
+			padding-bottom: 10px;
+		}
+		.profile-photo {
+			height:80px;
+			border-radius:50%;
+			@include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
+		}
+		.user-details {
+			margin-top: 14px;
+			margin-bottom: 14px;
+		}
+		.change-password {
+			margin-top: 60px;
+			margin-bottom: 14px;
+			.change-password-text {
+				margin-right: 20px;
+				margin-bottom: 12px;
+			}
+		}
+		.modal-container {
+			&.hidden {
+				display:none;
+			}
+		}
+		.copy {
+			background: none !important;
+			border: none !important;
+			color: $red-light !important;
+			font-size: $fs-24 !important;
+			i {
+				margin-left:-20px;
+			}
+			&:hover {
+				box-shadow:none !important;
+				color: $red-medium;
+			}
+		}
+
 	}
-	.red {
-		color: $red-light;
-	}
-	.item {
-		margin:20px;
-		text-align:center;
-	}
-	.profile-photo {
-		height:100px;
-		border-radius:50%;
-		@include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
-	}
-	.modal-container {
-		&.hidden {
-			display:none;
+}
+
+.modal-container{
+	.modal-card {
+		.title {
+			margin-bottom: 20px;
+		}
+		.code-btn {
+			margin-top: 15px;
 		}
 	}
-	.copy {
-		background: none !important;
-	    border: none !important;
-	    color: $red-light !important;
-	    font-size: $fs-24 !important;
-	    i {
-	    	margin-left:-20px;
-	    }
-	    &:hover {
-	    	box-shadow:none !important;
-	    	color: $red-medium;
-	    }
-	}
-
 }
 
 @include screen-medium {

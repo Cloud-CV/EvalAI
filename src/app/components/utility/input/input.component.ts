@@ -53,6 +53,11 @@ export class InputComponent implements OnInit {
   @Input() icon: string;
 
   /**
+   * Input field message
+   */
+  @Input() message: string;
+
+  /**
    * Custom validate function
    */
   @Input() validate: Function;
@@ -123,11 +128,6 @@ export class InputComponent implements OnInit {
   fileSelected = null;
 
   /**
-   * Input field message
-   */
-  message = 'Required field';
-
-  /**
    * Input field message for required fields
    */
   requiredMessage = 'Required field';
@@ -151,6 +151,12 @@ export class InputComponent implements OnInit {
     }
     if (this.label === undefined) {
       this.label = 'Default Label';
+    }
+    if (this.message === undefined) {
+      this.message = 'Required field';
+    } else if (this.message !== '') {
+      this.isValid = false;
+      this.isEmpty = false;
     }
     if (this.accept === undefined) {
       this.accept = '';
@@ -234,11 +240,11 @@ export class InputComponent implements OnInit {
     this.document.getElementById(id).click();
   }
 
+  showErrorCondition () {
+    return (this.isRequired && this.isEmpty) || (!this.isValid && !this.isEmpty);
+  }
+
   toggleErrorMessage () {
-    if (((this.isRequired && this.isEmpty) || (!this.isValid && !this.isEmpty)) && this.isDirty) {
-      return false;
-    } else {
-      return true;
-    }
+    return !((this.showErrorCondition() || this.message !== '') && this.isDirty);
   }
 }

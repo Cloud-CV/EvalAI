@@ -3,6 +3,7 @@ import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { InputComponent } from '../input/input.component';
 import { ChallengeService } from '../../../services/challenge.service';
+import { AuthService } from '../../../services/auth.service';
 
 /**
  * Component Class
@@ -80,9 +81,34 @@ export class ModalComponent implements OnInit {
   challenge: any;
 
   /**
+   * User object
+   */
+  user: any;
+
+  /**
+   * Old password
+   */
+  oldPassword = '';
+
+  /**
+   * New password
+   */
+  newPassword = '';
+
+  /**
+   * Re-type new password
+   */
+  retype_newPassword = '';
+
+  /**
    * delete challenge button disable
    */
   isDisabled = true;
+
+  /**
+   * Input field message
+   */
+  inputErrorMessage = '';
 
   /**
    * Modal form items
@@ -104,7 +130,8 @@ export class ModalComponent implements OnInit {
    * Constructor.
    * @param globalService  GlobalService Injection.
    */
-  constructor(private globalService: GlobalService, private challengeService: ChallengeService) { }
+  constructor(private globalService: GlobalService, private challengeService: ChallengeService,
+              private authService: AuthService) { }
 
   /**
    * Component on intialized.
@@ -146,6 +173,10 @@ export class ModalComponent implements OnInit {
       }
     }
 
+    this.authService.change.subscribe((details) => {
+      this.user = details;
+    });
+
     if (this.isEditorRequired || this.isButtonDisabled) {
       this.isDisabled = false;
     }
@@ -157,7 +188,12 @@ export class ModalComponent implements OnInit {
    */
   formValidate() {
     if (this.formComponents.length > 0) {
-      this.globalService.formValidate(this.formComponents, this.confirmed, this);
+      console.log(this.formComponents);
+      if (this.title === 'Update Profile') {
+        this.confirmed(this);
+      } else {
+        this.globalService.formValidate(this.formComponents, this.confirmed, this);
+      }
     } else {
       this.confirmed(this);
     }
@@ -195,26 +231,33 @@ export class ModalComponent implements OnInit {
   }
 
   validateModalInput(e) {
+    this.inputErrorMessage = '';
     if (e.target.name === 'challegenDeleteInput') {
-      if (e.target.value === this.challenge.title) {
-        this.isDisabled = false;
-      } else {
-        this.isDisabled = true;
-      }
+      this.isDisabled = e.target.value !== this.challenge.title;
     } else if (e.target.name === 'editChallengeTitle') {
-      if (e.target.value !== this.challenge.title && e.target.value.length > 1) {
-        this.isDisabled = false;
-      } else {
-        this.isDisabled = true;
+      this.isDisabled = e.target.value === this.challenge.title;
+    } else if (e.target.name === 'update_first_name') {
+      this.isDisabled = e.target.value === this.user.first_name;
+    } else if (e.target.name === 'update_last_name') {
+      this.isDisabled = e.target.value === this.user.last_name;
+    } else if (e.target.name === 'update_affiliation') {
+      this.isDisabled = e.target.value === this.user.affiliation;
+    } else if (e.target.name === 'old_password') {
+      this.oldPassword = e.target.value;
+    } else if (e.target.name === 'new_password1') {
+      this.newPassword = e.target.value;
+      if (e.target.value === this.oldPassword) {
+        this.inputErrorMessage = 'Old password cannot be same as New Password';
+      }
+    } else if (e.target.name === 'new_password2') {
+      this.retype_newPassword = e.target.value;
+      if (e.target.value !== this.newPassword) {
+        this.inputErrorMessage = 'Password do not match';
       }
     }
   }
 
   validateFileInput(e) {
-    if (e.target.value !== '') {
-      this.isDisabled = false;
-    } else {
-      this.isDisabled = true;
-    }
+    this.isDisabled = e.target.value === '';
   }
 }
