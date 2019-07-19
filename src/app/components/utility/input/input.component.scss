@@ -16,7 +16,8 @@
     font-size: .9em;
   }
 
-  input[type=text] {
+  input[type=text]
+  input[text=password] {
     background-color: transparent;
     border: none;
     border-bottom: 1px solid #9e9e9e;

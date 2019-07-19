@@ -151,6 +151,7 @@ export class ProfileComponent implements OnInit {
         {
           isRequired: true,
           label: 'first_name',
+          name: 'update_first_name',
           placeholder: 'First Name',
           type: 'text',
           value: this.user['first_name']
@@ -158,6 +159,7 @@ export class ProfileComponent implements OnInit {
         {
           isRequired: true,
           label: 'last_name',
+          name: 'update_last_name',
           placeholder: 'Last Name',
           type: 'text',
           value: this.user['last_name']
@@ -165,6 +167,7 @@ export class ProfileComponent implements OnInit {
         {
           isRequired: true,
           label: 'affiliation',
+          name: 'update_affiliation',
           placeholder: 'Affiliated To',
           type: 'text',
           value: this.user['affiliation']
@@ -224,24 +227,28 @@ export class ProfileComponent implements OnInit {
     const PARAMS = {
       title: 'Change Password',
       content: '',
+      isButtonDisabled: true,
       confirm: 'Submit',
       deny: 'Cancel',
       form: [
         {
           isRequired: true,
           label: 'old_password',
+          name: 'old_password',
           placeholder: 'Old Password*',
           type: 'password'
         },
         {
           isRequired: true,
           label: 'new_password1',
+          name: 'new_password1',
           placeholder: 'New Pasword*',
           type: 'password'
         },
         {
           isRequired: true,
           label: 'new_password2',
+          name: 'new_password2',
           placeholder: 'New Password (Again)*',
           type: 'password'
         }
