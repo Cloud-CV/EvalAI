@@ -1842,6 +1842,7 @@ class BaseChallengePhaseClass(BaseAPITestClass):
                 name="Challenge Phase",
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
+                leaderboard_order_is_descending=True,
                 is_public=True,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
@@ -2196,6 +2197,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
             "name": self.challenge_phase.name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "leaderboard_order_is_descending": self.challenge_phase.leaderboard_order_is_descending,
             "start_date": "{0}{1}".format(
                 self.challenge_phase.start_date.isoformat(), "Z"
             ).replace("+00:00", ""),

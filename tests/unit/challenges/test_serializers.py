@@ -75,6 +75,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
                 name="Challenge Phase",
                 description="Description for Challenge Phase",
                 leaderboard_public=False,
+                leaderboard_order_is_descending=True,
                 is_public=False,
                 start_date=timezone.now() - timedelta(days=2),
                 end_date=timezone.now() + timedelta(days=1),
