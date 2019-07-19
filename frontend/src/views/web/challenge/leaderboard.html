@@ -122,7 +122,9 @@
                                                     id="baseline-badge" class="new badge orange-background"
                                                     data-badge-caption="B" ng-if="key.submission__is_baseline"></span>
                                             </td>
-                                            <td ng-repeat="(i, score) in key.result track by $index" >{{score | number : 2}}<span ng-if = "key.error != nil"> ± {{key.error[i] | number : 2}}</span>
+                                            <td ng-repeat="(i, score) in key.result track by $index" >
+                                                {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}
+                                                <span ng-if = "key.error != nil"> ± {{key.error[i] | number : leaderboard_decimal_precision}}</span>
                                             </td>
                                             <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
                                             </td>

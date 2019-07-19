@@ -24,6 +24,7 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
         vm.phaseRemainingSubmissionsCountdown = {};
@@ -571,6 +572,21 @@
 
             vm.startLoader("Loading Leaderboard Items");
 
+            // get the selected phase split object
+            parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
+            parameters.method = "GET";
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.selectedPhaseSplit = response.data;
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    vm.leaderboard.error = error;
+                    vm.stopLoader();
+                }
+            };
+            utilities.sendRequest(parameters);
 
             // Show leaderboard
             vm.leaderboard = {};
