@@ -32,6 +32,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "created_at",
         "is_docker_based",
         "slug",
+        "banned_email_ids"
     )
     list_filter = (
         "published",
@@ -42,7 +43,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "start_date",
         "end_date",
     )
-    search_fields = ("title", "creator", "creator__team_name", "slug")
+    search_fields = ("title", "creator__team_name", "slug")
 
 
 @admin.register(ChallengeConfiguration)
@@ -91,6 +92,8 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
         "dataset_split",
         "leaderboard",
         "visibility",
+        "leaderboard_decimal_precision",
+        "is_leaderboard_order_descending"
     )
     list_filter = ("dataset_split", "leaderboard", "visibility")
     search_fields = (
