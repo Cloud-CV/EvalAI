@@ -638,6 +638,12 @@ a.active-challenge {
   outline: none;
 }
 
+.challenge-description a, .evaluation-details a, .terms-and-conditions a,
+.phase-description a, .submission-guidelines a {
+    color: #2196F3;
+    cursor: pointer;
+}
+
 
 
 
