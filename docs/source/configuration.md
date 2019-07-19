@@ -69,6 +69,8 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **leaderboard_public**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to either make the leaderboard public or private. Default is `False`)
 
+  - **leaderboard_order_is_descending**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to toggle the leaderboard sorting order. Default is `True`)
+
   - **is_public**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to either hide or show the challenge phase to participants. Default is `False`)
 
   - **is_submission_public**: True/False (a Boolean field that gives the flexibility to Challenge Hosts to either make the submissions by default public/private. Note that this will only work when the `leaderboard_public` property is set to true. Default is `False`)
