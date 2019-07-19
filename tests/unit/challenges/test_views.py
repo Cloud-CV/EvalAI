@@ -2476,6 +2476,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC,
+            leaderboard_decimal_precision=2,
             is_leaderboard_order_descending=True
         )
 
@@ -3609,6 +3610,7 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "leaderboard": self.leaderboard.pk,
             "challenge_phase": self.challenge_phase.pk,
             "visibility": self.challenge_phase_split.visibility,
+            "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,
             "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending
         }
         response = self.client.get(self.url)
