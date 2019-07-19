@@ -299,6 +299,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     visibility = models.PositiveSmallIntegerField(
         choices=VISIBILITY_OPTIONS, default=PUBLIC
     )
+    is_leaderboard_order_descending = models.BooleanField(default=True)
 
     def __str__(self):
         return "{0} : {1}".format(
