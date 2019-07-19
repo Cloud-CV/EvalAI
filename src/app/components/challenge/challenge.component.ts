@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { GlobalService } from '../../services/global.service';
 import { ChallengeService } from '../../services/challenge.service';
 import { EndpointsService } from '../../services/endpoints.service';
+import { Meta } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
 
 /**
  * Component Class
@@ -78,11 +80,12 @@ export class ChallengeComponent implements OnInit {
    * @param apiService  Router Injection.
    * @param endpointsService  EndpointsService Injection.
    * @param challengeService  ChallengeService Injection.
+   * @param DOCUMENT Document Injection
    */
-  constructor(private router: Router, private route: ActivatedRoute,
+  constructor(@Inject(DOCUMENT) document: any, private router: Router, private route: ActivatedRoute,
               private apiService: ApiService, private globalService: GlobalService,
               private challengeService: ChallengeService, private authService: AuthService,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService, private meta: Meta) { }
 
   /**
    * Component on initialized
@@ -101,7 +104,26 @@ export class ChallengeComponent implements OnInit {
         this.challengeService.fetchChallenge(params['id']);
       }
     });
-    this.challengeService.currentChallenge.subscribe(challenge => this.challenge = challenge);
+    this.challengeService.currentChallenge.subscribe(challenge => {
+      this.challenge = challenge;
+      // update meta tag
+      SELF.meta.updateTag({
+        property: 'og:title',
+        content: SELF.challenge.title
+      });
+      SELF.meta.updateTag({
+        property: 'og:description',
+        content: SELF.challenge.short_description
+      });
+      SELF.meta.updateTag({
+        property: 'og:image',
+        content: SELF.challenge.image
+      });
+      SELF.meta.updateTag({
+        property: 'og:url',
+        content: document.location.href
+      });
+    });
     this.challengeService.currentStars.subscribe(stars => this.stars = stars);
     this.challengeService.currentParticipationStatus.subscribe(status => {
       this.isParticipated = status;
