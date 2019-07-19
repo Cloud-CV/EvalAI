@@ -359,18 +359,20 @@ class TestScaleWorkers(BaseAdminCallsClass):
     def setUp(self):
         super(TestScaleWorkers, self).setUp()
 
-    def test_scale_workers_when_first_challenge_is_new_with_no_worker_service(self):
+    def test_scale_workers_when_third_challenge_is_new_with_no_worker_service(self):
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
 
         pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestScaleWorkers, self).queryset(pklist)
         num_of_tasks = self.challenge2.workers + 3
-        expected_count = 3
-        expected_message = "All selected challenge workers successfully scaled."
+        expected_count = 2
+        expected_num_of_workers = [num_of_tasks, num_of_tasks, None]
+        expected_message = "Please start worker for Challenge {} before scaling.".format(self.challenge3.pk)
         response = aws_utils.scale_workers(queryset, num_of_tasks)
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
     '''
     def test_scale_workers_when_second_challenge_is_scaled_to_same_number_of_workers(self):  # challenge2 scaling number same as current workers.
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
@@ -385,12 +387,11 @@ class TestScaleWorkers(BaseAdminCallsClass):
         queryset = super(TestScaleWorkers, self).queryset(pklist)
         num_of_tasks = self.challenge2.workers
         expected_count = 1
-        expected_message = "Please scale to a different number than current worker count for challenge {}".format(self.challenge2.pk)
+        expected_message = "Please scale to a different number. Challenge {} has {} workers.".format(self.challenge2.pk, num_of_tasks)
         response = aws_utils.scale_workers(queryset, num_of_tasks)
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
     '''
-
 
 class TestDeleteWorkers(BaseAdminCallsClass):
 

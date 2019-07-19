@@ -1,14 +1,15 @@
+import logging
 import os
 import random
 import string
-import logging
 
 from botocore.exceptions import ClientError
+from django.conf import settings
+from http import HTTPStatus
+from moto import mock_ecs
+
 from base.utils import get_boto3_client
 
-from http import HTTPStatus
-
-from moto import mock_ecs
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +24,24 @@ aws_keys = {
 }
 
 TASK_ROLE_ARN = os.environ.get("TASK_ROLE_ARN", ""),
-TASK_EXECUTION_ROLE_ARN = os.environ.get("TASK_EXECUTION_ROLE_ARN", "")
+TASK_EXECUTION_ROLE_ARN = "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(aws_keys["AWS_ACCOUNT_ID"])
 
+DJANGO_SETTINGS_DICT = {
+    "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost")
+    "DEBUG": settings.DEBUG
+    "EMAIL_HOST": os.environ.get("EMAIL_HOST", "https://email_host"),
+    "EMAIL_HOST_PASSWORD": os.environ.get("EMAIL_HOST_PASSWORD", "x"),
+    "EMAIL_HOST_USER":os.environ.get("EMAIL_HOST_USER", "user"),
+    "EMAIL_PORT": os.environ.get("EMAIL_PORT", 587),
+    "EMAIL_USE_TLS": os.environ.get("EMAIL_USE_TLS", "True"),
+    "MEMCACHED_LOCATION": os.environ.get("MEMCACHED_LOCATION", "None"),
+    "RDS_DB_NAME": os.environ.get("RDS_DB_NAME", "rds_db"),
+    "RDS_HOSTNAME": os.environ.get("RDS_HOSTNAME", "rds_host"),
+    "RDS_PASSWORD": os.environ.get("RDS_PASSWORD", "x"),
+    "RDS_USERNAME": os.environ.get("RDS_USERNAME", "user"),
+    "SECRET_KEY": os.environ.get("SECRET_KEY", "x"),
+    "SENTRY_URL": os.environ.get("SENTRY_URL", "https://sentry_url"),
+}
 
 task_definition = """
 {{
@@ -36,27 +53,19 @@ task_definition = """
         {{
             "name": "{container_name}",
             "image": "{image}",
-            "repositoryCredentials": {{
-                "credentialsParameter": ""
-            }},
-            "portMappings": [
-                {{
-                    "containerPort": 0,
-                }}
-            ],
             "essential": True,
             "environment": [
                 {{
                     "name": "PYTHONUNBUFFERED",
                     "value": "1"
                 }},
-                {{  # If we pass here, they are visible on console.
+                {{
                     "name": "AWS_DEFAULT_REGION",
                     "value": "{AWS_DEFAULT_REGION}"
                 }},
                 {{
                     "name": "DJANGO_SERVER",
-                    "value": "django"
+                    "value": "{DJANGO_SERVER}"
                 }},
                 {{
                     "name": "DJANGO_SETTINGS_MODULE",
@@ -70,6 +79,58 @@ task_definition = """
                     "name": "CHALLENGE_QUEUE",
                     "value": "{queue_name}"
                 }},
+                {{
+                  "name": "DEBUG",
+                  "value": "{DEBUG}"
+                }},
+                {{
+                  "name": "EMAIL_HOST",
+                  "value": "{EMAIL_HOST}"
+                }},
+                {{
+                  "name": "EMAIL_HOST_PASSWORD",
+                  "value": "{EMAIL_HOST_PASSWORD}"
+                }},
+                {{
+                  "name": "EMAIL_HOST_USER",
+                  "value": "{EMAIL_HOST_USER}"
+                }},
+                {{
+                  "name": "EMAIL_PORT",
+                  "value": "{EMAIL_PORT}"
+                }},
+                {{
+                  "name": "EMAIL_USE_TLS",
+                  "value": "{EMAIL_USE_TLS}"
+                }},
+                {{
+                  "name": "MEMCACHED_LOCATION",
+                  "value": "{MEMCACHED_LOCATION}"
+                }},
+                {{
+                  "name": "RDS_DB_NAME",
+                  "value": "{RDS_DB_NAME}"
+                }},
+                {{
+                  "name": "RDS_HOSTNAME",
+                  "value": "{RDS_HOSTNAME}"
+                }},
+                {{
+                  "name": "RDS_PASSWORD",
+                  "value": "{RDS_PASSWORD}"
+                }},
+                {{
+                  "name": "RDS_USERNAME",
+                  "value": "{RDS_USERNAME}"
+                }},
+                {{
+                  "name": "SECRET_KEY",
+                  "value": "{SECRET_KEY}"
+                }},
+                {{
+                  "name": "SENTRY_URL",
+                  "value": "{SENTRY_URL}"
+                }},
             ],
             "workingDirectory": "/code",
             "readonlyRootFilesystem": False,
@@ -77,63 +138,52 @@ task_definition = """
                 "logDriver": "awslogs",
                 "options": {{
                     "awslogs-create-group": "true",
+                    "awslogs-group": "gsoc2019",
                     "awslogs-region": "us-east-1",
-                    "awslogs-group": "{log_group}",
-                    "awslogs-stream-prefix": "{queue_name}"  # log stream format: prefix-name/container-name/ecs-task-id
+                    "awslogs-stream-prefix": "{queue_name}",
                 }},
-            }},
-            "healthCheck": {{
-                "command": [  # Need healthcheck command.
-                    ""
-                ],
-                "interval": 30,
-                "timeout": 5,
-                "retries": 3,
-                "startPeriod": 0
             }},
         }}
     ],
     "requiresCompatibilities":[
         "FARGATE"
     ],
-    "cpu":"",  # Need hard limits.
-    "memory":"",
+    "cpu": "1024",
+    "memory": "2048",
 }}
 """
 
 service_definition = """
 {{
-    "cluster":"Challenge_Cluster",
+    "cluster":"gsoc2019",
     "serviceName":"{service_name}",
     "taskDefinition":"{task_def_arn}",
     "desiredCount":1,
     "clientToken":"{client_token}",
     "launchType":"FARGATE",
     "platformVersion":"LATEST",
-    "networkConfiguration":{{ # Need to create VPC before filling this.
+    "networkConfiguration":{{
         "awsvpcConfiguration": {{
             "subnets": [
-                "string",
+                "subnet-e260d5be",
+                "subnet-300ea557",
             ],
             'securityGroups': [
-                "string",
+                "sg-148b4a5e",
             ],
             "assignPublicIp": "ENABLED"
         }}
     }},
-    "healthCheckGracePeriodSeconds":30,
     "schedulingStrategy":"REPLICA",
     "deploymentController":{{
         "type": "ECS"
     }},
-    "enableECSManagedTags":True,
-    "propagateTags":"SERVICE"
 }}
 """
 
 update_service_args = """
 {{
-    "cluster":"Challenge_Cluster",
+    "cluster":"gsoc2019",
     "service":"{service_name}",
     "desiredCount":num_of_tasks,
     "taskDefinition":"{task_def_arn}",
@@ -143,7 +193,7 @@ update_service_args = """
 
 delete_service_args = """
 {{
-    "cluster": "Challenge_Cluster",
+    "cluster": "gsoc2019",
     "service": "{service_name}",
     "force": False
 }}
@@ -188,7 +238,7 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
         definition = task_definition.format(queue_name=queue_name, task_role_arn=task_role_arn,
                                             execution_role_arn=execution_role_arn, container_name=container_name,
                                             image=image, AWS_DEFAULT_REGION=AWS_DEFAULT_REGION, env=ENV,
-                                            challenge_pk=challenge.pk, log_group=log_group)
+                                            challenge_pk=challenge.pk, log_group=log_group, **DJANGO_SETTINGS_DICT)
         definition = eval(definition)
         if not challenge.task_def_arn:
             try:
@@ -411,8 +461,11 @@ def scale_workers(queryset, num_of_tasks):
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
+        if not challenge.workers:
+            response = "Please start worker for Challenge {} before scaling.".format(challenge.pk)
+            return {"count": count, "message": response}
         if (num_of_tasks == challenge.workers):
-            response = "Please select only active challenges. Challenge {} is inactive.".format(challenge.pk)
+            response = "Please scale to a different number. Challenge {} has {} workers.".format(challenge.pk, num_of_tasks)
             return {"count": count, "message": response}
         response = service_manager(client, challenge=challenge, num_of_tasks=num_of_tasks)
         if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
