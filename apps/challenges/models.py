@@ -299,6 +299,7 @@ class ChallengePhaseSplit(TimeStampedModel):
     visibility = models.PositiveSmallIntegerField(
         choices=VISIBILITY_OPTIONS, default=PUBLIC
     )
+    leaderboard_decimal_precision = models.PositiveIntegerField(default=2)
     is_leaderboard_order_descending = models.BooleanField(default=True)
 
     def __str__(self):
