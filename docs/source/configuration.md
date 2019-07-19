@@ -116,7 +116,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
   - **is_leaderboard_order_descending**: True/False (a Boolean field that gives the flexibility to challenge host to change the default leaderboard sorting order. It is useful in cases where you have error as a metric and want to sort the leaderboard in increasing order of error value. Default is `True`)
 
-  - **leaderboard_decimal_precision**: Positive integer which tells the leaderboard decimal precision. Default is `2`.
+  - **leaderboard_decimal_precision**: Positive integer field used for varying the leaderboard decimal precision. Default value is `2`.
 
   | Visibility | Description                                                             |
   | ---------- | ----------------------------------------------------------------------- |
