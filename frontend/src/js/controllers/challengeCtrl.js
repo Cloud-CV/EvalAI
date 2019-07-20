@@ -580,9 +580,7 @@
                 onSuccess: function (response) {
                     vm.selectedPhaseSplit = response.data;
                 },
-                onError: function (response) {
-                    var error = response.data;
-                    vm.leaderboard.error = error;
+                onError: function () {
                     vm.stopLoader();
                 }
             };
