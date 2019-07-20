@@ -2,6 +2,7 @@
 @import './mixins.scss';
 
 .ev-md-container {
+  padding-bottom: 0px;
   .phase-title {
     margin-bottom: 20px;
   }
@@ -35,6 +36,22 @@
 
 table {
   width: 160% !important;
+}
+
+.marker {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+.pad-top {
+  padding-top: 40px;
+  padding-bottom: 10px;
+  .show-on-leaderboard {
+    color: rgb(169, 169, 169);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.25;
+  }
 }
 
 .cbx-label {

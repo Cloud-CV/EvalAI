@@ -47,6 +47,10 @@
           </div>
         </div>
       </div>
+      <div *ngIf="submissions.length > 0" class="display-flex pad-top">
+        <i class="fa fa-check-circle submitted marker"></i>
+        <span class="show-on-leaderboard">Shown on leaderboard</span>
+      </div>
     </div>
 
     <div class="ev-card-body exist-team-card">
@@ -80,7 +84,10 @@
               </thead>
               <tbody>
                 <tr *ngFor="let key of submissions" class="result-val content">
-                  <td>{{key.participant_team_name}}</td>
+                  <td class="display-flex">
+                    <i *ngIf="key.public" class="fa fa-check-circle submitted marker"></i>
+                    {{key.participant_team_name}}
+                  </td>
                   <td *ngIf="key.method_name != ''">{{key.method_name}}</td>
                   <td *ngIf="key.method_name == ''"> None </td>
 
@@ -134,7 +141,7 @@
                     </span>
                   </td>
                   <td><a class="pointer" (click)="editSubmission(key)">
-                      <i class="fa fa-pencil" aria-hidden="true"></i></a></td>
+                    <i class="fa fa-pencil" aria-hidden="true"></i></a></td>
                 </tr>
               </tbody>
             </table>
