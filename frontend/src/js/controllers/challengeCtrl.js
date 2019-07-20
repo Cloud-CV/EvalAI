@@ -607,8 +607,11 @@
                 onSuccess: function (response) {
                     vm.selectedPhaseSplit = response.data;
                 },
-                onError: function () {
+                onError: function (response) {
+                    var error = response.data;
                     vm.stopLoader();
+                    $rootScope.notify("error", error);
+                    return false;
                 }
             };
             utilities.sendRequest(parameters);
