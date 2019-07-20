@@ -24,6 +24,7 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
         vm.phaseRemainingSubmissionsCountdown = {};
@@ -50,7 +51,8 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
-
+        vm.filter_all_submission_by_team_name = '';
+        vm.filter_my_submission_by_team_name = '';
         // show loader
         vm.startLoader = loaderService.startLoader;
         // stop loader
@@ -315,7 +317,7 @@
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
             if (isDockerBased && isParticipated == true) {
-                parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions';
+                parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions/';
                 parameters.method = 'GET';
                 parameters.data = {};
                 parameters.callback = {
@@ -570,6 +572,21 @@
 
             vm.startLoader("Loading Leaderboard Items");
 
+            // get the selected phase split object
+            parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
+            parameters.method = "GET";
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.selectedPhaseSplit = response.data;
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    vm.leaderboard.error = error;
+                    vm.stopLoader();
+                }
+            };
+            utilities.sendRequest(parameters);
 
             // Show leaderboard
             vm.leaderboard = {};
@@ -685,13 +702,14 @@
         }
 
         vm.getResults = function(phaseId) {
-
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
             vm.stopFetchingSubmissions();
             vm.isResult = true;
-            vm.phaseId = phaseId;
+            if (phaseId !== undefined) {
+                vm.phaseId = phaseId;
+            }
 
             var all_phases = vm.phases.results;
             for (var i = 0; i < vm.phases.results.length; i++) {
@@ -729,7 +747,13 @@
             vm.currentPage = '';
             vm.showPagination = false;
 
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
+            if (vm.filter_my_submission_by_team_name === '') {
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submission/";
+            } else {
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submission?participant_team__team_name=" + vm.filter_my_submission_by_team_name;
+            }
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -932,6 +956,26 @@
 
             utilities.sendRequest(parameters);
         };
+
+        vm.reRunSubmission = function(submissionObject) {
+            submissionObject.classList = ['spin', 'progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList = [''];
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList = [''];
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
         vm.refreshLeaderboard = function() {
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
@@ -1026,14 +1070,15 @@
         };
 
         vm.getAllSubmissionResults = function(phaseId) {
-
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
 
             vm.stopFetchingSubmissions();
             vm.isResult = true;
-            vm.phaseId = phaseId;
+            if (phaseId !== undefined) {
+                vm.phaseId = phaseId;
+            }
 
             // loader for loading submissions.
             vm.startLoader = loaderService.startLoader;
@@ -1044,8 +1089,13 @@
             vm.isPrev = '';
             vm.currentPage = '';
             vm.showPagination = false;
-
-            parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submissions";
+            if (vm.filter_all_submission_by_team_name === '') {
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submissions";
+            } else {
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submissions?participant_team__team_name=" + vm.filter_all_submission_by_team_name;
+            }
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -1180,7 +1230,7 @@
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
             vm.maxExceeded = false;
-            parameters.url = "jobs/" + vm.challengeId + "/remaining_submissions";
+            parameters.url = "jobs/" + vm.challengeId + "/remaining_submissions/";
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
