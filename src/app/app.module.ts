@@ -74,6 +74,7 @@ import {
   ChallengeviewallsubmissionsComponent
 } from './components/challenge/challengeviewallsubmissions/challengeviewallsubmissions.component';
 import { SideBarComponent } from './components/utility/side-bar/side-bar.component';
+import { DashFooterComponent } from './components/nav/dash-footer/dash-footer.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -125,6 +126,7 @@ import { MatIconModule } from '@angular/material/icon';
     TestimonialsComponent,
     SideBarComponent,
     FeaturedChallengesComponent,
+    DashFooterComponent,
     EditphasemodalComponent,
     ChallengeviewallsubmissionsComponent,
     TermsAndConditionsModalComponent
