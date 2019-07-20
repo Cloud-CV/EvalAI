@@ -37,6 +37,22 @@
         // stop loader
         vm.stopLoader = loaderService.stopLoader;
 
+        vm.newContainer = angular.element('.new-team-card');
+
+        // show loader
+        vm.startLoader = function(msg) {
+            vm.isLoader = true;
+            vm.loaderTitle = msg;
+            vm.newContainer.addClass('low-screen');
+        };
+
+        // stop loader
+        vm.stopLoader = function() {
+            vm.isLoader = false;
+            vm.loaderTitle = '';
+            vm.newContainer.removeClass('low-screen');
+        };
+
         vm.activateCollapsible = function() {
             angular.element('.collapsible').collapsible();
         };
@@ -137,7 +153,6 @@
 
         utilities.sendRequest(parameters);
 
-
         vm.showMdDialog = function(ev, hostTeamId) {
             vm.hostTeamId = hostTeamId;
             parameters.url = 'hosts/challenge_host_team/' + hostTeamId;
@@ -216,26 +231,10 @@
             }
         };
 
-
         // function to create new team
         vm.createNewTeam = function() {
             vm.isLoader = true;
             vm.loaderTitle = '';
-            vm.newContainer = angular.element('.new-team-card');
-
-            // show loader
-            vm.startLoader = function(msg) {
-                vm.isLoader = true;
-                vm.loaderTitle = msg;
-                vm.newContainer.addClass('low-screen');
-            };
-
-            // stop loader
-            vm.stopLoader = function() {
-                vm.isLoader = false;
-                vm.loaderTitle = '';
-                vm.newContainer.removeClass('low-screen');
-            };
 
             vm.startLoader("Loading Teams");
 
@@ -421,11 +420,10 @@
             });
         };
 
-    vm.storeChallengeHostTeamId = function() {
-
-        utilities.storeData('challengeHostTeamId', vm.challengeHostTeamId);
-        $state.go('web.challenge-create');
-    };
+        vm.storeChallengeHostTeamId = function() {
+            utilities.storeData('challengeHostTeamId', vm.challengeHostTeamId);
+            $state.go('web.challenge-create');
+        };
 
     }
 

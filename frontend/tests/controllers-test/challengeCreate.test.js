@@ -16,7 +16,7 @@ describe('Unit tests for challenge create controller', function() {
         vm = $controller('ChallengeCreateCtrl', { $scope: $scope });
     }));
 
-    describe('Global Variables', function() {
+    describe('Global variables', function() {
         it('has default values', function() {
             expect(vm.wrnMsg).toEqual({});
             expect(vm.isValid).toEqual({});
