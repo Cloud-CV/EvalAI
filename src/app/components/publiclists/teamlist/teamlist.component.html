@@ -1,31 +1,88 @@
-<div class="teamlist-container">
-  <div *ngIf="authServicePublic.isLoggedIn()">
-    <div class="card team-select">
-      <div class="card-title">
-        {{teamSelectTitle}}
-      </div>
-      <div class="card-content">
-        <app-cardlist [type]="'teams'" [data]="filteredTeams" [deleteTeam]="deleteTeamWrapper()" [editTeam]="editTeamWrapper()" [addMembersToTeam]="addMembersToTeamWrapper()" [selectTeam]="selectTeamWrapper()" [dataObservable]="filteredTeamsObservable"></app-cardlist>
-        <div class="see-more" *ngIf="filteredTeams.length < allTeams.length">
-          <a class="btn btn-filter" (click)="seeMoreClicked()">See More</a>
+<div *ngIf="authServicePublic.isLoggedIn() && 
+  (fetchTeamsPath == 'hosts/challenge_host_team' || 
+  fetchTeamsPath == 'participants/participant_team') && (isOnChallengePage && !isParticipated)">
+  <div class="row row-lr-margin">
+    <div class="col-md-6 col-sm-12">
+      <div class="ev-card-panel card-bt-margin">
+        <div class="ev-md-container bottom-hr-line">
+          <strong class="fw-semibold content">{{teamSelectTitle}}</strong>
+        </div>
+        <div class="ev-card-body">
+          <app-cardlist *ngIf="!isOnChallengePage" [type]="'teams'" [data]="filteredTeams" [deleteTeam]="deleteTeamWrapper()"
+            [editTeam]="editTeamWrapper()" [addMembersToTeam]="addMembersToTeamWrapper()" [selectTeam]="selectTeamWrapper()"
+            [dataObservable]="filteredTeamsObservable">
+          </app-cardlist>
+          <div class="see-more" *ngIf="filteredTeams.length < allTeams.length && !isOnChallengePage">
+            <a class="btn btn-filter" (click)="seeMoreClicked()">See More</a>
+          </div>
+          <div *ngIf="isOnChallengePage && !isParticipated" class="participants-team-list">
+            <div *ngIf="!paginationDetails.showPagination" class="content">{{paginationDetails.paginationMessage}}</div>
+            <ul class="rm-pad">
+              <li *ngFor="let value of allTeams">
+                <input [(ngModel)]="teamId" type="radio" name="selectExistTeam" class="with-gap selectTeam"
+                  id="{{value.id}}" value="{{value.id}}" (click)="selectedParticipantTeam(value)">
+                <label for="{{value.id}}"></label>
+                <div *ngIf="value.team_url != ''" class="radio-button-text pointer pointer content">
+                  <strong class="text-med-black fw-semibold">Team: </strong>
+                  <a class="orange-text" href="{{value.team_url}}" target="_blank">{{value.team_name}}</a>
+                  <br><strong class="text-med-black fw-semibold">Created By: </strong>{{value.created_by}}
+                </div>
+                <div *ngIf="value.team_url == ''" class="radio-button-text pointer pointer content">
+                  <strong class="text-med-black fw-semibold">Team: </strong>{{value.team_name}}
+                  <br><strong class="text-med-black fw-semibold">Created By: </strong>{{value.created_by}}
+                </div>
+                <div class="clearfix"></div>
+              </li>
+
+              <div class="pagination" *ngIf="paginationDetails.showPagination">
+                <div class="row row-lr-margin">
+                  <div class="col-md-6 col-sm-12 left-align col-lr-pad">
+                    <button [ngClass]="paginationDetails.isPrev" class="btn-floating btn-pagination waves-effect waves-light " 
+                    (click)="loadPaginationData(previous)">
+                      <i class="fa fa-chevron-left"></i>
+                    </button>
+                    <span class="pagination-title">
+                      <strong class="text-med-black fw-semibold content">
+                        Page {{paginationDetails.currentPage}} of {{paginationDetails.totalPage}}
+                      </strong></span>
+                    <button [ngClass]="paginationDetails.isNext" class="btn-floating btn-pagination waves-effect waves-light" 
+                    (click)="loadPaginationData(next)">
+                      <i class="fa fa-chevron-right"></i>
+                    </button>
+                  </div>
+                  <div class="col-md-6 col-sm-12 col-lr-pad">
+                    <div class="create-challenge align-right" *ngIf="isOnChallengePage">
+                      <button [disabled]="!selectedTeam" class="btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark 
+                        grad-btn-dark fw-light fs-14" (click)="participateInChallenge()">
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ul>
+          </div>
+          <div class="create-challenge" *ngIf="selectedTeam && routerPublic.url=='/teams/hosts'">
+              <a class="btn btn-filter selected" (click)="createChallenge()">Create Challenge</a>
+          </div>
         </div>
       </div>
-      <div class="create-challenge" *ngIf="selectedTeam && routerPublic.url=='/teams/hosts'">
-          <a class="btn btn-filter selected" (click)="createChallenge()">Create Challenge</a>
-      </div>
-      <div class="create-challenge" *ngIf="selectedTeam && isOnChallengePage">
-          <a class="btn btn-filter selected" (click)="participateInChallenge()">Participate</a>
-      </div>
     </div>
-    <div class="card team-create">
-      <div class="card-title">
-        {{teamCreateTitle}}
-      </div>
-      <div class="card-content">
-        <div class="team-create-form">
-	        <app-input [label]="'team_name'" [placeholder]="'Team Name*'" [isRequired]="true" [theme]="'dark'" [icon]="'assets/images/username_dark.png'" #formteam></app-input>
-	        <app-input [label]="'team_url'" [placeholder]="'Team URL (Optional)'" [isRequired]="false" [theme]="'dark'" [icon]="'assets/images/link_dark.png'" #formteam></app-input>
-	        <span class="btn btn-filter selected" (click)="createTeam('formteam')">{{teamCreateButton}}</span>
+    <div class="col-md-6 col-sm-12">
+      <div class="ev-card-panel card-bt-margin">
+        <div class="ev-md-container bottom-hr-line">
+          <strong class="fw-semibold content">{{teamCreateTitle}}</strong>
+        </div>
+        <div class="ev-card-body new-team-card">
+          <div class="team-create-form">
+            <app-input [label]="'team_name'" [placeholder]="'Team Name*'" [isRequired]="true" [icon]="'fa fa-user'" #formteam></app-input>
+            <app-input [label]="'team_url'" [placeholder]="'Team URL (Optional)'" [isRequired]="false" [icon]="'fa fa-link'" #formteam></app-input>
+            <div class="align-left reg-control">
+              <button class="btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark grad-btn-dark fw-light fs-14" (click)="createTeam('formteam')" type="submit" value="Submit">
+                {{teamCreateButton}}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
