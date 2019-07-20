@@ -107,8 +107,12 @@
                   <td>
                     <a [matMenuTriggerFor]="settingsmenu"><i class="fa fa-gear"></i></a>
                     <mat-menu #settingsmenu="matMenu" yPosition="below">
+                      <button (click)="confirmSubmissionFlagChange(key, key.is_flagged)" mat-menu-item>
+                        <mat-icon>{{key.submissionFlagIcon}}</mat-icon>
+                        <span>{{key.submissionFlagText}}</span>
+                      </button>
                       <button *ngIf="key.status == 'finished'" (click)="confirmSubmissionVisibility(key, key.is_public)" mat-menu-item>
-                        <mat-icon class="green-text">{{key.submissionVisibilityIcon}}</mat-icon>
+                        <mat-icon>{{key.submissionVisibilityIcon}}</mat-icon>
                         <span>{{key.submissionVisibilityText}}</span>
                       </button>
                       <button (click)="reRunSubmission(key.id)" mat-menu-item>

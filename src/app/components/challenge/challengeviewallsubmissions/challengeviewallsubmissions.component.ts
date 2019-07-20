@@ -215,10 +215,16 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
       data => {
         SELF.submissions = data['results'];
         for (let i = 0; i < SELF.submissions.length; i++) {
+          // Update view for submission visibility setting
           SELF.submissions[i].submissionVisibilityIcon =
             (SELF.submissions[i].is_public) ? 'visibility' : 'visibility_off';
           SELF.submissions[i].submissionVisibilityText =
             (SELF.submissions[i].is_public) ? 'Public' : 'Private';
+          // Update view for flag submission setting
+          SELF.submissions[i].submissionFlagIcon =
+            (SELF.submissions[i].is_flagged) ? 'flag' : 'outlined_flag';
+          SELF.submissions[i].submissionFlagText =
+            (SELF.submissions[i].is_flagged) ? 'Flagged' : 'UnFlagged';
         }
         SELF.paginationDetails.next = data.next;
         SELF.paginationDetails.previous = data.previous;
@@ -338,6 +344,20 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
     }
   }
 
+
+  /**
+   * Update submission flag.
+   * @param id  Submission id
+   */
+  updateSubmissionFlag(id) {
+    for (let i = 0; i < this.submissions.length; i++) {
+      if (this.submissions[i]['id'] === id) {
+        this.submissions[i]['is_flagged'] = !this.submissions[i]['is_flagged'];
+        break;
+      }
+    }
+  }
+
   /**
    * Change Submission's leaderboard visibility API.
    * @param submission  Selected submission
@@ -365,6 +385,58 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
         () => {}
       );
     }
+  }
+
+  /**
+   * Change Submission's leaderboard visibility API.
+   * @param submission  Selected submission
+   * @param is_flagged  is submission flagged boolean field
+   */
+  toggleSubmissionFlag(submission, is_flagged) {
+    is_flagged = !is_flagged;
+    const SELF = this;
+    SELF.updateSubmissionFlag(submission.id);
+    if (SELF.challenge['id'] && SELF.selectedPhase && SELF.selectedPhase['id'] && submission.id) {
+      const API_PATH = SELF.endpointsService.challengeSubmissionUpdateURL(
+        SELF.challenge['id'], SELF.selectedPhase['id'], submission.id
+      );
+      const BODY = JSON.stringify({is_flagged: is_flagged});
+      SELF.apiService.patchUrl(API_PATH, BODY).subscribe(
+        () => {
+          submission.submissionFlagIcon = (is_flagged) ? 'flag' : 'outlined_flag';
+          submission.submissionFlagText = (is_flagged) ? 'Flagged' : 'Unflagged';
+          const toastMessage =
+            (is_flagged) ? 'Submission flagged successfully!' : 'Submission unflagged successfully!';
+          SELF.globalService.showToast('success', toastMessage);
+        },
+        err => {
+          SELF.globalService.handleApiError(err);
+        },
+        () => {}
+      );
+    }
+  }
+
+  /**
+   * Modal to confirm the change of submission flag field
+   * @param submission  Selected submission
+   * @param is_flagged is submission flagged boolean field
+   */
+  confirmSubmissionFlagChange(submission, is_flagged) {
+    const SELF = this;
+    const submissionFlagState = (is_flagged) ? 'Unflag' : 'Flag';
+
+    SELF.apiCall = () => {
+      SELF.toggleSubmissionFlag(submission, is_flagged);
+    };
+
+    const PARAMS = {
+      title: submissionFlagState + ' this submission ?',
+      confirm: 'Yes, I\'m sure',
+      deny: 'No',
+      confirmCallback: SELF.apiCall
+    };
+    SELF.globalService.showConfirm(PARAMS);
   }
 
   /**
@@ -397,17 +469,14 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
    */
   confirmSubmissionVisibility(submission, submissionVisibility) {
     const SELF = this;
-    let toggleSubmissionVisibilityState;
-    (submissionVisibility) ?
-    (toggleSubmissionVisibilityState = 'private') :
-    (toggleSubmissionVisibilityState = 'public');
+    const submissionVisibilityState = (submissionVisibility) ? 'private' : 'public';
 
     SELF.apiCall = () => {
       SELF.changeSubmissionVisibility(submission, submissionVisibility);
     };
 
     const PARAMS = {
-      title: 'Make this submission ' + toggleSubmissionVisibilityState + '?',
+      title: 'Make this submission ' + submissionVisibilityState + '?',
       confirm: 'Yes, I\'m sure',
       deny: 'No',
       confirmCallback: SELF.apiCall
