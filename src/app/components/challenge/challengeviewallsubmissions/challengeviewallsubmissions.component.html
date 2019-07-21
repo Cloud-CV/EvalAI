@@ -28,8 +28,23 @@
           </mat-form-field>
         </div>
         <div class="col-md-2 col-sm-2 col-xs-6 col-lr-pad download-submissions">
-          <a class="ev-btn btn-waves-effect grad-rec-btn waves-dark ev-btn-dark
-            grad-btn-dark fw-light fs-14" (click)='downloadSubmission()'>Download</a>
+          <a class="ev-btn btn-waves-effect grad-rec-btn waves-dark
+            ev-btn-dark grad-btn-dark fw-light fs-14" (click)='downloadSubmission()'>Download
+          </a>
+        </div>
+        <div *ngIf="selectedPhase">
+          <div class="row row-lr-margin phase-title">
+            <div class="col-sm-12 col-xs-12">
+              <strong class="fw-semibold content fs-15">Filter Submissions by Team name</strong>
+            </div>
+          </div>
+          <div class="row row-lr-margin">
+            <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
+              <app-input [name]="'filterByTeamName'" (input)="filterSubmissions($event.target.value)"
+                [label]="'Team name'" [placeholder]="'Team name'" [type]="'text'" #formFilter>
+              </app-input>
+            </div>
+          </div>
         </div>
       </div>
     </div>
