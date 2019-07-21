@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren, ViewChild, Input, AfterViewInit } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { ApiService } from '../../../services/api.service';
 import { WindowService } from '../../../services/window.service';
@@ -7,6 +7,7 @@ import { ChallengeService } from '../../../services/challenge.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
+import { InputComponent } from '../../utility/input/input.component';
 
 /**
  * Component Class
@@ -23,6 +24,11 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    */
   @ViewChildren('phaseselect')
   components: QueryList<SelectphaseComponent>;
+
+  /**
+   * Input parameters object
+   */
+  @Input() params: any;
 
   /**
    * Is user logged in
@@ -124,6 +130,17 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   apiCall: any;
 
   /**
+   * Filter query as participant team name
+   */
+  filterSubmissionsQuery = '';
+
+  /**
+   * Modal form items
+   */
+  @ViewChildren('formFilter')
+  formComponents: QueryList<InputComponent>;
+
+  /**
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  GlobalService Injection.
@@ -209,9 +226,16 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    * @param phase  phase id
    */
   fetchSubmissions(challenge, phase) {
-    const API_PATH = this.endpointsService.challengeSubmissionURL(challenge, phase);
     const SELF = this;
-    this.apiService.getUrl(API_PATH).subscribe(
+    let API_PATH;
+    if (SELF.filterSubmissionsQuery === '') {
+      API_PATH = SELF.endpointsService.challengeSubmissionURL(challenge, phase);
+    } else {
+      API_PATH = SELF.endpointsService.challengeSubmissionWithFilterQueryURL(
+        challenge, phase, SELF.filterSubmissionsQuery
+      );
+    }
+    SELF.apiService.getUrl(API_PATH).subscribe(
       data => {
         SELF.submissions = data['results'];
         SELF.paginationDetails.next = data.next;
@@ -247,6 +271,16 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
         console.log('Fetched submissions', challenge, phase);
       }
     );
+  }
+
+  /**
+   * Filter submissions by participant team name
+   * @param participantTeamName Participant team name
+   */
+  filterSubmissions(participantTeamName) {
+    const SELF = this;
+    SELF.filterSubmissionsQuery = participantTeamName;
+    SELF.fetchSubmissions(SELF.challenge['id'], SELF.selectedPhase['id']);
   }
 
   /**
