@@ -1,45 +1,14 @@
+<app-side-bar *ngIf="authService.isAuth"></app-side-bar>
 <app-header-static></app-header-static>
+<div class="web-container" [style.center]="!authService.isAuth">
+  <div class="dashboard-flex">
+    <div class="dashboard-content">
+      <app-dashboard-content></app-dashboard-content>
+    </div>
+    <!--Dashboard-Footer-->
+    <app-footer [isDash]="true" *ngIf="authService.isAuth"></app-footer>
+  </div>
+</div>
+<div class="clearfix"></div>
 
-<div class="container-top dashboard-container">
-
-<div class="row card">
-<div class="section col-lg-4 col-md-4 com-sm-12 col-xs-12">
-	<div class="section-title">
-		Ongoing Challenges
-	</div>
-	<div class="section-number">
-		{{challenges.length}}
-	</div>
-	<div class="section-link">
-	    <span [routerLink]="['/challenges/all']" class="btn btn-filter">View All</span>
-	</div>
-</div>
-<div class="section col-lg-4 col-md-4 com-sm-12 col-xs-12">
-	<div class="section-title">
-		My Host Teams
-	</div>
-	<div class="section-number">
-		{{hostteams.length}}
-	</div>
-	<div class="section-link">
-	    <span [routerLink]="['/teams/hosts']" class="btn btn-filter">View or Create</span>
-	</div>
-</div>
-<div class="section col-lg-4 col-md-4 com-sm-12 col-xs-12">
-	<div class="section-title">
-		My Participant Teams
-	</div>
-	<div class="section-number">
-		{{participantteams.length}}
-	</div>
-	<div class="section-link">
-	    <span [routerLink]="['/teams/participants']" class="btn btn-filter">View or Create</span>
-	</div>
-</div>
-<div class="analytics">
-	<span class="btn btn-filter selected">Go to Analytics Dashboard</span>
-</div>
-</div>
-</div>
-
-<app-footer></app-footer>
+<app-footer *ngIf="!authService.isAuth"></app-footer>

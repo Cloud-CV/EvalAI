@@ -1167,6 +1167,11 @@ code {
   display: inline-block;
   transition: all 0.3s ease;
   font-size: $fs-14;
+  text-transform: none;
+  font-family: 'Roboto';
+  i {
+    font-size: $fs-14;
+  }
 }
 
 .btn:disabled {

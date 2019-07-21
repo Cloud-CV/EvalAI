@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import {Component, OnInit, Inject, Input} from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { DOCUMENT } from '@angular/common';
@@ -13,6 +13,10 @@ import { Router, ActivatedRoute } from '@angular/router';
   styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent implements OnInit {
+
+  @Input() isDash = false;
+
+  year: any;
 
   /**
    * Router local/public instance
@@ -49,6 +53,8 @@ export class FooterComponent implements OnInit {
     if (!this.transparentHeaderUrls.includes(this.router.url)) {
       this.atHome = false;
     }
+
+    this.year = new Date().getFullYear();
   }
 
   /**

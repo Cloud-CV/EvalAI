@@ -18,9 +18,7 @@ describe('FooterComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ FooterComponent ],
       imports: [ RouterTestingModule, HttpClientModule ],
-      providers: [ GlobalService, ApiService,
-                   {provide: ActivatedRoute, useValue: fakeActivatedRoute},
-                   {provide: Router, useClass: class { navigate = jasmine.createSpy('navigate'); }} ]
+      providers: [ GlobalService, ApiService]
     })
     .compileComponents();
   }));

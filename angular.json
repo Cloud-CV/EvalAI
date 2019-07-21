@@ -29,6 +29,7 @@
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css",
               "node_modules/normalize.css/normalize.css",
+              "node_modules/materialize-css/dist/css/materialize.css",
               "src/styles/base.scss",
               "./node_modules/froala-editor/css/froala_editor.pkgd.min.css",
               "./node_modules/froala-editor/css/froala_style.min.css",

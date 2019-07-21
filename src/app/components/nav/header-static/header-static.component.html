@@ -1,35 +1,47 @@
-<header id="header-static" [class.header-shadow]="headerWhite" [class.header-shadow-large]="scrolledState" [class.white-bg]="headerWhite" [class.dark-bg]="isMenuExpanded && atHome && innerWidth <= 810">
-  <div class="logo-container" [class.at-home]="atHome">
-    <img src="assets/images/EvalAI_favicon.png" class="logo-header" [class.invert-color]="headerWhite" *ngIf="atHome" (click)="navigateTo('')" />
-    <img src="assets/images/evalai_logo_light.png" *ngIf="!atHome" class="logo-header" [class.invert-color]="headerWhite" (click)="navigateTo('')" />
-  </div>
-  <div class="menu-expander" [class.menu-change]="isMenuExpanded" (click)="menuExpander()">
-    <div class="menu-bar1" [class.dark-bg]="headerWhite" [class.white-bg]="!headerWhite"></div>
-    <div class="menu-bar2" [class.dark-bg]="headerWhite" [class.white-bg]="!headerWhite"></div>
-    <div class="menu-bar3" [class.dark-bg]="headerWhite" [class.white-bg]="!headerWhite"></div>
-  </div>
-  <div class="navlinks-container" [class.height-zero]="!isMenuExpanded" [class.white-bg]="headerWhite">
-    <ul class="main-wrapper clearfix">
-      <li class="navlinks navlinktext fw-light" (click)="navigateTo('challenges')" [class.dark-text]="headerWhite"> Challenges </li>
-      <li class="navlinks navlinktext fw-light" (click)="navigateTo('news')" [class.dark-text]="headerWhite"> News </li>
-      <li class="navlinks navlinktext fw-light" (click)="navigateTo('forum')" [class.dark-text]="headerWhite"> Forum </li>
-      <li class="navlinks navlinktext fw-light" (click)="navigateTo('join-us')" [class.dark-text]="headerWhite"> Join Us </li>
-      <!-- <li class="navlinks navlinktext">
-        <img src="assets/images/dots.png" />
-      </li> -->
-      <li class="navlinks center btn btn-nofill fw-regular" [class.btn-white-bg]="headerWhite" [class.dark-text]="headerWhite" (click)="navigateTo('/auth/signup');" *ngIf="!authState.isLoggedIn">
-        Sign Up
-      </li>
-      <li class="navlinks center btn btn-fill fw-regular" [class.btn-white-bg]="headerWhite" (click)="navigateTo('/auth/login');" *ngIf="!authState.isLoggedIn">
-        Log In
-      </li>
-      <li class="navlinks navlinktext fw-regular" (click)="navigateTo('/profile')" *ngIf="authState.isLoggedIn && authState.username" [class.dark-text]="headerWhite">
-        Hi {{authState.username}}!
-      </li>
-      <li class="navlinks center btn btn-fire fw-regular" *ngIf="authState.isLoggedIn" (click)="logOut();navigateTo('');">
-        Log Out
-      </li>
-    </ul>
-  </div>
-</header>
-<div class="overlay-container" (click)="isMenuExpanded = false;" [class.dark-overlay]="isMenuExpanded && innerWidth<=810"></div>
+<div class="main-header padding-lr-header">
+  <nav [class.grad-shadow-1]="scrolledState">
+    <div class="nav-wrapper">
+      <a (click)="menuExpander()" class="button-collapse main-header-link"><i class="fa fa-bars"></i></a>
+      <ul class="hide-on-med-and-down">
+        <li><a class="waves-effect waves-dark main-header-link evalai-logo" routerLink="/" routerLinkActive="active"><img src="assets/images/evalai-logo-single.png"></a></li>
+        <li *ngIf="!authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/challenges">All Challenges</a></li>
+        <li *ngIf="!authService.isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank">Forum</a></li>
+        <!-- show after authenticate user -->
+        <li *ngIf="authService.isAuth && !isDash"><a class="waves-effect waves-dark main-header-link" (click) ="isDash = true" routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
+        <li *ngIf="authService.isAuth && isDash"><a class="waves-effect waves-dark main-header-link" routerLink="/challenges" routerLinkActive="active">All Challenges</a></li>
+        <li *ngIf="authService.isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank">Forum</a></li>
+      </ul>
+      <ul class="right hide-on-med-and-down">
+        <li *ngIf="!authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/auth/signup" routerLinkActive="active">Sign Up</a></li>
+        <li *ngIf="!authService.isAuth"><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" routerLink="/auth/login" routerLinkActive="active">Log In</a></li>
+        <!-- show after authenticate user -->
+        <li *ngIf="authService.isAuth">
+          <a class="dropdown-button waves-effect waves-dark main-header-link" data-activates='ev-dropdown' routerLink="/profile" routerLinkActive="active"> <span class="text-light-black">Hi</span><strong>{{' ' + user.username}}</strong> &nbsp;
+          </a>
+        </li>
+        <li *ngIf="authService.isAuth">
+          <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" (click)="logOut()">Logout</div>
+        </li>
+      </ul>
+      <ul class="side-nav expand-menu" (click)="menuExpander()" *ngIf="!isMenuExpanded">
+        <li>
+          <div class="userView">
+            <div class="background">
+              <a class="white-text name">EvalAI</a>
+            </div>
+          </div>
+        </li>
+        <li><a class="waves-effect waves-dark" routerLink="/" routerLinkActive="active"><i class="fa fa-home"></i>Home</a></li>
+        <li *ngIf="!authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/challenges"><i class="fa fa-fire"></i>All Challenges</a></li>
+        <li *ngIf="!authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/auth/signup" routerLinkActive="active"><i class="fa fa-sign-out"></i>Sign Up</a></li>
+        <li *ngIf="!authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/auth/login" routerLinkActive="active"><i class="fa fa-sign-in"></i>Log In</a></li>
+        <!-- show after authenticate user -->
+        <li *ngIf="authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/dashboard" routerLinkActive="active"><i class="fa fa-thumb-tack"></i>Dashboard</a></li>
+        <li *ngIf="authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/challenges" routerLinkActive="active"><i class="fa fa-fire"></i>All Challenges</a></li>
+        <li *ngIf="authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/teams" routerLinkActive="active"><i class="fa fa-users"></i>Participant Teams</a></li>
+        <li *ngIf="authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/challenge-create" routerLinkActive="active"><i class="fa fa-paper-plane"></i>Create Challenge</a></li>
+        <li *ngIf="authService.isAuth"><a class="waves-effect waves-dark main-header-link" routerLink="/profile" routerLinkActive="active"><i class="fa fa-user"></i>Hi {{user.username}}!</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>

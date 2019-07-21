@@ -23,7 +23,6 @@ export class TwitterFeedComponent implements OnInit {
    * Component on initialized
    */
   ngOnInit() {
-    console.log(this.windowService, this);
     this.windowService.loadJS('https://platform.twitter.com/widgets.js', this.feedLoaded,
       this.document.body, this);
   }
