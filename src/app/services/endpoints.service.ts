@@ -58,7 +58,9 @@ export class EndpointsService {
     return `${this.auth}registration/verify-email/`;
   }
 
-
+  featuredChallengesURL() {
+    return `${this.challenges}featured/`;
+  }
   /**
    * All Participant teams
    */

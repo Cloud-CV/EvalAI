@@ -1,4 +1,4 @@
-import { Injectable, Output, EventEmitter } from '@angular/core';
+import {Injectable, Output, EventEmitter, ElementRef} from '@angular/core';
 import { GlobalService } from './global.service';
 import { EndpointsService } from './endpoints.service';
 import { ApiService } from './api.service';
@@ -137,23 +137,25 @@ export class AuthService {
 
     /**
      * User Details fetch Trigger
-     * @param  login token
-     * @param  callback function
+     * @param token
+     * @param success
+     * @param error
      */
-    verifyEmail(token, callback = () => {}) {
-      const API_PATH = this.endpointsService.verifyEmailURL();
-      const SELF = this;
-      const BODY = JSON.stringify({
-        key: token
-      });
-      this.apiService.postUrl(API_PATH, BODY).subscribe(
-        data => {
-          callback();
-        },
-        err => {
-          SELF.globalService.handleApiError(err);
-        },
-        () => console.log('Email Verified')
-      );
-    }
+      verifyEmail(token, success = () => {}, error = () => {}) {
+        const API_PATH = this.endpointsService.verifyEmailURL();
+        const SELF = this;
+        const BODY = JSON.stringify({
+          key: token
+        });
+        this.apiService.postUrl(API_PATH, BODY).subscribe(
+          data => {
+            success();
+          },
+          err => {
+            error();
+            SELF.globalService.handleApiError(err);
+          },
+          () => console.log('Email Verified')
+        );
+      }
 }

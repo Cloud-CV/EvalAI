@@ -5,7 +5,7 @@ export class AppPage {
     return browser.get('/');
   }
 
-  getHeadingH1Text() {
-    return element(by.css('app-root app-home h1')).getText();
+  getHeadingH3Text() {
+    return element(by.css('app-root app-home h3')).getText();
   }
 }
