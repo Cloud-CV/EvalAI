@@ -27,7 +27,8 @@ from .aws_utils import (
 
 
 class UpdateNumOfWorkersForm(ActionForm):
-    num_of_tasks = forms.IntegerField(initial=-1, label=" Number of Workers. (Enter a whole number while scaling. Otherwise, ignore.)")
+    label = " Number of Workers. (Enter a whole number while scaling. Otherwise, ignore.)"
+    num_of_tasks = forms.IntegerField(initial=-1, label=label, required=False)
 
 
 @admin.register(Challenge)

@@ -275,9 +275,10 @@ def create_service_by_challenge_pk(client, challenge, client_token):
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
     if challenge.workers is None:  # Verify if the challenge is new (i.e, service not yet created.).
-        response = register_task_def_by_challenge_pk(client, queue_name, challenge)
-        if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-            return response
+        if challenge.task_def_arn is "":
+            response = register_task_def_by_challenge_pk(client, queue_name, challenge)
+            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+                return response
         task_def_arn = challenge.task_def_arn
         definition = service_definition.format(service_name=service_name, task_def_arn=task_def_arn, client_token=client_token)
         definition = eval(definition)
@@ -337,10 +338,6 @@ def delete_service_by_challenge_pk(challenge):
     Returns:
     dict: The response returned by the delete_service method from boto3
     """
-    if(ENV is "dev"):
-        mock = mock_ecs()
-        mock.start()
-
     client = get_boto3_client("ecs", aws_keys)
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
@@ -352,12 +349,11 @@ def delete_service_by_challenge_pk(challenge):
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
                 return response
 
-        client.deregister_task_definition(taskDefinition=challenge.task_def_arn)
         response = client.delete_service(**kwargs)
-        if(ENV is "dev"):
-            mock.stop()
         if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
             challenge.workers = None
+            challenge.save()
+            client.deregister_task_definition(taskDefinition=challenge.task_def_arn)
             challenge.task_def_arn = ""
             challenge.save()
         return response
