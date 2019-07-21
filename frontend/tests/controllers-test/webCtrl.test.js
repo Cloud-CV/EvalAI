@@ -3,7 +3,7 @@
 describe('Unit tests for web controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
-    var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, userKey, vm;
+    var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, vm;
 
     beforeEach(inject(function (_$controller_, _$injector_, _$rootScope_, _utilities_, _$state_, _$stateParams_) {
         $controller = _$controller_;
@@ -16,7 +16,7 @@ describe('Unit tests for web controller', function () {
         createController = function () {
             return $controller('WebCtrl', {$scope: $scope});
         };
-        vm = createController();
+        utilities.storeData('userKey', 'encrypted');
     }));
 
     describe('Global variables', function () {
@@ -29,8 +29,6 @@ describe('Unit tests for web controller', function () {
             vm = createController();
             expect(vm.user).toEqual({});
             expect(utilities.hideLoader).toHaveBeenCalled();
-            utilities.storeData('userKey', 'encrypted');
-            userKey = utilities.getData('userKey');
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
         });
     });
