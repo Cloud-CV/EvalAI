@@ -1,8 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, HostListener } from '@angular/core';
+import {Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, HostListener, ViewChild, ElementRef, AfterViewInit} from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
 import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
+import {ApiService} from '../../../services/api.service';
+import {el} from '@angular/platform-browser/testing/src/browser_util';
 
 /**
  * Component Class
@@ -14,20 +16,17 @@ import { DOCUMENT } from '@angular/common';
 })
 export class HeaderStaticComponent implements OnInit, OnDestroy {
 
-  /**
-   * Header white flag
-   */
-  headerWhite = false;
-
-  /**
-   * Header is transparent on these URLs
-   */
-  transparentHeaderUrls = ['', '/'];
+  user = {username: ''};
 
   /**
    * Is router at '/'
    */
   atHome = true;
+
+  /**
+   * At dashboard
+   */
+  isDash = false;
 
   /**
    * Scroll position
@@ -59,6 +58,11 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
    */
   public innerWidth: any;
 
+  routePath = '/dashboard';
+
+
+  @ViewChild('navContainer') navContainer: ElementRef;
+
   /**
    * Constructor.
    * @param document  Window document Injection.
@@ -73,7 +77,8 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
               private route: ActivatedRoute,
               private router: Router,
               private ref: ChangeDetectorRef,
-              private authService: AuthService,
+              public authService: AuthService,
+              private apiService: ApiService,
               @Inject(DOCUMENT) private document: Document) {
                  this.authState = authService.authState;
               }
@@ -82,16 +87,8 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
    * Update View Elements (called after onInit).
    */
   updateElements() {
-    this.headerWhite = false;
     this.atHome = true;
-
-    if (!this.transparentHeaderUrls.includes(this.router.url)) {
-      this.atHome = false;
-      this.headerWhite = true;
-    }
-
     this.globalServiceSubscription = this.globalService.currentScrolledState.subscribe(scrolledState => {
-      this.headerWhite = scrolledState || !this.atHome;
       this.scrolledState = scrolledState;
     });
   }
@@ -101,20 +98,19 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
    */
   ngOnInit() {
     this.updateElements();
-    this.innerWidth = window.innerWidth;
-    if (this.innerWidth <= 810) {
-      this.isMenuExpanded = false;
-    }
+    this.checkInnerWidth();
+    this.isDash = this.router.url === this.routePath;
     this.authServiceSubscription = this.authService.change.subscribe((authState) => {
       this.authState = authState;
+      if (this.authState.isLoggedIn) {
+        this.user = this.authState;
+      }
     });
   }
+
   @HostListener('window:resize', ['$event'])
   onResize(event) {
-    this.innerWidth = window.innerWidth;
-    if (this.innerWidth <= 810) {
-      this.isMenuExpanded = false;
-    }
+    this.checkInnerWidth();
   }
 
   /**
@@ -122,7 +118,6 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
    */
   sendMeHome() {
     this.atHome = true;
-    this.headerWhite = false;
     this.ref.detectChanges();
     this.router.navigate(['']);
   }
@@ -163,6 +158,13 @@ export class HeaderStaticComponent implements OnInit, OnDestroy {
    */
   menuExpander() {
     this.isMenuExpanded = !this.isMenuExpanded;
+  }
+
+  checkInnerWidth() {
+    this.innerWidth = window.innerWidth;
+    if (this.innerWidth > 810) {
+      this.isMenuExpanded = true;
+    }
   }
 
 }

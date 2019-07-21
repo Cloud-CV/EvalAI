@@ -21,8 +21,6 @@ describe('AboutComponent', () => {
       declarations: [ AboutComponent, HeaderStaticComponent, FooterComponent ],
       providers: [
       GlobalService,
-      {provide: ActivatedRoute, useValue: fakeActivatedRoute},
-      {provide: Router, useClass: class { navigate = jasmine.createSpy('navigate'); }},
       AuthService,
       ApiService,
       EndpointsService
