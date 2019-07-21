@@ -461,7 +461,7 @@ def scale_workers(queryset, num_of_tasks):
     client = get_boto3_client("ecs", aws_keys)
     count = 0
     for challenge in queryset:
-        if not challenge.workers:
+        if challenge.workers is None:
             response = "Please start worker for Challenge {} before scaling.".format(challenge.pk)
             return {"count": count, "message": response}
         if (num_of_tasks == challenge.workers):
