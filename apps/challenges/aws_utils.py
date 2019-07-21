@@ -6,7 +6,6 @@ import string
 from botocore.exceptions import ClientError
 from django.conf import settings
 from http import HTTPStatus
-from moto import mock_ecs
 
 from base.utils import get_boto3_client
 
@@ -31,7 +30,7 @@ DJANGO_SETTINGS_DICT = {
     "DEBUG": settings.DEBUG,
     "EMAIL_HOST": os.environ.get("EMAIL_HOST", "https://email_host"),
     "EMAIL_HOST_PASSWORD": os.environ.get("EMAIL_HOST_PASSWORD", "x"),
-    "EMAIL_HOST_USER":os.environ.get("EMAIL_HOST_USER", "user"),
+    "EMAIL_HOST_USER": os.environ.get("EMAIL_HOST_USER", "user"),
     "EMAIL_PORT": os.environ.get("EMAIL_PORT", 587),
     "EMAIL_USE_TLS": os.environ.get("EMAIL_USE_TLS", "True"),
     "MEMCACHED_LOCATION": os.environ.get("MEMCACHED_LOCATION", "None"),

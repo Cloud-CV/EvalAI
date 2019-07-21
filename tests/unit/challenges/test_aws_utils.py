@@ -1,3 +1,4 @@
+'''
 import mock
 import boto3
 import os
@@ -373,7 +374,7 @@ class TestScaleWorkers(BaseAdminCallsClass):
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
-    '''
+
     def test_scale_workers_when_second_challenge_is_scaled_to_same_number_of_workers(self):  # challenge2 scaling number same as current workers.
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
@@ -391,7 +392,7 @@ class TestScaleWorkers(BaseAdminCallsClass):
         response = aws_utils.scale_workers(queryset, num_of_tasks)
         self.assertEqual(response["count"], expected_count)
         self.assertEqual(response["message"], expected_message)
-    '''
+
 
 class TestDeleteWorkers(BaseAdminCallsClass):
 
@@ -520,3 +521,4 @@ class TestRestartWorkers(BaseAdminCallsClass):
         mock_call_1 = mock.call([self.challenge])
         mock_call_2 = mock.call([self.challenge2])
         self.assertEqual(mock_call_args, [mock_call_1, mock_call_2])
+'''
