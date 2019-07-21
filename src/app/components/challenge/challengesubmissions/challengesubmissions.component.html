@@ -47,6 +47,21 @@
           </div>
         </div>
       </div>
+      <br>
+      <div *ngIf="selectedPhase">
+        <div class="row row-lr-margin phase-title">
+          <div class="col-sm-12">
+            <strong class="fw-semibold content fs-15">Filter Submissions by Team name</strong>
+          </div>
+        </div>
+        <div class="row row-lr-margin">
+          <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
+            <app-input [name]="'filterByTeamName'" (input)="filterSubmissions($event.target.value)"
+              [label]="'Team name'" [placeholder]="'Team name'" [type]="'text'" #formFilter>
+            </app-input>
+          </div>
+        </div>
+      </div>
       <div *ngIf="submissions.length > 0" class="display-flex pad-top">
         <i class="fa fa-check-circle submitted marker"></i>
         <span class="show-on-leaderboard">Shown on leaderboard</span>
