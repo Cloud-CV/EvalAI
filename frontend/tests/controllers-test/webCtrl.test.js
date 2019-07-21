@@ -3,7 +3,7 @@
 describe('Unit tests for web controller', function () {
     beforeEach(angular.mock.module('evalai'));
 
-    var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, vm;
+    var $controller, createController, $rootScope, $scope, utilities, $state, $stateParams, userKey, vm;
 
     beforeEach(inject(function (_$controller_, _$injector_, _$rootScope_, _utilities_, _$state_, _$stateParams_) {
         $controller = _$controller_;
@@ -30,6 +30,7 @@ describe('Unit tests for web controller', function () {
             expect(vm.user).toEqual({});
             expect(utilities.hideLoader).toHaveBeenCalled();
             utilities.storeData('userKey', 'encrypted');
+            userKey = utilities.getData('userKey');
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
         });
     });
