@@ -121,7 +121,7 @@ class Challenge(TimeStampedModel):
     cli_version = models.CharField(
         max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
-     # The number of active workers on Fargate of the challenge.
+    # The number of active workers on Fargate of the challenge.
     workers = models.IntegerField(
         null=True, blank=True, default=None
     )
