@@ -27,8 +27,8 @@ TASK_ROLE_ARN = os.environ.get("TASK_ROLE_ARN", ""),
 TASK_EXECUTION_ROLE_ARN = "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(aws_keys["AWS_ACCOUNT_ID"])
 
 DJANGO_SETTINGS_DICT = {
-    "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost")
-    "DEBUG": settings.DEBUG
+    "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost"),
+    "DEBUG": settings.DEBUG,
     "EMAIL_HOST": os.environ.get("EMAIL_HOST", "https://email_host"),
     "EMAIL_HOST_PASSWORD": os.environ.get("EMAIL_HOST_PASSWORD", "x"),
     "EMAIL_HOST_USER":os.environ.get("EMAIL_HOST_USER", "user"),
@@ -137,8 +137,7 @@ task_definition = """
             "logConfiguration": {{
                 "logDriver": "awslogs",
                 "options": {{
-                    "awslogs-create-group": "true",
-                    "awslogs-group": "gsoc2019",
+                    "awslogs-group": "gsoc-2019-test",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
                 }},
