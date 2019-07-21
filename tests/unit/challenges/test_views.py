@@ -159,6 +159,7 @@ class GetChallengeTest(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": False,
                 "forum_url": self.challenge.forum_url,
                 "is_docker_based": self.challenge.is_docker_based,
@@ -267,6 +268,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "banned_email_ids": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
@@ -336,6 +338,7 @@ class GetParticularChallenge(BaseAPITestClass):
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "banned_email_ids": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
@@ -432,6 +435,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             ).replace("+00:00", ""),
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "banned_email_ids": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
@@ -478,6 +482,7 @@ class UpdateParticularChallenge(BaseAPITestClass):
             ).replace("+00:00", ""),
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "banned_email_ids": [],
             "approved_by_admin": False,
             "forum_url": self.challenge.forum_url,
             "is_docker_based": self.challenge.is_docker_based,
@@ -981,6 +986,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
@@ -1029,6 +1035,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
@@ -1077,6 +1084,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
                 "is_docker_based": self.challenge4.is_docker_based,
@@ -1124,6 +1132,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge4.forum_url,
                 "is_docker_based": self.challenge4.is_docker_based,
@@ -1160,6 +1169,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
@@ -1196,6 +1206,7 @@ class GetAllChallengesTest(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
@@ -1293,6 +1304,7 @@ class GetFeaturedChallengesTest(BaseAPITestClass):
                 "is_active": False,
                 "allowed_email_domains": self.challenge3.allowed_email_domains,
                 "blocked_email_domains": self.challenge3.blocked_email_domains,
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge3.forum_url,
                 "is_docker_based": self.challenge3.is_docker_based,
@@ -1417,6 +1429,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "banned_email_ids": [],
             "approved_by_admin": self.challenge3.approved_by_admin,
             "forum_url": self.challenge3.forum_url,
             "is_docker_based": self.challenge3.is_docker_based,
@@ -1477,6 +1490,7 @@ class GetChallengeByPk(BaseAPITestClass):
             "is_active": True,
             "allowed_email_domains": [],
             "blocked_email_domains": [],
+            "banned_email_ids": [],
             "approved_by_admin": self.challenge4.approved_by_admin,
             "forum_url": self.challenge4.forum_url,
             "is_docker_based": self.challenge4.is_docker_based,
@@ -1593,6 +1607,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
@@ -1641,6 +1656,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
@@ -1689,6 +1705,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
@@ -1735,6 +1752,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge.forum_url,
                 "is_docker_based": self.challenge.is_docker_based,
@@ -1771,6 +1789,7 @@ class GetChallengeBasedOnTeams(BaseAPITestClass):
                 "is_active": True,
                 "allowed_email_domains": [],
                 "blocked_email_domains": [],
+                "banned_email_ids": [],
                 "approved_by_admin": True,
                 "forum_url": self.challenge2.forum_url,
                 "is_docker_based": self.challenge2.is_docker_based,
@@ -2457,6 +2476,8 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC,
+            leaderboard_decimal_precision=2,
+            is_leaderboard_order_descending=True
         )
 
         self.challenge_phase_split_host = ChallengePhaseSplit.objects.create(
@@ -2934,6 +2955,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver1/",
                 publication_url="http://testserver1/",
                 is_public=True,
+                is_flagged=True,
             )
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
@@ -2952,6 +2974,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver2/",
                 publication_url="http://testserver2/",
                 is_public=True,
+                is_flagged=True,
             )
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
@@ -2970,6 +2993,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver3/",
                 publication_url="http://testserver3/",
                 is_public=True,
+                is_flagged=True,
             )
 
         self.client.force_authenticate(user=self.user6)
@@ -3035,6 +3059,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "created_by": submission.created_by.username,
                     "status": submission.status,
                     "is_public": submission.is_public,
+                    "is_flagged": submission.is_flagged,
                     "submission_number": submission.submission_number,
                     "submitted_at": "{0}{1}".format(
                         submission.submitted_at.isoformat(), "Z"
@@ -3092,6 +3117,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     self.submission1.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "is_public": self.submission1.is_public,
+                "is_flagged": self.submission1.is_flagged,
                 "when_made_public": self.submission1.when_made_public,
                 "is_baseline": self.submission1.is_baseline,
             }
@@ -3584,6 +3610,8 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "leaderboard": self.leaderboard.pk,
             "challenge_phase": self.challenge_phase.pk,
             "visibility": self.challenge_phase_split.visibility,
+            "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,
+            "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)

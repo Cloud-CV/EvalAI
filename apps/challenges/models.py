@@ -78,6 +78,12 @@ class Challenge(TimeStampedModel):
     blocked_email_domains = ArrayField(
         models.CharField(max_length=50, blank=True), default=[], blank=True
     )
+    banned_email_ids = ArrayField(
+        models.TextField(null=True, blank=True),
+        default=[],
+        blank=True,
+        null=True
+    )
     remote_evaluation = models.BooleanField(
         default=False, verbose_name="Remote Evaluation", db_index=True
     )
@@ -293,6 +299,8 @@ class ChallengePhaseSplit(TimeStampedModel):
     visibility = models.PositiveSmallIntegerField(
         choices=VISIBILITY_OPTIONS, default=PUBLIC
     )
+    leaderboard_decimal_precision = models.PositiveIntegerField(default=2)
+    is_leaderboard_order_descending = models.BooleanField(default=True)
 
     def __str__(self):
         return "{0} : {1}".format(
