@@ -72,4 +72,21 @@ a.evalai-logo {
   .side-nav li {
     float: none !important;
   }
+
+  .side-nav li a i{
+    float: none !important;
+  }
+}
+
+#ev-dropdown li a:hover {
+  background-color: white;
+  color: $dark-gray;
+}
+
+a.evalai-logo {
+  width: 60px;
+  img {
+    width: 100%;
+    vertical-align: middle;
+  }
 }

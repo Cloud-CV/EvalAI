@@ -1,70 +1,94 @@
-@import './variables.scss';
-@import './mixins.scss';
+@import "styles/variables";
 
-.home-container {
-  overflow-x:hidden;
-  overflow-y:hidden;
-  .home-section-title {
-    font-size: $fs-30;
-    font-weight:$fw-regular;
-    margin-top:50px;
+.org-logo{
+  max-width: 100%;
+  height: 120px;
+  text-align: center;
+
+  img{
+    height: 75%;
+    max-width: 100%;
+    width: auto;
+    transition:all 0.2s ease-in-out;
   }
-  .construction {
-    margin:0 auto;
-    width:400px;
-    text-align:center;
-    background:white;
-    font-size:$fs-24;
-    margin-top:100px;
-    overflow:auto;
-    color:$gray-darker;
-    padding:20px;
-    border-radius:10px;
-    @include box-shadow(0px, 0px, 10px, 5px, $overlay-light);
-    img {
-      height:100px;
-      width:auto;
-    }
-    span {
-      display:block;
+  &:hover{
+    img{
+      -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+      filter: grayscale(100%);
     }
   }
-  .main-bg {
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: -1;
-    display: flex;
-    flex-direction: column;
-    overflow-x: hidden;
-    img {
+}
+
+@media only screen and (max-width: $small-screen) {
+  .org-logo{
+    height: auto;
+    width: 100%;
+    img{
       width: 100%;
-    }
-  }
-  .home-content-temporary {
-    position: relative;
-    height: 1000px;
-  }
-}
-
-@include screen-medium {
-  .home-container {
-    .main-bg {
-      img {
-        width:200%;
-        left:-50%;
-      }
+      height: auto;
     }
   }
 }
 
-@include screen-small {
-  .home-container {
-    .main-bg {
-      img {
-        width:300%;
-        left:-100%;
-      }
-    }
-  }
+.grad-head {
+  padding-top: 10vh;
+}
+
+.ev-details,
+.ev-reverse-details {
+  position: relative;
+  box-shadow: 6px -1px 9px $super-light-shadow;
+  padding: 0;
+}
+
+.ev-reverse-details {
+  box-shadow: none;
+}
+
+.landing-buttons {
+  margin-top: 35px;
+  position: relative;
+  z-index: 3;
+}
+
+#fb-logo{
+  height: 175px;
+  width: 160px;
+  padding-bottom:30%;
+}
+
+#mapillary-logo{
+  height:70px;
+  width:210px;
+}
+
+#umbc-logo{
+  height:70px;
+  width:180px;
+}
+
+#draper-logo {
+  height: 110px;
+  padding-bottom:5%;
+}
+
+#ebay-logo{
+  padding-top:5%;
+  height: 80px;
+  width:160px;
+}
+
+#iitm-logo{
+  height:100px;
+  width:100px;
+}
+
+#adelaide-logo{
+  height:80px;
+  width:180px;
+}
+
+#pitt-logo{
+  height:80px;
+  width:180px;
 }
