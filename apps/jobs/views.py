@@ -522,7 +522,7 @@ def leaderboard(request, challenge_phase_split_id):
             float(k["filtering_score"]),
             float(-k["filtering_error"]),
         ),
-        reverse=True,
+        reverse=True if challenge_phase_split.is_leaderboard_order_descending else False,
     )
 
     distinct_sorted_leaderboard_data = []

@@ -245,6 +245,8 @@ class ChallengePhaseSplitAdmin(ImportExportTimeStampedAdmin):
         "dataset_split",
         "leaderboard",
         "visibility",
+        "leaderboard_decimal_precision",
+        "is_leaderboard_order_descending"
     )
     list_filter = ("dataset_split", "leaderboard", "visibility")
     search_fields = (
