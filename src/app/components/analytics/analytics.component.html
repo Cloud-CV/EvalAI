@@ -1,0 +1,13 @@
+<app-side-bar *ngIf="authService.isAuth"></app-side-bar>
+<app-header-static></app-header-static>
+<div class="web-container" [style.center]="!authService.isAuth">
+  <div class="dashboard-flex">
+    <div class="dashboard-content">
+      <router-outlet></router-outlet>
+    </div>
+    <app-footer [isDash]="true" *ngIf="authService.isAuth"></app-footer>
+  </div>
+</div>
+<div class="clearfix"></div>
+
+<app-footer *ngIf="!authService.isAuth"></app-footer>

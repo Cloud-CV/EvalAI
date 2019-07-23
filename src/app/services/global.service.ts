@@ -48,6 +48,11 @@ export class GlobalService {
   };
 
   /**
+   * Title loader
+   */
+  loaderTitle = '';
+
+  /**
    * Terms and conditions modal default settings
    */
   isTermsAndConditionsModalVisible = false;
@@ -554,5 +559,22 @@ export class GlobalService {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Start loader message
+   * @param msg  string
+   */
+  startLoader(msg) {
+    this.isLoading = true;
+    this.loaderTitle = msg;
+  }
+
+  /**
+   * Stop loader msg
+   */
+  stopLoader() {
+    this.isLoading = false;
+    this.loaderTitle = '';
   }
 }

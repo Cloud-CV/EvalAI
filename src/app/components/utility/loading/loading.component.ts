@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {GlobalService} from '../../../services/global.service';
 
 /**
  * Component Class
@@ -13,7 +14,7 @@ export class LoadingComponent implements OnInit {
   /**
    * Constructor.
    */
-  constructor() { }
+  constructor(public globalService: GlobalService) { }
 
   /**
    * Component on intialized
