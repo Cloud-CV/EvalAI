@@ -156,7 +156,6 @@ class TestJobsUrls(BaseAPITestClass):
             resolver.view_name, "jobs:change_submission_data_and_visibility"
         )
 
-    @responses.activate
     def test_challenge_submisson_url(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
