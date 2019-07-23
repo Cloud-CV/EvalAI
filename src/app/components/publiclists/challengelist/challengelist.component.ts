@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, HostListener, Inject, OnInit} from '@angular/core';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { AuthService } from '../../../services/auth.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import {DOCUMENT} from '@angular/common';
 
 /**
  * Component Class
@@ -48,6 +49,11 @@ export class ChallengelistComponent implements OnInit {
    * API common path
    */
   apiPathCommon = 'challenges/challenge/';
+
+  /**
+   * Host teams API common path
+   */
+  hostTeamsapiPathCommon = 'hosts/challenge_host_team';
 
   /**
    * API path mapping
@@ -99,17 +105,54 @@ export class ChallengelistComponent implements OnInit {
   isLoggedIn: any = false;
 
   /**
+   * Is scroll button visible
+   */
+  isScrollbtnVisible = false;
+
+  /**
+   * Authentication Service subscription
+   */
+  authServiceSubscription: any;
+
+  /**
+   * All challenges common route path
+   */
+  allChallengesRoutePathCommon = '/challenges/all';
+
+  /**
+   * My challenges common route path
+   */
+  myChallengesRoutePathCommon = '/challenges/me';
+
+  /**
+   * Host teams common route path
+   */
+  hostTeamsRoutePathCommon = '/teams/hosts';
+
+  /**
+   * Challenge common path
+   */
+  challengeRoutePathCommon = '/challenge';
+
+  /**
+   * Auth common route path
+   */
+  authRoutePathCommon = '/auth/';
+
+  /**
    * Constructor.
    * @param route  ActivatedRoute Injection.
    * @param router  Router Injection.
    * @param globalService  GlobalService Injection.
    * @param authService  AuthService Injection.
    * @param apiService  ApiService Injection.
+   * @param document
    */
   constructor(private apiService: ApiService,
               private authService: AuthService,
               private globalService: GlobalService,
               private router: Router,
+              @Inject(DOCUMENT) private document,
               private route: ActivatedRoute) { }
 
   /**
@@ -119,21 +162,39 @@ export class ChallengelistComponent implements OnInit {
     if (this.authService.isLoggedIn()) {
       this.isLoggedIn = true;
     }
-    if (this.router.url === '/challenges/all') {
+
+    this.authServiceSubscription = this.authService.change.subscribe((authState) => {
+      this.isLoggedIn = authState.isLoggedIn;
+      if (!authState.isLoggedIn && this.router.url === this.myChallengesRoutePathCommon) {
+        this.router.navigate([`${this.authRoutePathCommon}login`]);
+      }
+    });
+
+    if (this.router.url === this.allChallengesRoutePathCommon) {
       this.fetchChallenges();
-    } else if (this.router.url === '/challenges/me' && this.authService.isLoggedIn()) {
+    } else if (this.router.url === this.myChallengesRoutePathCommon && this.authService.isLoggedIn()) {
       this.fetchMyTeams();
     }
+
     this.authServicePublic = this.authService;
     this.routerPublic = this.router;
+  }
+
+
+  /**
+   * Listener for page scroll event
+   */
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    const RECT =  this.document.getElementById('ongoing-challenges').getBoundingClientRect();
+    this.isScrollbtnVisible = RECT.top < 0;
   }
 
   /**
    * Fetch teams function.
    */
   fetchMyTeams() {
-    // this.fetchTeams('participants/participant_team');
-    this.fetchTeams('hosts/challenge_host_team');
+    this.fetchTeams(this.hostTeamsapiPathCommon);
   }
 
   /**
@@ -177,7 +238,7 @@ export class ChallengelistComponent implements OnInit {
    * Filtering challenges by teams
    */
   filterChallengesByTeams() {
-    if (this.router.url === '/challenges/me' && this.authService.isLoggedIn()) {
+    if (this.router.url === this.myChallengesRoutePathCommon && this.authService.isLoggedIn()) {
       this.filteredChallenges = this.filteredChallenges.filter((v, i, a) => this.allTeams.indexOf(v['creator']['id']) > -1);
     }
   }
@@ -201,9 +262,7 @@ export class ChallengelistComponent implements OnInit {
       err => {
         SELF.globalService.handleApiError(err, false);
       },
-      () => {
-        console.log('Teams fetched', path);
-      }
+      () => {}
     );
   }
 
@@ -248,8 +307,11 @@ export class ChallengelistComponent implements OnInit {
       err => {
         SELF.globalService.handleApiError(err);
       },
-      () => console.log(path.slice(SELF.apiPathCommon.length) + ' challenges fetched!')
+      () => {}
     );
   }
 
+  scrollUp() {
+    this.document.getElementById('ongoing-challenges').scrollIntoView({behavior: 'smooth'});
+  }
 }

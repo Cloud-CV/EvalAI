@@ -7,6 +7,11 @@ import { GlobalService } from '../../services/global.service';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import {TeamlistComponent} from './teamlist/teamlist.component';
 import {ChallengelistComponent} from './challengelist/challengelist.component';
+import {EndpointsService} from '../../services/endpoints.service';
+import {AuthService} from '../../services/auth.service';
+import {NotFoundComponent} from '../not-found/not-found.component';
+import {ApiService} from '../../services/api.service';
+import {HttpClientModule} from '@angular/common/http';
 
 const routes: Routes = [
 
@@ -28,6 +33,15 @@ const routes: Routes = [
       {path: 'me', component: ChallengelistComponent}
     ]
   },
+  {
+    path: '404',
+    component: NotFoundComponent
+  },
+  {
+    path: '**',
+    redirectTo: '/404',
+    pathMatch: 'full'
+  }
 ];
 
 
@@ -39,9 +53,9 @@ describe('PubliclistsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ RouterTestingModule.withRoutes(routes) ],
-      declarations: [ PubliclistsComponent, ChallengelistComponent, TeamlistComponent ],
-      providers: [ GlobalService ],
+      imports: [ RouterTestingModule.withRoutes(routes), HttpClientModule ],
+      declarations: [ PubliclistsComponent, ChallengelistComponent, TeamlistComponent, NotFoundComponent ],
+      providers: [ GlobalService, EndpointsService, AuthService, ApiService ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();

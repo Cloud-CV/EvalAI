@@ -1,13 +1,31 @@
-@import './variables.scss';
-@import './mixins.scss';
+@import "styles/variables";
 
-.publiclist-container {
-  @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
-  width:90%;
-  margin: 0 auto;
-  background:$gray-lighter;
-  color:$gray-darker;
-  border-radius:10px;
-  margin-top:50px;
-  margin-bottom:100px;
+.dashboard-flex {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.dashboard-content {
+  flex: 1;
+  min-height: 100vh;
+}
+
+.web-container {
+  width: calc(100vw - 223px);
+  float: right;
+  padding-top: 70px;
+  overflow-x: hidden;
+  &.center {
+    float: none;
+    margin: 0 auto;
+    text-align: left;
+    overflow: hidden;
+  }
+}
+
+@media only screen and (max-width: $med-screen) {
+  .web-container {
+    width: 100%;
+  }
 }

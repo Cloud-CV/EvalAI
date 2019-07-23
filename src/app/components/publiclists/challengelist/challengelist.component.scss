@@ -1,34 +1,9 @@
-@import './variables.scss';
-@import './mixins.scss';
+@import "styles/variables";
 
-.challengelist-container { 
-	padding:30px;
-  overflow:auto;
-  .challengelist-filters {
-  	padding:0px 0px 30px 0px;
-  	a {
-  		width:220px;
-  		display:inline-block;
-  		font-size:$fs-16;
-  		font-weight:$fw-light;
-  	}
-  }
-  .see-more {
-    text-align: center;
-    margin-top:20px;
-    font-size:$fs-16;
-    font-weight:$fw-light;
-  }
+.challenge-container {
+  margin: 0px 10px -30px 10px;
 }
 
-@include screen-small {
-	.challengelist-container {
-		.challengelist-filters {
-			text-align:center;
-			a {
-				margin-left:0;
-			}
-		}
-	}
-
+.challenge-page-title {
+  padding-bottom: 10px;
 }
