@@ -203,7 +203,7 @@ def get_queue_name(param):
     return queue_name
 
 
-def send_slack_notification(webhook=settings.SLACK_WEBHOOKS['default'], message=""):
+def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
     """
     Send slack notification to any workspace
     Keyword Arguments:
