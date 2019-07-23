@@ -18,6 +18,7 @@ export class AuthService {
 
   /**
    * Constructor.
+   * @param router
    * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
    * @param endpointsService  EndpointsService Injection.

@@ -1,14 +1,63 @@
-<div class="challengelist-container">
- <div *ngIf="authServicePublic.isLoggedIn() || routerPublic.url == '/challenges/all'">
- <div class="challengelist-filters">
- 	<a [class.selected]="isUpcomingChecked" class="btn btn-filter" (click)="toggleFilter('isUpcomingChecked')">Upcoming Challenges</a>
- 	<a [class.selected]="isOngoingChecked" class="btn btn-filter" (click)="toggleFilter('isOngoingChecked')">Ongoing Challenges</a>
- 	<a [class.selected]="isPastChecked" class="btn btn-filter" (click)="toggleFilter('isPastChecked')">Past Challenges</a>
- </div>
- <app-cardlist [type]="'challenges'" [data]="filteredChallengesView"></app-cardlist>
- <div class="see-more" *ngIf="filteredChallengesView.length < filteredChallenges.length">
-    <a class="btn btn-filter" (click)="seeMoreClicked()">See More</a>
- </div>
- </div>
- <app-forcelogin [path]="'/challenges/me'" *ngIf="!authServicePublic.isLoggedIn() && routerPublic.url == '/challenges/me'"></app-forcelogin>
-</div>
+<section class="ev-sm-container ev-view challenge-container">
+
+  <!-- ongoing challenges -->
+  <div *ngIf="routerPublic.url === allChallengesRoutePathCommon">
+    <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">Ongoing Challenges</strong></div>
+    <div *ngIf="ongoingChallenges.length === 0">None</div>
+    <div class="row">
+      <div class="col s12 m3" *ngFor="let challenge of ongoingChallenges">
+        <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon,challenge.id]">
+          <app-challengecard [challenge]="challenge" ></app-challengecard>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll up button -->
+  <div id = "scroll-up" *ngIf="isScrollbtnVisible" (click)="scrollUp()" >
+    <a class="ev-btn-scroll" ><strong><i class="align-right fa fa-chevron-up"></i></strong></a>
+  </div>
+
+  <!-- upcoming challenges -->
+  <div *ngIf="routerPublic.url === allChallengesRoutePathCommon">
+    <div class="challenge-page-title" ><strong class="text-med-black fs-18">Upcoming Challenges</strong></div>
+    <div *ngIf="upcomingChallenges.length === 0">None</div>
+    <div class="row">
+      <div class="col s12 m3" *ngFor="let challenge of upcomingChallenges">
+        <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon,challenge.id]">
+          <app-challengecard [challenge]="challenge" ></app-challengecard>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- past challenges -->
+  <div *ngIf="routerPublic.url === allChallengesRoutePathCommon">
+    <div class="challenge-page-title" ><strong class="text-med-black fs-18">Past Challenges</strong></div>
+    <div *ngIf="pastChallenges.length === 0">None</div>
+    <div class="row">
+      <div class="col s12 m3" *ngFor="let challenge of pastChallenges">
+        <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon,challenge.id]">
+          <app-challengecard [challenge]="challenge" ></app-challengecard>
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- my challenges -->
+  <div *ngIf="routerPublic.url === myChallengesRoutePathCommon">
+    <div class="challenge-page-title" id = "ongoing-challenges" ><strong class="text-med-black fs-18">My Hosted Challenges</strong></div>
+    <div *ngIf="!filteredChallenges.length">
+      You haven't hosted any challenge. Please <a [routerLink]="hostTeamsRoutePathCommon" class="highlight-link">click here</a> to host one!
+    </div>
+    <div class="row" *ngIf="filteredChallenges.length">
+      <div class="col s12 m3" *ngFor="let challenge of filteredChallenges">
+        <a class="ev-card-hover" [routerLink]="[challengeRoutePathCommon,challenge['id']]">
+          <app-challengecard [challenge]="challenge"></app-challengecard>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</section>

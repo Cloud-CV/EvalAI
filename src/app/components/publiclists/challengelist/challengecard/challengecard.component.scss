@@ -1,191 +1,20 @@
-@import './variables.scss';
-@import './mixins.scss';
+@import "styles/variables";
 
-.challenge-card-container {
-  position: relative;
-  background: white;
-  border-radius: 20px;
-  font-size: $fs-14;
-  color: $gray-darker;
-  font-weight: $fw-light;
-  padding: 20px;
-  margin-top:20px;
-  transition:all 0.3s ease;
-  .challenge-details {
-    padding-left: 20px;
-    display: inline-block;
-    height: 140px;
-    vertical-align: top;
-    overflow: hidden;
-    .challenge-title {
-      cursor:pointer;
-      font-size: $fs-18;
-      font-weight: $fw-regular;
-      display: inline-block;
-    }
-    .challenge-host {
-      display: inline-block;
-      margin-left: 50px;
-      font-weight: $fw-light;
-      font-size: $fs-14;
-      color: $gray-dark;
-      span {
-        color: $gray-darker;
-      }
-    }
-    .challenge-type {
-      position: absolute;
-      right: 15px;
-      top: 15px;
-      color: white;
-      border-radius: 10px;
-      padding: 3px 10px;
-      font-size: $fs-14;
-      font-weight: $fw-light;
-      &.upcoming {
-        background: $purple-medium;
-      }
-      &.ongoing {
-        background: $green-medium;
-      }
-      &.past {
-        background: $blue-light;
-      }
-    }
-    .challenge-description {
-      font-size: $fs-14;
-      font-weight: $fw-light;
-      display: inline-block;
-      max-width: 500px;
-      white-space: nowrap;
-      margin-top: 10px;
-    }
-    .challenge-time-remaining {
-      display: inline-block;
-      font-size: $fs-14;
-      font-weight: $fw-light;
-      width: 250px;
-      white-space: nowrap;
-      margin-top: 15px;
-    }
-    .challenge-time-range {
-      display: inline-block;
-      font-size: $fs-14;
-      font-weight: $fw-light;
-      margin-top: 15px;
-      img {
-        height: 20px;
-        margin-left: 20px;
-        margin-right: 10px;
-        margin-bottom: -5px;
-      }
-    }
-    .challenge-participate {
-      margin-top: 20px;
-      margin-left:0px;
-      font-size: $fs-14;
-      color: $red-light;
-    }
-    .challenge-labels {
-      display: inline-block;
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      font-size: $fs-14;
-      // .stars {
-      //   color: $red-light;
-      //   padding: 10px;
-      // }
-      .stars {
-          color:$red-light;;
-          padding: 10px;
-          &.is-starred {
-            color: $yellow;
-          }
-          i {
-            margin-right: 10px;
-          }
-          &.is-clickable {
-            cursor:pointer;
-          }
-        }
-      .challenge-tags {
-        color: $gray-darker;
-        padding: 10px;
-      }
-    }
-  }
-  .challenge-img-div {
-    cursor: pointer;
-    text-align:center;
-    display: inline-table;
-    position:relative;
-    height:140px;
-    width:200px;
-    .challenge-img-parent {
-      display:table-cell;
-      vertical-align:middle;
-    }
-    .challenge-img {
-      max-width: 200px;
-      max-height: 140px;
-      display: inline-block;
-      position: relative;
-      vertical-align:middle;
-    }
-    .helper {
-    display: none;
-    height: 100%;
-    vertical-align: middle;
-}
-  }
-  &:hover {
-    @include box-shadow(0px, 0px, 10px, 0px, $overlay-light);
-  }
+.ev-challenge-card {
+  min-height: 415px;
 }
 
-@include screen-medium {
-  .challenge-card-container {
-    .challenge-details {
-      display: block;
-      padding-left: 0px;
-      padding-top: 20px;
-      height: auto;
-      .challenge-labels {
-        bottom: unset;
-        top: 10px;
-      }
-    }
-  }
+.bg-img {
+  width: 100%;
+  margin: -5% auto auto;
 }
 
-@include screen-small {
-  .challenge-card-container {
-    .challenge-img-div {
-      display: table;
-      margin:0 auto;
-      text-align: center;
-    }
-    .challenge-details {
-      display: block;
-      padding-left: 0px;
-      padding-top: 20px;
-      height: auto;
-      .challenge-host {
-        margin-left: 0;
-      }
-      .challenge-time-range {
-        img {
-          margin-left: 0;
-        }
-      }
-      .challenge-labels {
-        position: relative;
-        margin-top: 10px;
-      }
-      .challenge-participate-div {
-        text-align: center;
-      }
-    }
-  }
+.margin-top-btm {
+  margin-top: 10px;
+  margin-bottom: 25px;
+}
+
+.card {
+  margin-left: 0;
+  margin-right: 0;
 }
