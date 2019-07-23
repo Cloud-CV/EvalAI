@@ -582,8 +582,9 @@
                 },
                 onError: function (response) {
                     var error = response.data;
-                    vm.leaderboard.error = error;
                     vm.stopLoader();
+                    $rootScope.notify("error", error);
+                    return false;
                 }
             };
             utilities.sendRequest(parameters);
