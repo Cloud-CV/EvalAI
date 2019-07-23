@@ -56,6 +56,7 @@ from hosts.utils import (
     is_user_a_host_of_challenge,
     get_challenge_host_team_model,
 )
+from jobs.filters import SubmissionFilter
 from jobs.models import Submission
 from jobs.serializers import (
     SubmissionSerializer,
@@ -234,6 +235,12 @@ def add_participant_team_to_challenge(
         response_data = {"error": "Challenge does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+    if not challenge.is_registration_open:
+        response_data = {
+            "error": "Registration is closed for this challenge!"
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     if (
         challenge.end_date < timezone.now()
         or challenge.start_date > timezone.now()
@@ -248,6 +255,19 @@ def add_participant_team_to_challenge(
     except ParticipantTeam.DoesNotExist:
         response_data = {"error": "ParticipantTeam does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # Check if user is banned
+    if len(challenge.banned_email_ids) > 0:
+        for participant_email in participant_team.get_all_participants_email():
+            if participant_email in challenge.banned_email_ids:
+                message = "You're a part of {} team and it has been banned from this challenge. \
+                Please contact the challenge host.".format(participant_team.team_name)
+                response_data = {
+                    "error": message
+                }
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
 
     # Check if user is in allowed list.
     user_email = request.user.email
@@ -1169,7 +1189,8 @@ def get_all_submissions_of_challenge(
         submissions = Submission.objects.filter(
             challenge_phase=challenge_phase
         ).order_by("-submitted_at")
-        paginator, result_page = paginated_queryset(submissions, request)
+        filtered_submissions = SubmissionFilter(request.GET, queryset=submissions)
+        paginator, result_page = paginated_queryset(filtered_submissions.qs, request)
         serializer = ChallengeSubmissionManagementSerializer(
             result_page, many=True, context={"request": request}
         )
@@ -1550,7 +1571,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
             serializer.save()
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
         serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split)
