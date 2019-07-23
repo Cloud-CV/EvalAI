@@ -28,6 +28,10 @@
   }
 }
 
+.loader-title {
+  margin-top: 39vh;
+}
+
 .loader {
   width: $loader-size;
   height: $loader-height;
@@ -83,3 +87,4 @@
       opacity: 0;
   }
 }
+

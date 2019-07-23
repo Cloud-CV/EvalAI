@@ -285,4 +285,39 @@ ${phase}/submission?participant_team__team_name=${participantTeamName}`;
   reRunSubmissionURL(submission) {
     return `${this.jobs}submissions/${submission}/re-run/`;
   }
+
+  /**
+   * Team count analytics
+   * @param challengeId challenge id
+   */
+  teamCountAnalyticsURL(challengeId) {
+    return `${this.analytics}challenge/${challengeId}/team/count`;
+  }
+
+  /**
+   * Challenge phase analytics
+   * @param challengeId challenge id
+   * @param phaseId phase id
+   */
+  challengePhaseAnalyticsURL(challengeId, phaseId) {
+    return `${this.analytics}challenge/${challengeId}/challenge_phase/${phaseId}/analytics`;
+  }
+
+  /**
+   * Challenge phase last submission analytics
+   * @param challengeId challenge id
+   * @param phaseId phase id
+   */
+  lastSubmissionAnalyticsURL(challengeId, phaseId) {
+    return `${this.analytics}challenge/${challengeId}/challenge_phase/${phaseId}/last_submission_datetime_analysis/`;
+  }
+
+  /**
+   * Challenge phase last submission analytics
+   * @param challengeId challenge id
+   * @param phaseId phase id
+   */
+  downloadParticipantsAnalyticsURL(challengeId) {
+    return `${this.analytics}challenges/${challengeId}/download_all_participants/`;
+  }
 }

@@ -29,6 +29,8 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { OurTeamComponent } from './components/our-team/our-team.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
+import {AnalyticsComponent} from './components/analytics/analytics.component';
+import {HostAnalyticsComponent} from './components/analytics/host-analytics/host-analytics.component';
 
 const routes: Routes = [
   {
@@ -95,7 +97,15 @@ const routes: Routes = [
   },
   {
     path: 'dashboard',
-    component: DashboardComponent
+    component: DashboardComponent,
+  },
+  {
+    path: 'analytics',
+    component: AnalyticsComponent,
+    children: [
+      {path: '', redirectTo: 'host-analytics', pathMatch: 'full'},
+      {path: 'host-analytics', component: HostAnalyticsComponent}
+    ]
   },
   {
     path: 'get-involved',
