@@ -1571,7 +1571,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
             serializer.save()
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
         serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split)
