@@ -45,6 +45,7 @@ script:
 - karma start --single-run
 - py.test --cov . --cov-config .coveragerc
 after_success:
+- bash <(curl -s https://codecov.io/bash)
 - coveralls --rcfile=.coveragerc
 - ./scripts/deployment/push.sh
 notifications:
