@@ -130,7 +130,7 @@ class TestSlackNotification(BaseAPITestClass):
 
     @responses.activate
     def test_if_slack_notification_works(self):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
 
         response = send_slack_notification(
             message="Testing Slack notification functionality")

@@ -1125,14 +1125,15 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             zip_config.challenge = challenge
             zip_config.save()
 
-            slack_challenge_details = {
-                'challenge_title': challenge.title,
-                'zip_file_link': CHALLENGE_ZIP_DOWNLOAD_LOCATION
-            }
-            send_slack_notification(
-                message="A *new challenge* has been uploaded to EvalAI. \n *User email*: {}\n *Challenge details*: {}"
-                .format(request.user.email, slack_challenge_details)
-            )
+            if settings.SLACK_WEB_HOOK_URL:
+                slack_challenge_details = {
+                    'challenge_title': challenge.title,
+                    'zip_file_link': CHALLENGE_ZIP_DOWNLOAD_LOCATION
+                }
+                send_slack_notification(
+                    message="A *new challenge* has been uploaded to EvalAI. \n *User email*: {}\n *Challenge details*: {}"
+                    .format(request.user.email, slack_challenge_details)
+                )
 
             response_data = {
                 "success": "Challenge {} has been created successfully and"

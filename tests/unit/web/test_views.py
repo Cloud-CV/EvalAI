@@ -47,7 +47,7 @@ class CreateContactMessage(BaseAPITestCase):
 
     @responses.activate
     def test_get_user_data(self):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         expected = {"name": self.user.username, "email": self.user.email}
 
         self.client.force_authenticate(user=self.user)
@@ -57,7 +57,7 @@ class CreateContactMessage(BaseAPITestCase):
 
     @responses.activate
     def test_create_contact_message_with_all_data(self):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         if self.data["message"]:
             response = self.client.post(self.url, self.data)
             expected = {
@@ -68,7 +68,7 @@ class CreateContactMessage(BaseAPITestCase):
 
     @responses.activate
     def test_create_contact_message_with_no_data(self):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         del self.data["message"]
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

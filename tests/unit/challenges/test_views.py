@@ -2689,7 +2689,7 @@ class CreateChallengeUsingZipFile(APITestCase):
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -2703,7 +2703,7 @@ class CreateChallengeUsingZipFile(APITestCase):
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded_successfully(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -2722,7 +2722,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_server_error_occurs(self):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -2742,7 +2742,7 @@ class CreateChallengeUsingZipFile(APITestCase):
     def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={
@@ -2766,7 +2766,7 @@ class CreateChallengeUsingZipFile(APITestCase):
     def test_create_challenge_using_zip_file_when_user_is_not_authenticated(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -2781,7 +2781,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_success(self):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},

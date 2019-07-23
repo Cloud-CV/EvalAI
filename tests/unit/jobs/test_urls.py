@@ -158,7 +158,7 @@ class TestJobsUrls(BaseAPITestClass):
 
     @responses.activate
     def test_challenge_submisson_url(self):
-        responses.add(responses.POST, settings.SLACK_WEBHOOKS['default'], status=200)
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={

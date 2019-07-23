@@ -207,7 +207,7 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
     """
     Send slack notification to any workspace
     Keyword Arguments:
-        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEBHOOKS['default']})
+        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     """
     response = requests.post(

@@ -275,7 +275,7 @@ ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
 # Slack web hook url
-SLACK_WEB_HOOK_URL = os.environ.get('SLACK_WEB_HOOK_URL', 'http://testslackwebhook.com/webhook')
+SLACK_WEB_HOOK_URL = os.environ.get('SLACK_WEB_HOOK_URL', '')
 
 SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "evalai.urls.swagger_api_info",
