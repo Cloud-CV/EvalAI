@@ -28,7 +28,6 @@ from drf_yasg.utils import swagger_auto_schema
 from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     paginated_queryset,
-    send_slack_notification,
     StandardResultSetPagination,
     get_sqs_queue_object,
     get_boto3_client,

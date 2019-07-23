@@ -33,7 +33,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def setUp(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.client = APIClient(enforce_csrf_checks=True)
 
         self.user = User.objects.create(
@@ -181,7 +180,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_challenge_does_not_exist(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -204,7 +202,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_challenge_is_not_active(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -228,7 +225,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -251,7 +247,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_challenge_phase_is_not_public(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -278,7 +273,6 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_user_does_not_exist_in_allowed_emails(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -302,7 +296,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_user_exist_in_allowed_emails(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -329,7 +322,6 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_user_does_not_exist_in_allowed_emails_and_is_host(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -352,7 +344,6 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_challenge_phase_is_private_and_user_is_host(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -376,7 +367,6 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_challenge_phase_is_private_and_user_is_not_host(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -403,7 +393,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_participant_team_is_none(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -428,7 +417,6 @@ class BaseAPITestClass(APITestCase):
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -450,7 +438,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_status_and_file_is_not_submitted(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -473,7 +460,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_form_encoding_is_wrong(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -499,7 +485,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_status_is_not_correct(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -523,7 +508,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_for_successful_submission(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -544,7 +528,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_when_maximum_limit_exceeded(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -569,7 +552,6 @@ class BaseAPITestClass(APITestCase):
 
     @responses.activate
     def test_challenge_submission_for_docker_based_challenges(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -618,7 +600,6 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
     @responses.activate
     def test_challenge_submission_when_challenge_does_not_exist(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -637,7 +618,6 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
     @responses.activate
     def test_challenge_submission_when_challenge_phase_does_not_exist(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -656,7 +636,6 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
     @responses.activate
     def test_challenge_submission_when_participant_team_is_none(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -677,7 +656,6 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
     def test_challenge_submission_when_participant_team_hasnt_participated_in_challenge(
         self
     ):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
@@ -695,7 +673,6 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
 
     @responses.activate
     def test_get_challenge_submissions(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={
