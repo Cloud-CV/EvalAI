@@ -1125,7 +1125,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             zip_config.challenge = challenge
             zip_config.save()
 
-            if settings.SLACK_WEB_HOOK_URL:
+            if settings.SLACK_WEB_HOOK_URL != "http://testslackwebhook.com/webhook":
                 slack_challenge_details = {
                     'challenge_title': challenge.title,
                     'zip_file_link': CHALLENGE_ZIP_DOWNLOAD_LOCATION

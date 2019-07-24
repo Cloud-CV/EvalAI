@@ -110,7 +110,7 @@ def contact_us(request):
                 "message": "We have received your request and will contact you shortly."
             }
 
-            if settings.SLACK_WEB_HOOK_URL:
+            if settings.SLACK_WEB_HOOK_URL != "http://testslackwebhook.com/webhook":
                 send_slack_notification(
                     message="A *new contact message* is received. \n *Contact details*: {}"
                     .format(request_data)

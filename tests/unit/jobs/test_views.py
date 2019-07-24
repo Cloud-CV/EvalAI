@@ -5,7 +5,6 @@ import shutil
 
 from datetime import timedelta
 
-from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
@@ -29,7 +28,6 @@ from participants.models import ParticipantTeam, Participant
 
 
 class BaseAPITestClass(APITestCase):
-
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
