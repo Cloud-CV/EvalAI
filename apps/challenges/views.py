@@ -1132,16 +1132,11 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                         {
                             "title": "Email",
                             "value": request.user.email,
-                            "short": True
+                            "short": False
                         },
                         {
                             "title": "Challenge title",
                             "value": challenge.title,
-                            "short": True
-                        },
-                        {
-                            "title": "Challenge config uploaded from",
-                            "value": CHALLENGE_ZIP_DOWNLOAD_LOCATION,
                             "short": False
                         }
                     ]

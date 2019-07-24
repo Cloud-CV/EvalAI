@@ -215,11 +215,12 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
             "text": message["text"],
             "attachments": [
                 {
+                    "color": "ffaf4b",
                     "fields": message["fields"]
                 }
             ]
         }
-        response = requests.post(
+        return requests.post(
             webhook,
             data=json.dumps(data),
             headers={"Content-Type": "application/json"}
