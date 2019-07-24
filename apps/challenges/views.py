@@ -38,11 +38,11 @@ from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
 from base.utils import (
-    paginated_queryset,
-    send_slack_notification,
-    send_email,
-    get_url_from_hostname,
     get_queue_name,
+    get_url_from_hostname,
+    paginated_queryset,
+    send_email,
+    send_slack_notification
 )
 from challenges.utils import (
     get_challenge_model,
@@ -1125,15 +1125,28 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             zip_config.challenge = challenge
             zip_config.save()
 
-            if settings.SLACK_WEB_HOOK_URL != "http://testslackwebhook.com/webhook":
-                slack_challenge_details = {
-                    'challenge_title': challenge.title,
-                    'zip_file_link': CHALLENGE_ZIP_DOWNLOAD_LOCATION
+            if settings.DEBUG:
+                message = {
+                    "text": "A *new challenge* has been uploaded to EvalAI.",
+                    "fields": [
+                        {
+                            "title": "Email",
+                            "value": request.user.email,
+                            "short": True
+                        },
+                        {
+                            "title": "Challenge title",
+                            "value": challenge.title,
+                            "short": True
+                        },
+                        {
+                            "title": "Challenge config uploaded from",
+                            "value": CHALLENGE_ZIP_DOWNLOAD_LOCATION,
+                            "short": False
+                        }
+                    ]
                 }
-                send_slack_notification(
-                    message="A *new challenge* has been uploaded to EvalAI. \n *User email*: {}\n *Challenge details*: {}"
-                    .format(request.user.email, slack_challenge_details)
-                )
+                send_slack_notification(message=message)
 
             response_data = {
                 "success": "Challenge {} has been created successfully and"

@@ -110,11 +110,28 @@ def contact_us(request):
                 "message": "We have received your request and will contact you shortly."
             }
 
-            if settings.SLACK_WEB_HOOK_URL != "http://testslackwebhook.com/webhook":
-                send_slack_notification(
-                    message="A *new contact message* is received. \n *Contact details*: {}"
-                    .format(request_data)
-                )
+            if settings.DEBUG:
+                message = {
+                    "text": "A *contact message* is received!",
+                    "fields": [
+                        {
+                            "title": "Name",
+                            "value": request.data["name"],
+                            "short": True
+                        },
+                        {
+                            "title": "Email",
+                            "value": request.data["email"],
+                            "short": True
+                        },
+                        {
+                            "title": "Message",
+                            "value": request.data["message"],
+                            "short": False
+                        }
+                    ]
+                }
+                send_slack_notification(message=message)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

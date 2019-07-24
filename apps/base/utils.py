@@ -210,14 +210,21 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
         webhook {string} -- slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     """
-    response = requests.post(
-        webhook,
-        data=json.dumps({'text': str(message)}),
-        headers={'Content-Type': 'application/json'}
-    )
-    if type(response) == requests.models.Response and response.status_code == status.HTTP_200_OK:
-        return response
-    else:
-        logger.info(
-            'Exception raised while sending slack notification "{}".'
-            .format(message))
+    try:
+        data = {
+            "text": message["text"],
+            "attachments": [
+                {
+                    "fields": message["fields"]
+                }
+            ]
+        }
+        response = requests.post(
+            webhook,
+            data=json.dumps(data),
+            headers={"Content-Type": "application/json"}
+        )
+    except Exception as e:
+        logger.exception(
+            "Exception raised while sending slack notification. \n Exception message: {}".format(e)
+        )
