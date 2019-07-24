@@ -12,7 +12,6 @@ from base.utils import get_boto3_client
 
 logger = logging.getLogger(__name__)
 
-
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
 ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
 aws_keys = {
@@ -22,61 +21,82 @@ aws_keys = {
     "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
 }
 
-TASK_ROLE_ARN = os.environ.get("TASK_ROLE_ARN", ""),
-TASK_EXECUTION_ROLE_ARN = "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(aws_keys["AWS_ACCOUNT_ID"])
 
-DJANGO_SETTINGS_DICT = {
+COMMON_SETTINGS_DICT = {
+    "AWS_DEFAULT_REGION": aws_keys["AWS_REGION"],
+    "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
+    "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
+    "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
+    "TASK_ROLE_ARN": os.environ.get("TASK_ROLE_ARN", "dummy_role"),
+    "EXECUTION_ROLE_ARN": os.environ.get("EXECUTION_ROLE_ARN", "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(aws_keys["AWS_ACCOUNT_ID"])),
+    "WORKER_IMAGE": os.environ.get("WORKER_IMAGE", "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(aws_keys["AWS_ACCOUNT_ID"], ENV)),
+    "CPU": os.environ.get("CPU", 1024),
+    "MEMORY": os.environ.get("MEMORY", 2048),
+    "CLUSTER": os.environ.get("CLUSTER", "evalai-prod-cluster"),
     "DJANGO_SERVER": os.environ.get("DJANGO_SERVER", "localhost"),
     "DEBUG": settings.DEBUG,
-    "EMAIL_HOST": os.environ.get("EMAIL_HOST", "https://email_host"),
-    "EMAIL_HOST_PASSWORD": os.environ.get("EMAIL_HOST_PASSWORD", "x"),
-    "EMAIL_HOST_USER": os.environ.get("EMAIL_HOST_USER", "user"),
-    "EMAIL_PORT": os.environ.get("EMAIL_PORT", 587),
-    "EMAIL_USE_TLS": os.environ.get("EMAIL_USE_TLS", "True"),
-    "MEMCACHED_LOCATION": os.environ.get("MEMCACHED_LOCATION", "None"),
-    "RDS_DB_NAME": os.environ.get("RDS_DB_NAME", "rds_db"),
-    "RDS_HOSTNAME": os.environ.get("RDS_HOSTNAME", "rds_host"),
-    "RDS_PASSWORD": os.environ.get("RDS_PASSWORD", "x"),
-    "RDS_USERNAME": os.environ.get("RDS_USERNAME", "user"),
-    "SECRET_KEY": os.environ.get("SECRET_KEY", "x"),
-    "SENTRY_URL": os.environ.get("SENTRY_URL", "https://sentry_url"),
+    "EMAIL_HOST": settings.EMAIL_HOST,
+    "EMAIL_HOST_PASSWORD": settings.EMAIL_HOST_PASSWORD,
+    "EMAIL_HOST_USER": settings.EMAIL_HOST_USER,
+    "EMAIL_PORT": settings.EMAIL_PORT,
+    "EMAIL_USE_TLS": settings.EMAIL_USE_TLS,
+    "MEMCACHED_LOCATION": os.environ.get("MEMCACHED_LOCATION", None),
+    "RDS_DB_NAME": settings.DATABASES["default"]["NAME"],
+    "RDS_HOSTNAME": settings.DATABASES["default"]["HOST"],
+    "RDS_PASSWORD": settings.DATABASES["default"]["USER"],
+    "RDS_USERNAME": settings.DATABASES["default"]["NAME"],
+    "RDS_PORT": settings.DATABASES["default"]["PORT"],
+    "SECRET_KEY": settings.SECRET_KEY,
+    "SENTRY_URL": os.environ.get("SENTRY_URL"),
+    "SUBNET_1": os.environ.get("SUBNET_1", "subnet-e260d5be"),
+    "SUBNET_2": os.environ.get("SUBNET_2", "subnet-300ea557"),
+    "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg-148b4a5e"),
 }
+
 
 task_definition = """
 {{
     "family":"{queue_name}",
-    "taskRoleArn":"{task_role_arn}",
-    "executionRoleArn":"{execution_role_arn}",
+    "taskRoleArn": "{TASK_ROLE_ARN}",
+    "executionRoleArn":"{EXECUTION_ROLE_ARN}",
     "networkMode":"awsvpc",
     "containerDefinitions":[
         {{
             "name": "{container_name}",
-            "image": "{image}",
+            "image": "{WORKER_IMAGE}",
             "essential": True,
             "environment": [
                 {{
-                    "name": "PYTHONUNBUFFERED",
-                    "value": "1"
+                  "name": "AWS_DEFAULT_REGION",
+                  "value": "{AWS_DEFAULT_REGION}"
                 }},
                 {{
-                    "name": "AWS_DEFAULT_REGION",
-                    "value": "{AWS_DEFAULT_REGION}"
+                  "name": "AWS_ACCOUNT_ID",
+                  "value": "{AWS_ACCOUNT_ID}"
                 }},
                 {{
-                    "name": "DJANGO_SERVER",
-                    "value": "{DJANGO_SERVER}"
+                  "name": "AWS_ACCESS_KEY_ID",
+                  "value": "{AWS_ACCESS_KEY_ID}"
                 }},
                 {{
-                    "name": "DJANGO_SETTINGS_MODULE",
-                    "value": "settings.{env}"
+                  "name": "AWS_SECRET_ACCESS_KEY",
+                  "value": "{AWS_SECRET_ACCESS_KEY}"
                 }},
                 {{
-                    "name": "CHALLENGE_PK",
-                    "value": "{challenge_pk}"
+                  "name": "CHALLENGE_PK",
+                  "value": "{challenge_pk}"
                 }},
                 {{
-                    "name": "CHALLENGE_QUEUE",
-                    "value": "{queue_name}"
+                  "name": "CHALLENGE_QUEUE",
+                  "value": "{queue_name}"
+                }},
+                {{
+                  "name": "DJANGO_SERVER",
+                  "value": "{DJANGO_SERVER}"
+                }},
+                {{
+                  "name": "DJANGO_SETTINGS_MODULE",
+                  "value": "settings.{ENV}"
                 }},
                 {{
                   "name": "DEBUG",
@@ -107,6 +127,10 @@ task_definition = """
                   "value": "{MEMCACHED_LOCATION}"
                 }},
                 {{
+                    "name": "PYTHONUNBUFFERED",
+                    "value": "1"
+                }},
+                {{
                   "name": "RDS_DB_NAME",
                   "value": "{RDS_DB_NAME}"
                 }},
@@ -123,6 +147,10 @@ task_definition = """
                   "value": "{RDS_USERNAME}"
                 }},
                 {{
+                  "name": "RDS_PORT",
+                  "value": "{RDS_PORT}"
+                }},
+                {{
                   "name": "SECRET_KEY",
                   "value": "{SECRET_KEY}"
                 }},
@@ -136,7 +164,7 @@ task_definition = """
             "logConfiguration": {{
                 "logDriver": "awslogs",
                 "options": {{
-                    "awslogs-group": "gsoc-2019-test",
+                    "awslogs-group": "evalai-worker-{ENV}",
                     "awslogs-region": "us-east-1",
                     "awslogs-stream-prefix": "{queue_name}",
                 }},
@@ -146,14 +174,14 @@ task_definition = """
     "requiresCompatibilities":[
         "FARGATE"
     ],
-    "cpu": "1024",
-    "memory": "2048",
+    "cpu": "{CPU}",
+    "memory": "{MEMORY}",
 }}
 """
 
 service_definition = """
 {{
-    "cluster":"gsoc2019",
+    "cluster":"{CLUSTER}",
     "serviceName":"{service_name}",
     "taskDefinition":"{task_def_arn}",
     "desiredCount":1,
@@ -163,11 +191,11 @@ service_definition = """
     "networkConfiguration":{{
         "awsvpcConfiguration": {{
             "subnets": [
-                "subnet-e260d5be",
-                "subnet-300ea557",
+                "{SUBNET_1}",
+                "{SUBNET_2}",
             ],
             'securityGroups': [
-                "sg-148b4a5e",
+                "{SUBNET_SECURITY_GROUP}",
             ],
             "assignPublicIp": "ENABLED"
         }}
@@ -181,17 +209,17 @@ service_definition = """
 
 update_service_args = """
 {{
-    "cluster":"gsoc2019",
+    "cluster":"{CLUSTER}",
     "service":"{service_name}",
     "desiredCount":num_of_tasks,
     "taskDefinition":"{task_def_arn}",
-    "forceNewDeployment":{forceNewDeployment}
+    "forceNewDeployment":{force_new_deployment}
 }}
 """
 
 delete_service_args = """
 {{
-    "cluster": "gsoc2019",
+    "cluster": "{CLUSTER}",
     "service": "{service_name}",
     "force": False
 }}
@@ -225,18 +253,12 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     dict: A dict of the task definition and it's ARN if succesful, and an error dictionary if not
     """
     container_name = "worker_{}".format(queue_name)
-    image = "{AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-{env}-worker:latest".format(AWS_ACCOUNT_ID=aws_keys["AWS_ACCOUNT_ID"], env=ENV)
-    AWS_DEFAULT_REGION = aws_keys["AWS_REGION"]
-    log_group = "{}_logs".format(queue_name)
+    task_role_arn = COMMON_SETTINGS_DICT["TASK_ROLE_ARN"]
+    execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
-    task_role_arn = TASK_ROLE_ARN
-    execution_role_arn = TASK_EXECUTION_ROLE_ARN
-
-    if task_role_arn and execution_role_arn:
-        definition = task_definition.format(queue_name=queue_name, task_role_arn=task_role_arn,
-                                            execution_role_arn=execution_role_arn, container_name=container_name,
-                                            image=image, AWS_DEFAULT_REGION=AWS_DEFAULT_REGION, env=ENV,
-                                            challenge_pk=challenge.pk, log_group=log_group, **DJANGO_SETTINGS_DICT)
+    if (task_role_arn and execution_role_arn):
+        definition = task_definition.format(queue_name=queue_name, container_name=container_name,
+                                            ENV=ENV, challenge_pk=challenge.pk, **COMMON_SETTINGS_DICT)
         definition = eval(definition)
         if not challenge.task_def_arn:
             try:
@@ -247,13 +269,13 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                     challenge.save()
                 return response
             except ClientError as e:
-                logger.info(e)
+                logger.exception(e)
                 return e.response
         else:
             message = "Error. Task definition already registered for challenge {}.".format(challenge.pk)
             return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": 400}}
     else:
-        message = "Please ensure that the TASK_ROLE_ARN & TASK_EXECUTION_ROLE_ARN are appropriately passed as environment varibles."
+        message = "Please ensure that the TASK_ROLE_ARN & TASK_EXECUTION_ROLE_ARN are appropriately passed as ENVironment varibles."
         return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": 400}}
 
 
@@ -272,28 +294,29 @@ def create_service_by_challenge_pk(client, challenge, client_token):
 
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
-    if challenge.workers is None:  # Verify if the challenge is new (i.e, service not yet created.).
-        if challenge.task_def_arn is "":
+    if (challenge.workers is None):  # Verify if the challenge is new (i.e, service not yet created.).
+        if (challenge.task_def_arn is ""):
             response = register_task_def_by_challenge_pk(client, queue_name, challenge)
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
                 return response
         task_def_arn = challenge.task_def_arn
-        definition = service_definition.format(service_name=service_name, task_def_arn=task_def_arn, client_token=client_token)
+        definition = service_definition.format(CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"], service_name=service_name, task_def_arn=task_def_arn, client_token=client_token)
         definition = eval(definition)
         try:
             response = client.create_service(**definition)
-            if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+            if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
                 challenge.workers = 1
                 challenge.save()
             return response
         except ClientError as e:
+            logger.exception(e)
             return e.response
     else:
         message = "Worker service for challenge {} already exists. Please scale, stop or delete.".format(challenge.pk)
         return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": 400}}
 
 
-def update_service_by_challenge_pk(client, challenge, num_of_tasks, forceNewDeployment=False):
+def update_service_by_challenge_pk(client, challenge, num_of_tasks, force_new_deployment=False):
     """
     Updates the worker service for a challenge, and scales the number of workers to num_of_tasks.
 
@@ -301,7 +324,7 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks, forceNewDepl
     client (boto3.client): the client used for making requests to ECS
     challenge (<class 'challenges.models.Challenge'>): The challenge object  for whom the task definition is being registered.
     num_of_tasks (int): Number of workers to scale to for the challenge.
-    forceNewDeployment (bool): Set True (mainly for restarting) to specify if you want to redploy with the latest image from ECR. Default is False.
+    force_new_deployment (bool): Set True (mainly for restarting) to specify if you want to redploy with the latest image from ECR. Default is False.
 
     Returns:
     dict: The response returned by the update_service method from boto3. If unsuccesful, returns an error dictionary
@@ -311,16 +334,17 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks, forceNewDepl
     service_name = "{}_service".format(queue_name)
     task_def_arn = challenge.task_def_arn
 
-    kwargs = update_service_args.format(service_name=service_name, task_def_arn=task_def_arn, forceNewDeployment=forceNewDeployment)
+    kwargs = update_service_args.format(CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"], service_name=service_name, task_def_arn=task_def_arn, force_new_deployment=force_new_deployment)
     kwargs = eval(kwargs)
 
     try:
         response = client.update_service(**kwargs)
-        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+        if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
             challenge.workers = num_of_tasks
             challenge.save()
         return response
     except ClientError as e:
+        logger.exception(e)
         return e.response
 
 
@@ -339,16 +363,16 @@ def delete_service_by_challenge_pk(challenge):
     client = get_boto3_client("ecs", aws_keys)
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
-    kwargs = delete_service_args.format(service_name=service_name, force=True)
+    kwargs = delete_service_args.format(CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"], service_name=service_name, force=True)
     kwargs = eval(kwargs)
     try:
-        if(challenge.workers != 0):
+        if (challenge.workers != 0):
             response = update_service_by_challenge_pk(client, challenge, 0, False)
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
                 return response
 
         response = client.delete_service(**kwargs)
-        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
+        if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
             challenge.workers = None
             challenge.save()
             client.deregister_task_definition(taskDefinition=challenge.task_def_arn)
@@ -356,10 +380,11 @@ def delete_service_by_challenge_pk(challenge):
             challenge.save()
         return response
     except ClientError as e:
-            return e.response
+        logger.exception(e)
+        return e.response
 
 
-def service_manager(client, challenge, num_of_tasks=None, forceNewDeployment=False):
+def service_manager(client, challenge, num_of_tasks=None, force_new_deployment=False):
     """
     This method determines if the challenge is new or not, and accordingly calls <update or create>_by_challenge_pk.
 
@@ -374,8 +399,8 @@ def service_manager(client, challenge, num_of_tasks=None, forceNewDeployment=Fal
     Returns:
     dict: The response returned by the respective functions update_service_by_challenge_pk or create_service_by_challenge_pk
     """
-    if challenge.workers is not None:
-        response = update_service_by_challenge_pk(client, challenge, num_of_tasks, forceNewDeployment)
+    if (challenge.workers is not None):
+        response = update_service_by_challenge_pk(client, challenge, num_of_tasks, force_new_deployment)
         return response
     else:
         client_token = client_token_generator()
@@ -394,21 +419,22 @@ def start_workers(queryset):
 
     Returns:
     dict: keys-> 'count': the number of workers successfully started.
-                 'message': the message to be displayed on the django admin page
+                 'failures': a dict of all the failures with their error messages and the challenge pk
     """
     client = get_boto3_client("ecs", aws_keys)
     count = 0
+    failures = []
     for challenge in queryset:
         if (challenge.workers == 0) or (challenge.workers is None):
             response = service_manager(client, challenge=challenge, num_of_tasks=1)
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-                return {"count": count, "message": response['Error']}
+                failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+                continue
             count += 1
         else:
-            response = "Please select only inactive challenges."
-            return {"count": count, "message": response}
-    message = "All selected challenge workers successfully started."
-    return {"count": count, "message": message}
+            response = "Please select challenge with inactive workers only."
+            failures.append({"message": response, "challenge_pk": challenge.pk})
+    return {"count": count, "failures": failures}
 
 
 def stop_workers(queryset):
@@ -422,21 +448,22 @@ def stop_workers(queryset):
 
     Returns:
     dict: keys-> 'count': the number of workers successfully stopped.
-                 'message': the message to be displayed on the django admin page
+                 'failures': a dict of all the failures with their error messages and the challenge pk
     """
     client = get_boto3_client("ecs", aws_keys)
     count = 0
+    failures = []
     for challenge in queryset:
         if (challenge.workers is not None) and (challenge.workers > 0):
             response = service_manager(client, challenge=challenge, num_of_tasks=0)
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-                return {"count": count, "message": response['Error']}
+                failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+                continue
             count += 1
         else:
-            response = "Please select only active challenges."
-            return {"count": count, "message": response}
-    message = "All selected challenge workers successfully stopped."
-    return {"count": count, "message": message}
+            response = "Please select challenges with active workers only."
+            failures.append({"message": response, "challenge_pk": challenge.pk})
+    return {"count": count, "failures": failures}
 
 
 def scale_workers(queryset, num_of_tasks):
@@ -450,23 +477,26 @@ def scale_workers(queryset, num_of_tasks):
 
     Returns:
     dict: keys-> 'count': the number of workers successfully started.
-                 'message': the message to be displayed on the django admin page
+                 'failures': a dict of all the failures with their error messages and the challenge pk
     """
     client = get_boto3_client("ecs", aws_keys)
     count = 0
+    failures = []
     for challenge in queryset:
-        if challenge.workers is None:
-            response = "Please start worker for Challenge {} before scaling.".format(challenge.pk)
-            return {"count": count, "message": response}
+        if (challenge.workers is None):
+            response = "Please start worker(s) before scaling.".format(challenge.pk)
+            failures.append({"message": response, "challenge_pk": challenge.pk})
+            continue
         if (num_of_tasks == challenge.workers):
-            response = "Please scale to a different number. Challenge {} has {} workers.".format(challenge.pk, num_of_tasks)
-            return {"count": count, "message": response}
+            response = "Please scale to a different number. Challenge has {} workers.".format(num_of_tasks)
+            failures.append({"message": response, "challenge_pk": challenge.pk})
+            continue
         response = service_manager(client, challenge=challenge, num_of_tasks=num_of_tasks)
         if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-            return {"count": count, "message": response}
+            failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+            continue
         count += 1
-    message = "All selected challenge workers successfully scaled."
-    return {"count": count, "message": message}
+    return {"count": count, "failures": failures}
 
 
 def delete_workers(queryset):
@@ -480,21 +510,21 @@ def delete_workers(queryset):
 
     Returns:
     dict: keys-> 'count': the number of workers successfully stopped.
-                 'message': the message to be displayed on the django admin page
+                 'failures': a dict of all the failures with their error messages and the challenge pk
     """
     count = 0
+    failures = []
     for challenge in queryset:
-        if challenge.workers is not None:
+        if (challenge.workers is not None):
             response = delete_service_by_challenge_pk(challenge=challenge)
+            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+                failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+                continue
+            count += 1
         else:
-            response = "Please select only active challenges. Challenge {} is inactive.".format(challenge.pk)
-            return {"count": count, "message": response}
-
-        if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-            return {"count": count, "message": response['Error']}
-        count += 1
-    message = "All selected challenge workers successfully deleted."
-    return {"count": count, "message": message}
+            response = "Please select challenges with active workers only."
+            failures.append({"message": response, "challenge_pk": challenge.pk})
+    return {"count": count, "failures": failures}
 
 
 def restart_workers(queryset):
@@ -508,22 +538,22 @@ def restart_workers(queryset):
 
     Returns:
     dict: keys-> 'count': the number of workers successfully stopped.
-                 'message': the message to be displayed on the django admin page
+                 'failures': a dict of all the failures with their error messages and the challenge pk
     """
     client = get_boto3_client("ecs", aws_keys)
     count = 0
+    failures = []
     for challenge in queryset:
         if (challenge.workers is not None) and (challenge.workers > 0):
-            response = service_manager(client, challenge, num_of_tasks=challenge.workers, forceNewDeployment=True)
+            response = service_manager(client, challenge, num_of_tasks=challenge.workers, force_new_deployment=True)
+            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+                failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+                continue
+            count += 1
         else:
-            response = "Please select only active challenges. Challenge {} is inactive.".format(challenge.pk)
-            return {"count": count, "message": response}
-
-        if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-            return {"count": count, "message": response['Error']}
-        count += 1
-    message = "All selected challenge workers successfully restarted."
-    return {"count": count, "message": message}
+            response = "Please select challenges with active workers only."
+            failures.append({"message": response, "challenge_pk": challenge.pk})
+    return {"count": count, "failures": failures}
 
 
 def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
@@ -533,10 +563,10 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     """
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
-    if prev != curr:
-        if(field_name == "test_annotation"):
+    if (prev != curr):
+        if (field_name == "test_annotation"):
             challenge = instance.challenge
         else:
             challenge = instance
         restart_workers([challenge])
-        logger.info("The worker service for challenge {} was restarted.".format(instance.pk))
+        logger.info("The worker service for challenge {} was restarted, as {} was changed.".format(instance.pk, field_name))

@@ -26,7 +26,7 @@ from .models import (
 
 
 class UpdateNumOfWorkersForm(ActionForm):
-    label = " Number of Workers. (Enter a whole number while scaling. Otherwise, ignore.)"
+    label = "Number of workers. (Enter a whole number while scaling. Otherwise, ignore.)"
     num_of_tasks = forms.IntegerField(initial=-1, label=label, required=False)
 
 
@@ -66,65 +66,80 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
 
     def start_selected_workers(self, request, queryset):
         response = start_workers(queryset)
-        count = response["count"]
-        message = response["message"]
+        count, failures = response["count"], response["failures"]
 
-        if(count == queryset.count()):
+        if (count == queryset.count()):
+            message = "All selected challenge workers successfully started."
             messages.success(request, message)
         else:
             messages.success(request, "{} challenge workers were succesfully started.".format(count))
-            messages.error(request, message)
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(challenge_pk, message)
+                messages.error(request, display_message)
     start_selected_workers.short_description = "Start all selected challenge workers."
 
     def stop_selected_workers(self, request, queryset):
         response = stop_workers(queryset)
-        count = response["count"]
-        message = response["message"]
+        count, failures = response["count"], response["failures"]
 
-        if(count == queryset.count()):
+        if (count == queryset.count()):
+            message = "All selected challenge workers successfully stopped."
             messages.success(request, message)
         else:
             messages.success(request, "{} challenge workers were succesfully stopped.".format(count))
-            messages.error(request, message)
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(challenge_pk, message)
+                messages.error(request, display_message)
     stop_selected_workers.short_description = "Stop all selected challenge workers."
 
     def scale_selected_workers(self, request, queryset):
         num_of_tasks = int(request.POST['num_of_tasks'])
-        if (num_of_tasks >= 0):
+        if (num_of_tasks >= 0 and num_of_tasks % 1 == 0):
             response = scale_workers(queryset, num_of_tasks)
-            count = response["count"]
-            message = response["message"]
-            if(count == queryset.count()):
+            count, failures = response["count"], response["failures"]
+            if (count == queryset.count()):
+                message = "All selected challenge workers successfully scaled."
                 messages.success(request, message)
             else:
                 messages.success(request, "{} challenge workers were succesfully scaled.".format(count))
-                messages.error(request, message)
+                for fail in failures:
+                    challenge_pk, message = fail["challenge_pk"], fail["message"]
+                    display_message = "Challenge {}: {}".format(challenge_pk, message)
+                    messages.error(request, display_message)
         else:
             messages.warning(request, "Please enter a valid whole number to scale.")
     scale_selected_workers.short_description = "Scale all selected challenge workers to a given number."
 
     def restart_selected_workers(self, request, queryset):
         response = restart_workers(queryset)
-        count = response["count"]
-        message = response["message"]
+        count, failures = response["count"], response["failures"]
 
-        if(count == queryset.count()):
+        if (count == queryset.count()):
+            message = "All selected challenge workers successfully restarted."
             messages.success(request, message)
         else:
             messages.success(request, "{} challenge workers were succesfully restarted.".format(count))
-            messages.error(request, message)
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(challenge_pk, message)
+                messages.error(request, display_message)
     restart_selected_workers.short_description = "Restart all selected challenge workers."
 
     def delete_selected_workers(self, request, queryset):
         response = delete_workers(queryset)
-        count = response["count"]
-        message = response["message"]
+        count, failures = response["count"], response["failures"]
 
-        if(count == queryset.count()):
+        if (count == queryset.count()):
+            message = "All selected challenge workers successfully deleted."
             messages.success(request, message)
         else:
             messages.success(request, "{} challenge workers were succesfully deleted.".format(count))
-            messages.error(request, message)
+            for fail in failures:
+                challenge_pk, message = fail["challenge_pk"], fail["message"]
+                display_message = "Challenge {}: {}".format(challenge_pk, message)
+                messages.error(request, display_message)
     delete_selected_workers.short_description = "Delete all selected challenge workers."
 
 
