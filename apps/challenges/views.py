@@ -1125,7 +1125,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             zip_config.challenge = challenge
             zip_config.save()
 
-            if settings.DEBUG:
+            if not settings.DEBUG:
                 message = {
                     "text": "A *new challenge* has been uploaded to EvalAI.",
                     "fields": [

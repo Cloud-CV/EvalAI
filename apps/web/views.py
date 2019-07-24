@@ -110,7 +110,7 @@ def contact_us(request):
                 "message": "We have received your request and will contact you shortly."
             }
 
-            if settings.DEBUG:
+            if not settings.DEBUG:
                 message = {
                     "text": "A *contact message* is received!",
                     "fields": [
