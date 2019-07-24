@@ -5,11 +5,11 @@ from django.contrib.admin.helpers import ActionForm
 from base.admin import ImportExportTimeStampedAdmin
 
 from .aws_utils import (
-    start_workers,
-    stop_workers,
-    scale_workers,
     delete_workers,
     restart_workers,
+    scale_workers,
+    start_workers,
+    stop_workers,
 )
 
 from .models import (
