@@ -124,7 +124,7 @@
                                             </td>
                                             <td ng-repeat="(i, score) in key.result track by $index" >
                                                 {{score | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}
-                                                <span ng-if = "key.error != nil"> ± {{key.error[i] | number : leaderboard_decimal_precision}}</span>
+                                                <span ng-if = "key.error != nil"> ± {{key.error[i] | number : challenge.selectedPhaseSplit.leaderboard_decimal_precision}}</span>
                                             </td>
                                             <td>{{ key.submission__submitted_at | number: 0}}&nbsp;{{key.timeSpan}} ago
                                             </td>
