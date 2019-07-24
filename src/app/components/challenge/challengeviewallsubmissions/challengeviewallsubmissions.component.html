@@ -11,6 +11,7 @@
       <div class="row row-lr-margin">
         <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
           <app-selectphase [phases]="filteredPhases"
+            [phaseSelectionListType]="phaseSelectionListType"
             [phaseSelectionType]="phaseSelectionType"
             [phaseSelected]="phaseSelected()" #phaseselect></app-selectphase>
         </div>

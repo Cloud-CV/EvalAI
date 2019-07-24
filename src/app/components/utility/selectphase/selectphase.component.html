@@ -32,7 +32,7 @@
   </li>
 </ng-container>
 
-<ng-container *ngIf="phaseSelectionType=='selectBox'">
+<ng-container *ngIf="phaseSelectionType=='selectBox' && phaseSelectionListType=='phase'">
   <mat-form-field>
     <mat-label>Phase</mat-label>
     <mat-select class="rm-margin">
@@ -46,6 +46,36 @@
       </mat-select-trigger>
       <mat-option (click)="selectPhase(key)" [value]="key" *ngFor="let key of phases">
         <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">{{key.name}} </span>
+        <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+          <mat-chip-list *ngIf="key.showPrivate">
+            <mat-chip>Private</mat-chip>
+          </mat-chip-list>
+        </span>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</ng-container>
+
+<ng-container *ngIf="phaseSelectionType=='selectBox' && phaseSelectionListType=='phaseSplit'">
+  <mat-form-field>
+    <mat-label>Challenge Phase</mat-label>
+    <mat-select class="rm-margin" [(ngModel)]="selectedPhaseSplit">
+      <mat-select-trigger>
+        <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">
+          <span class="fw-regular">Phase:</span>{{phaseName}}, 
+          <span class="fw-regular">Split: </span>{{splitName}} &nbsp; 
+        </span>
+        <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
+          <mat-chip-list *ngIf="phaseVisibility">
+            <mat-chip>Private</mat-chip>
+          </mat-chip-list>
+        </span>
+      </mat-select-trigger>
+      <mat-option (click)="selectPhaseSplit(key, 'selectBox', 'phaseSplit')" [value]="key" *ngFor="let key of phases">
+        <span class="col-lg-9 col-md-9 col-sm-8 col-xs-7">
+          <span class="fw-regular">Phase:</span>{{key.challenge_phase_name}}, 
+          <span class="fw-regular">Split: </span>{{key.dataset_split_name}} &nbsp; 
+        </span>
         <span class="col-lg-3 col-md-3 col-sm-4 col-xs-5">
           <mat-chip-list *ngIf="key.showPrivate">
             <mat-chip>Private</mat-chip>

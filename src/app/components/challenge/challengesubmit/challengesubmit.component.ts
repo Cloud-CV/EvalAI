@@ -102,6 +102,11 @@ export class ChallengesubmitComponent implements OnInit {
   phaseSelectionType = 'radioButton';
 
   /**
+   * Select box list type
+   */
+  phaseSelectionListType = 'phase';
+
+  /**
    * Api call inside the modal to edit the submission guidelines
    */
   apiCall: any;

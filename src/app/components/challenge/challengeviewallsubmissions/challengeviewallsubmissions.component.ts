@@ -106,6 +106,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
   phaseSelectionType = 'selectBox';
 
   /**
+   * Select box list type
+   */
+  phaseSelectionListType = 'phase';
+
+  /**
    * Filter query as participant team name
    */
   filterSubmissionsQuery = '';

@@ -23,6 +23,21 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   @Input() phaseSelected: any;
 
   /**
+   * Selected phase split callback
+   */
+  @Input() phaseSplitSelected: any;
+
+    /**
+   * Phase selection type (radio button or select box)
+   */
+  @Input() phaseSelectionType: string;
+
+  /**
+   * Phase selection list type (phase or phase split)
+   */
+  @Input () phaseSelectionListType: string;
+
+  /**
    * Selected phase name
    */
   phaseName = '';
@@ -33,9 +48,19 @@ export class SelectphaseComponent implements OnInit, OnChanges {
   phaseVisibility = false;
 
   /**
-   * Phase selection type (radio button or select box)
+   * Currently selected phase
    */
-  @Input() phaseSelectionType: string;
+  selectedPhase: any = null;
+
+  /**
+   * Selected split name
+   */
+  splitName = '';
+
+  /**
+   * Selected phase split
+   */
+  selectedPhaseSplit = '';
 
   /**
    * Challenge object
@@ -74,6 +99,22 @@ export class SelectphaseComponent implements OnInit, OnChanges {
     this.phaseName = phase.name;
     this.phaseVisibility = phase.showPrivate;
     this.phaseSelected(phase);
+  }
+
+  /**
+   * Select a particular phase split.
+   * @param phaseSplit  phase split to be selected.
+   * @param phaseSelectionType phase selection type (radio button or select box).
+   * @param phaseSelectionListType phase selection list type (phase or phase split)
+   */
+  selectPhaseSplit(phaseSplit, phaseSelectionType, phaseSelectionListType) {
+    this.phaseSelectionType = phaseSelectionType;
+    this.phaseSelectionListType = phaseSelectionListType;
+    this.selectedPhaseSplit = phaseSplit;
+    this.phaseName = phaseSplit.challenge_phase_name;
+    this.splitName = phaseSplit.dataset_split_name;
+    this.phaseVisibility = phaseSplit.showPrivate;
+    this.phaseSplitSelected(phaseSplit);
   }
 
   /**
