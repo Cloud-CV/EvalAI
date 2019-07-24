@@ -1,11 +1,9 @@
 import os
-import responses
 import json
 import shutil
 
 from datetime import timedelta
 
-from django.conf import settings
 from django.core.urlresolvers import reverse_lazy, resolve
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
