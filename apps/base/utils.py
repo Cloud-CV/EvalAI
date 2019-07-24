@@ -12,6 +12,7 @@ import uuid
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
 
+from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 
@@ -209,22 +210,25 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
         webhook {string} -- slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
         message {str} -- JSON/Text message to be sent to slack (default: {""})
     """
-    try:
-        data = {
-            "text": message["text"],
-            "attachments": [
-                {
-                    "color": "ffaf4b",
-                    "fields": message["fields"]
-                }
-            ]
-        }
-        return requests.post(
-            webhook,
-            data=json.dumps(data),
-            headers={"Content-Type": "application/json"}
-        )
-    except Exception as e:
+    data = {
+        "text": message["text"],
+        "attachments": [
+            {
+                "color": "ffaf4b",
+                "fields": message["fields"]
+            }
+        ]
+    }
+    response = requests.post(
+        webhook,
+        data=json.dumps(data),
+        headers={"Content-Type": "application/json"}
+    )
+    if type(response) == requests.models.Response and response.status_code == status.HTTP_200_OK:
+        return response
+    else:
         logger.exception(
-            "Exception raised while sending slack notification. \n Exception message: {}".format(e)
+            "Exception raised while sending slack notification. \n Exception message: {}".format(
+                message['text']
+            )
         )
