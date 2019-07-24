@@ -116,6 +116,11 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
   phaseSelectionType = 'selectBox';
 
   /**
+   * Select box list type
+   */
+  phaseSelectionListType = 'phase';
+
+  /**
    * @param showPagination Is pagination
    * @param paginationMessage Pagination message
    * @param isPrev Previous page state

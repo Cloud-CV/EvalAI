@@ -42,10 +42,10 @@ export class ApiService {
    * @param path  path of API call.
    * @param isJson  set to false when fetching some non-JSON content.
    */
-  getUrl(path: string, isJson = true) {
+  getUrl(path: string, isJson = true, isLoader = true) {
     if (isJson) {
       this.prepareHttpOptions();
-      return this.loadingWrapper(this.http.get(this.API + path, this.HTTP_OPTIONS));
+      return this.loadingWrapper(this.http.get(this.API + path, this.HTTP_OPTIONS), isLoader);
     } else {
       this.prepareHttpOptions(true);
       const TEMP = Object.assign({}, this.HTTP_OPTIONS, { observe: 'response', responseType: 'text' });
@@ -117,9 +117,11 @@ export class ApiService {
    * @param path  path of API call.
    * @param body  stringified json body.
    */
-  loadingWrapper(httpCall) {
+  loadingWrapper(httpCall, isLoader = true) {
     const SELF = this;
-    setTimeout(() => {this.globalService.toggleLoading(true); }, 100);
+    if (isLoader) {
+      setTimeout(() => {this.globalService.toggleLoading(true); }, 100);
+    }
     let success = (params) => {};
     let error = (params) => {};
     let final = () => {};

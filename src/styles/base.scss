@@ -38,6 +38,12 @@ body {
   margin: 0px;
 }
 
+.result-wrn {
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+
 /* Margins */
 
 .ev-mt-50 {
@@ -328,7 +334,32 @@ mat-chip {
 }
 
 
+
+/* Refresh list page */
+
+.update-page {
+  display: block;
+  background: $dark-gray;
+  overflow: auto;
+  padding: 10px;
+  text-align: center;
+  color: #fff;
+  position: absolute;
+  width: auto;
+  right: 0;
+  padding: 10px 30px;
+  box-shadow: 2px 2px 9px #6d6d6d;
+  border-radius: 3px 0px 0px 3px;
+  font-weight: 300;
+  transition: all 0.2s ease-in-out;
+  &:hover {
+      box-shadow: -1px 0px 9px #bbbbbb;
+  }
+}
+
+
 /**File field styles*/
+
 .file-field {
   position: relative;
 }
@@ -695,6 +726,7 @@ input[type=checkbox].filled-in:not(:checked)+label:after {
 
 
 /* radio button styles */
+
 [type=radio]:not(:checked), [type=radio]:checked {
   position: absolute;
   left: -9999px;

@@ -1,35 +1,119 @@
-<div class="challenge-leaderboard-container">
-  <div class="phase-select-div">
-    <app-selectphase [phases]="filteredPhaseSplits" [phaseSelected]="phaseSplitSelected()" #phasesplitselect></app-selectphase>
-  </div>
-  <div *ngIf="leaderboard.length <= 0" class="leaderboard-empty">
-      <!-- <img src="assets/images/sadcloud.png" /> -->
-      <i class="fas fa-clipboard" aria-hidden="true"></i> No Results..
-  </div>
-  <div class="leaderboard-table-div" *ngIf="leaderboard.length > 0">
-    
-    <table class="table-light leaderboard-table">
-        <tr>
-          <th>
-            <div (click)="sortColumn!='rank' && reverseSort = false;sortColumn == 'rank' && reverseSort=!reverseSort;sortColumn='rank';sortLeaderboard();" class="fa-stack fa-1x"><span>Rank </span><i class="fas fa-sort-up fa-stack-1x" [class.dark]="reverseSort && sortColumn == 'rank'"></i><i class="fas fa-sort-down fa-stack-1x" [class.dark]="!reverseSort && sortColumn == 'rank'"></i></div>
-          </th>
-          <th>
-          <div (click)="sortColumn!='string' && reverseSort = false;sortColumn == 'string' && reverseSort=!reverseSort;sortColumn='string';sortLeaderboard();" class="fa-stack fa-1x fat"><span>Participant Team</span><i class="fas fa-sort-up fa-stack-1x" [class.dark]="reverseSort && sortColumn == 'string'"></i><i class="fas fa-sort-down fa-stack-1x" [class.dark]="!reverseSort && sortColumn == 'string'"></i></div>
-          </th>
-          <th *ngFor="let key of leaderboard[0].leaderboard__schema.labels;index as i" [attr.data-index]="i"><div href="#" (click)="sortColumn!='number' && columnIndexSort != i && reverseSort = false;sortColumn == 'number' && columnIndexSort == i && reverseSort=!reverseSort;sortColumn = 'number';columnIndexSort = i;sortLeaderboard();" class="fa-stack fa-1x"><span>{{key}}</span><i class="fas fa-sort-up fa-stack-1x" [class.dark]="reverseSort && sortColumn == 'number' && columnIndexSort == i"></i><i class="fas fa-sort-down fa-stack-1x" [class.dark]="!reverseSort && sortColumn == 'number' && columnIndexSort == i"></i></div>
-          </th>
-          <th>
-            <div (click)="sortColumn!='date' && reverseSort = false;sortColumn == 'date' && reverseSort=!reverseSort;sortColumn='date';sortLeaderboard();" class="fa-stack fa-1x fat"><span>Last Submission at</span><i class="fas fa-sort-up fa-stack-1x" [class.dark]="reverseSort && sortColumn == 'date'"></i>
-            <i class="fas fa-sort-down fa-stack-1x" [class.dark]="!reverseSort && sortColumn == 'date'"></i>
-            </div>
-          </th>
-        </tr>
-        <tr *ngFor="let key of leaderboard" [class.highlight]="key.is_highlighted" class="pointer" [routerLink]="routerPublic.url.split('/').length == 6 ? ['../' + key.submission__participant_team__team_name] : [key.submission__participant_team__team_name]">
-          <td><div>{{initial_ranking[key.submission__participant_team__team_name]}}</div></td>
-          <td><div class="fw-regular">{{key.submission__participant_team__team_name}}</div></td>
-          <td *ngFor="let score of key.result"><div>{{score | number : '1.2-2'}}</div></td>
-          <td><div>{{ key.submission__submitted_at_formatted }}</div></td>
-        </tr>
-    </table>
+<div class="challenge-card">
+  <div class="ev-card-panel card-bt-margin">
+    <div class="ev-md-container ev-panel-title" *ngIf="challenge.leaderboard_description">
+      <div class="row row-lr-margin">
+        <div class="col-sm-12 col-xs-12 col-lr-pad">
+          <span class="fw-regular">Description</span>
+        </div>
+        <div class="col-sm-12 md-body-1 col-lr-pad" [innerHTML]="challenge.leaderboard_description"></div>
+      </div>
+    </div>
+    <div class="ev-md-container bottom-hr-line">
+      <div (click)="refreshLeaderboard()" class="pointer update-page" *ngIf="showLeaderboardUpdate">
+        <span class="text-white">Page is Outdated, Click to update&nbsp;
+        <i class="fa fa-refresh text-highlight"></i></span>
+      </div>
+      <div class="row row-lr-margin phase-title">
+        <div class="col-sm-12">
+          <strong class="fw-semibold content fs-15">Please select from following phases!</strong>
+        </div>
+      </div>
+      <div class="row row-lr-margin">
+        <div class="col-sm-6 col-xs-12 col-lr-pad phase-select-box">
+          <app-selectphase [phases]="filteredPhaseSplits"
+            [phaseSelectionType]="phaseSelectionType"
+            [phaseSelectionListType]="phaseSelectionListType"
+            [phaseSplitSelected]="phaseSplitSelected()"
+            #phasesplitselect>
+          </app-selectphase>
+        </div>
+      </div>
+    </div>
+
+    <div class="ev-card-body exist-team-card">
+      <div class="row row-lr-margin">
+        <div class="horizontal-scroll">
+          <div class="col-sm-12 col-lr-pad">
+            <div *ngIf="leaderboard.length <= 0 && selectedPhaseSplit == null"
+              class="fw-regular result-wrn">No phase selected.</div>
+              <div *ngIf="leaderboard.length > 0 && selectedPhaseSplit"
+                class="result-wrn content">
+                <mat-chip-list>
+                  <mat-chip>B</mat-chip> - Baseline submission
+                </mat-chip-list>
+              </div>
+
+              <table *ngIf="leaderboard.length > 0 && selectedPhaseSplit" class="centered highlight">
+                <thead>
+                  <tr class="content">
+                    <td data-field="rank" class="align-center">
+                      <a (click)="sortNonMetricsColumn('rank')">
+                        <span class="fw-regular fs-18">Rank </span>
+                        <span class="fa-stack fa-1x">
+                          <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort && 
+                            sortColumn == 'rank' ? 'text-med-black' : 'text-light-black fw-semibold'"></i>
+                          <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="!reverseSort && 
+                            sortColumn == 'rank' ? 'text-med-black' : 'text-light-black fw-semibold'"></i>
+                        </span>
+                      </a>
+                    </td>
+                    <td data-field="team" class="align-center">
+                      <a (click)="sortNonMetricsColumn('string')">
+                        <span class="fw-regular fs-18">Participant Team</span>
+                        <span class="fa-stack fa-1x">
+                          <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort && 
+                            sortColumn == 'string'? 'text-med-black' : 'text-light-black fw-semibold'"></i>
+                          <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="reverseSort && 
+                            sortColumn == 'string'? 'text-med-black' : 'text-light-black fw-semibold'"></i>
+                        </span>
+                      </a>
+                    </td>
+                    <td *ngFor="let key of leaderboard[0].leaderboard__schema.labels;index as i"
+                      [attr.data-index]="i" class="align-center">
+                        <a (click)="sortMetricsColumn(i)">
+                          <span class="fw-regular fs-18">{{key}}</span>
+                          <span class="fa-stack fa-1x">
+                            <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort && 
+                              sortColumn == 'number'? 'text-med-black' : 'text-light-black fw-semibold'"></i>
+                            <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="!reverseSort && 
+                              sortColumn == 'number'? 'text-med-black' : 'text-light-black fw-semibold'"></i>
+                          </span>
+                        </a>
+                    </td>
+                    <td data-field="submission_time" class="align-center">
+                      <a (click)="sortNonMetricsColumn('date')">
+                        <span class="fs-18 fw-regular">Last submission at</span>
+                        <span class="fa-stack fa-1x">
+                          <i class="fa fa-sort-asc fa-stack-1x" [ngClass]="reverseSort && 
+                            sortColumn == 'date'? 'text-med-black' : 'text-light-black w-500'"></i>
+                          <i class="fa fa-sort-desc fa-stack-1x" [ngClass]="!reverseSort && 
+                            sortColumn == 'date'? 'text-med-black' : 'text-light-black w-500'"></i>
+                        </span>
+                      </a>
+                    </td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let key of leaderboard" class="content">
+                    <td>{{initial_ranking[key.submission__participant_team__team_name]}}</td>
+                    <td class="fw-regular">{{key.submission__participant_team__team_name}}
+                      <span *ngIf="key.submission__is_baseline">
+                        <mat-chip-list>
+                          <mat-chip>B</mat-chip>
+                        </mat-chip-list>
+                      </span>
+                    </td>
+                    <td *ngFor="let score of key.result">{{score | number : '1.2-2'}}</td>
+                    <td><div>{{ key.submission__submitted_at_formatted }}</div></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="leaderboard.length <= 0 && selectedPhaseSplit">
+                <p>No results to show!</p>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
