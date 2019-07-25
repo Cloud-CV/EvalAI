@@ -126,7 +126,7 @@ class Challenge(TimeStampedModel):
         null=True, blank=True, default=None
     )
     # The task definition ARN for the challenge, used for updating and creating service.
-    task_def_arn = models.CharField(blank=True, max_length=2048, default="")
+    task_def_arn = models.CharField(null=True, blank=True, max_length=2048, default="")
 
     class Meta:
         app_label = "challenges"

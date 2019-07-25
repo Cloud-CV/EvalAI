@@ -27,7 +27,6 @@ COMMON_SETTINGS_DICT = {
     "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
     "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
     "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
-    "TASK_ROLE_ARN": os.environ.get("TASK_ROLE_ARN", "dummy_role"),
     "EXECUTION_ROLE_ARN": os.environ.get("EXECUTION_ROLE_ARN", "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(aws_keys["AWS_ACCOUNT_ID"])),
     "WORKER_IMAGE": os.environ.get("WORKER_IMAGE", "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(aws_keys["AWS_ACCOUNT_ID"], ENV)),
     "CPU": os.environ.get("CPU", 1024),
@@ -48,6 +47,9 @@ COMMON_SETTINGS_DICT = {
     "RDS_PORT": settings.DATABASES["default"]["PORT"],
     "SECRET_KEY": settings.SECRET_KEY,
     "SENTRY_URL": os.environ.get("SENTRY_URL"),
+}
+
+VPC_DICT = {
     "SUBNET_1": os.environ.get("SUBNET_1", "subnet-e260d5be"),
     "SUBNET_2": os.environ.get("SUBNET_2", "subnet-300ea557"),
     "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg-148b4a5e"),
@@ -57,7 +59,6 @@ COMMON_SETTINGS_DICT = {
 task_definition = """
 {{
     "family":"{queue_name}",
-    "taskRoleArn": "{TASK_ROLE_ARN}",
     "executionRoleArn":"{EXECUTION_ROLE_ARN}",
     "networkMode":"awsvpc",
     "containerDefinitions":[
@@ -253,10 +254,9 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     dict: A dict of the task definition and it's ARN if succesful, and an error dictionary if not
     """
     container_name = "worker_{}".format(queue_name)
-    task_role_arn = COMMON_SETTINGS_DICT["TASK_ROLE_ARN"]
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
-    if (task_role_arn and execution_role_arn):
+    if (execution_role_arn):
         definition = task_definition.format(queue_name=queue_name, container_name=container_name,
                                             ENV=ENV, challenge_pk=challenge.pk, **COMMON_SETTINGS_DICT)
         definition = eval(definition)
@@ -273,10 +273,10 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 return e.response
         else:
             message = "Error. Task definition already registered for challenge {}.".format(challenge.pk)
-            return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": 400}}
+            return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}}
     else:
-        message = "Please ensure that the TASK_ROLE_ARN & TASK_EXECUTION_ROLE_ARN are appropriately passed as ENVironment varibles."
-        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": 400}}
+        message = "Please ensure that the TASK_EXECUTION_ROLE_ARN is appropriately passed as an environment varible."
+        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}}
 
 
 def create_service_by_challenge_pk(client, challenge, client_token):
@@ -300,7 +300,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
                 return response
         task_def_arn = challenge.task_def_arn
-        definition = service_definition.format(CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"], service_name=service_name, task_def_arn=task_def_arn, client_token=client_token)
+        definition = service_definition.format(CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"], service_name=service_name, task_def_arn=task_def_arn, client_token=client_token, **VPC_DICT)
         definition = eval(definition)
         try:
             response = client.create_service(**definition)
@@ -313,7 +313,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             return e.response
     else:
         message = "Worker service for challenge {} already exists. Please scale, stop or delete.".format(challenge.pk)
-        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": 400}}
+        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}}
 
 
 def update_service_by_challenge_pk(client, challenge, num_of_tasks, force_new_deployment=False):
@@ -484,11 +484,11 @@ def scale_workers(queryset, num_of_tasks):
     failures = []
     for challenge in queryset:
         if (challenge.workers is None):
-            response = "Please start worker(s) before scaling.".format(challenge.pk)
+            response = "Please start worker(s) before scaling."
             failures.append({"message": response, "challenge_pk": challenge.pk})
             continue
         if (num_of_tasks == challenge.workers):
-            response = "Please scale to a different number. Challenge has {} workers.".format(num_of_tasks)
+            response = "Please scale to a different number. Challenge has {} worker(s).".format(num_of_tasks)
             failures.append({"message": response, "challenge_pk": challenge.pk})
             continue
         response = service_manager(client, challenge=challenge, num_of_tasks=num_of_tasks)
