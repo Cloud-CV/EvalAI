@@ -242,12 +242,17 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             )
 
         if 'file_url' in request.data:
-            print('coming')
-            download_file_and_publish_submission_message(
+            download_file_and_publish_submission_message.delay(
                 request.data['file_url'],
+                request.user.id,
+                request.method,
                 challenge_id,
                 challenge_phase_id
             )
+            response_data = {
+                'message': 'Please wait while your submission being evaluated!'
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
         else:
             serializer = SubmissionSerializer(
                 data=request.data,

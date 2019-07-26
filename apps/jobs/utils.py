@@ -151,8 +151,11 @@ def url_is_valid(url):
 
 
 def get_file_from_url(url):
+    """ Get file object from a url """
+
     BASE_TEMP_DIR = tempfile.mkdtemp()
     file_name  = url.split("/")[-1]
+    print(file_name)
     file_path = os.path.join(BASE_TEMP_DIR, file_name)
     file_obj = {}
     filename, headers = urllib.request.urlretrieve(url, file_path)
