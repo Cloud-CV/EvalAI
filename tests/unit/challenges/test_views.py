@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import os
+import responses
 import shutil
 
 from datetime import timedelta
@@ -2476,6 +2477,8 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC,
+            leaderboard_decimal_precision=2,
+            is_leaderboard_order_descending=True
         )
 
         self.challenge_phase_split_host = ChallengePhaseSplit.objects.create(
@@ -2682,9 +2685,11 @@ class CreateChallengeUsingZipFile(APITestCase):
             content_type="application/zip",
         )
 
+    @responses.activate
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -2694,9 +2699,11 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    @responses.activate
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded_successfully(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -2713,7 +2720,9 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    @responses.activate
     def test_create_challenge_using_zip_file_when_server_error_occurs(self):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -2729,9 +2738,11 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    @responses.activate
     def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={
@@ -2751,9 +2762,11 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    @responses.activate
     def test_create_challenge_using_zip_file_when_user_is_not_authenticated(
         self
     ):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -2766,7 +2779,9 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(list(response.data.values())[0], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    @responses.activate
     def test_create_challenge_using_zip_file_success(self):
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
@@ -2953,6 +2968,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver1/",
                 publication_url="http://testserver1/",
                 is_public=True,
+                is_flagged=True,
             )
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
@@ -2971,6 +2987,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver2/",
                 publication_url="http://testserver2/",
                 is_public=True,
+                is_flagged=True,
             )
 
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
@@ -2989,6 +3006,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 project_url="http://testserver3/",
                 publication_url="http://testserver3/",
                 is_public=True,
+                is_flagged=True,
             )
 
         self.client.force_authenticate(user=self.user6)
@@ -3054,6 +3072,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "created_by": submission.created_by.username,
                     "status": submission.status,
                     "is_public": submission.is_public,
+                    "is_flagged": submission.is_flagged,
                     "submission_number": submission.submission_number,
                     "submitted_at": "{0}{1}".format(
                         submission.submitted_at.isoformat(), "Z"
@@ -3111,6 +3130,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     self.submission1.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "is_public": self.submission1.is_public,
+                "is_flagged": self.submission1.is_flagged,
                 "when_made_public": self.submission1.when_made_public,
                 "is_baseline": self.submission1.is_baseline,
             }
@@ -3603,6 +3623,8 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "leaderboard": self.leaderboard.pk,
             "challenge_phase": self.challenge_phase.pk,
             "visibility": self.challenge_phase_split.visibility,
+            "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,
+            "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)

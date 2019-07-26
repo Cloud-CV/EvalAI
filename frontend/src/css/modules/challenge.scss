@@ -9,6 +9,12 @@
     }
 }
 
+.challenge-description a, .evaluation-details a, .terms-and-conditions a,
+.phase-description a, .submission-guidelines a {
+    color: #2196F3;
+    cursor: pointer;
+}
+
 a.active-challenge {
     color: $dark-black;
     display: block;
@@ -185,6 +191,28 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
 
 #option-text-color {
     color: #252833;
+}
+
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}
+
+
+.spin {
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+.progress-indicator {
+    width: 14px;
 }
 
 .btn-switch {
