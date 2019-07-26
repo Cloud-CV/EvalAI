@@ -3770,3 +3770,141 @@ class StarChallengesTest(BaseAPITestClass):
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
+
+    def setUp(self):
+        super(GetChallengePhaseByPkTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_challenge_phase_by_pk',
+                                kwargs={'pk': self.challenge_phase.pk})
+
+    def test_get_challenge_phase_by_pk(self):
+        expected = {
+            "id": self.challenge_phase.id,
+            "name": self.challenge_phase.name,
+            "description": self.challenge_phase.description,
+            "leaderboard_public": self.challenge_phase.leaderboard_public,
+            "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
+            "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "challenge": self.challenge_phase.challenge.pk,
+            "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+            'max_submissions_per_month': self.challenge_phase.max_submissions_per_month,
+            "max_submissions": self.challenge_phase.max_submissions,
+            "is_public": self.challenge_phase.is_public,
+            "is_active": True,
+            "codename": self.challenge_phase.codename,
+            "slug": self.challenge_phase.slug,
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_phase_by_pk_if_pk_does_not_exist(self):
+        self.url = reverse_lazy('challenges:get_challenge_phase_by_pk',
+                                kwargs={'pk': self.challenge_phase.pk + 2})
+        expected = {
+            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk + 2)
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
+
+    def setUp(self):
+        super(GetChallengePhasesByChallengePkTest, self).setUp()
+        self.url = reverse_lazy('challenges:get_challenge_phases_by_challenge_pk',
+                                kwargs={"challenge_pk": self.challenge.pk},)
+
+        self.user1 = User.objects.create(
+            username="someuser1",
+            email="user1@test.com",
+            password="secret_psassword",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email="user1@test.com",
+            primary=True,
+            verified=True,
+        )
+
+    def test_get_challenge_phases_by_challenge_pk(self):
+        expected = [
+            {
+                "id": self.private_challenge_phase.id,
+                "name": self.private_challenge_phase.name,
+                "description": self.private_challenge_phase.description,
+                "leaderboard_public": self.private_challenge_phase.leaderboard_public,
+                "start_date": "{0}{1}".format(
+                    self.private_challenge_phase.start_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "end_date": "{0}{1}".format(
+                    self.private_challenge_phase.end_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "challenge": self.private_challenge_phase.challenge.pk,
+                "max_submissions_per_day": self.private_challenge_phase.max_submissions_per_day,
+                "max_submissions_per_month": self.private_challenge_phase.max_submissions_per_month,
+                "max_submissions": self.private_challenge_phase.max_submissions,
+                "is_public": self.private_challenge_phase.is_public,
+                "is_active": True,
+                "is_submission_public": self.private_challenge_phase.is_submission_public,
+                "codename": self.private_challenge_phase.codename,
+                "test_annotation": "http://testserver%s"
+                % (self.private_challenge_phase.test_annotation.url),
+                "slug": self.private_challenge_phase.slug,
+            },
+            {
+                "id": self.challenge_phase.id,
+                "name": self.challenge_phase.name,
+                "description": self.challenge_phase.description,
+                "leaderboard_public": self.challenge_phase.leaderboard_public,
+                "start_date": "{0}{1}".format(
+                    self.challenge_phase.start_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "end_date": "{0}{1}".format(
+                    self.challenge_phase.end_date.isoformat(), "Z"
+                ).replace("+00:00", ""),
+                "challenge": self.challenge_phase.challenge.pk,
+                "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
+                "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
+                "max_submissions": self.challenge_phase.max_submissions,
+                "is_public": self.challenge_phase.is_public,
+                "is_active": True,
+                "is_submission_public": self.challenge_phase.is_submission_public,
+                "codename": self.challenge_phase.codename,
+                "test_annotation": "http://testserver%s"
+                % (self.challenge_phase.test_annotation.url),
+                "slug": self.challenge_phase.slug,
+            }
+        ]
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_challenge_phases_by_challenge_pk_when_challenge_does_not_exist(self):
+        self.url = reverse_lazy(
+            'challenges:get_challenge_phases_by_challenge_pk',
+            kwargs={"challenge_pk": self.challenge.pk + 10},
+        )
+
+        expected = {
+            "detail": "Challenge {} does not exist".format(
+                self.challenge.pk + 10
+            )
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_challenge_phases_by_challenge_pk_when_user_is_not_challenge_host(self):
+        """
+        This is the case in which a user is not a challenge host
+        """
+        self.client.force_authenticate(user=self.user1)
+        expected = {"error": "Sorry, you are not authorized to access these challenge phases."}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
