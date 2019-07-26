@@ -38,10 +38,11 @@ from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
 from base.utils import (
+    get_queue_name,
+    get_url_from_hostname,
     paginated_queryset,
     send_email,
-    get_url_from_hostname,
-    get_queue_name,
+    send_slack_notification
 )
 from challenges.utils import (
     get_challenge_model,
@@ -1123,6 +1124,25 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
             zip_config.challenge = challenge
             zip_config.save()
+
+            if not settings.DEBUG:
+                message = {
+                    "text": "A *new challenge* has been uploaded to EvalAI.",
+                    "fields": [
+                        {
+                            "title": "Email",
+                            "value": request.user.email,
+                            "short": False
+                        },
+                        {
+                            "title": "Challenge title",
+                            "value": challenge.title,
+                            "short": False
+                        }
+                    ]
+                }
+                send_slack_notification(message=message)
+
             response_data = {
                 "success": "Challenge {} has been created successfully and"
                 " sent for review to EvalAI Admin.".format(challenge.title)
