@@ -60,6 +60,7 @@ OUR_APPS = [
 THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
+    "celery",
     "corsheaders",
     "django_ses",
     "import_export",
@@ -187,6 +188,10 @@ AUTHENTICATION_BACKENDS = (
     # `allauth` specific authentication methods, such as login by e-mail
     "allauth.account.auth_backends.AuthenticationBackend",
 )
+
+# Broker url for celery
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True

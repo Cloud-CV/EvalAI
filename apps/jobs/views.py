@@ -60,6 +60,7 @@ from .serializers import (
     CreateLeaderboardDataSerializer,
     RemainingSubmissionDataSerializer,
 )
+from .tasks import download_file_and_publish_submission_message
 from .utils import get_submission_model, get_remaining_submission_for_a_phase
 
 logger = logging.getLogger(__name__)
@@ -234,32 +235,40 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             >= challenge_phase.max_concurrent_submissions_allowed
         ):
             message = "You have {} submissions that are being processed. \
-                       Please wait for them to finish and then try again."
+                Please wait for them to finish and then try again."
             response_data = {"error": message.format(submissions_in_progress)}
             return Response(
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        serializer = SubmissionSerializer(
-            data=request.data,
-            context={
-                "participant_team": participant_team,
-                "challenge_phase": challenge_phase,
-                "request": request,
-            },
-        )
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data
-            submission = serializer.instance
-            # publish message in the queue
-            publish_submission_message(
-                challenge_id, challenge_phase_id, submission.id
+        if 'file_url' in request.data:
+            print('coming')
+            download_file_and_publish_submission_message(
+                request.data['file_url'],
+                challenge_id,
+                challenge_phase_id
             )
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(
-            serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
-        )
+        else:
+            serializer = SubmissionSerializer(
+                data=request.data,
+                context={
+                    "participant_team": participant_team,
+                    "challenge_phase": challenge_phase,
+                    "request": request,
+                },
+            )
+            if serializer.is_valid():
+                serializer.save()
+                response_data = serializer.data
+                submission = serializer.instance
+                # publish message in the queue
+                publish_submission_message(
+                    challenge_id, challenge_phase_id, submission.id
+                )
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response(
+                serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
 
 
 @api_view(["PATCH"])

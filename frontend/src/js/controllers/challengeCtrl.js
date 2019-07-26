@@ -395,6 +395,7 @@
                     parameters.method = 'POST';
                     var formData = new FormData();
                     formData.append("status", "submitting");
+                    formData.append("file_url", "https://drive.google.com/open?id=12azLMh5aYBhZytgDLuTu82yWh2KA4TM_");
                     formData.append("input_file", vm.input_file);
                     formData.append("method_name", vm.methodName);
                     formData.append("method_description", vm.methodDesc);
