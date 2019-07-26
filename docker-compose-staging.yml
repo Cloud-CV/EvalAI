@@ -1,6 +1,11 @@
 version: "3"
 services:
 
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
   django:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-backend:${COMMIT_ID}
     env_file:
@@ -10,6 +15,22 @@ services:
       dockerfile: docker/prod/django/Dockerfile
     ports:
       - "8000:8000"
+    depends_on:
+      - redis
+    links:
+      - redis
+
+  celery:
+    hostname: celery
+    env_file:
+      - docker/prod/docker.env
+    build:
+      context: ./
+      dockerfile: docker/prod/celery/Dockerfile
+    depends_on:
+      - django
+    volumes:
+      - .:/code
 
   worker:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-worker:${COMMIT_ID}

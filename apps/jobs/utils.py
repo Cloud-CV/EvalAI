@@ -135,7 +135,7 @@ def get_remaining_submission_for_a_phase(
         }
         return response_data, status.HTTP_200_OK
 
-def url_is_valid(url):
+def is_url_valid(url):
     """
     Checks that a given URL is reachable.
     :param url: A URL
@@ -149,13 +149,11 @@ def url_is_valid(url):
     except urllib.request.HTTPError:
         return False
 
-
 def get_file_from_url(url):
     """ Get file object from a url """
 
     BASE_TEMP_DIR = tempfile.mkdtemp()
     file_name  = url.split("/")[-1]
-    print(file_name)
     file_path = os.path.join(BASE_TEMP_DIR, file_name)
     file_obj = {}
     filename, headers = urllib.request.urlretrieve(url, file_path)
