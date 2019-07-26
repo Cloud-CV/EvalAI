@@ -9,6 +9,7 @@ import { WindowService } from '../../../services/window.service';
 import { ApiService } from '../../../services/api.service';
 import { HttpClientModule } from '@angular/common/http';
 import { EndpointsService } from '../../../services/endpoints.service';
+import { FormsModule } from '@angular/forms';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;
@@ -23,7 +24,7 @@ describe('SignupComponent', () => {
         ApiService,
         EndpointsService
       ],
-      imports: [ RouterTestingModule, HttpClientModule ],
+      imports: [ RouterTestingModule, HttpClientModule, FormsModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();

@@ -14,6 +14,7 @@ import { HttpClientModule } from '@angular/common/http';
 import {Router, Routes} from '@angular/router';
 import {NotFoundComponent} from '../not-found/not-found.component';
 import {LoginComponent} from '../auth/login/login.component';
+import {FormsModule} from '@angular/forms';
 
 
 const routes: Routes = [
@@ -46,7 +47,7 @@ describe('ProfileComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ProfileComponent, HeaderStaticComponent, FooterComponent, NotFoundComponent, LoginComponent ],
       providers: [ GlobalService, AuthService, WindowService, ApiService, EndpointsService],
-      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes) ],
+      imports: [ HttpClientModule, RouterTestingModule.withRoutes(routes), FormsModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();

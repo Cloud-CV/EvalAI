@@ -1,47 +1,33 @@
-@import './styles/variables.scss';
-@import './styles/mixins.scss';
+@import "styles/variables";
 
-.login-container {
-  .auth-forgot-div {
-    position: relative;
-    display: block;
-    .btn-fire {
-      margin-left: 0;
-    }
+a.active-auth {
+  color: $dark-black;
+}
 
-    .auth-forgot {
-      font-size: $fs-14;
-      font-weight: $fw-regular;
-      color: $gray-darker;
-      cursor: pointer;
-      position: absolute;
-      right: 0;
-      float: right;
-      top: 50%;
-      transform: translate(0, -50%);
-    }
-  }
-  .auth-signup-row {
-    padding-top: 20px;
-    padding-left: 10px;
-    span {
-      font-size: $fs-14;
-      font-weight: $fw-light;
-    }
-    a {
-      font-size: $fs-14;
-      font-weight: $fw-semibold;
-      cursor: pointer;
-    }
+.auth-light-link {
+  &:hover {
+    color: $highlight;
   }
 }
 
-@include screen-small {
-  .login-container {
-    .auth-forgot-div {
-      .auth-forgot {
-        width: 150px;
-      }
-    }
-  }
+.ev-horiz-list {
+  display: inline-block;
+  margin-right: 20px;
+}
+
+.wrn-msg {
+  font-size: 0.8em;
+}
+
+input {
+  margin-bottom: 0px !important;
+}
+
+.input-field {
+  height: 72px !important;
+  max-height: 72px !important;
+}
+
+.fg-pass {
+  font-size: 0.8em;
 }

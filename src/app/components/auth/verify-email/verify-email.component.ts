@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
-import { ApiService } from '../../../services/api.service';
-import { GlobalService } from '../../../services/global.service';
+import {Component, OnInit} from '@angular/core';
+import {Router, ActivatedRoute} from '@angular/router';
+import {AuthService} from '../../../services/auth.service';
+import {ApiService} from '../../../services/api.service';
+import {GlobalService} from '../../../services/global.service';
 
 /**
  * Component Class
@@ -22,11 +22,15 @@ export class VerifyEmailComponent implements OnInit {
   /**
    * Is Email verified
    */
-  isVerified = false;
+  email_verify_msg = '';
+
+  /**
+   * Login route path
+   */
+  loginRoute = '/auth/login';
 
   /**
    * Constructor.
-   * @param document  Window document Injection.
    * @param authService  AuthService Injection.
    * @param globalService  GlobalService Injection.
    * @param apiService  Router Injection.
@@ -35,18 +39,27 @@ export class VerifyEmailComponent implements OnInit {
    */
   constructor(private router: Router, private route: ActivatedRoute,
               private apiService: ApiService, private globalService: GlobalService,
-              private authService: AuthService) { }
+              private authService: AuthService) {
+  }
 
   /**
    * Component on initialized.
    */
   ngOnInit() {
+    this.globalService.startLoader('Verifying Email');
     this.route.params.subscribe(params => {
       if (params['token']) {
         this.token = params['token'];
-        this.authService.verifyEmail(this.token, () => {
-          this.isVerified = true;
-        });
+        this.authService.verifyEmail(this.token,
+          () => {
+            this.email_verify_msg = 'Your email has been verified successfully';
+            this.globalService.stopLoader();
+          },
+          () => {
+            this.email_verify_msg = 'Something went wrong!! Please try again.';
+            this.globalService.stopLoader();
+          }
+        );
       }
     });
   }

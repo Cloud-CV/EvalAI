@@ -1,33 +1,47 @@
-<app-header-static>
-</app-header-static>
-<div class="container-top">
-  <div class="auth-container" style="background-image: url('assets/images/auth_background.png');">
-    <div class="auth-background-image" style="background-image: url('assets/images/auth_orange_image.png');">
-      <span class="auth-tagline">Evaluating state of the art in AI</span>
+<section class="auth-container" #authContainer [class.low-screen]="authService.isLoader">
+  <!-- graphic animated view -->
+  <div class="graphic-cont">
+    <img class="star-img star1" src="assets/images/star1.png">
+    <img class="star-img star2" src="assets/images/star2.png">
+    <div class="moon">
+      <img src="assets/images/moon.png">
     </div>
-    <div class="auth-form">
-      <div class="auth-form-logo" [class.align-center]="!(localRouter.url=='/auth/login' || localRouter.url=='/auth/signup')">
-        <img src="assets/images/evalai_logo_light.png" />
+    <div class="sun">
+      <img src="assets/images/sun.png">
+    </div>
+    <div class="auth-cloud-cont">
+      <img src="assets/images/auth-cloud.png">
+    </div>
+    <div class="ufo">
+      <img src="assets/images/spaceman.png">
+    </div>
+  </div>
+  <!-- rendering auth children here -->
+  <div class="auth-cont">
+    <div class="row">
+      <div class="col s12 m6 offset-m3">
+        <div class="left">
+          <h5><strong><a routerLink="" class="dark-link"><img class="auth-logo"
+                                                              src="assets/images/evalai-logo.png"></a></strong>
+          </h5>
+          <p class="text-med-gray auth-home">Evaluating state of the art in AI!</p>
+        </div>
       </div>
-      <div class="auth-nav" *ngIf = "localRouter.url=='/auth/login' || localRouter.url=='/auth/signup'">
-        <a [class.auth-selected]="localRouter.url=='/auth/login'" [routerLink]="['/auth/login']" >Login</a>
-        <a [class.auth-selected]="localRouter.url=='/auth/signup'" [routerLink]="['/auth/signup']">Signup</a>
-      </div>
+    </div>
+    <div class="row">
+      <div class="reg-alert col s12 m6 offset-m3 align-left text-highlight w-300">{{authService.regMsg}}</div>
       <router-outlet></router-outlet>
-      <div class="auth-form-footer">
-        <ul class="row">
-            <li class="align-left col-lg-4 col-md-4 col-sm-4 col-xs-3">
-              <a target="_blank" href="https://github.com/Cloud-CV"><img src="assets/images/git_dark.png"/></a> 
-              <a target="_blank" href="https://twitter.com/project_cloudcv"><img src="assets/images/twitter_dark.png"/></a>
-            </li>
-            <li class="align-center col-lg-4 col-md-4 col-sm-4 col-xs-4">
-              <a target="_blank" href="https://www.cloudcv.org">www.cloudcv.org</a>
-            </li>
-            <li class="align-right col-lg-4 col-md-4 col-sm-4 col-xs-5">
-              <a [routerLink]="['']">Back to home</a>
-            </li>
-        </ul>
+    </div>
+    <div class="row">
+      <div class="reg-alert col s12 m6 offset-m3 align-left text-highlight w-300 social-auth-group">
+        <a href="https://github.com/Cloud-CV/EvalAI" class="light-link" target="_blank"><i class="fa fa-github"></i></a>
+        &nbsp;&nbsp;&nbsp;<a href="https://twitter.com/project_cloudcv" class="light-link" target="_blank"><i
+        class="fa fa-twitter"></i></a> &nbsp;&nbsp;&nbsp; <a href="http://www.cloudcv.org/" class="light-link fg-pass"
+                                                             target="_blank">www.cloudcv.org</a> &nbsp;&nbsp;&nbsp; <a
+        routerLink="/" class="light-link fg-pass">Back to home</a>
       </div>
     </div>
   </div>
-</div>
+  <div class="clearfix"></div>
+</section>
+

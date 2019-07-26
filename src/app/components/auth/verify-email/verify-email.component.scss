@@ -1,21 +1,6 @@
-@import './styles/variables.scss';
-@import './styles/mixins.scss';
+@import "styles/variables";
 
-.verify-email-container {
-	* {
-		margin-bottom:30px;
-	}
-	height:250px;
-	margin-top:30px;
-	color:$gray-darker;
-	font-size: $fs-18;
-	font-weight: $fw-light;
-	i {
-		font-size:$fs-36;
-		color:$green-medium;
-	}
-	img {
-		height:100px;
-	}
-
+.ev-horiz-list {
+  display: inline-block;
+  margin-right: 20px;
 }

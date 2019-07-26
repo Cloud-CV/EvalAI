@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { GlobalService } from '../../services/global.service';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Router, ActivatedRoute} from '@angular/router';
+import {GlobalService} from '../../services/global.service';
+import {AuthService} from '../../services/auth.service';
 
 /**
  * Component Class
@@ -17,13 +18,18 @@ export class AuthComponent implements OnInit {
    */
   localRouter: any;
 
+  @ViewChild('authContainer') authContainer: ElementRef;
+
   /**
    * Constructor.
    * @param router  Router Injection.
    * @param route  ActivatedRoute Injection.
    * @param globalService  GlobalService Injection.
+   * @param authService  AuthServiceInjection
    */
-  constructor(private router: Router, private route: ActivatedRoute, private globalService: GlobalService) { }
+  constructor(private router: Router, private route: ActivatedRoute, private globalService: GlobalService,
+              public authService: AuthService) {
+  }
 
   /**
    * Component on initialization.
@@ -31,6 +37,7 @@ export class AuthComponent implements OnInit {
   ngOnInit() {
     this.localRouter = this.router;
     this.globalService.scrollToTop();
+    this.authService.resetForm();
   }
 
   /**

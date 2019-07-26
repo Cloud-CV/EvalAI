@@ -31,6 +31,20 @@ export class EndpointsService {
   }
 
   /**
+   * Reset password URL
+   */
+  resetPasswordURL() {
+    return `auth/password/reset/`;
+  }
+
+  /**
+   * Reset password confirm URL
+   */
+  resetPasswordConfirmURL() {
+    return `auth/password/reset/confirm`;
+  }
+
+  /**
    * Contact form URL
    */
   contactURL() {
