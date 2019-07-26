@@ -1,13 +1,12 @@
-<div class="verify-email-container">
-<div class="align-center">
-<div *ngIf="!isVerified">
-<div>Verifying your email ...</div>
-<div><img src="assets/images/rocket.gif" /></div>
-</div>
-<div *ngIf="isVerified">
-	<i class="fas fa-check"></i>
-	<div> Email verified successfully!</div>
-	<span class="btn btn-fire" [routerLink]="['/auth/login']">LOGIN</span>
-</div>
-</div>
+<div>
+  <div class="col s12 m6 offset-m3 left">
+    <ul class="center">
+      <li class="ev-horiz-list">{{email_verify_msg}}.</li>
+    </ul>
+    <a [routerLink]="loginRoute">
+      <button class="waves-effect waves-dark btn ev-btn-dark w-300 grad-btn grad-btn-dark" type="submit" value="Submit">
+        Log In
+      </button>
+    </a>
+  </div>
 </div>

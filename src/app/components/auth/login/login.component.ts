@@ -19,62 +19,56 @@ import { Router, ActivatedRoute} from '@angular/router';
 })
 export class LoginComponent implements OnInit, AfterViewInit {
 
-  /**
-   * Holds form elements for all forms in the component
-   */
-  ALL_FORMS: any = {};
+  isnameFocused = false;
+  ispasswordFocused = false;
 
   /**
-   * Name of login form elements
+   * Route path for dashboard
    */
-  loginForm = 'formlogin';
+  dashboardRoute = '/dashboard';
 
   /**
-   * Component Class
+   * Route path for login
    */
-  @ViewChildren('formlogin')
-  components: QueryList<InputComponent>;
+  loginRoute = '/auth/login';
+
+  /**
+   * Route path for signup
+   */
+  signupRoute = '/auth/signup';
 
   /**
    * Constructor.
    * @param document  window document injection
+   * @param windowService
    * @param apiService  ApiService Injection
    * @param authService  AuthService Injection
    * @param router  Router Injection.
    * @param route  ActivatedRoute Injection.
    * @param globalService  GlobalService Injection.
+   * @param endpointsService
    */
   constructor(@Inject(DOCUMENT) private document: Document,
               private windowService: WindowService,
               private globalService: GlobalService,
               private apiService: ApiService,
-              private authService: AuthService,
+              public authService: AuthService,
               private route: ActivatedRoute,
               private router: Router,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService) {
+  }
 
   /**
    * Constructor on initialization
    */
   ngOnInit() {
+    this.authService.resetForm();
   }
 
   /**
    * After view is initialized.
    */
   ngAfterViewInit() {
-    // print array of CustomComponent objects
-    // this.componentlist = this.components.toArray();
-
-    this.ALL_FORMS[this.loginForm] = this.components;
-  }
-
-  /**
-   * Validate form function
-   * @param formname  name of the form elements (#)
-   */
-  formValidate(formname) {
-    this.globalService.formValidate(this.ALL_FORMS[this.loginForm], this.formSubmit, this);
   }
 
   /**
@@ -82,7 +76,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
    * @param self  Router Injection.
    */
   redirectCheck(self) {
-    let redirectTo = '/dashboard';
+    let redirectTo = this.dashboardRoute;
     const REDIRECT_URL = self.globalService.getData(self.globalService.redirectStorageKey);
     if (REDIRECT_URL && REDIRECT_URL['path']) {
       redirectTo = REDIRECT_URL['path'];
@@ -91,25 +85,50 @@ export class LoginComponent implements OnInit, AfterViewInit {
     self.router.navigate([redirectTo]);
   }
 
-  /**
-   * Submit form function. Called after validation
-   * @param self  context value of this
-   */
-  formSubmit(self) {
-    const LOGIN_BODY = JSON.stringify({
-      username: self.globalService.formValueForLabel(self.ALL_FORMS[self.loginForm], 'username'),
-      password: self.globalService.formValueForLabel(self.ALL_FORMS[self.loginForm], 'password')
-    });
-    self.apiService.postUrl(self.endpointsService.loginURL(), LOGIN_BODY).subscribe(
+
+  // Function to login
+  userLogin(loginFormValid) {
+    if (!loginFormValid) {
+      this.globalService.stopLoader();
+      return;
+    }
+
+    this.globalService.startLoader('Taking you to EvalAI!');
+
+    const LOGIN_BODY = {
+      'username': this.authService.getUser['name'],
+      'password': this.authService.getUser['password'],
+    };
+
+    this.apiService.postUrl(this.endpointsService.loginURL(), LOGIN_BODY).subscribe(
       data => {
-        self.globalService.storeData(self.globalService.authStorageKey, data['token']);
-        self.authService.loggedIn(true);
-        self.redirectCheck(self);
+        this.globalService.storeData(this.globalService.authStorageKey, data['token']);
+        this.authService.loggedIn(true);
+        this.globalService.stopLoader();
+        this.redirectCheck(this);
       },
+
       err => {
-        self.globalService.handleFormError(self.ALL_FORMS[self.loginForm], err);
+        this.globalService.stopLoader();
+
+        if (err.status === 400) {
+          this.authService.isFormError = true;
+          try {
+            const non_field_errors = typeof (err.error.non_field_errors) !== 'undefined';
+            if (non_field_errors) {
+              this.authService.FormError = err.error.non_field_errors[0];
+            }
+          } catch (error) {
+            setTimeout(() => {
+              this.globalService.showToast('Error', 'Unable to Login.Please Try Again!', 5);
+            }, 1000);
+          }
+        } else {
+          this.globalService.handleApiError(err);
+        }
       },
-      () => console.log('LOGIN-FORM-SUBMITTED')
+      () => {}
     );
   }
+
 }

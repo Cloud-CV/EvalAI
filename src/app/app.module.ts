@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { EmailValidator, FormsModule } from '@angular/forms';
 import { FroalaEditorModule, FroalaViewModule } from 'angular-froala-wysiwyg';
 import { TextareaAutosizeModule } from 'ngx-textarea-autosize';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
@@ -80,6 +80,10 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 
 import { DashboardContentComponent } from './components/dashboard/dashboard-content/dashboard-content.component';
+import {PasswordMismatchValidatorDirective} from './Directives/password.validator';
+import { ResetPasswordComponent } from './components/auth/reset-password/reset-password.component';
+import { EmailValidatorDirective } from './Directives/email.validator';
+import { ResetPasswordConfirmComponent } from './components/auth/reset-password-confirm/reset-password-confirm.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -131,7 +135,11 @@ import { DashboardContentComponent } from './components/dashboard/dashboard-cont
     FeaturedChallengesComponent,
     DashboardContentComponent,
     HostAnalyticsComponent,
+    PasswordMismatchValidatorDirective,
+    EmailValidatorDirective,
+    ResetPasswordComponent,
     EditphasemodalComponent,
+    ResetPasswordConfirmComponent,
     ChallengeviewallsubmissionsComponent,
     TermsAndConditionsModalComponent
   ],

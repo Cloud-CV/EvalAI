@@ -1,115 +1,205 @@
-@import './variables.scss';
-@import './mixins.scss';
+@import "styles/variables";
+
+.auth-light-link {
+  &:hover {
+    color: $highlight;
+  }
+}
+
+.fg-pass {
+  font-size: 0.8em;
+}
 
 .auth-container {
+  transition: all 0.2s ease-in-out;
+}
+
+.auth-home {
+  padding-top: 0px;
+  margin-top: 5px;
+}
+
+img.auth-logo {
+  width:90px;
+}
+
+.graphic-cont,
+.auth-cont {
+  display: inline-block;
+  padding: 10vh 40px 40px;
+  width: 70%;
+  background: #fff;
+  float: left;
+  min-height: 100vh;
+  overflow: hidden;
   position: relative;
-  display: block;
+}
+
+.graphic-cont {
+  background: $dark-gray;
+  /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient($dark-gray, $grad-sec-gray);
+  /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient($dark-gray, $grad-sec-gray);
+  /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient($dark-gray, $grad-sec-gray);
+  /* For Firefox 3.6 to 15 */
+  background: linear-gradient($dark-gray, $grad-sec-gray);
+  /* Standard syntax */
+  width: 30%;
+}
+
+.auth-cloud-cont {
+  position: absolute;
+  bottom: 0;
+  height: 30%;
   width: 100%;
-  background-size: 100% 100%;
-  height: 630px;
-  .auth-background-image {
-    background-size: 100% 100%;
-    display: inline-block;
-    position: relative;
-    height: 350px;
-    width: 400px;
-    left: 25%;
-    top: 70px;
-    padding-right: 100px;
-    padding-left: 50px;
-    @include box-shadow(0px, 10px, 15px, 5px, $overlay-light);
-    .auth-tagline {
-      color: white;
-      font-size: $fs-36;
-      top: 50%;
-      position: absolute;
-      transform: translate(0, -50%);
-      padding-right: 100px;
-    }
-  }
-  .auth-form {
-    display: inline-block;
+  left: 0;
+
+  img {
+    width: 120%;
     position: absolute;
-    top: 20px;
-    left: 50%;
-    width: 300px;
-    background: $gray-lighter;
-    border-radius: 15px;
-    padding: 30px;
-    padding-bottom:10px;
-    margin-bottom: 20px;
-    width: 500px;
-    @include box-shadow(0px, 10px, 15px, 5px, $overlay-light);
-    .auth-nav {
-      margin-bottom: 20px;
-      a {
-        cursor: pointer;
-        font-size: $fs-16;
-        color: $gray-darker;
-        margin-right: 30px;
-        font-weight: $fw-light;
-      }
-      .auth-selected {
-        font-weight: $fw-semibold;
-      }
-    }
-    .auth-form-logo {
-      padding-top: 10px;
-      padding-bottom: 20px;
-      img {
-        filter: invert(100%);
-        height: 30px;
-      }
-    }
-    .auth-form-footer {
-      margin-top: 30px;
-      ul {
-        padding-left:10px;
-        list-style-type: none;
-        width: 100%;
-        li {
-          display: inline-block;
-          a {
-            padding-left:5px;
-            cursor: pointer;
-            font-size: $fs-14;
-            color: $gray-darker;
-            font-weight: $fw-regular;
-            img {
-              height: $fs-14;
-              margin-right: 10px;
-            }
-          }
-        }
-      }
-    }
+    bottom: 0;
   }
 }
 
-@include screen-medium {
-  .auth-container {
-    .auth-background-image {
-      left: 5%;
-    }
-    .auth-form {
-      left: 40%;
-      margin: 0 auto;
-    }
+.social-auth-group {
+  margin-top:20px;
+}
+
+.moon {
+  width: 80px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+
+  img {
+    width: 100%;
+  }
+
+  animation: plane 50s linear infinite;
+}
+
+@keyframes plane {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
 
-@include screen-small {
-  .auth-container {
-    text-align: center;
-    .auth-background-image {
-      display: none;
-    }
-    .auth-form {
-      position: relative;
-      margin: 0 auto;
-      left: 0;
-      text-align: left;
-      width: 90%;
-    }
+.sun {
+  width: 200px;
+  position: absolute;
+  bottom: 15%;
+  right: -45px;
+
+  img {
+    width: 100%;
+  }
+
+  animation: sun 70s linear infinite;
+}
+
+@keyframes sun {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.star-img {
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.star1 {
+  animation: starone 2s alternate linear infinite;
+}
+
+.star2 {
+  animation: startwo 3s alternate linear infinite;
+}
+
+@keyframes starone {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes startwo {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.ufo {
+  width: 120px;
+  position: absolute;
+
+  img {
+    width: 100%;
+  }
+
+  animation: spaceman 14s alternate linear infinite;
+}
+
+@keyframes spaceman {
+  0% {
+    transform: rotate(0deg);
+    top: 10%;
+    left: 10%;
+  }
+  50% {
+    transform: rotate(15deg);
+    top: 60%;
+    left: 20%;
+  }
+  75% {
+    transform: rotate(-10deg);
+    top: 40%;
+    left: 60%;
+  }
+  100% {
+    transform: rotate(0deg);
+    top: 20%;
+    left: 20%;
+  }
+}
+
+/*media queries*/
+
+@media only screen and (max-width: $med-screen) {
+  .graphic-cont {
+    position: absolute;
+    width: 100%;
+    opacity: 0.4;
+  }
+  .auth-cont {
+    width: 100%;
+    background-color: rgba(255,255,255,0.9);
   }
 }

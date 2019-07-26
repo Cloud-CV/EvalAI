@@ -566,7 +566,6 @@ export class GlobalService {
    * @param msg  string
    */
   startLoader(msg) {
-    this.isLoading = true;
     this.loaderTitle = msg;
   }
 
@@ -574,7 +573,6 @@ export class GlobalService {
    * Stop loader msg
    */
   stopLoader() {
-    this.isLoading = false;
     this.loaderTitle = '';
   }
 }

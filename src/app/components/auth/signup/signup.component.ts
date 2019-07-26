@@ -1,12 +1,12 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { ViewChildren, QueryList, AfterViewInit } from '@angular/core';
+import { AfterViewInit } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { InputComponent } from '../../../components/utility/input/input.component';
-import { WindowService } from '../../../services/window.service';
-import { ApiService } from '../../../services/api.service';
-import { EndpointsService } from '../../../services/endpoints.service';
-import { GlobalService } from '../../../services/global.service';
-import { Router, ActivatedRoute} from '@angular/router';
+import {WindowService} from '../../../services/window.service';
+import {ApiService} from '../../../services/api.service';
+import {EndpointsService} from '../../../services/endpoints.service';
+import {GlobalService} from '../../../services/global.service';
+import {Router, ActivatedRoute} from '@angular/router';
+import {AuthService} from '../../../services/auth.service';
 
 /**
  * Component Class
@@ -16,23 +16,28 @@ import { Router, ActivatedRoute} from '@angular/router';
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss']
 })
+
+
 export class SignupComponent implements OnInit, AfterViewInit {
 
-  /**
-   * All forms in signup component
-   */
-  ALL_FORMS: any = {};
+
+  color = '';
+  message = '';
+
+  isnameFocused = false;
+  ispasswordFocused = false;
+  iscnfrmpasswordFocused = false;
+  isemailFocused = false;
 
   /**
-   * Form elements name in signup form
+   * Login route path
    */
-  signupForm = 'formsignup';
+  loginRoute = '/auth/login';
 
   /**
-   * Signup form elements
+   * Signup route path
    */
-  @ViewChildren('formsignup')
-  components: QueryList<InputComponent>;
+  signupRoute = '/auth/signup';
 
   /**
    * Constructor.
@@ -40,16 +45,20 @@ export class SignupComponent implements OnInit, AfterViewInit {
    * @param windowService  ActivatedRoute Injection.
    * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
+   * @param authService
    * @param router  Router Injection.
    * @param route  ActivatedRoute Injection.
+   * @param endpointsService
    */
   constructor(@Inject(DOCUMENT) private document: Document,
               private windowService: WindowService,
               private globalService: GlobalService,
               private apiService: ApiService,
+              public authService: AuthService,
               private route: ActivatedRoute,
               private endpointsService: EndpointsService,
-              private router: Router) { }
+              private router: Router) {
+  }
 
   /**
    * Component init function.
@@ -61,43 +70,79 @@ export class SignupComponent implements OnInit, AfterViewInit {
    * Component after view initialized.
    */
   ngAfterViewInit() {
-    // print array of CustomComponent objects
-    // this.componentlist = this.components.toArray();
-
-    this.ALL_FORMS[this.signupForm] = this.components;
   }
 
-  /**
-   * Validate form function.
-   * @param formname  Name of the form fields (#)
-   */
-  formValidate(formname) {
-    this.globalService.formValidate(this.ALL_FORMS[this.signupForm], this.formSubmit, this);
+  // Function to signup
+  userSignUp(signupFormValid) {
+    if (signupFormValid) {
+      this.globalService.startLoader('Setting up your details!');
+      const SIGNUP_BODY = JSON.stringify({
+        username: this.authService.regUser['name'],
+        email: this.authService.regUser['email'],
+        password1: this.authService.regUser['password'],
+        password2: this.authService.regUser['confirm_password']
+      });
+
+      this.apiService.postUrl(this.endpointsService.signupURL(), SIGNUP_BODY).subscribe(
+        data => {
+
+          if (data.status === 201) {
+            this.authService.isFormError = false;
+            this.authService.regMsg = 'Registered successfully, Login to continue!';
+          }
+
+          // Success Message in data.message
+          setTimeout(() => {
+            this.globalService.showToast('success', 'Registered successfully. Please verify your email address!', 5);
+          }, 1000);
+
+          this.router.navigate([this.loginRoute]);
+          this.globalService.stopLoader();
+        },
+
+        err => {
+          this.globalService.stopLoader();
+          if (err.status === 400) {
+            this.authService.isFormError = true;
+            let non_field_errors, isUsername_valid, isEmail_valid, isPassword1_valid, isPassword2_valid;
+            try {
+              non_field_errors = typeof (err.error.non_field_errors) !== 'undefined';
+              isUsername_valid = typeof (err.error.username) !== 'undefined';
+              isEmail_valid = typeof (err.error.email) !== 'undefined';
+              isPassword1_valid = typeof (err.error.password1) !== 'undefined';
+              isPassword2_valid = typeof (err.error.password2) !== 'undefined';
+              if (non_field_errors) {
+                this.authService.FormError = err.error.non_field_errors[0];
+              } else if (isUsername_valid) {
+                this.authService.FormError = err.error.username[0];
+              } else if (isEmail_valid) {
+                this.authService.FormError = err.error.email[0];
+              } else if (isPassword1_valid) {
+                this.authService.FormError = err.error.password1[0];
+              } else if (isPassword2_valid) {
+                this.authService.FormError = err.error.password2[0];
+              }
+
+            } catch (error) {
+              setTimeout(() => {
+                this.globalService.showToast('Error', 'Registration UnSuccessful.Please Try Again!', 5);
+              }, 1000);
+            }
+          } else {
+            this.globalService.handleApiError(err);
+          }
+        },
+
+        () => {}
+      );
+    }
   }
 
-  /**
-   * Form Submit function (Called after validation).
-   * @param self  context value of this.
-   */
-  formSubmit(self) {
-    const SIGNUP_BODY = JSON.stringify({
-      username: self.globalService.formValueForLabel(self.ALL_FORMS[self.signupForm], 'username'),
-      email: self.globalService.formValueForLabel(self.ALL_FORMS[self.signupForm], 'email'),
-      password1: self.globalService.formValueForLabel(self.ALL_FORMS[self.signupForm], 'password'),
-      password2: self.globalService.formValueForLabel(self.ALL_FORMS[self.signupForm], 'confirm password')
-    });
-    self.apiService.postUrl(self.endpointsService.signupURL(), SIGNUP_BODY).subscribe(
-      data => {
-        // Success Message in data.message
-        setTimeout(() => {
-          self.globalService.showToast('success', 'Registered successfully. Please verify your email address!', 5);
-        }, 1000);
-        self.router.navigate(['/auth/login']);
-      },
-      err => {
-        self.globalService.handleFormError(self.ALL_FORMS[self.signupForm], err);
-      },
-      () => console.log('SIGNUP-FORM-SUBMITTED')
-    );
+
+// function to check password strength
+  checkStrength(password) {
+    const passwordStrength = this.authService.passwordStrength(password);
+    this.message = passwordStrength[0];
+    this.color = passwordStrength[1];
   }
 }
