@@ -1,15 +1,17 @@
 import base64
 import logging
 import os
-import sendgrid
+import urllib
 import uuid
 
 from django.conf import settings
 from django.utils.deconstruct import deconstructible
-from sendgrid.helpers.mail import Email, Content, Mail
 
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
+
+from sendgrid.helpers.mail import *
+from sendgrid import *
 
 logger = logging.getLogger(__name__)
 
@@ -78,22 +80,40 @@ def decode_data(data):
     return decoded
 
 
-def send_email(email="", message=""):
+def personalize(username, challenge_name, recepient):
     """
-    Send email to sendgrid with message
+    Personalise email by substituting fields
 
     Keyword Arguments:
-        email {string} -- The email to which the message is to be sent
-        message {string} -- The message which is to be sent to the email
+        username {string} -- Username of the user to which email is being sent
+        challenge_name {string} -- The challenge name with which the user is associated
+        recepient {string} -- The email to which the message is to be sent
     """
+    personalization = Personalization()
+    #make sure your template has a Substitution tag somewhere in it like "-username-"
+    personalization.add_substitution(Substitution("-username-", username))
+    personalization.add_substitution(Substitution("-challengename-", challenge_name))
+    personalization.add_to(Email(recepient))
+    return personalization
+
+
+def send_email(recepient="", username="", challenge_name="", template_id=""):
+    """
+    Send email to sendgrid with template
+
+    Keyword Arguments:
+        recepient {string} -- The email to which the message is to be sent
+        username {string} -- Username of the user to which email is being sent
+        challenge_name {string} -- The challenge name with which the user is associated
+        template_id {string} -- The template of the message which is to be sent
+    """
+    sg = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
+    mail = Mail()
+    mail.from_email = Email("admin@evalai.com", "EvalAI Admin")
+    mail.template_id = template_id
+    mail.add_personalization(personalize(username, challenge_name, recepient))
+
     try:
-        sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-        from_email = Email(settings.ADMIN_EMAIL)
-        to_email = Email(email)
-        subject = "Challenge creation"
-        content = Content("text/plain", message)
-        mail = Mail(from_email, subject, to_email, content)
-        sg.client.mail.send.post(request_body=mail.get())
-    except Exception as e:
-        logger.exception(
-            'Exception raised while sending the email. Error details : {}'.format(e))
+        response = sg.client.mail.send.post(request_body=mail.get())
+    except urllib.error.HTTPError as e:
+        logger.exception(e.read())
