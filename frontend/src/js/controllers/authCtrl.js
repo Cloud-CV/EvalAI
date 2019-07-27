@@ -288,14 +288,13 @@
         vm.oauthLoginGithub = function(){
             vm.startLoader("Logging you in");
             var code = location.search;
-            code =  code.split('?code=')[1]
+            code =  code.split('?code=')[1];
             var parameters = {};
             parameters.url = 'auth/oauth/github/';
             parameters.method = 'POST';
             parameters.data = {
                 "code": code,
             };
-            
             parameters.callback = {
                 onSuccess: function(response){
                     if (response.status == 200) {
@@ -306,8 +305,6 @@
                         } else {
                             $state.go('web.dashboard');
                         }
-                    } else {
-                        alert("Something went wrong");
                     }
                 },
                 onError: function(response){
