@@ -71,8 +71,6 @@
                   <th data-field="file">Stderr File</th>
                   <th data-field="file">Result File</th>
                   <th data-field="file">Metadata File</th>
-                  <th *ngIf="selectedPhase['leaderboard_public']"
-                    data-field="file">Show on Leaderboard</th>
                   <th data-field="settings">Submission Settings</th>
                 </tr>
               </thead>
@@ -110,15 +108,6 @@
                     <a href="{{key.submission_metadata_file}}" target="_blank"
                       class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
                   <td *ngIf="!key.submission_metadata_file">None</td>
-
-                  <td *ngIf="selectedPhase['leaderboard_public']">
-                    <input [checked]="key.is_public" *ngIf="key.status == 'finished'"
-                    type="checkbox" id="isPublic{{ key.id }}"
-                      (change)="changeSubmissionVisibility(key.id, key.is_public)"
-                      class="cbx hidden" />
-                    <label for="isPublic{{ key.id }}" class="cbx-label"></label>
-                    <span *ngIf="key.status !== 'finished'"> N/A </span>
-                  </td>
 
                   <td>
                     <a [matMenuTriggerFor]="settingsmenu"><i class="fa fa-gear"></i></a>
