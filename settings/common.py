@@ -297,6 +297,6 @@ HOSTNAME = os.environ.get("HOSTNAME")
 SENDGRID_SETTINGS = {
     "TEMPLATES": {
         "CHALLENGE_INVITATION": "d-60825bcf014f4958bdb1b9173471d420",
-        "CHALLENGE_CREATION" : "xxx",
+        "CHALLENGE_CREATION_SUCCESS" : "x",
         }
 }

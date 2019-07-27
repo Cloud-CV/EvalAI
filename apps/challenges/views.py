@@ -1153,10 +1153,9 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             if challenge.image:
                 template_data["image"] = challenge.image.url
             template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
-                "CHALLENGE_INVITATION"
+                "CHALLENGE_CREATION_SUCCESS"
             )
             send_email(sender_email, request.user.email, template_id, template_data)
-            logger.exception('Tried sending mail')
             return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:  # noqa: E722
