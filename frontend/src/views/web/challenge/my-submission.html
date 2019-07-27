@@ -38,7 +38,7 @@
                         <div class="col s6 m2">
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
                         </div>
-                        <div class="col s12 m4" ng-if="challenge.phaseId">
+                        <div class="col s12 m4" ng-if="challenge.phaseId && challenge.isResult">
                             <div class="add-line-height">
                                 <span>
                                     <strong class="text-med-black">
@@ -51,13 +51,30 @@
                             </div>
                         </div>
                     </div>
+                    <br>
+                    <div ng-if="challenge.isResult">
+                        <div class="row rm-margin">
+                            <div class="col s12">
+                                <strong>Filter Submissions by Team name</strong>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="input-field align-left col s6">
+                                <form method="GET">
+                                    <input type="text" name="participant_team__team_name" ng-keyup="challenge.getResults(key.id)" ng-model="challenge.filter_my_submission_by_team_name" id="participant_team__team_name" /></td></tr>
+                                    <label for="participant_team__team_name">Team name</label>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
                         <div class="col s12">
                             <div class="all-submission-table-scroll">
+                                <div ng-if="!challenge.showPagination && challenge.isResult" class="result-wrn">No results found.</div>
                                 <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                                <table ng-if="challenge.isResult" class="highlight all-submission-table">
+                                <table ng-if="challenge.showPagination && challenge.isResult" class="highlight all-submission-table">
                                     <thead>
                                         <tr>
                                             <th data-field="team">Team Name</th>
@@ -73,6 +90,7 @@
                                             <th data-field="file">Stderr File</th>
                                             <th class="align-center" data-field="file">Submitted At</th>
                                             <th class="align-center" ng-if="challenge.currentPhaseLeaderboardPublic" data-field="file">Show on Leaderboard</th>
+                                            <th data-field="isBaseline" ng-if="challenge.isChallengeHost">Baseline</th>
                                             <th>Edit</th>
                                         </tr>
                                     </thead>
@@ -112,6 +130,12 @@
                                                 <label for="isPublic{{ key.id }}"></label>
                                                 <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                             </td>
+                                            <td ng-if="challenge.isChallengeHost" class="center">
+                                                <input ng-checked="key.is_baseline" ng-if="key.status == 'finished'" ng-model="challenge.baselineStatus[key.id]"
+                                                    type="checkbox" id="baselineSubmission{{ key.id }}" ng-change="challenge.changeBaselineStatus(key.id)" />
+                                                <label for="baselineSubmission{{ key.id }}"></label>
+                                                <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
+                                            </td>
                                             <td><a class="pointer" ng-click="challenge.showMdDialog($event, key.id)"><i class="fa fa-pencil" aria-hidden="true"></i></a></td>
                                         </tr>
                                     </tbody>
@@ -120,13 +144,13 @@
                         </div>
                     </div>
                 </div>
-                <section class="pagination" ng-if="challenge.showPagination">
+                <section class="pagination" ng-if="challenge.showPagination && challenge.isResult">
                     <div class="row">
                         <div class="col s12 left-align">
                             <a ng-class="challenge.isPrev" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.previous)">
                                 <i class="fa fa-chevron-left"></i>
                             </a>
-                            <span class="pagination-title"> <strong class="text-med-black"> Page {{challenge.currentPage | ceil}} of {{challenge.submissionResult.count/10 | ceil}} </strong></span>
+                            <span class="pagination-title"> <strong class="text-med-black"> Page {{challenge.currentPage | ceil}} of {{challenge.submissionResult.count/100 | ceil}} </strong></span>
                             <a ng-class="challenge.isNext" class="btn-floating btn-pagination waves-effect waves-light " ng-click="challenge.load(challenge.submissionResult.next)">
                                 <i class="fa fa-chevron-right"></i>
                             </a>
