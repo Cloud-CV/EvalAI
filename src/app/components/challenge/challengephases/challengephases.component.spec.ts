@@ -6,6 +6,7 @@ import { ApiService } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth.service';
 import { GlobalService } from '../../../services/global.service';
 import { HttpClientModule } from '@angular/common/http';
+import { RouterTestingModule } from '@angular/router/testing';
 import { PhasecardComponent } from './phasecard/phasecard.component';
 import { EndpointsService } from '../../../services/endpoints.service';
 
@@ -17,7 +18,7 @@ describe('ChallengephasesComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ChallengephasesComponent, PhasecardComponent ],
       providers: [ ChallengeService, ApiService, GlobalService, AuthService, EndpointsService ],
-      imports: [ HttpClientModule ]
+      imports: [ RouterTestingModule, HttpClientModule ]
     })
     .compileComponents();
   }));

@@ -3,6 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { PhasecardComponent } from './phasecard.component';
 import { GlobalService } from '../../../../services/global.service';
 import { HttpClientModule } from '@angular/common/http';
+import { RouterTestingModule } from '@angular/router/testing';
 import { ChallengeService } from '../../../../services/challenge.service';
 import { EndpointsService } from '../../../../services/endpoints.service';
 import { ApiService } from '../../../../services/api.service';
@@ -16,7 +17,7 @@ describe('PhasecardComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ PhasecardComponent ],
       providers: [ GlobalService, ChallengeService, EndpointsService, ApiService, AuthService ],
-      imports: [ HttpClientModule ]
+      imports: [ RouterTestingModule, HttpClientModule ]
     })
     .compileComponents();
   }));
