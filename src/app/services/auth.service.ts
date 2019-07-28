@@ -3,6 +3,7 @@ import { GlobalService } from './global.service';
 import { EndpointsService } from './endpoints.service';
 import { ApiService } from './api.service';
 import { BehaviorSubject } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthService {
@@ -40,7 +41,7 @@ export class AuthService {
    * @param endpointsService  EndpointsService Injection.
    */
   constructor(private globalService: GlobalService, private apiService: ApiService,
-              private endpointsService: EndpointsService) { }
+              private endpointsService: EndpointsService, private router: Router) { }
 
     /**
      * Call this to update authentication state.
@@ -68,8 +69,10 @@ export class AuthService {
      */
     logOut() {
       const temp = {isLoggedIn: false};
+      const routePath = '/auth/login';
       this.globalService.deleteData(this.globalService.authStorageKey);
       this.authStateChange(temp);
+      this.router.navigate([routePath]);
     }
 
     /**

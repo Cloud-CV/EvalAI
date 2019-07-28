@@ -5,6 +5,7 @@ import { ChallengeService } from '../../../services/challenge.service';
 import { ApiService } from '../../../services/api.service';
 import { GlobalService } from '../../../services/global.service';
 import { HttpClientModule } from '@angular/common/http';
+import {RouterTestingModule} from '@angular/router/testing';
 import { AuthService } from '../../../services/auth.service';
 import { EndpointsService } from '../../../services/endpoints.service';
 import { Observable } from 'rxjs';
@@ -18,7 +19,7 @@ describe('ChallengeevaluationComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ChallengeevaluationComponent ],
       providers: [ ChallengeService, ApiService, GlobalService, AuthService, EndpointsService ],
-      imports: [ HttpClientModule ]
+      imports: [ RouterTestingModule, HttpClientModule ]
     })
     .compileComponents();
   }));
