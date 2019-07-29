@@ -306,9 +306,16 @@
                             $state.go('web.dashboard');
                         }
                     }
+                    else{
+                        $state.go('auth.login');
+                        vm.stopLoader();
+                        $rootScope.notify("error", "Something went wrong, please try again later !");
+                    }
                 },
                 onError: function(response){
-                    console.log(response)
+                    $state.go('auth.login');
+                    vm.stopLoader();
+                    $rootScope.notify("error", "Something went wrong, please try again later !");
                 }
             }
             utilities.sendRequest(parameters, "no-header");    
