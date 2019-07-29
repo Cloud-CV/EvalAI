@@ -11,7 +11,7 @@
       {{editorValidationMessage}}</div>
     <div *ngIf="isEditorRequired" class="edit-global-modal" [froalaEditor]
       [(froalaModel)]="editorContent"></div>
-    <div class="form">
+    <div class="form modal-inputs">
       <div *ngFor="let item of form">
         <app-input *ngIf="item['type'] != 'file'" [name]="item['name']"
           (input)="validateModalInput($event)" [isRequired]="item['isRequired']"
