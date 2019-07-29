@@ -25,18 +25,15 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "end_date",
         "creator",
         "published",
-        "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",
         "featured",
         "created_at",
         "is_docker_based",
         "slug",
-        "banned_email_ids"
     )
     list_filter = (
         "published",
-        "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",
         "featured",

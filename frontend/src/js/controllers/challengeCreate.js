@@ -12,7 +12,7 @@
     function ChallengeCreateCtrl(utilities, loaderService, $rootScope, $state) {
         var vm = this;
         var userKey = utilities.getData('userKey');
-        vm.hostTeamId = utilities.getData('challengeHostTeamId');
+        var hostTeamId = utilities.getData('challengeHostTeamId');
         vm.wrnMsg = {};
         vm.isValid = {};
         vm.isFormError = false;
@@ -21,10 +21,6 @@
         vm.formError = {};
         vm.syntaxErrorInYamlFile = {};
 
-        vm.isExistLoader = false;
-        vm.loaderTitle = '';
-        vm.loaderContainer = angular.element('.exist-team-card');
-
         // start loader
         vm.startLoader = loaderService.startLoader;
 
@@ -32,8 +28,8 @@
         vm.stopLoader = loaderService.stopLoader;
 
         // function to create a challenge using zip file.
-        vm.challengeCreate = function() {
-            if (vm.hostTeamId) {
+    vm.challengeCreate = function() {
+            if (hostTeamId) {
                 var fileVal = angular.element(".file-path").val();
 
                 if (fileVal === null || fileVal === "") {
@@ -43,10 +39,8 @@
                     
                 }
                 if (vm.input_file) {
-                    vm.startLoader('create challenge');
-
                     var parameters = {};
-                    parameters.url = 'challenges/challenge/challenge_host_team/' + vm.hostTeamId + '/zip_upload/';
+                    parameters.url = 'challenges/challenge/challenge_host_team/' + hostTeamId + '/zip_upload/';
                     parameters.method = 'POST';
                     var formData = new FormData();
                     formData.append("zip_configuration", vm.input_file);
@@ -89,8 +83,7 @@
             }
             else {
                 angular.element(".file-path").val(null);
-                vm.infoMsg = "Please select a challenge host team!";
-                $rootScope.notify("info", vm.infoMsg);
+                $rootScope.notify("info", "Please select a challenge host team!");
             }
         };
     }

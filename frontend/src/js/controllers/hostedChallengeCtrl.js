@@ -15,7 +15,6 @@
         utilities.showLoader();
 
         vm.challengeList = [];
-        vm.challengeCreator = {};
 
         var parameters = {};
         parameters.url = 'hosts/challenge_host_team/';
@@ -32,9 +31,6 @@
                             var data = response.data;
                             for (var j=0; j<data.results.length; j++){
                                 vm.challengeList.push(data.results[j]);
-                                var id = data.results[j].id;
-                                vm.challengeCreator[id] = data.results[j].creator.id;
-                                utilities.storeData("challengeCreator", vm.challengeCreator);
                             }
                         },
                         onError: function() {

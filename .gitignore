@@ -18,7 +18,6 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
-docs/build/
 
 # pyenv
 .python-version

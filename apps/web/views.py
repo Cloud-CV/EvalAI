@@ -123,7 +123,7 @@ def contact_us(request):
 @permission_classes((permissions.AllowAny,))
 def our_team(request):
     if request.method == "GET":
-        teams = Team.objects.all().order_by("position")
+        teams = Team.objects.all()
         serializer = TeamSerializer(
             teams, many=True, context={"request": request}
         )

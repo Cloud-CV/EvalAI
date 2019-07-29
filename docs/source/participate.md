@@ -1,6 +1,6 @@
-# Participate in a challenge
+## Tutorial to participate in a challenge in EvalAI
 
-You have to create an account on [EvalAI](http://evalai.cloudcv.org) and a participant team in order to participate in a challenge.
+Participating in EvalAI is really easy. One just needs to create an account and a participant team in order to participate in a challenge.
 
 If you are already familiar with the flow of EvalAI, you may want to skip this section else please follow the following steps to participate in a challenge (VQA Challenge 2017 in this example):
 
