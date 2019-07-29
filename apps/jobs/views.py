@@ -284,7 +284,18 @@ def change_submission_data_and_visibility(
         response_data = {"error": "Challenge is not active"}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
+
+    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
+            request.user, challenge_pk
+    )
+    try:
+        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
+    except ParticipantTeam.DoesNotExist:
+        response_data = {"error": "You haven't participated in the challenge"}
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
     # check if challenge phase is public and accepting solutions
+    print("IS USER A HOST",is_user_a_host_of_challenge(request.user, challenge_pk))
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         if not challenge_phase.is_public:
             response_data = {
@@ -297,25 +308,24 @@ def change_submission_data_and_visibility(
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-        request.user, challenge_pk
-    )
-
-    try:
-        participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
-    except ParticipantTeam.DoesNotExist:
-        response_data = {"error": "You haven't participated in the challenge"}
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
-
-    try:
-        submission = Submission.objects.get(
-            participant_team=participant_team,
-            challenge_phase=challenge_phase,
-            id=submission_pk,
-        )
-    except Submission.DoesNotExist:
-        response_data = {"error": "Submission does not exist"}
-        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+        try:
+            submission = Submission.objects.get(
+                participant_team=participant_team,
+                challenge_phase=challenge_phase,
+                id=submission_pk,
+            )
+        except Submission.DoesNotExist:
+            response_data = {"error": "Submission does not exist"}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+    else:
+        try:
+            submission = Submission.objects.get(
+                challenge_phase=challenge_phase,
+                id=submission_pk,
+            )
+        except Submission.DoesNotExist:
+            response_data = {"error": "Submission does not exist"}
+            return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     try:
         is_public = request.data["is_public"]
