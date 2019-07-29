@@ -39,6 +39,26 @@ body {
   margin: 0px;
 }
 
+.rm-pad {
+  padding: 0 !important;
+}
+
+.rm-pad-top {
+  padding-top: 0 !important;
+}
+
+.rm-pad-btm {
+  padding-btm: 0 !important;
+}
+
+.rm-pad-rt {
+  padding-right: 0 !important;
+}
+
+.rm-pad-lt {
+  padding-left: 0 !important;
+}
+
 .result-wrn {
   margin-top: 15px;
   margin-bottom: 20px;
@@ -562,7 +582,6 @@ ul {
 }
 
 .btn-waves-effect {
-  padding: 13px 33px 13px 33px;
   border: none;
   position: relative;
   cursor: pointer;
@@ -574,6 +593,10 @@ ul {
   z-index: 1;
   will-change: opacity, transform;
   transition: .3s ease-out;
+}
+
+.ev-btn {
+  padding: 13px 33px 13px 33px;
 }
 
 .ev-btn-dark {
