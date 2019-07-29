@@ -49,14 +49,14 @@
 				<br>
 				<div class="item">
 					<button class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark
-						fs-16" (click)="isTokenModalVisible= true;">Get your Auth Token</button>
+						fs-16 rm-pad-top" (click)="isTokenModalVisible= true;">Get your Auth Token</button>
 				</div>
 				<div class="item change-password">
 					<a (click)="updatePassword()" class="dark-link pointer">
 						<strong class="fw-semibold fs-15 change-password-text">Change Password</strong>
 					</a>
 					<button (click)="updateUserDetails()" class="btn btn-waves-effect
-						waves-dark grad-btn grad-btn-dark fs-16">Update Profile</button>
+						waves-dark grad-btn grad-btn-dark rm-pad-top fs-16">Update Profile</button>
 				</div>
 
 				<div class="modal-container" [class.hidden]="!isTokenModalVisible">
@@ -89,7 +89,7 @@
 							</li>
 							<li>
 								<span class="btn btn-waves-effect waves-dark grad-btn grad-btn-dark
-									fs-14" (click)="tokenModalButtonToggle()">{{tokenModalButton}}</span>
+									fs-14 rm-pad-top" (click)="tokenModalButtonToggle()">{{tokenModalButton}}</span>
 							</li>
 						</ul>
 					</div>
