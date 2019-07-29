@@ -8,6 +8,8 @@ import { TextareaAutosizeModule } from 'ngx-textarea-autosize';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIconModule } from '@angular/material/icon';
 
 // Import serivces
 import { AuthService } from './services/auth.service';
@@ -66,6 +68,7 @@ import { PartnersComponent } from './components/home/partners/partners.component
 import { RulesComponent } from './components/home/rules/rules.component';
 import { TestimonialsComponent } from './components/home/testimonials/testimonials.component';
 import { FeaturedChallengesComponent } from './components/home/featured-challenges/featured-challenges.component';
+import { ChallengesettingsComponent } from './components/challenge/challengesettings/challengesettings.component';
 import { AnalyticsComponent } from './components/analytics/analytics.component';
 import { HostAnalyticsComponent } from './components/analytics/host-analytics/host-analytics.component';
 import { EditphasemodalComponent } from './components/challenge/challengephases/editphasemodal/editphasemodal.component';
@@ -76,8 +79,6 @@ import {
   ChallengeviewallsubmissionsComponent
 } from './components/challenge/challengeviewallsubmissions/challengeviewallsubmissions.component';
 import { SideBarComponent } from './components/utility/side-bar/side-bar.component';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatIconModule } from '@angular/material/icon';
 
 import { DashboardContentComponent } from './components/dashboard/dashboard-content/dashboard-content.component';
 import {PasswordMismatchValidatorDirective} from './Directives/password.validator';
@@ -130,6 +131,7 @@ import { ResetPasswordConfirmComponent } from './components/auth/reset-password-
     PartnersComponent,
     RulesComponent,
     TestimonialsComponent,
+    ChallengesettingsComponent,
     SideBarComponent,
     AnalyticsComponent,
     FeaturedChallengesComponent,

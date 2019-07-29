@@ -14,6 +14,7 @@ import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-poli
 import { GetInvolvedComponent } from './components/get-involved/get-involved.component';
 import { AboutComponent } from './components/about/about.component';
 import { ChallengeComponent } from './components/challenge/challenge.component';
+import { ChallengesettingsComponent } from './components/challenge/challengesettings/challengesettings.component';
 import { ChallengeoverviewComponent} from './components/challenge/challengeoverview/challengeoverview.component';
 import { ChallengeevaluationComponent } from './components/challenge/challengeevaluation/challengeevaluation.component';
 import { ChallengephasesComponent} from './components/challenge/challengephases/challengephases.component';
@@ -79,7 +80,8 @@ const routes: Routes = [
       {path: 'view-all-submissions', component: ChallengeviewallsubmissionsComponent},
       {path: 'leaderboard', component: ChallengeleaderboardComponent},
       {path: 'leaderboard/:split', component: ChallengeleaderboardComponent},
-      {path: 'leaderboard/:split/:entry', component: ChallengeleaderboardComponent}
+      {path: 'leaderboard/:split/:entry', component: ChallengeleaderboardComponent},
+      {path: 'settings', component: ChallengesettingsComponent}
     ]
   },
   {
