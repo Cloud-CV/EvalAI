@@ -19,14 +19,14 @@
   color: #4d4d4d;
   margin: 1.14rem 0 0.912rem 0;
   font-size: 34px;
-  font-weight: 500;
+  font-weight: $fw-regular;
 }
 
 .about-content {
   color: #4d4d4d;
   font-size: 15px;
   line-height: 1.5;
-  font-weight: normal;
+  font-weight: $fw-light;
 }
 
 @include screen-small {

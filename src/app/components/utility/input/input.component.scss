@@ -139,7 +139,7 @@
   input:focus~label {
     top: -10px;
     color: $wild-blue !important;
-    font-weight: 400;
+    font-weight: $fw-regular;
     font-size: 0.8rem;
     -webkit-transform: translateY(-10%);
     transform: translateY(-10%);
@@ -159,7 +159,7 @@
   textarea:focus~label {
     top: -20px;
     color: $wild-blue !important;
-    font-weight: 400;
+    font-weight: $fw-regular;
     font-size: 0.8rem;
     -webkit-transform: translateY(-10%);
     transform: translateY(-10%);

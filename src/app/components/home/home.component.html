@@ -6,12 +6,12 @@
       <div class="row">
         <div class="col s12 m8 l8">
           <div class="grad-head">
-            <h3 class="text-dark-black"><strong>Evaluating state-of-the-art in AI</strong></h3>
-            <p class="text-med-black fs-18 w-300">EvalAI is an open source platform for evaluating and comparing machine learning (ML) and artificial intelligence algorithms (AI) at scale.</p>
+            <h3 class="text-dark-black fw-regular"><strong>Evaluating state-of-the-art in AI</strong></h3>
+            <p class="text-med-black fs-18 fw-light">EvalAI is an open source platform for evaluating and comparing machine learning (ML) and artificial intelligence algorithms (AI) at scale.</p>
             <div class="landing-buttons">
               <ul class="inline-list">
                 <li>
-                  <a (click)="hostChallenge()" href="javascript:void(0)" class="dark-link"><strong>Host Challenge</strong></a>
+                  <a (click)="hostChallenge()" href="javascript:void(0)" class="fw-regular dark-link"><strong>Host Challenge</strong></a>
                 </li>
                 <li><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" routerLink="/challenges/all">Participate</a></li>
               </ul>
@@ -32,8 +32,8 @@
             <img src="../../../assets/images/features/protocols.png" alt="" width="100%">
           </div>
           <div class="col s12 m4 l4">
-            <h5 class="w-300">Custom evaluation protocol</h5>
-            <p class="w-300 fs-16">We allow creation of an arbitrary number of evaluation phases
+            <h5 class="fw-regular">Custom evaluation protocol</h5>
+            <p class="fw-light fs-16">We allow creation of an arbitrary number of evaluation phases
               and dataset splits, compatibility using any programming language, and organizing results in both
               public and private leaderboards.
             </p>
@@ -42,8 +42,8 @@
             <img src="../../../assets/images/features/remote.png" alt="" width="100%">
           </div>
           <div class="col s12 m4 l4">
-            <h5 class="w-300">Remote evaluation</h5>
-            <p class="w-300 fs-16">Certain large-scale challenges need special compute capabilities for evaluation. If the challenge needs extra computational power, challenge organizers can easily add their own cluster of worker nodes to process participant submissions while we take care of hosting the challenge, handling user submissions, and maintaining the leaderboard.</p>
+            <h5 class="fw-regular">Remote evaluation</h5>
+            <p class="fw-light fs-16">Certain large-scale challenges need special compute capabilities for evaluation. If the challenge needs extra computational power, challenge organizers can easily add their own cluster of worker nodes to process participant submissions while we take care of hosting the challenge, handling user submissions, and maintaining the leaderboard.</p>
           </div>
         </div>
         <div class="row">
@@ -51,15 +51,15 @@
             <img src="../../../assets/images/features/docker.png" alt="" width="100%">
           </div>
           <div class="col s12 m4 l4">
-            <h5 class="w-300">Evaluation inside RL environments</h5>
-            <p class="w-300 fs-16">EvalAI lets participants submit code for their agent in the form of docker images which are evaluated against test environments on the evaluation server. During evaluation, the worker fetches the image, test environment, and the model snapshot and spins up a new container to perform evaluation.</p>
+            <h5 class="fw-regular">Evaluation inside RL environments</h5>
+            <p class="fw-light fs-16">EvalAI lets participants submit code for their agent in the form of docker images which are evaluated against test environments on the evaluation server. During evaluation, the worker fetches the image, test environment, and the model snapshot and spins up a new container to perform evaluation.</p>
           </div>
           <div class="col s12 m2 l2">
             <img src="../../../assets/images/features/cli.png" alt="" width="100%">
           </div>
           <div class="col s12 m4 l4">
-            <h5 class="w-300">CLI support</h5>
-            <p class="w-300 fs-16">EvalAI-CLI is designed to extend the functionality of the EvalAI web application to your command line to make the platform more accessible and terminal-friendly.</p>
+            <h5 class="fw-regular">CLI support</h5>
+            <p class="fw-light fs-16">EvalAI-CLI is designed to extend the functionality of the EvalAI web application to your command line to make the platform more accessible and terminal-friendly.</p>
           </div>
         </div>
         <div class="row">
@@ -67,15 +67,15 @@
             <img src="../../../assets/images/features/portability.png" alt="" width="100%">
           </div>
           <div class="col s12 m4 l4">
-            <h5 class="w-300">Portability</h5>
-            <p class="w-300 fs-16">EvalAI was designed with keeping in mind scalability and portability of such a system from the very inception of the idea. Most of the components rely heavily on open-source technologies – Docker, Django, Node.js, and PostgreSQL.</p>
+            <h5 class="fw-regular">Portability</h5>
+            <p class="fw-light fs-16">EvalAI was designed with keeping in mind scalability and portability of such a system from the very inception of the idea. Most of the components rely heavily on open-source technologies – Docker, Django, Node.js, and PostgreSQL.</p>
           </div>
           <div class="col s12 m2 l2">
             <img src="../../../assets/images/features/faster-eval.png" alt="" width="100%">
           </div>
           <div class="col s12 m4 l4">
-            <h5 class="w-300">Faster evaluation</h5>
-            <p class="w-300 fs-16">We warm-up the worker nodes at start-up by importing the challenge code and pre-loading the dataset in memory. We also split the dataset into small chunks that are simultaneously evaluated on multiple cores. These simple tricks result in faster evaluation and reduces the evaluation time by an order of magnitude in some cases.</p>
+            <h5 class="fw-regular">Faster evaluation</h5>
+            <p class="fw-light fs-16">We warm-up the worker nodes at start-up by importing the challenge code and pre-loading the dataset in memory. We also split the dataset into small chunks that are simultaneously evaluated on multiple cores. These simple tricks result in faster evaluation and reduces the evaluation time by an order of magnitude in some cases.</p>
           </div>
         </div>
       </div>
@@ -83,7 +83,7 @@
     <section class="ev-container ev-reverse-details text-med-black " >
       <div class="grad-container text-med-black ">
         <div class="row">
-          <h4 class="w-300 center">Popular challenges</h4>
+          <h4 class="fw-regular center">Popular challenges</h4>
         </div>
         <div class="row">
           <div class="col s12 m3 l3" *ngFor="let challenge of challengeList">
@@ -94,25 +94,25 @@
                   <span class=" ev-card-title fs-14"><span><img [src]="challenge['image']" ></span>{{challenge['image']}}</span>
                 </div>
                 <div class="card-content">
-                  <p><strong class="text-light-black fs-12">Organized by</strong>
+                  <p><strong class="fw-regular text-light-black fs-12">Organized by</strong>
                     <br>
-                    <span class="w-300 fs-16">{{challenge['creator']['team_name']}}</span>
+                    <span class="fw-light fs-16">{{challenge['creator']['team_name']}}</span>
                   </p>
-                  <p><strong class="text-light-black fs-12">Starts on</strong>
+                  <p><strong class="fw-regular text-light-black fs-12">Starts on</strong>
                     <br>
-                    <span class="w-300 fs-16">{{challenge['start_date'] | date:'medium'}}</span>
+                    <span class="fw-light fs-16">{{challenge['start_date'] | date:'medium'}}</span>
                   </p>
-                  <p><strong class="text-light-black fs-12">Ends on</strong>
+                  <p><strong class="fw-regular text-light-black fs-12">Ends on</strong>
                     <br>
-                    <span class="w-300 fs-16">{{challenge['end_date'] | date:'medium'}}</span>
+                    <span class="fw-light fs-16">{{challenge['end_date'] | date:'medium'}}</span>
                   </p>
                 </div>
-                <div class=" btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
+                <div class="fw-regular btn-card-detail waves-effect waves-dark w-300 fs-14"> <strong>View Details </strong> &nbsp; </div>
               </div>
             </a>
           </div>
           <div *ngIf="challengeList.length == 0" class="row">
-            <p class="text-dark-black w-300 center fs-16">Sorry! there are no featured challenges. Please check again later.</p>
+            <p class="fw-light text-dark-black w-300 center fs-16">Sorry! there are no featured challenges. Please check again later.</p>
           </div>
         </div>
       </div>
@@ -123,7 +123,7 @@
         <div class="row">
           <div class="col s12 m12 l12">
             <div class="row">
-              <h4 class="w-300 center">Partner Organizations</h4>
+              <h4 class="fw-regular center">Partner Organizations</h4>
             </div>
             <div class="row">
               <div class="col s12 l3">
@@ -211,12 +211,12 @@
     <section class="ev-container ev-reverse-details text-med-black " >
       <div class="grad-container text-med-black ">
         <div class="row">
-          <h4 class="w-300 center">Cite our work</h4>
+          <h4 class="fw-regular center">Cite our work</h4>
         </div>
         <div class="row">
           <div class="col s12 m12 l12">
-            <h5 class="w-400">EvalAI: Towards Better Evaluation Systems for AI Agents</h5>
-            <span class="w-300 fs-16">Deshraj Yadav, Rishabh Jain, Harsh Agrawal, Prithvijit Chattopadhyay, Taranjeet Singh, Akash Jain, Shiv Baran Singh, Stefan Lee, Dhruv Batra</span>
+            <h5 class="fw-regular">EvalAI: Towards Better Evaluation Systems for AI Agents</h5>
+            <span class="fw-light fs-16">Deshraj Yadav, Rishabh Jain, Harsh Agrawal, Prithvijit Chattopadhyay, Taranjeet Singh, Akash Jain, Shiv Baran Singh, Stefan Lee, Dhruv Batra</span>
           </div>
         </div>
         <div class="row">

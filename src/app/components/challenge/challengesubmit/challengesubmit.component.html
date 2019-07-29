@@ -1,15 +1,15 @@
 <div class="challenge-card">
   <div class="ev-card-panel ev-md-container card-bt-margin">
-    <p *ngIf="!isActive"><strong class="fw-semibold">Sorry, the challenge is not
+    <p *ngIf="!isActive"><strong class="fw-light">Sorry, the challenge is not
         active.</strong></p>
     <div *ngIf="isActive" class="row row-lr-margin">
       <div class="col-md-11 col-sm-11 col-xs-10 col-lr-pad">
-        <span class="fs-20 fw-light">Submission Guidelines</span>
+        <span class="fs-20 fw-regular">Submission Guidelines</span>
         <div *ngIf="isChallengeHost">
           <div class="fw-semibold content">
-            <p><strong class="fw-semibold">Note: </strong>Your submissions won't
+            <p><strong class="fw-regular">Note: </strong>Your submissions won't
               be visible on leaderboard for
-              <strong class="fw-semibold blue-text"> Public Challenge Phases
+              <strong class="fw-regular blue-text"> Public Challenge Phases
               </strong> since you are a challenge host
               for this challenge.<br> This feature is only for your testing
               purposes.</p>
@@ -146,7 +146,7 @@
 
   <div *ngIf="!challenge.is_docker_based" class="ev-card-panel">
     <div class="bottom-card-container bottom-hr-line">
-      <strong class="fw-semibold content">
+      <strong class="fw-regular content">
         Please fill the following fields to submit
       </strong>
     </div>
@@ -248,36 +248,36 @@
           remaining-submission-clock">
           <div class="row row-lr-margin">
             <span class="color-black">
-              <strong class="fw-semibold fs-15">
+              <strong class="fw-regular fs-15">
                 Today's remaining Submissions:
               </strong>
             </span>
             <span class="color-black">
-              <strong class="fw-semibold fs-15">
+              <strong class="fw-light fs-15">
                 {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_today_count}}
               </strong>
             </span>
           </div>
           <div class="row row-lr-margin">
             <span class="color-black">
-              <strong class="fw-semibold fs-15">
+              <strong class="fw-regular fs-15">
                 Monthly remaining submissions:
               </strong>
             </span>
             <span class="color-black">
-              <strong class="fw-semibold fs-15">
+              <strong class="fw-light fs-15">
                 {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_this_month_count}}
               </strong>
             </span>
           </div>
           <div class="row row-lr-margin">
             <span class="color-black">
-              <strong class="fw-semibold fs-15">
+              <strong class="fw-regular fs-15">
                 Total remaining submissions:
               </strong>
             </span>
             <span class="color-black">
-              <strong class="fw-semibold fs-15">
+              <strong class="fw-light fs-15">
                 {{selectedPhaseSubmissions.remainingSubmissions.remaining_submissions_count}}
               </strong>
             </span>
@@ -289,11 +289,11 @@
         <div class="ev-card-body exist-team-card ev-remaining-submission
           remaining-submission-clock">
           <div class="row row-lr-margin">
-            <strong class="text-med-black">
+            <strong class="fw-regular text-med-black">
               Message:
             </strong> {{selectedPhaseSubmissions.clockMessage.message}}
           </div>
-          <div>
+          <div class="fw-regular">
             Next set of submissions will be available after:
           </div>
           <div>
