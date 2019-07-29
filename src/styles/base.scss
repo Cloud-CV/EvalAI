@@ -323,6 +323,11 @@ mat-label {
 
 
 /* Chip Styles */
+
+.mat-form-field-infix {
+  padding: 0px !important;
+}
+
 mat-chip-list {
   display: inline-block;
 }

@@ -1,0 +1,40 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.challenge-card {
+    .bottom-card-container {
+        .settings-section {
+            padding: 20px 30px;
+            border: 1px solid;
+            border-radius: 5px;
+            min-height: 50px;
+            color: rgb(101, 97, 97);
+        }
+    }
+}
+
+@include screen-medium {
+    .settings-section {
+        padding: 10px 20px !important;
+    }
+}
+
+@include screen-small-medium {
+    .settings-section {
+        padding: 10px 10px !important;
+    }
+}
+
+@include screen-small {
+    .settings-section {
+        padding: 10px 5px !important;
+    }
+}
+
+.example-chip-list {
+    width: 100%;
+}
+
+.error-message {
+    color: $highlight;
+}
