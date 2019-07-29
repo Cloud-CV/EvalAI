@@ -27,9 +27,9 @@ class ProfileSerializer(UserDetailsSerializer):
     """
 
     affiliation = serializers.CharField(source="profile.affiliation")
-    github_url = serializers.CharField(source="profile.github_url")
-    google_scholar_url = serializers.CharField(source="profile.google_scholar_url")
-    linkedin_url = serializers.CharField(source="profile.linkedin_url")
+    github_url = serializers.URLField(source="profile.github_url", allow_blank=True)
+    google_scholar_url = serializers.URLField(source="profile.google_scholar_url", allow_blank=True)
+    linkedin_url = serializers.URLField(source="profile.linkedin_url", allow_blank=True)
 
     class Meta(UserDetailsSerializer.Meta):
         fields = (
