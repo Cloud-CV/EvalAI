@@ -245,6 +245,7 @@ def extract_challenge_data(challenge, phases):
 
     try:
         # import the challenge after everything is finished
+        importlib.invalidate_caches()
         challenge_module = importlib.import_module(
             CHALLENGE_IMPORT_STRING.format(challenge_id=challenge.id)
         )
@@ -428,6 +429,13 @@ def run_submission(
                "submission_result": ['foo', 'bar'],
             }
         """
+
+        error_bars_dict = dict()
+        if "error" in submission_output:
+            for split_error in submission_output["error"]:
+                split_code_name = list(split_error.keys())[0]
+                error_bars_dict[split_code_name] = split_error[split_code_name]
+
         if "result" in submission_output:
 
             leaderboard_data_list = []
@@ -471,6 +479,11 @@ def run_submission(
                 leaderboard_data.result = split_result.get(
                     dataset_split.codename
                 )
+
+                if "error" in submission_output:
+                    leaderboard_data.error = error_bars_dict.get(
+                        dataset_split.codename
+                    )
 
                 leaderboard_data_list.append(leaderboard_data)
 
@@ -660,7 +673,7 @@ def main():
         q_params["pk"] = challenge_pk
 
     if settings.DEBUG or settings.TEST:
-        if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+        if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
             if not challenge_pk:
                 logger.exception(
                     "Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file."
@@ -685,7 +698,7 @@ def main():
     while True:
         for message in queue.receive_messages():
             if settings.DEBUG or settings.TEST:
-                if LIMIT_CONCURRENT_SUBMISSION_PROCESSING:
+                if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
                     current_running_submissions_count = Submission.objects.filter(
                         challenge_phase__challenge=challenge.id,
                         status="running",
