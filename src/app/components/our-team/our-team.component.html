@@ -1,11 +1,11 @@
 <app-header-static></app-header-static>
 <div class="container-top">
     <div class="our-team-container">
-        <div class="our-team-title">
+        <div class="our-team-title fw-regular">
             {{coreTeamType}}
         </div>
         <div class="row">
-            <h3 ng-if="noTeamDisplay" class="team-heading">{{noTeamDisplay}}</h3>
+            <h3 ng-if="noTeamDisplay" class="team-heading fw-regular">{{noTeamDisplay}}</h3>
             <!-- This card is for Core Team -->
             <div class="col-lg-3 col-md-3 col-sm-12" *ngFor="let data of
                 coreTeamDetails">

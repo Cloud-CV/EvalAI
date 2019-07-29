@@ -376,7 +376,7 @@ mat-chip {
   padding: 10px 30px;
   box-shadow: 2px 2px 9px #6d6d6d;
   border-radius: 3px 0px 0px 3px;
-  font-weight: 300;
+  font-weight: $fw-light;
   transition: all 0.2s ease-in-out;
   &:hover {
       box-shadow: -1px 0px 9px #bbbbbb;
@@ -647,7 +647,7 @@ input[type="checkbox"] {
 input[type=checkbox]+label {
   color: $light-gray;
   font-size: 0.8em;
-  font-weight: 400;
+  font-weight: $fw-regular;
 }
 
 input[type=checkbox].filled-in:checked+label:after {
@@ -1196,7 +1196,7 @@ ul {
 code {
   font-family: Roboto;
   font-size: 14px;
-  font-weight: 300;
+  font-weight: $fw-light;
   background: #eff0f1;
   border: #eff0f1 dashed 1px;
   padding: 6px;
@@ -2042,7 +2042,7 @@ input[type="radio"].selectTeam + label {
 /* icon prefix focus color */
 
 input {
-  font-weight: 300;
+  font-weight: $fw-light;
   border-bottom: 1px solid $light-gray;
 }
 
