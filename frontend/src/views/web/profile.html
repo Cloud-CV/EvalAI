@@ -3,17 +3,37 @@
     <img src="dist/images/pro-pic.png" class="profile-pic">
     <div>{{profile.user.username}}</div>
     <div class="text-light-black w-300">{{profile.user.email}}</div>
-    <ul>
-        <li>
-            <span class="text-light-black fs-12">First Name<br> </span> {{profile.user.first_name}}
-        </li>
-        <li>
-            <span class="text-light-black fs-12">Last Name<br></span> {{profile.user.last_name}}
-        </li>
-        <li>
-            <span class="text-light-black fs-12">Affiliated To<br></span> {{profile.user.affiliation}}
-        </li>
-    </ul>
+    <div class="row">
+        <div class="col s12 m6 l6">
+            <ul>
+                <li>
+                    <span class="text-light-black fs-12">First Name<br> </span> {{profile.user.first_name}}
+                </li>
+                <li>
+                    <span class="text-light-black fs-12">Last Name<br></span> {{profile.user.last_name}}
+                </li>
+                <li>
+                    <span class="text-light-black fs-12">Affiliated To<br></span> {{profile.user.affiliation}}
+                </li>
+            </ul>
+        </div>
+        <div class="col s12 m6 l6">
+            <ul>
+                <li>
+                    <span class="text-light-black fs-12">Github Url<br> </span>
+                    <span class="blue-text">{{profile.user.github_url}}</span>
+                </li>
+                <li>
+                    <span class="text-light-black fs-12">Google Scholar Url<br></span>
+                    <span class="blue-text">{{profile.user.google_scholar_url}}</span>
+                </li>
+                <li>
+                    <span class="text-light-black fs-12">Linkedin Url<br></span>
+                    <span class="blue-text">{{profile.user.linkedin_url}}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
     <!--         <li>
             <input type="checkbox" class="filled-in fs-14" id="sub">
             <label for="sub">Subscribe to email list</label>
