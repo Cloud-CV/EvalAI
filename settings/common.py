@@ -305,4 +305,4 @@ SENDGRID_SETTINGS = {
     "TEMPLATES": {"CHALLENGE_INVITATION": "d-60825bcf014f4958bdb1b9173471d420"}
 }
 
-FRONTEND_URL =  os.environ.get("FRONTEND_URL", "http://localhost:8888")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:8888")
