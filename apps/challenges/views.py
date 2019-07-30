@@ -336,7 +336,7 @@ def add_participant_team_to_challenge(
             if (
                 participant.user.first_name == "" or participant.user.last_name == ""
                 or participant.user.profile.affiliation == ""
-                or participant.user.profile.google_scholar_url
+                or participant.user.profile.google_scholar_url == ""
             ):
                 response_data = {
                     "error": "Each participant of a team must complete their profile"
