@@ -14,6 +14,8 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **image**: Logo of the challenge (use a relative path for the logo in the zip configuration, e.g. `images/logo/challenge_logo.jpg`). **Note**: The image must be in jpg, jpeg or png format.
 
+- **is_profile_required**: True/False (boolean field that require participants to complete their profile before participating in challenge)
+
 - **submission_guidelines**: Submission guidelines of the challenge (use a relative path for the HTML file, e.g. `challenge_details/submission_guidelines.html`)
 
 - **evaluation_script**: Python script which will decide how to evaluate submissions in different phases (path of the evaluation script file or folder relative to this YAML file. For e.g. `evaluation_script/`)

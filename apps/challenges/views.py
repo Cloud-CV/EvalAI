@@ -329,9 +329,24 @@ def add_participant_team_to_challenge(
             "participant_team_id": int(participant_team_pk),
         }
         return Response(response_data, status=status.HTTP_200_OK)
-    else:
-        challenge.participant_teams.add(participant_team)
-        return Response(status=status.HTTP_201_CREATED)
+
+    if challenge.is_profile_required:
+        participants = Participant.objects.filter(team=participant_team)
+        for participant in participants:
+            print(participant.user.first_name)
+            if (participant.user.first_name == "" or participant.user.last_name == "" or
+                participant.user.profile.affiliation == "" or participant.user.profile.google_scholar_url
+            ):
+                response_data = {
+                    "error": "Each participant of a team must complete their profile"
+                    " in order to participate in this challenge.",
+                    "is_profile_complete": False
+                }
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
+    challenge.participant_teams.add(participant_team)
+    return Response(status=status.HTTP_201_CREATED)
 
 
 @api_view(["POST"])

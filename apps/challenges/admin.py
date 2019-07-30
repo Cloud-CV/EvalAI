@@ -40,6 +40,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "end_date",
         "creator",
         "published",
+        "is_profile_required",
         "is_registration_open",
         "enable_forum",
         "anonymous_leaderboard",

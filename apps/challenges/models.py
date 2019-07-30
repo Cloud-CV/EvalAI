@@ -58,6 +58,7 @@ class Challenge(TimeStampedModel):
     published = models.BooleanField(
         default=False, verbose_name="Publicly Available", db_index=True
     )
+    is_profile_required = models.BooleanField(default=False)
     is_registration_open = models.BooleanField(default=True)
     enable_forum = models.BooleanField(default=True)
     forum_url = models.URLField(max_length=100, blank=True, null=True)
