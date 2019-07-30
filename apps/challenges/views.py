@@ -333,9 +333,10 @@ def add_participant_team_to_challenge(
     if challenge.is_profile_required:
         participants = Participant.objects.filter(team=participant_team)
         for participant in participants:
-            print(participant.user.first_name)
-            if (participant.user.first_name == "" or participant.user.last_name == "" or
-                participant.user.profile.affiliation == "" or participant.user.profile.google_scholar_url
+            if (
+                participant.user.first_name == "" or participant.user.last_name == ""
+                or participant.user.profile.affiliation == ""
+                or participant.user.profile.google_scholar_url
             ):
                 response_data = {
                     "error": "Each participant of a team must complete their profile"
