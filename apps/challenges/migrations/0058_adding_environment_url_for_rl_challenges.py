@@ -9,7 +9,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0054_add_banned_email_ids_field'),
+        ('challenges', '0057_add_task_def_arn_and_workers_field_to_challenge_model'),
     ]
 
     operations = [
