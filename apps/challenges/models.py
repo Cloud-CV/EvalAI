@@ -8,6 +8,8 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import signals
 
+from .aws_utils import restart_workers_signal_callback
+
 from base.models import (
     TimeStampedModel,
     model_field_name,
@@ -119,6 +121,12 @@ class Challenge(TimeStampedModel):
     cli_version = models.CharField(
         max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
+    # The number of active workers on Fargate of the challenge.
+    workers = models.IntegerField(
+        null=True, blank=True, default=None
+    )
+    # The task definition ARN for the challenge, used for updating and creating service.
+    task_def_arn = models.CharField(null=True, blank=True, max_length=2048, default="")
 
     class Meta:
         app_label = "challenges"
@@ -158,6 +166,11 @@ class Challenge(TimeStampedModel):
 
 signals.post_save.connect(
     model_field_name(field_name="evaluation_script")(create_post_model_field),
+    sender=Challenge,
+    weak=False,
+)
+signals.post_save.connect(
+    model_field_name(field_name="evaluation_script")(restart_workers_signal_callback),
     sender=Challenge,
     weak=False,
 )
@@ -266,6 +279,11 @@ signals.post_save.connect(
     sender=ChallengePhase,
     weak=False,
 )
+signals.post_save.connect(
+    model_field_name(field_name="test_annotation")(restart_workers_signal_callback),
+    sender=ChallengePhase,
+    weak=False,
+)
 
 
 class Leaderboard(TimeStampedModel):
@@ -299,6 +317,8 @@ class ChallengePhaseSplit(TimeStampedModel):
     visibility = models.PositiveSmallIntegerField(
         choices=VISIBILITY_OPTIONS, default=PUBLIC
     )
+    leaderboard_decimal_precision = models.PositiveIntegerField(default=2)
+    is_leaderboard_order_descending = models.BooleanField(default=True)
 
     def __str__(self):
         return "{0} : {1}".format(

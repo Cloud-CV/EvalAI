@@ -66,9 +66,9 @@
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
                         <div class="col s12 all-submission-table-scroll">
-                            <div ng-if="(challenge.showPagination == false) && (challenge.isResult == true)" class="result-wrn">No results found.</div>
+                            <div ng-if="!challenge.showPagination && challenge.isResult" class="result-wrn">No results found.</div>
                             <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                            <table ng-if="challenge.isResult" class="highlight all-submission-table responsive-table">
+                            <table ng-if="challenge.showPagination && challenge.isResult" class="highlight all-submission-table responsive-table">
                                 <thead>
                                     <tr>
                                         <th class="align-center" data-field="team">Team</th>
@@ -82,6 +82,7 @@
                                         <th data-field="file">Stderr File</th>
                                         <th data-field="file">Result File</th>
                                         <th data-field="file">Metadata File</th>
+                                        <th data-field="button">Re-run Submissions</th>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
@@ -116,6 +117,7 @@
                                             <label for="isPublic{{ key.id }}"></label>
                                             <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                         </td>
+                                        <td><center><a ng-class="key.classList" class="fa fa-refresh pointer" ng-click="challenge.reRunSubmission(key)"></a></center></td>
                                     </tr>
                                 </tbody>
                             </table>

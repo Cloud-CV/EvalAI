@@ -291,3 +291,18 @@ class TestChallengeUrls(BaseAPITestClass):
         )
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, "challenges:get_aws_credentials_for_participant_team")
+        self.url = reverse_lazy(
+            'challenges:get_challenge_phase_by_pk',
+            kwargs={'pk': self.challenge_phase.pk},
+        )
+        self.assertEqual(
+            self.url, "/api/challenges/challenge/phase/{}/".format(self.challenge_phase.pk)
+        )
+
+        self.url = reverse_lazy(
+            'challenges:get_challenge_phases_by_challenge_pk',
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+        self.assertEqual(
+            self.url, "/api/challenges/{}/phases/".format(self.challenge.pk)
+        )

@@ -8,7 +8,7 @@
                         Evaluation Criteria
                         </strong>
                     </span>
-                    <div ng-bind-html="challenge.page.evaluation_details"></div>
+                    <div class="evaluation-details" ng-bind-html="challenge.page.evaluation_details"></div>
                 </div>
                 <div ng-if="challenge.isChallengeHost" class="col s1 m1">
                     <a class="pointer" ng-click="challenge.evaluationCriteriaDialog($event)">
@@ -32,7 +32,7 @@
                             Terms And Conditions
                         </strong>
                     </span>
-                    <div ng-bind-html="challenge.page.terms_and_conditions"></div>
+                    <div class="terms-and-conditions" ng-bind-html="challenge.page.terms_and_conditions"></div>
                 </div>
                 <div ng-if="challenge.isChallengeHost" class="col s1 m1">
                     <a class="pointer" ng-click="challenge.termsAndConditionsDialog($event)">

@@ -11,7 +11,7 @@
                                 for this challenge.<br> This feature is only for your testing purposes.</p>
                         </strong>
                     </div>
-                    <div ng-bind-html="challenge.page.submission_guidelines"></div>
+                    <div class="submission-guidelines" ng-bind-html="challenge.page.submission_guidelines"></div>
                 </div>
                 <div ng-if="challenge.isChallengeHost" class="col s1 m1">
                     <a class="pointer" ng-click="challenge.submissionGuidelinesDialog($event)">
