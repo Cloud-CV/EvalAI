@@ -574,6 +574,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
+            is_flagged=True,
         )
 
     def test_challenge_submission_when_challenge_does_not_exist(self):
@@ -675,6 +676,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                     self.submission.submitted_at.isoformat(), "Z"
                 ).replace("+00:00", ""),
                 "is_public": self.submission.is_public,
+                "is_flagged": self.submission.is_flagged,
                 "when_made_public": self.submission.when_made_public,
                 "is_baseline": self.submission.is_baseline,
             }
@@ -1140,6 +1142,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
+            is_flagged=True,
             when_made_public=timezone.now(),
         )
 
@@ -1154,6 +1157,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
+            is_flagged=True,
             when_made_public=timezone.now(),
         )
 
@@ -1168,6 +1172,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             project_url="http://testserver/",
             publication_url="http://testserver/",
             is_public=True,
+            is_flagged=True,
             when_made_public=timezone.now(),
         )
 
@@ -1340,6 +1345,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
+            "is_flagged": self.submission.is_flagged,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1384,6 +1390,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.private_submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_public": self.private_submission.is_public,
+            "is_flagged": self.private_submission.is_flagged,
             "when_made_public": "{0}{1}".format(
                 self.private_submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1446,6 +1453,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
+            "is_flagged": self.submission.is_flagged,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1510,6 +1518,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.host_participant_team_submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_public": self.host_participant_team_submission.is_public,
+            "is_flagged": self.host_participant_team_submission.is_flagged,
             "when_made_public": "{0}{1}".format(
                 self.host_participant_team_submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1582,6 +1591,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
+            "is_flagged": self.submission.is_flagged,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1621,6 +1631,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.submission.submitted_at.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_public": self.submission.is_public,
+            "is_flagged": self.submission.is_flagged,
             "when_made_public": "{0}{1}".format(
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
@@ -1843,6 +1854,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.leaderboard_data.id,
+                    "submission__participant_team": self.submission.participant_team.id,
                     "submission__participant_team__team_name": self.submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
@@ -1863,7 +1875,6 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
         expected = collections.OrderedDict(expected)
 
         response = self.client.get(self.url, {})
-
         self.assertEqual(response.data["count"], expected["count"])
         self.assertEqual(response.data["next"], expected["next"])
         self.assertEqual(response.data["previous"], expected["previous"])
@@ -1886,8 +1897,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.host_participant_leaderboard_data.id,
-                    "submission__participant_team__team_name":
-                        self.host_participant_team_submission.participant_team.team_name,
+                    "submission__participant_team": self.host_participant_team_submission.participant_team.id,
+                    "submission__participant_team__team_name": self.host_participant_team_submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team,
@@ -1904,6 +1915,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 },
                 {
                     "id": self.leaderboard_data.id,
+                    "submission__participant_team": self.submission.participant_team.id,
                     "submission__participant_team__team_name": self.submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
@@ -1953,9 +1965,9 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.host_participant_leaderboard_data.id,
-                    "submission__participant_team__team_name":
-                        self.host_participant_team_submission.participant_team.team_name,
-                        "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
+                    "submission__participant_team": self.host_participant_team_submission.participant_team.id,
+                    "submission__participant_team__team_name": self.host_participant_team_submission.participant_team.team_name,
+                    "submission__participant_team__team_url": self.host_participant_team_submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team,
                     "filtering_score": self.filtering_score_host_participant_team,
@@ -1971,6 +1983,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 },
                 {
                     "id": self.leaderboard_data.id,
+                    "submission__participant_team": self.submission.participant_team.id,
                     "submission__participant_team__team_name": self.submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.submission.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
@@ -1988,8 +2001,8 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                 },
                 {
                     "id": self.host_participant_leaderboard_data_2.id,
-                    "submission__participant_team__team_name":
-                        self.host_participant_team_submission_2.participant_team.team_name,
+                    "submission__participant_team": self.host_participant_team_submission_2.participant_team.id,
+                    "submission__participant_team__team_name": self.host_participant_team_submission_2.participant_team.team_name,
                     "submission__participant_team__team_url": self.host_participant_team_submission_2.participant_team.team_url,
                     "challenge_phase_split": self.challenge_phase_split.id,
                     "result": self.expected_results_host_participant_team_2,
@@ -2069,6 +2082,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
             "results": [
                 {
                     "id": self.private_leaderboard_data.id,
+                    "submission__participant_team": self.private_submission.participant_team.id,
                     "submission__participant_team__team_name": self.private_submission.participant_team.team_name,
                     "submission__participant_team__team_url": self.private_submission.participant_team.team_url,
                     "challenge_phase_split": self.private_challenge_phase_split.id,
