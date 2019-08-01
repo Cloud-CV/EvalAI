@@ -11,6 +11,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TeamlistComponent } from '../../../components/publiclists/teamlist/teamlist.component';
 import { EndpointsService } from '../../../services/endpoints.service';
+import { FormsModule } from '@angular/forms';
 
 describe('ChallengeparticipateComponent', () => {
   let component: ChallengeparticipateComponent;
@@ -20,7 +21,7 @@ describe('ChallengeparticipateComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ChallengeparticipateComponent, ForceloginComponent, TeamlistComponent ],
       providers: [ ChallengeService, ApiService, GlobalService, AuthService, EndpointsService ],
-      imports: [ HttpClientModule, RouterTestingModule ],
+      imports: [ HttpClientModule, RouterTestingModule, FormsModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();

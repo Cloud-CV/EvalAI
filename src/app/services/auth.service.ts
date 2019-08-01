@@ -34,7 +34,7 @@ export class AuthService {
   canShowPassword = false;
   canShowConfirmPassword = false;
 
-  /**
+   /**
    * Constructor.
    * @param globalService  GlobalService Injection.
    * @param apiService  ApiService Injection.
