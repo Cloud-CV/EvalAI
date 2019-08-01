@@ -13,6 +13,8 @@ import {Router, Routes} from '@angular/router';
 
 import {PubliclistsComponent} from '../publiclists.component';
 import {By} from '@angular/platform-browser';
+import {FormsModule} from '@angular/forms';
+import {NotFoundComponent} from '../../not-found/not-found.component';
 
 
 const routes: Routes = [
@@ -22,6 +24,15 @@ const routes: Routes = [
   {
     path: 'challenge-create',
     redirectTo: '/teams/hosts',
+    pathMatch: 'full'
+  },
+  {
+    path: '404',
+    component: NotFoundComponent
+  },
+  {
+    path: '**',
+    redirectTo: '/404',
     pathMatch: 'full'
   }
 ];
@@ -33,9 +44,9 @@ describe('TeamlistComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TeamlistComponent],
+      declarations: [ TeamlistComponent, NotFoundComponent],
       providers: [ GlobalService, ApiService, AuthService, ChallengeService, EndpointsService ],
-      imports: [ RouterTestingModule.withRoutes(routes), HttpClientModule ],
+      imports: [ RouterTestingModule.withRoutes(routes), HttpClientModule, FormsModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
       .compileComponents();

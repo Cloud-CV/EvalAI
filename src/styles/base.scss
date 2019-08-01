@@ -483,6 +483,12 @@ ul {
   list-style-type: none;
 }
 
+li {
+  margin-bottom: 1.5%; }
+
+li:last-child {
+  margin-bottom: 0px; }
+
 .exist-team-card ul.collapsible {
   border: 0;
   box-shadow: none;
@@ -1422,6 +1428,7 @@ code {
     font-size: $fs-16;
     color: $gray-darker;
     padding: 30px;
+    overflow-y: scroll;
     .title {
       color: $med-black;
       padding: 10px;

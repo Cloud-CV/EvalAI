@@ -27,7 +27,7 @@ describe('TeamcardComponent', () => {
     component = fixture.componentInstance;
     component.team = {members: []};
     component.selected = false;
-    component.update = false;
+    component.isOnChallengePage = false;
     component.deleteTeamCard = new EventEmitter<any>();
     component.selectTeamCard = new EventEmitter<any>();
     fixture.detectChanges();

@@ -89,15 +89,12 @@
         @include box-shadow(0px, 0px, 5px, 0px, $overlay-light);
         max-height: 300px;
         transition: all 0.5s ease;
-        padding: 15px;
-        padding-top: 20px;
-        padding-left: 20px;
+        padding: 20px 15px 15px 20px;
       }
     }
     &.noexpand {
       .team-content {
         @include box-shadow(0px, 0px, 10px, 0px, $overlay-light);
-        // background: $gray-lighter;
       }
     }
   }
@@ -120,4 +117,10 @@
       width: 95%;
     }
   }
+}
+
+
+.selected {
+  height: unset !important;
+  border-bottom-style: none !important;
 }
