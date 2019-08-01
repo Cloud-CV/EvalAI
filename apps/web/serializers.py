@@ -1,12 +1,18 @@
 from rest_framework import serializers
 
-from .models import Contact, Team
+from .models import Contact, Subscribers, Team
 
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = ("name", "email", "message")
+
+
+class SubscribeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscribers
+        fields = ("email",)
 
 
 class TeamSerializer(serializers.ModelSerializer):
