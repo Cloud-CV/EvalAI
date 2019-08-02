@@ -1,7 +1,6 @@
 import csv
 import logging
 import random
-import requests
 import shutil
 import string
 import tempfile
