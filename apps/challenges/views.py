@@ -75,7 +75,6 @@ from .models import (
     Challenge,
     ChallengePhase,
     ChallengePhaseSplit,
-    ChallengeConfiguration,
     StarChallenge,
     UserInvitation,
 )
@@ -625,39 +624,35 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     Creates a challenge using a zip file.
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+
     uploaded_zip_file = request.data.get("zip_configuration")
+    if uploaded_zip_file is None:
+        message = "No file was submitted."
+        response_data = {"zip_configuration": message}
+        logger.exception(message)
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # All files download and extract location.
     BASE_LOCATION = tempfile.mkdtemp()
+    unique_folder_name = "".join(
+        [
+            random.choice(string.ascii_letters + string.digits)
+            for i in xrange(10)
+        ]
+    )
+    CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(
+        BASE_LOCATION, "{}.zip".format(unique_folder_name)
+    )
     try:
-        unique_folder_name = "".join(
-            [
-                random.choice(string.ascii_letters + string.digits)
-                for i in xrange(10)
-            ]
-        )
-        CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(
-            BASE_LOCATION, "{}.zip".format(unique_folder_name)
-        )
-        try:
-            with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, "wb") as zip_file:
-                zip_file.write(uploaded_zip_file.read())
-        except IOError:
-            message = (
-                "Unable to process the uploaded zip file. " "Please try again!"
-            )
-            response_data = {"error": message}
-            logger.exception(message)
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    except requests.exceptions.RequestException:
+        with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, "wb") as zip_file:
+            zip_file.write(uploaded_zip_file.read())
+    except IOError:
         message = (
-            "A server error occured while processing zip file. "
-            "Please try again!"
+            "Unable to process the uploaded zip file. " "Please try again!"
         )
         response_data = {"error": message}
         logger.exception(message)
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # Extract zip file
     try:
