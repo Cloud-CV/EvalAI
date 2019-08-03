@@ -138,7 +138,7 @@ describe('Unit tests for analytics controller', function() {
 	});
 
 	describe('Unit tests for `showChallengeAnalysis` function', function() {
-		var phaseDetailsSuccess, currentPhaseDetailsSuccess, teamsCountSuccess, success;
+		var phaseDetailsSuccess, currentPhaseDetailsSuccess, teamsCountSuccess;
 		var successResponse, participantTeamCount = 10;
 		var status;
 
