@@ -15,7 +15,7 @@ describe('Unit tests for analytics controller', function() {
         createController = function () {
         	return $controller('AnalyticsCtrl', { $scope: $scope });
         };
-        vm = createController();
+        vm = $controller('AnalyticsCtrl', { $scope: $scope });
 	}));
 
 	describe('Global Variables', function() {
