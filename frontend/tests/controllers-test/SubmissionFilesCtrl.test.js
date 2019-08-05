@@ -16,7 +16,7 @@ describe('Unit tests for submission files controller', function () {
         createController = function () {
             return $controller('SubmissionFilesCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('SubmissionFilesCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {

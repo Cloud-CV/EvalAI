@@ -15,7 +15,7 @@ describe('Unit tests for main controller', function () {
         createController = function () {
             return $controller('MainCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('MainCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {

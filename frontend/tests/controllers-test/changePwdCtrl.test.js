@@ -15,7 +15,7 @@ describe('Unit tests for change password controller', function () {
         createController = function () {
             return $controller('ChangePwdCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('ChangePwdCtrl', { $scope: $scope });
     }));
     
     describe('Global variables', function () {

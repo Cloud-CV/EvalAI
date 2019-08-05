@@ -15,7 +15,7 @@ describe('Unit tests for ContactUs Controller', function () {
         createController = function () {
             return $controller('contactUsCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('contactUsCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {

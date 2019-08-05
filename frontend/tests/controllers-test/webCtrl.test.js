@@ -16,6 +16,7 @@ describe('Unit tests for web controller', function () {
         createController = function () {
             return $controller('WebCtrl', {$scope: $scope});
         };
+        vm = $controller('WebCtrl', { $scope: $scope });
         utilities.storeData('userKey', 'encrypted');
     }));
 

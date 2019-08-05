@@ -14,6 +14,7 @@ describe('Unit tests for permission controller', function () {
         createController = function () {
             return $controller('PermCtrl', {$scope: $scope});
         };
+        vm = $controller('PermCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {

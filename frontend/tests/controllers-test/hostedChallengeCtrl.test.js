@@ -14,7 +14,7 @@ describe('Unit tests for hosted challenge controller', function () {
         createController = function () {
             return $controller('HostedChallengesCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('HostedChallengesCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {
