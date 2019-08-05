@@ -15,7 +15,7 @@ describe('Unit tests for challenge invite controller', function () {
         createController = function () {
             return $controller('ChallengeInviteCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('ChallengeInviteCtrl', { $scope: $scope });
     }));
 
     describe('Unit tests for registerChallengeParticipant function \
