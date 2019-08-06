@@ -352,18 +352,7 @@ export class ChallengeService {
    */
   challengeCreate(hostTeam, formData, callback = () => {}) {
     const API_PATH = this.endpointsService.challengeCreateURL(hostTeam);
-    const SELF = this;
-    this.apiService.postFileUrl(API_PATH, formData).subscribe(
-      data => {
-        SELF.globalService.showToast('success', 'Successfuly sent to EvalAI admin for approval.');
-        callback();
-      },
-      err => {
-        SELF.globalService.showToast('error', err.error);
-      },
-      () => {
-        console.log('Challenge Creation Zip Uploaded');
-    });
+    return  this.apiService.postFileUrl(API_PATH, formData);
   }
 
 
