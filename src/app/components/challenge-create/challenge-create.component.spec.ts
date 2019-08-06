@@ -13,6 +13,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientModule } from '@angular/common/http';
 import {Router, Routes} from '@angular/router';
 import {NotFoundComponent} from '../not-found/not-found.component';
+import {FormsModule} from '@angular/forms';
 
 const routes: Routes = [
   {
@@ -39,7 +40,7 @@ describe('ChallengecreateComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ChallengeCreateComponent, HeaderStaticComponent, FooterComponent, NotFoundComponent ],
       schemas: [ NO_ERRORS_SCHEMA ],
-      imports: [ RouterTestingModule.withRoutes(routes), HttpClientModule ],
+      imports: [ RouterTestingModule.withRoutes(routes), HttpClientModule, FormsModule],
       providers: [ GlobalService, AuthService, ApiService, ChallengeService, EndpointsService ]
     })
     .compileComponents();
