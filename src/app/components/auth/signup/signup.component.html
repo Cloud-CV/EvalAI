@@ -14,6 +14,7 @@
     <div class="input-field align-left">
       <input type="text" id="name" class="dark-autofill" name="name" #name="ngModel"
              (focusin)="isnameFocused = true" (focusout)="isnameFocused = authService.regUser['name'] !== ''"
+             (change)="isnameFocused = authService.regUser['name'] !== ''"
              [(ngModel)]="authService.regUser['name']" minlength="3" required>
       <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
       <label for="name" [class.active]="isnameFocused">Username*</label>
@@ -26,6 +27,7 @@
     <div class="input-field align-left">
       <input type="email" id="email" class="dark-autofill" name="email" #email="ngModel"
              (focusin)="isemailFocused = true" (focusout)="isemailFocused = authService.regUser['email'] !== ''"
+             (change)="isemailFocused = authService.regUser['email'] !== ''"
              [(ngModel)]="authService.regUser['email']" required>
       <span class="form-icon form-icon-dark"><i class="fa fa-envelope"></i></span>
       <label for="email" [class.active]="isemailFocused">Email</label>
@@ -41,6 +43,7 @@
              (paste)="authService.regUser['password'] = ''" class="dark-autofill" name="password" #password="ngModel"
              (focusin)="ispasswordFocused = true"
              (focusout)="ispasswordFocused = authService.regUser['password'] !== ''"
+             (input)="ispasswordFocused = authService.regUser['password'] !== ''"
              [(ngModel)]="authService.regUser['password']" minlength="8"
              (change)="checkStrength(authService.regUser['password'])" required>
       <span class="form-icon form-icon-dark" (click)="authService.togglePasswordVisibility()">
@@ -64,6 +67,7 @@
              #confirm_password="ngModel"
              (focusin)="iscnfrmpasswordFocused = true"
              (focusout)="iscnfrmpasswordFocused = authService.regUser['confirm_password'] !== ''"
+             (change)="iscnfrmpasswordFocused = authService.regUser['confirm_password'] !== ''"
              [(ngModel)]="authService.regUser['confirm_password']" minlength="8" required>
       <span class="form-icon form-icon-dark" (click)="authService.toggleConfirmPasswordVisibility()">
                 <i *ngIf="!authService.canShowConfirmPassword" class="fa fa-eye pointer"></i>
