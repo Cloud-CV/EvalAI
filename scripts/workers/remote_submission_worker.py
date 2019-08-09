@@ -25,6 +25,7 @@ COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
 logger = logging.getLogger(__name__)
 
+PRIVATE_ANNOTATION_PATH = os.environ.get("PRIVATE_ANNOTATION_PATH")
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
 DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT", "8000")
@@ -119,7 +120,13 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         * `download_location` should include name of file as well.
     """
     try:
-        response = requests.get(url)
+        # If file is local.
+        if url[0] == '/':
+            zip_ref = zipfile.ZipFile(url, "r")
+            zip_ref.extractall(extract_location)
+            zip_ref.close()
+        else:
+            response = requests.get(url)
     except Exception as e:
         logger.error("Failed to fetch file from {}, error {}".format(url, e))
         response = None
@@ -169,6 +176,42 @@ def return_url_per_environment(url):
     return url
 
 
+def annotation_zip_file_validator(phases, phase_data_base_directory):
+    """
+    Verifies the structure of the Annotation files.
+
+    Parameters:
+    phases (list): list of phase objects.
+    """
+    directories = []
+    files_map = {}
+    for (root, dirs, files) in os.walk(phase_data_base_directory, topdown=True):
+        directories.append(dirs)
+        files_map[os.path.basename(root)] = files
+
+    phases = directories[0]
+    num_of_phases = len(phases)
+    challenge = get_challenge_by_queue_name()
+
+    # To verify number of phases.
+    if num_of_phases is not len(phases):
+        shutil.rmtree(phase_data_base_directory)
+        logger.exception(
+            "Given Annotation files phases don't match the challenge phases for challenge {}".format(challenge.get("id"))
+        )
+        raise
+
+    # To verify one annotation file for each phase.
+    for phase in phases:
+        if len(files_map[phase]) == 1:
+            shutil.rmtree(phase_data_base_directory)
+            logger.exception(
+                "Please ensure one annotation file for each phase. Rectify {}".format(phase)
+            )
+            raise
+    return True
+
+
 def load_challenge():
     """
         Creates python package for a challenge and extracts relevant data
@@ -187,7 +230,7 @@ def load_challenge():
     extract_challenge_data(challenge, phases)
 
 
-def extract_challenge_data(challenge, phases):
+def extract_challenge_data(challenge, phases, annotation_path=PRIVATE_ANNOTATION_PATH):
     """
         * Expects a challenge object and an array of phase object
         * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
@@ -214,23 +257,48 @@ def extract_challenge_data(challenge, phases):
     )
     create_dir(phase_data_base_directory)
 
-    for phase in phases:
-        phase_data_directory = PHASE_DATA_DIR.format(
-            challenge_id=challenge.get("id"), phase_id=phase.get("id")
+    if challenge.private_annotations is None:
+        for phase in phases:
+            phase_data_directory = PHASE_DATA_DIR.format(
+                challenge_id=challenge.get("id"), phase_id=phase.get("id")
+            )
+            # create phase directory
+            create_dir(phase_data_directory)
+
+            annotation_file_url = phase.get("test_annotation")
+            annotation_file_name = os.path.basename(phase.get("test_annotation"))
+            PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")][
+                phase.get("id")
+            ] = annotation_file_name
+            annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(
+                challenge_id=challenge.get("id"),
+                phase_id=phase.get("id"),
+                annotation_file=annotation_file_name,
+            )
+            download_and_extract_file(annotation_file_url, annotation_file_path)
+    else:
+        if annotation_path is None:
+            logger.exception(
+                "PRIVATE_ANNOTATION_PATH environment variable was not passed. Please restart."
+            )
+            raise
+
+        annotation_file_name = os.path.basename(annotation_path)
+        annotation_zip_file = join(
+            phase_data_base_directory,
+            "annotations.zip"
         )
-        # create phase directory
-        create_dir(phase_data_directory)
-        annotation_file_url = phase.get("test_annotation")
-        annotation_file_name = os.path.basename(phase.get("test_annotation"))
-        PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")][
-            phase.get("id")
-        ] = annotation_file_name
-        annotation_file_path = PHASE_ANNOTATION_FILE_PATH.format(
-            challenge_id=challenge.get("id"),
-            phase_id=phase.get("id"),
-            annotation_file=annotation_file_name,
-        )
-        download_and_extract_file(annotation_file_url, annotation_file_path)
+        for phase in phases:
+            phase_data_directory = PHASE_DATA_DIR.format(
+                challenge_id=challenge.get("id"), phase_id=phase.get("id")
+            )
+            create_dir(phase_data_directory)
+            PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")][
+                phase.get("id")
+            ] = annotation_file_name
+
+        download_and_extract_zip_file(annotation_path, annotation_zip_file, phase_data_base_directory)
+        annotation_zip_file_validator(phases, phase_data_base_directory)
     try:
         # import the challenge after everything is finished
         challenge_module = importlib.import_module(
