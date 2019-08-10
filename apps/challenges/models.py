@@ -128,6 +128,7 @@ class Challenge(TimeStampedModel):
     # The task definition ARN for the challenge, used for updating and creating service.
     task_def_arn = models.CharField(null=True, blank=True, max_length=2048, default="")
     private_annotations = models.BooleanField(default=False)
+
     class Meta:
         app_label = "challenges"
         db_table = "challenge"
@@ -209,7 +210,7 @@ class ChallengePhase(TimeStampedModel):
     is_public = models.BooleanField(default=False)
     is_submission_public = models.BooleanField(default=False)
     test_annotation = models.FileField(
-        upload_to=RandomFileName("test_annotations"), 
+        upload_to=RandomFileName("test_annotations"),
         default=False, null=True, blank=True,
     )
     max_submissions_per_day = models.PositiveIntegerField(
