@@ -284,10 +284,7 @@ def change_submission_data_and_visibility(
         response_data = {"error": "Challenge is not active"}
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
-
-    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(
-            request.user, challenge_pk
-    )
+    participant_team_pk = get_participant_team_id_of_user_for_a_challenge(request.user, challenge_pk)
     try:
         participant_team = ParticipantTeam.objects.get(pk=participant_team_pk)
     except ParticipantTeam.DoesNotExist:
@@ -295,7 +292,7 @@ def change_submission_data_and_visibility(
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     # check if challenge phase is public and accepting solutions
-    print("IS USER A HOST",is_user_a_host_of_challenge(request.user, challenge_pk))
+    print("IS USER A HOST", is_user_a_host_of_challenge(request.user, challenge_pk))
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         if not challenge_phase.is_public:
             response_data = {

@@ -1261,6 +1261,8 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             },
         )
 
+        self.challenge.participant_teams.add(self.participant_team)
+
         self.challenge_phase.is_public = False
         self.challenge_phase.save()
         self.data = {"method_name": "Updated Method Name"}
@@ -1476,6 +1478,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             },
         )
         self.data = {"is_baseline": True}
+        self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
         self.client.force_authenticate(user=self.user1)
         expected = {"error": "Sorry, you are not authorized to make this request"}
