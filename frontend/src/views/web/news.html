@@ -1,0 +1,40 @@
+<div class="news-container">
+    <h4 class="news-text center fw-400
+        text-dark-black">News</h4>
+    <span class="ev-card-panel">
+        <div ng-repeat="latestNews in news.news track by $index"
+            class="row">
+            <span ng-if="$index % 2 == 0">
+                <div class="center image-col col s5">
+                    <img width="150" height="150"
+                        src="{{latestNews.image}}">
+                </div>
+                <div class="col s6">
+                    <h5>{{latestNews.title}}</h5>
+                    <p class="news-category">
+                        <i class="fa fa-tag" aria-hidden="true"></i>&nbsp;
+                        <span ng-repeat="category in latestNews.categories">
+                            {{category}},
+                        </span>
+                    </p>
+                    <p>{{latestNews.content}}</p>
+                </div>
+            </span>
+            <span ng-if="$index % 2 != 0">
+                <div class="col s6">
+                    <h5>{{latestNews.title}}</h5>
+                    <p class="news-category"><i
+                            class="fa fa-tag" aria-hidden="true"></i>&nbsp;
+                        <span ng-repeat="category in latestNews.categories">
+                            {{category}},
+                        </span>
+                    </p>
+                    <p>{{latestNews.content}}</p>
+                </div>
+                <div class="center image-col col s5">
+                    <img width="150" height="150" src="{{latestNews.image}}">
+                </div>
+            </span>
+        </div>
+    </span>
+</div>

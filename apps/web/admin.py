@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from base.admin import ImportExportTimeStampedAdmin
 
-from .models import Contact, Subscribers, Team
+from .models import Contact, News, Subscribers, Team
 
 
 @admin.register(Contact)
@@ -16,6 +16,17 @@ class ContactAdmin(admin.ModelAdmin):
         "modified_at",
     )
     search_fields = ("email",)
+
+
+@admin.register(News)
+class NewsAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at",)
+    list_display = (
+        "title",
+        "image",
+        "categories",
+    )
+    search_fields = ("title", "categories")
 
 
 @admin.register(Subscribers)

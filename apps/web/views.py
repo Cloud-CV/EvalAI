@@ -7,8 +7,8 @@ from django.core.mail import EmailMessage
 from django.shortcuts import render
 
 from smtplib import SMTPException
-from .models import Subscribers, Team
-from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
+from .models import News, Subscribers, Team
+from .serializers import ContactSerializer, NewsSerializer, SubscribeSerializer, TeamSerializer
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -39,6 +39,19 @@ def internal_server_error(request):
     response = render(request, "error500.html")
     response.status_code = 500
     return response
+
+
+@api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
+@permission_classes((permissions.AllowAny,))
+def news(request):
+    if request.method == 'GET':
+        news = News.objects.all().order_by("-pk")
+        serializer = NewsSerializer(
+            news, many=True, context={"request": request}
+        )
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 def notify_users_about_challenge(request):

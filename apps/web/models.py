@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from base.models import TimeStampedModel
@@ -25,10 +25,27 @@ class Contact(TimeStampedModel):
     class Meta:
         app_label = "web"
         db_table = "contact"
+        
+        
+class News(TimeStampedModel):
+    """Model representing latest news"""
+
+    title = models.CharField(max_length=200)
+    content = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to="news_image", null=True, blank=True)
+    categories = ArrayField(models.CharField(max_length=50, blank=True), default=[], blank=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        app_label = "web"
+        db_table = "news"
+        verbose_name_plural = "News"
 
 
 class Subscribers(TimeStampedModel):
-    """Model representing subbscribed user's email"""
+    """Model representing subscribed user's email"""
 
     email = models.EmailField(max_length=70)
 

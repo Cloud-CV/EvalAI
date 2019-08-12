@@ -285,6 +285,16 @@
             authenticate: true
         };
 
+        var news = {
+            name: "web.news",
+            parent: "web",
+            url: "/news",
+            templateUrl: baseUrl + "/web/news.html",
+            title: "News",
+            controller: 'newsCtrl',
+            controllerAs: 'news'
+        };
+
         var host_challenge = {
             name: "web.host-challenge",
             parent: "web",
@@ -504,6 +514,7 @@
         $stateProvider.state(host_challenge);
 
         $stateProvider.state(profile);
+        $stateProvider.state(news);
         $stateProvider.state(permission_denied);
         $stateProvider.state(change_password);
         $stateProvider.state(error_404);
