@@ -31,7 +31,7 @@ We categorize the challenges in two categories:
 
    <a href="https://evalai.cloudcv.org/web/challenges/list" target="_blank"><img src="_static/img/prediction-upload-challenges.png"></a><br />
 
-   If you are interested in hosting prediction upload based challenges, then [click here](/host_challenge.html#host-prediction-upload-based-challenge).
+   If you are interested in hosting prediction upload based challenges, then [click here](host_challenge.html#host-prediction-upload-based-challenge).
 
     <br />
 
@@ -41,7 +41,7 @@ We categorize the challenges in two categories:
 
    <a href="https://evalai.cloudcv.org/web/challenges/list" target="_blank"><img src="_static/img/code-upload-challenges.png"></a>
 
-   If you are interested in hosting code upload based challenges, then [click here](/host_challenge.html#host-prediction-upload-based-challenge).
+   If you are interested in hosting code upload based challenges, then [click here](host_challenge.html#host-prediction-upload-based-challenge).
 
 ## Host Prediction upload based challenge
 
@@ -53,7 +53,7 @@ We have created a sample challenge configuration that we recommend you to use to
 
 Open [`challenge_config.yml`](https://github.com/Cloud-CV/EvalAI-Starters/blob/master/challenge_config.yaml) from the repository that you cloned in step-1. This file defines all the different settings of your challenge such as start date, end date, number of phases, and submission limits etc.
 
-Edit this file based on your requirement. For reference to the fields, refer to the [challenge configuration reference section](/configuration.html#challenge-configuration).
+Edit this file based on your requirement. For reference to the fields, refer to the [challenge configuration reference section](configuration.html).
 
 ### Step 3: Edit evaluation script
 
@@ -79,7 +79,7 @@ If you have issues in creating a challenge on EvalAI, please feel free to contac
 
 ### Step 1: Setup challenge configuration
 
-Steps to create a Code upload based challenge is very similar to what it takes to create a [prediction upload based challenge](/host_challenge.html#host-a-prediction-upload-based-challenge).
+Steps to create a Code upload based challenge is very similar to what it takes to create a [prediction upload based challenge](host_challenge.html#host-a-prediction-upload-based-challenge).
 
 We have created a sample challenge configuration that we recommend you to use to get started. Fork and clone [EvalAI-Starters] repository to start.
 
@@ -92,7 +92,7 @@ Make sure that following fields are set correctly:
 - `remote_evaluation` is set to `True`
 - `is_docker_based` is set to `True`
 
-For reference to the fields, refer to the [challenge configuration reference section](/configuration.html#challenge-configuration).
+For reference to the fields, refer to the [challenge configuration reference section](configuration.html).
 
 ### Step 3: Edit evaluation script
 
