@@ -7,7 +7,7 @@
         .module('evalai')
         .controller('challengeCreateUsingUICtrl', challengeCreateUsingUICtrl);
 
-        challengeCreateUsingUICtrl.$inject = ['utilities', '$state', '$rootScope'];
+    challengeCreateUsingUICtrl.$inject = ['utilities', '$state', '$rootScope'];
 
     function challengeCreateUsingUICtrl(utilities, $state, $rootScope) {
         var vm = this;
@@ -15,10 +15,10 @@
         vm.challengeStartDate = '';
         vm.challengeEndDate = '';
         vm.challengeEvaluationScript = null;
-
+        console.log("asdwqewq");
         vm.challengePhase = utilities.getData('challengePhase');
         vm.challengeSplit = utilities.getData('challengeSplit');
-        vm.numberOfPhases = new Array(Integer.parseInt(vm.challengePhase));
+        // vm.numberOfPhases = new Array(Integer.parseInt(vm.challengePhase));
 
         vm.submitChallengeDetails = function (challengeDetailsForm) {
             if (challengeDetailsForm) {
