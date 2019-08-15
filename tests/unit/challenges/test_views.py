@@ -3085,7 +3085,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "submission_result_file": None,
                     "submission_metadata_file": None,
                     "participant_team_members_email_ids": ["user6@test.com"],
-                    "participant_team_members_affiliations": ["participants affiliation"],
+                    "participant_team_members_affiliations": ["None"],
                     "participant_team_members": [
                         {"username": "participant", "email": "user6@test.com"}
                     ],
