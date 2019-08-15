@@ -1308,8 +1308,6 @@ def download_all_submissions(
                     ]
                 )
                 for submission in submissions.data:
-                    for user in submission["participant_team_members_affiliations"]:
-                        print(user)
                     writer.writerow(
                         [
                             submission["id"],
