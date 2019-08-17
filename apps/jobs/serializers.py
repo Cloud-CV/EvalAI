@@ -177,14 +177,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             team=participant_team
         ).values_list("user_id", flat=True)
         users = User.objects.filter(id__in=participant_ids)
-        participant_team_members_affiliation = list()
-        for user in users:
-            if user.profile.affiliation == "":
-                affiliation = "None"
-            else:
-                affiliation = user.profile.affiliation
-            participant_team_members_affiliation.append(affiliation)
-        return participant_team_members_affiliation
+        return [user.profile.affiliation for user in users]
 
 
 class SubmissionCount(object):
