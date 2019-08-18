@@ -15,7 +15,7 @@ describe('Unit tests for dashboard controller', function () {
         createController = function () {
             return $controller('DashCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('DashCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {
