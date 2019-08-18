@@ -200,6 +200,20 @@ def create_federated_user(name, repository, aws_keys):
 @mock_if_non_prod_aws(mock_ecr)
 @mock_if_non_prod_aws(mock_sts)
 def get_aws_credentials_for_submission(challenge, participant_team):
+    """
+        Method to generate AWS Credentails for CLI's Push
+        Wrappers:
+            - mock_ecr: To mock ECR requests to generate ecr credemntials
+            - mock_sts: To mock STS requests to generated federated user
+        Args:
+            - challenge: Challenge model
+            - participant_team: Participant Team Model
+        Returns:
+            - dict: {
+                "federated_user"
+                "docker_repository_uri"
+            }
+    """
     aws_keys = get_aws_credentials_for_challenge(challenge.pk)
     ecr_repository_name = "{}-participant-team-{}".format(
         challenge.slug, participant_team.pk

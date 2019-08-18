@@ -1720,8 +1720,19 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_aws_credentials_for_participant_team(request, phase_pk):
     """
-    Returns:
-        Dictionary containing AWS credentials for the participant team for a particular challenge
+        Endpoint to generate AWS Credentails for CLI
+        Args:
+            - challenge: Challenge model
+            - participant_team: Participant Team Model
+        Returns:
+            - JSON: {
+                    "federated_user"
+                    "docker_repository_uri"
+                }
+        Raises:
+            - BadRequestException 400
+                - When participant_team has not participanted in challenge
+                - When Challenge is not Docker based
     """
     challenge_phase = get_challenge_phase_model(phase_pk)
     challenge = challenge_phase.challenge
