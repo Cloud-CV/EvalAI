@@ -9,7 +9,7 @@ from moto import mock_ecr, mock_sts
 from base.utils import (
     get_model_object,
     get_boto3_client,
-    if_non_prod_aws_mocker,
+    mock_if_non_prod_aws,
 )
 
 from .models import (
@@ -197,8 +197,8 @@ def create_federated_user(name, repository, aws_keys):
     return response
 
 
-@if_non_prod_aws_mocker(mock_ecr)
-@if_non_prod_aws_mocker(mock_sts)
+@mock_if_non_prod_aws(mock_ecr)
+@mock_if_non_prod_aws(mock_sts)
 def get_aws_credentials_for_submission(challenge, participant_team):
     aws_keys = get_aws_credentials_for_challenge(challenge.pk)
     ecr_repository_name = "{}-participant-team-{}".format(
