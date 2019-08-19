@@ -45,7 +45,7 @@ urlpatterns = [
         name="get_submissions_for_challenge",
     ),
     url(
-        r"^queues/(?P<queue_name>[\w-]+)/receipt/(?P<receipt_handle>[\w-]+)/$",
+        r"^queues/(?P<queue_name>[\w-]+)/$",
         views.delete_submission_message_from_queue,
         name="delete_submission_message_from_queue",
     ),
