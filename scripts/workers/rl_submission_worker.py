@@ -28,6 +28,7 @@ DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "http://localhost")
 DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT", "8000")
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 ENVIRONMENT_IMAGE = os.environ.get("ENVIRONMENT_IMAGE", "x:tag")
+MESSAGE_FETCH_DEPLAY = int(os.environ.get("MESSAGE_FETCH_DEPLAY", "5"))
 
 
 def create_deployment_object(image, submission, message):
@@ -128,7 +129,7 @@ def main():
                     )
                     process_submission_callback(message_body, api)
                     api.delete_message_from_sqs_queue(message.get("receipt_handle"))
-        time.sleep(5)
+        time.sleep(MESSAGE_FETCH_DEPLAY)
         if killer.kill_now:
             break
 
