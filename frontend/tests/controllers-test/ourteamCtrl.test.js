@@ -14,7 +14,7 @@ describe('Unit tests for OurTeam Controller', function () {
         createController = function () {
             return $controller('ourTeamCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('ourTeamCtrl', { $scope: $scope });
     }));
 
     describe('Unit tests for global backend call for listing the team `web/team/`', function () {

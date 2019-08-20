@@ -46,12 +46,29 @@
                             <a class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14" ng-click="challenge.downloadChallengeSubmissions()">Download</a>
                         </div>
                     </div>
+                    <br>
+                    <div ng-if="challenge.isResult">
+                        <div class="row rm-margin">
+                            <div class="col s12">
+                                <strong>Filter Submissions by Team name</strong>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="input-field align-left col s6">
+                                <form method="GET">
+                                    <input type="text" name="participant_team__team_name" ng-keyup="challenge.getAllSubmissionResults(key.id)" ng-model="challenge.filter_all_submission_by_team_name" id="participant_team__team_name" /></td></tr>
+                                    <label for="participant_team__team_name">Team name</label>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
                         <div class="col s12 all-submission-table-scroll">
+                            <div ng-if="!challenge.showPagination && challenge.isResult" class="result-wrn">No results found.</div>
                             <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                            <table ng-if="challenge.isResult" class="highlight all-submission-table responsive-table">
+                            <table ng-if="challenge.showPagination && challenge.isResult" class="highlight all-submission-table responsive-table">
                                 <thead>
                                     <tr>
                                         <th class="align-center" data-field="team">Team</th>
@@ -65,6 +82,7 @@
                                         <th data-field="file">Stderr File</th>
                                         <th data-field="file">Result File</th>
                                         <th data-field="file">Metadata File</th>
+                                        <th data-field="button">Re-run Submissions</th>
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="key in challenge.submissionResult.results" class="result-val">
@@ -99,6 +117,7 @@
                                             <label for="isPublic{{ key.id }}"></label>
                                             <span ng-if="key.status !== 'finished'" class="center"> N/A </span>
                                         </td>
+                                        <td><center><a ng-class="key.classList" class="fa fa-refresh pointer" ng-click="challenge.reRunSubmission(key)"></a></center></td>
                                     </tr>
                                 </tbody>
                             </table>

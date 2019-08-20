@@ -16,7 +16,8 @@ describe('Unit tests for web controller', function () {
         createController = function () {
             return $controller('WebCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('WebCtrl', { $scope: $scope });
+        utilities.storeData('userKey', 'encrypted');
     }));
 
     describe('Global variables', function () {
@@ -29,7 +30,6 @@ describe('Unit tests for web controller', function () {
             vm = createController();
             expect(vm.user).toEqual({});
             expect(utilities.hideLoader).toHaveBeenCalled();
-            utilities.storeData('userKey', 'encrypted');
             expect(utilities.getData).toHaveBeenCalledWith('userKey');
         });
     });
