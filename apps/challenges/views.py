@@ -2014,7 +2014,7 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
         uploaded_zip_file_path = serializer.data["zip_configuration"]
     else:
         errors["Error"] = serializer.errors
-        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(errors, status=status.HTTP_200_OK)
 
     # All files download and extract location.
     BASE_LOCATION = tempfile.mkdtemp()
@@ -2040,7 +2040,7 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
             "Please try again!"
         )
         errors["Error"] = [message]
-        return Response(errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     # Extract zip file
     try:
@@ -2089,7 +2089,7 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
             error_description, line_number, column_number
         )
         errors["Error"] = [message]
-        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(errors, status=status.HTTP_200_OK)
 
     error = False
     # Check for challenge title.
@@ -2396,7 +2396,7 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
     shutil.rmtree(BASE_LOCATION)
 
     if errors:
-        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(errors, status=status.HTTP_200_OK)
     else:
         message = " No errors in the configurations file."
         response_data = {"Success": message}
