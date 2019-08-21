@@ -2013,7 +2013,7 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
     if serializer.is_valid():
         uploaded_zip_file_path = serializer.data["zip_configuration"]
     else:
-        errors["Error"] = serializer.errors
+        errors["error"] = serializer.errors
         return Response(errors, status=status.HTTP_200_OK)
 
     # All files download and extract location.
@@ -2031,7 +2031,7 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
             message = (
                 "Unable to process the uploaded zip file. " "Please try again!"
             )
-            errors["Error"] = [message]
+            errors["error"] = [message]
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     except requests.exceptions.RequestException:
@@ -2039,7 +2039,7 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
             "A server error occured while processing zip file. "
             "Please try again!"
         )
-        errors["Error"] = [message]
+        errors["error"] = [message]
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     # Extract zip file
@@ -2049,7 +2049,7 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
         zip_ref.close()
     except zipfile.BadZipfile:
         message = "The zip file contents cannot be extracted. Please check the format!"
-        errors["Error"] = [message]
+        errors["error"] = [message]
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     yaml_file_count = 0
@@ -2062,13 +2062,13 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
             yaml_file_count += 1
     if not yaml_file_count:
         message = "There is no YAML file in zip file you uploaded!"
-        errors["Error"] = message
+        errors["error"] = message
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
     if yaml_file_count > 1:
         message = "There are {0} YAML files instead of one in zip file!".format(
             yaml_file_count
         )
-        errors["Error"] = [message]
+        errors["error"] = [message]
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     try:
@@ -2088,8 +2088,8 @@ def verify_challenge_config_file(request, challenge_host_team_pk):
         message = "\n{} in line {}, column {}\n".format(
             error_description, line_number, column_number
         )
-        errors["Error"] = [message]
-        return Response(errors, status=status.HTTP_200_OK)
+        errors["error"] = [message]
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     error = False
     # Check for challenge title.
