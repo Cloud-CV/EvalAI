@@ -15,9 +15,12 @@ import sys
 import tempfile
 import time
 import traceback
+import yaml
 import zipfile
 
 from os.path import join
+from yaml.scanner import ScannerError
+
 
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
@@ -75,6 +78,14 @@ class ExecutionTimeLimitExceeded(Exception):
     pass
 
 
+class AnnotationPathEnvVariableNotPassed(Exception):
+    pass
+
+
+class PhaseAnnotationFilesInvalid(Exception):
+    pass
+
+
 @contextlib.contextmanager
 def stdout_redirect(where):
     sys.stdout = where
@@ -102,16 +113,29 @@ def download_and_extract_file(url, download_location):
         * Function to extract download a file.
         * `download_location` should include name of file as well.
     """
-    try:
-        response = requests.get(url)
-    except Exception as e:
-        logger.error("Failed to fetch file from {}, error {}".format(url, e))
-        traceback.print_exc()
-        response = None
+    # If file is local.
+    if url[0] == '/':
+        try:
+            local_file = open(url, "rb")
+            local_file_contents = local_file.read()
+            with open(download_location, "wb") as f:
+                f.write(local_file_contents)
+            local_file.close()
+        except Exception as e:
+            logger.error("Failed to fetch file from {}, error {}".format(url, e))
+            response = None
+            raise
+    else:
+        try:
+            response = requests.get(url)
+        except Exception as e:
+            logger.error("Failed to fetch file from {}, error {}".format(url, e))
+            traceback.print_exc()
+            response = None
 
-    if response and response.status_code == 200:
-        with open(download_location, "wb") as f:
-            f.write(response.content)
+        if response and response.status_code == 200:
+            with open(download_location, "wb") as f:
+                f.write(response.content)
 
 
 def download_and_extract_zip_file(url, download_location, extract_location):
@@ -120,16 +144,11 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         * `download_location` should include name of file as well.
     """
     try:
-        # If file is local.
-        if url[0] == '/':
-            zip_ref = zipfile.ZipFile(url, "r")
-            zip_ref.extractall(extract_location)
-            zip_ref.close()
-        else:
-            response = requests.get(url)
+        response = requests.get(url)
     except Exception as e:
         logger.error("Failed to fetch file from {}, error {}".format(url, e))
         response = None
+        raise
 
     if response and response.status_code == 200:
         with open(download_location, "wb") as f:
@@ -176,40 +195,46 @@ def return_url_per_environment(url):
     return url
 
 
-def annotation_zip_file_validator(phases, phase_data_base_directory):
+def return_file_url_per_environment(url):
+    url = "https://evalai.s3.amazonaws.com{}".format(url)
+    return url
+
+
+def annotation_yaml_file_validator(yaml_dict, phases):
     """
-    Verifies the structure of the Annotation files.
-
-    Parameters:
-    phases (list): list of phase objects.
+    Structure of yaml file is to be of form:
+    - id: 1
+      test_annotation_file: <file_path_local_or_non_local_1>
+    - id: 2
+      test_annotation_file: <file_path_local_or_non_local_2>
     """
-    directories = []
-    files_map = {}
-    for (root, dirs, files) in os.walk(phase_data_base_directory, topdown=True):
-        directories.append(dirs)
-        files_map[os.path.basename(root)] = files
-
-    phases = directories[0]
-    num_of_phases = len(phases)
-    challenge = get_challenge_by_queue_name()
-
-    # To verify number of phases.
-    if num_of_phases is not len(phases):
+    phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
+        challenge_id=phases[0].get("challenge")
+    )
+    if len(yaml_dict) != len(phases):
         shutil.rmtree(phase_data_base_directory)
         logger.exception(
-            "Given Annotation files phases don't match the challenge phases for challenge {}".format(challenge.get("id"))
+            "Please ensure that num of phases in the yaml file are same as in the challenge."
         )
-        raise
+        raise PhaseAnnotationFilesInvalid
 
-    # To verify one annotation file for each phase.
-    for phase in phases:
-        if len(files_map[phase]) == 1:
+    for i in range(len(yaml_dict)):
+        phase_data = yaml_dict[i]
+        if phase_data.get("id") is None:
             shutil.rmtree(phase_data_base_directory)
             logger.exception(
-                "Please ensure one annotation file for each phase. Rectify {}".format(phase)
+                "Please mention the id number of the phases."
             )
-            raise
-    return True
+            raise PhaseAnnotationFilesInvalid
+
+    for phase in yaml_dict:
+        test_annotation_file = phase.get("test_annotation_file")
+        if test_annotation_file is None:
+            shutil.rmtree(phase_data_base_directory)
+            logger.exception(
+                "test_annotation_file path not present for phase {}".format(phase["id"])
+            )
+            raise PhaseAnnotationFilesInvalid
 
 
 def load_challenge():
@@ -227,10 +252,10 @@ def load_challenge():
         raise
     challenge_pk = challenge.get("id")
     phases = get_challenge_phases_by_challenge_pk(challenge_pk)
-    extract_challenge_data(challenge, phases)
+    extract_challenge_data(challenge, phases, PRIVATE_ANNOTATION_PATH)
 
 
-def extract_challenge_data(challenge, phases, annotation_path=PRIVATE_ANNOTATION_PATH):
+def extract_challenge_data(challenge, phases, annotation_path):
     """
         * Expects a challenge object and an array of phase object
         * Extracts `evaluation_script` for challenge and `annotation_file` for each phase
@@ -238,7 +263,11 @@ def extract_challenge_data(challenge, phases, annotation_path=PRIVATE_ANNOTATION
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
         challenge_id=challenge.get("id")
     )
-    evaluation_script_url = challenge.get("evaluation_script")
+    evaluation_script_url = challenge.get("evaluation_script").url
+    evaluation_script_url = return_file_url_per_environment(
+        evaluation_script_url
+    )
+
     create_dir_as_python_package(challenge_data_directory)
 
     # set entry in map
@@ -257,7 +286,7 @@ def extract_challenge_data(challenge, phases, annotation_path=PRIVATE_ANNOTATION
     )
     create_dir(phase_data_base_directory)
 
-    if challenge.private_annotations is None:
+    if challenge.get("private_annotations") is False:
         for phase in phases:
             phase_data_directory = PHASE_DATA_DIR.format(
                 challenge_id=challenge.get("id"), phase_id=phase.get("id")
@@ -265,7 +294,10 @@ def extract_challenge_data(challenge, phases, annotation_path=PRIVATE_ANNOTATION
             # create phase directory
             create_dir(phase_data_directory)
 
-            annotation_file_url = phase.get("test_annotation")
+            annotation_file_url = phase.get("test_annotation").url
+            annotation_file_url = return_file_url_per_environment(
+                annotation_file_url
+            )
             annotation_file_name = os.path.basename(phase.get("test_annotation"))
             PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")][
                 phase.get("id")
@@ -281,24 +313,49 @@ def extract_challenge_data(challenge, phases, annotation_path=PRIVATE_ANNOTATION
             logger.exception(
                 "PRIVATE_ANNOTATION_PATH environment variable was not passed. Please restart."
             )
+            raise AnnotationPathEnvVariableNotPassed
+        annotation_yaml_file = join(
+            phase_data_base_directory,
+            "annotations.yaml"
+        )
+        download_and_extract_file(annotation_path, annotation_yaml_file)
+        try:
+            with open(annotation_yaml_file, "r") as stream:
+                yaml_file_data = yaml.safe_load(stream)
+        except (yaml.YAMLError, ScannerError) as exc:
+            if hasattr(exc, "problem"):
+                error_description = exc.problem
+                error_description = error_description[0:].capitalize()
+            if hasattr(exc, "problem_mark"):
+                mark = exc.problem_mark
+                line_number = mark.line + 1
+                column_number = mark.column + 1
+            message = "{} in line {}, column {}".format(
+                error_description, line_number, column_number
+            )
+            logger.exception(message)
             raise
 
-        annotation_file_name = os.path.basename(annotation_path)
-        annotation_zip_file = join(
-            phase_data_base_directory,
-            "annotations.zip"
-        )
-        for phase in phases:
+        phases.sort(key=lambda x: x["id"])
+        annotation_yaml_file_validator(yaml_file_data, phases)
+
+        for i in range(len(phases)):
+            phase_data = yaml_file_data[i]
+            phase = phases[i]
+            test_annotation_path = phase_data["test_annotation_file"]
             phase_data_directory = PHASE_DATA_DIR.format(
                 challenge_id=challenge.get("id"), phase_id=phase.get("id")
             )
+            # create phase directory
             create_dir(phase_data_directory)
-            PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")][
-                phase.get("id")
-            ] = annotation_file_name
+            test_annotation_file_name = os.path.basename(test_annotation_path)
+            test_annotation_file_path = join(phase_data_directory, test_annotation_file_name)
+            download_and_extract_file(test_annotation_path, test_annotation_file_path)
 
-        download_and_extract_zip_file(annotation_path, annotation_zip_file, phase_data_base_directory)
-        annotation_zip_file_validator(phases, phase_data_base_directory)
+            PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")][phase.get("id")] = test_annotation_file_name
+
+        logger.info("Annotation files were loaded successfully.")
+
     try:
         # import the challenge after everything is finished
         challenge_module = importlib.import_module(
@@ -525,7 +582,6 @@ def run_submission(
     """
     * Checks whether the corresponding evaluation script and the annotation file for the challenge exists or not
     * Calls evaluation script to evaluate the particular submission
-
     Arguments:
         challenge_pk  -- challenge Id in which the submission is created
         challenge_phase  -- challenge phase JSON object in which the submission is created

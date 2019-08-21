@@ -1,0 +1,4 @@
+  - id: 1
+    test_annotation_file: /code/tests/integration/remoteworker/data/annotations/test_annotations_devsplit.json
+  - id: 2
+    test_annotation_file: /code/tests/integration/remoteworker/data/annotations/test_annotations_split_2.json
