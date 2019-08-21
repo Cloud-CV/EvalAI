@@ -15,7 +15,7 @@ describe('Unit tests for analytics controller', function() {
         createController = function () {
         	return $controller('AnalyticsCtrl', { $scope: $scope });
         };
-        vm = createController();
+        vm = $controller('AnalyticsCtrl', { $scope: $scope });
 	}));
 
 	describe('Global Variables', function() {
@@ -137,54 +137,178 @@ describe('Unit tests for analytics controller', function() {
 		});
 	});
 
-	describe('Unit tests for `showChallengeAnalysis` function `challenges/challenge/<challenge_id>/challenge_phase`', function() {
-		var success, participant_team_count = 10;
+	describe('Unit tests for `showChallengeAnalysis` function', function() {
+		var phaseDetailsSuccess, currentPhaseDetailsSuccess, teamsCountSuccess;
+		var successResponse, participantTeamCount = 10;
+		var status;
 
 		beforeEach(function() {
+			spyOn(window, 'alert');
+			spyOn(utilities, 'resetStorage');
+			spyOn($state, 'go');
+
             utilities.sendRequest = function(parameters) {
-                if (success) {
-                    parameters.callback.onSuccess({
-                    	status: 200,
-                    	data: {
-                    		participant_team_count: participant_team_count,
-                    		results: {
-                    			id: 4,
-                    			name: "test-dev",
-                    			description: "this is test-dev description"
-                    		}
-                    	}
-                    });
+				if ((phaseDetailsSuccess && parameters.url === 'challenges/challenge/2/challenge_phase') ||
+				(teamsCountSuccess && parameters.url === 'analytics/challenge/2/team/count') ||
+				(currentPhaseDetailsSuccess && parameters.url === 'analytics/challenge/2/challenge_phase/4/analytics')) {
+					parameters.callback.onSuccess({
+						status: 200,
+						data: successResponse
+					});
                 } else {
-                    parameters.callback.onError({
-                    	status: 403,
-                    	data: 'error',
-                    });
+					parameters.callback.onError({
+						status: status,
+						data: 'error'
+					});
                 }
             };
-        });
+		});
 
-        it('null challengeId', function() {
-        	success = false;
-        	vm.showChallengeAnalysis();
-        	expect(vm.challengeId).toEqual(null);
-        	expect(vm.isTeamSelected).toEqual(false);
-        });
-
-		it('backend error', function() {
-			success = false;
+		it('when challenge Id is null', function() {
+			phaseDetailsSuccess = null;
+			teamsCountSuccess = null;
+			currentPhaseDetailsSuccess = null;
+			vm.challengeId = null;
+			vm.showChallengeAnalysis();
+			expect(vm.isTeamSelected).toEqual(false);
+		});
+		
+		it('on success `challenges/challenge/<challenge_id>/challenge_phase`', function() {
+			phaseDetailsSuccess = true;
+			teamsCountSuccess = null;
+			currentPhaseDetailsSuccess = null;
 			vm.challengeId = 2;
+			successResponse = {
+				'participant_team_count': participantTeamCount,
+				'results': {
+					id: 4,
+					name: "test-dev",
+					description: "this is test-dev description"
+				}
+			}
 			vm.showChallengeAnalysis();
 			expect(vm.isTeamSelected).toEqual(true);
+		});
+
+		it('backend error with status 403 `challenges/challenge/<challenge_id>/challenge_phase`', function() {
+			phaseDetailsSuccess = false;
+			teamsCountSuccess = null;
+			currentPhaseDetailsSuccess = null;
+			status = 403;
+			vm.challengeId = 2;
+			successResponse = {
+				'participant_team_count': participantTeamCount,
+				'results': {
+					id: 4,
+					name: "test-dev",
+					description: "this is test-dev description"
+				}
+			}
+			vm.showChallengeAnalysis();
 			expect(vm.error).toEqual('error');
 		});
 
-		it('on success', function() {
-			success = true;
-			vm.showChallengeAnalysis();
+		it('backend error with status 401 `challenges/challenge/<challenge_id>/challenge_phase`', function() {
+			phaseDetailsSuccess = false;
+			teamsCountSuccess = null;
+			currentPhaseDetailsSuccess = null;
+			status = 401;
 			vm.challengeId = 2;
+			successResponse = {
+				'participant_team_count': participantTeamCount,
+				'results': {
+					id: 4,
+					name: "test-dev",
+					description: "this is test-dev description"
+				}
+			}
+			vm.showChallengeAnalysis();
+			expect(window.alert).toHaveBeenCalledWith('Timeout, Please login again to continue!');
+			expect(utilities.resetStorage).toHaveBeenCalled();
+			expect($state.go).toHaveBeenCalledWith('auth.login');
+			expect($rootScope.isAuth).toBeFalsy();
+		});
+
+		it('on success `analytics/challenge/<challenge_id>/team/count`', function() {
+			phaseDetailsSuccess = true;
+			teamsCountSuccess = true;
+			currentPhaseDetailsSuccess = null;
+			vm.challengeId = 2;
+			successResponse = {
+				'participant_team_count': participantTeamCount,
+				'results': {
+					id: 4,
+					name: "test-dev",
+					description: "this is test-dev description"
+				}
+			}
 			vm.showChallengeAnalysis();
 			expect(vm.isTeamSelected).toEqual(true);
-			expect(vm.totalChallengeTeams).toEqual(participant_team_count);
+			expect(vm.totalChallengeTeams).toEqual(participantTeamCount);
+		});
+
+		it('backend error with status 403 `analytics/challenge/<challenge_id>/team/count`', function() {
+			phaseDetailsSuccess = true;
+			teamsCountSuccess = false;
+			currentPhaseDetailsSuccess = null;
+			status = 403;
+			vm.challengeId = 2;
+			successResponse = {
+				'participant_team_count': participantTeamCount,
+				'results': {
+					id: 4,
+					name: "test-dev",
+					description: "this is test-dev description"
+				}
+			}
+			vm.showChallengeAnalysis();
+			expect(vm.error).toEqual('error');
+		});
+
+		it('backend error with status 401 `analytics/challenge/<challenge_id>/team/count`', function() {
+			phaseDetailsSuccess = true;
+			teamsCountSuccess = false;
+			currentPhaseDetailsSuccess = null;
+			status = 401;
+			vm.challengeId = 2;
+			successResponse = {
+				'participant_team_count': participantTeamCount,
+				'results': {
+					id: 4,
+					name: "test-dev",
+					description: "this is test-dev description"
+				}
+			}
+			vm.showChallengeAnalysis();
+			expect(window.alert).toHaveBeenCalledWith('Timeout, Please login again to continue!');
+			expect(utilities.resetStorage).toHaveBeenCalled();
+			expect($state.go).toHaveBeenCalledWith('auth.login');
+			expect($rootScope.isAuth).toBeFalsy();
+		});
+
+		it('backend error `analytics/challenge/<challenge_id>/challenge_phase/<current_phase_id>/analytics`',
+		function() {
+			phaseDetailsSuccess = true;
+			teamsCountSuccess = true;
+			currentPhaseDetailsSuccess = false;
+			status = 401;
+			vm.challengeId = 2;
+			successResponse = {
+				'participant_team_count': participantTeamCount,
+				'results': [
+					{
+						id: 4,
+						name: "test-dev",
+						description: "this is test-dev description"
+					}
+				]
+			}
+			vm.showChallengeAnalysis();
+			expect(vm.currentPhase).toEqual(successResponse.results);
+			expect(window.alert).toHaveBeenCalledWith('Timeout, Please login again to continue!');
+			expect(utilities.resetStorage).toHaveBeenCalled();
+			expect($state.go).toHaveBeenCalledWith('auth.login');
+			expect($rootScope.isAuth).toBeFalsy();
 		});
 	});
 });
