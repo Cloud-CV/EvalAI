@@ -151,4 +151,9 @@ urlpatterns = [
         views.get_challenge_phase_by_slug,
         name="get_challenge_phase_by_slug",
     ),
+    url(
+        r"^challenge/challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/verify_challenge_config/$",
+        views.verify_challenge_config_file,
+        name="verify_challenge_config_file",
+    ),
 ]
