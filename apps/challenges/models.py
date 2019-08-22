@@ -127,6 +127,9 @@ class Challenge(TimeStampedModel):
     )
     # The task definition ARN for the challenge, used for updating and creating service.
     task_def_arn = models.CharField(null=True, blank=True, max_length=2048, default="")
+    custom_requirements = models.FileField(
+        upload_to=RandomFileName("test_annotations"), default=False
+    )
 
     class Meta:
         app_label = "challenges"

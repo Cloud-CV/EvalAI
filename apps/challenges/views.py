@@ -821,6 +821,21 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     else:
         challenge_image_file = None
 
+    # Check for custom_requirements file for challenge.
+    custom_requirements = yaml_file_data.get("custom_requirements")
+    if custom_requirements and custom_requirements.endswith(".txt"):
+        custom_requirements_path = join(
+            BASE_LOCATION, unique_folder_name, extracted_folder_name, custom_requirements
+        )
+        if isfile(custom_requirements_path):
+            custom_requirements_file = ContentFile(
+                get_file_content(custom_requirements_path, "rb")
+            )
+        else:
+            custom_requirements_file = None
+    else:
+        custom_requirements_file = None
+
     # check for challenge description file
     try:
         challenge_description_file_path = join(
@@ -971,6 +986,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                     "challenge_host_team": challenge_host_team,
                     "image": challenge_image_file,
                     "evaluation_script": challenge_evaluation_script_file,
+                    "custom_requirements": custom_requirements_file,
                 },
             )
             if serializer.is_valid():

@@ -165,6 +165,9 @@ class ZipChallengeSerializer(ChallengeSerializer):
             evaluation_script = context.get("evaluation_script")
             if evaluation_script:
                 kwargs["data"]["evaluation_script"] = evaluation_script
+            custom_requirements = context.get("custom_requirements")
+            if custom_requirements:
+                kwargs["data"]["custom_requirements"] = custom_requirements
 
     class Meta:
         model = Challenge
@@ -196,6 +199,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "slug",
             "max_docker_image_size",
             "cli_version",
+            "custom_requirements"
         )
 
 

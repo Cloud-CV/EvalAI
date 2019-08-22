@@ -13,6 +13,9 @@ from base.utils import get_boto3_client
 logger = logging.getLogger(__name__)
 
 DJANGO_SETTINGS_MODULE = os.environ.get("DJANGO_SETTINGS_MODULE")
+DJANGO_SERVER = os.environ.get("DJANGO_SERVER", "localhost")
+DJANGO_SERVER_PORT = os.environ.get("DJANGO_SERVER_PORT", "8000")
+
 ENV = DJANGO_SETTINGS_MODULE.split(".")[-1]
 aws_keys = {
     "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
@@ -66,6 +69,7 @@ task_definition = """
             "name": "{container_name}",
             "image": "{WORKER_IMAGE}",
             "essential": True,
+            "command": "{command}",
             "environment": [
                 {{
                   "name": "AWS_DEFAULT_REGION",
@@ -227,6 +231,12 @@ delete_service_args = """
 """
 
 
+def return_url_per_environment(url):
+    base_url = "http://{0}:{1}".format(DJANGO_SERVER, DJANGO_SERVER_PORT)
+    url = "{0}{1}".format(base_url, url)
+    return url
+
+
 def client_token_generator():
     """
     Returns a 32 characters long client token to ensure idempotency with create_service boto3 requests.
@@ -256,9 +266,17 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     container_name = "worker_{}".format(queue_name)
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
+    if challenge.custom_requirements:
+        file_url = challenge.custom_requirements.url
+        file_url = return_url_per_environment(file_url)
+        command = ["scripts/worker_init.sh", "{}".format(file_url)]
+    else:
+        command = ["scripts/worker_init.sh"]
+
     if (execution_role_arn):
         definition = task_definition.format(queue_name=queue_name, container_name=container_name,
-                                            ENV=ENV, challenge_pk=challenge.pk, **COMMON_SETTINGS_DICT)
+                                            ENV=ENV, challenge_pk=challenge.pk, command=command,
+                                            **COMMON_SETTINGS_DICT)
         definition = eval(definition)
         if not challenge.task_def_arn:
             try:
@@ -295,7 +313,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
     if (challenge.workers is None):  # Verify if the challenge is new (i.e, service not yet created.).
-        if (challenge.task_def_arn is ""):
+        if (challenge.task_def_arn == ""):
             response = register_task_def_by_challenge_pk(client, queue_name, challenge)
             if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
                 return response
