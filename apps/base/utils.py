@@ -1,9 +1,11 @@
 import base64
 import boto3
 import botocore
+import json
 import logging
 import os
 import re
+import requests
 import sendgrid
 import uuid
 
@@ -198,3 +200,31 @@ def get_queue_name(param):
         :80
     ]  # The max-length for queue-name is 80 in SQS
     return queue_name
+
+
+def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
+    """
+    Send slack notification to any workspace
+    Keyword Arguments:
+        webhook {string} -- slack webhook URL (default: {settings.SLACK_WEB_HOOK_URL})
+        message {str} -- JSON/Text message to be sent to slack (default: {""})
+    """
+    try:
+        data = {
+            "text": message["text"],
+            "attachments": [
+                {
+                    "color": "ffaf4b",
+                    "fields": message["fields"]
+                }
+            ]
+        }
+        return requests.post(
+            webhook,
+            data=json.dumps(data),
+            headers={"Content-Type": "application/json"}
+        )
+    except Exception as e:
+        logger.exception(
+            "Exception raised while sending slack notification. \n Exception message: {}".format(e)
+        )

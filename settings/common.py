@@ -70,6 +70,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_docs",
     "rest_framework_expiring_authtoken",
     "drf_yasg",
+    "django_filters"
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -272,6 +273,9 @@ REST_AUTH_SERIALIZERS = {
 # For inviting users to participant and host teams.
 ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
+
+# Slack web hook url
+SLACK_WEB_HOOK_URL = os.environ.get("SLACK_WEB_HOOK_URL", "http://testslackwebhook.com/webhook")
 
 SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "evalai.urls.swagger_api_info",
