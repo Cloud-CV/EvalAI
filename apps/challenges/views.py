@@ -829,7 +829,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
         )
         if isfile(custom_requirements_path):
             custom_requirements_file = ContentFile(
-                get_file_content(custom_requirements_path, "rb")
+                get_file_content(custom_requirements_path, "rb"), custom_requirements_path
             )
         else:
             custom_requirements_file = None
