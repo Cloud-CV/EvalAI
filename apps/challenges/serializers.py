@@ -57,6 +57,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "slug",
             "max_docker_image_size",
             "cli_version",
+            "custom_requirements",
         )
 
 
