@@ -60,6 +60,11 @@ urlpatterns = [
         name="challenge_phase_split_list",
     ),
     url(
+        r"^challenge/challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/using_ui/$",
+        views.create_challenge_using_ui,
+        name="create_challenge_using_ui",
+    ),
+    url(
         r"^challenge/challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/zip_upload/$",
         views.create_challenge_using_zip_file,
         name="create_challenge_using_zip_file",

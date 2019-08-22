@@ -170,34 +170,12 @@
             authenticate: true
         };
 
-        var challenge_create_using_ui_step_1 = {
-            name: "web.challenge-create-using-ui-step-1",
+        var challenge_create_using_ui = {
+            name: "web.challenge-create-using-ui",
             parent: "web",
-            url: "/challenge-create-step-1",
-            templateUrl: baseUrl + "/web/challenge-create-using-ui/challenge-create-step-1.html",
-            title: 'Challenge Create Using UI Step 1',
-            controller: 'challengeCreateUsingUICtrl',
-            controllerAs: 'challengeCreateUsingUI',
-            authenticate: true
-        };
-
-        var challenge_create_using_ui_step_2 = {
-            name: "web.challenge-create-using-ui-step-2",
-            parent: "web",
-            url: "/challenge-create-step-2",
-            templateUrl: baseUrl + "/web/challenge-create-using-ui/challenge-create-step-2.html",
-            title: 'Challenge Create Using UI Step 2',
-            controller: 'challengeCreateUsingUICtrl',
-            controllerAs: 'challengeCreateUsingUI',
-            authenticate: true
-        };
-
-        var challenge_create_using_ui_step_3 = {
-            name: "web.challenge-create-using-ui-step-3",
-            parent: "web",
-            url: "/challenge-create-step-3",
-            templateUrl: baseUrl + "/web/challenge-create-using-ui/challenge-create-step-3.html",
-            title: 'Challenge Create Using UI Step 3',
+            url: "/challenge-create-using-ui",
+            templateUrl: baseUrl + "/web/challenge-create-using-ui/challenge-create-using-ui.html",
+            title: 'Challenge Create Using UI',
             controller: 'challengeCreateUsingUICtrl',
             controllerAs: 'challengeCreateUsingUI',
             authenticate: true
@@ -512,9 +490,7 @@
 
         // challenge create page
         $stateProvider.state(challenge_create);
-        $stateProvider.state(challenge_create_using_ui_step_1);
-        $stateProvider.state(challenge_create_using_ui_step_2);
-        $stateProvider.state(challenge_create_using_ui_step_3);
+        $stateProvider.state(challenge_create_using_ui);
 
         // challenge details
         $stateProvider.state(challenge_page);

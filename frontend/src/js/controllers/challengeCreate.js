@@ -103,7 +103,7 @@
                 utilities.storeData('challengePhase', challengePhase);
                 utilities.storeData('challengeSplit', challengeSplit);
 
-                $state.go('web.challenge-create-using-ui-step-1');
+                $state.go('web.challenge-create-using-ui');
             } else {
                 $rootScope.notify('error', 'Please select one of the challenge phase split')
             }

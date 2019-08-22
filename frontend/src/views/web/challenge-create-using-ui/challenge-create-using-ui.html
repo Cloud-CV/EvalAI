@@ -1,18 +1,9 @@
 <section class="ev-sm-container ev-view challenge-container">
-    <div class="container">
-        <ul class="progressbar">
-            <li class="active">Challenge Details</li>
-            <li>Phase/Split Details</li>
-            <li>Review Details</li>
-            <li>Great Job!</li>
-        </ul>
-    </div>
-
-    <div style="margin-top: 150px;" class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
+    <div class="ev-md-container ev-card-panel ev-z-depth-5 ev-challenge-view">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="ev-card-body pd-20 w-300">
-                    <form name="challengeDetailsForm" ng-submit="challengeCreateUsingUI.submitChallengeDetails(challengeDetailsForm.$valid)">
+                    <form name="challengeDetailsForm" ng-submit="challengeCreateUsingUI.createChallengeUsingUI(challengeDetailsForm.$valid)">
                         <div class="row">
                             <div class="col s6 m6 l6">
                                 <div class="input-field align-left">
@@ -52,14 +43,30 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row"></div>
+                        <div class="row">
+                            <div class="col s12 m6 l6">
+                                <div class="file-field input-field">
+                                    <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-16">
+                                        <span> Challenge logo </span>
+                                        <input name="challengeCreateUsingUI.challengeLogo" ngf-select type="file"
+                                            class="text-dark-black dark-autofill w-50" accept=".zip"
+                                            ng-model="challengeCreateUsingUI.challengeLogo" required>
+                                    </div>
+                                    <div class="file-path-wrapper">
+                                        <input class="file-path" type="text" class="input-field"
+                                            ng-model="challengeCreateUsingUI.challengeLogo"
+                                            ng-value="challengeCreateUsingUI.challengeLogo" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col s12 m6 l6">
                                 <div class="file-field input-field">
                                     <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-16">
                                         <span> Evaluation script file </span>
                                         <input name="challengeCreateUsingUI.challengeEvaluationScript" ngf-select type="file"
-                                            class="text-dark-black dark-autofill w-50"
+                                            class="text-dark-black dark-autofill w-50" accept=".zip"
                                             ng-model="challengeCreateUsingUI.challengeEvaluationScript" required>
                                     </div>
                                     <div class="file-path-wrapper">
@@ -76,7 +83,7 @@
                                     <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
                                         type="submit" value="submit"
                                         ng-disabled="!challengeCreateUsingUI.challengeTitle || !challengeCreateUsingUI.challengeStartDate
-                                        || !challengeCreateUsingUI.challengeEndDate || !challengeCreateUsingUI.challengeEvaluationScript">Next</button>
+                                        || !challengeCreateUsingUI.challengeEndDate || !challengeCreateUsingUI.challengeEvaluationScript">Create challenge</button>
                                 </div>
                             </div>
                         </div>
@@ -85,6 +92,4 @@
             </div>
         </div>
     </div>
-    </div>
-
 </section>

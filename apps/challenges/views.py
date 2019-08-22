@@ -599,6 +599,33 @@ def challenge_phase_split_list(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
+def create_challenge_using_ui(request, challenge_host_team_pk):
+    """
+    Creates a challenge using UI.
+    """
+    challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+    serializer = ZipChallengeSerializer(
+        data=request.data,
+        context={
+            "challenge_host_team": challenge_host_team,
+            "request": request,
+        },
+        partial=True,
+    )
+    print(serializer.is_valid())
+    if serializer.is_valid():
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_200_OK)
+    else:
+        response_data = serializer.errors
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
 def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     Creates a challenge using a zip file.
