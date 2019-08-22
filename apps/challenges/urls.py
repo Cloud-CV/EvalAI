@@ -60,7 +60,9 @@ urlpatterns = [
         name="challenge_phase_split_list",
     ),
     url(
-        r"^challenge/challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)/using_ui/$",
+        r"^challenge/challenge_host_team/(?P<challenge_host_team_pk>[0-9]+)"
+        r"/phase/(?P<challenge_phase>[0-9]+)/split/(?P<challenge_split>[0-9]+)"
+        r"/using_ui/$",
         views.create_challenge_using_ui,
         name="create_challenge_using_ui",
     ),

@@ -620,30 +620,75 @@ def challenge_phase_split_list(request, challenge_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def create_challenge_using_ui(request, challenge_host_team_pk):
+def create_challenge_using_ui(request, challenge_host_team_pk, challenge_phase, challenge_split):
     """
     Creates a challenge using UI.
     """
-    print('wqeqweqwe=======================================================================')
-    print(request)
-    print(request.data)
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
+    evaluation_script = request.data.get("evaluation_script")
+    request.data.pop("evaluation_script")
     serializer = ZipChallengeSerializer(
-        data=request.data,
+        data=request.data.copy(),
         context={
             "challenge_host_team": challenge_host_team,
             "request": request,
         },
         partial=True,
     )
-    print(serializer.is_valid())
     if serializer.is_valid():
         serializer.save()
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_200_OK)
+        challenge = serializer.instance
+        queue_name = get_queue_name(challenge.title)
+        challenge.queue = queue_name
+        challenge.evaluation_script = evaluation_script
+        challenge.save()
+        challenge_phase_ids = {}
+        for phase_no in range(1, int(challenge_phase)+1):
+            data = {
+                "id": phase_no,
+                "name": "Phase " + str(phase_no),
+                "description": "Challenge phase description",
+                "codename": "codename " + str(phase_no)
+            }
+            serializer = ChallengePhaseCreateSerializer(
+                data=data,
+                context={
+                    "challenge": challenge,
+                },
+            )
+            if serializer.is_valid():
+                serializer.save()
+                challenge_phase_ids[
+                    str(data["id"])
+                ] = serializer.instance.pk
+            else:
+                response_data = serializer.errors
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            
+        dataset_split_ids = {}
+        for split_no in range(1, int(challenge_split)+1):
+            data = {
+                "id": split_no,
+                "name": "Split " + str(split_no),
+                "codename": "split_" + str(split_no)
+            }
+            serializer = DatasetSplitSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                dataset_split_ids[str(data["id"])] = serializer.instance.pk
+            else:
+                # Return error when dataset split name is not unique.
+                response_data = serializer.errors
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        
+        response_data = {
+            "success": "Challenge {} has been created successfully and"
+            " sent for review to EvalAI Admin.".format(challenge.title)
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
     else:
         response_data = serializer.errors
-    return Response({}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])

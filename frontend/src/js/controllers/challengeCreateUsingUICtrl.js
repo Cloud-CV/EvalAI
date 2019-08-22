@@ -7,50 +7,55 @@
         .module('evalai')
         .controller('challengeCreateUsingUICtrl', challengeCreateUsingUICtrl);
 
-    challengeCreateUsingUICtrl.$inject = ['utilities', '$state', '$rootScope'];
+    challengeCreateUsingUICtrl.$inject = ['utilities', '$state', '$rootScope', 'loaderService'];
 
-    function challengeCreateUsingUICtrl(utilities, $state, $rootScope) {
+    function challengeCreateUsingUICtrl(utilities, $state, $rootScope, loaderService) {
         var vm = this;
         var userKey = utilities.getData('userKey');
         vm.hostTeamId = utilities.getData('challengeHostTeamId');
-        vm.challengeTitle = '';
-        vm.challengeStartDate = '';
-        vm.challengeEndDate = '';
-        vm.challengeLogo = null;
-        vm.challengeEvaluationScript = null;
         vm.challengePhase = utilities.getData('challengePhase');
         vm.challengeSplit = utilities.getData('challengeSplit');
         // vm.numberOfPhases = new Array(Integer.parseInt(vm.challengePhase));
 
+        // start loader
+        // vm.startLoader = loaderService.startLoader;
+
+        // stop loader
+        // vm.stopLoader = loaderService.stopLoader;
+
         vm.createChallengeUsingUI = function (challengeDetailsForm) {
             if (challengeDetailsForm) {
+                // vm.startLoader('create challenge');
                 var parameters = {};
-                parameters.url = 'challenges/challenge_host_team/' + vm.hostTeamId + '/challenge';
+                parameters.url = 'challenges/challenge/challenge_host_team/' + vm.hostTeamId +
+                    '/phase/' + vm.challengePhase + '/split/' + vm.challengeSplit + '/using_ui/';
                 parameters.method = 'POST';
-                console.log(vm.challengeLogo, vm.challengeEvaluationScript);
-                // var formData = new FormData();
-                // formData.append("title", vm.challengeTitle);
-                // formData.append("start_date", vm.challengeStartDate);
-                // formData.append("end_date", vm.challengeEndDate);
-                // formData.append("image", vm.challengeLogo);
-                // formData.append("evaluation_script", vm.challengeEvaluationScript);
-                parameters.data = {
-                    "title": vm.challengeTitle,
-                    "start_date": vm.challengeStartDate,
-                    "end_date": vm.challengeEndDate,
-                    "is_registration_open": true,
-                };
+                var formdata = new FormData();
+                formdata.append("title", vm.challengeTitle);
+                formdata.append("start_date", vm.challengeStartDate.toISOString());
+                formdata.append("end_date", vm.challengeEndDate.toISOString());
+                formdata.append("image", vm.challengeLogo);
+                formdata.append("evaluation_script", vm.challengeEvaluationScript);
+                parameters.data = formdata;
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {
-                        console.log(response)
-                        $state.go("home");
+                        var status = response.status;
+                        var details =  response.data;
+                        if(status === 201) {
+                            $rootScope.notify("success", details.success);
+                            $state.go("home");
+                        }
                     },
                     onError: function(response) {
-                        console.log("error", response);
+                        // utilities.hideLoader();
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                        // vm.stopLoader();
                     }
                 };
-                utilities.sendRequest(parameters);
+                // utilities.showLoader();
+                utilities.sendRequest(parameters, 'header', 'upload');
             }
         };
     };
