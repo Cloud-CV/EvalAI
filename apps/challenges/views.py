@@ -603,6 +603,9 @@ def create_challenge_using_ui(request, challenge_host_team_pk):
     """
     Creates a challenge using UI.
     """
+    print('wqeqweqwe=======================================================================')
+    print(request)
+    print(request.data)
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
     serializer = ZipChallengeSerializer(
         data=request.data,
@@ -619,7 +622,7 @@ def create_challenge_using_ui(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_200_OK)
     else:
         response_data = serializer.errors
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])

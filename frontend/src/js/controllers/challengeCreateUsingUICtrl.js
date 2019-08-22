@@ -25,15 +25,21 @@
         vm.createChallengeUsingUI = function (challengeDetailsForm) {
             if (challengeDetailsForm) {
                 var parameters = {};
-                parameters.url = 'challenges/challenge/challenge_host_team/' + vm.hostTeamId + '/using_ui/';
+                parameters.url = 'challenges/challenge_host_team/' + vm.hostTeamId + '/challenge';
                 parameters.method = 'POST';
-                var formData = new FormData();
-                formData.append("title", vm.challengeTitle);
-                formData.append("start_date", vm.challengeStartDate);
-                formData.append("end_date", vm.challengeEndDate);
+                console.log(vm.challengeLogo, vm.challengeEvaluationScript);
+                // var formData = new FormData();
+                // formData.append("title", vm.challengeTitle);
+                // formData.append("start_date", vm.challengeStartDate);
+                // formData.append("end_date", vm.challengeEndDate);
                 // formData.append("image", vm.challengeLogo);
                 // formData.append("evaluation_script", vm.challengeEvaluationScript);
-                parameters.data = formData;
+                parameters.data = {
+                    "title": vm.challengeTitle,
+                    "start_date": vm.challengeStartDate,
+                    "end_date": vm.challengeEndDate,
+                    "is_registration_open": true,
+                };
                 parameters.token = userKey;
                 parameters.callback = {
                     onSuccess: function(response) {

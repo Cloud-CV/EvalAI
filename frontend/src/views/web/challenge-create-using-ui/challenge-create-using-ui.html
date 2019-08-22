@@ -49,7 +49,7 @@
                                     <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-16">
                                         <span> Challenge logo </span>
                                         <input name="challengeCreateUsingUI.challengeLogo" ngf-select type="file"
-                                            class="text-dark-black dark-autofill w-50" accept=".zip"
+                                            class="text-dark-black dark-autofill w-50" accept=".png, .jpg"
                                             ng-model="challengeCreateUsingUI.challengeLogo" required>
                                     </div>
                                     <div class="file-path-wrapper">
@@ -65,9 +65,11 @@
                                 <div class="file-field input-field">
                                     <div class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-transparent fs-16">
                                         <span> Evaluation script file </span>
-                                        <input name="challengeCreateUsingUI.challengeEvaluationScript" ngf-select type="file"
+                                        <input type="file" ngf-select ng-model="challenge.challengeEvaluationScript"
+                                            name="challenge.challengeEvaluationScript" accept=".zip" required>
+                                        <!-- <input name="challengeCreateUsingUI.challengeEvaluationScript" ngf-select type="file"
                                             class="text-dark-black dark-autofill w-50" accept=".zip"
-                                            ng-model="challengeCreateUsingUI.challengeEvaluationScript" required>
+                                            ng-model="challengeCreateUsingUI.challengeEvaluationScript" required> -->
                                     </div>
                                     <div class="file-path-wrapper">
                                         <input class="file-path" type="text" class="input-field"
