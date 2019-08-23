@@ -210,7 +210,6 @@ def create_leaderboard():
 
 
 def create_leaderboard_data(challenge_phase_split, submission):
-    dataset_split = challenge_phase_split.dataset_split
     result = {'score': 0}
     leaderboard_data = LeaderboardData.objects.create(
         challenge_phase_split=challenge_phase_split,
@@ -255,6 +254,7 @@ def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
                                                                                             dataset_split.name))
     return challenge_phase_split
 
+
 def create_participant_team(user):
     """
     Creates participant team and returns it.
@@ -270,7 +270,7 @@ def create_participant_team(user):
     return team
 
 
-def create_submission(participant_user, participant_team, 
+def create_submission(participant_user, participant_team,
                       challenge_phase, dataset_splits):
     status = Submission.FINISHED
     submitted_at = timezone.now()
@@ -284,7 +284,7 @@ def create_submission(participant_user, participant_team,
         split_result = {dataset_split.codename: {'score': 0}}
         output.append(split_result)
 
-    result =  ['foo', 'bar']
+    result = ['foo', 'bar']
     submission_result = json.dumps(result)
 
     submission = Submission.objects.create(
@@ -309,8 +309,8 @@ def create_submission(participant_user, participant_team,
         is_flagged=True
 
     )
-    print("Submission created by user {} for phase {} of challenge {}.".format(participant_user.username, 
-                                                                               challenge_phase.name, 
+    print("Submission created by user {} for phase {} of challenge {}.".format(participant_user.username,
+                                                                               challenge_phase.name,
                                                                                challenge_phase.challenge.title))
 
     return submission
