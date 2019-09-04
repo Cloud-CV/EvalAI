@@ -1573,7 +1573,7 @@ def create_challenge_phase_split(request):
 
 @api_view(["GET", "PATCH"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     """
