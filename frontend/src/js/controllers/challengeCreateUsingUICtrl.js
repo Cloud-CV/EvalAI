@@ -35,6 +35,7 @@
                 formdata.append("start_date", vm.challengeStartDate.toISOString());
                 formdata.append("end_date", vm.challengeEndDate.toISOString());
                 formdata.append("image", vm.challengeLogo);
+                formdata.append("published", true);
                 formdata.append("evaluation_script", vm.challengeEvaluationScript);
                 parameters.data = formdata;
                 parameters.token = userKey;

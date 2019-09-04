@@ -642,8 +642,25 @@ def create_challenge_using_ui(request, challenge_host_team_pk, challenge_phase, 
         challenge.queue = queue_name
         challenge.evaluation_script = evaluation_script
         challenge.save()
+
+        leaderboard_ids = {}
+        for i in range(1, (int(challenge_phase) * int(challenge_split) + 1)):
+            data = {
+                "id": i,
+                "schema": {
+                    "labels": ["Metric1", "Metric2", "Metric3", "Total"],
+                    "default_order_by": "Total"
+                }
+            }
+            serializer = LeaderboardSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                leaderboard_ids[str(data["id"])] = serializer.instance.pk
+            else:
+                response_data = serializer.errors
+
         challenge_phase_ids = {}
-        for phase_no in range(1, int(challenge_phase)+1):
+        for phase_no in range(1, int(challenge_phase) + 1):
             data = {
                 "id": phase_no,
                 "name": "Phase " + str(phase_no),
@@ -664,9 +681,9 @@ def create_challenge_using_ui(request, challenge_host_team_pk, challenge_phase, 
             else:
                 response_data = serializer.errors
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-            
+
         dataset_split_ids = {}
-        for split_no in range(1, int(challenge_split)+1):
+        for split_no in range(1, int(challenge_split) + 1):
             data = {
                 "id": split_no,
                 "name": "Split " + str(split_no),
@@ -680,7 +697,28 @@ def create_challenge_using_ui(request, challenge_host_team_pk, challenge_phase, 
                 # Return error when dataset split name is not unique.
                 response_data = serializer.errors
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        counter = 0
+        for i in range(1, int(challenge_phase) + 1):
+            for j in range(1, int(challenge_split) + 1):
+                counter += 1
+                leaderboard = leaderboard_ids[str(counter)]
+                challenge_phase = challenge_phase_ids[str(i)]
+                dataset_split = dataset_split_ids[str(j)]
+                visibility = 1
+
+                data = {
+                    "challenge_phase": challenge_phase,
+                    "leaderboard": leaderboard,
+                    "dataset_split": dataset_split,
+                    "visibility": visibility,
+                }
+                serializer = ZipChallengePhaseSplitSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    response_data = serializer.errors
+
         response_data = {
             "success": "Challenge {} has been created successfully and"
             " sent for review to EvalAI Admin.".format(challenge.title)
