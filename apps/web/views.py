@@ -1,13 +1,12 @@
 import logging
 import traceback
-
+from base.utils import send_slack_notification
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.shortcuts import render
 
 from smtplib import SMTPException
-
 from .models import Subscribers, Team
 from .serializers import ContactSerializer, SubscribeSerializer, TeamSerializer
 
@@ -110,6 +109,29 @@ def contact_us(request):
             response_data = {
                 "message": "We have received your request and will contact you shortly."
             }
+
+            if not settings.DEBUG:
+                message = {
+                    "text": "A *contact message* is received!",
+                    "fields": [
+                        {
+                            "title": "Name",
+                            "value": request.data["name"],
+                            "short": True
+                        },
+                        {
+                            "title": "Email",
+                            "value": request.data["email"],
+                            "short": True
+                        },
+                        {
+                            "title": "Message",
+                            "value": request.data["message"],
+                            "short": False
+                        }
+                    ]
+                }
+                send_slack_notification(message=message)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
