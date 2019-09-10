@@ -90,6 +90,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
     challenge_phase = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField()
     participant_team_members_email_ids = serializers.SerializerMethodField()
+    participant_team_members_affiliations = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
     participant_team_members = serializers.SerializerMethodField()
 
@@ -112,6 +113,7 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
             "submission_result_file",
             "submission_metadata_file",
             "participant_team_members_email_ids",
+            "participant_team_members_affiliations",
             "created_at",
             "method_name",
             "participant_team_members",
@@ -162,6 +164,20 @@ class ChallengeSubmissionManagementSerializer(serializers.ModelSerializer):
                 "username", "email"
             )
         )
+
+    def get_participant_team_members_affiliations(self, obj):
+        try:
+            participant_team = ParticipantTeam.objects.get(
+                team_name=obj.participant_team.team_name
+            )
+        except ParticipantTeam.DoesNotExist:
+            return "Participant team does not exist"
+
+        participant_ids = Participant.objects.filter(
+            team=participant_team
+        ).values_list("user_id", flat=True)
+        users = User.objects.filter(id__in=participant_ids)
+        return [user.profile.affiliation for user in users]
 
 
 class SubmissionCount(object):
