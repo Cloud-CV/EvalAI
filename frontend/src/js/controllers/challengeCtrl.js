@@ -1300,6 +1300,9 @@
             'label': 'Team Members Email Id',
             'id': 'participant_team_members_email' 
         },{
+            'label': 'Team Members Affiliation',
+            'id': 'participant_team_members_affiliation' 
+        },{
             'label': 'Challenge Phase',
             'id': 'challenge_phase' 
         },{
