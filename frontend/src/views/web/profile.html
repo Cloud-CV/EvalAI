@@ -1,34 +1,80 @@
 <!-- <slide-profile></slide-profile> -->
-<div class="ev-md-container center">
-    <img src="dist/images/pro-pic.png" class="profile-pic">
-    <div>{{profile.user.username}}</div>
-    <div class="text-light-black w-300">{{profile.user.email}}</div>
-    <ul>
-        <li>
-            <span class="text-light-black fs-12">First Name<br> </span> {{profile.user.first_name}}
-        </li>
-        <li>
-            <span class="text-light-black fs-12">Last Name<br></span> {{profile.user.last_name}}
-        </li>
-        <li>
-            <span class="text-light-black fs-12">Affiliated To<br></span> {{profile.user.affiliation}}
-        </li>
-    </ul>
-    <!--         <li>
-            <input type="checkbox" class="filled-in fs-14" id="sub">
-            <label for="sub">Subscribe to email list</label>
-        </li> -->
-    <div class="text-highlight"><span class="fs-12">Profile Completed</span>
-        <br> <span class="text-dark-black">{{profile.user.complete}}%</span></div>
-    <br>
-    <br>
-    <div>
-        <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ng-click="profile.getAuthTokenDialog($event)">Get your Auth Token</button>
+<div class="ev-md-container">
+    <div class="row">
+        <div class="ev-md-container ev-card-panel ev-z-depth-5
+            challenge-title-container">
+            <div class="col s12 m3 l3 center">
+                <img src="dist/images/pro-pic.png" class="profile-pic">
+                <div>{{profile.user.username}}</div>
+                <div class="text-light-black w-300">{{profile.user.email}}</div>
+                <br><br>
+                <div class="text-highlight"><span class="fs-12">
+                    Profile Completed</span>
+                    <br>
+                    <span class="text-dark-black">{{profile.user.complete}}%</span>
+                </div>
+                <br><br>
+                <div>
+                    <button class="btn ev-btn-dark waves-effect waves-dark
+                        grad-btn grad-btn-dark fs-14"
+                        ng-click="profile.getAuthTokenDialog($event)">
+                        Get your Auth Token
+                    </button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m4 l4 center user-info">
+                    <ul>
+                        <li>
+                            <span class="text-light-black fs-12">First Name<br>
+                            </span> {{profile.user.first_name}}
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">Last Name<br></span>
+                            {{profile.user.last_name}}
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">Affiliated
+                                To<br></span>
+                            {{profile.user.affiliation}}
+                        </li>
+                    </ul>
+                </div>
+                <div class="col s12 m5 l5 user-urls center">
+                    <ul>
+                        <li>
+                            <span class="text-light-black fs-12">Github Url<br>
+                            </span>
+                            <a href="{{profile.user.github_url}}"
+                                target="_blank"
+                                class="text-highlight">{{profile.user.github_url}}</a>
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">
+                                Google Scholar Url<br></span>
+                            <a href="{{profile.user.google_scholar_url}}"
+                                target="_blank" class="text-highlight">
+                                {{profile.user.google_scholar_url}}</a>
+                        </li>
+                        <li>
+                            <span class="text-light-black fs-12">Linkedin Url<br></span>
+                            <a href="{{profile.user.linkedin_url}}"
+                                target="_blank"
+                                class="text-highlight">{{profile.user.linkedin_url}}</a>
+                        </li>
+                    </ul>
+                </div>
+                <ul class="inline-list profile-edit-group center">
+                    <li>
+                        <a ng-click="main.hostChallenge($event)"
+                            ui-sref="web.change-password" class="dark-link"><strong>Change
+                                Password</strong></a>
+                    </li>
+                    <li><a class="btn ev-btn-dark waves-effect waves-dark
+                            grad-btn grad-btn-dark fs-14"
+                            ui-sref="web.update-profile">Update Profile</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <ul class="inline-list profile-edit-group">
-        <li>
-            <a ng-click="main.hostChallenge($event)" ui-sref="web.change-password" class="dark-link"><strong>Change Password</strong></a>
-        </li>
-        <li><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="web.update-profile">Update Profile</a></li>
-    </ul>
 </div>
