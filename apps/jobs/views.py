@@ -260,27 +260,26 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 'message': 'Please wait while your submission being evaluated!'
             }
             return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            serializer = SubmissionSerializer(
-                data=request.data,
-                context={
-                    "participant_team": participant_team,
-                    "challenge_phase": challenge_phase,
-                    "request": request,
-                },
+        serializer = SubmissionSerializer(
+            data=request.data,
+            context={
+                "participant_team": participant_team,
+                "challenge_phase": challenge_phase,
+                "request": request,
+            },
+        )
+        if serializer.is_valid():
+            serializer.save()
+            response_data = serializer.data
+            submission = serializer.instance
+            # publish message in the queue
+            publish_submission_message(
+                challenge_id, challenge_phase_id, submission.id
             )
-            if serializer.is_valid():
-                serializer.save()
-                response_data = serializer.data
-                submission = serializer.instance
-                # publish message in the queue
-                publish_submission_message(
-                    challenge_id, challenge_phase_id, submission.id
-                )
-                return Response(response_data, status=status.HTTP_201_CREATED)
-            return Response(
-                serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(
+            serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
+        )
 
 
 @api_view(["PATCH"])
