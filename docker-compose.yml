@@ -26,8 +26,6 @@ services:
       - sqs
     volumes:
       - .:/code
-    links:
-      - sqs
 
   celery:
     hostname: celery

@@ -10,10 +10,6 @@ services:
       dockerfile: docker/prod/django/Dockerfile
     ports:
       - "8000:8000"
-    depends_on:
-      - sqs
-    links:
-      - sqs
 
   celery:
     hostname: celery
