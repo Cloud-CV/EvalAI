@@ -245,7 +245,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-        if 'file_url' in request.data:
+        if not request.FILES:
             if not is_url_valid(request.data['file_url']):
                 response_data = {'error': 'The file URL does not exists!'}
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

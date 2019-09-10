@@ -14,6 +14,7 @@
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
+        vm.fileUrl = "";
         vm.methodName = "";
         vm.methodDesc = "";
         vm.projectUrl = "";
@@ -52,6 +53,7 @@
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
         vm.team = {};
+        vm.isSubmissionUsingUrl = null;
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -381,8 +383,8 @@
 
                 var fileVal = angular.element(".file-path").val();
 
-                if (fileVal === null || fileVal === "") {
-                    vm.subErrors.msg = "Please upload file!";
+                if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
+                    vm.subErrors.msg = "Please upload file or enter submission URL!";
                 } else {
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
@@ -396,9 +398,13 @@
                     parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
                     var formData = new FormData();
-                    formData.append("file_url", "https://drive.google.com/open?id=12azLMh5aYBhZytgDLuTu82yWh2KA4TM_");
+                    if (vm.isSubmissionUsingUrl) {
+                        formData.append("file_url", vm.fileUrl);
+                    } else {
+                        formData.append("input_file", vm.input_file);
+                    }
+                    console.log(vm.fileUrl);
                     formData.append("status", "submitting");
-                    formData.append("input_file", vm.input_file);
                     formData.append("method_name", vm.methodName);
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
@@ -423,6 +429,7 @@
 
                             // Reset the value of fields related to a submission
                             vm.phaseId = null;
+                            vm.fileUrl = "";
                             vm.methodName = "";
                             vm.methodDesc = "";
                             vm.projectUrl = "";
@@ -437,6 +444,7 @@
                             var error = response.data;
 
                             vm.phaseId = null;
+                            vm.fileUrl = null;
                             vm.methodName = null;
                             vm.methodDesc = null;
                             vm.projectUrl = null;
