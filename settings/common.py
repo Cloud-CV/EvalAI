@@ -60,7 +60,6 @@ OUR_APPS = [
 THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
-    "celery",
     "corsheaders",
     "django_ses",
     "import_export",
