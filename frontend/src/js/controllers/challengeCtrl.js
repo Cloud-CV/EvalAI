@@ -403,7 +403,6 @@
                     } else {
                         formData.append("input_file", vm.input_file);
                     }
-                    console.log(vm.fileUrl);
                     formData.append("status", "submitting");
                     formData.append("method_name", vm.methodName);
                     formData.append("method_description", vm.methodDesc);
