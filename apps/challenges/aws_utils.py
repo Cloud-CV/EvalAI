@@ -19,6 +19,9 @@ aws_keys = {
     "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
     "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
     "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+    "AWS_STORAGE_BUCKET_NAME": os.environ.get(
+        "AWS_STORAGE_BUCKET_NAME", "evalai-s3-bucket"
+    ),
 }
 
 
@@ -27,8 +30,19 @@ COMMON_SETTINGS_DICT = {
     "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
     "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
     "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
-    "EXECUTION_ROLE_ARN": os.environ.get("EXECUTION_ROLE_ARN", "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(aws_keys["AWS_ACCOUNT_ID"])),
-    "WORKER_IMAGE": os.environ.get("WORKER_IMAGE", "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(aws_keys["AWS_ACCOUNT_ID"], ENV)),
+    "AWS_STORAGE_BUCKET_NAME": aws_keys["AWS_STORAGE_BUCKET_NAME"],
+    "EXECUTION_ROLE_ARN": os.environ.get(
+        "EXECUTION_ROLE_ARN",
+        "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(
+            aws_keys["AWS_ACCOUNT_ID"]
+        ),
+    ),
+    "WORKER_IMAGE": os.environ.get(
+        "WORKER_IMAGE",
+        "{}.dkr.ecr.us-east-1.amazonaws.com/evalai-{}-worker:latest".format(
+            aws_keys["AWS_ACCOUNT_ID"], ENV
+        ),
+    ),
     "CPU": os.environ.get("CPU", 1024),
     "MEMORY": os.environ.get("MEMORY", 2048),
     "CLUSTER": os.environ.get("CLUSTER", "evalai-prod-cluster"),
@@ -42,8 +56,8 @@ COMMON_SETTINGS_DICT = {
     "MEMCACHED_LOCATION": os.environ.get("MEMCACHED_LOCATION", None),
     "RDS_DB_NAME": settings.DATABASES["default"]["NAME"],
     "RDS_HOSTNAME": settings.DATABASES["default"]["HOST"],
-    "RDS_PASSWORD": settings.DATABASES["default"]["USER"],
-    "RDS_USERNAME": settings.DATABASES["default"]["NAME"],
+    "RDS_PASSWORD": settings.DATABASES["default"]["PASSWORD"],
+    "RDS_USERNAME": settings.DATABASES["default"]["USER"],
     "RDS_PORT": settings.DATABASES["default"]["PORT"],
     "SECRET_KEY": settings.SECRET_KEY,
     "SENTRY_URL": os.environ.get("SENTRY_URL"),
@@ -52,7 +66,9 @@ COMMON_SETTINGS_DICT = {
 VPC_DICT = {
     "SUBNET_1": os.environ.get("SUBNET_1", "subnet-e260d5be"),
     "SUBNET_2": os.environ.get("SUBNET_2", "subnet-300ea557"),
-    "SUBNET_SECURITY_GROUP": os.environ.get("SUBNET_SECURITY_GROUP", "sg-148b4a5e"),
+    "SUBNET_SECURITY_GROUP": os.environ.get(
+        "SUBNET_SECURITY_GROUP", "sg-148b4a5e"
+    ),
 }
 
 
@@ -82,6 +98,10 @@ task_definition = """
                 {{
                   "name": "AWS_SECRET_ACCESS_KEY",
                   "value": "{AWS_SECRET_ACCESS_KEY}"
+                }},
+                {{
+                  "name": "AWS_STORAGE_BUCKET_NAME",
+                  "value": "{AWS_STORAGE_BUCKET_NAME}"
                 }},
                 {{
                   "name": "CHALLENGE_PK",
@@ -237,7 +257,9 @@ def client_token_generator():
     str: string of size 32 composed of digits and letters
     """
 
-    client_token = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+    client_token = "".join(
+        random.choices(string.ascii_letters + string.digits, k=32)
+    )
     return client_token
 
 
@@ -256,15 +278,25 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
     container_name = "worker_{}".format(queue_name)
     execution_role_arn = COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"]
 
-    if (execution_role_arn):
-        definition = task_definition.format(queue_name=queue_name, container_name=container_name,
-                                            ENV=ENV, challenge_pk=challenge.pk, **COMMON_SETTINGS_DICT)
+    if execution_role_arn:
+        definition = task_definition.format(
+            queue_name=queue_name,
+            container_name=container_name,
+            ENV=ENV,
+            challenge_pk=challenge.pk,
+            **COMMON_SETTINGS_DICT
+        )
         definition = eval(definition)
         if not challenge.task_def_arn:
             try:
                 response = client.register_task_definition(**definition)
-                if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
-                    task_def_arn = response["taskDefinition"]["taskDefinitionArn"]
+                if (
+                    response["ResponseMetadata"]["HTTPStatusCode"]
+                    == HTTPStatus.OK
+                ):
+                    task_def_arn = response["taskDefinition"][
+                        "taskDefinitionArn"
+                    ]
                     challenge.task_def_arn = task_def_arn
                     challenge.save()
                 return response
@@ -272,11 +304,19 @@ def register_task_def_by_challenge_pk(client, queue_name, challenge):
                 logger.exception(e)
                 return e.response
         else:
-            message = "Error. Task definition already registered for challenge {}.".format(challenge.pk)
-            return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}}
+            message = "Error. Task definition already registered for challenge {}.".format(
+                challenge.pk
+            )
+            return {
+                "Error": message,
+                "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            }
     else:
         message = "Please ensure that the TASK_EXECUTION_ROLE_ARN is appropriately passed as an environment varible."
-        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}}
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
 
 
 def create_service_by_challenge_pk(client, challenge, client_token):
@@ -294,17 +334,27 @@ def create_service_by_challenge_pk(client, challenge, client_token):
 
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
-    if (challenge.workers is None):  # Verify if the challenge is new (i.e, service not yet created.).
-        if (challenge.task_def_arn is ""):
-            response = register_task_def_by_challenge_pk(client, queue_name, challenge)
-            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+    if (
+        challenge.workers is None
+    ):  # Verify if the challenge is new (i.e, service not yet created.).
+        if challenge.task_def_arn == "" or challenge.task_def_arn is None:
+            response = register_task_def_by_challenge_pk(
+                client, queue_name, challenge
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 return response
         task_def_arn = challenge.task_def_arn
-        definition = service_definition.format(CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"], service_name=service_name, task_def_arn=task_def_arn, client_token=client_token, **VPC_DICT)
+        definition = service_definition.format(
+            CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+            service_name=service_name,
+            task_def_arn=task_def_arn,
+            client_token=client_token,
+            **VPC_DICT
+        )
         definition = eval(definition)
         try:
             response = client.create_service(**definition)
-            if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
+            if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
                 challenge.workers = 1
                 challenge.save()
             return response
@@ -312,11 +362,18 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             logger.exception(e)
             return e.response
     else:
-        message = "Worker service for challenge {} already exists. Please scale, stop or delete.".format(challenge.pk)
-        return {"Error": message, "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST}}
+        message = "Worker service for challenge {} already exists. Please scale, stop or delete.".format(
+            challenge.pk
+        )
+        return {
+            "Error": message,
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+        }
 
 
-def update_service_by_challenge_pk(client, challenge, num_of_tasks, force_new_deployment=False):
+def update_service_by_challenge_pk(
+    client, challenge, num_of_tasks, force_new_deployment=False
+):
     """
     Updates the worker service for a challenge, and scales the number of workers to num_of_tasks.
 
@@ -334,12 +391,17 @@ def update_service_by_challenge_pk(client, challenge, num_of_tasks, force_new_de
     service_name = "{}_service".format(queue_name)
     task_def_arn = challenge.task_def_arn
 
-    kwargs = update_service_args.format(CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"], service_name=service_name, task_def_arn=task_def_arn, force_new_deployment=force_new_deployment)
+    kwargs = update_service_args.format(
+        CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+        service_name=service_name,
+        task_def_arn=task_def_arn,
+        force_new_deployment=force_new_deployment,
+    )
     kwargs = eval(kwargs)
 
     try:
         response = client.update_service(**kwargs)
-        if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
+        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
             challenge.workers = num_of_tasks
             challenge.save()
         return response
@@ -363,19 +425,27 @@ def delete_service_by_challenge_pk(challenge):
     client = get_boto3_client("ecs", aws_keys)
     queue_name = challenge.queue
     service_name = "{}_service".format(queue_name)
-    kwargs = delete_service_args.format(CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"], service_name=service_name, force=True)
+    kwargs = delete_service_args.format(
+        CLUSTER=COMMON_SETTINGS_DICT["CLUSTER"],
+        service_name=service_name,
+        force=True,
+    )
     kwargs = eval(kwargs)
     try:
-        if (challenge.workers != 0):
-            response = update_service_by_challenge_pk(client, challenge, 0, False)
-            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
+        if challenge.workers != 0:
+            response = update_service_by_challenge_pk(
+                client, challenge, 0, False
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
                 return response
 
         response = client.delete_service(**kwargs)
-        if (response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK):
+        if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
             challenge.workers = None
             challenge.save()
-            client.deregister_task_definition(taskDefinition=challenge.task_def_arn)
+            client.deregister_task_definition(
+                taskDefinition=challenge.task_def_arn
+            )
             challenge.task_def_arn = ""
             challenge.save()
         return response
@@ -384,7 +454,9 @@ def delete_service_by_challenge_pk(challenge):
         return e.response
 
 
-def service_manager(client, challenge, num_of_tasks=None, force_new_deployment=False):
+def service_manager(
+    client, challenge, num_of_tasks=None, force_new_deployment=False
+):
     """
     This method determines if the challenge is new or not, and accordingly calls <update or create>_by_challenge_pk.
 
@@ -399,12 +471,16 @@ def service_manager(client, challenge, num_of_tasks=None, force_new_deployment=F
     Returns:
     dict: The response returned by the respective functions update_service_by_challenge_pk or create_service_by_challenge_pk
     """
-    if (challenge.workers is not None):
-        response = update_service_by_challenge_pk(client, challenge, num_of_tasks, force_new_deployment)
+    if challenge.workers is not None:
+        response = update_service_by_challenge_pk(
+            client, challenge, num_of_tasks, force_new_deployment
+        )
         return response
     else:
         client_token = client_token_generator()
-        response = create_service_by_challenge_pk(client, challenge, client_token)
+        response = create_service_by_challenge_pk(
+            client, challenge, client_token
+        )
         return response
 
 
@@ -426,14 +502,23 @@ def start_workers(queryset):
     failures = []
     for challenge in queryset:
         if (challenge.workers == 0) or (challenge.workers is None):
-            response = service_manager(client, challenge=challenge, num_of_tasks=1)
-            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-                failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+            response = service_manager(
+                client, challenge=challenge, num_of_tasks=1
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
                 continue
             count += 1
         else:
             response = "Please select challenge with inactive workers only."
-            failures.append({"message": response, "challenge_pk": challenge.pk})
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
     return {"count": count, "failures": failures}
 
 
@@ -455,14 +540,23 @@ def stop_workers(queryset):
     failures = []
     for challenge in queryset:
         if (challenge.workers is not None) and (challenge.workers > 0):
-            response = service_manager(client, challenge=challenge, num_of_tasks=0)
-            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-                failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+            response = service_manager(
+                client, challenge=challenge, num_of_tasks=0
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
                 continue
             count += 1
         else:
             response = "Please select challenges with active workers only."
-            failures.append({"message": response, "challenge_pk": challenge.pk})
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
     return {"count": count, "failures": failures}
 
 
@@ -483,17 +577,27 @@ def scale_workers(queryset, num_of_tasks):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers is None):
+        if challenge.workers is None:
             response = "Please start worker(s) before scaling."
-            failures.append({"message": response, "challenge_pk": challenge.pk})
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
             continue
-        if (num_of_tasks == challenge.workers):
-            response = "Please scale to a different number. Challenge has {} worker(s).".format(num_of_tasks)
-            failures.append({"message": response, "challenge_pk": challenge.pk})
+        if num_of_tasks == challenge.workers:
+            response = "Please scale to a different number. Challenge has {} worker(s).".format(
+                num_of_tasks
+            )
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
             continue
-        response = service_manager(client, challenge=challenge, num_of_tasks=num_of_tasks)
-        if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-            failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+        response = service_manager(
+            client, challenge=challenge, num_of_tasks=num_of_tasks
+        )
+        if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+            failures.append(
+                {"message": response["Error"], "challenge_pk": challenge.pk}
+            )
             continue
         count += 1
     return {"count": count, "failures": failures}
@@ -515,15 +619,22 @@ def delete_workers(queryset):
     count = 0
     failures = []
     for challenge in queryset:
-        if (challenge.workers is not None):
+        if challenge.workers is not None:
             response = delete_service_by_challenge_pk(challenge=challenge)
-            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-                failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
                 continue
             count += 1
         else:
             response = "Please select challenges with active workers only."
-            failures.append({"message": response, "challenge_pk": challenge.pk})
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
     return {"count": count, "failures": failures}
 
 
@@ -545,14 +656,26 @@ def restart_workers(queryset):
     failures = []
     for challenge in queryset:
         if (challenge.workers is not None) and (challenge.workers > 0):
-            response = service_manager(client, challenge, num_of_tasks=challenge.workers, force_new_deployment=True)
-            if (response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK):
-                failures.append({"message": response['Error'], "challenge_pk": challenge.pk})
+            response = service_manager(
+                client,
+                challenge,
+                num_of_tasks=challenge.workers,
+                force_new_deployment=True,
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] != HTTPStatus.OK:
+                failures.append(
+                    {
+                        "message": response["Error"],
+                        "challenge_pk": challenge.pk,
+                    }
+                )
                 continue
             count += 1
         else:
             response = "Please select challenges with active workers only."
-            failures.append({"message": response, "challenge_pk": challenge.pk})
+            failures.append(
+                {"message": response, "challenge_pk": challenge.pk}
+            )
     return {"count": count, "failures": failures}
 
 
@@ -563,10 +686,14 @@ def restart_workers_signal_callback(sender, instance, field_name, **kwargs):
     """
     prev = getattr(instance, "_original_{}".format(field_name))
     curr = getattr(instance, "{}".format(field_name))
-    if (prev != curr):
-        if (field_name == "test_annotation"):
+    if prev != curr:
+        if field_name == "test_annotation":
             challenge = instance.challenge
         else:
             challenge = instance
         restart_workers([challenge])
-        logger.info("The worker service for challenge {} was restarted, as {} was changed.".format(instance.pk, field_name))
+        logger.info(
+            "The worker service for challenge {} was restarted, as {} was changed.".format(
+                instance.pk, field_name
+            )
+        )
