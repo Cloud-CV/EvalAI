@@ -19,6 +19,9 @@ aws_keys = {
     "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
     "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
     "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+    "AWS_STORAGE_BUCKET_NAME": os.environ.get(
+        "AWS_STORAGE_BUCKET_NAME", "evalai-s3-bucket"
+    ),
 }
 
 
@@ -27,6 +30,7 @@ COMMON_SETTINGS_DICT = {
     "AWS_ACCOUNT_ID": aws_keys["AWS_ACCOUNT_ID"],
     "AWS_ACCESS_KEY_ID": aws_keys["AWS_ACCESS_KEY_ID"],
     "AWS_SECRET_ACCESS_KEY": aws_keys["AWS_SECRET_ACCESS_KEY"],
+    "AWS_STORAGE_BUCKET_NAME": aws_keys["AWS_STORAGE_BUCKET_NAME"],
     "EXECUTION_ROLE_ARN": os.environ.get(
         "EXECUTION_ROLE_ARN",
         "arn:aws:iam::{}:role/evalaiTaskExecutionRole".format(
@@ -52,8 +56,8 @@ COMMON_SETTINGS_DICT = {
     "MEMCACHED_LOCATION": os.environ.get("MEMCACHED_LOCATION", None),
     "RDS_DB_NAME": settings.DATABASES["default"]["NAME"],
     "RDS_HOSTNAME": settings.DATABASES["default"]["HOST"],
-    "RDS_PASSWORD": settings.DATABASES["default"]["USER"],
-    "RDS_USERNAME": settings.DATABASES["default"]["NAME"],
+    "RDS_PASSWORD": settings.DATABASES["default"]["PASSWORD"],
+    "RDS_USERNAME": settings.DATABASES["default"]["USER"],
     "RDS_PORT": settings.DATABASES["default"]["PORT"],
     "SECRET_KEY": settings.SECRET_KEY,
     "SENTRY_URL": os.environ.get("SENTRY_URL"),
@@ -94,6 +98,10 @@ task_definition = """
                 {{
                   "name": "AWS_SECRET_ACCESS_KEY",
                   "value": "{AWS_SECRET_ACCESS_KEY}"
+                }},
+                {{
+                  "name": "AWS_STORAGE_BUCKET_NAME",
+                  "value": "{AWS_STORAGE_BUCKET_NAME}"
                 }},
                 {{
                   "name": "CHALLENGE_PK",
@@ -329,7 +337,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
     if (
         challenge.workers is None
     ):  # Verify if the challenge is new (i.e, service not yet created.).
-        if challenge.task_def_arn == "":
+        if challenge.task_def_arn == "" or challenge.task_def_arn is None:
             response = register_task_def_by_challenge_pk(
                 client, queue_name, challenge
             )
