@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @app.task
 def download_file_and_publish_submission_message(
-    file_url,
+    request_data,
     user_pk,
     request_method,
     challenge_id,
@@ -48,7 +48,7 @@ def download_file_and_publish_submission_message(
     request.method = request_method
     request.user = user
     try:
-        downloaded_file = get_file_from_url(file_url)
+        downloaded_file = get_file_from_url(request_data["file_url"])
         file_path = os.path.join(downloaded_file["temp_dir_path"], downloaded_file["name"])
 
         with open(file_path, "r") as f:
@@ -57,7 +57,14 @@ def download_file_and_publish_submission_message(
                 f.read().encode(),
                 content_type="multipart/form-data"
             )
-        data = {"input_file": input_file, "status": Submission.SUBMITTED}
+        data = {
+            "input_file": input_file,
+            "method_name": request_data["method_name"],
+            "method_description": request_data["method_description"],
+            "project_url": request_data["project_url"],
+            "publication_url": request_data["publication_url"],
+            "status": Submission.SUBMITTED
+        }
         serializer = SubmissionSerializer(
             data=data,
             context={

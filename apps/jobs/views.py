@@ -250,7 +250,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data = {'error': 'The file URL does not exists!'}
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             download_file_and_publish_submission_message.delay(
-                request.data['file_url'],
+                request.data,
                 request.user.id,
                 request.method,
                 challenge_id,
