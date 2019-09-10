@@ -1,11 +1,6 @@
 version: "3"
 services:
 
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"
-
   django:
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-production-backend:${COMMIT_ID}
     env_file:
@@ -16,9 +11,9 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - redis
+      - sqs
     links:
-      - redis
+      - sqs
 
   celery:
     hostname: celery
