@@ -1,6 +1,9 @@
 import logging
 import os
+import requests
 import shutil
+import tempfile
+import codecs
 
 from challenges.models import (
     Challenge,
@@ -51,10 +54,10 @@ def download_file_and_publish_submission_message(
         downloaded_file = get_file_from_url(request_data["file_url"])
         file_path = os.path.join(downloaded_file["temp_dir_path"], downloaded_file["name"])
 
-        with open(file_path, "r") as f:
+        with open(file_path, 'rb') as f:
             input_file = SimpleUploadedFile(
                 downloaded_file["name"],
-                f.read().encode(),
+                f.read(),
                 content_type="multipart/form-data"
             )
         data = {

@@ -2,6 +2,7 @@ import os
 import tempfile
 import urllib.request
 import datetime
+import requests
 
 from base.utils import get_model_object
 from challenges.utils import get_challenge_model, get_challenge_phase_model
@@ -158,8 +159,12 @@ def get_file_from_url(url):
     file_name = url.split("/")[-1]
     file_path = os.path.join(BASE_TEMP_DIR, file_name)
     file_obj = {}
-    filename, headers = urllib.request.urlretrieve(url, file_path)
-    file_obj['name'] = filename
-    file_obj['headers'] = headers
+    headers = {'user-agent': 'Wget/1.16 (linux-gnu)'}
+    r = requests.get(url, stream=True, headers=headers)
+    with open(file_path, "wb") as f:
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+    file_obj['name'] = file_name
     file_obj['temp_dir_path'] = BASE_TEMP_DIR
     return file_obj
