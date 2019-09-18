@@ -377,10 +377,12 @@
             }, function() {});
         };
 
-        vm.makeSubmission = function(makeSubmissionForm) {
+        vm.makeSubmission = function() {
+            var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
             var validExtensions = ["json", "zip", "csv"];
+            var isUrlValid = urlRegex.test(vm.fileUrl);
             var extension = vm.fileUrl.split(".").pop();
-            if (makeSubmissionForm && validExtensions.includes(extension)) {
+            if (isUrlValid && validExtensions.includes(extension)) {
                 if (vm.isParticipated) {
                     var fileVal = angular.element(".file-path").val();
                     if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {

@@ -139,7 +139,7 @@
                 <div class="row" ng-if="!challenge.page.is_docker_based">
                     <div class="col s12 m7">
                         <div class="ev-card-body exist-team-card">
-                            <form ng-submit="challenge.makeSubmission(makeSubmissionForm.$valid)" name="makeSubmissionForm">
+                            <form ng-submit="challenge.makeSubmission()">
                                 <ul>
                                     <b>Select phase:</b>
                                     <li ng-repeat="item in challenge.phases.results">
@@ -209,7 +209,6 @@
                                     <div ng-show="challenge.isSubmissionUsingUrl" class="row">
                                         <div class="input-field align-left col s10">
                                             <input type="text" id="fileUrl" name="fileUrl"
-                                                ng-pattern="/^(http[s]?:\/\/){0,1}(www\.){0,1}[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,5}[\.]{0,1}/"
                                                 ng-model="challenge.fileUrl">
                                             <span class="form-icon"><i class="fa fa-text"></i></span>
                                             <label for="fileUrl">Submission file URL</label>
