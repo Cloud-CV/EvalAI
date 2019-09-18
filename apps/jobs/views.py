@@ -253,7 +253,6 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 request.data,
                 request.user.id,
                 request.method,
-                challenge_id,
                 challenge_phase_id
             )
             response_data = {

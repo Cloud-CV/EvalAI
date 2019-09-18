@@ -27,19 +27,17 @@ def download_file_and_publish_submission_message(
     request_data,
     user_pk,
     request_method,
-    challenge_id,
     challenge_phase_id
 ):
     """
     Download submission file from url and send it for the evaluation
     """
     user = User.objects.get(pk=user_pk)
-    challenge = Challenge.objects.get(pk=challenge_id)
     challenge_phase = ChallengePhase.objects.get(
-        pk=challenge_phase_id, challenge=challenge
+        pk=challenge_phase_id
     )
     participant_team_id = get_participant_team_id_of_user_for_a_challenge(
-        user, challenge_id
+        user, challenge_phase.challenge.pk
     )
     participant_team = ParticipantTeam.objects.get(
         pk=participant_team_id
