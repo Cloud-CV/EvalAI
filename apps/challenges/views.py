@@ -38,10 +38,11 @@ from allauth.account.models import EmailAddress
 from accounts.permissions import HasVerifiedEmail
 from accounts.serializers import UserDetailsSerializer
 from base.utils import (
+    get_queue_name,
+    get_url_from_hostname,
     paginated_queryset,
     send_email,
-    get_url_from_hostname,
-    get_queue_name,
+    send_slack_notification
 )
 from challenges.utils import (
     get_challenge_model,
@@ -1123,6 +1124,25 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
             zip_config.challenge = challenge
             zip_config.save()
+
+            if not settings.DEBUG:
+                message = {
+                    "text": "A *new challenge* has been uploaded to EvalAI.",
+                    "fields": [
+                        {
+                            "title": "Email",
+                            "value": request.user.email,
+                            "short": False
+                        },
+                        {
+                            "title": "Challenge title",
+                            "value": challenge.title,
+                            "short": False
+                        }
+                    ]
+                }
+                send_slack_notification(message=message)
+
             response_data = {
                 "success": "Challenge {} has been created successfully and"
                 " sent for review to EvalAI Admin.".format(challenge.title)
@@ -1273,6 +1293,7 @@ def download_all_submissions(
                         "Team Name",
                         "Team Members",
                         "Team Members Email Id",
+                        "Team Members Affiliaton",
                         "Challenge Phase",
                         "Status",
                         "Created By",
@@ -1300,6 +1321,12 @@ def download_all_submissions(
                             ",".join(
                                 email["email"]
                                 for email in submission["participant_team_members"]
+                            ),
+                            ",".join(
+                                affiliation
+                                for affiliation in submission[
+                                    "participant_team_members_affiliations"
+                                ]
                             ),
                             submission["challenge_phase"],
                             submission["status"],
@@ -1382,6 +1409,7 @@ def download_all_submissions(
                     'participant_team': 'Team Name',
                     'participant_team_members': 'Team Members',
                     'participant_team_members_email': 'Team Members Email Id',
+                    'participant_team_members_affiliation': 'Team Members Affiliation',
                     'challenge_phase': 'Challenge Phase',
                     'status': 'Status',
                     'created_by': 'Created By',
@@ -1421,6 +1449,13 @@ def download_all_submissions(
                                 ",".join(
                                     email['email']
                                     for email in submission['participant_team_members']
+                                )
+                            )
+                        elif field == 'participant_team_members_affiliation':
+                            row.append(
+                                ",".join(
+                                    affiliation
+                                    for affiliation in submission['participant_team_members_affiliations']
                                 )
                             )
                         elif field == 'created_at':
@@ -1553,7 +1588,7 @@ def create_challenge_phase_split(request):
 
 @api_view(["GET", "PATCH"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     """
@@ -1571,7 +1606,7 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
             serializer.save()
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.erros, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "GET":
         serializer = ZipChallengePhaseSplitSerializer(challenge_phase_split)

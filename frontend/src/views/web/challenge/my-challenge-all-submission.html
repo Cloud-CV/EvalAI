@@ -66,9 +66,9 @@
                 <div class=" ev-card-body exist-team-card">
                     <div class="row">
                         <div class="col s12 all-submission-table-scroll">
-                            <div ng-if="(challenge.showPagination == false) && (challenge.isResult == true)" class="result-wrn">No results found.</div>
+                            <div ng-if="!challenge.showPagination && challenge.isResult" class="result-wrn">No results found.</div>
                             <div ng-if="!challenge.isResult" class="result-wrn">No phase selected.</div>
-                            <table ng-if="challenge.isResult" class="highlight all-submission-table responsive-table">
+                            <table ng-if="challenge.showPagination && challenge.isResult" class="highlight all-submission-table responsive-table">
                                 <thead>
                                     <tr>
                                         <th class="align-center" data-field="team">Team</th>
