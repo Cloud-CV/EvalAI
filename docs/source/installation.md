@@ -28,7 +28,7 @@ Once you have installed [docker] and [docker-compose], please follow these steps
 | Host        | host        | `password` | Create and manage challenges                                                           |
 | Participant | participant | `password` | Participate in different challenges and make submissions                               |
 
-If you are facing any issue during installation, please see our [common errors during installation page](</faq(developers).html#common-errors-during-installation>).
+If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
 
 [evalai-cli]: http://evalai-cli.cloudcv.org
 [evalai]: http://evalai.cloudcv.org

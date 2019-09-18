@@ -7,25 +7,7 @@ Alternatively, if you come across a new bug on the site, please file a new issue
 
 #### Q. What are the technologies that EvalAI uses?
 
-##### Django
-
-Django is the heart of the application, which powers our backend. We use Django version 1.11.18.
-
-##### Django Rest Framework
-
-We use Django Rest Framework for writing and providing REST APIs. It's permission and serializers have helped write a maintainable codebase.
-
-##### AWS Simple Queue Service (SQS)
-
-We currently use AWS SQS for queueing submission messages which are then later on processed by a Python worker.
-
-##### PostgreSQL
-
-PostgresSQL is used as our primary datastore. All our tables currently reside in a single database named evalai.
-
-##### Angular JS - ^1.6.1
-
-Angular JS is a well-known framework that powers our frontend.
+Please refer to [Technoligies Used](https://evalai.readthedocs.io/en/latest/architecture.html)
 
 #### Q. Where could I learn Github Commands?
 
