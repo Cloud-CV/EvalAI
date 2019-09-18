@@ -2,10 +2,7 @@ import logging
 import os
 import shutil
 
-from challenges.models import (
-    Challenge,
-    ChallengePhase
-)
+from challenges.models import ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpRequest
