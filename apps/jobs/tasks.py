@@ -1,9 +1,6 @@
 import logging
 import os
-import requests
 import shutil
-import tempfile
-import codecs
 
 from challenges.models import (
     Challenge,

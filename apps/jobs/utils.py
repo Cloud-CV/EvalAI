@@ -160,9 +160,9 @@ def get_file_from_url(url):
     file_path = os.path.join(BASE_TEMP_DIR, file_name)
     file_obj = {}
     headers = {'user-agent': 'Wget/1.16 (linux-gnu)'}
-    r = requests.get(url, stream=True, headers=headers)
+    response = requests.get(url, stream=True, headers=headers)
     with open(file_path, "wb") as f:
-        for chunk in r.iter_content(chunk_size=1024):
+        for chunk in response.iter_content(chunk_size=1024):
             if chunk:
                 f.write(chunk)
     file_obj['name'] = file_name
