@@ -60,7 +60,12 @@ from .serializers import (
     CreateLeaderboardDataSerializer,
     RemainingSubmissionDataSerializer,
 )
-from .utils import get_submission_model, get_remaining_submission_for_a_phase
+from .tasks import download_file_and_publish_submission_message
+from .utils import (
+    get_submission_model,
+    get_remaining_submission_for_a_phase,
+    is_url_valid
+)
 
 logger = logging.getLogger(__name__)
 
@@ -240,6 +245,20 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
+        if not request.FILES:
+            if not is_url_valid(request.data['file_url']):
+                response_data = {'error': 'The file URL does not exists!'}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            download_file_and_publish_submission_message.delay(
+                request.data,
+                request.user.id,
+                request.method,
+                challenge_phase_id
+            )
+            response_data = {
+                'message': 'Please wait while your submission being evaluated!'
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
         serializer = SubmissionSerializer(
             data=request.data,
             context={

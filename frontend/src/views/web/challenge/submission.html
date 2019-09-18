@@ -170,7 +170,31 @@
                                         </div>
                                         <div class="clearfix"></div>
                                     </li>
-                                    <div class="row">
+
+                                    <b>Submission options:</b>
+                                    <li>
+                                        <input
+                                            type="radio" name="submissionOptions" class="with-gap selectPhase"
+                                            id="fileUrl" value="fileUrl"
+                                            ng-click="challenge.isSubmissionUsingUrl = true">
+                                        <label for="fileUrl"></label>
+                                        <div class="show-member-title pointer">
+                                            <strong class="text-med-black">Enter file URL (if file is > 400MB) </strong>
+                                        </div>
+                                        <div class="clearfix"></div>
+
+                                        <input
+                                            type="radio" name="submissionOptions" class="with-gap selectPhase"
+                                            id="fileUpload" value="challenge.showFileUploadOption"
+                                            ng-click="challenge.isSubmissionUsingUrl = false">
+                                        <label for="fileUpload"></label>
+                                        <div class="show-member-title pointer">
+                                            <strong class="text-med-black">Upload file </strong>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                    </li>
+
+                                    <div ng-show="challenge.isSubmissionUsingUrl == false" class="row">
                                         <div class="file-field input-field col s10">
                                             <div class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14">
                                                 <span>Upload file</span>
@@ -182,38 +206,48 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row">
+                                    <div ng-show="challenge.isSubmissionUsingUrl" class="row">
                                         <div class="input-field align-left col s10">
-                                            <input type="text" id="methodName" name="methodName"
-                                                ng-model="challenge.methodName">
+                                            <input type="text" id="fileUrl" name="fileUrl"
+                                                ng-model="challenge.fileUrl">
                                             <span class="form-icon"><i class="fa fa-text"></i></span>
-                                            <label for="methodName">Method name (Optional)</label>
+                                            <label for="fileUrl">Submission file URL</label>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="input-field align-left col s10">
-                                            <textarea id="methodDesc" class="materialize-textarea" name="methodDesc"
-                                                ng-model="challenge.methodDesc"></textarea>
-                                            <span class="form-icon"><i class="fa fa-text"></i></span>
-                                            <label for="methodDesc">Method description (Optional)</label>
+                                    <span ng-show="challenge.isSubmissionUsingUrl == true || challenge.isSubmissionUsingUrl == false">
+                                        <div class="row">
+                                            <div class="input-field align-left col s10">
+                                                <input type="text" id="methodName" name="methodName"
+                                                    ng-model="challenge.methodName">
+                                                <span class="form-icon"><i class="fa fa-text"></i></span>
+                                                <label for="methodName">Method name (Optional)</label>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="input-field align-left col s10">
-                                            <input type="text" id="projectUrl" name="projectUrl"
-                                                ng-model="challenge.projectUrl">
-                                            <span class="form-icon"><i class="fa fa-text"></i></span>
-                                            <label for="projectUrl">Project URL (Optional)</label>
+                                        <div class="row">
+                                            <div class="input-field align-left col s10">
+                                                <textarea id="methodDesc" class="materialize-textarea" name="methodDesc"
+                                                    ng-model="challenge.methodDesc"></textarea>
+                                                <span class="form-icon"><i class="fa fa-text"></i></span>
+                                                <label for="methodDesc">Method description (Optional)</label>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="input-field align-left col s10">
-                                            <input type="text" id="publicationUrl" name="publicationUrl"
-                                                ng-model="challenge.publicationUrl">
-                                            <span class="form-icon"><i class="fa fa-text"></i></span>
-                                            <label for="publicationUrl">Publication URL (Optional)</label>
+                                        <div class="row">
+                                            <div class="input-field align-left col s10">
+                                                <input type="text" id="projectUrl" name="projectUrl"
+                                                    ng-model="challenge.projectUrl">
+                                                <span class="form-icon"><i class="fa fa-text"></i></span>
+                                                <label for="projectUrl">Project URL (Optional)</label>
+                                            </div>
                                         </div>
-                                    </div>
+                                        <div class="row">
+                                            <div class="input-field align-left col s10">
+                                                <input type="text" id="publicationUrl" name="publicationUrl"
+                                                    ng-model="challenge.publicationUrl">
+                                                <span class="form-icon"><i class="fa fa-text"></i></span>
+                                                <label for="publicationUrl">Publication URL (Optional)</label>
+                                            </div>
+                                        </div>
+                                    </span>
                                     <div class="text-highlight red-text"><strong>
                                             {{challenge.subErrors.msg}}</strong></div>
                                     <section class="pagination">
@@ -221,7 +255,7 @@
                                             <div class="col s12 m12">
                                                 <div class="align-left ">
                                                     <button class="waves-effect waves-dark btn ev-btn-dark w-300 fs-14"
-                                                        ng-disabled="challenge.disableSubmit || !challenge.input_file"
+                                                        ng-disabled="challenge.disableSubmit || (!challenge.input_file && !challenge.fileUrl)"
                                                         type="submit" value="Submit">Submit</button>
                                                     <br>
                                                     <br>

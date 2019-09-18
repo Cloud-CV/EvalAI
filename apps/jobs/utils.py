@@ -1,14 +1,16 @@
+import os
+import tempfile
+import urllib.request
 import datetime
-from rest_framework import status
-from django.utils import timezone
+import requests
 
+from base.utils import get_model_object
 from challenges.utils import get_challenge_model, get_challenge_phase_model
-
+from django.utils import timezone
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
-
+from rest_framework import status
 from .constants import submission_status_to_exclude
 from .models import Submission
-from base.utils import get_model_object
 
 get_submission_model = get_model_object(Submission)
 
@@ -133,3 +135,36 @@ def get_remaining_submission_for_a_phase(
             "remaining_submissions_count": remaining_submission_count,
         }
         return response_data, status.HTTP_200_OK
+
+
+def is_url_valid(url):
+    """
+    Checks that a given URL is reachable.
+    :param url: A URL
+    :return type: bool
+    """
+    request = urllib.request.Request(url)
+    request.get_method = lambda: 'HEAD'
+    try:
+        urllib.request.urlopen(request)
+        return True
+    except urllib.request.HTTPError:
+        return False
+
+
+def get_file_from_url(url):
+    """ Get file object from a url """
+
+    BASE_TEMP_DIR = tempfile.mkdtemp()
+    file_name = url.split("/")[-1]
+    file_path = os.path.join(BASE_TEMP_DIR, file_name)
+    file_obj = {}
+    headers = {'user-agent': 'Wget/1.16 (linux-gnu)'}
+    response = requests.get(url, stream=True, headers=headers)
+    with open(file_path, "wb") as f:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+    file_obj['name'] = file_name
+    file_obj['temp_dir_path'] = BASE_TEMP_DIR
+    return file_obj

@@ -27,6 +27,18 @@ services:
     volumes:
       - .:/code
 
+  celery:
+    hostname: celery
+    env_file:
+      - docker/dev/docker.env
+    build:
+      context: ./
+      dockerfile: docker/dev/celery/Dockerfile
+    depends_on:
+      - django
+    volumes:
+      - .:/code
+
   worker:
     env_file:
       - docker/dev/docker.env

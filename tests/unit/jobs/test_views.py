@@ -421,51 +421,6 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_challenge_submission_when_status_and_file_is_not_submitted(self):
-        self.url = reverse_lazy(
-            "jobs:challenge_submission",
-            kwargs={
-                "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
-            },
-        )
-
-        self.challenge.participant_teams.add(self.participant_team)
-        self.challenge.save()
-
-        expected = {
-            "status": ["This field is required."],
-            "input_file": ["No file was submitted."],
-        }
-
-        response = self.client.post(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-
-    def test_challenge_submission_when_form_encoding_is_wrong(self):
-        self.url = reverse_lazy(
-            "jobs:challenge_submission",
-            kwargs={
-                "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
-            },
-        )
-
-        self.challenge.participant_teams.add(self.participant_team)
-        self.challenge.save()
-
-        expected = {
-            "input_file": [
-                "The submitted data was not a file. Check the encoding type on the form."
-            ]
-        }
-
-        response = self.client.post(
-            self.url, {"status": "submitting", "input_file": self.input_file}
-        )
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-
     def test_challenge_submission_when_status_is_not_correct(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",

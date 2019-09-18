@@ -14,6 +14,7 @@
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
+        vm.fileUrl = "";
         vm.methodName = "";
         vm.methodDesc = "";
         vm.projectUrl = "";
@@ -52,6 +53,7 @@
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
         vm.team = {};
+        vm.isSubmissionUsingUrl = null;
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -377,12 +379,9 @@
 
         vm.makeSubmission = function() {
             if (vm.isParticipated) {
-
-
                 var fileVal = angular.element(".file-path").val();
-
-                if (fileVal === null || fileVal === "") {
-                    vm.subErrors.msg = "Please upload file!";
+                if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
+                    vm.subErrors.msg = "Please upload file or enter submission URL!";
                 } else {
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
@@ -396,8 +395,22 @@
                     parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
                     var formData = new FormData();
+                    if (vm.isSubmissionUsingUrl) {
+                        var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+                        var validExtensions = ["json", "zip", "csv"];
+                        var isUrlValid = urlRegex.test(vm.fileUrl);
+                        var extension = vm.fileUrl.split(".").pop();
+                        if (isUrlValid && validExtensions.includes(extension)) {
+                            formData.append("file_url", vm.fileUrl);
+                        } else {
+                            vm.stopLoader();
+                            vm.subErrors.msg = "Please enter an valid URL!";
+                            return false;
+                        }
+                    } else {
+                        formData.append("input_file", vm.input_file);
+                    }
                     formData.append("status", "submitting");
-                    formData.append("input_file", vm.input_file);
                     formData.append("method_name", vm.methodName);
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
@@ -422,6 +435,7 @@
 
                             // Reset the value of fields related to a submission
                             vm.phaseId = null;
+                            vm.fileUrl = "";
                             vm.methodName = "";
                             vm.methodDesc = "";
                             vm.projectUrl = "";
@@ -436,6 +450,7 @@
                             var error = response.data;
 
                             vm.phaseId = null;
+                            vm.fileUrl = null;
                             vm.methodName = null;
                             vm.methodDesc = null;
                             vm.projectUrl = null;

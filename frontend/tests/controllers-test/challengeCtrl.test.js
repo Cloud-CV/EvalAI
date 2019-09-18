@@ -753,6 +753,7 @@ describe('Unit tests for challenge controller', function () {
             success = false;
             status = 404;
             vm.isParticipated = true;
+            vm.isSubmissionUsingUrl = false;
             vm.makeSubmission();
             vm.fileVal = 'submission.zip';
             expect(vm.phaseId).toEqual(null);
@@ -768,6 +769,7 @@ describe('Unit tests for challenge controller', function () {
             success = false;
             status = 403;
             vm.isParticipated = true;
+            vm.isSubmissionUsingUrl = false;
             vm.makeSubmission('submission.zip');
             expect(vm.phaseId).toEqual(null);
             expect(vm.methodName).toEqual(null);
