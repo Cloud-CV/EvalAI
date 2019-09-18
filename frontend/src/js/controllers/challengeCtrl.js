@@ -377,91 +377,94 @@
             }, function() {});
         };
 
-        vm.makeSubmission = function() {
-            if (vm.isParticipated) {
-
-
-                var fileVal = angular.element(".file-path").val();
-
-                if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
-                    vm.subErrors.msg = "Please upload file or enter submission URL!";
-                } else {
-                    vm.isExistLoader = true;
-                    vm.loaderTitle = '';
-                    vm.loaderContainer = angular.element('.exist-team-card');
-
-
-                    vm.startLoader("Making Submission");
-                    if (vm.input_file) {
-                        // vm.upload(vm.input_file);
-                    }
-                    parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
-                    parameters.method = 'POST';
-                    var formData = new FormData();
-                    if (vm.isSubmissionUsingUrl) {
-                        formData.append("file_url", vm.fileUrl);
+        vm.makeSubmission = function(makeSubmissionForm) {
+            var validExtensions = ["json", "zip", "csv"];
+            var extension = vm.fileUrl.split(".").pop();
+            if (makeSubmissionForm && validExtensions.includes(extension)) {
+                if (vm.isParticipated) {
+                    var fileVal = angular.element(".file-path").val();
+                    if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
+                        vm.subErrors.msg = "Please upload file or enter submission URL!";
                     } else {
-                        formData.append("input_file", vm.input_file);
-                    }
-                    formData.append("status", "submitting");
-                    formData.append("method_name", vm.methodName);
-                    formData.append("method_description", vm.methodDesc);
-                    formData.append("project_url", vm.projectUrl);
-                    formData.append("publication_url", vm.publicationUrl);
-
-                    parameters.data = formData;
-
-                    parameters.token = userKey;
-                    parameters.callback = {
-                        onSuccess: function() {
-                            // vm.input_file.name = '';
-
-                            angular.forEach(
-                                angular.element("input[type='file']"),
-                                function(inputElem) {
-                                    angular.element(inputElem).val(null);
-                                }
-                            );
-
-                            angular.element(".file-path").val(null);
+                        vm.isExistLoader = true;
+                        vm.loaderTitle = '';
+                        vm.loaderContainer = angular.element('.exist-team-card');
 
 
-                            // Reset the value of fields related to a submission
-                            vm.phaseId = null;
-                            vm.fileUrl = "";
-                            vm.methodName = "";
-                            vm.methodDesc = "";
-                            vm.projectUrl = "";
-                            vm.publicationUrl = "";
-                            $rootScope.notify("success", "Your submission has been recorded succesfully!");
-                            vm.disableSubmit = true;
-                            vm.showSubmissionNumbers = false;
-                            vm.stopLoader();
-                        },
-                        onError: function(response) {
-                            var status = response.status;
-                            var error = response.data;
-
-                            vm.phaseId = null;
-                            vm.fileUrl = null;
-                            vm.methodName = null;
-                            vm.methodDesc = null;
-                            vm.projectUrl = null;
-                            vm.publicationUrl = null;
-                            if (status == 404) {
-                                vm.subErrors.msg = "Please select phase!";
-                            } else {
-                                if (error.error){
-                                    vm.subErrors.msg = error.error;
-                                } else {
-                                    vm.subErrors.msg = error.input_file[0];
-                                }
-                            }
-                            vm.stopLoader();
+                        vm.startLoader("Making Submission");
+                        if (vm.input_file) {
+                            // vm.upload(vm.input_file);
                         }
-                    };
-                    utilities.sendRequest(parameters, 'header', 'upload');
+                        parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
+                        parameters.method = 'POST';
+                        var formData = new FormData();
+                        if (vm.isSubmissionUsingUrl) {
+                            formData.append("file_url", vm.fileUrl);
+                        } else {
+                            formData.append("input_file", vm.input_file);
+                        }
+                        formData.append("status", "submitting");
+                        formData.append("method_name", vm.methodName);
+                        formData.append("method_description", vm.methodDesc);
+                        formData.append("project_url", vm.projectUrl);
+                        formData.append("publication_url", vm.publicationUrl);
+
+                        parameters.data = formData;
+
+                        parameters.token = userKey;
+                        parameters.callback = {
+                            onSuccess: function() {
+                                // vm.input_file.name = '';
+
+                                angular.forEach(
+                                    angular.element("input[type='file']"),
+                                    function(inputElem) {
+                                        angular.element(inputElem).val(null);
+                                    }
+                                );
+
+                                angular.element(".file-path").val(null);
+
+
+                                // Reset the value of fields related to a submission
+                                vm.phaseId = null;
+                                vm.fileUrl = "";
+                                vm.methodName = "";
+                                vm.methodDesc = "";
+                                vm.projectUrl = "";
+                                vm.publicationUrl = "";
+                                $rootScope.notify("success", "Your submission has been recorded succesfully!");
+                                vm.disableSubmit = true;
+                                vm.showSubmissionNumbers = false;
+                                vm.stopLoader();
+                            },
+                            onError: function(response) {
+                                var status = response.status;
+                                var error = response.data;
+
+                                vm.phaseId = null;
+                                vm.fileUrl = null;
+                                vm.methodName = null;
+                                vm.methodDesc = null;
+                                vm.projectUrl = null;
+                                vm.publicationUrl = null;
+                                if (status == 404) {
+                                    vm.subErrors.msg = "Please select phase!";
+                                } else {
+                                    if (error.error){
+                                        vm.subErrors.msg = error.error;
+                                    } else {
+                                        vm.subErrors.msg = error.input_file[0];
+                                    }
+                                }
+                                vm.stopLoader();
+                            }
+                        };
+                        utilities.sendRequest(parameters, 'header', 'upload');
+                    }
                 }
+            } else {
+                vm.subErrors.msg = "Please enter an valid URL!";
             }
         };
 
