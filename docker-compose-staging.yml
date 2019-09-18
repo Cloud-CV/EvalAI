@@ -14,7 +14,7 @@ services:
   celery:
     hostname: celery
     env_file:
-      - docker/prod/docker.env
+      - docker/prod/docker_staging.env
     build:
       context: ./
       dockerfile: docker/prod/celery/Dockerfile
