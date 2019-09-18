@@ -396,7 +396,7 @@
                     parameters.method = 'POST';
                     var formData = new FormData();
                     if (vm.isSubmissionUsingUrl) {
-                        var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+                        var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
                         var validExtensions = ["json", "zip", "csv"];
                         var isUrlValid = urlRegex.test(vm.fileUrl);
                         var extension = vm.fileUrl.split(".").pop();
@@ -404,7 +404,7 @@
                             formData.append("file_url", vm.fileUrl);
                         } else {
                             vm.stopLoader();
-                            vm.subErrors.msg = "Please enter an valid URL!";
+                            vm.subErrors.msg = "Please enter a valid URL which ends in json, zip or csv file extension!";
                             return false;
                         }
                     } else {
