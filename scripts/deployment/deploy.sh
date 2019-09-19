@@ -58,6 +58,11 @@ case $opt in
             docker-compose -f docker-compose-${env}.yml up -d nodejs
             echo "Completed deploy operation."
             ;;
+        deploy-celery)
+            echo "Deploying celery docker container..."
+            docker-compose -f docker-compose-${env}.yml up -d celery
+            echo "Completed deploy operation."
+            ;;
         deploy-worker)
             token=${3}
             challenge=${4}
@@ -138,6 +143,8 @@ case $opt in
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-django production"
         echo "    deploy-nodejs : Deploy nodejs containers in the respective environment."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-nodejs production"
+        echo "    deploy-celery : Deploy celery containers in the respective environment."
+        echo "        Eg. ./scripts/deployment/deploy.sh deploy-celery production"
         echo "    deploy-worker : Deploy worker container for a challenge using challenge pk."
         echo "        Eg. ./scripts/deployment/deploy.sh deploy-worker production <superuser_auth_token> <challenge_pk>"
         echo "    deploy-remote-worker : Deploy remote worker container for a challenge using host auth token and challenge queue name."
