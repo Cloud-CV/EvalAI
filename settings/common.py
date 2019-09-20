@@ -70,7 +70,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_docs",
     "rest_framework_expiring_authtoken",
     "drf_yasg",
-    "django_filters"
+    "django_filters",
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
@@ -188,11 +188,11 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
 # Broker url for celery
-CELERY_BROKER_URL = 'sqs://%s:%s@' % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+CELERY_BROKER_URL = "sqs://%s:%s@" % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
 
 # CORS Settings
 CORS_ORIGIN_ALLOW_ALL = True
@@ -268,8 +268,8 @@ CACHES = {
 
 # The maximum size in bytes for request body
 # https://docs.djangoproject.com/en/1.10/ref/settings/#data-upload-max-memory-size
-FILE_UPLOAD_MAX_MEMORY_SIZE = 2097152000  # 2 GB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 2097152000  # 2 GB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 4294967296  # 4 GB
 
 # To make usermame field read-only, customized serializer is defined.
 REST_AUTH_SERIALIZERS = {
@@ -281,7 +281,9 @@ ADMIN_EMAIL = "admin@cloudcv.org"
 CLOUDCV_TEAM_EMAIL = "EvalAI Team <team@cloudcv.org>"
 
 # Slack web hook url
-SLACK_WEB_HOOK_URL = os.environ.get("SLACK_WEB_HOOK_URL", "http://testslackwebhook.com/webhook")
+SLACK_WEB_HOOK_URL = os.environ.get(
+    "SLACK_WEB_HOOK_URL", "http://testslackwebhook.com/webhook"
+)
 
 SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "evalai.urls.swagger_api_info",
