@@ -14,7 +14,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
-import mock
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -2694,49 +2693,10 @@ class CreateChallengeUsingZipFile(APITestCase):
             "challenges:create_challenge_using_zip_file",
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
         )
-        expected = {"zip_configuration": ["No file was submitted."]}
+        expected = {"zip_configuration": "No file was submitted."}
         response = self.client.post(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    @responses.activate
-    def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded_successfully(
-        self
-    ):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
-        )
-
-        expected = {
-            "zip_configuration": [
-                "The submitted data was not a file. Check the encoding type on the form."
-            ]
-        }
-        response = self.client.post(
-            self.url, {"zip_configuration": self.input_zip_file}
-        )
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    @responses.activate
-    def test_create_challenge_using_zip_file_when_server_error_occurs(self):
-        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
-        self.url = reverse_lazy(
-            "challenges:create_challenge_using_zip_file",
-            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
-        )
-        expected = {
-            "error": "A server error occured while processing zip file. Please try again!"
-        }
-        response = self.client.post(
-            self.url,
-            {"zip_configuration": self.input_zip_file},
-            format="multipart",
-        )
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(
@@ -2792,17 +2752,12 @@ class CreateChallengeUsingZipFile(APITestCase):
         self.assertEqual(Leaderboard.objects.count(), 1)
         self.assertEqual(ChallengePhaseSplit.objects.count(), 1)
 
-        with mock.patch("challenges.views.requests.get") as m:
-            resp = mock.Mock()
-            resp.content = self.test_zip_file.read()
-            resp.status_code = 200
-            m.return_value = resp
-            response = self.client.post(
-                self.url,
-                {"zip_configuration": self.input_zip_file},
-                format="multipart",
-            )
-            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(
+            self.url,
+            {"zip_configuration": self.test_zip_file},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.assertEqual(Challenge.objects.count(), 2)
         self.assertEqual(DatasetSplit.objects.count(), 2)
