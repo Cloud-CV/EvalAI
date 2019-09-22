@@ -1,6 +1,7 @@
 import csv
 import logging
 import random
+import requests
 import shutil
 import string
 import tempfile
@@ -74,6 +75,7 @@ from .models import (
     Challenge,
     ChallengePhase,
     ChallengePhaseSplit,
+    ChallengeConfiguration,
     StarChallenge,
     UserInvitation,
 )
@@ -624,34 +626,49 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
     """
     challenge_host_team = get_challenge_host_team_model(challenge_host_team_pk)
 
-    uploaded_zip_file = request.data.get("zip_configuration")
-    if uploaded_zip_file is None:
-        message = "No file was submitted."
-        response_data = {"zip_configuration": message}
-        logger.exception(message)
+    serializer = ChallengeConfigSerializer(
+        data=request.data, context={"request": request}
+    )
+    if serializer.is_valid():
+        uploaded_zip_file = serializer.save()
+        uploaded_zip_file_path = serializer.data["zip_configuration"]
+    else:
+        response_data = serializer.errors
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # All files download and extract location.
     BASE_LOCATION = tempfile.mkdtemp()
-    unique_folder_name = "".join(
-        [
-            random.choice(string.ascii_letters + string.digits)
-            for i in xrange(10)
-        ]
-    )
-    CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(
-        BASE_LOCATION, "{}.zip".format(unique_folder_name)
-    )
     try:
-        with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, "wb") as zip_file:
-            zip_file.write(uploaded_zip_file.read())
-    except IOError:
+        response = requests.get(uploaded_zip_file_path, stream=True)
+        unique_folder_name = "".join(
+            [
+                random.choice(string.ascii_letters + string.digits)
+                for i in xrange(10)
+            ]
+        )
+        CHALLENGE_ZIP_DOWNLOAD_LOCATION = join(
+            BASE_LOCATION, "{}.zip".format(unique_folder_name)
+        )
+        try:
+            if response and response.status_code == 200:
+                with open(CHALLENGE_ZIP_DOWNLOAD_LOCATION, "wb") as zip_file:
+                    zip_file.write(response.content)
+        except IOError:
+            message = (
+                "Unable to process the uploaded zip file. " "Please try again!"
+            )
+            response_data = {"error": message}
+            logger.exception(message)
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    except requests.exceptions.RequestException:
         message = (
-            "Unable to process the uploaded zip file. " "Please try again!"
+            "A server error occured while processing zip file. "
+            "Please try again!"
         )
         response_data = {"error": message}
         logger.exception(message)
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     # Extract zip file
     try:
@@ -1082,62 +1099,55 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 else:
                     response_data = serializer.errors
 
-        # saving challenge configuration file
-        serializer = ChallengeConfigSerializer(
-            data=request.data, context={"request": request}
+        zip_config = ChallengeConfiguration.objects.get(
+            pk=uploaded_zip_file.pk
         )
-        if serializer.is_valid():
-            serializer.save()
-            challenge_configuration = serializer.instance
-        else:
-            response_data = serializer.errors
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        if not challenge.is_docker_based:
-            # Add the Challenge Host as a test participant.
-            emails = challenge_host_team.get_all_challenge_host_email()
-            team_name = "Host_{}_Team".format(random.randint(1, 100000))
-            participant_host_team = ParticipantTeam(
-                team_name=team_name,
-                created_by=challenge_host_team.created_by,
-            )
-            participant_host_team.save()
-            for email in emails:
-                user = User.objects.get(email=email)
-                host = Participant(
-                    user=user,
-                    status=Participant.ACCEPTED,
-                    team=participant_host_team,
+        if zip_config:
+            if not challenge.is_docker_based:
+                # Add the Challenge Host as a test participant.
+                emails = challenge_host_team.get_all_challenge_host_email()
+                team_name = "Host_{}_Team".format(random.randint(1, 100000))
+                participant_host_team = ParticipantTeam(
+                    team_name=team_name,
+                    created_by=challenge_host_team.created_by,
                 )
-                host.save()
-            challenge.participant_teams.add(participant_host_team)
+                participant_host_team.save()
+                for email in emails:
+                    user = User.objects.get(email=email)
+                    host = Participant(
+                        user=user,
+                        status=Participant.ACCEPTED,
+                        team=participant_host_team,
+                    )
+                    host.save()
+                challenge.participant_teams.add(participant_host_team)
 
-        challenge_configuration.challenge = challenge
-        challenge_configuration.save()
+            zip_config.challenge = challenge
+            zip_config.save()
 
-        if not settings.DEBUG:
-            message = {
-                "text": "A *new challenge* has been uploaded to EvalAI.",
-                "fields": [
-                    {
-                        "title": "Email",
-                        "value": request.user.email,
-                        "short": False
-                    },
-                    {
-                        "title": "Challenge title",
-                        "value": challenge.title,
-                        "short": False
-                    }
-                ]
+            if not settings.DEBUG:
+                message = {
+                    "text": "A *new challenge* has been uploaded to EvalAI.",
+                    "fields": [
+                        {
+                            "title": "Email",
+                            "value": request.user.email,
+                            "short": False
+                        },
+                        {
+                            "title": "Challenge title",
+                            "value": challenge.title,
+                            "short": False
+                        }
+                    ]
+                }
+                send_slack_notification(message=message)
+
+            response_data = {
+                "success": "Challenge {} has been created successfully and"
+                " sent for review to EvalAI Admin.".format(challenge.title)
             }
-            send_slack_notification(message=message)
-
-        response_data = {
-            "success": "Challenge {} has been created successfully and"
-            " sent for review to EvalAI Admin.".format(challenge.title)
-        }
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response(response_data, status=status.HTTP_201_CREATED)
 
     except:  # noqa: E722
         try:
