@@ -63,107 +63,95 @@
           </div>
         </div>
       </div>
-      <div *ngIf="submissions.length > 0" class="display-flex pad-top">
-        <i class="fa fa-check-circle submitted marker"></i>
-        <span class="show-on-leaderboard">Shown on leaderboard</span>
-      </div>
     </div>
 
-    <div class="ev-card-body exist-team-card">
+    <div class="ev-card-body exist-team-card" *ngIf="!isPhaseSelected || (paginationDetails.showPagination == false && isPhaseSelected)">
       <div class="row row-lr-margin">
         <div class="col-md-12 col-lr-pad">
           <div *ngIf="!isPhaseSelected" class="result-wrn">No phase selected.</div>
           <div *ngIf="paginationDetails.showPagination == false && isPhaseSelected"
                class="result-wrn">No results found.</div>
-          <div *ngIf="paginationDetails.showPagination == true && submissions.length > 0"
-               class="table-scroll">
-            <table class="centered highlight all-submission-table">
-              <thead>
-                <tr class="content">
-                  <th data-field="team">Team Name</th>
-                  <th data-field="method-name">Method Name</th>
-                  <th data-field="method-description">Method Description</th>
-                  <th data-field="project-url">Project Url</th>
-                  <th data-field="publication-url">Publication Url </th>
-                  <th data-field="status">Status</th>
-                  <th data-field="status">Execution Time (sec.)</th>
-                  <th data-field="file">Submitted File</th>
-                  <th data-field="file">Result File</th>
-                  <th data-field="file">Stdout File</th>
-                  <th data-field="file">Stderr File</th>
-                  <th data-field="file">Submitted At</th>
-                  <th *ngIf="selectedPhase['leaderboard_public']"
-                    data-field="file">Show on Leaderboard</th>
-                  <th data-field="isBaseline" *ngIf="isChallengeHost">Baseline</th>
-                  <th>Edit</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let key of submissions" class="result-val content">
-                  <td class="display-flex">
-                    <i *ngIf="key.public" class="fa fa-check-circle submitted marker"></i>
-                    {{key.participant_team_name}}
-                  </td>
-                  <td *ngIf="key.method_name != ''">{{key.method_name}}</td>
-                  <td *ngIf="key.method_name == ''"> None </td>
-
-                  <td *ngIf="key.method_description != ''">{{key.method_description}}</td>
-                  <td *ngIf="key.method_description == ''"> None </td>
-
-                  <td *ngIf="key.project_url != ''">{{key.project_url}}</td>
-                  <td *ngIf="key.project_url == ''"> None </td>
-
-                  <td *ngIf="key.publication_url != ''">{{key.publication_url}}</td>
-                  <td *ngIf="key.publication_url == ''"> None </td>
-
-                  <td class="mb-10 capitalize" [ngClass]="key.status">{{key.status}}</td>
-                  <td>{{key.execution_time > 0 ? key.execution_time : "None"}}</td>
-                  <td><a href="{{key.input_file}}" target="_blank"
-                      class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
-                  <td *ngIf="key.submission_result_file"><a
-                      href="{{key.submission_result_file}}" target="_blank"
-                      class="blue-text"><i class="fa fa-external-link"></i> Link</a></td>
-                  <td *ngIf="!key.submission_result_file">None</td>
-
-                  <td *ngIf="key.stdout_file"><a href="{{key.stdout_file}}"
-                      target="_blank" class="blue-text">
-                      <i class="fa fa-external-link"></i> Link</a></td>
-                  <td *ngIf="!key.stdout_file">None</td>
-
-                  <td *ngIf="key.stderr_file"><a href="{{key.stderr_file}}"
-                      target="_blank" class="blue-text">
-                      <i class="fa fa-external-link"></i> Link</a></td>
-                  <td *ngIf="!key.stderr_file">None</td>
-
-                  <td>{{key.submitted_at | date:'medium'}}</td>
-
-                  <td *ngIf="selectedPhase['leaderboard_public']"><div>
-                    <input [checked]="key.is_public" *ngIf="key.status == 'finished'"
-                      type="checkbox" id="isPublic{{ key.id }}"
-                      (change)="changeSubmissionVisibility(key.id,
-                      key.is_public)" class="cbx hidden" />
-                    <label for="isPublic{{ key.id }}" class="cbx-label"></label>
-                    <div *ngIf="key.status !== 'finished'" class="center"> N/A
-                    </div></div>
-                  </td>
-                  <td *ngIf="isChallengeHost">
-                    <input [checked]="key.is_baseline" *ngIf="key.status == 'finished'"
-                      type="checkbox" id="baselineSubmission{{ key.id }}"
-                      (change)="changeBaselineStatus(key.id, key.is_baseline)"
-                      class="cbx hidden" />
-                    <label for="baselineSubmission{{ key.id }}"
-                      class="cbx-label"></label>
-                    <span *ngIf="key.status !== 'finished'" class="center"> N/A
-                    </span>
-                  </td>
-                  <td><a class="pointer" (click)="editSubmission(key)">
-                    <i class="fa fa-pencil" aria-hidden="true"></i></a></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
+    </div>
+    <div class="collapsible-table">
+      <table mat-table *ngIf="paginationDetails.showPagination == true && submissions.length > 0"
+             [dataSource]="submissions" multiTemplateDataRows
+             class="mat-elevation-z0 ev-md-container">
+        <ng-container matColumnDef="{{column}}" *ngFor="let column of columnsToDisplay; let i = index">
+          <th class="cell-outside text-dark-black fs-16" mat-header-cell *matHeaderCellDef> {{columnsHeadings[i]}} </th>
+          <td class="cell-outside fw-regular" mat-cell *matCellDef="let element" >
+            <a target="_blank" class="blue-text" [href]="element[column]" *ngIf="element[column] !== null && column !== 'status'">
+              <i class="fa fa-external-link"></i>
+              Link
+            </a>
+            <span [class.green-text]="column === 'status'" *ngIf="element[column] !== null && column === 'status'">{{element[column]}}</span>
+            <span *ngIf="element[column] === null">{{"None"}}</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
+            <div class="elements" [class.expanded-row]="element == expandedElement"
+                 [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+              <div class="elements-detail">
+                <div class="element">
+                  <span class="element-description-attribution">Team Name</span>
+                  <span class="fw-regular element-description"> {{element.participant_team_name}} </span>
+                </div>
+                <div class="element">
+                  <span class="element-description-attribution">Method Name</span>
+                  <span class="fw-regular element-description"> {{element.method_name}} </span>
+                </div>
+                <div class="element">
+                  <span class="element-description-attribution">Method Description</span>
+                  <span class="fw-regular element-description"> {{element.method_description}} </span>
+                </div>
+                <div class="element">
+                  <span class="element-description-attribution">Project Url</span>
+                  <span class="fw-regular element-description"> {{element.project_url}} </span>
+                </div>
+                <div class="element">
+                  <span class="element-description-attribution">Publication Url</span>
+                  <span class="fw-regular element-description"> {{element.publication_url}} </span>
+                </div>
+              </div>
+
+              <div class="elements-action">
+                <div class="element">
+                  <span class="element-description-attribution">Status</span>
+                  <span class="fw-regular element-description" [ngClass]="element.status"> {{element.status}} </span>
+                </div>
+                <div class="element">
+                  <span class="element-description-attribution">Execution Time</span>
+                  <span class="fw-regular element-description"> {{element.execution_time}} </span>
+                </div>
+                <div class="element">
+                  <span class="element-description-attribution">Submitted At</span>
+                  <span class="fw-regular element-description"> {{element.submitted_at | date:'medium'}} </span>
+                </div>
+                <div class="element">
+                  <mat-checkbox [checked]="element.is_public" [disabled]="element.status !== 'finished' || !selectedPhase['leaderboard_public']" (change)="changeSubmissionVisibility(element.id, element.is_public)">
+                    Show On Leaderboard
+                  </mat-checkbox>
+                </div>
+                <div class="element">
+                  <a (click)="editSubmission(element)" >
+                    <i class="fa fa-pencil"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+        <tr mat-row *matRowDef="let element; columns: columnsToDisplay;"
+            class="element-row"
+            [class.expanded-row]="expandedElement === element"
+            (click)="expandedElement = expandedElement === element ? null : element">
+        </tr>
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+      </table>
     </div>
 
     <div class="pagination" *ngIf="paginationDetails.showPagination && submissions.length > 0">

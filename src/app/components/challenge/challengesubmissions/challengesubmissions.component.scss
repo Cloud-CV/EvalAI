@@ -34,10 +34,6 @@
   margin-bottom: 20px;
 }
 
-table {
-  width: 160% !important;
-}
-
 .marker {
   margin-right: 10px;
   font-size: 20px;
@@ -61,4 +57,96 @@ table {
 
 .cbx:checked ~ .cbx-label {
   background: #4CAF50;
+}
+
+.collapsible-table{
+  overflow: auto;
+}
+
+tr.detail-row {
+  height: 0;
+  overflow: hidden;
+}
+
+.cell-outside {
+  padding: 8px;
+}
+
+tr.element-row:not(.expanded-row):hover {
+  td {
+    color: #efefef;
+  }
+  background: #252833;
+}
+
+tr.element-row:not(.expanded-row):active {
+  background: #efefef;
+}
+
+.expanded-row {
+  margin-top: 24px;
+  margin-bottom: 14px;
+}
+
+.elements {
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+
+.elements-detail {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+
+  padding-right: 80px;
+}
+
+.elements-action {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin-left: 40px;
+}
+
+.element {
+  margin-bottom: 10px;
+}
+
+.element-description {
+  margin-left: 10px;
+}
+
+.element-description-attribution {
+  opacity: 0.5;
+}
+
+@include screen-small {
+  .elements {
+    flex-direction: column;
+  }
+  .elements-action {
+    margin-left: 0;
+    margin-top: 20px;
+  }
+  .elements-detail {
+    border-right-style: none;
+    padding-right: 0;
+
+    border-bottom-style: solid;
+    border-bottom-color: lightgrey;
+    border-bottom-width: 1px;
+    padding-bottom: 20px;
+  }
+  .element {
+    display: flex;
+    flex-direction: column;
+  }
+  .element-description {
+    margin-left: 0;
+  }
 }
