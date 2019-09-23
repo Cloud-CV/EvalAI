@@ -11,6 +11,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { ForceloginComponent } from '../../../components/utility/forcelogin/forcelogin.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { MatTableModule } from '@angular/material';
 
 describe('ChallengesubmissionsComponent', () => {
   let component: ChallengesubmissionsComponent;
@@ -21,7 +22,7 @@ describe('ChallengesubmissionsComponent', () => {
       declarations: [ ChallengesubmissionsComponent ],
       providers: [ ChallengeService, GlobalService, AuthService, ApiService,
                    WindowService, EndpointsService ],
-      imports: [ HttpClientModule, RouterTestingModule ],
+      imports: [ HttpClientModule, RouterTestingModule, MatTableModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();

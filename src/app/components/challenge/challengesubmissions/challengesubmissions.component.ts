@@ -9,13 +9,21 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
 import { InputComponent } from '../../utility/input/input.component';
 
+import { animate, state, style, transition, trigger } from '@angular/animations';
 /**
  * Component Class
  */
 @Component({
   selector: 'app-challengesubmissions',
   templateUrl: './challengesubmissions.component.html',
-  styleUrls: ['./challengesubmissions.component.scss']
+  styleUrls: ['./challengesubmissions.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({height: '0px', minHeight: '0'})),
+      state('expanded', style({height: '*'})),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
 })
 export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
 
@@ -133,6 +141,11 @@ export class ChallengesubmissionsComponent implements OnInit, AfterViewInit {
    * To call the API inside modal for editing the submission
    */
   apiCall: any;
+
+  columnsToDisplay = ['status', 'stderr_file', 'stdout_file', 'submission_result_file'];
+  columnsHeadings = ['Status', 'Stderr File', 'Stdout File', 'Submission Result File'];
+
+  expandedElement: null;
 
   /**
    * Filter query as participant team name

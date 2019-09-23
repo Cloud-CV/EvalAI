@@ -24,7 +24,8 @@ import { InputComponent } from '../../components/utility/input/input.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import {FormsModule} from '@angular/forms';
+import { MatTableModule } from '@angular/material';
+import { FormsModule } from '@angular/forms';
 
 describe('ChallengeComponent', () => {
   let component: ChallengeComponent;
@@ -68,7 +69,7 @@ describe('ChallengeComponent', () => {
           },
         },
       ],
-      imports: [ HttpClientModule, RouterTestingModule, FormsModule ],
+      imports: [ HttpClientModule, RouterTestingModule, FormsModule, MatTableModule ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
