@@ -25,8 +25,8 @@ class Contact(TimeStampedModel):
     class Meta:
         app_label = "web"
         db_table = "contact"
-        
-        
+
+
 class News(TimeStampedModel):
     """Model representing latest news"""
 
