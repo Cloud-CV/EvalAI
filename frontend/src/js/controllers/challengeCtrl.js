@@ -6,14 +6,15 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment', '$location', '$anchorScroll', '$timeout'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
+        vm.fileUrl = "";
         vm.methodName = "";
         vm.methodDesc = "";
         vm.projectUrl = "";
@@ -52,6 +53,7 @@
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
         vm.team = {};
+        vm.isSubmissionUsingUrl = null;
 
         vm.filter_all_submission_by_team_name = '';
         vm.filter_my_submission_by_team_name = '';
@@ -66,6 +68,31 @@
         vm.subErrors = {};
 
         utilities.showLoader();
+
+        // scroll to the selected entry after page has been rendered
+        vm.scrollToEntryAfterLeaderboardLoads = function () {
+            // get unique rank number from the url & if exists hightlight the entry
+            $timeout(function() {
+                const elementId = $location.absUrl().split('?')[0].split('#')[1];
+                if (elementId) {
+                    $anchorScroll.yOffset = 90;
+                    $anchorScroll(elementId);
+                    $scope.isHighlight = elementId.split("leaderboardrank-")[1];
+                }
+            }, 500);
+        };
+      
+        // scroll to the specific entry of the leaderboard
+        vm.scrollToSpecificEntryLeaderboard = function (elementId) {
+            var newHash = elementId.toString();
+            if ($location.hash() !== newHash) {
+                $location.hash(elementId);
+            } else {
+                $anchorScroll();
+            }
+            $scope.isHighlight = false;
+            $anchorScroll.yOffset = 90;
+        }
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
@@ -377,12 +404,9 @@
 
         vm.makeSubmission = function() {
             if (vm.isParticipated) {
-
-
                 var fileVal = angular.element(".file-path").val();
-
-                if (fileVal === null || fileVal === "") {
-                    vm.subErrors.msg = "Please upload file!";
+                if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
+                    vm.subErrors.msg = "Please upload file or enter submission URL!";
                 } else {
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
@@ -396,8 +420,22 @@
                     parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
                     var formData = new FormData();
+                    if (vm.isSubmissionUsingUrl) {
+                        var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
+                        var validExtensions = ["json", "zip", "csv"];
+                        var isUrlValid = urlRegex.test(vm.fileUrl);
+                        var extension = vm.fileUrl.split(".").pop();
+                        if (isUrlValid && validExtensions.includes(extension)) {
+                            formData.append("file_url", vm.fileUrl);
+                        } else {
+                            vm.stopLoader();
+                            vm.subErrors.msg = "Please enter a valid URL which ends in json, zip or csv file extension!";
+                            return false;
+                        }
+                    } else {
+                        formData.append("input_file", vm.input_file);
+                    }
                     formData.append("status", "submitting");
-                    formData.append("input_file", vm.input_file);
                     formData.append("method_name", vm.methodName);
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
@@ -422,6 +460,7 @@
 
                             // Reset the value of fields related to a submission
                             vm.phaseId = null;
+                            vm.fileUrl = "";
                             vm.methodName = "";
                             vm.methodDesc = "";
                             vm.projectUrl = "";
@@ -436,6 +475,7 @@
                             var error = response.data;
 
                             vm.phaseId = null;
+                            vm.fileUrl = null;
                             vm.methodName = null;
                             vm.methodDesc = null;
                             vm.projectUrl = null;
@@ -665,8 +705,8 @@
                                 vm.leaderboard[i].timeSpan = 'hour';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'hours';
-                            }                        
-                        } 
+                            }
+                        }
                         else if (duration._data.minutes !=0) {
                             var minutes = duration.asMinutes();
                             vm.leaderboard[i].submission__submitted_at = minutes;
@@ -689,6 +729,7 @@
                     vm.phaseName = vm.phaseSplitId;
                     vm.startLeaderboard();
                     vm.stopLoader();
+                    vm.scrollToEntryAfterLeaderboardLoads();
                 },
                 onError: function(response) {
                     var error = response.data;
@@ -1299,6 +1340,9 @@
         },{
             'label': 'Team Members Email Id',
             'id': 'participant_team_members_email' 
+        },{
+            'label': 'Team Members Affiliation',
+            'id': 'participant_team_members_affiliation' 
         },{
             'label': 'Challenge Phase',
             'id': 'challenge_phase' 
