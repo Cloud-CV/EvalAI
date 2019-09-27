@@ -8,6 +8,7 @@ from django.conf import settings
 from challenges.utils import get_file_content
 from base.utils import get_queue_name
 
+
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
         self.test_file_path = os.path.join(
