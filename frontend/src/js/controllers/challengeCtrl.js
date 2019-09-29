@@ -10,7 +10,10 @@
 
     function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
-        vm.challengeId = $stateParams.challengeId;
+        var slugUrl = $stateParams.challengeSlug;
+        if (slugUrl !== undefined) {
+            vm.challengeId = slugUrl.split("-").pop();
+        }
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
