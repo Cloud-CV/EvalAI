@@ -6,7 +6,7 @@
         You haven't hosted any challenge. Please <a ui-sref="web.challenge-host-teams" class="highlight-link">click here</a> to host one!
     </div>
     <div class="row" ng-if="hostedChallenges.challengeList.length">
-        <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.challengeList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeId:challenge.id})">
+        <div class="col s12 m3" ng-repeat="challenge in hostedChallenges.challengeList"><a class="ev-card-hover" ui-sref="web.challenge-main.challenge-page({challengeSlug:challenge.slug})">
                 <div class="card ev-card-panel ev-challenge-card ev-card-hover">
                     <div class="card-image ev-card-image">
                         <img class="bg-img" ng-src="{{challenge.image}}">

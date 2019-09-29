@@ -8,7 +8,7 @@
         <div class="row">
             <div class="col s12">
                 <div ng-if="featured_challenge.isActive">
-                    <p ng-if="isAuth">Proceed to <a ui-sref="web.challenge-main.challenge-page({challengeId:featured_challenge.page.id})" class="blue-text">challenge page</a> to participate.</p>
+                    <p ng-if="isAuth">Proceed to <a ui-sref="web.challenge-main.challenge-page({challengeSlug:featured_challenge.page.slug})" class="blue-text">challenge page</a> to participate.</p>
                     <p ng-if="!isAuth">Please <a ui-sref="auth.login" class="blue-text" ui-sref-active="active-auth" ng-click="auth.resetForm()">log in</a> to participate in this challenge.</p>
                 </div>
                 <div ng-if="!featured_challenge.isActive">
