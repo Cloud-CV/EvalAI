@@ -4,7 +4,6 @@
 	overflow-x: auto;
 }
 
-
 #baseline-badge {
 	font-weight: 300;
 	min-width: 0rem;
@@ -20,4 +19,11 @@
 	margin-left: 0px;
 	float: none;
 
+}
+
+.highlightLeaderboard {
+	border-color: #fff3e0;
+	box-shadow: 0 0 0 0.2em #ffcc80 !important;
+	border: 1px solid #d1d5da;
+	border-radius: 3px;
 }

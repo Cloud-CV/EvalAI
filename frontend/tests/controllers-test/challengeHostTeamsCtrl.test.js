@@ -20,7 +20,7 @@ describe('Unit tests for challenge host team controller', function () {
         createController = function () {
             return $controller('ChallengeHostTeamsCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('ChallengeHostTeamsCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {
