@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment', '$location', '$anchorScroll', '$timeout'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
         var vm = this;
         var slugUrl = $stateParams.challengeSlug;
         if (slugUrl !== undefined) {
@@ -71,31 +71,6 @@
         vm.subErrors = {};
 
         utilities.showLoader();
-
-        // scroll to the selected entry after page has been rendered
-        vm.scrollToEntryAfterLeaderboardLoads = function () {
-            // get unique rank number from the url & if exists hightlight the entry
-            $timeout(function() {
-                const elementId = $location.absUrl().split('?')[0].split('#')[1];
-                if (elementId) {
-                    $anchorScroll.yOffset = 90;
-                    $anchorScroll(elementId);
-                    $scope.isHighlight = elementId.split("leaderboardrank-")[1];
-                }
-            }, 500);
-        };
-      
-        // scroll to the specific entry of the leaderboard
-        vm.scrollToSpecificEntryLeaderboard = function (elementId) {
-            var newHash = elementId.toString();
-            if ($location.hash() !== newHash) {
-                $location.hash(elementId);
-            } else {
-                $anchorScroll();
-            }
-            $scope.isHighlight = false;
-            $anchorScroll.yOffset = 90;
-        }
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
@@ -708,8 +683,8 @@
                                 vm.leaderboard[i].timeSpan = 'hour';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'hours';
-                            }
-                        }
+                            }                        
+                        } 
                         else if (duration._data.minutes !=0) {
                             var minutes = duration.asMinutes();
                             vm.leaderboard[i].submission__submitted_at = minutes;
@@ -732,7 +707,6 @@
                     vm.phaseName = vm.phaseSplitId;
                     vm.startLeaderboard();
                     vm.stopLoader();
-                    vm.scrollToEntryAfterLeaderboardLoads();
                 },
                 onError: function(response) {
                     var error = response.data;
