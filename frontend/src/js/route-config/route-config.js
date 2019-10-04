@@ -191,7 +191,7 @@
         var challenge_page = {
             name: "web.challenge-main.challenge-page",
             parent: "web.challenge-main",
-            url: "/challenge-page/:challengeSlug",
+            url: "/challenge-page/:challengeId",
             templateUrl: baseUrl + "/web/challenge/challenge-page.html",
             controller: 'ChallengeCtrl',
             controllerAs: 'challenge',
@@ -382,7 +382,7 @@
 
         var featured_challenge_page = {
             name: "featured-challenge-page",
-            url: "/featured-challenges/:challengeSlug",
+            url: "/featured-challenges/:challengeId",
             templateUrl: baseUrl + "/web/featured-challenge/challenge-page.html",
             controller: 'FeaturedChallengeCtrl',
             controllerAs: 'featured_challenge',
