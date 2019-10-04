@@ -1,4 +1,6 @@
 import os
+import requests
+import responses
 
 from datetime import timedelta
 
@@ -8,9 +10,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
+from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName
+from base.utils import RandomFileName, send_slack_notification
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -121,3 +124,19 @@ class TestSeeding(BaseAPITestClass):
         self.assertEqual(Challenge.objects.all().count(), 1)
         seed.run(2)
         self.assertEqual(Challenge.objects.all().count(), 2)
+
+
+class TestSlackNotification(BaseAPITestClass):
+
+    @responses.activate
+    def test_if_slack_notification_works(self):
+        message = {
+            "text": "Testing slack functionality",
+            "fields": []
+        }
+        responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
+        response = send_slack_notification(
+            message=message
+        )
+        self.assertEqual(type(response), requests.models.Response)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

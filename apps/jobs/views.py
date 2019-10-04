@@ -60,7 +60,12 @@ from .serializers import (
     CreateLeaderboardDataSerializer,
     RemainingSubmissionDataSerializer,
 )
-from .utils import get_submission_model, get_remaining_submission_for_a_phase
+from .tasks import download_file_and_publish_submission_message
+from .utils import (
+    get_submission_model,
+    get_remaining_submission_for_a_phase,
+    is_url_valid
+)
 
 logger = logging.getLogger(__name__)
 
@@ -240,6 +245,20 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 response_data, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
+        if not request.FILES:
+            if not is_url_valid(request.data['file_url']):
+                response_data = {'error': 'The file URL does not exists!'}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            download_file_and_publish_submission_message.delay(
+                request.data,
+                request.user.id,
+                request.method,
+                challenge_phase_id
+            )
+            response_data = {
+                'message': 'Please wait while your submission being evaluated!'
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
         serializer = SubmissionSerializer(
             data=request.data,
             context={
@@ -522,7 +541,7 @@ def leaderboard(request, challenge_phase_split_id):
             float(k["filtering_score"]),
             float(-k["filtering_error"]),
         ),
-        reverse=True,
+        reverse=True if challenge_phase_split.is_leaderboard_order_descending else False,
     )
 
     distinct_sorted_leaderboard_data = []
@@ -953,9 +972,45 @@ def update_submission(request, challenge_pk):
             submission, data=data, partial=True, context={"request": request}
         )
         if serializer.is_valid():
-            submission.save()
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST', ])
+@throttle_classes([UserRateThrottle, ])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def re_run_submission(request, submission_pk):
+    """
+    API endpoint to re-run a submission.
+    Only challenge host has access to this endpoint.
+    """
+    try:
+        submission = Submission.objects.get(pk=submission_pk)
+    except Submission.DoesNotExist:
+        response_data = {'error': 'Submission {} does not exist'.format(submission_pk)}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    # get the challenge and challenge phase object
+    challenge_phase = submission.challenge_phase
+    challenge = challenge_phase.challenge
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Only challenge hosts are allowed to re-run a submission"
+        }
+        return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+    if not challenge.is_active:
+        response_data = {'error': 'Challenge {} is not active'.format(challenge.title)}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    publish_submission_message(challenge.pk, challenge_phase.pk, submission.pk)
+    response_data = {
+        'success': 'Submission is successfully submitted for re-running'
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
