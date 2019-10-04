@@ -403,6 +403,11 @@ a.view-more {
         max-width: 100%;
         width: auto;
         transition:all 0.2s ease-in-out;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: auto;
+        margin-bottom: auto;
     }
     &:hover{
         img{
@@ -462,82 +467,96 @@ a.view-more {
 }
 
 #aptiv-logo {
-    width: 200px;
-    height: 72px;
+    height: 35%;
+    padding-top: 5%;
+}
+
+#cmu-logo {
+    height: 50%;
 }
 
 #draper-logo {
-    height: 110px;
-    padding-bottom:5%;
+    height: 50%;
+    padding-bottom: 7%;
 }
 
 #ebay-logo{
-    height: 70px;
-    width:160px;
+    height: 35%;
+    padding-top: 3%;
 }
 
 #fb-logo{
-    height: 55px;
-    width: 175px;
+    height: 30%;
+    padding-top: 7%;
+}
+
+#gt-logo {
+    height: 40%;
+}
+
+#google-logo {
+    height: 40%;
 }
 
 #ibm-logo {
-    height: 55px;
-    width: 135px;
+    height: 35%;
+    padding-top: 5%;
 }
 
 #uiuc-logo {
-    height: 100px;
-    width: 185px;
+    height: 25%;
+    padding-top: 5%;
 }
 
 #iitm-logo{
-    height:100px;
-    width:133px;
+    height: 50%;
 }
 
 #intel-logo {
-    height: 120px;
-    width: 265px;
+    height: 45%;
 }
 
 #ju-logo {
-    height: 110px;
-    width: 133px;
+    height: 50%;
 }
 
 #mapillary-logo{
-    height: 85px;
-    width: 180px;
+    height: 40%;
+    padding-top: 7%;
 }
 
 #mit-logo {
-    width: 160px;
-    height: 60px;
-    padding-top: 10px;
+    height: 35%;
+    padding-top: 7%;
 }
   
 #nu-logo {
-    height: 100px;
-    width: 135px;
+    height: 50%;
 }
 
 #siop-logo {
-    width: 175px;
-    height: 110px;
+    height: 50%;
+}
+
+#stanford-logo {
+    height: 50%;
 }
 
 #adelaide-logo{
-    height: 90px;
-    width: 200px;
+    height: 50%;
+    padding-top: 5%;
 }
 
 #umbc-logo{
-    height: 90px;
-    width: 160px;
+    height: 45%;
+    padding-top: 5%;
 }
 
 #pitt-logo{
-    height:80px;
-    width:180px;
+    height: 50%;
+    padding-top: 5%;
+}
+
+#vt-logo {
+    height: 45%;
 }
