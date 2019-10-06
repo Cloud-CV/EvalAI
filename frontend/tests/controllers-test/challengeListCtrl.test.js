@@ -14,7 +14,7 @@ describe('Unit tests for challenge list controller', function () {
         createController = function () {
             return $controller('ChallengeListCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('ChallengeListCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {
