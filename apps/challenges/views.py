@@ -1309,6 +1309,7 @@ def download_all_submissions(
                         "Team Name",
                         "Team Members",
                         "Team Members Email Id",
+                        "Team Members Affiliaton",
                         "Challenge Phase",
                         "Status",
                         "Created By",
@@ -1336,6 +1337,12 @@ def download_all_submissions(
                             ",".join(
                                 email["email"]
                                 for email in submission["participant_team_members"]
+                            ),
+                            ",".join(
+                                affiliation
+                                for affiliation in submission[
+                                    "participant_team_members_affiliations"
+                                ]
                             ),
                             submission["challenge_phase"],
                             submission["status"],
@@ -1418,6 +1425,7 @@ def download_all_submissions(
                     'participant_team': 'Team Name',
                     'participant_team_members': 'Team Members',
                     'participant_team_members_email': 'Team Members Email Id',
+                    'participant_team_members_affiliation': 'Team Members Affiliation',
                     'challenge_phase': 'Challenge Phase',
                     'status': 'Status',
                     'created_by': 'Created By',
@@ -1457,6 +1465,13 @@ def download_all_submissions(
                                 ",".join(
                                     email['email']
                                     for email in submission['participant_team_members']
+                                )
+                            )
+                        elif field == 'participant_team_members_affiliation':
+                            row.append(
+                                ",".join(
+                                    affiliation
+                                    for affiliation in submission['participant_team_members_affiliations']
                                 )
                             )
                         elif field == 'created_at':
@@ -1589,7 +1604,7 @@ def create_challenge_phase_split(request):
 
 @api_view(["GET", "PATCH"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
     """
