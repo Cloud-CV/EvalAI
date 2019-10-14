@@ -14,6 +14,7 @@
         vm.phaseId = null;
         vm.phaseSplitId = $stateParams.phaseSplitId;
         vm.input_file = null;
+        vm.fileUrl = "";
         vm.methodName = "";
         vm.methodDesc = "";
         vm.projectUrl = "";
@@ -24,6 +25,7 @@
         vm.isActive = false;
         vm.phases = {};
         vm.phaseSplits = {};
+        vm.selectedPhaseSplit = {};
         vm.phaseRemainingSubmissions = {};
         vm.phaseRemainingSubmissionsFlags = {};
         vm.phaseRemainingSubmissionsCountdown = {};
@@ -50,7 +52,11 @@
         vm.loaderTitle = '';
         vm.loaderContainer = angular.element('.exist-team-card');
         vm.termsAndConditions = false;
+        vm.team = {};
+        vm.isSubmissionUsingUrl = null;
 
+        vm.filter_all_submission_by_team_name = '';
+        vm.filter_my_submission_by_team_name = '';
         // show loader
         vm.startLoader = loaderService.startLoader;
         // stop loader
@@ -62,6 +68,65 @@
         vm.subErrors = {};
 
         utilities.showLoader();
+
+        vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
+            // get remaining submission for docker based challenge
+            if (isDockerBased && isParticipated == true) {
+                parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions/';
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function (response) {
+                        vm.phaseRemainingSubmissions = response.data;
+                        var details = vm.phaseRemainingSubmissions.phases;
+                        for (var i = 0; i < details.length; i++) {
+                            if (details[i].limits.submission_limit_exceeded === true) {
+                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "maxExceeded";
+                            } else if (details[i].limits.remaining_submissions_today_count > 0) {
+                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
+                            } else {
+                                vm.eachPhase = details[i];
+                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showClock";
+                                vm.countDownTimer = function () {
+                                    vm.remainingTime = vm.eachPhase.limits.remaining_time;
+                                    vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
+                                    vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
+                                    vm.hours = Math.floor(vm.hoursLeft / 3600);
+                                    vm.minutesLeft = Math.floor((vm.hoursLeft) - (vm.hours * 3600));
+                                    vm.minutes = Math.floor(vm.minutesLeft / 60);
+                                    vm.remainingSeconds = Math.floor(vm.remainingTime % 60);
+                                    if (vm.remainingSeconds < 10) {
+                                        vm.remainingSeconds = "0" + vm.remainingSeconds;
+                                    }
+                                    vm.phaseRemainingSubmissionsCountdown[details[i].id] = {
+                                        "days": vm.days,
+                                        "hours": vm.hours,
+                                        "minutes": vm.minutes,
+                                        "seconds": vm.remainingSeconds
+                                    };
+                                    if (vm.remainingTime === 0) {
+                                        vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
+                                    } else {
+                                        vm.remainingSeconds--;
+                                    }
+                                };
+                                setInterval(function () {
+                                    $rootScope.$apply(vm.countDownTimer);
+                                }, 1000);
+                                vm.countDownTimer();
+                            }
+                        }
+                        utilities.hideLoader();
+                    },
+                    onError: function (response) {
+                        var error = response.data;
+                        utilities.storeData('emailError', error.detail);
+                        $state.go('web.permission-denied');
+                    }
+                };
+                utilities.sendRequest(parameters);
+            }
+        };
 
         // get details of the particular challenge
         var parameters = {};
@@ -81,6 +146,7 @@
                 vm.isForumEnabled = details.enable_forum;
                 vm.forumURL = details.forum_url;
                 vm.cliVersion = details.cli_version;
+                vm.isRegistrationOpen = details.is_registration_open;
 
                 if (vm.page.image === null) {
                     vm.page.image = "dist/images/logo.png";
@@ -269,73 +335,53 @@
 
         utilities.sendRequest(parameters);
 
-        vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
-            // get remaining submission for docker based challenge
-            if (isDockerBased && isParticipated == true) {
-                parameters.url = 'jobs/' + vm.challengeId + '/remaining_submissions';
-                parameters.method = 'GET';
-                parameters.data = {};
+        vm.toggleParticipation = function (ev, isRegistrationOpen) {
+            // ev.stopPropagation();
+            var participationState;
+            if (isRegistrationOpen) {
+                participationState = 'Close';
+            } else {
+                participationState = 'Open';
+            }
+            var confirm = $mdDialog.confirm()
+                          .title(participationState + ' participation in the challenge?')
+                          .ariaLabel('')
+                          .targetEvent(ev)
+                          .ok('Yes, I\'m sure')
+                          .cancel('No');
+
+            $mdDialog.show(confirm).then(function () {
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge == vm.challengeId) {
+                        vm.challengeHostId = challengeHostList[challenge];
+                        break;
+                    }
+                }
+                parameters.method = "PATCH";
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.data = {
+                    "is_registration_open": !isRegistrationOpen
+                };
                 parameters.callback = {
-                    onSuccess: function (response) {
-                        vm.phaseRemainingSubmissions = response.data;
-                        var details = vm.phaseRemainingSubmissions.phases;
-                        for (var i = 0; i < details.length; i++) {
-                            if (details[i].limits.submission_limit_exceeded === true) {
-                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "maxExceeded";
-                            } else if (details[i].limits.remaining_submissions_today_count > 0) {
-                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
-                            } else {
-                                vm.eachPhase = details[i];
-                                vm.phaseRemainingSubmissionsFlags[details[i].id] = "showClock";
-                                vm.countDownTimer = function () {
-                                    vm.remainingTime = vm.eachPhase.limits.remaining_time;
-                                    vm.days = Math.floor(vm.remainingTime / 24 / 60 / 60);
-                                    vm.hoursLeft = Math.floor((vm.remainingTime) - (vm.days * 86400));
-                                    vm.hours = Math.floor(vm.hoursLeft / 3600);
-                                    vm.minutesLeft = Math.floor((vm.hoursLeft) - (vm.hours * 3600));
-                                    vm.minutes = Math.floor(vm.minutesLeft / 60);
-                                    vm.remainingSeconds = Math.floor(vm.remainingTime % 60);
-                                    if (vm.remainingSeconds < 10) {
-                                        vm.remainingSeconds = "0" + vm.remainingSeconds;
-                                    }
-                                    vm.phaseRemainingSubmissionsCountdown[details[i].id] = {
-                                        "days": vm.days,
-                                        "hours": vm.hours,
-                                        "minutes": vm.minutes,
-                                        "seconds": vm.remainingSeconds
-                                    };
-                                    if (vm.remainingTime === 0) {
-                                        vm.phaseRemainingSubmissionsFlags[details[i].id] = "showSubmissionNumbers";
-                                    } else {
-                                        vm.remainingSeconds--;
-                                    }
-                                };
-                                setInterval(function () {
-                                    $rootScope.$apply(vm.countDownTimer);
-                                }, 1000);
-                                vm.countDownTimer();
-                            }
-                        }
-                        utilities.hideLoader();
+                    onSuccess: function() {
+                        vm.isRegistrationOpen = !vm.isRegistrationOpen;
+                        $rootScope.notify('success', 'Participation is ' + participationState + 'ed successfully');
                     },
-                    onError: function (response) {
-                        var error = response.data;
-                        utilities.storeData('emailError', error.detail);
-                        $state.go('web.permission-denied');
+                    onError: function(response) {
+                        var details = response.data;
+                        $rootScope.notify('error', details.error);
                     }
                 };
                 utilities.sendRequest(parameters);
-            }
+            }, function() {});
         };
 
         vm.makeSubmission = function() {
             if (vm.isParticipated) {
-
-
                 var fileVal = angular.element(".file-path").val();
-
-                if (fileVal === null || fileVal === "") {
-                    vm.subErrors.msg = "Please upload file!";
+                if ((fileVal === null || fileVal === "") && (vm.fileUrl === null || vm.fileUrl === "")) {
+                    vm.subErrors.msg = "Please upload file or enter submission URL!";
                 } else {
                     vm.isExistLoader = true;
                     vm.loaderTitle = '';
@@ -349,8 +395,22 @@
                     parameters.url = 'jobs/challenge/' + vm.challengeId + '/challenge_phase/' + vm.phaseId + '/submission/';
                     parameters.method = 'POST';
                     var formData = new FormData();
+                    if (vm.isSubmissionUsingUrl) {
+                        var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
+                        var validExtensions = ["json", "zip", "csv"];
+                        var isUrlValid = urlRegex.test(vm.fileUrl);
+                        var extension = vm.fileUrl.split(".").pop();
+                        if (isUrlValid && validExtensions.includes(extension)) {
+                            formData.append("file_url", vm.fileUrl);
+                        } else {
+                            vm.stopLoader();
+                            vm.subErrors.msg = "Please enter a valid URL which ends in json, zip or csv file extension!";
+                            return false;
+                        }
+                    } else {
+                        formData.append("input_file", vm.input_file);
+                    }
                     formData.append("status", "submitting");
-                    formData.append("input_file", vm.input_file);
                     formData.append("method_name", vm.methodName);
                     formData.append("method_description", vm.methodDesc);
                     formData.append("project_url", vm.projectUrl);
@@ -375,6 +435,7 @@
 
                             // Reset the value of fields related to a submission
                             vm.phaseId = null;
+                            vm.fileUrl = "";
                             vm.methodName = "";
                             vm.methodDesc = "";
                             vm.projectUrl = "";
@@ -389,6 +450,7 @@
                             var error = response.data;
 
                             vm.phaseId = null;
+                            vm.fileUrl = null;
                             vm.methodName = null;
                             vm.methodDesc = null;
                             vm.projectUrl = null;
@@ -420,11 +482,19 @@
             onSuccess: function(response) {
                 var details = response.data;
                 vm.phases = details;
+                var timezone = moment.tz.guess();
                 for (var i=0; i<details.count; i++) {
                     if (details.results[i].is_public == false) {
                         vm.phases.results[i].showPrivate = true;
                     }
                 }
+                for (var j=0; j<vm.phases.results.length; j++){
+                    var offset = new Date(vm.phases.results[j].start_date).getTimezoneOffset();
+                    vm.phases.results[j].start_zone = moment.tz.zone(timezone).abbr(offset);
+                    offset = new Date(vm.phases.results[j].end_date).getTimezoneOffset();
+                    vm.phases.results[j].end_zone = moment.tz.zone(timezone).abbr(offset);
+                }
+                
                 // navigate to challenge page
                 // $state.go('web.challenge-page.overview');
                 utilities.hideLoader();
@@ -504,6 +574,31 @@
         // my submissions
         vm.isResult = false;
 
+        vm.startLeaderboard = function() {
+            vm.stopLeaderboard();
+            vm.poller = $interval(function() {
+                parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
+                parameters.method = 'GET';
+                parameters.data = {};
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var details = response.data;
+                        if (vm.leaderboard.count !== details.results.count) {
+                            vm.showLeaderboardUpdate = true;
+                        }
+                    },
+                    onError: function(response) {
+                        var error = response.data;
+                        utilities.storeData('emailError', error.detail);
+                        $state.go('web.permission-denied');
+                        vm.stopLoader();
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            }, 5000);
+        };
+
         vm.getLeaderboard = function(phaseSplitId) {
             vm.stopLeaderboard = function() {
                 $interval.cancel(vm.poller);
@@ -519,6 +614,22 @@
 
             vm.startLoader("Loading Leaderboard Items");
 
+            // get the selected phase split object
+            parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
+            parameters.method = "GET";
+            parameters.data = {};
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.selectedPhaseSplit = response.data;
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    vm.stopLoader();
+                    $rootScope.notify("error", error);
+                    return false;
+                }
+            };
+            utilities.sendRequest(parameters);
 
             // Show leaderboard
             vm.leaderboard = {};
@@ -602,17 +713,39 @@
             };
 
             utilities.sendRequest(parameters);
-            vm.startLeaderboard = function() {
-                vm.stopLeaderboard();
+        };
+
+        if (vm.phaseSplitId) {
+            vm.getLeaderboard(vm.phaseSplitId);
+        }
+
+        vm.getResults = function(phaseId) {
+            // long polling (5s) for leaderboard
+            vm.start = function() {
+                vm.stopFetchingSubmissions();
                 vm.poller = $interval(function() {
-                    parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
+                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
                     parameters.data = {};
                     parameters.callback = {
                         onSuccess: function(response) {
                             var details = response.data;
-                            if (vm.leaderboard.count !== details.results.count) {
-                                vm.showLeaderboardUpdate = true;
+
+                            // Set the is_public flag corresponding to each submission
+                            for (var i = 0; i < details.results.length; i++) {
+                                vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
+                                vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
+                            }
+
+                            if (vm.submissionResult.results.length !== details.results.length) {
+                                vm.showUpdate = true;
+                            } else {
+                                for (i = 0; i < details.results.length; i++) {
+                                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
+                                        vm.showUpdate = true;
+                                        break;
+                                    }
+                                }
                             }
                         },
                         onError: function(response) {
@@ -627,20 +760,14 @@
                 }, 5000);
             };
 
-        };
-
-        if (vm.phaseSplitId) {
-            vm.getLeaderboard(vm.phaseSplitId);
-        }
-
-        vm.getResults = function(phaseId) {
-
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
             vm.stopFetchingSubmissions();
             vm.isResult = true;
-            vm.phaseId = phaseId;
+            if (phaseId !== undefined) {
+                vm.phaseId = phaseId;
+            }
 
             var all_phases = vm.phases.results;
             for (var i = 0; i < vm.phases.results.length; i++) {
@@ -678,7 +805,13 @@
             vm.currentPage = '';
             vm.showPagination = false;
 
-            parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/";
+            if (vm.filter_my_submission_by_team_name === '') {
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submission/";
+            } else {
+                parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submission?participant_team__team_name=" + vm.filter_my_submission_by_team_name;
+            }
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -771,47 +904,6 @@
             };
 
             utilities.sendRequest(parameters);
-
-            // long polling (5s) for leaderboard
-
-            vm.start = function() {
-                vm.stopFetchingSubmissions();
-                vm.poller = $interval(function() {
-                    parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
-                    parameters.method = 'GET';
-                    parameters.data = {};
-                    parameters.callback = {
-                        onSuccess: function(response) {
-                            var details = response.data;
-
-                            // Set the is_public flag corresponding to each submission
-                            for (var i = 0; i < details.results.length; i++) {
-                                vm.submissionVisibility[details.results[i].id] = details.results[i].is_public;
-                                vm.baselineStatus[details.results[i].id] = details.results[i].is_baseline;
-                            }
-
-                            if (vm.submissionResult.results.length !== details.results.length) {
-                                vm.showUpdate = true;
-                            } else {
-                                for (i = 0; i < details.results.length; i++) {
-                                    if (details.results[i].status !== vm.submissionResult.results[i].status) {
-                                        vm.showUpdate = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        },
-                        onError: function(response) {
-                            var error = response.data;
-                            utilities.storeData('emailError', error.detail);
-                            $state.go('web.permission-denied');
-                            vm.stopLoader();
-                        }
-                    };
-
-                    utilities.sendRequest(parameters);
-                }, 5000);
-            };
         };
 
         vm.refreshSubmissionData = function() {
@@ -881,6 +973,26 @@
 
             utilities.sendRequest(parameters);
         };
+
+        vm.reRunSubmission = function(submissionObject) {
+            submissionObject.classList = ['spin', 'progress-indicator'];
+            parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run/';
+            parameters.method = 'POST';
+            parameters.token = userKey;
+            parameters.callback = {
+                onSuccess: function(response) {
+                    $rootScope.notify("success", response.data.success);
+                    submissionObject.classList = [''];
+                },
+                onError: function(response) {
+                    var error = response.data;
+                    $rootScope.notify("error", error);
+                    submissionObject.classList = [''];
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
         vm.refreshLeaderboard = function() {
             vm.startLoader("Loading Leaderboard Items");
             vm.leaderboard = {};
@@ -975,14 +1087,15 @@
         };
 
         vm.getAllSubmissionResults = function(phaseId) {
-
             vm.stopFetchingSubmissions = function() {
                 $interval.cancel(vm.poller);
             };
 
             vm.stopFetchingSubmissions();
             vm.isResult = true;
-            vm.phaseId = phaseId;
+            if (phaseId !== undefined) {
+                vm.phaseId = phaseId;
+            }
 
             // loader for loading submissions.
             vm.startLoader = loaderService.startLoader;
@@ -993,8 +1106,13 @@
             vm.isPrev = '';
             vm.currentPage = '';
             vm.showPagination = false;
-
-            parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submissions";
+            if (vm.filter_all_submission_by_team_name === '') {
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submissions";
+            } else {
+                parameters.url = "challenges/" + vm.challengeId + "/challenge_phase/" +
+                vm.phaseId + "/submissions?participant_team__team_name=" + vm.filter_all_submission_by_team_name;
+            }
             parameters.method = 'GET';
             parameters.data = {};
             parameters.callback = {
@@ -1129,7 +1247,7 @@
             vm.showClock = false;
             vm.showSubmissionNumbers = false;
             vm.maxExceeded = false;
-            parameters.url = "jobs/" + vm.challengeId + "/remaining_submissions";
+            parameters.url = "jobs/" + vm.challengeId + "/remaining_submissions/";
             parameters.method = 'GET';
             parameters.callback = {
                 onSuccess: function(response) {
@@ -1187,26 +1305,100 @@
         };
 
         vm.fileTypes = [{ 'name': 'csv' }];
+        vm.fields = [{
+            'label': 'Team Name',
+            'id': 'participant_team' 
+        },{
+            'label': 'Team Members',
+            'id': 'participant_team_members' 
+        },{
+            'label': 'Team Members Email Id',
+            'id': 'participant_team_members_email' 
+        },{
+            'label': 'Team Members Affiliation',
+            'id': 'participant_team_members_affiliation' 
+        },{
+            'label': 'Challenge Phase',
+            'id': 'challenge_phase' 
+        },{
+            'label': 'Status',
+            'id': 'status' 
+        },{
+            'label': 'Created By',
+            'id': 'created_by' 
+        },{
+            'label': 'Execution Time',
+            'id': 'execution_time' 
+        },{
+            'label': 'Submission Number',
+            'id': 'submission_number' 
+        },{
+            'label': 'Submitted File',
+            'id': 'input_file' 
+        },{
+            'label': 'Stdout File',
+            'id': 'stdout_file' 
+        },{
+            'label': 'Stderr File',
+            'id': 'stderr_file' 
+        },{
+            'label': 'Submitted At',
+            'id': 'created_at' 
+        },{
+            'label': 'Submission Result File',
+            'id': 'submission_result_file' 
+        },{
+            'label': 'Submission Metadata File',
+            'id': 'submission_metadata_file' 
+        }];
 
         vm.downloadChallengeSubmissions = function() {
             if (vm.phaseId) {
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
-                parameters.method = "GET";
-                parameters.callback = {
-                    onSuccess: function(response) {
-                        var details = response.data;
-                        var anchor = angular.element('<a/>');
-                        anchor.attr({
-                            href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
-                            download: 'all_submissions.csv'
-                        })[0].click();
-                    },
-                    onError: function(response) {
-                        var details = response.data;
-                        $rootScope.notify('error', details.error);
+                if (vm.fieldsToGet === undefined || vm.fieldsToGet.length === 0) {
+                    parameters.method = "GET";
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var details = response.data;
+                            var anchor = angular.element('<a/>');
+                            anchor.attr({
+                                href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                                download: 'all_submissions.csv'
+                            })[0].click();
+                        },
+                        onError: function(response) {
+                            var details = response.data;
+                            $rootScope.notify('error', details.error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                }
+                else {
+                    parameters.method = "POST";
+                    var fieldsExport = [];
+                    for(var i = 0 ; i < vm.fields.length ; i++) {
+                        if (vm.fieldsToGet.includes(vm.fields[i].id)) {
+                            fieldsExport.push(vm.fields[i].id);
+                        }
                     }
-                };
-                utilities.sendRequest(parameters);
+                    parameters.data = fieldsExport;
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var details = response.data;
+                            var anchor = angular.element('<a/>');
+                            anchor.attr({
+                                href: 'data:attachment/csv;charset=utf-8,' + encodeURI(details),
+                                download: 'all_submissions.csv'
+                            })[0].click();
+                        },
+                        onError: function(response) {
+                            var details = response.data;
+                            $rootScope.notify('error', details.error);
+                        }
+                    };
+                    utilities.sendRequest(parameters);
+                }
+                
             } else {
                 $rootScope.notify("error", "Please select a challenge phase!");
             }
