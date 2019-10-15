@@ -1016,6 +1016,27 @@
             utilities.sendRequest(parameters);
         };
 
+        vm.toggleShowLeaderboardByLatest = function() {
+            parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
+            parameters.method = "PATCH";
+            parameters.data = {
+                "show_leaderboard_by_latest_submission": !vm.selectedPhaseSplit.show_leaderboard_by_latest_submission
+            };
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.selectedPhaseSplit = response.data;
+                    vm.getLeaderboard(vm.selectedPhaseSplit.id);
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    vm.stopLoader();
+                    $rootScope.notify("error", error);
+                    return false;
+                }
+            };
+            utilities.sendRequest(parameters);
+        };
+
         // function to create new team for participating in challenge
         vm.createNewTeam = function() {
             vm.isLoader = true;

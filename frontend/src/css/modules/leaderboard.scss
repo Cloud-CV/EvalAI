@@ -21,3 +21,12 @@
 	float: none;
 
 }
+
+.float-right {
+	float: right;
+
+	.btn-switch {
+		vertical-align: middle;
+		display: inline-block;
+	}
+}
