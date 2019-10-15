@@ -621,6 +621,8 @@
             parameters.callback = {
                 onSuccess: function (response) {
                     vm.selectedPhaseSplit = response.data;
+                    vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
+                        "Sort by best":"Sort by latest";
                 },
                 onError: function (response) {
                     var error = response.data;
@@ -1026,6 +1028,8 @@
                 onSuccess: function (response) {
                     vm.selectedPhaseSplit = response.data;
                     vm.getLeaderboard(vm.selectedPhaseSplit.id);
+                    vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
+                        "Sort by best":"Sort by latest";
                 },
                 onError: function (response) {
                     var error = response.data;
