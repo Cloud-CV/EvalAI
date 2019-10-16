@@ -535,14 +535,17 @@ def leaderboard(request, challenge_phase_split_id):
         if leaderboard_item["error"] is None:
             leaderboard_item.update(filtering_error=0)
 
-    sorted_leaderboard_data = sorted(
-        leaderboard_data,
-        key=lambda k: (
-            float(k["filtering_score"]),
-            float(-k["filtering_error"]),
-        ),
-        reverse=True if challenge_phase_split.is_leaderboard_order_descending else False,
-    )
+    if challenge_phase_split.show_leaderboard_by_latest_submission:
+        sorted_leaderboard_data = leaderboard_data
+    else:
+        sorted_leaderboard_data = sorted(
+            leaderboard_data,
+            key=lambda k: (
+                float(k["filtering_score"]),
+                float(-k["filtering_error"]),
+            ),
+            reverse=True if challenge_phase_split.is_leaderboard_order_descending else False,
+        )
 
     distinct_sorted_leaderboard_data = []
     team_list = []
