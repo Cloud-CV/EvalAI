@@ -3625,7 +3625,8 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "challenge_phase": self.challenge_phase.pk,
             "visibility": self.challenge_phase_split.visibility,
             "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,
-            "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending
+            "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,
+            "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
