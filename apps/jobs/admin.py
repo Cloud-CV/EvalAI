@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 @admin.register(Submission)
 class SubmissionAdmin(ImportExportTimeStampedAdmin):
-    actions = ["submit_job_to_worker"]
+    actions = ["submit_job_to_worker", "make_submission_public"]
     list_display = (
         "id",
         "participant_team",
@@ -71,3 +71,10 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
             queryset.update(status=Submission.SUBMITTED)
 
     submit_job_to_worker.short_description = "Run selected submissions"
+
+    def make_submission_public(self, request, queryset):
+        for submision in queryset:
+            submision.is_public = True
+            submision.save()
+
+    make_submission_public.short_description = "Make submission public"
