@@ -1,6 +1,6 @@
 import logging
 
-from django.contrib import admin, messages
+from django.contrib import admin
 
 from base.admin import ImportExportTimeStampedAdmin
 
@@ -76,7 +76,5 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         for submision in queryset:
             submision.is_public = True
             submision.save()
-        message = "All selected submissions are made public."
-        messages.success(request, message)
 
     make_submission_public.short_description = "Make submission public"
