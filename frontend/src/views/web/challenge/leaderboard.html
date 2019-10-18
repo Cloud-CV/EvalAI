@@ -123,8 +123,10 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
-                                            class="fs-16">
+                                        <tr ng-class="{highlightLeaderboard:isHighlight == challenge.initial_ranking[key.id]}"
+                                            ng-click="challenge.scrollToSpecificEntryLeaderboard('leaderboardrank-' + challenge.initial_ranking[key.id])"
+                                            ng-repeat="key in challenge.leaderboard|orderBy:challenge.sortFunction:challenge.reverseSort"
+                                            class="fs-16" id="leaderboardrank-{{challenge.initial_ranking[key.id]}}">
                                             <td>{{challenge.initial_ranking[key.id]}}</td>
                                             <td><a ng-if="key.submission__participant_team__team_url"
                                                     class="orange-text" target="_blank"
