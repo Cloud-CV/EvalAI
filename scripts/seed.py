@@ -210,7 +210,7 @@ def create_leaderboard():
 
 
 def create_leaderboard_data(challenge_phase_split, submission):
-    result = {'score': 0}
+    result = {'score': random.randint(1, 100)}
     leaderboard_data = LeaderboardData.objects.create(
         challenge_phase_split=challenge_phase_split,
         submission=submission,
