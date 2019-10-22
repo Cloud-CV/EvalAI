@@ -92,7 +92,7 @@
             }
             $scope.isHighlight = false;
             $anchorScroll.yOffset = 90;
-        }
+        };
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
