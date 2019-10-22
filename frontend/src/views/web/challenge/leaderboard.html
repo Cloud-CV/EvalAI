@@ -60,7 +60,7 @@
                                             class="new badge orange-background w-400" data-badge-caption="B"></span>
                                         <span class="w-400"> - Baseline submission</span>
                                     </div>
-                                    <div align="right" class="result-wrn col l3 m4 s5">
+                                    <div class="align-right result-wrn col l3 m4 s5" ng-if="challenge.isChallengeHost">
                                         <div ng-click="challenge.toggleShowLeaderboardByLatest()"
                                             class="btn-switch sort-leaderboard-switch" ng-class="{'btn-switch--on':challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission}"
                                             ng-model="challenge.selectedPhaseSplit.show_leaderboard_by_latest_submission">
