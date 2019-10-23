@@ -1,5 +1,6 @@
 # Command to run : python manage.py shell  < scripts/seed.py
 import datetime
+import json
 import os
 import random
 import string
@@ -8,14 +9,16 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
 from faker import Factory
 
-from challenges.models import Challenge, ChallengePhase, DatasetSplit, Leaderboard, ChallengePhaseSplit
+from challenges.models import Challenge, ChallengePhase, ChallengePhaseSplit, DatasetSplit, Leaderboard, LeaderboardData
 from hosts.models import ChallengeHostTeam, ChallengeHost
+from jobs.models import Submission
 from participants.models import Participant, ParticipantTeam
 
 fake = Factory.create()
@@ -150,6 +153,7 @@ def create_challenge(title, start_date, end_date, host_team):
         evaluation_details=fake.paragraph(),
         evaluation_script=SimpleUploadedFile(evaluation_script.name, evaluation_script.read()),
         approved_by_admin=True,
+        leaderboard_description=fake.paragraph(),
         creator=host_team,
         published=True,
         enable_forum=True,
@@ -205,6 +209,18 @@ def create_leaderboard():
     return leaderboard
 
 
+def create_leaderboard_data(challenge_phase_split, submission):
+    result = {'score': random.randint(1, 100)}
+    leaderboard_data = LeaderboardData.objects.create(
+        challenge_phase_split=challenge_phase_split,
+        submission=submission,
+        leaderboard=challenge_phase_split.leaderboard,
+        result=json.dumps(result),
+        error=None
+    )
+    return leaderboard_data
+
+
 def create_dataset_splits(number_of_splits):
     """
     Creates dataset splits and returns it.
@@ -228,7 +244,7 @@ def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
     """
     Creates a challenge phase split.
     """
-    ChallengePhaseSplit.objects.create(
+    challenge_phase_split = ChallengePhaseSplit.objects.create(
         challenge_phase=challenge_phase,
         leaderboard=leaderboard,
         dataset_split=dataset_split,
@@ -236,6 +252,7 @@ def create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split):
     )
     print("Challenge Phase Split created with challenge_phase: {} dataset_split: {}".format(challenge_phase.name,
                                                                                             dataset_split.name))
+    return challenge_phase_split
 
 
 def create_participant_team(user):
@@ -253,6 +270,52 @@ def create_participant_team(user):
     return team
 
 
+def create_submission(participant_user, participant_team,
+                      challenge_phase, dataset_splits):
+    status = Submission.FINISHED
+    submitted_at = timezone.now()
+    started_at = timezone.now()
+    completed_at = timezone.now()
+    input_file = SimpleUploadedFile(
+        "dummy_input.txt", b"file_content", content_type="text/plain"
+    )
+    output = []
+    for dataset_split in dataset_splits:
+        split_result = {dataset_split.codename: {'score': 0}}
+        output.append(split_result)
+
+    result = ['foo', 'bar']
+    submission_result = json.dumps(result)
+
+    submission = Submission.objects.create(
+        participant_team=participant_team,
+        challenge_phase=challenge_phase,
+        created_by=participant_user,
+        status=status,
+        output=output,
+        submitted_at=submitted_at,
+        started_at=started_at,
+        completed_at=completed_at,
+        input_file=input_file,
+        method_name=fake.first_name(),
+        method_description=fake.paragraph(),
+        project_url=fake.uri(),
+        publication_url=fake.uri(),
+        stdout_file=None,
+        stderr_file=None,
+        submission_result_file=ContentFile(submission_result),
+        submission_metadata_file=None,
+        is_baseline=True,
+        is_flagged=True
+
+    )
+    print("Submission created by user {} for phase {} of challenge {}.".format(participant_user.username,
+                                                                               challenge_phase.name,
+                                                                               challenge_phase.challenge.title))
+
+    return submission
+
+
 def run(*args):
     NUMBER_OF_CHALLENGES = int(args[0])
     status = check_database()
@@ -268,6 +331,8 @@ def run(*args):
     challenge_host_team = create_challenge_host_team(user=host_user)
     # Create challenge
     create_challenges(number_of_challenges=NUMBER_OF_CHALLENGES, host_team=challenge_host_team)
+    participant_user = create_user(is_admin=False, username="participant")
+    participant_team = create_participant_team(user=participant_user)
 
     # Fetch all the created challenges
     challenges = Challenge.objects.all()
@@ -280,8 +345,9 @@ def run(*args):
         dataset_splits = create_dataset_splits(number_of_splits=NUMBER_OF_DATASET_SPLITS)
         # Create Challenge Phase Split for each Phase and Dataset Split
         for challenge_phase in challenge_phases:
+            submission = create_submission(participant_user, participant_team, challenge_phase, dataset_splits)
             for dataset_split in dataset_splits:
-                create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split)
-    participant_user = create_user(is_admin=False, username="participant")
-    create_participant_team(user=participant_user)
+                challenge_phase_split = create_challenge_phase_splits(challenge_phase, leaderboard, dataset_split)
+                create_leaderboard_data(challenge_phase_split, submission)
+
     print('Database successfully seeded.')
