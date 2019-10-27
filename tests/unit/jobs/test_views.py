@@ -485,6 +485,86 @@ class BaseAPITestClass(APITestCase):
         self.challenge_phase.max_submissions = actual_maxinmum_submissions
         self.challenge_phase.save()
 
+    def test_challenge_submission_when_user_team_is_banned(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.banned_email_ids = ["user1@test.com"]
+        self.challenge.save()
+
+        expected = {"error":"You're a part of Participant Team for Challenge team and it has been banned from this challenge. \
+        Please contact the challenge host."}
+
+        response = self.client.post(
+            self.url,
+            {"status":"submitting", "input_file":self.input_file},
+            format=multipart,
+        )
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_challenge_submission_when_number_of_concurrent_submissions_greater_than_allowed(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        actual_max_concurrent_submissions = self.challenge_phase.max_concurrent_submissions_allowed
+        self.challenge_phase.max_concurrent_submissions_allowed = 1
+        self.challenge_phase.save()
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response_1 = self.client.post(
+            self.url,
+            {"status": Submission.SUBMITTING, "input_file": self.input_file},
+            format="multipart",
+        )
+        self.assertEqual(response_1.status_code, status.HTTP_201_CREATED)
+        response_2 = self.client.post(
+            self.url,
+            {"status": Submission.SUBMITTING, "input_file": self.input_file},
+            format="multipart",
+        )
+
+        expected = {"error" : "You have 1 submissions that are being processed. \
+        Please wait for them to finish and then try again."}
+
+        self.assertEqual(response_2.data, expected)
+        self.assertEqual(response_2.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.challenge_phase.max_concurrent_submissions_allowed = actual_max_concurrent_submissions
+        self.challenge_phase.save()
+
+    def test_challenge_submission_with_url_when_url_is_invalid(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "file_url": "http://www."},
+            format="multipart",
+        )
+
+        expected = {"error":"The file URL does not exists!"}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_challenge_submission_for_docker_based_challenges(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
