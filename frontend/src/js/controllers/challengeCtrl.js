@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment', '$location', '$anchorScroll', '$timeout'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -68,6 +68,31 @@
         vm.subErrors = {};
 
         utilities.showLoader();
+
+        // scroll to the selected entry after page has been rendered
+        vm.scrollToEntryAfterLeaderboardLoads = function () {
+            // get unique rank number from the url & if exists hightlight the entry
+            $timeout(function() {
+                var elementId = $location.absUrl().split('?')[0].split('#')[1];
+                if (elementId) {
+                    $anchorScroll.yOffset = 90;
+                    $anchorScroll(elementId);
+                    $scope.isHighlight = elementId.split("leaderboardrank-")[1];
+                }
+            }, 500);
+        };
+
+         // scroll to the specific entry of the leaderboard
+        vm.scrollToSpecificEntryLeaderboard = function (elementId) {
+            var newHash = elementId.toString();
+            if ($location.hash() !== newHash) {
+                $location.hash(elementId);
+            } else {
+                $anchorScroll();
+            }
+            $scope.isHighlight = false;
+            $anchorScroll.yOffset = 90;
+        };
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
@@ -621,6 +646,8 @@
             parameters.callback = {
                 onSuccess: function (response) {
                     vm.selectedPhaseSplit = response.data;
+                    vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
+                        "Sort by best":"Sort by latest";
                 },
                 onError: function (response) {
                     var error = response.data;
@@ -704,6 +731,7 @@
                     vm.phaseName = vm.phaseSplitId;
                     vm.startLeaderboard();
                     vm.stopLoader();
+                    vm.scrollToEntryAfterLeaderboardLoads();
                 },
                 onError: function(response) {
                     var error = response.data;
@@ -1013,6 +1041,29 @@
                 }
             };
 
+            utilities.sendRequest(parameters);
+        };
+
+        vm.toggleShowLeaderboardByLatest = function() {
+            parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
+            parameters.method = "PATCH";
+            parameters.data = {
+                "show_leaderboard_by_latest_submission": !vm.selectedPhaseSplit.show_leaderboard_by_latest_submission
+            };
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.selectedPhaseSplit = response.data;
+                    vm.getLeaderboard(vm.selectedPhaseSplit.id);
+                    vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
+                        "Sort by best":"Sort by latest";
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    vm.stopLoader();
+                    $rootScope.notify("error", error);
+                    return false;
+                }
+            };
             utilities.sendRequest(parameters);
         };
 

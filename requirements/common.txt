@@ -3,7 +3,7 @@ boto3==1.9.88
 botocore==1.12.88
 celery[sqs]==4.3.0
 commonmark==0.5.4
-django==1.11.20
+django==1.11.23
 django-filter==2.1.0
 django-import-export==0.5.1
 djangorestframework==3.9.3
@@ -16,7 +16,7 @@ drfdocs==0.0.11
 drf-yasg==1.11.0
 pika==0.10.0
 pickleshare==0.7.4
-Pillow==3.4.2
+Pillow==6.2.0
 psycopg2==2.7.3.2
 pycurl==7.43.0.1
 PyYaml==4.2b1
