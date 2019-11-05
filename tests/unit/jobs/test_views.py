@@ -506,7 +506,7 @@ class BaseAPITestClass(APITestCase):
         response = self.client.post(
             self.url,
             {"status":"submitting", "input_file":self.input_file},
-            format=multipart,
+            format="multipart",
         )
 
         self.assertEqual(response.data, expected)
@@ -607,7 +607,7 @@ class BaseAPITestClass(APITestCase):
         }
 
         with mock.patch('jobs.tasks.download_file_and_publish_submission_message'):
-            self.input_file_url = "http://testserver{}".format(self.input_file.url)
+            self.input_file_url = "http://testserver{}".format(self.input_file.name)
 
             response = self.client.post(
                 self.url,
