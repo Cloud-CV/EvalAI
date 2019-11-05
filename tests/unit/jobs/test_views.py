@@ -1,7 +1,10 @@
 import collections
 import json
+import mock
 import os
 import shutil
+
+import apps.jobs.tasks
 
 from datetime import timedelta
 
@@ -585,6 +588,35 @@ class BaseAPITestClass(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_challenge_submission_for_successful_submission_with_file_url(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+
+        expected = {
+            'message': 'Please wait while your submission being evaluated!'
+        }
+
+        with mock.patch('apps.jobs.tasks.download_file_and_publish_submission_message'):
+            self.input_file_url = "http://testserver{}".format(self.input_file.url)
+
+            response = self.client.post(
+                self.url,
+                {"status": "submitting", "file_url": self.input_file_url},
+                format=multipart,
+            )
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class GetChallengeSubmissionTest(BaseAPITestClass):
