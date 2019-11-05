@@ -4,7 +4,7 @@ import mock
 import os
 import shutil
 
-import apps.jobs.tasks
+import jobs.tasks
 
 from datetime import timedelta
 
@@ -606,7 +606,7 @@ class BaseAPITestClass(APITestCase):
             'message': 'Please wait while your submission being evaluated!'
         }
 
-        with mock.patch('apps.jobs.tasks.download_file_and_publish_submission_message'):
+        with mock.patch('jobs.tasks.download_file_and_publish_submission_message'):
             self.input_file_url = "http://testserver{}".format(self.input_file.url)
 
             response = self.client.post(
