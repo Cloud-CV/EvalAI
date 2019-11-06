@@ -515,38 +515,6 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_challenge_submission_when_number_of_concurrent_submissions_greater_than_allowed(self):
-        self.url = reverse_lazy(
-            "jobs:challenge_submission",
-            kwargs={
-                "challenge_id": self.challenge.pk,
-                "challenge_phase_id": self.challenge_phase.pk,
-            },
-        )
-
-        actual_max_concurrent_submissions = self.challenge_phase.max_concurrent_submissions_allowed
-        self.challenge_phase.max_concurrent_submissions_allowed = 1
-        self.challenge_phase.save()
-        self.challenge.participant_teams.add(self.participant_team)
-        self.challenge.save()
-
-        response = self.client.post(
-            self.url,
-            {"status": Submission.SUBMITTING, "input_file": self.input_file},
-            format="multipart",
-        )
-
-        message = "You have 1 submissions that are being processed. \
-                       Please wait for them to finish and then try again."
-        expected = {
-            "error" : message
-        }
-
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-        self.challenge_phase.max_concurrent_submissions_allowed = actual_max_concurrent_submissions
-        self.challenge_phase.save()
-
     def test_challenge_submission_with_url_when_url_is_invalid(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
