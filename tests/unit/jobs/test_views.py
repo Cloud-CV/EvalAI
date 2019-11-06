@@ -5,6 +5,7 @@ import os
 import shutil
 
 import jobs.tasks
+import jobs.utils
 
 from datetime import timedelta
 
@@ -505,7 +506,7 @@ class BaseAPITestClass(APITestCase):
         self.challenge.banned_email_ids = ["user1@test.com"]
         self.challenge.save()
 
-        message = "You're a part of Participant Team for Challenge team and it has been banned from this challenge. \
+        message = "You're a part of Participant Team for Challenge team and it has been banned from this challenge.     \
             Please contact the challenge host."
         expected = {"error": message}
 
@@ -601,6 +602,7 @@ class BaseAPITestClass(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    @mock.patch('jobs.utils.is_url_valid', mock.MagicMock(return_value=True))
     def test_challenge_submission_for_successful_submission_with_file_url(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
