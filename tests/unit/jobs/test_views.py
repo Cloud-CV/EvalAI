@@ -175,10 +175,6 @@ class BaseAPITestClass(APITestCase):
             "dummy_input.txt", b"file_content", content_type="text/plain"
         )
 
-        self.input_file_2 = SimpleUploadedFile(
-            "dummy_input_2.txt", b"file_content_2", content_type="text/plain"
-        )
-
     def tearDown(self):
         shutil.rmtree("/tmp/evalai")
 
@@ -534,17 +530,9 @@ class BaseAPITestClass(APITestCase):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
 
-        response_1 = self.client.post(
+        response = self.client.post(
             self.url,
             {"status": Submission.SUBMITTING, "input_file": self.input_file},
-            format="multipart",
-        )
-        self.assertEqual(response_1.data, None)
-        self.assertEqual(response_1.status_code, status.HTTP_201_CREATED)
-
-        response_2 = self.client.post(
-            self.url,
-            {"status": Submission.SUBMITTING, "input_file": self.input_file_2},
             format="multipart",
         )
 
@@ -554,8 +542,8 @@ class BaseAPITestClass(APITestCase):
             "error" : message
         }
 
-        self.assertEqual(response_2.data, expected)
-        self.assertEqual(response_2.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.challenge_phase.max_concurrent_submissions_allowed = actual_max_concurrent_submissions
         self.challenge_phase.save()
 
@@ -636,7 +624,7 @@ class BaseAPITestClass(APITestCase):
                 request_data_qdict,
                 self.user1.pk,
                 "POST",
-                self.challenge_phase.pk,
+                str(self.challenge_phase.pk),
             )
 
         self.assertEqual(response.data, expected)
