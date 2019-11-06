@@ -531,7 +531,6 @@ class BaseAPITestClass(APITestCase):
             {"status": "submitting", "file_url": "http://www.google.com/secret/dummy_file.txt" },
             format="multipart",
         )
-
         expected = {
             "error":"The file URL does not exists!"
         }
@@ -550,13 +549,11 @@ class BaseAPITestClass(APITestCase):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.is_docker_based = True
         self.challenge.save()
-
         response = self.client.post(
             self.url,
             {"status": "submitting", "input_file": self.input_file},
             format="multipart",
         )
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     @mock.patch('jobs.views.is_url_valid', mock.MagicMock(return_value=True))
@@ -572,20 +569,17 @@ class BaseAPITestClass(APITestCase):
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
 
-
         expected = {
             'message': 'Please wait while your submission being evaluated!'
         }
 
         with mock.patch('jobs.views.download_file_and_publish_submission_message.delay') as mocked_function:
             self.input_file_url = "http://testserver/{}".format(self.input_file.name)
-
             response = self.client.post(
                 self.url,
                 {"status": "submitting", "file_url": self.input_file_url},
                 format="multipart",
             )
-
             request_data_qdict = QueryDict('', mutable=True)
             request_data_qdict.update({"status": "submitting", "file_url": self.input_file_url})
             mocked_function.assert_called_with(
