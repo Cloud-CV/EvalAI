@@ -174,6 +174,10 @@ class BaseAPITestClass(APITestCase):
             "dummy_input.txt", b"file_content", content_type="text/plain"
         )
 
+        self.input_file_2 = SimpleUploadedFile(
+            "dummy_input_2.txt", b"file_content_2", content_type="text/plain"
+        )
+
     def tearDown(self):
         shutil.rmtree("/tmp/evalai")
 
@@ -524,7 +528,7 @@ class BaseAPITestClass(APITestCase):
         )
 
         actual_max_concurrent_submissions = self.challenge_phase.max_concurrent_submissions_allowed
-        self.challenge_phase.max_concurrent_submissions_allowed = 2
+        self.challenge_phase.max_concurrent_submissions_allowed = 1
         self.challenge_phase.save()
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
@@ -538,12 +542,12 @@ class BaseAPITestClass(APITestCase):
 
         response_2 = self.client.post(
             self.url,
-            {"status": Submission.SUBMITTING, "input_file": self.input_file},
+            {"status": Submission.SUBMITTING, "input_file": self.input_file_2},
             format="multipart",
         )
 
-        message = "You have 2 submissions that are being processed. \
-                   Please wait for them to finish and then try again."
+        message = "You have 1 submissions that are being processed. \
+                       Please wait for them to finish and then try again."
         expected = {
             "error" : message
         }
@@ -614,13 +618,19 @@ class BaseAPITestClass(APITestCase):
             'message': 'Please wait while your submission being evaluated!'
         }
 
-        with mock.patch('jobs.tasks.download_file_and_publish_submission_message') as mock:
-            self.input_file_url = "http://testserver{}".format(self.input_file.name)
+        with mock.patch('jobs.tasks.download_file_and_publish_submission_message.delay') as mocked_function:
+            self.input_file_url = "http://testserver/{}".format(self.input_file.name)
 
             response = self.client.post(
                 self.url,
                 {"status": "submitting", "file_url": self.input_file_url},
                 format="multipart",
+            )
+            mocked_function.assert_called_with(
+                {"status": "submitting", "file_url": self.input_file_url},
+                self.user1.pk,
+                "POST",
+                self.challenge_phase.pk,
             )
 
         self.assertEqual(response.data, expected)
