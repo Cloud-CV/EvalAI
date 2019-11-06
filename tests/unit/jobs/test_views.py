@@ -534,8 +534,8 @@ class BaseAPITestClass(APITestCase):
             {"status": Submission.SUBMITTING, "input_file": self.input_file},
             format="multipart",
         )
-        self.assertEqual(response_1.data, None)
         self.assertEqual(response_1.status_code, status.HTTP_201_CREATED)
+
         response_2 = self.client.post(
             self.url,
             {"status": Submission.SUBMITTING, "input_file": self.input_file},
@@ -614,7 +614,7 @@ class BaseAPITestClass(APITestCase):
             'message': 'Please wait while your submission being evaluated!'
         }
 
-        with mock.patch('jobs.tasks.download_file_and_publish_submission_message'):
+        with mock.patch('jobs.tasks.download_file_and_publish_submission_message') as mock:
             self.input_file_url = "http://testserver{}".format(self.input_file.name)
 
             response = self.client.post(
