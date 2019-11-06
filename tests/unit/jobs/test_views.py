@@ -11,6 +11,7 @@ from datetime import timedelta
 from django.core.urlresolvers import reverse_lazy
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
+from django.http import QueryDict
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
@@ -570,7 +571,7 @@ class BaseAPITestClass(APITestCase):
 
         response = self.client.post(
             self.url,
-            {"status": "submitting", "file_url": "http://www."},
+            {"status": "submitting", "file_url": "http://www.google.com/secret/dummy_file.txt" },
             format="multipart",
         )
 
@@ -627,8 +628,11 @@ class BaseAPITestClass(APITestCase):
                 {"status": "submitting", "file_url": self.input_file_url},
                 format="multipart",
             )
+
+            request_data_qdict = QueryDict('')
+            request_data_qdict.update({"status": "submitting", "file_url": self.input_file_url})
             mocked_function.assert_called_with(
-                {"status": "submitting", "file_url": self.input_file_url},
+                request_data_qdict,
                 self.user1.pk,
                 "POST",
                 self.challenge_phase.pk,
