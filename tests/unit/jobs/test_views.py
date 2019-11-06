@@ -503,7 +503,7 @@ class BaseAPITestClass(APITestCase):
 
         message = "You're a part of Participant Team for Challenge team and it has been banned from this challenge. \
             Please contact the challenge host."
-        expected = {"error":}
+        expected = {"error": message}
 
         response = self.client.post(
             self.url,
