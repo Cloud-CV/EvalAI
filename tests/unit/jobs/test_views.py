@@ -629,7 +629,7 @@ class BaseAPITestClass(APITestCase):
                 format="multipart",
             )
 
-            request_data_qdict = QueryDict('')
+            request_data_qdict = QueryDict('', mutable=True)
             request_data_qdict.update({"status": "submitting", "file_url": self.input_file_url})
             mocked_function.assert_called_with(
                 request_data_qdict,
