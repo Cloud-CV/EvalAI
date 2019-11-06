@@ -4,8 +4,6 @@ import mock
 import os
 import shutil
 
-import jobs.views
-
 from datetime import timedelta
 
 from django.core.urlresolvers import reverse_lazy
@@ -508,7 +506,7 @@ class BaseAPITestClass(APITestCase):
 
         response = self.client.post(
             self.url,
-            {"status":"submitting", "input_file":self.input_file},
+            {"status": "submitting", "input_file": self.input_file},
             format="multipart",
         )
 
@@ -528,11 +526,11 @@ class BaseAPITestClass(APITestCase):
 
         response = self.client.post(
             self.url,
-            {"status": "submitting", "file_url": "http://www.google.com/secret/dummy_file.txt" },
+            {"status": "submitting", "file_url": "http://www.google.com/secret/dummy_file.txt"},
             format="multipart",
         )
         expected = {
-            "error":"The file URL does not exists!"
+            "error": "The file URL does not exists!"
         }
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
