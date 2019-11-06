@@ -497,6 +497,7 @@ class BaseAPITestClass(APITestCase):
             },
         )
 
+        self.challenge.participant_teams.add(self.participant_team)
         self.challenge.banned_email_ids = ["user1@test.com"]
         self.challenge.save()
 
@@ -532,6 +533,7 @@ class BaseAPITestClass(APITestCase):
             {"status": Submission.SUBMITTING, "input_file": self.input_file},
             format="multipart",
         )
+        self.assertEqual(response_1.data, None)
         self.assertEqual(response_1.status_code, status.HTTP_201_CREATED)
         response_2 = self.client.post(
             self.url,
@@ -612,7 +614,7 @@ class BaseAPITestClass(APITestCase):
             response = self.client.post(
                 self.url,
                 {"status": "submitting", "file_url": self.input_file_url},
-                format=multipart,
+                format="multipart",
             )
 
         self.assertEqual(response.data, expected)
