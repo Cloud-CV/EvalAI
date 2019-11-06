@@ -501,8 +501,9 @@ class BaseAPITestClass(APITestCase):
         self.challenge.banned_email_ids = ["user1@test.com"]
         self.challenge.save()
 
-        expected = {"error":"You're a part of Participant Team for Challenge team and it has been banned from this challenge. \
-        Please contact the challenge host."}
+        message = "You're a part of Participant Team for Challenge team and it has been banned from this challenge. \
+            Please contact the challenge host."
+        expected = {"error":}
 
         response = self.client.post(
             self.url,
