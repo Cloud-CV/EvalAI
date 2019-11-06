@@ -5,7 +5,7 @@ import os
 import shutil
 
 import jobs.tasks
-import jobs.utils
+import jobs.views
 
 from datetime import timedelta
 
@@ -602,7 +602,7 @@ class BaseAPITestClass(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @mock.patch('jobs.utils.is_url_valid', mock.MagicMock(return_value=True))
+    @mock.patch('jobs.views.is_url_valid', mock.MagicMock(return_value=True))
     def test_challenge_submission_for_successful_submission_with_file_url(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
