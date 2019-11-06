@@ -523,7 +523,7 @@ class BaseAPITestClass(APITestCase):
         )
 
         actual_max_concurrent_submissions = self.challenge_phase.max_concurrent_submissions_allowed
-        self.challenge_phase.max_concurrent_submissions_allowed = 1
+        self.challenge_phase.max_concurrent_submissions_allowed = 2
         self.challenge_phase.save()
         self.challenge.participant_teams.add(self.participant_team)
         self.challenge.save()
@@ -541,8 +541,11 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
 
-        expected = {"error" : "You have 1 submissions that are being processed. \
-        Please wait for them to finish and then try again."}
+        message = "You have 2 submissions that are being processed. \
+                   Please wait for them to finish and then try again."
+        expected = {
+            "error" : message
+        }
 
         self.assertEqual(response_2.data, expected)
         self.assertEqual(response_2.status_code, status.HTTP_406_NOT_ACCEPTABLE)
@@ -566,7 +569,9 @@ class BaseAPITestClass(APITestCase):
             format="multipart",
         )
 
-        expected = {"error":"The file URL does not exists!"}
+        expected = {
+            "error":"The file URL does not exists!"
+        }
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
