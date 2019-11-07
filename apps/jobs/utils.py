@@ -140,7 +140,7 @@ def get_remaining_submission_for_a_phase(
 
 def is_url_possible(url):
     """ Uses urllib.urlparse to determine whether a string qualifies as a valid URL string """
-    o = urlparse(string)
+    o = urlparse(url)
     if o.scheme and o.netloc:
         return True
     return False
