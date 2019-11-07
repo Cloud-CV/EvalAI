@@ -64,7 +64,6 @@ from .tasks import download_file_and_publish_submission_message
 from .utils import (
     get_submission_model,
     get_remaining_submission_for_a_phase,
-    is_url_possible,
     is_url_valid
 )
 
