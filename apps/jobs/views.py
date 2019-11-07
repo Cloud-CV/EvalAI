@@ -64,6 +64,7 @@ from .tasks import download_file_and_publish_submission_message
 from .utils import (
     get_submission_model,
     get_remaining_submission_for_a_phase,
+    is_url_possible,
     is_url_valid
 )
 
@@ -246,6 +247,9 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             )
 
         if not request.FILES:
+            if not is_url_possible(request.data['file_url']):
+                response_data = {'error': 'The file URL submitted is not valid.'}
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
             if not is_url_valid(request.data['file_url']):
                 response_data = {'error': 'The file URL does not exists!'}
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)

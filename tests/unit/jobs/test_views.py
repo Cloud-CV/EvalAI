@@ -513,7 +513,29 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_challenge_submission_with_url_when_url_is_invalid(self):
+    def test_challenge_submission_with_url_when_url_is_not_possible(self):
+        self.url = reverse_lazy(
+            "jobs:challenge_submission",
+            kwargs={
+                "challenge_id": self.challenge.pk,
+                "challenge_phase_id": self.challenge_phase.pk,
+            },
+        )
+        self.challenge.participant_teams.add(self.participant_team)
+        self.challenge.save()
+
+        response = self.client.post(
+            self.url,
+            {"status": "submitting", "file_url": "http://www/"},
+            format="multipart",
+        )
+        expected = {
+            "error": "The file URL submitted is not valid."
+        }
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_challenge_submission_with_url_when_url_is_unerachable(self):
         self.url = reverse_lazy(
             "jobs:challenge_submission",
             kwargs={

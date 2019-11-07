@@ -9,6 +9,7 @@ from challenges.utils import get_challenge_model, get_challenge_phase_model
 from django.utils import timezone
 from participants.utils import get_participant_team_id_of_user_for_a_challenge
 from rest_framework import status
+from urllib.parse import urlparse
 from .constants import submission_status_to_exclude
 from .models import Submission
 
@@ -135,6 +136,14 @@ def get_remaining_submission_for_a_phase(
             "remaining_submissions_count": remaining_submission_count,
         }
         return response_data, status.HTTP_200_OK
+
+
+def is_url_possible(url):
+    """ Uses urllib.urlparse to determine whether a string qualifies as a valid URL string """
+    o = urlparse(string)
+    if o.scheme and o.netloc:
+        return True
+    return False
 
 
 def is_url_valid(url):
