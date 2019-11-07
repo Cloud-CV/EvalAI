@@ -247,22 +247,20 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             )
 
         if not request.FILES:
-            if not is_url_possible(request.data['file_url']):
-                response_data = {'error': 'The file URL submitted is not valid.'}
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-            if not is_url_valid(request.data['file_url']):
-                response_data = {'error': 'The file URL does not exists!'}
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-            download_file_and_publish_submission_message.delay(
-                request.data,
-                request.user.id,
-                request.method,
-                challenge_phase_id
-            )
-            response_data = {
-                'message': 'Please wait while your submission being evaluated!'
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
+            if 'file_url' in request.data.keys:
+                if not is_url_valid(request.data['file_url']):
+                    response_data = {'error': 'The file URL does not exists!'}
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                download_file_and_publish_submission_message.delay(
+                    request.data,
+                    request.user.id,
+                    request.method,
+                    challenge_phase_id
+                )
+                response_data = {
+                    'message': 'Please wait while your submission being evaluated!'
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
         serializer = SubmissionSerializer(
             data=request.data,
             context={
