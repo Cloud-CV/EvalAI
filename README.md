@@ -56,10 +56,10 @@ The steps are:
     git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
     ```
 
-3. Build and run the Docker containers. This might take a while.
+3. Build and run the Docker containers with admin privileges. This might take a while.
 
     ```
-    docker-compose up --build
+     docker-compose up --build
     ```
 
 4. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
