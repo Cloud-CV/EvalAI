@@ -48,7 +48,7 @@ Our ultimate goal is to build a centralized platform to host, participate and co
 Setting up EvalAI on your local machine is really easy. You can setup EvalAI using docker:
 The steps are:
 
-1. Install [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and [docker-compose](https://docs.docker.com/compose/install/) on your machine.
+1. Install [docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/install/) on your machine.
 
 2. Get the source code on to your machine via git.
 
@@ -68,7 +68,7 @@ The steps are:
     **HOST USER-** username: `host` password: `password`  
     **PARTICIPANT USER-** username: `participant` password: `password`
 
-If you are facing any issue during installation, please see our [common errors during installation page](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation).
+If you are facing any issue during installation, please see our [common errors during installation](https://evalai.readthedocs.io/en/latest/faq(developers).html#common-errors-during-installation) page.
 
 ## Citing EvalAI
 If you are using EvalAI for hosting challenges, please cite the following technical report:
@@ -89,7 +89,7 @@ If you are using EvalAI for hosting challenges, please cite the following techni
 
 ## Team
 
-EvalAI is currently maintained by [Deshraj Yadav](https://deshraj.github.io) and [Rishabh Jain](https://rishabhjain2018.github.io/). A non-exhaustive list of other major contributors includes: [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](http://taranjeet.github.io/), [Shiv Baran Singh](http://www.shivbaran.in/), [Harsh Agarwal](https://dexter1691.github.io/), [Prithvijit Chattopadhyay](https://prithv1.github.io/), [Devi Parikh](https://www.cc.gatech.edu/~parikh/) and [Dhruv Batra](https://www.cc.gatech.edu/~dbatra/).
+EvalAI is currently maintained by [Deshraj Yadav](http://deshraj.xyz/) and [Rishabh Jain](https://rishabhjain.xyz/). A non-exhaustive list of other major contributors includes: [Akash Jain](http://www.jainakash.in/), [Taranjeet Singh](https://taranjeet.cc/), [Shiv Baran Singh](https://github.com/spyshiv), [Harsh Agarwal](https://dexter1691.github.io/), [Prithvijit Chattopadhyay](https://prithv1.github.io/), [Devi Parikh](https://www.cc.gatech.edu/~parikh/) and [Dhruv Batra](https://www.cc.gatech.edu/~dbatra/).
 
 ## Contribution guidelines
 
