@@ -20,7 +20,7 @@ Once you have installed [docker] and [docker-compose], please follow these steps
    docker-compose up --build
    ```
 
-3. That's it. Open web browser and hit the url [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below:
+3. That's it. Open web browser and hit the URL [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below:
 
 | User type   | Username    | Password   | Permissions                                                                            |
 | ----------- | ----------- | ---------- | -------------------------------------------------------------------------------------- |
