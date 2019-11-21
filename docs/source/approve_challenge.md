@@ -2,7 +2,7 @@
 
 **Note:** If you are hosting the challenge on [evalai.cloudcv.org](https://evalai.cloudcv.org), then you cannot approve your challenge. It will be approved by [EvalAI team](https://evalai.cloudcv.org/team). You can skip this section.
 
-Once a challenge config has been uploaded, the challenge has to be approved by the EvalAI Admin (i.e you if you are setting up EvalAI yourself on your server) to make it available to everyone. Please follow the following steps to approve a challenge (if you are ):
+Once a challenge config has been uploaded, the challenge has to be approved by the EvalAI Admin (i.e. you if you are setting up EvalAI yourself on your server) to make it available to everyone. Please follow the following steps to approve a challenge (if you are ):
 
 Let's assume that we want to approve a challenge with name `Random Number Generator Challenge`.
 
@@ -33,4 +33,4 @@ Run the following command:
 
 Now, the challenge is ready to accept submissions from participants.
 
-If you have issues in hosting a challenge on forked version of EvalAI, please feel free to create an issue on our [Github Issues Page](https://github.com/Cloud-CV/EvalAI/issues/new).
+If you have issues in hosting a challenge on forked version of EvalAI, please feel free to create an issue on our [GitHub Issues Page](https://github.com/Cloud-CV/EvalAI/issues/new).

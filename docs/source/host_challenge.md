@@ -2,7 +2,7 @@
 
 EvalAI supports hosting challenges with different configurations. Challenge organizers can choose to customize most aspects of the challenge but not limited to:
 
-- Evalutaion metrics
+- Evaluation metrics
 - Language/Framework to implement the metric
 - Number of phases and data-splits
 - Daily / monthly / overall submission limit
@@ -25,7 +25,7 @@ We have hosted challenges from different domains such as:
 
 We categorize the challenges in two categories:
 
-1. **Prediction upload based challenges**: Participants upload predictions corresponding to ground truth labels in the form of a file (could be any format: `json`, `npy`, `csv`, `txt` etc).
+1. **Prediction upload based challenges**: Participants upload predictions corresponding to ground truth labels in the form of a file (could be any format: `json`, `npy`, `csv`, `txt` etc.)
 
    Some of the popular prediction upload based challenges that we have hosted are shown below:
 
@@ -69,11 +69,11 @@ EvalAI supports all kinds of HTML tags which means you can add images, videos, t
 
 ### Step 5: Upload configuration on EvalAI
 
-Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, vist [EvalAI - Host challenge page](https://evalai.cloudcv.org/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
+Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://evalai.cloudcv.org/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
 
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://evalai.cloudcv.org/team) has notified about this. [EvalAI team](https://evalai.cloudcv.org/team) will review and will approve the challenge.
 
-If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [Github issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
+If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
 ## Host Code upload based challenge
 
@@ -108,11 +108,11 @@ EvalAI supports all kinds of HTML tags which means you can add images, videos, t
 
 ### Step 5: Upload configuration on EvalAI
 
-Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, vist [EvalAI - Host challenge page](https://evalai.cloudcv.org/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
+Finally run the `./run.sh` script in the bundle. It will generate a `challenge_config.zip` file that contains all the details related to the challenge. Now, visit [EvalAI - Host challenge page](https://evalai.cloudcv.org/web/challenge-host-teams) and select/create a challenge host team. Then upload the `challenge_config.zip`.
 
 **Congratulations!** you have submitted your challenge configuration for review and [EvalAI team](https://evalai.cloudcv.org/team) has notified about this. [EvalAI team](https://evalai.cloudcv.org/team) will review and will approve the challenge.
 
-If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [Github issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
+If you have issues in creating a challenge on EvalAI, please feel free to contact us at [team@cloudcv.org](mailto:team@cloudcv.org) create an issue on our [GitHub issues page](https://github.com/Cloud-CV/EvalAI/issues/new).
 
 [evalai-starters]: https://github.com/cloud-CV/evalai-starters
 [evalai-cli]: http://evalai-cli.cloudcv.org

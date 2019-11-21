@@ -21,7 +21,7 @@ It receives three arguments, namely:
 
 After reading the files, some custom actions can be performed. This varies per challenge.
 
-The `evaluate()` method also accepts keyword arguments. By default, we provide you metadata of each submission to your challenge which you can use to send notifications to your slack channel or to some other webhook service. Following is an example code showing how to get the submission metadata in your evaluation script and send a slack notification if the accuracy is more than some value `X` (X being 90 in the expample given below).
+The `evaluate()` method also accepts keyword arguments. By default, we provide you metadata of each submission to your challenge which you can use to send notifications to your slack channel or to some other webhook service. Following is an example code showing how to get the submission metadata in your evaluation script and send a slack notification if the accuracy is more than some value `X` (X being 90 in the example given below).
 
 ```
 def evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs):
