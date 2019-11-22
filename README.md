@@ -57,8 +57,15 @@ The steps are:
     ```
 
 3. Build and run the Docker containers. This might take a while.
+    
+    ***For Ubuntu :***
 
+    ```shell 
+    sudo docker-compose up --build
     ```
+    ***For Windows , Run cmd as administrator and the command :***
+        
+    ```shell
     docker-compose up --build
     ```
 
