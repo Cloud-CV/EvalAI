@@ -21,8 +21,9 @@ urlpatterns = [
         name="get_remaining_submissions",
     ),
     url(
-        r'^submissions/(?P<submission_pk>[0-9]+)/re-run/$',
-        views.re_run_submission, name='re_run_submission'
+        r"^submissions/(?P<submission_pk>[0-9]+)/re-run/$",
+        views.re_run_submission,
+        name="re_run_submission",
     ),
     url(
         r"^challenge_phase_split/(?P<challenge_phase_split_id>[0-9]+)/leaderboard/$",
@@ -58,5 +59,10 @@ urlpatterns = [
         r"^submission_files/$",
         views.get_signed_url_for_submission_related_file,
         name="get_signed_url_for_submission_related_file",
+    ),
+    url(
+        r"^leaderboard_data/(?P<leaderboard_data_pk>[0-9]+)/$",
+        views.update_leaderboard_data,
+        name="update_leaderboard_data",
     ),
 ]
