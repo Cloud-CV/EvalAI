@@ -56,15 +56,16 @@ from .filters import SubmissionFilter
 from .models import Submission
 from .sender import publish_submission_message
 from .serializers import (
-    SubmissionSerializer,
     CreateLeaderboardDataSerializer,
+    LeaderboardDataSerializer,
     RemainingSubmissionDataSerializer,
+    SubmissionSerializer,
 )
 from .tasks import download_file_and_publish_submission_message
 from .utils import (
     get_submission_model,
     get_remaining_submission_for_a_phase,
-    is_url_valid
+    is_url_valid,
 )
 
 logger = logging.getLogger(__name__)
@@ -152,8 +153,12 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             participant_team=participant_team_id,
             challenge_phase=challenge_phase,
         ).order_by("-submitted_at")
-        filtered_submissions = SubmissionFilter(request.GET, queryset=submission)
-        paginator, result_page = paginated_queryset(filtered_submissions.qs, request)
+        filtered_submissions = SubmissionFilter(
+            request.GET, queryset=submission
+        )
+        paginator, result_page = paginated_queryset(
+            filtered_submissions.qs, request
+        )
         serializer = SubmissionSerializer(
             result_page, many=True, context={"request": request}
         )
@@ -216,11 +221,13 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         for participant_email in all_participants_email:
             if participant_email in challenge.banned_email_ids:
                 message = "You're a part of {} team and it has been banned from this challenge. \
-                Please contact the challenge host.".format(participant_team.team_name)
-                response_data = {
-                    "error": message
-                }
-                return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+                Please contact the challenge host.".format(
+                    participant_team.team_name
+                )
+                response_data = {"error": message}
+                return Response(
+                    response_data, status=status.HTTP_403_FORBIDDEN
+                )
 
         # Fetch the number of submissions under progress.
         submissions_in_progress_status = [
@@ -246,17 +253,19 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             )
 
         if not request.FILES:
-            if not is_url_valid(request.data['file_url']):
-                response_data = {'error': 'The file URL does not exists!'}
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+            if not is_url_valid(request.data["file_url"]):
+                response_data = {"error": "The file URL does not exists!"}
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
             download_file_and_publish_submission_message.delay(
                 request.data,
                 request.user.id,
                 request.method,
-                challenge_phase_id
+                challenge_phase_id,
             )
             response_data = {
-                'message': 'Please wait while your submission being evaluated!'
+                "message": "Please wait while your submission being evaluated!"
             }
             return Response(response_data, status=status.HTTP_200_OK)
         serializer = SubmissionSerializer(
@@ -527,7 +536,9 @@ def leaderboard(request, challenge_phase_split_id):
     for leaderboard_item in leaderboard_data:
         participant_team_id = leaderboard_item["submission__participant_team"]
         participant_team = ParticipantTeam.objects.get(id=participant_team_id)
-        all_participants_email_ids = participant_team.get_all_participants_email()
+        all_participants_email_ids = (
+            participant_team.get_all_participants_email()
+        )
         for participant_email in all_participants_email_ids:
             if participant_email in all_banned_email_ids:
                 all_banned_participant_team.append(participant_team_id)
@@ -544,15 +555,18 @@ def leaderboard(request, challenge_phase_split_id):
                 float(k["filtering_score"]),
                 float(-k["filtering_error"]),
             ),
-            reverse=True if challenge_phase_split.is_leaderboard_order_descending else False,
+            reverse=True
+            if challenge_phase_split.is_leaderboard_order_descending
+            else False,
         )
 
     distinct_sorted_leaderboard_data = []
     team_list = []
     for data in sorted_leaderboard_data:
         if (
-            data["submission__participant_team__team_name"] in team_list or
-            data['submission__participant_team'] in all_banned_participant_team
+            data["submission__participant_team__team_name"] in team_list
+            or data["submission__participant_team"]
+            in all_banned_participant_team
         ):
             continue
         elif data["submission__is_baseline"] is True:
@@ -980,8 +994,8 @@ def update_submission(request, challenge_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST', ])
-@throttle_classes([UserRateThrottle, ])
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def re_run_submission(request, submission_pk):
@@ -992,7 +1006,9 @@ def re_run_submission(request, submission_pk):
     try:
         submission = Submission.objects.get(pk=submission_pk)
     except Submission.DoesNotExist:
-        response_data = {'error': 'Submission {} does not exist'.format(submission_pk)}
+        response_data = {
+            "error": "Submission {} does not exist".format(submission_pk)
+        }
         return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     # get the challenge and challenge phase object
@@ -1006,12 +1022,14 @@ def re_run_submission(request, submission_pk):
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
 
     if not challenge.is_active:
-        response_data = {'error': 'Challenge {} is not active'.format(challenge.title)}
+        response_data = {
+            "error": "Challenge {} is not active".format(challenge.title)
+        }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     publish_submission_message(challenge.pk, challenge_phase.pk, submission.pk)
     response_data = {
-        'success': 'Submission is successfully submitted for re-running'
+        "success": "Submission is successfully submitted for re-running"
     }
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -1216,3 +1234,99 @@ def get_signed_url_for_submission_related_file(request):
             "error": "You are not authorized to access this file."
         }
         return Response(response_data, status=status.HTTP_403_FORBIDDEN)
+
+
+@api_view(["PATCH"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def update_leaderboard_data(request, leaderboard_data_pk):
+    """API endpoint to update a metric in leaderboard data
+
+    Arguments:
+        request {HttpRequest} -- The request object
+        leaderboard_data_pk {int} -- Primary key from leaderboard data table
+    """
+
+    try:
+        leaderboard_data = LeaderboardData.objects.get(pk=leaderboard_data_pk)
+    except LeaderboardData.DoesNotExist:
+        response_data = {"error": "Leaderboard data does not exist"}
+        return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    challenge = (
+        leaderboard_data.challenge_phase_split.challenge_phase.challenge
+    )
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to make this request!"
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    data = request.data.get("leaderboard_data")
+    if data is None:
+        response_data = {"error": "leaderboard_data can't be blank"}
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        data = json.loads(data)
+    except (ValueError, TypeError) as exc:
+        response_data = {
+            "error": "`leaderboard_data` key contains invalid data with error {}."
+            "Please try again with correct format.".format(str(exc))
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    leaderboard_metrics = leaderboard_data.leaderboard.schema.get("labels")
+    missing_metrics = []
+    extra_metrics = []
+    malformed_metrics = []
+    for metric in leaderboard_metrics:
+        if metric not in data:
+            missing_metrics.append(metric)
+
+    for metric, value in data.items():
+        if metric not in leaderboard_metrics:
+            extra_metrics.append(metric)
+
+        if not (isinstance(value, float) or isinstance(value, int)):
+            malformed_metrics.append((metric, type(value)))
+
+    if len(missing_metrics) and len(extra_metrics):
+        response_data = {
+            "error": "Following metrics {0} are missing and following metrics are invalid {1} in the "
+            "leaderboard data".format(missing_metrics, extra_metrics)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if len(missing_metrics):
+        response_data = {
+            "error": "Following metrics are missing in the "
+            "leaderboard data: {}".format(missing_metrics)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if len(extra_metrics):
+        response_data = {
+            "error": "Following metrics are invalid in the "
+            "leaderboard data: {}".format(extra_metrics)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if len(malformed_metrics):
+        response_data = {
+            "error": "Values for following metrics are not of"
+            "float/int: {}".format(malformed_metrics)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    result = {"result": data}
+    serializer = LeaderboardDataSerializer(
+        leaderboard_data,
+        data=result,
+        partial=True,
+        context={"request": request},
+    )
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
