@@ -183,6 +183,7 @@ def create_challenge_phases(challenge, number_of_phases=1):
             description=fake.paragraph(),
             leaderboard_public=True,
             is_public=True,
+            is_submission_public=True,
             start_date=challenge.start_date,
             end_date=challenge.end_date,
             challenge=challenge,
@@ -215,7 +216,7 @@ def create_leaderboard_data(challenge_phase_split, submission):
         challenge_phase_split=challenge_phase_split,
         submission=submission,
         leaderboard=challenge_phase_split.leaderboard,
-        result=json.dumps(result),
+        result=result,
         error=None
     )
     return leaderboard_data
@@ -291,7 +292,6 @@ def create_submission(participant_user, participant_team,
         participant_team=participant_team,
         challenge_phase=challenge_phase,
         created_by=participant_user,
-        status=status,
         output=output,
         submitted_at=submitted_at,
         started_at=started_at,
@@ -305,10 +305,10 @@ def create_submission(participant_user, participant_team,
         stderr_file=None,
         submission_result_file=ContentFile(submission_result),
         submission_metadata_file=None,
-        is_baseline=True,
-        is_flagged=True
-
+        is_baseline=True
     )
+    submission.status = status
+    submission.save()
     print("Submission created by user {} for phase {} of challenge {}.".format(participant_user.username,
                                                                                challenge_phase.name,
                                                                                challenge_phase.challenge.title))
