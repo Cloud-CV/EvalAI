@@ -75,6 +75,7 @@ class LeaderboardDataSerializer(serializers.ModelSerializer):
             "challenge_phase_split",
             "leaderboard_schema",
             "result",
+            "error",
         )
 
     def get_participant_team_name(self, obj):
