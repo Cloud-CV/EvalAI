@@ -7,15 +7,15 @@ Alternatively, if you come across a new bug on the site, please file a new issue
 
 #### Q. What are the technologies that EvalAI uses?
 
-Please refer to [Technoligies Used](https://evalai.readthedocs.io/en/latest/architecture.html)
+Please refer to [Technologies Used](https://evalai.readthedocs.io/en/latest/architecture.html)
 
 #### Q. Where could I learn Github Commands?
 
-Refer to [Github Guide](https://help.github.com/articles/git-and-github-learning-resources/).
+Refer to [GitHub Guide](https://help.github.com/articles/git-and-github-learning-resources/).
 
 #### Q. Where could I learn Markdown?
 
-Refer to [MarkDown Guide](https://guides.github.com/features/mastering-markdown/).
+Refer to [Markdown Guide](https://guides.github.com/features/mastering-markdown/).
 
 #### Q. What to do when coverage decreases in your pull request?
 
@@ -118,7 +118,7 @@ Execute the following command first :
 gem install sass
 ```
 
-#### Q. While trying to install `npm config set proxy http://proxy:port` on UBUNTU, I get the following error:
+#### Q. While trying to install `npm config set proxy http://proxy:port` on Ubuntu, I get the following error:
 
 ```
 ubuntu@ubuntu-Inspiron-3521:~/Desktop/Python-2.7.14$ npm install -g angular-cli
@@ -151,7 +151,7 @@ If the above does not work, try deleting them by following commands:
 
 Then, start the installation process of frontend once more.
 
-#### Q. While using docker, I am getting the following error on URL [http://localhost:8888/](http://localhost:8888/)
+#### Q. While using docker, I am getting the following error on URL [http://localhost:8888/](http://localhost:8888/):
 
 ```
 Cannot Get \
@@ -159,7 +159,7 @@ Cannot Get \
 
 Try removing the docker containers and then building them again.
 
-#### Q. Getting the following error while running `python manage.py seed`
+#### Q. Getting the following error while running `python manage.py seed`:
 
 ```
 Starting the database seeder. Hang on... Exception while running run() in 'scripts.seed' Database successfully seeded
@@ -167,7 +167,7 @@ Starting the database seeder. Hang on... Exception while running run() in 'scrip
 
 Change the python version to 2.7.x . The problem might be because of the python 3.0 version.
 
-#### Q. Getting the following error while executing command `createdb evalai -U postgres`
+#### Q. Getting the following error while executing command `createdb evalai -U postgres`:
 
 ```
 createdb: could not connect to database template1: FATAL: Peer authentication failed for user "postgres"
@@ -175,7 +175,7 @@ createdb: could not connect to database template1: FATAL: Peer authentication fa
 
 Try creating a new user and then grant all the privileges to it and then create a db.
 
-#### Q. Getting the following error while executing `npm install`
+#### Q. Getting the following error while executing `npm install`:
 
 ```
 npm WARN generator-angular@0.16.0 requires a peer of generator-
@@ -200,7 +200,7 @@ It appears that you are trying to run `pytest` in a docker container. To fix thi
 
 `find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf`
 
-#### Q. Getting the following error :
+#### Q. Getting the following error:
 
 ```
 ERROR: for db Cannot start service db: driver failed programming external connectivity on endpoint evalai_db_1 (2163096de9aac6561b4f699bb1049acd0ce881fbaa0da28e47cfa9ca0ee1199f): Error starting userland proxy: listen tcp 0.0.0.0:5432: bind: address already in use
@@ -223,15 +223,15 @@ Execute the following command:
 sudo kill 25273 ## This would vary and you can change with the output in the first step
 ```
 
-#### Q. Getting the following error :
+#### Q. Getting the following error when using Docker:
 
 ```
-ERROR : Version in "./docker-compose.yml" is unsupported. You might be seeing this error becasue you are using wrong Compose file version.
+ERROR : Version in "./docker-compose.yml" is unsupported. You might be seeing this error because you are using wrong Compose file version.
 ```
 
 Since, the version of compose file is 3. You might be using a docker version which is not compatible. You can upgrade your docker engine and try again.
 
-#### Q. Getting the following error while runnig `python manage.py runserver --settings=settings.dev`
+#### Q. Getting the following error while running `python manage.py runserver --settings=settings.dev`:
 
 ```
 Starting the database seeder. Hang on...
