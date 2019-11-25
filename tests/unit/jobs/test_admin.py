@@ -147,3 +147,9 @@ class SubmissionAdminTest(BaseAPITestClass):
         queryset = Submission.objects.filter(is_public=False)
         self.app_admin.make_submission_public(request, queryset)
         self.assertEqual(Submission.objects.filter(is_public=True).count(), 1)
+
+    def test_make_submission_private(self):
+
+        queryset = Submission.objects.filter(is_public=True)
+        self.app_admin.make_submission_public(request, queryset)
+        self.assertEqual(Submission.objects.filter(is_public=False).count(), 1)
