@@ -207,3 +207,15 @@ class TestJobsUrls(BaseAPITestClass):
         )
         resolver = resolve(self.url)
         self.assertEqual(resolver.view_name, "jobs:get_remaining_submissions")
+
+    def test_update_leaderboard_data_url(self):
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard.pk}
+        )
+        self.assertEqual(
+            self.url,
+            "/api/jobs/leaderboard_data/{}/".format(self.leaderboard.pk),
+        )
+        resolver = resolve(self.url)
+        self.assertEqual(resolver.view_name, "jobs:update_leaderboard_data")
