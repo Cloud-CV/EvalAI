@@ -31,6 +31,8 @@ from rest_framework_expiring_authtoken.authentication import (
     ExpiringTokenAuthentication,
 )
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from yaml.scanner import ScannerError
 
@@ -1177,6 +1179,137 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                 )
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True,
+        ),
+        openapi.Parameter(
+            name="challenge_phase_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge Phase ID",
+            required=True,
+        ),
+    ],
+    operation_id="get_all_submissions_for_a_challenge",
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            description="",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "count": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Count of submissions",
+                    ),
+                    "next": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="URL of next page of results",
+                    ),
+                    "previous": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="URL of previous page of results",
+                    ),
+                    "results": openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        description="Array of results object",
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                "id": openapi.Schema(
+                                    type=openapi.TYPE_INTEGER,
+                                    description="Submission ID",
+                                ),
+                                "participant_team": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Participant Team Name",
+                                ),
+                                "challenge_phase": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Challenge Phase name",
+                                ),
+                                "created_by": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Username of user who created the submission",
+                                ),
+                                "status": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Status of the submission",
+                                ),
+                                "is_public": openapi.Schema(
+                                    type=openapi.TYPE_BOOLEAN,
+                                    description="Shows if the submission is public or not",
+                                ),
+                                "is_flagged": openapi.Schema(
+                                    type=openapi.TYPE_BOOLEAN,
+                                    description="Shows if the submission is flagged or not",
+                                ),
+                                "submission_number": openapi.Schema(
+                                    type=openapi.TYPE_INTEGER,
+                                    description="Count of submissions done by a team",
+                                ),
+                                "submitted_at": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Timestamp when submission was submitted",
+                                ),
+                                "execution_time": openapi.Schema(
+                                    type=openapi.TYPE_NUMBER,
+                                    description="Execution time of the submission in seconds",
+                                ),
+                                "input_file": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="URL of the file submitted by user",
+                                ),
+                                "stdout_file": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="URL of the stdout file generated after evaluating submission",
+                                ),
+                                "stderr_file": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="URL of the stderr file generated after evaluating submission only available when the submission fails",
+                                ),
+                                "submission_result_file": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="URL of the result file generated after successfully evaluating submission",
+                                ),
+                                "submission_metadata_file": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="URL of the metadata file generated after successfully evaluating submission",
+                                ),
+                                "participant_team_members_email_ids": openapi.Schema(
+                                    type=openapi.TYPE_ARRAY,
+                                    description="Array of the participant team members email ID's",
+                                ),
+                                "participant_team_members_affiliations": openapi.Schema(
+                                    type=openapi.TYPE_ARRAY,
+                                    description="Array of the participant team members affiliations",
+                                ),
+                                "created_at": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Timestamp when the submission was created",
+                                ),
+                                "method_name": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    description="Name of the method used by the participant team",
+                                ),
+                                "participant_team_members": openapi.Schema(
+                                    type=openapi.TYPE_ARRAY,
+                                    description="Array of participant team members name and email",
+                                ),
+                            },
+                        ),
+                    ),
+                },
+            ),
+        )
+    },
+)
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
