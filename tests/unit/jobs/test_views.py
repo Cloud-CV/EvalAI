@@ -2478,3 +2478,87 @@ class UpdateSubmissionTest(BaseAPITestClass):
         response = self.client.put(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class UpdateLeaderBoardDataTest(BaseAPITestClass):
+    def setUp(self):
+        super(UpdateLeaderBoardDataTest, self).setUp()
+
+        self.submission = Submission.objects.create(
+            participant_team=self.participant_team,
+            challenge_phase=self.challenge_phase,
+            created_by=self.challenge_host_team.created_by,
+            status="submitted",
+            input_file=self.challenge_phase.test_annotation,
+            method_name="Test Method",
+            method_description="Test Description",
+            project_url="http://testserver/",
+            publication_url="http://testserver/",
+            is_public=True,
+            when_made_public=timezone.now(),
+        )
+        self.challenge_host = ChallengeHost.objects.create(
+            user=self.user,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ADMIN,
+        )
+        self.datasetSplit = DatasetSplit.objects.create(
+            name="Test", codename="Test"
+        )
+        self.leaderboard = Leaderboard.objects.create(
+            schema={"labels": ["metric1", "metric2"]}
+        )
+        self.challengephasesplit = ChallengePhaseSplit.objects.create(
+            challenge_phase=self.challenge_phase,
+            dataset_split=self.datasetSplit,
+            leaderboard=self.leaderboard,
+            visibility=3,
+        )
+        self.leaderboard_data = LeaderboardData.objects.create(
+            challenge_phase_split=self.challengephasesplit,
+            submission=self.submission,
+            leaderboard=self.leaderboard,
+            result={"labels": ["metric1", "metric2"]},
+        )
+    def test_update_leaderboard_when_data_doesnt_exists(self):
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk + 10},
+        )
+        
+        expected = {
+            "error": "Leaderboard data does not exist"
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.patch(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_leaderboard_when_user_is_not_challlenge_host(self):
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        
+        expected = {
+            'error': 'Sorry, you are not authorized to make this request!'
+        }
+        response = self.client.patch(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_leaderboard_when_data_is_blank(self):
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        
+        expected = {
+            'error': "leaderboard_data can't be blank"
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.patch(self.url)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    
