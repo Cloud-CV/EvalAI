@@ -18,6 +18,7 @@ from base.utils import paginated_queryset
 from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
 from challenges.utils import (
+    get_challenge_model,
     is_user_in_allowed_email_domains,
     is_user_in_blocked_email_domains
 )
@@ -187,7 +188,7 @@ def invite_participant_to_team(request, pk):
 
     if len(team_participated_challenges) > 0:
         for challenge_pk in team_participated_challenges:
-            challenge = Challenge.objects.get(pk=challenge_pk)
+            challenge = get_challenge_model(challenge_pk)
             # Check if user is in allowed list.
             if len(challenge.allowed_email_domains) > 0:
                 if not is_user_in_allowed_email_domains(email, challenge_pk):
