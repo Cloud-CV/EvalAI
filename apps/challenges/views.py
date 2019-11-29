@@ -52,8 +52,8 @@ from challenges.utils import (
     get_challenge_phase_split_model,
     get_dataset_split_model,
     get_leaderboard_model,
-    check_if_user_is_in_allowed_email_domains,
-    check_if_user_is_in_blocked_email_domains
+    is_user_in_allowed_email_domains,
+    is_user_in_blocked_email_domains
 )
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from hosts.utils import (
@@ -275,7 +275,7 @@ def add_participant_team_to_challenge(
     # Check if user is in allowed list.
     user_email = request.user.email
     if len(challenge.allowed_email_domains) > 0:
-        if not check_if_user_is_in_allowed_email_domains(user_email, challenge_pk):
+        if not is_user_in_allowed_email_domains(user_email, challenge_pk):
             message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
             domains = ""
             for domain in challenge.allowed_email_domains:
@@ -287,7 +287,7 @@ def add_participant_team_to_challenge(
             )
 
     # Check if user is in blocked list.
-    if check_if_user_is_in_blocked_email_domains(user_email, challenge_pk):
+    if is_user_in_blocked_email_domains(user_email, challenge_pk):
         message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
         domains = ""
         for domain in challenge.blocked_email_domains:

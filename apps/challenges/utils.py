@@ -191,7 +191,7 @@ def create_federated_user(name, repository, aws_keys):
     return response
 
 
-def check_if_user_is_in_allowed_email_domains(email, challenge_pk):
+def is_user_in_allowed_email_domains(email, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
     for domain in challenge.allowed_email_domains:
         if domain.lower() in email.lower():
@@ -199,7 +199,7 @@ def check_if_user_is_in_allowed_email_domains(email, challenge_pk):
     return False
 
 
-def check_if_user_is_in_blocked_email_domains(email, challenge_pk):
+def is_user_in_blocked_email_domains(email, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
     for domain in challenge.blocked_email_domains:
         domain = "@" + domain
