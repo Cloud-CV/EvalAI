@@ -73,7 +73,7 @@
         vm.scrollToEntryAfterLeaderboardLoads = function () {
             // get unique rank number from the url & if exists hightlight the entry
             $timeout(function() {
-                const elementId = $location.absUrl().split('?')[0].split('#')[1];
+                var elementId = $location.absUrl().split('?')[0].split('#')[1];
                 if (elementId) {
                     $anchorScroll.yOffset = 90;
                     $anchorScroll(elementId);
@@ -81,8 +81,8 @@
                 }
             }, 500);
         };
-      
-        // scroll to the specific entry of the leaderboard
+
+         // scroll to the specific entry of the leaderboard
         vm.scrollToSpecificEntryLeaderboard = function (elementId) {
             var newHash = elementId.toString();
             if ($location.hash() !== newHash) {
@@ -92,7 +92,7 @@
             }
             $scope.isHighlight = false;
             $anchorScroll.yOffset = 90;
-        }
+        };
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
@@ -646,6 +646,8 @@
             parameters.callback = {
                 onSuccess: function (response) {
                     vm.selectedPhaseSplit = response.data;
+                    vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
+                        "Sort by best":"Sort by latest";
                 },
                 onError: function (response) {
                     var error = response.data;
@@ -705,8 +707,8 @@
                                 vm.leaderboard[i].timeSpan = 'hour';
                             } else {
                                 vm.leaderboard[i].timeSpan = 'hours';
-                            }
-                        }
+                            }                        
+                        } 
                         else if (duration._data.minutes !=0) {
                             var minutes = duration.asMinutes();
                             vm.leaderboard[i].submission__submitted_at = minutes;
@@ -1039,6 +1041,29 @@
                 }
             };
 
+            utilities.sendRequest(parameters);
+        };
+
+        vm.toggleShowLeaderboardByLatest = function() {
+            parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
+            parameters.method = "PATCH";
+            parameters.data = {
+                "show_leaderboard_by_latest_submission": !vm.selectedPhaseSplit.show_leaderboard_by_latest_submission
+            };
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.selectedPhaseSplit = response.data;
+                    vm.getLeaderboard(vm.selectedPhaseSplit.id);
+                    vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
+                        "Sort by best":"Sort by latest";
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    vm.stopLoader();
+                    $rootScope.notify("error", error);
+                    return false;
+                }
+            };
             utilities.sendRequest(parameters);
         };
 
