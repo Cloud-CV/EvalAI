@@ -17,6 +17,10 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
+from challenges.utils import (
+    check_if_user_is_in_allowed_email_domains,
+    check_if_user_is_in_blocked_email_domains
+)
 from hosts.utils import is_user_a_host_of_challenge
 
 from .models import Participant, ParticipantTeam
@@ -180,6 +184,34 @@ def invite_participant_to_team(request, pk):
     team_participated_challenges = get_list_of_challenges_for_participant_team(
         [participant_team]
     ).values_list("id", flat=True)
+
+    if len(team_participated_challenges) > 0:
+        for challenge_pk in team_participated_challenges:
+            challenge = Challenge.objects.get(pk=challenge_pk)
+            # Check if user is in allowed list.
+            if len(challenge.allowed_email_domains) > 0:
+                if not check_if_user_is_in_allowed_email_domains(email, challenge_pk):
+                    message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
+                    domains = ""
+                    for domain in challenge.allowed_email_domains:
+                        domains = "{}{}{}".format(domains, "/", domain)
+                    domains = domains[1:]
+                    response_data = {"error": message.format(domains)}
+                    return Response(
+                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+
+            # Check if user is in blocked list.
+            if check_if_user_is_in_blocked_email_domains(email, challenge_pk):
+                message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
+                domains = ""
+                for domain in challenge.blocked_email_domains:
+                    domains = "{}{}{}".format(domains, "/", domain)
+                domains = domains[1:]
+                response_data = {"error": message.format(domains)}
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
 
     if set(invited_user_participated_challenges) & set(
         team_participated_challenges
