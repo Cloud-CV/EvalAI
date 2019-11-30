@@ -2479,6 +2479,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+
 class UpdateLeaderBoardDataTest(BaseAPITestClass):
     def setUp(self):
         super(UpdateLeaderBoardDataTest, self).setUp()
@@ -2520,12 +2521,13 @@ class UpdateLeaderBoardDataTest(BaseAPITestClass):
             leaderboard=self.leaderboard,
             result={"labels": ["metric1", "metric2"]},
         )
+
     def test_update_leaderboard_when_data_doesnt_exists(self):
         self.url = reverse_lazy(
             "jobs:update_leaderboard_data",
             kwargs={"leaderboard_data_pk": self.leaderboard_data.pk + 10},
         )
-        
+
         expected = {
             "error": "Leaderboard data does not exist"
         }
@@ -2534,12 +2536,12 @@ class UpdateLeaderBoardDataTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_update_leaderboard_when_user_is_not_challlenge_host(self):
+    def test_update_leaderboard_when_user_is_not_challenge_host(self):
         self.url = reverse_lazy(
             "jobs:update_leaderboard_data",
             kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
         )
-        
+
         expected = {
             'error': 'Sorry, you are not authorized to make this request!'
         }
@@ -2552,7 +2554,7 @@ class UpdateLeaderBoardDataTest(BaseAPITestClass):
             "jobs:update_leaderboard_data",
             kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
         )
-        
+
         expected = {
             'error': "leaderboard_data can't be blank"
         }
@@ -2561,4 +2563,83 @@ class UpdateLeaderBoardDataTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    
+    def test_update_leaderboard_when_data_is_invalid(self):
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        self.data = {
+            "leaderboard_data": {"metric1": "123", "metric3": "456"}
+        }
+        expected = {
+            "error": "`leaderboard_data` key contains invalid data with error the JSON object must be str, bytes or bytearray, not 'dict'."
+            "Please try again with correct format."
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_leaderboard_when_data_for_missing_and_invalid_metrics(self):
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        self.data = {
+            "leaderboard_data": '{"metric1": "123", "metric3": "456"}'
+        }
+        expected = {
+            "error": "Following metrics ['metric2'] are missing and following metrics are invalid ['metric3'] in the leaderboard data"
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_leaderboard_when_data_for_missing_metrics(self):
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        self.data = {
+            "leaderboard_data": '{"metric1": "123"}'
+        }
+        expected = {
+            "error": "Following metrics are missing in the leaderboard data: ['metric2']"
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_leaderboard_when_data_for_extra_metrics(self):
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        self.data = {
+            "leaderboard_data": '{"metric1": 123, "metric2": 123, "metric3": 123}'
+        }
+        expected = {
+            "error": "Following metrics are invalid in the leaderboard data: ['metric3']"
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_leaderboard_when_data_for_malformed_metrics(self):
+        self.url = reverse_lazy(
+            "jobs:update_leaderboard_data",
+            kwargs={"leaderboard_data_pk": self.leaderboard_data.pk},
+        )
+        self.data = {
+            "leaderboard_data": '{"metric1": "123", "metric2": "123"}'
+        }
+        expected = {
+            "error": "Values for following metrics are not of float/int: [('metric1', <class 'str'>), ('metric2', <class 'str'>)]"
+        }
+        self.client.force_authenticate(user=self.challenge_host.user)
+        response = self.client.patch(self.url, self.data)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

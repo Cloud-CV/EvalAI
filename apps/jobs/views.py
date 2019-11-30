@@ -1430,7 +1430,7 @@ def update_leaderboard_data(request, leaderboard_data_pk):
 
     if len(malformed_metrics):
         response_data = {
-            "error": "Values for following metrics are not of"
+            "error": "Values for following metrics are not of "
             "float/int: {}".format(malformed_metrics)
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
