@@ -190,14 +190,7 @@ def invite_participant_to_team(request, pk):
         for challenge_pk in team_participated_challenges:
             challenge = get_challenge_model(challenge_pk)
 
-            is_user_banned = False
             if len(challenge.banned_email_ids) > 0:
-                # Check if invited user is banned
-                if email in challenge.banned_email_ids:
-                    message = "You cannot invite as the invited user has been banned \
-                    from this challenge. Please contact the challenge host."
-                    is_user_banned = True
-
                 # Check if team participants emails are banned
                 for participant_email in participant_team.get_all_participants_email():
                     if participant_email in challenge.banned_email_ids:
@@ -205,10 +198,15 @@ def invite_participant_to_team(request, pk):
                         from this challenge. Please contact the challenge host.".format(
                             participant_team.team_name
                         )
-                        is_user_banned = True
-                        break
+                        response_data = {"error": message}
+                        return Response(
+                            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
 
-                if is_user_banned:
+                # Check if invited user is banned
+                if email in challenge.banned_email_ids:
+                    message = "You cannot invite as the invited user has been banned \
+                    from this challenge. Please contact the challenge host."
                     response_data = {"error": message}
                     return Response(
                         response_data, status=status.HTTP_406_NOT_ACCEPTABLE
