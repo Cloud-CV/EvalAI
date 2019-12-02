@@ -206,6 +206,7 @@ def invite_participant_to_team(request, pk):
                             participant_team.team_name
                         )
                         is_user_banned = True
+                        break
 
                 if is_user_banned:
                     response_data = {"error": message}
