@@ -315,6 +315,75 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_invitation_when_team_participants_emails_are_banned(self):
+        self.challenge.banned_email_ids.extend(["user2@platform.com"])
+        self.challenge.save()
+        self.url = reverse_lazy(
+            "participants:invite_participant_to_team",
+            kwargs={
+                "pk": self.participant_team2.pk
+            },
+        )
+
+        response = self.client.post(self.url, self.data)
+        message = "You cannot invite as you're a part of {} team and it has been banned \
+        from this challenge. Please contact the challenge host.".format(
+            self.participant_team2.team_name
+        )
+        expected = {"error": message}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_invitation_when_invited_user_is_banned(self):
+        self.challenge.banned_email_ids.extend(["other@platform.com"])
+        self.challenge.save()
+        self.url = reverse_lazy(
+            "participants:invite_participant_to_team",
+            kwargs={
+                "pk": self.participant_team2.pk
+            },
+        )
+
+        response = self.client.post(self.url, self.data)
+        message = "You cannot invite as the invited user has been banned \
+        from this challenge. Please contact the challenge host."
+        expected = {"error": message}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_invitation_when_invited_user_is_in_blocked_list(self):
+        self.challenge.blocked_email_domains.extend(["platform"])
+        self.challenge.save()
+        self.url = reverse_lazy(
+            "participants:invite_participant_to_team",
+            kwargs={
+                "pk": self.participant_team2.pk
+            },
+        )
+
+        response = self.client.post(self.url, self.data)
+        message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
+        expected = {"error": message.format("platform")}
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_invitation_when_invited_user_is_not_in_allowed_list(self):
+        self.challenge.allowed_email_domains.extend(["example"])
+        self.challenge.save()
+        self.url = reverse_lazy(
+            "participants:invite_participant_to_team",
+            kwargs={
+                "pk": self.participant_team2.pk
+            },
+        )
+
+        response = self.client.post(self.url, self.data)
+        message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
+        expected = {"error": message.format("example")}
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
     def test_invite_participant_to_team_when_user_cannot_be_invited(self):
         """
         NOTE
