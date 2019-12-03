@@ -127,7 +127,7 @@ class BaseAPITestClass(TestCase):
     @mock.patch("scripts.workers.submission_worker.importlib.import_module", return_value="challenge_module")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_zip_file")
     def test_extract_submission_data(self, mocked_download_and_extract_zip_file, mocked_import_module, patched_EVALUATION_SCRIPTS):
-        with mock.patch("scripts.workers.submission_worker.BASE_TEMP_DIR", self.BASE_TEMP_DIR)
+        with mock.patch("scripts.workers.submission_worker.BASE_TEMP_DIR", self.BASE_TEMP_DIR):
             phases = self.challenge.challengephase_set.all()
             extract_challenge_data(self.challenge, phases)
             evaluation_script_url = "http://testserver{}".format(self.challenge.evaluation_script.url)
