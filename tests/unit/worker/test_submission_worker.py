@@ -130,7 +130,7 @@ class BaseAPITestClass(TestCase):
         phases = self.challenge.challengephase_set.all()
         extract_challenge_data(self.challenge, phases)
         evaluation_script_url = "http://testserver{}".format(self.challenge.evaluation_script.url)
-        challenge_data_directory = join("/tmp/tmp-test/", "compute", "challenge_data", "challenge_{}".format(self.challenge.id))
+        challenge_data_directory = join("/tmp/test-dir/", "compute", "challenge_data", "challenge_{}".format(self.challenge.id))
         challenge_zip_file = join(challenge_data_directory, "challenge_{}.zip".format(self.challenge.id))
         mocked_download_and_extract_zip_file.assert_called_with(evaluation_script_url, challenge_zip_file, challenge_data_directory)
         mocked_import_module.assert_called_with("challenge_data.challenge_{}".format(self.challenge.id))
