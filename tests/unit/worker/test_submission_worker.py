@@ -1,5 +1,4 @@
 import boto3
-import importlib
 import mock
 import os
 import shutil
@@ -20,6 +19,7 @@ from challenges.models import (
 )
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
+from participants.models import ParticipantTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
@@ -123,11 +123,11 @@ class BaseAPITestClass(TestCase):
         returned_url = return_file_url_per_environment(self.url)
         self.assertEqual(returned_url, "http://testserver/test/url")
 
+    @mock.patch.dict("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
     @mock.patch("scripts.workers.submission_worker.importlib.import_module", return_value="challenge_module")
-    @mock.patch("scripts.workers.submission_worker.BASE_TEMP_DIR", self.BASE_TEMP_DIR)
     @mock.patch("scripts.workers.submission_worker.download_and_extract_zip_file")
-    def test_extract_submission_data(self, mocked_download_and_extract_zip_file, mocked_import_module):
-        with mock.patch.dict("scripts.workers.submission_worker.EVALUATION_SCRIPTS") as patched_EVALUATION_SCRIPTS:
+    def test_extract_submission_data(self, mocked_download_and_extract_zip_file, mocked_import_module, patched_EVALUATION_SCRIPTS):
+        with mock.patch("scripts.workers.submission_worker.BASE_TEMP_DIR", self.BASE_TEMP_DIR)
             phases = self.challenge.challengephase_set.all()
             extract_challenge_data(self.challenge, phases)
             evaluation_script_url = "http://testserver{}".format(self.challenge.evaluation_script.url)
