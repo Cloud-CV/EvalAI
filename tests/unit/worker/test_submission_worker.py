@@ -80,12 +80,14 @@ class BaseAPITestClass(TestCase):
         returned_url = return_file_url_per_environment(self.url)
         self.assertEqual(returned_url, "http://testserver/test/url")
 
+    @mock.patch("scripts.workers.submission_worker.load_challenge")
     @mock.patch("scripts.workers.submission_worker.Challenge.objects.get")
-    def test_load_challenge_and_return_max_submissions(self, mocked_get_challenge):
+    def test_load_challenge_and_return_max_submissions(self, mocked_get_challenge, mocked_load_challenge):
         mocked_get_challenge.return_value = self.challenge
         q_params = {"pk": 1}
         response = load_challenge_and_return_max_submissions(q_params)
         mocked_get_challenge.assert_called_with(q_params)
+        mocked_load_challenge.assert_called_with(self.challenge)
         self.assertEqual(response, (200000, self.challenge))
 
     @mock_sqs()
