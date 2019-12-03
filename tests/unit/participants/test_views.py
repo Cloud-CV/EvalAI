@@ -41,79 +41,6 @@ class BaseAPITestClass(APITestCase):
             user=self.user, team=self.participant_team, status=Participant.SELF
         )
 
-        self.user2 = User.objects.create(
-            username="user2",
-            email="user2@platform.com",
-            password="user2_password",
-        )
-
-        EmailAddress.objects.create(
-            user=self.user2,
-            email="user2@platform.com",
-            primary=True,
-            verified=True,
-        )
-
-        self.user3 = User.objects.create(
-            username="user3",
-            email="user3@platform.com",
-            password="user3_password",
-        )
-
-        EmailAddress.objects.create(
-            user=self.user3,
-            email="user3@platform.com",
-            primary=True,
-            verified=True,
-        )
-
-        self.participant_team2 = ParticipantTeam.objects.create(
-            team_name="Participant Team created by user 2",
-            created_by=self.user2,
-        )
-
-        self.participant_team3 = ParticipantTeam.objects.create(
-            team_name="Participant Team created by user 3",
-            created_by=self.user3,
-        )
-
-        self.participant2 = Participant.objects.create(
-            user=self.user2,
-            status=Participant.ACCEPTED,
-            team=self.participant_team2,
-        )
-
-        self.participant3 = Participant.objects.create(
-            user=self.user3,
-            status=Participant.ACCEPTED,
-            team=self.participant_team3,
-        )
-
-        self.challenge_host_team = ChallengeHostTeam.objects.create(
-            team_name="Test Challenge Host Team", created_by=self.user
-        )
-
-        self.challenge = Challenge.objects.create(
-            title="Test Challenge",
-            short_description="Short description for test challenge",
-            description="Description for test challenge",
-            terms_and_conditions="Terms and conditions for test challenge",
-            submission_guidelines="Submission guidelines for test challenge",
-            creator=self.challenge_host_team,
-            published=False,
-            enable_forum=True,
-            leaderboard_description=None,
-            anonymous_leaderboard=False,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
-        )
-
-        self.client.force_authenticate(user=self.user2)
-
-        self.challenge.participant_teams.add(self.participant_team)
-        self.challenge.participant_teams.add(self.participant_team2)
-        self.challenge.participant_teams.add(self.participant_team3)
-
         self.client.force_authenticate(user=self.user)
 
 
@@ -328,6 +255,52 @@ class DeleteParticularParticipantTeam(BaseAPITestClass):
 class InviteParticipantToTeamTest(BaseAPITestClass):
     def setUp(self):
         super(InviteParticipantToTeamTest, self).setUp()
+
+        self.user1 = User.objects.create(
+            username="user1",
+            email="user1@platform.com",
+            password="user1_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email="user1@platform.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.participant_team1 = ParticipantTeam.objects.create(
+            team_name="Team A", created_by=self.user1
+        )
+
+        self.participant1 = Participant.objects.create(
+            user=self.user1,
+            status=Participant.ACCEPTED,
+            team=self.participant_team1,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Host Team 1", created_by=self.user1
+        )
+
+        self.challenge1 = Challenge.objects.create(
+            title="Test Challenge 1",
+            short_description="Short description for test challenge 1",
+            description="Description for test challenge 1",
+            terms_and_conditions="Terms and conditions for test challenge 1",
+            submission_guidelines="Submission guidelines for test challenge 1",
+            creator=self.challenge_host_team,
+            published=False,
+            is_registration_open=True,
+            enable_forum=True,
+            leaderboard_description="Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.challenge1.participant_teams.add(self.participant_team1)
+
         self.data = {"email": self.invite_user.email}
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
@@ -389,48 +362,50 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_invitation_when_team_participants_emails_are_banned(self):
-        self.challenge.banned_email_ids.extend(["user@test.com"])
-        self.challenge.save()
+        self.challenge1.banned_email_ids.extend(["user1@platform.com"])
+        self.challenge1.save()
+        self.client.force_authenticate(user=self.user1)
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
             kwargs={
-                "pk": self.participant_team.pk
+                "pk": self.participant_team1.pk
             },
         )
 
         response = self.client.post(self.url, self.data)
         message = "You cannot invite as you're a part of {} team and it has been banned from this challenge. "
-        + "Please contact the challenge host."
-        expected = {"error": message.format(self.participant_team.team_name)}
+        "Please contact the challenge host."
+        expected = {"error": message.format(self.participant_team1.team_name)}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_invitation_when_invited_user_is_banned(self):
-        self.challenge.banned_email_ids = []
-        self.challenge.banned_email_ids.extend(["other@platform.com", "some@platform.com"])
-        self.challenge.save()
+        self.challenge1.banned_email_ids = []
+        self.challenge1.banned_email_ids.extend(["other@platform.com", "some@platform.com"])
+        self.challenge1.save()
+        self.client.force_authenticate(user=self.user1)
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
             kwargs={
-                "pk": self.participant_team.pk
+                "pk": self.participant_team1.pk
             },
         )
-
         response = self.client.post(self.url, self.data)
         message = "You cannot invite as the invited user has been banned from this challenge."
-        + " Please contact the challenge host."
+        " Please contact the challenge host."
         expected = {"error": message}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_invitation_when_invited_user_is_in_blocked_list(self):
-        self.challenge.banned_email_ids = []
-        self.challenge.blocked_email_domains.extend(["platform", "test1"])
-        self.challenge.save()
+    def test_invitation_when_invited_user_is_in_blocked_domains(self):
+        self.challenge1.banned_email_ids = []
+        self.challenge1.blocked_email_domains.extend(["platform", "test1"])
+        self.challenge1.save()
+        self.client.force_authenticate(user=self.user1)
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
             kwargs={
-                "pk": self.participant_team.pk
+                "pk": self.participant_team1.pk
             },
         )
 
@@ -440,15 +415,16 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_invitation_when_invited_user_is_not_in_allowed_list(self):
-        self.challenge.banned_email_ids = []
-        self.challenge.blocked_email_domains = []
-        self.challenge.allowed_email_domains.extend(["example1", "example2"])
-        self.challenge.save()
+    def test_invitation_when_invited_user_is_not_in_allowed_domains(self):
+        self.challenge1.banned_email_ids = []
+        self.challenge1.blocked_email_domains = []
+        self.challenge1.allowed_email_domains.extend(["example1", "example2"])
+        self.challenge1.save()
+        self.client.force_authenticate(user=self.user1)
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
             kwargs={
-                "pk": self.participant_team.pk
+                "pk": self.participant_team1.pk
             },
         )
 
@@ -460,6 +436,84 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_invite_participant_to_team_when_user_cannot_be_invited(self):
+        """
+        NOTE
+        user: host user
+        user1: participant 1
+        user2: participant 2
+        """
+        self.user2 = User.objects.create(
+            username="user2",
+            email="user2@platform.com",
+            password="user2_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email="user2@platform.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.user3 = User.objects.create(
+            username="user3",
+            email="user3@platform.com",
+            password="user3_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user3,
+            email="user3@platform.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.participant_team2 = ParticipantTeam.objects.create(
+            team_name="Participant Team created by user 2",
+            created_by=self.user2,
+        )
+
+        self.participant_team3 = ParticipantTeam.objects.create(
+            team_name="Participant Team created by user 3",
+            created_by=self.user3,
+        )
+
+        self.participant2 = Participant.objects.create(
+            user=self.user2,
+            status=Participant.ACCEPTED,
+            team=self.participant_team2,
+        )
+
+        self.participant3 = Participant.objects.create(
+            user=self.user3,
+            status=Participant.ACCEPTED,
+            team=self.participant_team3,
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
+
+        self.challenge = Challenge.objects.create(
+            title="Test Challenge",
+            short_description="Short description for test challenge",
+            description="Description for test challenge",
+            terms_and_conditions="Terms and conditions for test challenge",
+            submission_guidelines="Submission guidelines for test challenge",
+            creator=self.challenge_host_team,
+            published=False,
+            enable_forum=True,
+            leaderboard_description=None,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        self.client.force_authenticate(user=self.user2)
+
+        self.challenge.participant_teams.add(self.participant_team2)
+        self.challenge.participant_teams.add(self.participant_team3)
+
         self.data = {"email": self.user3.email}
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
