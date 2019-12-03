@@ -4,11 +4,16 @@ import os
 import shutil
 import tempfile
 
+from datetime import timedelta
 from moto import mock_sqs
 from os.path import join
 from unittest import TestCase
 
+from django.contrib.auth.models import User
+from django.utils import timezone
+
 from challenges.models import Challenge
+from hosts.models import ChallengeHostTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
@@ -32,6 +37,14 @@ class BaseAPITestClass(TestCase):
             region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+        )
+        self.user = User(
+            username="someuser",
+            email="user@test.com",
+            password="secret_password",
+        )
+        self.challenge_host_team = ChallengeHostTeam(
+            team_name="Test Challenge Host Team", created_by=self.user
         )
         self.challenge = Challenge(
             title="Test Challenge",
