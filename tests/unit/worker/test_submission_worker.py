@@ -10,6 +10,7 @@ from os.path import join
 from unittest import TestCase
 
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from challenges.models import Challenge
@@ -58,6 +59,11 @@ class BaseAPITestClass(TestCase):
             enable_forum=True,
             anonymous_leaderboard=False,
             max_concurrent_submission_evaluation=200000,
+            evaluation_script=SimpleUploadedFile(
+                "test_sample_file.txt",
+                b"Dummy file content",
+                content_type="text/plain",
+            ),
         )
 
     def test_create_dir(self):
