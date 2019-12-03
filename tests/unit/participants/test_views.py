@@ -447,6 +447,7 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         user2: participant 2
         """
         self.challenge1.allowed_email_domains = []
+        self.challenge1.blocked_email_domains = []
         self.challenge1.save()
         self.user2 = User.objects.create(
             username="user2",
