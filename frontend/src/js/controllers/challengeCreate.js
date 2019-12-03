@@ -88,8 +88,9 @@
                 utilities.sendRequest(parameters, 'header', 'upload');
             }
             else {
+                //Only occurs when file is not attached but file path not empty, and thus manually written
                 angular.element(".file-path").val(null);
-                vm.infoMsg = "Please select a challenge host team!";
+                vm.infoMsg = "Please enter a valid file address!";
                 $rootScope.notify("info", vm.infoMsg);
             }
         };
