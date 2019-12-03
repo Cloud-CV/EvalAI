@@ -399,15 +399,14 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, self.data)
-        message = "You cannot invite as you're a part of {} team and it has been banned \
-        from this challenge. Please contact the challenge host.".format(
-            self.participant_team.team_name
-        )
-        expected = {"error": message}
+        message = "You cannot invite as you're a part of {} team and it has been banned from this challenge. "
+        + "Please contact the challenge host."
+        expected = {"error": message.format(self.participant_team.team_name)}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_invitation_when_invited_user_is_banned(self):
+        self.challenge.banned_email_ids = []
         self.challenge.banned_email_ids.extend(["other@platform.com", "some@platform.com"])
         self.challenge.save()
         self.url = reverse_lazy(
@@ -418,14 +417,15 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, self.data)
-        message = "You cannot invite as the invited user has been banned \
-        from this challenge. Please contact the challenge host."
+        message = "You cannot invite as the invited user has been banned from this challenge."
+        + " Please contact the challenge host."
         expected = {"error": message}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_invitation_when_invited_user_is_in_blocked_list(self):
-        self.challenge.blocked_email_domains.extend(["test", "test1"])
+        self.challenge.banned_email_ids = []
+        self.challenge.blocked_email_domains.extend(["platform", "test1"])
         self.challenge.save()
         self.url = reverse_lazy(
             "participants:invite_participant_to_team",
@@ -436,11 +436,13 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
 
         response = self.client.post(self.url, self.data)
         message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
-        expected = {"error": message.format("test/test1")}
+        expected = {"error": message.format("platform/test1")}
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_invitation_when_invited_user_is_not_in_allowed_list(self):
+        self.challenge.banned_email_ids = []
+        self.challenge.blocked_email_domains = []
         self.challenge.allowed_email_domains.extend(["example1", "example2"])
         self.challenge.save()
         self.url = reverse_lazy(
