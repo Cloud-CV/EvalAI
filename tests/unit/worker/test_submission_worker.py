@@ -1,18 +1,14 @@
 import boto3
+import mock
 import os
 import shutil
 import tempfile
 
-from datetime import timedelta
 from moto import mock_sqs
 from os.path import join
 from unittest import TestCase
 
-from django.contrib.auth.models import User
-from django.utils import timezone
-
 from challenges.models import Challenge
-from hosts.models import ChallengeHostTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
@@ -37,15 +33,7 @@ class BaseAPITestClass(TestCase):
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
-        self.user = User.objects.create(
-            username="someuser",
-            email="user@test.com",
-            password="secret_password",
-        )
-        self.challenge_host_team = ChallengeHostTeam.objects.create(
-            team_name="Test Challenge Host Team", created_by=self.user
-        )
-        self.challenge = Challenge.objects.create(
+        self.challenge = Challenge(
             title="Test Challenge",
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
@@ -57,7 +45,6 @@ class BaseAPITestClass(TestCase):
             enable_forum=True,
             anonymous_leaderboard=False,
             max_concurrent_submission_evaluation=200000,
-            approved_by_admin=True
         )
 
     def test_create_dir(self):
@@ -74,9 +61,12 @@ class BaseAPITestClass(TestCase):
         returned_url = return_file_url_per_environment(self.url)
         self.assertEqual(returned_url, "http://testserver/test/url")
 
-    def test_load_challenge_and_return_max_submissions(self):
-        q_params = {"pk": self.challenge.pk}
+    @mock.patch("scripts.workers.submission_worker.Challenge.objects.get")
+    def test_load_challenge_and_return_max_submissions(self, mocked_get_challenge):
+        mocked_get_challenge.return_value = self.challenge
+        q_params = {"pk": 1}
         response = load_challenge_and_return_max_submissions(q_params)
+        mocked_get_challenge.assert_called_with(q_params)
         self.assertEqual(response, (200000, self.challenge))
 
     @mock_sqs()
