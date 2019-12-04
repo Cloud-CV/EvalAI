@@ -63,6 +63,7 @@ class BaseAPITestClass(TestCase):
                 "test_sample_file.txt",
                 b"Dummy file content",
                 content_type="text/plain",
+            pk=1
             ),
         )
 
