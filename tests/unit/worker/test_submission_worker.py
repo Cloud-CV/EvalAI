@@ -58,7 +58,7 @@ class BaseAPITestClass(TestCase):
             published=False,
             enable_forum=True,
             anonymous_leaderboard=False,
-            max_concurrent_submission_evaluation=200000,
+            max_concurrent_submission_evaluation=100,
             evaluation_script=SimpleUploadedFile(
                 "test_sample_file.txt",
                 b"Dummy file content",
@@ -84,11 +84,11 @@ class BaseAPITestClass(TestCase):
     @mock.patch("scripts.workers.submission_worker.Challenge.objects.get")
     def test_load_challenge_and_return_max_submissions(self, mocked_get_challenge, mocked_load_challenge):
         mocked_get_challenge.return_value = self.challenge
-        q_params = {"pk": 1}
+        q_params = {"pk": self.challenge.pk}
         response = load_challenge_and_return_max_submissions(q_params)
-        mocked_get_challenge.assert_called_with(pk=1)
+        mocked_get_challenge.assert_called_with(pk=self.challenge.pk)
         mocked_load_challenge.assert_called_with(self.challenge)
-        self.assertEqual(response, (200000, self.challenge))
+        self.assertEqual(response, (self.challenge.max_concurrent_submission_evaluation, self.challenge))
 
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
