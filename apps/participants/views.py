@@ -186,6 +186,22 @@ def invite_participant_to_team(request, pk):
         [participant_team]
     ).values_list("id", flat=True)
 
+    if set(invited_user_participated_challenges) & set(
+        team_participated_challenges
+    ):
+        """
+        Check if the user has already participated in
+        challenges where the inviting participant has participated.
+        If this is the case, then the user cannot be invited since
+        he cannot participate in a challenge via two teams.
+        """
+        response_data = {
+            "error": "Sorry, the invited user has already participated"
+            " in atleast one of the challenges which you are already a"
+            " part of. Please try creating a new team and then invite."
+        }
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     if len(team_participated_challenges) > 0:
         for challenge_pk in team_participated_challenges:
             challenge = get_challenge_model(challenge_pk)
@@ -234,22 +250,6 @@ def invite_participant_to_team(request, pk):
                 return Response(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
-
-    if set(invited_user_participated_challenges) & set(
-        team_participated_challenges
-    ):
-        """
-        Check if the user has already participated in
-        challenges where the inviting participant has participated.
-        If this is the case, then the user cannot be invited since
-        he cannot participate in a challenge via two teams.
-        """
-        response_data = {
-            "error": "Sorry, the invited user has already participated"
-            " in atleast one of the challenges which you are already a"
-            " part of. Please try creating a new team and then invite."
-        }
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     serializer = InviteParticipantToTeamSerializer(
         data=request.data,
