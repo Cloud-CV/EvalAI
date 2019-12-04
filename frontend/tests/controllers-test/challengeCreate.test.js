@@ -54,7 +54,7 @@ describe('Unit tests for challenge create controller', function() {
 
     	it('when host team not selected `vm.hostTeamId=null`', function() {
     		vm.challengeCreate();
-    		expect(vm.infoMsg).toEqual("Please select a challenge host team!");
+    		expect(vm.infoMsg).toEqual("Please enter a valid file address!");
     	});
 
     	it('success of `challenges/challenge/challenge_host_team/<host_team_id>/zip_upload/`', function() {
