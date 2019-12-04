@@ -108,6 +108,7 @@ class BaseAPITestClass(TestCase):
             is_public=True,
             is_flagged=True,
         )
+        self.testserver = "http://testserver"
 
     def test_create_dir(self):
         create_dir(self.temp_directory)
@@ -121,7 +122,7 @@ class BaseAPITestClass(TestCase):
 
     def test_return_file_url_per_environment(self):
         returned_url = return_file_url_per_environment(self.url)
-        self.assertEqual(returned_url, "http://testserver/test/url")
+        self.assertEqual(returned_url, "{0}{1}".format(self.testserver, self.url))
 
     @mock.patch("scripts.workers.submission_worker.CHALLENGE_DATA_DIR", new="/tmp/test-dir/compute/challenge_data/challenge_{challenge_id}")
     @mock.patch("scripts.workers.submission_worker.importlib.import_module", return_value="challenge_module")
@@ -129,7 +130,7 @@ class BaseAPITestClass(TestCase):
     def test_extract_submission_data(self, mocked_download_and_extract_zip_file, mocked_import_module):
         phases = self.challenge.challengephase_set.all()
         extract_challenge_data(self.challenge, phases)
-        evaluation_script_url = "http://testserver{}".format(self.challenge.evaluation_script.url)
+        evaluation_script_url = "{0}{1}".format(self.testserver, self.challenge.evaluation_script.url)
         challenge_data_directory = join("/tmp/test-dir/", "compute", "challenge_data", "challenge_{}".format(self.challenge.id))
         challenge_zip_file = join(challenge_data_directory, "challenge_{}.zip".format(self.challenge.id))
         mocked_download_and_extract_zip_file.assert_called_with(evaluation_script_url, challenge_zip_file, challenge_data_directory)
