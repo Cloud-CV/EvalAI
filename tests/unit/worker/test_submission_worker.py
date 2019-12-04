@@ -101,7 +101,7 @@ class BaseAPITestClass(TestCase):
             except Challenge.DoesNotExist:
                 pass
             mocked_get_challenge.assert_called_with(pk=non_existing_challenge_pk)
-            mocked_logger_exception.assert_called_with("Challenge with pk {} does not exist.".format(non_existing_challenge_pk))
+            mocked_logger_exception.assert_called_with("Challenge with pk {} doesn't exist".format(non_existing_challenge_pk))
 
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
