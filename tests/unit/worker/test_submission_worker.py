@@ -95,7 +95,7 @@ class BaseAPITestClass(TestCase):
         non_existing_challenge_pk = self.challenge.pk + 1
         with mock.patch("scripts.workers.submission_worker.logger.exception") as mocked_logger_exception:
             try:
-                test_return_value = load_challenge_and_return_max_submissions({"pk": non_existing_challenge_pk})
+                load_challenge_and_return_max_submissions({"pk": non_existing_challenge_pk})
             except Challenge.DoesNotExist:
                 pass
             mocked_logger_exception.assert_called_with("Challenge with pk {} does not exist.".format(non_existing_challenge_pk))
