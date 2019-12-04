@@ -48,6 +48,7 @@ class BaseAPITestClass(TestCase):
             team_name="Test Challenge Host Team", created_by=self.user
         )
         self.challenge = Challenge(
+            pk=1,
             title="Test Challenge",
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
@@ -63,7 +64,6 @@ class BaseAPITestClass(TestCase):
                 "test_sample_file.txt",
                 b"Dummy file content",
                 content_type="text/plain",
-            pk=1
             ),
         )
 
