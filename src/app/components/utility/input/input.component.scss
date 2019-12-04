@@ -130,6 +130,7 @@
     &:focus {
       outline: none;
       border-bottom: 1px solid $yellow;
+      box-shadow: none;
     }
     &.theme-dark {
       color: $gray-darker;
