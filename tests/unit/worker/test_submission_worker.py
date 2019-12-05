@@ -136,7 +136,7 @@ class BaseAPITestClass(TestCase):
         expected_submission_data_dir = "/tmp/test-dir/compute/submission_files/submission_{submission_id}".format(self.submission.pk)
         mock_create_dir_as_python_package.assert_called_with(expected_submission_data_dir)
         expected_submission_input_file = "{0}{1}".format(self.testserver, self.submission.input_file.url)
-        expected_submission_input_file_path = "/tmp/test-dir/compute/submission_files/submission_{submission_id}/{input_file}".format(submission_id=self.submission.pk, os.path.basename(self.submission.input_file.name))
+        expected_submission_input_file_path = "/tmp/test-dir/compute/submission_files/submission_{submission_id}/{input_file}".format(submission_id=self.submission.pk, input_file=os.path.basename(self.submission.input_file.name))
         mock_download_and_extract_file.assert_called_with(expected_submission_input_file, expected_submission_input_file_path)
         self.assertEqual(submission, self.submission)
 
