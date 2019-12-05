@@ -23,7 +23,7 @@ from participants.models import ParticipantTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
-    extract_challenge_data,
+    extract_submission_data,
     return_file_url_per_environment,
     get_or_create_sqs_queue
 )
@@ -124,17 +124,21 @@ class BaseAPITestClass(TestCase):
         returned_url = return_file_url_per_environment(self.url)
         self.assertEqual(returned_url, "{0}{1}".format(self.testserver, self.url))
 
-    @mock.patch("scripts.workers.submission_worker.CHALLENGE_DATA_DIR", new="/tmp/test-dir/compute/challenge_data/challenge_{challenge_id}")
-    @mock.patch("scripts.workers.submission_worker.importlib.import_module", return_value="challenge_module")
-    @mock.patch("scripts.workers.submission_worker.download_and_extract_zip_file")
-    def test_extract_submission_data(self, mocked_download_and_extract_zip_file, mocked_import_module):
-        phases = self.challenge.challengephase_set.all()
-        extract_challenge_data(self.challenge, phases)
-        evaluation_script_url = "{0}{1}".format(self.testserver, self.challenge.evaluation_script.url)
-        challenge_data_directory = join("/tmp/test-dir/", "compute", "challenge_data", "challenge_{}".format(self.challenge.id))
-        challenge_zip_file = join(challenge_data_directory, "challenge_{}.zip".format(self.challenge.id))
-        mocked_download_and_extract_zip_file.assert_called_with(evaluation_script_url, challenge_zip_file, challenge_data_directory)
-        mocked_import_module.assert_called_with("challenge_data.challenge_{}".format(self.challenge.id))
+    @mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", "/tmp/test-dir/compute/submission_files/submission_{submission_id}")
+    @mock.patch("scripts.workers.submission_worker.SUBMISSION_INPUT_FILE_PATH", "/tmp/test-dir/compute/submission_files/submission_{submission_id}/{input_file}")
+    @mock.patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
+    @mock.patch("scripts.workers.submission_worker.Submission.objects.get")
+    def test_extract_submission_data(self, mock_submission_get, mock_download_and_extract_file, mock_create_dir_as_python_package):
+        mock_submission_get.return_value = self.submission
+        submission = extract_submission_data(self.submission.pk)
+        mock_submission_get.assert_called_with(id=self.submission.pk)
+        expected_submission_data_dir = "/tmp/test-dir/compute/submission_files/submission_{submission_id}".format(self.submission.pk)
+        mock_create_dir_as_python_package.assert_called_with(expected_submission_data_dir)
+        expected_submission_input_file = "{0}{1}".format(self.testserver, self.submission.input_file.url)
+        expected_submission_input_file_path = "/tmp/test-dir/compute/submission_files/submission_{submission_id}/{input_file}".format(submission_id=self.submission.pk, os.path.basename(self.submission.input_file.name))
+        mock_download_and_extract_file.assert_called_with(expected_submission_input_file, expected_submission_input_file_path)
+        self.assertEqual(submission, self.submission)
 
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
