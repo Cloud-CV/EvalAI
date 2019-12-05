@@ -7,11 +7,12 @@ import tempfile
 from datetime import timedelta
 from moto import mock_sqs
 from os.path import join
-from unittest import TestCase
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
+
+from rest_framework.test import APIClient, APITestCase
 
 from challenges.models import Challenge
 from hosts.models import ChallengeHostTeam
@@ -24,8 +25,9 @@ from scripts.workers.submission_worker import (
 )
 
 
-class BaseAPITestClass(TestCase):
+class BaseAPITestClass(APITestCase):
     def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
         self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
         self.url = "/test/url"
@@ -39,16 +41,15 @@ class BaseAPITestClass(TestCase):
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
-        self.user = User(
+        self.user = User.objects.create(
             username="someuser",
             email="user@test.com",
             password="secret_password",
         )
-        self.challenge_host_team = ChallengeHostTeam(
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
-        self.challenge = Challenge(
-            pk=1,
+        self.challenge = Challenge.objects.create(
             title="Test Challenge",
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
