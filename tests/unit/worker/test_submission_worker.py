@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APITestCase
 
 from challenges.models import Challenge
 from hosts.models import ChallengeHostTeam
@@ -27,7 +27,6 @@ from scripts.workers.submission_worker import (
 
 class BaseAPITestClass(APITestCase):
     def setUp(self):
-        self.client = APIClient(enforce_csrf_checks=True)
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
         self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
         self.url = "/test/url"
@@ -83,26 +82,20 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(returned_url, "http://testserver/test/url")
 
     @mock.patch("scripts.workers.submission_worker.load_challenge")
-    @mock.patch("scripts.workers.submission_worker.Challenge.objects.get")
-    def test_load_challenge_and_return_max_submissions(self, mocked_get_challenge, mocked_load_challenge):
-        mocked_get_challenge.return_value = self.challenge
+    def test_load_challenge_and_return_max_submissions(self, mocked_load_challenge):
         q_params = {"pk": self.challenge.pk}
         response = load_challenge_and_return_max_submissions(q_params)
-        mocked_get_challenge.assert_called_with(pk=self.challenge.pk)
         mocked_load_challenge.assert_called_with(self.challenge)
         self.assertEqual(response, (self.challenge.max_concurrent_submission_evaluation, self.challenge))
 
-    @mock.patch("scripts.workers.submission_worker.Challenge.objects.get")
-    def test_load_challenge_and_return_max_submissions_when_challenge_does_not_exist(self, mocked_get_challenge):
+    def test_load_challenge_and_return_max_submissions_when_challenge_does_not_exist(self):
         non_existing_challenge_pk = self.challenge.pk + 1
-        mocked_get_challenge.side_effect = Challenge.DoesNotExist
-        with mock.patch("scripts.workers.submission_worker.logger.exception") as mocked_logger_exception:
+        with mock.patch("scripts.workers.submission_worker.logger.exception") as mock_logger:
             try:
                 load_challenge_and_return_max_submissions({"pk": non_existing_challenge_pk})
             except Challenge.DoesNotExist:
                 pass
-            mocked_get_challenge.assert_called_with(pk=non_existing_challenge_pk)
-            mocked_logger_exception.assert_called_with("Challenge with pk {} doesn't exist".format(non_existing_challenge_pk))
+            mock_logger.assert_called_with("Challenge with pk {} doesn't exist".format(non_existing_challenge_pk))
 
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
