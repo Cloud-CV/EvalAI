@@ -50,7 +50,7 @@ class BaseAPITestClass(APITestCase):
             email="user@test.com",
             password="secret_password",
         )
-        self.challenge_host_team = ChallengeHostTeam.ibjects.create(
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
         self.challenge = Challenge.objects.create(
