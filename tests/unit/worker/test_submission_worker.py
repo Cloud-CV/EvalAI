@@ -88,13 +88,11 @@ class BaseAPITestClass(APITestCase):
         mocked_load_challenge.assert_called_with(self.challenge)
         self.assertEqual(response, (self.challenge.max_concurrent_submission_evaluation, self.challenge))
 
-    def test_load_challenge_and_return_max_submissions_when_challenge_does_not_exist(self):
+    @mock.patch("scripts.workers.submission_worker.logger.exception")
+    def test_load_challenge_and_return_max_submissions_when_challenge_does_not_exist(self, mock_logger):
         non_existing_challenge_pk = self.challenge.pk + 1
-        with mock.patch("scripts.workers.submission_worker.logger.exception") as mock_logger:
-            try:
-                load_challenge_and_return_max_submissions({"pk": non_existing_challenge_pk})
-            except Challenge.DoesNotExist:
-                pass
+        with self.assertRaises(Challenge.DoesNotExist):
+            load_challenge_and_return_max_submissions({"pk": non_existing_challenge_pk})
             mock_logger.assert_called_with("Challenge with pk {} doesn't exist".format(non_existing_challenge_pk))
 
     @mock_sqs()
