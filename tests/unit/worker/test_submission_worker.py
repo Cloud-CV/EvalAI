@@ -7,11 +7,12 @@ import tempfile
 from datetime import timedelta
 from moto import mock_sqs
 from os.path import join
-from unittest import TestCase
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
+
+from rest_framework.test import APITestCase
 
 from challenges.models import (
     Challenge,
@@ -29,7 +30,7 @@ from scripts.workers.submission_worker import (
 )
 
 
-class BaseAPITestClass(TestCase):
+class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
         self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
@@ -44,15 +45,15 @@ class BaseAPITestClass(TestCase):
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
-        self.user = User(
+        self.user = User.objects.create(
             username="someuser",
             email="user@test.com",
             password="secret_password",
         )
-        self.challenge_host_team = ChallengeHostTeam(
+        self.challenge_host_team = ChallengeHostTeam.ibjects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
-        self.challenge = Challenge(
+        self.challenge = Challenge.objects.create(
             title="Test Challenge",
             description="Description for test challenge",
             terms_and_conditions="Terms and conditions for test challenge",
@@ -70,10 +71,10 @@ class BaseAPITestClass(TestCase):
                 content_type="text/plain",
             ),
         )
-        self.participant_team = ParticipantTeam(
+        self.participant_team = ParticipantTeam.objects.create(
             team_name="Some Participant Team", created_by=self.user
         )
-        self.challenge_phase = ChallengePhase(
+        self.challenge_phase = ChallengePhase.objects.create(
             name="Challenge Phase",
             description="Description for Challenge Phase",
             leaderboard_public=False,
@@ -91,7 +92,7 @@ class BaseAPITestClass(TestCase):
             max_submissions=100000,
             codename="Phase Code Name",
         )
-        self.submission = Submission(
+        self.submission = Submission.objects.create(
             participant_team=self.participant_team,
             challenge_phase=self.challenge_phase,
             created_by=self.challenge_host_team.created_by,
@@ -128,17 +129,21 @@ class BaseAPITestClass(TestCase):
     @mock.patch("scripts.workers.submission_worker.SUBMISSION_INPUT_FILE_PATH", "/tmp/test-dir/compute/submission_files/submission_{submission_id}/{input_file}")
     @mock.patch("scripts.workers.submission_worker.create_dir_as_python_package")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
-    @mock.patch("scripts.workers.submission_worker.Submission.objects.get")
-    def test_extract_submission_data(self, mock_submission_get, mock_download_and_extract_file, mock_create_dir_as_python_package):
-        mock_submission_get.return_value = self.submission
+    def test_extract_submission_data_successful(self, mock_download_and_extract_file, mock_create_dir_as_python_package):
         submission = extract_submission_data(self.submission.pk)
-        mock_submission_get.assert_called_with(id=self.submission.pk)
         expected_submission_data_dir = "/tmp/test-dir/compute/submission_files/submission_{submission_id}".format(submission_id=self.submission.pk)
         mock_create_dir_as_python_package.assert_called_with(expected_submission_data_dir)
         expected_submission_input_file = "{0}{1}".format(self.testserver, self.submission.input_file.url)
         expected_submission_input_file_path = "/tmp/test-dir/compute/submission_files/submission_{submission_id}/{input_file}".format(submission_id=self.submission.pk, input_file=os.path.basename(self.submission.input_file.name))
         mock_download_and_extract_file.assert_called_with(expected_submission_input_file, expected_submission_input_file_path)
         self.assertEqual(submission, self.submission)
+
+    @mock.patch("scripts.workers.submission_worker.logger.critical")
+    def test_extract_submission_data_when_submission_does_not_exist(self, mock_logger):
+        non_existing_submission_pk = self.submission.pk + 1
+        value = extract_submission_data(non_existing_submission_pk)
+        mock_logger.assert_called_with("Submission {} does not exist".format(non_existing_submission_pk))
+        self.assertEqual(value, None)
 
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
