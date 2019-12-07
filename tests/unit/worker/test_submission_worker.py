@@ -169,8 +169,6 @@ class BaseAPITestClass(APITestCase):
     def test_extract_submission_data_success(self, mock_download_and_extract_file, mock_create_dir_as_python_package):
         patcher_submission_data_dir = mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", self.SUBMISSION_DATA_DIR)
         patcher_submission_input_file_path = mock.patch("scripts.workers.submission_worker.SUBMISSION_INPUT_FILE_PATH", self.SUBMISSION_INPUT_FILE_PATH)
-        patcher_submission_data_dir.start()
-        patcher_submission_input_file_path.start()
 
         submission = extract_submission_data(self.submission.pk)
 
@@ -182,9 +180,6 @@ class BaseAPITestClass(APITestCase):
         mock_download_and_extract_file.assert_called_with(expected_submission_input_file, expected_submission_input_file_path)
 
         self.assertEqual(submission, self.submission)
-
-        patcher_submission_data_dir.stop()
-        patcher_submission_input_file_path.stop()
 
     @mock.patch("scripts.workers.submission_worker.logger.critical")
     def test_extract_submission_data_when_submission_does_not_exist(self, mock_logger):
