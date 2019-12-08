@@ -226,6 +226,19 @@
         </div>
       </div>
     </section>
+    <section class="ev-container ev-details text-med-black ev-super-light-bg" >
+      <div class="grad-container text-med-black ">
+        <div class="row">
+          <h4 class="w-300 center">Subscribe to our newsletters</h4>
+        </div>
+        <div class="row">
+          <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 ev-mt-50 center subscribe-container">
+            <app-input [label]="'email'" [placeholder]="'Email*'" [isRequired]="true" [type]="'email'" [icon]="'fa fa-letter'" #formgroup></app-input>
+            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" (click)="formValidate('formgroup')">Subscribe</button>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
   <!--landing-footer></landing-footer-->
 </div>

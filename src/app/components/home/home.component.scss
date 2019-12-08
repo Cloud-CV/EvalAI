@@ -19,6 +19,11 @@
   }
 }
 
+.subscribe-container {
+  float: none;
+  margin: auto;
+}
+
 @media only screen and (max-width: $small-screen) {
   .org-logo{
     height: auto;
