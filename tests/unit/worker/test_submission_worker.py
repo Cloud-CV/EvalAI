@@ -131,15 +131,9 @@ class BaseAPITestClass(APITestCase):
             is_flagged=True,
         )
 
-    def helper_return_submission_input_file_path(
-        self,
-        submission_id,
-        input_file):
-        """Helper Method
-
-        Takes `submission_id` and `input_file` as input and returns
-        corresponding path to submmitted input file
-        """
+    def helper_return_submission_input_file_path(self, submission_id, input_file):
+        """Helper Method: Takes `submission_id` and `input_file` as input and
+        returns corresponding path to submmitted input file"""
 
         input_file_name = os.path.basename(input_file.name)
         return join(self.SUBMISSION_DATA_DIR, "{input_file}").format(
@@ -152,11 +146,8 @@ class BaseAPITestClass(APITestCase):
         challenge_id,
         phase_id,
         annotation_file):
-        """Helper Method
-
-        Takes `phase_id` and `annotation_file` as input and returns
-        corresponding path to annotation file
-        """
+        """Helper Method: Takes `challenge_id`, `phase_id` and `annotation_file`
+        as input and returns corresponding path to annotation file"""
 
         annotation_file_name = os.path.basename(annotation_file.name)
         return join(self.PHASE_DATA_DIR, "{annotation_file}").format(
@@ -191,7 +182,7 @@ class BaseAPITestClass(APITestCase):
         mock_create_dir_as_python_package.assert_called_with(expected_submission_data_dir)
 
         expected_submission_input_file = "{0}{1}".format(self.testserver, self.submission.input_file.url)
-        expected_submission_input_file_path = helper_return_submission_input_file_path(
+        expected_submission_input_file_path = self.helper_return_submission_input_file_path(
             self.submission.pk,
             self.submission.input_file,
         )
