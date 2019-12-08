@@ -187,8 +187,8 @@ class BaseAPITestClass(APITestCase):
             "scripts.workers.submission_worker.SUBMISSION_INPUT_FILE_PATH",
             submission_input_file_path,
         )
-        patcher_submission_data_dir.start()
-        patcher_submission_input_file_path.start()
+        mock_submission_data_dir.start()
+        mock_submission_input_file_path.start()
 
         submission = extract_submission_data(self.submission.pk)
 
@@ -204,8 +204,8 @@ class BaseAPITestClass(APITestCase):
 
         self.assertEqual(submission, self.submission)
 
-        patcher_submission_data_dir.stop()
-        patcher_submission_input_file_path.stop()
+        mock_submission_data_dir.stop()
+        mock_submission_input_file_path.stop()
 
     @mock.patch("scripts.workers.submission_worker.logger.critical")
     def test_extract_submission_data_when_submission_does_not_exist(self, mock_logger):
