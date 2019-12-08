@@ -35,32 +35,15 @@ class BaseAPITestClass(APITestCase):
     def setUp(self):
 
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
-        self.COMPUTE_DIRECTORY_PATH = join(
-            self.BASE_TEMP_DIR, "compute"
-        )
-        self.CHALLENGE_DATA_BASE_DIR = join(
-            self.COMPUTE_DIRECTORY_PATH, "challenge_data"
-        )
-        self.SUBMISSION_DATA_BASE_DIR = join(
-            self.COMPUTE_DIRECTORY_PATH, "submission_files"
-        )
+
         self.CHALLENGE_DATA_DIR = join(
-            self.CHALLENGE_DATA_BASE_DIR, "challenge_{challenge_id}"
-        )
-        self.PHASE_DATA_BASE_DIR = join(
-            self.CHALLENGE_DATA_DIR, "phase_data"
-        )
-        self.PHASE_DATA_DIR = join(
-            self.PHASE_DATA_BASE_DIR, "phase_{phase_id}"
-        )
-        self.PHASE_ANNOTATION_FILE_PATH = join(
-            self.PHASE_DATA_DIR, "{annotation_file}"
+            self.BASE_TEMP_DIR, "compute/challenge_data/challenge_{challenge_id}"
         )
         self.SUBMISSION_DATA_DIR = join(
-            self.SUBMISSION_DATA_BASE_DIR, "submission_{submission_id}"
+            self.BASE_TEMP_DIR, "compute/submission_files/submission_{submission_id}"
         )
-        self.SUBMISSION_INPUT_FILE_PATH = join(
-            self.SUBMISSION_DATA_DIR, "{input_file}"
+        self.PHASE_DATA_DIR = join(
+            self.CHALLENGE_DATA_DIR, "phase_data/phase_{phase_id}"
         )
         self.CHALLENGE_IMPORT_STRING = "challenge_data.challenge_{challenge_id}"
 
@@ -148,6 +131,40 @@ class BaseAPITestClass(APITestCase):
             is_flagged=True,
         )
 
+    def helper_return_submission_input_file_path(
+        self,
+        submission_id,
+        input_file):
+        """Helper Method
+
+        Takes `submission_id` and `input_file` as input and returns
+        corresponding path to submmitted input file
+        """
+
+        input_file_name = os.path.basename(input_file.name)
+        return join(self.SUBMISSION_DATA_DIR, "{input_file}").format(
+            submission_id=submission_id,
+            input_file=input_file_name,
+        )
+
+    def helper_return_phase_annotation_file_path(
+        self,
+        challenge_id,
+        phase_id,
+        annotation_file):
+        """Helper Method
+
+        Takes `phase_id` and `annotation_file` as input and returns
+        corresponding path to annotation file
+        """
+
+        annotation_file_name = os.path.basename(annotation_file.name)
+        return join(self.PHASE_DATA_DIR, "{annotation_file}").format(
+            challenge_id=challenge_id,
+            phase_id=phase_id,
+            annotation_file=annotation_file_name,
+        )
+
     def test_create_dir(self):
         create_dir(self.temp_directory)
         self.assertTrue(os.path.isdir(self.temp_directory))
@@ -166,7 +183,6 @@ class BaseAPITestClass(APITestCase):
     @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
     def test_extract_submission_data_success(self, mock_download_and_extract_file, mock_create_dir_as_python_package):
         patcher_submission_data_dir = mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", self.SUBMISSION_DATA_DIR)
-        patcher_submission_input_file_path = mock.patch("scripts.workers.submission_worker.SUBMISSION_INPUT_FILE_PATH", self.SUBMISSION_INPUT_FILE_PATH)
         patcher_submission_data_dir.start()
         patcher_submission_input_file_path.start()
 
@@ -176,13 +192,15 @@ class BaseAPITestClass(APITestCase):
         mock_create_dir_as_python_package.assert_called_with(expected_submission_data_dir)
 
         expected_submission_input_file = "{0}{1}".format(self.testserver, self.submission.input_file.url)
-        expected_submission_input_file_path = self.SUBMISSION_INPUT_FILE_PATH.format(submission_id=self.submission.pk, input_file=os.path.basename(self.submission.input_file.name))
+        expected_submission_input_file_path = helper_return_submission_input_file_path(
+            self.submission.pk,
+            self.submission.input_file,
+        )
         mock_download_and_extract_file.assert_called_with(expected_submission_input_file, expected_submission_input_file_path)
 
         self.assertEqual(submission, self.submission)
 
         patcher_submission_data_dir.stop()
-        patcher_submission_input_file_path.stop()
 
     @mock.patch("scripts.workers.submission_worker.logger.critical")
     def test_extract_submission_data_when_submission_does_not_exist(self, mock_logger):
