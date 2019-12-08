@@ -24,7 +24,7 @@ from participants.models import ParticipantTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
-    extract_submission_data,    
+    extract_submission_data,
     load_challenge_and_return_max_submissions,
     return_file_url_per_environment,
     get_or_create_sqs_queue
@@ -88,35 +88,6 @@ class BaseAPITestClass(APITestCase):
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
-        self.challenge = Challenge.objects.create(
-            title="Test Challenge",
-            description="Description for test challenge",
-            terms_and_conditions="Terms and conditions for test challenge",
-            submission_guidelines="Submission guidelines for test challenge",
-            creator=self.challenge_host_team,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() + timedelta(days=1),
-            published=False,
-            enable_forum=True,
-            anonymous_leaderboard=False,
-            max_concurrent_submission_evaluation=100,
-            evaluation_script=SimpleUploadedFile(
-                "test_sample_file.txt",
-                b"Dummy file content",
-                content_type="text/plain",
-            ),
-        )
-
-        self.user = User.objects.create(
-            username="someuser",
-            email="user@test.com",
-            password="secret_password",
-        )
-
-        self.challenge_host_team = ChallengeHostTeam.objects.create(
-            team_name="Test Challenge Host Team", created_by=self.user
-        )
-
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
             description="Description for test challenge",
