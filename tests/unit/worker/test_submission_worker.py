@@ -184,7 +184,6 @@ class BaseAPITestClass(APITestCase):
     def test_extract_submission_data_success(self, mock_download_and_extract_file, mock_create_dir_as_python_package):
         patcher_submission_data_dir = mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", self.SUBMISSION_DATA_DIR)
         patcher_submission_data_dir.start()
-        patcher_submission_input_file_path.start()
 
         submission = extract_submission_data(self.submission.pk)
 
