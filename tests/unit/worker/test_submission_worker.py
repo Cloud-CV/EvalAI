@@ -142,10 +142,10 @@ class BaseAPITestClass(APITestCase):
         )
 
     def helper_return_phase_annotation_file_path(
-        self,
-        challenge_id,
-        phase_id,
-        annotation_file):
+            self,
+            challenge_id,
+            phase_id,
+            annotation_file):
         """Helper Method: Takes `challenge_id`, `phase_id` and `annotation_file`
         as input and returns corresponding path to annotation file"""
 
@@ -172,9 +172,23 @@ class BaseAPITestClass(APITestCase):
 
     @mock.patch("scripts.workers.submission_worker.create_dir_as_python_package")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
-    def test_extract_submission_data_success(self, mock_download_and_extract_file, mock_create_dir_as_python_package):
-        patcher_submission_data_dir = mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", self.SUBMISSION_DATA_DIR)
+    def test_extract_submission_data_success(
+            self,
+            mock_download_and_extract_file,
+            mock_create_dir_as_python_package):
+        submission_input_file_path = join(
+            self.SUBMISSION_DATA_DIR, "{input_file}"
+        )
+        mock_submission_data_dir = mock.patch(
+            "scripts.workers.submission_worker.SUBMISSION_DATA_DIR",
+            self.SUBMISSION_DATA_DIR
+        )
+        mock_submission_input_file_path = mock.patch(
+            "scripts.workers.submission_worker.SUBMISSION_INPUT_FILE_PATH",
+            submission_input_file_path,
+        )
         patcher_submission_data_dir.start()
+        patcher_submission_input_file_path.start()
 
         submission = extract_submission_data(self.submission.pk)
 
@@ -191,6 +205,7 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(submission, self.submission)
 
         patcher_submission_data_dir.stop()
+        patcher_submission_input_file_path.stop()
 
     @mock.patch("scripts.workers.submission_worker.logger.critical")
     def test_extract_submission_data_when_submission_does_not_exist(self, mock_logger):
