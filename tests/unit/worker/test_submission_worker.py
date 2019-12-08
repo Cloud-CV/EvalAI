@@ -36,16 +36,9 @@ class BaseAPITestClass(APITestCase):
 
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
 
-        self.CHALLENGE_DATA_DIR = join(
-            self.BASE_TEMP_DIR, "compute/challenge_data/challenge_{challenge_id}"
-        )
         self.SUBMISSION_DATA_DIR = join(
             self.BASE_TEMP_DIR, "compute/submission_files/submission_{submission_id}"
         )
-        self.PHASE_DATA_DIR = join(
-            self.CHALLENGE_DATA_DIR, "phase_data/phase_{phase_id}"
-        )
-        self.CHALLENGE_IMPORT_STRING = "challenge_data.challenge_{challenge_id}"
 
         self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
 
@@ -131,7 +124,7 @@ class BaseAPITestClass(APITestCase):
             is_flagged=True,
         )
 
-    def helper_return_submission_input_file_path(self, submission_id, input_file):
+    def get_submission_input_file_path(self, submission_id, input_file):
         """Helper Method: Takes `submission_id` and `input_file` as input and
         returns corresponding path to submmitted input file"""
 
@@ -139,21 +132,6 @@ class BaseAPITestClass(APITestCase):
         return join(self.SUBMISSION_DATA_DIR, "{input_file}").format(
             submission_id=submission_id,
             input_file=input_file_name,
-        )
-
-    def helper_return_phase_annotation_file_path(
-            self,
-            challenge_id,
-            phase_id,
-            annotation_file):
-        """Helper Method: Takes `challenge_id`, `phase_id` and `annotation_file`
-        as input and returns corresponding path to annotation file"""
-
-        annotation_file_name = os.path.basename(annotation_file.name)
-        return join(self.PHASE_DATA_DIR, "{annotation_file}").format(
-            challenge_id=challenge_id,
-            phase_id=phase_id,
-            annotation_file=annotation_file_name,
         )
 
     def test_create_dir(self):
@@ -196,7 +174,7 @@ class BaseAPITestClass(APITestCase):
         mock_create_dir_as_python_package.assert_called_with(expected_submission_data_dir)
 
         expected_submission_input_file = "{0}{1}".format(self.testserver, self.submission.input_file.url)
-        expected_submission_input_file_path = self.helper_return_submission_input_file_path(
+        expected_submission_input_file_path = self.get_submission_input_file_path(
             self.submission.pk,
             self.submission.input_file,
         )
