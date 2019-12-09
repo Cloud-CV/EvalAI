@@ -6,18 +6,19 @@ import unittest
 import scripts.workers.remote_submission_worker as remote_submission_worker
 
 
-class DownloadAndExtractFileBaseTestClass(unittest.TestCase):
+class BaseTestClass(unittest.TestCase):
     def setUp(self):
         self.download_dir = "/tmp/evalai/"
         self.download_filename = "file"
         self.download_path = "{}{}".format(self.download_dir, self.download_filename)
+
         try:
             os.makedirs(self.download_dir)
         except OSError:
             pass
 
 
-class DownloadAndExtractFileWithProperURL(DownloadAndExtractFileBaseTestClass):
+class DownloadAndExtractFileWithProperURL(BaseTestClass):
     def setUp(self):
         super().setUp()
 
@@ -38,7 +39,7 @@ class DownloadAndExtractFileWithProperURL(DownloadAndExtractFileBaseTestClass):
             assert f.read() == self.body
 
 
-class DownloadAndExtractFileTestClass(DownloadAndExtractFileBaseTestClass):
+class DownloadAndExtractFileTestClass(BaseTestClass):
     def setUp(self):
         super().setUp()
 
