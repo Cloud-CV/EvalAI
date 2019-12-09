@@ -39,7 +39,7 @@ class DownloadAndExtractFileWithProperURL(BaseTestClass):
             assert f.read() == self.body
 
 
-class DownloadAndExtractFileTestClass(BaseTestClass):
+class DownloadAndExtractFileTestClassWithImproperURL(BaseTestClass):
     def setUp(self):
         super().setUp()
 
