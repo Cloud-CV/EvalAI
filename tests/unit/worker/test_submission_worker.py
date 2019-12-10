@@ -154,7 +154,7 @@ class BaseAPITestClass(APITestCase):
                                     mock_import_module):
 
         mock_challenge_data_dir = mock.patch(
-            "scripts.worker.submission_worker.CHALLENGE_DATA_DIR",
+            "scripts.workers.submission_worker.CHALLENGE_DATA_DIR",
             self.CHALLENGE_DATA_DIR,
         )
         mock_phase_annotation_file_name_map = mock.patch.dict(
