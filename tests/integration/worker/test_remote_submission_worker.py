@@ -6,21 +6,11 @@ import unittest
 import scripts.workers.remote_submission_worker as remote_submission_worker
 
 
-class BaseTestClass(unittest.TestCase):
+class TestDownloadAndExtractFile(unittest.TestCase):
     def setUp(self):
         self.download_dir = "/tmp/evalai/"
         self.download_filename = "file"
         self.download_path = "{}{}".format(self.download_dir, self.download_filename)
-
-        try:
-            os.makedirs(self.download_dir)
-        except OSError:
-            pass
-
-
-class DownloadAndExtractFileWithProperURL(BaseTestClass):
-    def setUp(self):
-        super().setUp()
 
         self.url = "http://example.com"
         self.body = """{"content": "test-data"}"""
@@ -31,6 +21,11 @@ class DownloadAndExtractFileWithProperURL(BaseTestClass):
             status=200
         )
 
+        try:
+            os.makedirs(self.download_dir)
+        except OSError:
+            pass
+
     @responses.activate
     def test_download_and_extract_file_when_proper_url_is_given(self):
         remote_submission_worker.download_and_extract_file(self.url, self.download_path)
@@ -38,15 +33,10 @@ class DownloadAndExtractFileWithProperURL(BaseTestClass):
         with open(self.download_path, "r") as f:
             assert f.read() == self.body
 
-
-class DownloadAndExtractFileTestClassWithImproperURL(BaseTestClass):
-    def setUp(self):
-        super().setUp()
-
-        self.url = "invalid-url"
-
     @mock.patch("scripts.workers.remote_submission_worker.logger.error")
     def test_download_and_extract_file_when_improper_url_is_given(self, mock_logger):
+        self.url = "invalid-url"
+
         remote_submission_worker.download_and_extract_file(self.url, "")
         mock_logger.assert_called_with(
             "Failed to fetch file from {}, error "
