@@ -38,8 +38,11 @@ class BaseAPITestClass(APITestCase):
             self.BASE_TEMP_DIR,
             "compute/challenge_data/challenge_{challenge_id}",
         )
+        self.PHASE_DATA_BASE_DIR = join(
+            self.CHALLENGE_DATA_DIR, "phase_data"
+        )
         self.PHASE_DATA_DIR = join(
-            self.CHALLENGE_DATA_DIR, "phase_data/phase_{phase_id}"
+            self.PHASE_DATA_BASE_DIR, "phase_{phase_id}"
         )
         self.CHALLENGE_IMPORT_STRING = "challenge_data.challenge_{challenge_id}"
 
@@ -152,9 +155,11 @@ class BaseAPITestClass(APITestCase):
                                     mock_download_and_extract_file,
                                     mock_import_module):
 
-        mock_challenge_data_dir = mock.patch(
-            "scripts.workers.submission_worker.CHALLENGE_DATA_DIR",
-            self.CHALLENGE_DATA_DIR,
+        dir_patcher = mock.patch.multiple(
+            "scripts.workers.submission_worker",
+            CHALLENGE_DATA_DIR=self.CHALLENGE_DATA_DIR,
+            PHASE_DATA_BASE_DIR=self.PHASE_DATA_BASE_DIR,
+            PHASE_DATA_DIR=self.PHASE_DATA_DIR,
         )
         mock_phase_annotation_file_name_map = mock.patch.dict(
             "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
@@ -164,7 +169,7 @@ class BaseAPITestClass(APITestCase):
             "scripts.workers.submission_worker.EVALUATION_SCRIPTS",
             clear=True,
         )
-        mock_challenge_data_dir.start()
+        dir_patcher.start()
         mock_phase_annotation_file_name_map.start()
         mock_evaluation_scripts.start()
 
@@ -197,7 +202,7 @@ class BaseAPITestClass(APITestCase):
         )
         self.assertEqual(mock_evaluation_scripts, expected_evaluation_scripts)
 
-        mock_challenge_data_dir.stop()
+        dir_patcher.stop()
         mock_phase_annotation_file_name_map.stop()
         mock_evaluation_scripts.stop()
 
