@@ -19,7 +19,6 @@ from challenges.models import (
     ChallengePhase,
 )
 from hosts.models import ChallengeHostTeam
-from participants.models import ParticipantTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
@@ -142,7 +141,7 @@ class BaseAPITestClass(APITestCase):
 
     def test_return_file_url_per_environment(self):
         returned_url = return_file_url_per_environment(self.url)
-        self.assertEqual(returned_url, get_url_for_test_environment(self.url))
+        self.assertEqual(returned_url, self.get_url_for_test_environment(self.url))
 
     @mock.patch("scripts.workers.submission_worker.importlib.import_module",
                 return_value="Test Value for Challenge Module")
@@ -172,15 +171,14 @@ class BaseAPITestClass(APITestCase):
         phases = self.challenge.challengephase_set.all()
         extract_challenge_data(self.challenge, phases)
 
-        challenge_data_directory = self.CHALLENGE_DATA_DIR.format(challenge_id=self.challenge.id)
-        annotation_file_name = os.path.basename(self.challenge_phase.annotation_file.name)
-        annotation_file_url = get_url_for_test_environment(
-            self.challenge_phase.annotation_file.url
+        annotation_file_name = os.path.basename(self.challenge_phase.test_annotation.name)
+        annotation_file_url = self.get_url_for_test_environment(
+            self.challenge_phase.test_annotation.url
         )
         annotation_file_path = self.get_phase_annotation_file_path(
             challenge_id=self.challenge.id,
             phase_id=self.challenge_phase.id,
-            annotation_file=self.challenge_phase.annotation_file,
+            annotation_file=self.challenge_phase.test_annotation,
         )
         challenge_import_string = self.CHALLENGE_IMPORT_STRING.format(challenge_id=self.challenge.id)
         expected_phase_annotation_file_name_map = {
