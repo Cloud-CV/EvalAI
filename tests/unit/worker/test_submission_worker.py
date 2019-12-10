@@ -158,13 +158,13 @@ class BaseAPITestClass(APITestCase):
         # Setting up expected data first, so all assertions can be made inside
         # the with block in their original order.
         challenge_data_directory = self.CHALLENGE_DATA_DIR.format(
-            challenge_id=challenge.id
+            challenge_id=self.challenge.id
         )
         evaluation_script_url = self.get_url_for_test_environment(
             self.challenge.evaluation_script.url
         )
         challenge_zip_file = join(
-            challenge_data_directory, "challenge_{}.zip".format(challenge.id)
+            challenge_data_directory, "challenge_{}.zip".format(self.challenge.id)
         )
         annotation_file_name = os.path.basename(self.challenge_phase.test_annotation.name)
         annotation_file_url = self.get_url_for_test_environment(
@@ -200,8 +200,9 @@ class BaseAPITestClass(APITestCase):
         )
 
         with dir_patcher,\
-             patcher_phase_annotation_file_name_map as mock_annotation_file_map,\
-             patcher_evaluation_scripts as mock_evaluation_scripts:
+            patcher_phase_annotation_file_name_map as mock_annotation_file_map,\
+            patcher_evaluation_scripts as mock_evaluation_scripts:
+
             phases = [self.challenge_phase]
             extract_challenge_data(self.challenge, phases)
 
