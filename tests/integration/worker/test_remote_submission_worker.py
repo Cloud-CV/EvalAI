@@ -1,6 +1,6 @@
-import responses
 import mock
 import os
+import responses
 import unittest
 
 import scripts.workers.remote_submission_worker as remote_submission_worker
