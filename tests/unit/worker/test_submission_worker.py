@@ -148,7 +148,7 @@ class BaseAPITestClass(APITestCase):
                      clear=True)
     @mock.patch.dict("scripts.workers.submission_worker.EVALUATION_SCRIPTS",
                      clear=True)
-    @mock.patch("scripts.workers.submission_worker.importlib.import_import_module",
+    @mock.patch("scripts.workers.submission_worker.importlib.import_module",
                 return_value="Test Value for Challenge Module")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_zip_file")
