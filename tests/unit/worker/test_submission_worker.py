@@ -162,17 +162,17 @@ class BaseAPITestClass(APITestCase):
             PHASE_DATA_DIR=self.PHASE_DATA_DIR,
             PHASE_ANNOTATION_FILE_PATH=join(self.PHASE_DATA_DIR, "{annotation_file}")
         )
-        mock_phase_annotation_file_name_map = mock.patch.dict(
+        patcher_phase_annotation_file_name_map = mock.patch.dict(
             "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
             clear=True,
         )
-        mock_evaluation_scripts = mock.patch.dict(
+        patcher_evaluation_scripts = mock.patch.dict(
             "scripts.workers.submission_worker.EVALUATION_SCRIPTS",
             clear=True,
         )
         dir_patcher.start()
-        mock_phase_annotation_file_name_map.start()
-        mock_evaluation_scripts.start()
+        mock_phase_annotation_file_name_map = patcher_phase_annotation_file_name_map.start()
+        mock_evaluation_scripts = patcher_evaluation_scripts.start()
 
         phases = self.challenge.challengephase_set.all()
         extract_challenge_data(self.challenge, phases)
