@@ -157,6 +157,15 @@ class BaseAPITestClass(APITestCase):
 
         # Setting up expected data first, so all assertions can be made inside
         # the with block in their original order.
+        challenge_data_directory = self.CHALLENGE_DATA_DIR.format(
+            challenge_id=challenge.id
+        )
+        evaluation_script_url = self.get_url_for_test_environment(
+            self.challenge.evaluation_script.url
+        )
+        challenge_zip_file = join(
+            challenge_data_directory, "challenge_{}.zip".format(challenge.id)
+        )
         annotation_file_name = os.path.basename(self.challenge_phase.test_annotation.name)
         annotation_file_url = self.get_url_for_test_environment(
             self.challenge_phase.test_annotation.url
@@ -181,29 +190,32 @@ class BaseAPITestClass(APITestCase):
                 self.PHASE_DATA_DIR, "{annotation_file}"
             )
         )
-        patcher_annotation_file_map = mock.patch.dict(
+        patcher_phase_annotation_file_name_map = mock.patch(
             "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
             {},
-            clear=True
         )
-        patcher_evaluation_scripts = mock.patch.dict(
+        patcher_evaluation_scripts = mock.patch(
             "scripts.workers.submission_worker.EVALUATION_SCRIPTS",
             {},
-            clear=True
         )
 
-        with dir_patcher, patcher_annotation_file_map as mock_annotation_file_map, patcher_evaluation_scripts as mock_evaluation_scripts:
+        with dir_patcher,\
+             patcher_phase_annotation_file_name_map as mock_annotation_file_map,\
+             patcher_evaluation_scripts as mock_evaluation_scripts:
             phases = [self.challenge_phase]
             extract_challenge_data(self.challenge, phases)
 
             # Order as executed in original function
-            mock_download_and_extract_file.assert_called_with(
-                annotation_file_url,
-                annotation_file_path,
+            mock_download_and_extract_zip_file.assert_called_with(
+                evaluation_script_url, challenge_zip_file, challenge_data_directory
             )
             self.assertEqual(
                 mock_annotation_file_map,
                 expected_phase_annotation_file_name_map,
+            )
+            mock_download_and_extract_file.assert_called_with(
+                annotation_file_url,
+                annotation_file_path,
             )
             mock_import_module.assert_called_with(challenge_import_string)
             self.assertEqual(mock_evaluation_scripts, expected_evaluation_scripts)
