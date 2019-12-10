@@ -19,7 +19,7 @@ from challenges.models import (
     ChallengePhase,
 )
 from hosts.models import ChallengeHostTeam
-from participants.models import PariticipantTeam
+from participants.models import ParticipantTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
