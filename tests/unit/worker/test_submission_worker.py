@@ -182,7 +182,7 @@ class BaseAPITestClass(APITestCase):
         )
         challenge_import_string = self.CHALLENGE_IMPORT_STRING.format(challenge_id=self.challenge.id)
         expected_phase_annotation_file_name_map = {
-            self.challenge.id: {self.phase.id: annotation_file_name}
+            self.challenge.id: {self.challenge_phase.id: annotation_file_name}
         }
         expected_evaluation_scripts = {self.challenge.id: "Test Value for Challenge Module"}
 
