@@ -155,26 +155,8 @@ class BaseAPITestClass(APITestCase):
                                     mock_download_and_extract_file,
                                     mock_import_module):
 
-        dir_patcher = mock.patch.multiple(
-            "scripts.workers.submission_worker",
-            CHALLENGE_DATA_DIR=self.CHALLENGE_DATA_DIR,
-            PHASE_DATA_BASE_DIR=self.PHASE_DATA_BASE_DIR,
-            PHASE_DATA_DIR=self.PHASE_DATA_DIR,
-            PHASE_ANNOTATION_FILE_PATH=join(self.PHASE_DATA_DIR, "{annotation_file}")
-        )
-        patcher_phase_annotation_file_name_map = mock.patch.dict(
-            "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP", {}
-        )
-        patcher_evaluation_scripts = mock.patch.dict(
-            "scripts.workers.submission_worker.EVALUATION_SCRIPTS", {}
-        )
-        dir_patcher.start()
-        mock_phase_annotation_file_name_map = patcher_phase_annotation_file_name_map.start()
-        mock_evaluation_scripts = patcher_evaluation_scripts.start()
-
-        phases = [self.challenge_phase]
-        extract_challenge_data(self.challenge, phases)
-
+        # Setting up expected data first, so all assertions can be made inside
+        # the with block in their original order.
         annotation_file_name = os.path.basename(self.challenge_phase.test_annotation.name)
         annotation_file_url = self.get_url_for_test_environment(
             self.challenge_phase.test_annotation.url
@@ -190,20 +172,37 @@ class BaseAPITestClass(APITestCase):
         }
         expected_evaluation_scripts = {self.challenge.id: "Test Value for Challenge Module"}
 
-        mock_download_and_extract_file.assert_called_with(
-            annotation_file_url,
-            annotation_file_path,
-        )
-        mock_import_module.assert_called_with(challenge_import_string)
-        self.assertEqual(
-            mock_phase_annotation_file_name_map,
-            expected_phase_annotation_file_name_map,
-        )
-        self.assertEqual(mock_evaluation_scripts, expected_evaluation_scripts)
+        with (
+            mock.patch.multiple(
+                "scripts.workers.submission_worker",
+                CHALLENGE_DATA_DIR=self.CHALLENGE_DATA_DIR,
+                PHASE_DATA_BASE_DIR=self.PHASE_DATA_BASE_DIR,
+                PHASE_DATA_DIR=self.PHASE_DATA_DIR,
+                PHASE_ANNOTATION_FILE_PATH=join(self.PHASE_DATA_DIR, "{annotation_file}")
+            ),
+            mock.patch.dict(
+                "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
+                clear=True
+            ) as mock_phase_annotation_file_name_map,
+            mock.patch.dict(
+                "scripts.workers.submission_worker.EVALUATION_SCRIPTS",
+                clear=True
+            ) as mock_evaluation_script
+        ):
+            phases = [self.challenge_phase]
+            extract_challenge_data(self.challenge, phases)
 
-        dir_patcher.stop()
-        mock_phase_annotation_file_name_map.stop()
-        mock_evaluation_scripts.stop()
+            # Order as executed in original function
+            mock_download_and_extract_file.assert_called_with(
+                annotation_file_url,
+                annotation_file_path,
+            )
+            self.assertEqual(
+                mock_phase_annotation_file_name_map,
+                expected_phase_annotation_file_name_map,
+            )
+            mock_import_module.assert_called_with(challenge_import_string)
+            self.assertEqual(mock_evaluation_scripts, expected_evaluation_scripts)
 
     @mock.patch("scripts.workers.submission_worker.load_challenge")
     def test_load_challenge_and_return_max_submissions(self, mocked_load_challenge):
