@@ -144,10 +144,6 @@ class BaseAPITestClass(APITestCase):
         returned_url = return_file_url_per_environment(self.url)
         self.assertEqual(returned_url, get_url_for_test_environment(self.url))
 
-    @mock.patch.dict("scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
-                     clear=True)
-    @mock.patch.dict("scripts.workers.submission_worker.EVALUATION_SCRIPTS",
-                     clear=True)
     @mock.patch("scripts.workers.submission_worker.importlib.import_module",
                 return_value="Test Value for Challenge Module")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
@@ -155,15 +151,23 @@ class BaseAPITestClass(APITestCase):
     def test_extract_challenge_data(self,
                                     mock_download_and_extract_zip_file,
                                     mock_download_and_extract_file,
-                                    mock_import_module,
-                                    mock_evaluation_scripts,
-                                    mock_phase_annotation_file_name_map):
+                                    mock_import_module):
 
         mock_challenge_data_dir = mock.patch(
             "scripts.worker.submission_worker.CHALLENGE_DATA_DIR",
             self.CHALLENGE_DATA_DIR,
         )
+        mock_phase_annotation_file_name_map = mock.patch.dict(
+            "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
+            clear=True,
+        )
+        mock_evaluation_scripts = mock.patch.dict(
+            "scripts.workers.submission_worker.EVALUATION_SCRIPTS",
+            clear=True,
+        )
         mock_challenge_data_dir.start()
+        mock_phase_annotation_file_name_map.start()
+        mock_evaluation_scripts.start()
 
         phases = self.challenge.challengephase_set.all()
         extract_challenge_data(self.challenge, phases)
@@ -196,6 +200,8 @@ class BaseAPITestClass(APITestCase):
         self.assertEqual(mock_evaluation_scripts, expected_evaluation_scripts)
 
         mock_challenge_data_dir.stop()
+        mock_phase_annotation_file_name_map.stop()
+        mock_evaluation_scripts.stop()
 
     @mock.patch("scripts.workers.submission_worker.load_challenge")
     def test_load_challenge_and_return_max_submissions(self, mocked_load_challenge):
