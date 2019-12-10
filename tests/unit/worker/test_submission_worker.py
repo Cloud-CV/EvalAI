@@ -200,8 +200,8 @@ class BaseAPITestClass(APITestCase):
         )
 
         with dir_patcher,\
-            patcher_phase_annotation_file_name_map as mock_annotation_file_map,\
-            patcher_evaluation_scripts as mock_evaluation_scripts:
+                patcher_phase_annotation_file_name_map as mock_annotation_file_map,\
+                patcher_evaluation_scripts as mock_evaluation_scripts:
 
             phases = [self.challenge_phase]
             extract_challenge_data(self.challenge, phases)
