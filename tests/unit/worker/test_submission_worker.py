@@ -163,12 +163,10 @@ class BaseAPITestClass(APITestCase):
             PHASE_ANNOTATION_FILE_PATH=join(self.PHASE_DATA_DIR, "{annotation_file}")
         )
         patcher_phase_annotation_file_name_map = mock.patch.dict(
-            "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
-            clear=True,
+            "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP", {}
         )
         patcher_evaluation_scripts = mock.patch.dict(
-            "scripts.workers.submission_worker.EVALUATION_SCRIPTS",
-            clear=True,
+            "scripts.workers.submission_worker.EVALUATION_SCRIPTS", {}
         )
         dir_patcher.start()
         mock_phase_annotation_file_name_map = patcher_phase_annotation_file_name_map.start()
