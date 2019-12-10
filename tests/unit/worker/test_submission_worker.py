@@ -160,6 +160,7 @@ class BaseAPITestClass(APITestCase):
             CHALLENGE_DATA_DIR=self.CHALLENGE_DATA_DIR,
             PHASE_DATA_BASE_DIR=self.PHASE_DATA_BASE_DIR,
             PHASE_DATA_DIR=self.PHASE_DATA_DIR,
+            PHASE_ANNOTATION_FILE_PATH=join(self.PHASE_DATA_DIR, "{annotation_file}")
         )
         mock_phase_annotation_file_name_map = mock.patch.dict(
             "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
