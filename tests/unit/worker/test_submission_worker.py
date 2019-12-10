@@ -174,7 +174,7 @@ class BaseAPITestClass(APITestCase):
         mock_phase_annotation_file_name_map = patcher_phase_annotation_file_name_map.start()
         mock_evaluation_scripts = patcher_evaluation_scripts.start()
 
-        phases = self.challenge.challengephase_set.all()
+        phases = [self.challenge_phase]
         extract_challenge_data(self.challenge, phases)
 
         annotation_file_name = os.path.basename(self.challenge_phase.test_annotation.name)
