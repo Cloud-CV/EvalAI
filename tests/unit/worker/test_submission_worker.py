@@ -37,7 +37,7 @@ class BaseAPITestClass(APITestCase):
         self.CHALLENGE_DATA_DIR = join(
             self.BASE_TEMP_DIR, "compute/challenge_data/challenge_{challenge_id}",
         )
-        self.PHASE_DATA_BASE_DIR = join(self.CHALLENGE_DATA_DIR, "phase_data")      )
+        self.PHASE_DATA_BASE_DIR = join(self.CHALLENGE_DATA_DIR, "phase_data")
         self.PHASE_DATA_DIR = join(self.PHASE_DATA_BASE_DIR, "phase_{phase_id}")
         self.CHALLENGE_IMPORT_STRING = "challenge_data.challenge_{challenge_id}"
 
