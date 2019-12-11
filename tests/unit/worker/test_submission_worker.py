@@ -215,6 +215,16 @@ class ExtractChallengeDataTest(BaseAPITestClass):
             expected_script_dict = {self.challenge.id: "Test Value for Challenge Module"}
             self.assertEqual(mock_script_dict, expected_script_dict)
 
+    @mock.patch("scripts.workers.submission_worker.logger.exception")
+    def test_extract_challenge_data_when_error_is_raised(self, mock_logger, mock_import):
+        mock_import.side_effect = ImportError
+
+        with self.assertRaises(ImportError):
+            extract_challenge_data(self.challenge, self.phases)
+            mock_logger.assert_called_with(
+                "Exception raised while creating Python module for challenge_id: {}".format(self.challenge.id)
+            )
+
 
 class LoadChallengeAndReturnMaxSubmissionsTest(BaseAPITestClass):
     @mock.patch("scripts.workers.submission_worker.load_challenge")
