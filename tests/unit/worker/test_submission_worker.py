@@ -141,6 +141,7 @@ class HelperMethodsTest(BaseAPITestClass):
         returned_url = return_file_url_per_environment(self.url)
         self.assertEqual(returned_url, self.get_url_for_test_environment(self.url))
 
+
 @mock.patch("scripts.workers.submission_worker.importlib.import_module")
 class ExtractChallengeDataTest(BaseAPITestClass):
     def setUp(self):
@@ -174,8 +175,9 @@ class ExtractChallengeDataTest(BaseAPITestClass):
         )
         self.challenge_data_directory = self.CHALLENGE_DATA_DIR.format(challenge_id=self.challenge.id)
         self.challenge_import_string = self.CHALLENGE_IMPORT_STRING.format(challenge_id=self.challenge.id)
-        self.challenge_zip_file = join(challenge_data_directory, "challenge_{}.zip".format(self.challenge.id))
+        self.challenge_zip_file = join(self.challenge_data_directory, "challenge_{}.zip".format(self.challenge.id))
         self.evaluation_script_url = self.get_url_for_test_environment(self.challenge.evaluation_script.url)
+
 
     @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_zip_file")
@@ -203,7 +205,7 @@ class ExtractChallengeDataTest(BaseAPITestClass):
         with self.directory_path_patcher, self.patcher_map as mock_map:
             extract_challenge_data(self.challenge, self.phases)
 
-            expected_map = {self.challenge.id: {self.challenge_phase.id: annotation_file_name}}
+            expected_map = {self.challenge.id: {self.challenge_phase.id: self.annotation_file_name}}
             self.assertEqual(mock_map, expected_map)
 
     def test_extract_challenge_data_evaluation_scripts(self, mock_import):
@@ -213,6 +215,7 @@ class ExtractChallengeDataTest(BaseAPITestClass):
 
             expected_script_dict = {self.challenge.id: "Test Value for Challenge Module"}
             self.assertEqual(mock_script_dict, expected_script_dict)
+
 
 class LoadChallengeAndReturnMaxSubmissionsTest(BaseAPITestClass):
     @mock.patch("scripts.workers.submission_worker.load_challenge")
@@ -228,6 +231,7 @@ class LoadChallengeAndReturnMaxSubmissionsTest(BaseAPITestClass):
         with self.assertRaises(Challenge.DoesNotExist):
             load_challenge_and_return_max_submissions({"pk": non_existing_challenge_pk})
             mock_logger.assert_called_with("Challenge with pk {} doesn't exist".format(non_existing_challenge_pk))
+
 
 @mock_sqs
 class GetOrCreateSqsQueueTest(BaseAPITestClass):
