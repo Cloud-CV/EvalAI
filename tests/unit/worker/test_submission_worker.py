@@ -125,6 +125,7 @@ class BaseAPITestClass(APITestCase):
         """Helper Method: Takes in `url` and returns URL for test environment"""
         return "{0}{1}".format(self.testserver, url)
 
+class HelperMethodsTest(BaseAPITestClass):
     def test_create_dir(self):
         create_dir(self.temp_directory)
         self.assertTrue(os.path.isdir(self.temp_directory))
@@ -139,8 +140,41 @@ class BaseAPITestClass(APITestCase):
         returned_url = return_file_url_per_environment(self.url)
         self.assertEqual(returned_url, self.get_url_for_test_environment(self.url))
 
-    @mock.patch("scripts.workers.submission_worker.importlib.import_module",
-                return_value="Test Value for Challenge Module")
+class ExtractChallengeDataTest(BaseAPITestClass):
+    def setUp(self):
+        super(ExtractChallengeDataTest, self).setUp()
+
+        self.directory_path_patcher = mock.patch.multiple(
+            "scripts.workers.submission_worker",
+            CHALLENGE_DATA_DIR=self.CHALLENGE_DATA_DIR,
+            PHASE_DATA_BASE_DIR=self.PHASE_DATA_BASE_DIR,
+            PHASE_DATA_DIR=self.PHASE_DATA_DIR,
+            PHASE_ANNOTATION_FILE_PATH=join(self.PHASE_DATA_DIR, "{annotation_file}")
+        )
+        self.patcher_map = mock.patch(
+            "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
+            {},
+        )
+        self.patcher_script_dict = mock.patch(
+            "scripts.workers.submission_worker.EVALUATION_SCRIPTS",
+            {},
+        )
+        self.phases = [self.challenge_phase]
+        self.challenge_data_directory = self.CHALLENGE_DATA_DIR.format(
+            challenge_id=self.challenge.id
+        )
+        self.annotation_file_name = os.path.basename(self.challenge_phase.test_annotation.name)
+        self.annotation_file_url = self.get_url_for_test_environment(
+            self.challenge_phase.test_annotation.url
+        )
+        self.annotation_file_path = self.get_phase_annotation_file_path(
+            challenge_id=self.challenge.id,
+            phase_id=self.challenge_phase.id,
+            annotation_file=self.challenge_phase.test_annotation,
+        )
+        challenge_import_string = self.CHALLENGE_IMPORT_STRING.format(challenge_id=self.challenge.id)
+
+    @mock.patch("scripts.workers.submission_worker.importlib.import_module")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_zip_file")
     def test_extract_challenge_data(self,
@@ -148,72 +182,38 @@ class BaseAPITestClass(APITestCase):
                                     mock_download_and_extract_file,
                                     mock_import_module):
 
-        # Setting up expected data first, so all assertions can be made inside
-        # the with block in their original order.
-        challenge_data_directory = self.CHALLENGE_DATA_DIR.format(
-            challenge_id=self.challenge.id
-        )
-        evaluation_script_url = self.get_url_for_test_environment(
-            self.challenge.evaluation_script.url
-        )
-        challenge_zip_file = join(
-            challenge_data_directory, "challenge_{}.zip".format(self.challenge.id)
-        )
-        annotation_file_name = os.path.basename(self.challenge_phase.test_annotation.name)
-        annotation_file_url = self.get_url_for_test_environment(
-            self.challenge_phase.test_annotation.url
-        )
-        annotation_file_path = self.get_phase_annotation_file_path(
-            challenge_id=self.challenge.id,
-            phase_id=self.challenge_phase.id,
-            annotation_file=self.challenge_phase.test_annotation,
-        )
-        challenge_import_string = self.CHALLENGE_IMPORT_STRING.format(challenge_id=self.challenge.id)
-        expected_phase_annotation_file_name_map = {
-            self.challenge.id: {self.challenge_phase.id: annotation_file_name}
-        }
-        expected_evaluation_scripts = {self.challenge.id: "Test Value for Challenge Module"}
-
-        dir_patcher = mock.patch.multiple(
-            "scripts.workers.submission_worker",
-            CHALLENGE_DATA_DIR=self.CHALLENGE_DATA_DIR,
-            PHASE_DATA_BASE_DIR=self.PHASE_DATA_BASE_DIR,
-            PHASE_DATA_DIR=self.PHASE_DATA_DIR,
-            PHASE_ANNOTATION_FILE_PATH=join(
-                self.PHASE_DATA_DIR, "{annotation_file}"
-            )
-        )
-        patcher_phase_annotation_file_name_map = mock.patch(
-            "scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP",
-            {},
-        )
-        patcher_evaluation_scripts = mock.patch(
-            "scripts.workers.submission_worker.EVALUATION_SCRIPTS",
-            {},
-        )
-
-        with dir_patcher,\
-                patcher_phase_annotation_file_name_map as mock_annotation_file_map,\
-                patcher_evaluation_scripts as mock_evaluation_scripts:
-
-            phases = [self.challenge_phase]
-            extract_challenge_data(self.challenge, phases)
+        evaluation_script_url = self.get_url_for_test_environment(self.challenge.evaluation_script.url)
+        challenge_zip_file = join(challenge_data_directory, "challenge_{}.zip".format(self.challenge.id))
+        with self.directory_path_patcher:
+            extract_challenge_data(self.challenge, self.phases)
 
             # Order as executed in original function
             mock_download_and_extract_zip_file.assert_called_with(
                 evaluation_script_url, challenge_zip_file, challenge_data_directory
             )
-            self.assertEqual(
-                mock_annotation_file_map,
-                expected_phase_annotation_file_name_map,
-            )
             mock_download_and_extract_file.assert_called_with(
-                annotation_file_url,
-                annotation_file_path,
+                self.annotation_file_url,
+                self.annotation_file_path,
             )
             mock_import_module.assert_called_with(challenge_import_string)
-            self.assertEqual(mock_evaluation_scripts, expected_evaluation_scripts)
 
+    def test_extract_challenge_data_annotation_file_map(self):
+        with self.directory_path_patcher, self.patcher_map as mock_map:
+            extract_challenge_data(self.challenge, self.phases)
+
+            expected_map = {self.challenge.id: {self.challenge_phase.id: self.annotation_file_name}}
+            self.assertEqual(mock_map, expected_map)
+
+    @mock.patch("scripts.workers.submission_worker.importlib.import_module",
+                return_value="Test Value for Challenge Module")
+    def test_extract_challenge_data_evaluation_scripts(self):
+        with self.directory_path_patcher, self.patcher_script_dict as mock_script_dict:
+            extract_challenge_data(self.challenge, self.phases)
+
+            expected_script_dict = {self.challenge.id: "Test Value for Challenge Module"}
+            self.assertEqual(mock_script_dict, expected_script_dict)
+
+class LoadChallengeAndReturnMaxSubmissionsTest(BaseAPITestClass):
     @mock.patch("scripts.workers.submission_worker.load_challenge")
     def test_load_challenge_and_return_max_submissions(self, mocked_load_challenge):
         q_params = {"pk": self.challenge.pk}
@@ -228,7 +228,8 @@ class BaseAPITestClass(APITestCase):
             load_challenge_and_return_max_submissions({"pk": non_existing_challenge_pk})
             mock_logger.assert_called_with("Challenge with pk {} doesn't exist".format(non_existing_challenge_pk))
 
-    @mock_sqs()
+@mock_sqs
+class GetOrCreateSqsQueueTest(BaseAPITestClass):
     def test_get_or_create_sqs_queue_for_existing_queue(self):
         self.sqs_client.create_queue(QueueName="test_queue")
         get_or_create_sqs_queue("test_queue")
@@ -236,7 +237,6 @@ class BaseAPITestClass(APITestCase):
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
 
-    @mock_sqs()
     def test_get_or_create_sqs_queue_for_non_existing_queue(self):
         get_or_create_sqs_queue("test_queue_2")
         queue_url = self.sqs_client.get_queue_url(QueueName='test_queue_2')['QueueUrl']
