@@ -27,14 +27,14 @@ class TestDownloadAndExtractFile(unittest.TestCase):
             pass
 
     @responses.activate
-    def test_download_and_extract_file_when_proper_url_is_given(self):
+    def test_download_and_extract_file_with_correct_url(self):
         remote_submission_worker.download_and_extract_file(self.url, self.download_path)
 
         with open(self.download_path, "r") as f:
             assert f.read() == self.body
 
     @mock.patch("scripts.workers.remote_submission_worker.logger.error")
-    def test_download_and_extract_file_when_improper_url_is_given(self, mock_logger):
+    def test_download_and_extract_file_with_incorrect_url(self, mock_logger):
         self.url = "invalid-url"
 
         remote_submission_worker.download_and_extract_file(self.url, "")
