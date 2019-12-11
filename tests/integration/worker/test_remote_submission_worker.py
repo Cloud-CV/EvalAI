@@ -1,5 +1,4 @@
 import mock
-import os
 import responses
 import shutil
 import unittest
@@ -7,6 +6,7 @@ import unittest
 import scripts.workers.remote_submission_worker as remote_submission_worker
 
 
+@mock.patch("scripts.workers.remote_submission_worker.logger.error")
 class TestDownloadAndExtractFile(unittest.TestCase):
     def setUp(self):
         self.download_dir = "/tmp/evalai/"
@@ -22,23 +22,22 @@ class TestDownloadAndExtractFile(unittest.TestCase):
             status=200
         )
 
-        try:
-            os.makedirs(self.download_dir)
-        except OSError:
-            pass
+        remote_submission_worker.create_dir(self.download_dir)
 
     def tearDown(self):
         shutil.rmtree(self.download_dir)
 
     @responses.activate
-    def test_download_and_extract_file_with_correct_url(self):
-        remote_submission_worker.download_and_extract_file(self.url, self.download_path)
+    def test_download_and_extract_file_with_correct_url(self, mock_logger):
+        mock_logger.assert_not_called()
 
+        remote_submission_worker.download_and_extract_file(self.url, self.download_path)
         with open(self.download_path, "r") as f:
             assert f.read() == self.body
 
-    @mock.patch("scripts.workers.remote_submission_worker.logger.error")
     def test_download_and_extract_file_with_incorrect_url(self, mock_logger):
+        mock_logger.assert_not_called()
+
         self.url = "invalid-url"
 
         remote_submission_worker.download_and_extract_file(self.url, "")
