@@ -35,15 +35,10 @@ class BaseAPITestClass(APITestCase):
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
 
         self.CHALLENGE_DATA_DIR = join(
-            self.BASE_TEMP_DIR,
-            "compute/challenge_data/challenge_{challenge_id}",
+            self.BASE_TEMP_DIR, "compute/challenge_data/challenge_{challenge_id}",
         )
-        self.PHASE_DATA_BASE_DIR = join(
-            self.CHALLENGE_DATA_DIR, "phase_data"
-        )
-        self.PHASE_DATA_DIR = join(
-            self.PHASE_DATA_BASE_DIR, "phase_{phase_id}"
-        )
+        self.PHASE_DATA_BASE_DIR = join(self.CHALLENGE_DATA_DIR, "phase_data")      )
+        self.PHASE_DATA_DIR = join(self.PHASE_DATA_BASE_DIR, "phase_{phase_id}")
         self.CHALLENGE_IMPORT_STRING = "challenge_data.challenge_{challenge_id}"
 
         self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
@@ -51,9 +46,7 @@ class BaseAPITestClass(APITestCase):
         self.testserver = "http://testserver"
         self.url = "/test/url"
 
-        self.input_file = open(
-            join(self.BASE_TEMP_DIR, 'dummy_input.txt'), "w+"
-        )
+        self.input_file = open(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), "w+")
         self.input_file.write("file_content")
         self.input_file.close()
 
