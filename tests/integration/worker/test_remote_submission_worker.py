@@ -1,6 +1,7 @@
 import mock
 import os
 import responses
+import shutil
 import unittest
 
 import scripts.workers.remote_submission_worker as remote_submission_worker
@@ -25,6 +26,9 @@ class TestDownloadAndExtractFile(unittest.TestCase):
             os.makedirs(self.download_dir)
         except OSError:
             pass
+
+    def tearDown(self):
+        shutil.rmtree(self.download_dir)
 
     @responses.activate
     def test_download_and_extract_file_with_correct_url(self):
