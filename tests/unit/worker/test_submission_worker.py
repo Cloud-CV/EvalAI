@@ -178,7 +178,6 @@ class ExtractChallengeDataTest(BaseAPITestClass):
         self.challenge_zip_file = join(self.challenge_data_directory, "challenge_{}.zip".format(self.challenge.id))
         self.evaluation_script_url = self.get_url_for_test_environment(self.challenge.evaluation_script.url)
 
-
     @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
     @mock.patch("scripts.workers.submission_worker.download_and_extract_zip_file")
     def test_extract_challenge_data(self,
