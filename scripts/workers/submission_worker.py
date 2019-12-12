@@ -167,14 +167,7 @@ def create_dir(directory):
         Creates a directory if it does not exists
     """
     if not os.path.exists(directory):
-        try:
-            os.makedirs(directory)
-        except Exception as e:
-            logger.error(
-                "Failed to create new directory {}, error {}".format(
-                    directory, e
-                )
-            )
+        os.makedirs(directory)
 
 
 def create_dir_as_python_package(directory):
