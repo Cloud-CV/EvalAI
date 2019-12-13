@@ -1,3 +1,5 @@
+import hashlib
+
 import boto3
 import mock
 import os
@@ -19,10 +21,12 @@ from hosts.models import ChallengeHostTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
+    download_and_extract_zip_file,
     load_challenge_and_return_max_submissions,
     return_file_url_per_environment,
     get_or_create_sqs_queue
 )
+from unit.hosts.test_utils import BaseTestClass
 
 
 class BaseAPITestClass(APITestCase):
@@ -109,3 +113,43 @@ class BaseAPITestClass(APITestCase):
         queue_url = self.sqs_client.get_queue_url(QueueName='test_queue_2')['QueueUrl']
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
+
+
+class TestDownloadAndExtractFile(APITestCase):
+    def setUp(self):
+        super(TestDownloadAndExtractFile, self).setUp()
+
+        self.base_dir = "{}/JdyW0ZCFLr".format(tempfile.gettempdir())
+        self.download_filename = "VwYOaVWkdw"
+        self.download_path = "{}/{}".format(self.base_dir, self.download_filename)
+        self.extract_dirname = "gMTblaJFbM"
+        self.extract_path = "{}/{}".format(self.base_dir, self.extract_dirname)
+        self.correct_md5 = "86629294bdc8256500ca37a9afecbd79"
+        self.url = "https://file-examples.com/wp-content/uploads/2017/02/zip_5MB.zip"
+        create_dir(self.base_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.base_dir)
+
+    def test_download_and_extract_file_with_correct_url(self):
+        assert os.path.exists(self.base_dir)
+
+        download_and_extract_zip_file(self.url, self.download_path, self.extract_path)
+        # with open(self.download_path, "r") as f:
+        #     assert f.read() == self.body
+        assert os.path.exists("{}/zip_10MB".format(self.extract_path))
+
+        with open("{}/zip_10MB/file_example_ODS_5000.ods".format(self.extract_path)) as file_to_check:
+            data = file_to_check.read()
+            assert self.correct_md5 == hashlib.md5(data).hexdigest()
+
+    @mock.patch("scripts.workers.remote_submission_worker.logger.error")
+    def test_download_and_extract_file_with_incorrect_url(self, mock_logger):
+        assert os.path.exists(self.base_dir)
+
+        self.url = "invalid-url"
+        download_and_extract_zip_file(self.url, self.download_path, self.extract_path)
+        mock_logger.assert_called_with(
+            "Failed to fetch file from {}, error "
+            "Invalid URL 'invalid-url': No schema supplied. Perhaps you meant http://invalid-url?".format(self.url)
+        )
