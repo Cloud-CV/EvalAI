@@ -1,0 +1,45 @@
+<section class="ev-md-container text-center rm-overflow-y">
+    <div class="row">
+        <form name="editChallengeDateForm"
+              ng-submit="challenge.editChallengeDate(editChallengeDateForm.$valid)">
+            <div class="col s12">
+                <div class="input-field align-left">
+                    <span class="text-med-black w-400 fs-16">Start date and time</span>
+                    <input id="start_date" name="start_date" format="MM-DD-YYYY hh:mm a" locale="en"
+                           value="{{ challenge.page.start_date }}" ng-model="challenge.page.start_date"
+                           start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="Start date"
+                           moment-picker="challenge.page.start_date"
+                           required>
+                    <span class="form-icon"><i class="fa fa-text"></i></span>
+                </div>
+            </div>
+            <div class="col s12">
+                <div class="input-field align-left">
+                    <span class="text-med-black w-400 fs-16">End date and time</span>
+                    <input id="end_date" name="end_date" format="MM-DD-YYYY hh:mm a" locale="en"
+                           value="{{ challenge.page.end_date }}" ng-model="challenge.page.end_date"
+                           start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="End date"
+                           moment-picker="challenge.page.end_date" min-date="challenge.page.start_date"
+                           required>
+                    <span class="form-icon"><i class="fa fa-text"></i></span>
+                </div>
+            </div>
+            <div class="col s12">
+                <div class="align-left text-med-black w-400">
+                    <ul class="inline-list hide-on-med-and-down">
+                        <li>
+                            <a ng-click="challenge.editChallengeDate(false)"
+                               class="dark-link pointer"><strong>Cancel</strong></a>
+                        </li>
+                        <li>
+                            <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-16"
+                                    type="submit" value="submit">Submit
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</section>

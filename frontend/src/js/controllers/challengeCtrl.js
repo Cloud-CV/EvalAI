@@ -2008,6 +2008,59 @@
             });
         };
 
+        // Edit Challenge Start Date
+        vm.challengeDateDialog = function(ev) {
+            vm.tempChallengeStartDate = vm.page.start_date;
+            vm.tempChallengeEndDate = vm.page.end_date;
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-date.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editChallengeDate = function(editChallengeDateForm) {
+            if (editChallengeDateForm) {
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge == vm.challengeId) {
+                        vm.challengeHostId = challengeHostList[challenge];
+                        break;
+                    }
+                }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                parameters.data = {
+                    "start_date": vm.page.start_date,
+                    "end_date": vm.page.end_date,
+                };
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        if (status === 200) {
+                            $mdDialog.hide();
+                            $rootScope.notify("success", "The challenge start and end date is successfully updated!");
+                        }
+                    },
+                    onError: function(response) {
+                        $mdDialog.hide();
+                        vm.page.start_date = vm.tempChallengeStartDate;
+                        vm.page.end_date = vm.tempChallengeEndDate;
+                        var error = response.data;
+                        $rootScope.notify("error", error);
+                    }
+                };
+
+                utilities.sendRequest(parameters);
+            } else {
+                vm.page.start_date = vm.tempChallengeStartDate;
+                vm.page.end_date = vm.tempChallengeEndDate;
+                $mdDialog.hide();
+            }
+        };
+
         $scope.$on('$destroy', function() {
             vm.stopFetchingSubmissions();
             vm.stopLeaderboard();
