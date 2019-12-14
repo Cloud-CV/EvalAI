@@ -1,3 +1,4 @@
+**The following files/functions/classes have nnot been tested thereby reducing Code Coverage**
 **ANALYTICS APP:**
 	- URLs are not tested at all (urls.py)
 	- The serializers are not tested at all (serializers.py)
