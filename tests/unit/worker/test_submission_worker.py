@@ -1,7 +1,6 @@
-import hashlib
-
 import boto3
 import mock
+import hashlib
 import os
 import shutil
 import tempfile
@@ -135,8 +134,6 @@ class TestDownloadAndExtractFile(APITestCase):
         assert os.path.exists(self.base_dir)
 
         download_and_extract_zip_file(self.url, self.download_path, self.extract_path)
-        # with open(self.download_path, "r") as f:
-        #     assert f.read() == self.body
         assert os.path.exists("{}/zip_10MB".format(self.extract_path))
 
         with open("{}/zip_10MB/file_example_ODS_5000.ods".format(self.extract_path)) as file_to_check:
