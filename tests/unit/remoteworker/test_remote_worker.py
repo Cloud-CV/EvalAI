@@ -164,3 +164,4 @@ class CreateDirAsPythonPackageTest(BaseTestClass):
             self.assertEqual(f.read(), "")
 
         shutil.rmtree(self.temp_directory)
+        self.assertFalse(os.path.exists(self.temp_directory))
