@@ -148,9 +148,9 @@ class URLFormatTestCase(BaseTestClass):
         self.assertEqual(returned_url, expected_url)
 
 
-class TestDownloadAndExtractFile(BaseTestClass):
+class DownloadAndExtractFileTest(BaseTestClass):
     def setUp(self):
-        super(TestDownloadAndExtractFile, self).setUp()
+        super(DownloadAndExtractFileTest, self).setUp()
 
         self.download_dir = "/tmp/evalai/"
         self.download_filename = "file"
