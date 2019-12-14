@@ -172,15 +172,15 @@ class DownloadAndExtractFileTest(BaseTestClass):
 
     @responses.activate
     def test_download_and_extract_file_with_correct_url(self):
-        assert os.path.exists(self.download_dir)
+        self.assertTrue(os.path.exists(self.download_dir))
 
         download_and_extract_file(self.url, self.download_path)
         with open(self.download_path, "r") as f:
-            assert f.read() == self.body
+            self.assertEqual(f.read(), self.body)
 
     @mock.patch("scripts.workers.remote_submission_worker.logger.error")
     def test_download_and_extract_file_with_incorrect_url(self, mock_logger):
-        assert os.path.exists(self.download_dir)
+        self.assertTrue(os.path.exists(self.download_dir))
 
         self.url = "invalid-url"
         download_and_extract_file(self.url, "")
