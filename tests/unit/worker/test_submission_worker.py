@@ -25,7 +25,6 @@ from scripts.workers.submission_worker import (
     return_file_url_per_environment,
     get_or_create_sqs_queue
 )
-from unit.hosts.test_utils import BaseTestClass
 
 
 class BaseAPITestClass(APITestCase):
