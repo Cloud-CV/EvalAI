@@ -2008,7 +2008,7 @@
             });
         };
 
-        // Edit Challenge Start Date
+        // Edit Challenge Start and End Date
         vm.challengeDateDialog = function(ev) {
             vm.tempChallengeStartDate = vm.page.start_date;
             vm.tempChallengeEndDate = vm.page.end_date;
