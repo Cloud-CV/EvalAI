@@ -30,6 +30,7 @@ install_requires = [
     "requests-toolbelt==0.8.0",
     "responses==0.9.0",
     "validators==0.12.2",
+    "termcolor==1.1.0",
 ]
 
 setup(

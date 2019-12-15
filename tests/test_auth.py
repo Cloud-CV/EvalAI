@@ -4,6 +4,7 @@ import responses
 
 from beautifultable import BeautifulTable
 from click.testing import CliRunner
+from termcolor import colored
 
 from evalai.challenges import challenge, challenges
 from evalai.set_host import host
@@ -200,7 +201,13 @@ class TestSetAndLoadHostURL(BaseTestClass):
             )
             end_date = convert_UTC_date_to_local(challenge_json["end_date"])
             values.extend([creator, start_date, end_date])
-            table.append_row(values)
+            table.append_row([colored(values[0], 'white'),
+                              colored(values[1], 'yellow'),
+                              colored(values[2], 'cyan'),
+                              colored(values[3], 'white'),
+                              colored(values[4], 'green'),
+                              colored(values[5], 'red'),
+                              ])
         self.output = str(table)
 
     def teardown(self):
@@ -213,4 +220,4 @@ class TestSetAndLoadHostURL(BaseTestClass):
         result = runner.invoke(host, ["-sh", "https://evalapi.cloudcv.org"])
         result = runner.invoke(challenges)
         response = result.output.strip()
-        assert response == self.output
+        assert str(response) == self.output

@@ -5,6 +5,7 @@ from beautifultable import BeautifulTable
 from click.testing import CliRunner
 from datetime import datetime
 from dateutil import tz
+from termcolor import colored
 
 from evalai.challenges import challenge, challenges
 from evalai.utils.urls import URLS
@@ -75,7 +76,13 @@ class TestDisplayChallenges(BaseTestClass):
             )
             end_date = convert_UTC_date_to_local(challenge_data["end_date"])
             values.extend([creator, start_date, end_date])
-            table.append_row(values)
+            table.append_row([colored(values[0], 'white'),
+                              colored(values[1], 'yellow'),
+                              colored(values[2], 'cyan'),
+                              colored(values[3], 'white'),
+                              colored(values[4], 'green'),
+                              colored(values[5], 'red'),
+                              ])
         self.output = str(table)
 
     @responses.activate
@@ -83,7 +90,7 @@ class TestDisplayChallenges(BaseTestClass):
         runner = CliRunner()
         result = runner.invoke(challenges)
         response = result.output.strip()
-        assert response == self.output
+        assert str(response) == self.output
 
     @responses.activate
     def test_display_past_challenge_lists(self):
@@ -517,7 +524,13 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
             )
             end_date = convert_UTC_date_to_local(challenge_data["end_date"])
             values.extend([creator, start_date, end_date])
-            table.append_row(values)
+            table.append_row([colored(values[0], 'white'),
+                              colored(values[1], 'yellow'),
+                              colored(values[2], 'cyan'),
+                              colored(values[3], 'white'),
+                              colored(values[4], 'green'),
+                              colored(values[5], 'red'),
+                              ])
         self.output = str(table)
 
     @responses.activate
@@ -527,7 +540,7 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         self.output = "{}{}".format(expected, self.output)
         result = runner.invoke(challenges, ["--host"])
         response = result.output.rstrip()
-        assert response == self.output
+        assert str(response) == self.output
 
     @responses.activate
     def test_display_participant_challenge_lists(self):
@@ -536,7 +549,7 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         self.output = "{}{}".format(expected, self.output)
         result = runner.invoke(challenges, ["--participant"])
         response = result.output.rstrip()
-        assert response == self.output
+        assert str(response) == self.output
 
     @responses.activate
     def test_display_participant_and_host_challenge_lists(self):
@@ -548,7 +561,7 @@ class TestParticipantOrHostTeamChallenges(BaseTestClass):
         )
         result = runner.invoke(challenges, ["--participant", "--host"])
         response = result.output.rstrip()
-        assert response == self.output
+        assert str(response) == self.output
 
 
 class TestDisplayChallengePhases(BaseTestClass):
