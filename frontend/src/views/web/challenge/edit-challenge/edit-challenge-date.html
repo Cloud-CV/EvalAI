@@ -5,7 +5,8 @@
             <div class="col s12">
                 <div class="input-field align-left">
                     <span class="text-med-black w-400 fs-16">Start date and time</span>
-                    <input id="start_date" name="start_date" format="MM-DD-YYYY hh:mm a" locale="en"
+                    <input id="start_date" name="start_date" autocomplete="off"
+                           format="MM-DD-YYYY hh:mm a" locale="en"
                            value="{{ challenge.page.start_date }}" ng-model="challenge.page.start_date"
                            start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="Start date"
                            moment-picker="challenge.page.start_date"
@@ -16,7 +17,8 @@
             <div class="col s12">
                 <div class="input-field align-left">
                     <span class="text-med-black w-400 fs-16">End date and time</span>
-                    <input id="end_date" name="end_date" format="MM-DD-YYYY hh:mm a" locale="en"
+                    <input id="end_date" name="end_date" autocomplete="off"
+                           format="MM-DD-YYYY hh:mm a" locale="en"
                            value="{{ challenge.page.end_date }}" ng-model="challenge.page.end_date"
                            start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="End date"
                            moment-picker="challenge.page.end_date" min-date="challenge.page.start_date"
