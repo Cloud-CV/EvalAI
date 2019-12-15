@@ -43,7 +43,7 @@
                      #teamName="ngModel" [(ngModel)]="create_team['team_name']" required>
               <span class="form-icon form-icon-dark"><i class="fa fa-user"></i></span>
               <label for="name" [class.active]="isnameFocused" data-error="wrong" data-success="right">Team Name*</label>
-              <div class="wrn-msg text-highlight" *ngIf="teamName.invalid && (teamName.dirty || teamName.touched || createTeamForm.submitted)">Team Name Required</div>
+              <div class="wrn-msg text-highlight" *ngIf="(create_team['team_name'] === '') && isTeamNameRequired">Team name is required</div>
             </div>
             <div class="input-field align-left">
               <input id="url" type="text" class="validate text-dark-black dark-autofill w-400" name="team_url"
