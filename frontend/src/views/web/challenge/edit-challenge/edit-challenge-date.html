@@ -22,7 +22,7 @@
                         format="MM-DD-YYYY hh:mm a" locale="en"
                         value="{{ challenge.challengeEndDate }}" ng-model="challenge.challengeEndDate"
                         start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="End date"
-                        moment-picker="challenge.challengeEndDate" min-date="challenge.challengeEndDate"
+                        moment-picker="challenge.challengeEndDate" min-date="challenge.challengeStartDate"
                         required>
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 </div>
