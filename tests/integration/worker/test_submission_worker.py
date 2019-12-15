@@ -202,6 +202,8 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
 
         mock_logger.assert_called_with("Challenge Phase {} does not exist".format(phase_pk))
 
+
+class ProcessAddChallengeTestClass(BaseTestClass):
     def test_process_add_challenge_message_successfully(self):
         message = {
             "challenge_id": self.challenge.pk,
