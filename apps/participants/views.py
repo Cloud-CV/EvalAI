@@ -17,6 +17,11 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import paginated_queryset
 from challenges.models import Challenge
 from challenges.serializers import ChallengeSerializer
+from challenges.utils import (
+    get_challenge_model,
+    is_user_in_allowed_email_domains,
+    is_user_in_blocked_email_domains
+)
 from hosts.utils import is_user_a_host_of_challenge
 
 from .models import Participant, ParticipantTeam
@@ -196,6 +201,55 @@ def invite_participant_to_team(request, pk):
             " part of. Please try creating a new team and then invite."
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if len(team_participated_challenges) > 0:
+        for challenge_pk in team_participated_challenges:
+            challenge = get_challenge_model(challenge_pk)
+
+            if len(challenge.banned_email_ids) > 0:
+                # Check if team participants emails are banned
+                for participant_email in participant_team.get_all_participants_email():
+                    if participant_email in challenge.banned_email_ids:
+                        message = "You cannot invite as you're a part of {} team and it has been banned "
+                        "from this challenge. Please contact the challenge host."
+                        response_data = {"error": message.format(participant_team.team_name)}
+                        return Response(
+                            response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
+
+                # Check if invited user is banned
+                if email in challenge.banned_email_ids:
+                    message = "You cannot invite as the invited user has been banned "
+                    "from this challenge. Please contact the challenge host."
+                    response_data = {"error": message}
+                    return Response(
+                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+
+            # Check if user is in allowed list.
+            if len(challenge.allowed_email_domains) > 0:
+                if not is_user_in_allowed_email_domains(email, challenge_pk):
+                    message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
+                    domains = ""
+                    for domain in challenge.allowed_email_domains:
+                        domains = "{}{}{}".format(domains, "/", domain)
+                    domains = domains[1:]
+                    response_data = {"error": message.format(domains)}
+                    return Response(
+                        response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+
+            # Check if user is in blocked list.
+            if is_user_in_blocked_email_domains(email, challenge_pk):
+                message = "Sorry, users with {} email domain(s) are not allowed to participate in this challenge."
+                domains = ""
+                for domain in challenge.blocked_email_domains:
+                    domains = "{}{}{}".format(domains, "/", domain)
+                domains = domains[1:]
+                response_data = {"error": message.format(domains)}
+                return Response(
+                    response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
 
     serializer = InviteParticipantToTeamSerializer(
         data=request.data,
