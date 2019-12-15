@@ -202,6 +202,29 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
 
         mock_logger.assert_called_with("Challenge Phase {} does not exist".format(phase_pk))
 
+    @mock.patch("scripts.workers.submission_worker.extract_challenge_data")
+    def test_process_add_challenge_message_successfully(self, mock_ecd):
+        message = {
+            "challenge_pk": self.challenge.pk,
+            "phase_pk": self.challenge_phase.pk,
+            "submission_pk": self.submission.pk
+        }
+
+        submission_worker.process_add_challenge_message(message)
+        mock_ecd.assert_called_with(self.challenge, self.challenge.challengephase_set.all())
+
+    @mock.patch("scripts.workers.submission_worker.logger.exception")
+    def test_process_add_challenge_message_when_challenge_does_not_exist(self, mock_logger):
+        message = {
+            "challenge_pk": self.challenge.pk + 9290,
+            "phase_pk": self.challenge_phase.pk,
+            "submission_pk": self.submission.pk
+        }
+
+        submission_worker.process_add_challenge_message(message)
+        mock_logger.assert_called_with("Challenge {} does not exist".format(message.get("challenge_pk")))
+
+
 
 class ExtractSubmissionDataTestClass(BaseTestClass):
     @mock.patch("scripts.workers.submission_worker.logger.critical")
