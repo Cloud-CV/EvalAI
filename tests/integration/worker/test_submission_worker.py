@@ -220,9 +220,8 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
             "phase_pk": self.challenge_phase.pk,
             "submission_pk": self.submission.pk
         }
-
-        submission_worker.process_add_challenge_message(message)
         with self.assertRaises(Exception):
+            submission_worker.process_add_challenge_message(message)
             mock_logger.assert_called_with("Challenge {} does not exist".format(message.get("challenge_pk")))
 
 
