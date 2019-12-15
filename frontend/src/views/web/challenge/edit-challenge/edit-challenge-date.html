@@ -8,9 +8,9 @@
                     <span class="text-med-black w-400 fs-16">Start date and time</span>
                     <input id="start_date" name="start_date" autocomplete="off"
                         format="MM-DD-YYYY hh:mm a" locale="en"
-                        value="{{ challenge.page.start_date }}" ng-model="challenge.page.start_date"
+                        value="{{ challenge.challengeStartDate }}" ng-model="challenge.challengeStartDate"
                         start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="Start date"
-                        moment-picker="challenge.page.start_date"
+                        moment-picker="challenge.challengeStartDate"
                         required>
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 </div>
@@ -20,9 +20,9 @@
                     <span class="text-med-black w-400 fs-16">End date and time</span>
                     <input id="end_date" name="end_date" autocomplete="off"
                         format="MM-DD-YYYY hh:mm a" locale="en"
-                        value="{{ challenge.page.end_date }}" ng-model="challenge.page.end_date"
+                        value="{{ challenge.challengeEndDate }}" ng-model="challenge.challengeEndDate"
                         start-view="year" ng-model-options="{ updateOn: 'blur' }" placeholder="End date"
-                        moment-picker="challenge.page.end_date" min-date="challenge.page.start_date"
+                        moment-picker="challenge.challengeEndDate" min-date="challenge.challengeEndDate"
                         required>
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 </div>
