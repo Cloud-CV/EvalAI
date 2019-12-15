@@ -210,7 +210,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
         }
         with mock.patch("scripts.workers.submission_worker.extract_challenge_data") as mock_ecd:
             submission_worker.process_add_challenge_message(message)
-            mock_ecd.assert_called_any(self.challenge, self.challenge.challengephase_set.all())
+            mock_ecd.assert_any_call(self.challenge, self.challenge.challengephase_set.all())
 
     @mock.patch("scripts.workers.submission_worker.logger.exception")
     def test_process_add_challenge_message_when_challenge_does_not_exist(self, mock_logger):
