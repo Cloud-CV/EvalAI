@@ -203,7 +203,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
         mock_logger.assert_called_with("Challenge Phase {} does not exist".format(phase_pk))
 
 
-class ProcessAddChallengeTestClass(BaseTestClass):
+class ProcessAddChallengeMessageTestClass(BaseTestClass):
     def test_process_add_challenge_message_successfully(self):
         message = {
             "challenge_id": self.challenge.pk,
@@ -217,7 +217,7 @@ class ProcessAddChallengeTestClass(BaseTestClass):
     @mock.patch("scripts.workers.submission_worker.logger.exception")
     def test_process_add_challenge_message_when_challenge_does_not_exist(self, mock_logger):
         message = {
-            "challenge_id": self.challenge.pk + 9290,
+            "challenge_id": self.challenge.pk + 1,
             "phase_pk": self.challenge_phase.pk,
             "submission_pk": self.submission.pk
         }
