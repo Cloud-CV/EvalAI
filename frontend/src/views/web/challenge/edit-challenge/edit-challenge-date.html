@@ -1,9 +1,9 @@
 <section class="ev-md-container text-center rm-overflow-y">
     <div class="row">
-        <form name="editChallengeDateForm"
-            ng-submit="challenge.editChallengeDate(editChallengeDateForm.$valid)">
-            <div class="pass-title font-size-16">Edit Challenge Start and End Date</div>
-            <div class="col s12">
+        <div class="col s12 m12">
+            <form name="editChallengeDateForm"
+                ng-submit="challenge.editChallengeDate(editChallengeDateForm.$valid)">
+                <div class="pass-title font-size-16">Edit Challenge Start and End Date</div>
                 <div class="input-field align-left">
                     <span class="text-med-black w-400 fs-16">Start date and time</span>
                     <input id="start_date" name="start_date" autocomplete="off"
@@ -14,8 +14,6 @@
                         required>
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 </div>
-            </div>
-            <div class="col s12">
                 <div class="input-field align-left">
                     <span class="text-med-black w-400 fs-16">End date and time</span>
                     <input id="end_date" name="end_date" autocomplete="off"
@@ -26,8 +24,6 @@
                         required>
                     <span class="form-icon"><i class="fa fa-text"></i></span>
                 </div>
-            </div>
-            <div class="col s12">
                 <div class="align-left text-med-black w-400">
                     <ul class="inline-list pointer">
                         <li>
@@ -41,7 +37,7 @@
                         </li>
                     </ul>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </section>
