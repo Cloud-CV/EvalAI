@@ -2044,6 +2044,8 @@
                             var status = response.status;
                             utilities.hideLoader();
                             if (status === 200) {
+                                vm.page.start_date = vm.challengeStartDate.format("MMM D, YYYY h:mm:ss A");
+                                vm.page.end_date = vm.challengeEndDate.format("MMM D, YYYY h:mm:ss A");
                                 $mdDialog.hide();
                                 $rootScope.notify("success", "The challenge start and end date is successfully updated!");
                             }
