@@ -25,7 +25,7 @@
                 <i ng-if="!canShowPassword" class="fa fa-eye pointer"></i>
                 <i ng-if="canShowPassword" class="fa fa-eye-slash pointer"></i>
             </span>
-            <label for="password">Password (min 8 characters) *</label>
+            <label for="password">Password *</label>
             <div class="wrn-msg text-highlight" ng-messages="loginForm.password.$error" ng-if="loginForm.password.$touched || loginForm.$submitted">
                 <p ng-message="minlength">Password is less than 8 characters.</p>
                 <p ng-message="required">Password is required.</p>
