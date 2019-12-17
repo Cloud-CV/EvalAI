@@ -2057,11 +2057,11 @@
                             $rootScope.notify("error", error);
                         }
                     };
+                    utilities.showLoader();
+                    utilities.sendRequest(parameters);
                 } else {
                     $rootScope.notify("error", "The challenge start date cannot be same or greater than end date.");
                 }
-                utilities.showLoader();
-                utilities.sendRequest(parameters);
             } else {
                 $mdDialog.hide();
             }
