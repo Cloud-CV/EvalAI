@@ -2034,7 +2034,7 @@
                 }
                 parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
                 parameters.method = 'PATCH';
-                if (new Date(vm.page.start_date).valueOf() < new Date(vm.page.end_date).valueOf()) {
+                if (new Date(vm.challengeStartDate).valueOf() < new Date(vm.challengeEndDate).valueOf()) {
                     parameters.data = {
                         "start_date": vm.challengeStartDate,
                         "end_date": vm.challengeEndDate
