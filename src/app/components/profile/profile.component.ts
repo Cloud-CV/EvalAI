@@ -125,6 +125,12 @@ export class ProfileComponent implements OnInit {
    * Displays a Modal to update user details
    */
   updateUserDetails() {
+    const firstName = (this.user['first_name'] === '-') ? '' : this.user['first_name'];
+    const lastName = (this.user['last_name'] === '-') ? '' : this.user['last_name'];
+    const affiliation = (this.user['affiliation'] === '-') ? '' : this.user['affiliation'];
+    const googleScholarUrl = (this.user['google_scholar_url'] === '-') ? '' : this.user['google_scholar_url'];
+    const githubUrl = (this.user['github_url'] === '-') ? '' : this.user['github_url'];
+    const linkedinUrl = (this.user['linkedin_url'] === '-') ? '' : this.user['linkedin_url'];
     const SELF = this;
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
@@ -154,7 +160,7 @@ export class ProfileComponent implements OnInit {
           name: 'update_first_name',
           placeholder: 'First Name',
           type: 'text',
-          value: this.user['first_name']
+          value: firstName
         },
         {
           isRequired: true,
@@ -162,7 +168,7 @@ export class ProfileComponent implements OnInit {
           name: 'update_last_name',
           placeholder: 'Last Name',
           type: 'text',
-          value: this.user['last_name']
+          value: lastName
         },
         {
           isRequired: true,
@@ -170,8 +176,32 @@ export class ProfileComponent implements OnInit {
           name: 'update_affiliation',
           placeholder: 'Affiliated To',
           type: 'text',
-          value: this.user['affiliation']
-        }
+          value: affiliation
+        },
+        {
+          isRequired: false,
+          label: 'google_scholar_url',
+          name: 'update_google_scholar_url',
+          placeholder: 'Google Scholar Url',
+          type: 'url',
+          value: googleScholarUrl
+        },
+        {
+          isRequired: false,
+          label: 'github_url',
+          name: 'update_github_url',
+          placeholder: 'GitHub Url',
+          type: 'url',
+          value: githubUrl
+        },
+        {
+          isRequired: false,
+          label: 'linkedin_url',
+          name: 'linkedin_url',
+          placeholder: 'Linkedin Url',
+          type: 'url',
+           value: linkedinUrl
+         }
       ],
       confirmCallback: SELF.apiCall
     };
