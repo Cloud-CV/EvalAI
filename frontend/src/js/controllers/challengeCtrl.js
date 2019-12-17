@@ -2058,7 +2058,7 @@
                         }
                     };
                 } else {
-                    $rootScope.notify("error", "The challenge start date is the same or greater than end date.");
+                    $rootScope.notify("error", "The challenge start date cannot be same or greater than end date.");
                 }
                 utilities.showLoader();
                 utilities.sendRequest(parameters);
