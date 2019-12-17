@@ -279,7 +279,6 @@ def process_submission_message(message):
                 phase_pk, QUEUE_NAME
             )
         )
-        raise
     user_annotation_file_path = join(
         SUBMISSION_DATA_DIR.format(submission_id=submission_pk),
         os.path.basename(submission_instance.get("input_file")),
