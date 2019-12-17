@@ -591,7 +591,6 @@ def process_add_challenge_message(message):
         challenge = Challenge.objects.get(id=challenge_id)
     except Challenge.DoesNotExist:
         logger.exception("Challenge {} does not exist".format(challenge_id))
-        raise
 
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
