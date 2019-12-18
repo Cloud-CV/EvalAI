@@ -36,10 +36,8 @@
                 <i ng-if="canShowPassword" class="fa fa-eye-slash pointer"></i>
             </span>
             <label for="password">
-                <strong>Password (minimum 8 Characters)</strong>
-                <div ng-if="auth.regUser.password">
-                <span ng-style="{color: auth.color}">{{auth.message}}</span>
-                </div>
+                <strong>Password (minimum 8 Characters) *</strong>
+                <span ng-if="auth.regUser.password" ng-style="{color: auth.color}">{{auth.message}}</span>
             </label>
             <div class="wrn-msg text-highlight" ng-messages="signupForm.password.$error" ng-if="signupForm.password.$touched || signupForm.$submitted">
                 <p ng-message="minlength">Password is less than 8 characters.</p>
