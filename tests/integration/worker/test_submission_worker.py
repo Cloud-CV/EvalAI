@@ -204,7 +204,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
 
 
 class ProcessAddChallengeMessageTestClass(BaseTestClass):
-    def test_process_add_challenge_message(self):
+    def test_process_add_challenge_message_(self):
         message = {
             "challenge_id": self.challenge.pk,
             "phase_pk": self.challenge_phase.pk,
