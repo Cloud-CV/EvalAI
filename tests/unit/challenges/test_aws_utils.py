@@ -11,13 +11,16 @@ from challenges.models import Challenge
 from hosts.models import ChallengeHostTeam
 
 from challenges.aws_utils import (
+    COMMON_SETTINGS_DICT,
     create_service_by_challenge_pk,
-    start_workers
+    start_workers,
 )
 
 
 class BaseTestClass(APITestCase):
     def setUp(self):
+        COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"] = "arn:aws:iam::us-east-1:012345678910:role/ecsTaskExecutionRole"
+
         self.client = APIClient(enforce_csrf_checks=True)
 
         self.ecs_client = boto3.client(
