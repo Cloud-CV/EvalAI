@@ -11,7 +11,6 @@ from challenges.models import Challenge
 from hosts.models import ChallengeHostTeam
 
 from challenges.aws_utils import (
-    COMMON_SETTINGS_DICT,
     create_service_by_challenge_pk,
     start_workers,
 )
@@ -42,6 +41,12 @@ class BaseTestClass(APITestCase):
             created_by=self.user
         )
 
+
+@mock_ecs
+class TestStartWorkers(BaseTestClass):
+    def setUp(self):
+        super(TestStartWorkers, self).setUp()
+
         for i in range(3):
             Challenge.objects.create(
                 pk=i,
@@ -49,11 +54,10 @@ class BaseTestClass(APITestCase):
                 creator=self.challenge_host_team,
             )
 
+        self.ecs_client.create_cluster(clusterName="cluster")
 
-@mock_ecs
-class TestStartWorkers(BaseTestClass):
     def test_start_workers_when_all_challenges_have_no_worker(self):
-        challenges = Challenge.objects.all()
+        challenges = Challenge.objects.order_by("pk").all()
 
         expected_workers = [None, None, None]
         self.assertEqual(list(c.workers for c in challenges), expected_workers)
