@@ -19,8 +19,6 @@ from challenges.aws_utils import (
 
 class BaseTestClass(APITestCase):
     def setUp(self):
-        COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"] = "arn:aws:iam::us-east-1:012345678910:role/ecsTaskExecutionRole"
-
         self.client = APIClient(enforce_csrf_checks=True)
 
         self.ecs_client = boto3.client(
