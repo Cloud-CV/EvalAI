@@ -206,9 +206,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
 class ProcessAddChallengeMessageTestClass(BaseTestClass):
     def test_process_add_challenge_message(self):
         message = {
-            "challenge_id": self.challenge.pk,
-            "phase_pk": self.challenge_phase.pk,
-            "submission_pk": self.submission.pk
+            "challenge_id": self.challenge.pk
         }
         with mock.patch("scripts.workers.submission_worker.extract_challenge_data") as mock_ecd:
             submission_worker.process_add_challenge_message(message)
@@ -217,9 +215,7 @@ class ProcessAddChallengeMessageTestClass(BaseTestClass):
     @mock.patch("scripts.workers.submission_worker.logger.exception")
     def test_process_add_challenge_message_when_challenge_does_not_exist(self, mock_logger):
         message = {
-            "challenge_id": self.challenge.pk + 1,
-            "phase_pk": self.challenge_phase.pk,
-            "submission_pk": self.submission.pk
+            "challenge_id": self.challenge.pk + 1
         }
         with self.assertRaises(Exception):
             submission_worker.process_add_challenge_message(message)
