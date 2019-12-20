@@ -4,6 +4,7 @@ botocore==1.12.88
 celery[sqs]==4.3.0
 commonmark==0.5.4
 django==1.11.23
+django-allauth==0.40.0
 django-filter==2.1.0
 django-import-export==0.5.1
 djangorestframework==3.9.3
