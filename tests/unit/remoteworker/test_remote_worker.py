@@ -13,6 +13,7 @@ from scripts.workers.remote_submission_worker import (
     update_submission_data,
     update_submission_status,
     return_url_per_environment,
+    load_challenge,
 )
 from challenges.models import Challenge, ChallengePhase
 
@@ -147,6 +148,7 @@ class URLFormatTestCase(BaseTestClass):
 
 @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
 @mock.patch("scripts.workers.remote_submission_worker.create_dir_as_python_package")
+@mock.patch("scripts.workers.remote_submission_worker.extract_challenge_data")
 class LoadChallengeTestClass(BaseTestClass):
     def setUp(self):
         super(LoadChallengeTestClass, self).setUp()
@@ -177,24 +179,25 @@ class LoadChallengeTestClass(BaseTestClass):
         )
         self.queue_name_patcher.start()
 
-    def tearDown():
+    def tearDown(self):
         self.queue_name_patcher.stop()
         # super(LoadChallengeTestClass, self).tearDown()  # FUTURE
 
-    @mock.patch("scripts.workers.remote_submission_worker.extract_challenge_data")
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phases_by_challenge_pk")
-    def test_load_challenge_success(self, mock_get_phases_by_pk, mock_extract_challenge_data,
-                                    mock_create_dir_as_pkg, mock_get_challenge_by_queue_name):
+    def test_load_challenge_success(self, mock_get_phases_by_challenge_pk, mock_extract_challenge_data,
+                                    mock_create_dir_as_python_package, mock_get_challenge_by_queue_name):
         mock_get_challenge_by_queue_name.return_value = self.challenge
-        mock_get_phases_by_pk.return_value = self.phases
+        mock_get_phases_by_challenge_pk.return_value = self.phases
         load_challenge()
-        mock_get_phases_by_pk.assert_called_with(self.challenge_pk)
+        mock_get_phases_by_challenge_pk.assert_called_with(self.challenge_pk)
         mock_extract_challenge_data.assert_called_with(self.challenge, self.phases)
 
     @mock.patch("scripts.workers.remote_submission_worker.logger")
-    def test_load_challenge_when_challenge_doesnt_exist(self, mock_logger, mock_create_dir_as_pkg,
+    def test_load_challenge_when_challenge_doesnt_exist(self, mock_logger, mock_extract_challenge_data,
+                                                        mock_create_dir_as_python_package,
                                                         mock_get_challenge_by_queue_name):
         mock_get_challenge_by_queue_name.side_effect = Exception
         with self.assertRaises(Exception):
-            load_challenge_data()
+            load_challenge()
         mock_logger.assert_called_with("Challenge with queue name %s does not exists" % (self.queue_name))
+        mock_extract_challenge_data.assert_not_called()
