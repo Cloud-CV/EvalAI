@@ -196,6 +196,7 @@ def create_federated_user(name, repository, aws_keys):
     )
     return response
 
+
 @mock_if_non_prod_aws(mock_ecr)
 @mock_if_non_prod_aws(mock_sts)
 def get_aws_credentials_for_submission(challenge, participant_team):
@@ -230,6 +231,7 @@ def get_aws_credentials_for_submission(challenge, participant_team):
         "federated_user": federated_user,
         "docker_repository_uri": docker_repository_uri,
     }
+
 
 def is_user_in_allowed_email_domains(email, challenge_pk):
     challenge = get_challenge_model(challenge_pk)
