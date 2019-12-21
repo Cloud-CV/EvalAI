@@ -18,6 +18,7 @@ from scripts.workers.remote_submission_worker import (
     load_challenge,
 )
 from challenges.models import Challenge, ChallengePhase
+from hosts.models import ChallengeHostTeam
 
 
 class BaseTestClass(TestCase):
