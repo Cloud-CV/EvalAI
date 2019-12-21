@@ -71,7 +71,7 @@ def convert_to_aws_federated_user_format(string):
 def get_aws_credentials_for_challenge(challenge_pk):
     """
     Return the AWS credentials for a challenge using challenge pk
-    Arguments:get_aws_credentials_for_challenge
+    Arguments:
         challenge_pk {int} -- challenge pk for which credentails are to be fetched
     Returns:
         aws_key {dict} -- Dict containing aws keys for a challenge
@@ -86,9 +86,9 @@ def get_aws_credentials_for_challenge(challenge_pk):
         }
     else:
         aws_keys = {
-            "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "x"),
-            "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
-            "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+            "AWS_ACCOUNT_ID": os.environ.get("AWS_ACCOUNT_ID", "aws_account_id"),
+            "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "aws_access_key_id"),
+            "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "aws_secret_access_key"),
             "AWS_REGION": os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
         }
     return aws_keys
