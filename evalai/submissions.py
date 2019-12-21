@@ -22,7 +22,12 @@ from evalai.utils.submissions import (
     convert_bytes_to,
 )
 from evalai.utils.urls import URLS
-from evalai.utils.config import EVALAI_HOST_URLS, HOST_URL_FILE_PATH
+from evalai.utils.config import (
+    ENVIRONMENT,
+    EVALAI_HOST_URLS,
+    HOST_URL_FILE_PATH,
+    LOCAL_DOCKER_REGISTRY_URI,
+)
 
 
 class Submission(object):
@@ -66,7 +71,15 @@ def result(ctx):
     help="challenge-phase-name to which image is to be pushed",
     required=True,
 )
-def push(image, phase):
+# Dependency Injection for Local Registry URI for Dev and Test environment
+@click.option(
+    "-u",
+    "--url",
+    help="Docker Registry URI where image will be pushed",
+    required=False,
+    default=LOCAL_DOCKER_REGISTRY_URI,
+)
+def push(image, phase, url):
     """
     Push docker image to a particular challenge phase.
     """
@@ -114,32 +127,44 @@ def push(image, phase):
     federated_user = response["success"]["federated_user"]
     repository_uri = response["success"]["docker_repository_uri"]
 
-    AWS_ACCOUNT_ID = federated_user["FederatedUser"]["FederatedUserId"].split(
-        ":"
-    )[0]
-    AWS_SERVER_PUBLIC_KEY = federated_user["Credentials"]["AccessKeyId"]
-    AWS_SERVER_SECRET_KEY = federated_user["Credentials"]["SecretAccessKey"]
-    SESSION_TOKEN = federated_user["Credentials"]["SessionToken"]
+    # Production Environment
+    if ENVIRONMENT == "PRODUCTION":
+        AWS_ACCOUNT_ID = federated_user["FederatedUser"][
+            "FederatedUserId"
+        ].split(":")[0]
+        AWS_SERVER_PUBLIC_KEY = federated_user["Credentials"]["AccessKeyId"]
+        AWS_SERVER_SECRET_KEY = federated_user["Credentials"][
+            "SecretAccessKey"
+        ]
+        SESSION_TOKEN = federated_user["Credentials"]["SessionToken"]
 
-    ecr_client = boto3.client(
-        "ecr",
-        region_name="us-east-1",
-        aws_access_key_id=AWS_SERVER_PUBLIC_KEY,
-        aws_secret_access_key=AWS_SERVER_SECRET_KEY,
-        aws_session_token=SESSION_TOKEN,
-    )
+        ecr_client = boto3.client(
+            "ecr",
+            region_name="us-east-1",
+            aws_access_key_id=AWS_SERVER_PUBLIC_KEY,
+            aws_secret_access_key=AWS_SERVER_SECRET_KEY,
+            aws_session_token=SESSION_TOKEN,
+        )
 
-    token = ecr_client.get_authorization_token(registryIds=[AWS_ACCOUNT_ID])
-    ecr_client = boto3.client("ecr", region_name="us-east-1")
-    username, password = (
-        base64.b64decode(token["authorizationData"][0]["authorizationToken"])
-        .decode()
-        .split(":")
-    )
-    registry = token["authorizationData"][0]["proxyEndpoint"]
-    docker_client.login(
-        username, password, registry=registry, dockercfg_path=os.getcwd()
-    )
+        token = ecr_client.get_authorization_token(
+            registryIds=[AWS_ACCOUNT_ID]
+        )
+        ecr_client = boto3.client("ecr", region_name="us-east-1")
+        username, password = (
+            base64.b64decode(
+                token["authorizationData"][0]["authorizationToken"]
+            )
+            .decode()
+            .split(":")
+        )
+        registry = token["authorizationData"][0]["proxyEndpoint"]
+        docker_client.login(
+            username, password, registry=registry, dockercfg_path=os.getcwd()
+        )
+
+    # Development and Test Environment
+    else:
+        repository_uri = "{0}/{1}".format(url, repository_uri.split("/")[1])
 
     # Tag and push docker image and create a submission if successfully pushed
     docker_client.images.get(image).tag("{}:{}".format(repository_uri, tag))

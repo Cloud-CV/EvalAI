@@ -1,13 +1,17 @@
+import docker
 import json
+import os
+import pytest
 import responses
+import socket
 
 from click.testing import CliRunner
 from datetime import datetime
 from dateutil import tz
 
 from evalai.challenges import challenge
-from evalai.submissions import submission
-from tests.data import submission_response
+from evalai.submissions import submission, push
+from tests.data import submission_response, challenge_response
 
 from evalai.utils.config import API_HOST_URL
 from evalai.utils.urls import URLS
@@ -111,6 +115,62 @@ class TestMakeSubmission(BaseTestClass):
             status=200,
         )
 
+        url = "{}{}"
+        responses.add(
+            responses.POST,
+            url.format(API_HOST_URL, URLS.make_submission.value).format(
+                "10", "2"
+            ),
+            json=self.submission,
+            status=200,
+        )
+
+        # To get AWS Credentials
+        url = "{}{}"
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.get_aws_credentials.value).format(
+                "2"
+            ),
+            json=json.loads(submission_response.aws_credentials),
+            status=200,
+        )
+
+        # To get Challenge Phase Details
+        url = "{}{}"
+        responses.add(
+            responses.GET,
+            url.format(
+                API_HOST_URL, URLS.challenge_phase_details.value
+            ).format("2"),
+            json=json.loads(challenge_response.challenge_phase_details),
+            status=200,
+        )
+
+        # To get Challenge Phase Details using slug
+        url = "{}{}"
+        responses.add(
+            responses.GET,
+            url.format(
+                API_HOST_URL, URLS.phase_details_using_slug.value
+            ).format("philip-phase-2019"),
+            json=json.loads(challenge_response.challenge_phase_details_slug),
+            status=200,
+        )
+
+        # To get Challenge Details
+        url = "{}{}"
+        responses.add(
+            responses.GET,
+            url.format(API_HOST_URL, URLS.challenge_details.value).format(
+                "10"
+            ),
+            json=json.loads(challenge_response.challenge_details),
+            status=200,
+        )
+
+        responses.add_passthru("http+docker://localhost/")
+
     @responses.activate
     def test_make_submission_when_file_is_not_valid(self):
         expected = (
@@ -177,3 +237,56 @@ class TestMakeSubmission(BaseTestClass):
             )
             assert result.exit_code == 0
             assert result.output.strip() == expected
+
+    @pytest.fixture()
+    def test_make_submission_for_docker_based_challenge_setup(self, request):
+        def get_open_port():
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(("", 0))
+            s.listen(1)
+            port = s.getsockname()[1]
+            s.close()
+            return port
+
+        registry_port = get_open_port()
+        client = docker.from_env()
+        image_tag = "evalai-push-test:v1"
+        client.images.build(
+            path=os.path.join(os.path.dirname(__file__), "data"), tag=image_tag
+        )
+        container = client.containers.run(
+            "registry:2",
+            name="registry-test",
+            detach=True,
+            ports={"5000/tcp": registry_port},
+            auto_remove=True,
+        )
+
+        def test_make_submission_for_docker_based_challenge_teardown():
+            container.stop(timeout=1)
+
+        request.addfinalizer(
+            test_make_submission_for_docker_based_challenge_teardown
+        )
+        return (registry_port, image_tag)
+
+    @responses.activate
+    def test_make_submission_for_docker_based_challenge(
+        self, test_make_submission_for_docker_based_challenge_setup
+    ):
+        registry_port, image_tag = (
+            test_make_submission_for_docker_based_challenge_setup
+        )
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                push,
+                [
+                    image_tag,
+                    "-p",
+                    "philip-phase-2019",
+                    "-u",
+                    "localhost:{0}".format(registry_port),
+                ],
+            )
+            assert result.exit_code == 0

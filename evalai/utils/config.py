@@ -25,3 +25,7 @@ EVALAI_HOST_URLS = [
     "https://evalai-staging.cloudcv.org",
     "http://localhost:8888",
 ]
+
+ENVIRONMENT = os.environ.get("EVALAI_CLI_ENVIRONMENT", "PRODUCTION")
+
+LOCAL_DOCKER_REGISTRY_URI = os.environ.get("EVALAI_LOCAL_DOCKER_REGISTRY_URI", "localhost:5000")

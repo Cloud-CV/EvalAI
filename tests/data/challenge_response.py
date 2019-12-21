@@ -121,7 +121,8 @@ challenge_details = """
             "terms_and_conditions": "Officia dolores non labore nihil exercitationem minima. \
             Esse repellendus accusamus minus nisi. Commodi cum adipisci molestias ipsum beatae qui \
             enim porro. Cumque saepe distinctio repellendus et sed labore ratione aspernatur.",
-            "title": "Sarah Challenge"
+            "title": "Sarah Challenge",
+            "max_docker_image_size": 42949672960
         }
 """
 
@@ -232,6 +233,25 @@ challenge_phase_details = """
                 "max_submissions_per_day": 100000,
                 "name": "Philip Phase",
                 "start_date": "2018-08-21T18:56:42.789363Z"
+            }
+"""
+
+challenge_phase_details_slug = """
+            {
+                "id": 2,
+                "name": "test2019",
+                "description": "This phase evaluates models on the test split of the GQA dataset",
+                "leaderboard_public": true,
+                "start_date": "2019-02-08T19:59:59Z",
+                "end_date": "2099-05-15T23:59:59Z",
+                "challenge": 10,
+                "max_submissions_per_day": 2,
+                "max_submissions_per_month": 10,
+                "max_submissions": 10,
+                "is_public": true,
+                "is_active": true,
+                "codename": "test2019",
+                "slug": "philip-phase-2019"
             }
 """
 
