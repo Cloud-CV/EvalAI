@@ -50,6 +50,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
             "leaderboard_description",
             "allowed_email_domains",
             "blocked_email_domains",
+            "banned_email_ids",
             "approved_by_admin",
             "forum_url",
             "is_docker_based",
@@ -188,6 +189,7 @@ class ZipChallengeSerializer(ChallengeSerializer):
             "evaluation_script",
             "allowed_email_domains",
             "blocked_email_domains",
+            "banned_email_ids",
             "forum_url",
             "remote_evaluation",
             "is_docker_based",
@@ -210,6 +212,9 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "dataset_split",
             "leaderboard",
             "visibility",
+            "leaderboard_decimal_precision",
+            "is_leaderboard_order_descending",
+            "show_leaderboard_by_latest_submission"
         )
 
 

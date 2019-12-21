@@ -7,39 +7,22 @@ Alternatively, if you come across a new bug on the site, please file a new issue
 
 #### Q. What are the technologies that EvalAI uses?
 
-##### Django
+Please refer to [Technologies Used](https://evalai.readthedocs.io/en/latest/architecture.html)
 
-Django is the heart of the application, which powers our backend. We use Django version 1.11.18.
+#### Q. Where could I learn GitHub Commands?
 
-##### Django Rest Framework
-
-We use Django Rest Framework for writing and providing REST APIs. It's permission and serializers have helped write a maintainable codebase.
-
-##### AWS Simple Queue Service (SQS)
-
-We currently use AWS SQS for queueing submission messages which are then later on processed by a Python worker.
-
-##### PostgreSQL
-
-PostgresSQL is used as our primary datastore. All our tables currently reside in a single database named evalai.
-
-##### Angular JS - ^1.6.1
-
-Angular JS is a well-known framework that powers our frontend.
-
-#### Q. Where could I learn Github Commands?
-
-Refer to [Github Guide](https://help.github.com/articles/git-and-github-learning-resources/).
+Refer to [GitHub Guide](https://help.github.com/articles/git-and-github-learning-resources/).
 
 #### Q. Where could I learn Markdown?
 
-Refer to [MarkDown Guide](https://guides.github.com/features/mastering-markdown/).
+Refer to [Markdown Guide](https://guides.github.com/features/mastering-markdown/).
 
 #### Q. What to do when coverage decreases in your pull request?
 
 Coverage decreases when the existing test cases don't test the new code you wrote. If you click coverage, you can see exactly which all parts aren't covered and you can write new tests to test the parts.
 
 #### Q. How to setup EvalAI using virtualenv?
+
 We have removed the documentation for setting up using virtual environment since the project has grown and different developers face different dependency issues. We recommend to setup EvalAI using docker based environment.
 
 ### Common Errors during installation
@@ -135,7 +118,7 @@ Execute the following command first :
 gem install sass
 ```
 
-#### Q. While trying to install `npm config set proxy http://proxy:port` on UBUNTU, I get the following error:
+#### Q. While trying to install `npm config set proxy http://proxy:port` on Ubuntu, I get the following error:
 
 ```
 ubuntu@ubuntu-Inspiron-3521:~/Desktop/Python-2.7.14$ npm install -g angular-cli
@@ -168,7 +151,7 @@ If the above does not work, try deleting them by following commands:
 
 Then, start the installation process of frontend once more.
 
-#### Q. While using docker, I am getting the following error on URL [http://localhost:8888/](http://localhost:8888/)
+#### Q. While using docker, I am getting the following error on URL [http://localhost:8888/](http://localhost:8888/):
 
 ```
 Cannot Get \
@@ -176,7 +159,7 @@ Cannot Get \
 
 Try removing the docker containers and then building them again.
 
-#### Q. Getting the following error while running `python manage.py seed`
+#### Q. Getting the following error while running `python manage.py seed`:
 
 ```
 Starting the database seeder. Hang on... Exception while running run() in 'scripts.seed' Database successfully seeded
@@ -184,7 +167,7 @@ Starting the database seeder. Hang on... Exception while running run() in 'scrip
 
 Change the python version to 2.7.x . The problem might be because of the python 3.0 version.
 
-#### Q. Getting the following error while executing command `createdb evalai -U postgres`
+#### Q. Getting the following error while executing command `createdb evalai -U postgres`:
 
 ```
 createdb: could not connect to database template1: FATAL: Peer authentication failed for user "postgres"
@@ -192,7 +175,7 @@ createdb: could not connect to database template1: FATAL: Peer authentication fa
 
 Try creating a new user and then grant all the privileges to it and then create a db.
 
-#### Q. Getting the following error while executing `npm install`
+#### Q. Getting the following error while executing `npm install`:
 
 ```
 npm WARN generator-angular@0.16.0 requires a peer of generator-
@@ -217,7 +200,7 @@ It appears that you are trying to run `pytest` in a docker container. To fix thi
 
 `find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf`
 
-#### Q. Getting the following error :
+#### Q. Getting the following error:
 
 ```
 ERROR: for db Cannot start service db: driver failed programming external connectivity on endpoint evalai_db_1 (2163096de9aac6561b4f699bb1049acd0ce881fbaa0da28e47cfa9ca0ee1199f): Error starting userland proxy: listen tcp 0.0.0.0:5432: bind: address already in use
@@ -226,25 +209,30 @@ ERROR: for db Cannot start service db: driver failed programming external connec
 The following solution only works on Linux.
 
 Execute :
-```sudo netstat -lpn |grep :5432```
+`sudo netstat -lpn |grep :5432`
 
 The output of the above would be in the following form:
+
 ```
 tcp 0 0 127.0.0.1:5432 0.0.0.0:* LISTEN 25273/postgres
 ```
+
 Execute the following command:
+
 ```
 sudo kill 25273 ## This would vary and you can change with the output in the first step
 ```
 
-#### Q. Getting the following error :
+#### Q. Getting the following error when using Docker:
+
 ```
-ERROR : Version in "./docker-compose.yml" is unsupported. You might be seeing this error becasue you are using wrong Compose file version.
+ERROR : Version in "./docker-compose.yml" is unsupported. You might be seeing this error because you are using wrong Compose file version.
 ```
 
 Since, the version of compose file is 3. You might be using a docker version which is not compatible. You can upgrade your docker engine and try again.
 
-#### Q. Getting the following error while runnig `python manage.py runserver --settings=settings.dev`
+#### Q. Getting the following error while running `python manage.py runserver --settings=settings.dev`:
+
 ```
 Starting the database seeder. Hang on...
 Are you sure you want to wipe the existing development database and reseed it? (Y/N)
@@ -254,14 +242,16 @@ Exception while running run() in 'scripts.seed'
 Try clearing the postgres database manually and try again.
 
 #### Q. Getting the following error while executing `gulp dev:runserver`:
+
 ```
 /usr/lib//nodejs/gulp//bin/gulp.js:132
 	gulpInst.start.apply(gulpInst, toRun)l
-				   ^	
+				   ^
 TypeError: Cannot read properly 'apply of undefined'
 ```
 
 Execute the following command:
+
 ```
 rm -rf node_modules/
 rm -rf bower_components
