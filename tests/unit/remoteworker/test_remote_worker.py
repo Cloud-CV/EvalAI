@@ -2,8 +2,6 @@ import mock
 
 from unittest import TestCase
 
-from django.contrib.auth.models import User
-
 from scripts.workers.remote_submission_worker import (
     make_request,
     get_message_from_sqs_queue,
@@ -17,8 +15,6 @@ from scripts.workers.remote_submission_worker import (
     return_url_per_environment,
     load_challenge,
 )
-from challenges.models import Challenge, ChallengePhase
-from hosts.models import ChallengeHostTeam
 
 
 class BaseTestClass(TestCase):
@@ -155,34 +151,34 @@ class URLFormatTestCase(BaseTestClass):
 class LoadChallengeTestClass(BaseTestClass):
     def setUp(self):
         super(LoadChallengeTestClass, self).setUp()
-        self.user = User(
-            username='someuser',
-            email="user@test.com",
-            password='secret_password')
+        self.user = {"username": 'someuser', "email": "user@test.com"}
 
-        self.challenge_host_team = ChallengeHostTeam(
-            team_name='Test Challenge Host Team',
-            created_by=self.user)
+        self.challenge_host_team = {
+            "team_name": 'Test Challenge Host Team',
+            "created_by": self.user,
+        }
 
-        self.challenge = Challenge(
-            id=self.challenge_pk,
-            title='Test Challenge',
-            description='Description for test challenge',
-            terms_and_conditions='Terms and conditions for test challenge',
-            submission_guidelines='Submission guidelines for test challenge',
-            creator=self.challenge_host_team,
-            published=True,
-            approved_by_admin=True,
-            enable_forum=True,
-            anonymous_leaderboard=False)
+        self.challenge = {
+            "id": self.challenge_pk,
+            "title": 'Test Challenge',
+            "description": 'Description for test challenge',
+            "terms_and_conditions": 'Terms and conditions for test challenge',
+            "submission_guidelines": 'Submission guidelines for test challenge',
+            "creator": self.challenge_host_team,
+            "published": True,
+            "approved_by_admin": True,
+            "enable_forum": True,
+            "anonymous_leaderboard": False,
+        }
 
-        self.challenge_phase = ChallengePhase(
-            id=self.challenge_phase_pk,
-            name='Challenge Phase',
-            description='Description for Challenge Phase',
-            leaderboard_public=False,
-            is_public=True,
-            challenge=self.challenge)
+        self.challenge_phase = {
+            "id": self.challenge_phase_pk,
+            "name": 'Challenge Phase',
+            "description": 'Description for Challenge Phase',
+            "leaderboard_public": False,
+            "is_public": True,
+            "challenge": self.challenge
+        }
 
         self.phases = [self.challenge_phase]
 
@@ -204,7 +200,7 @@ class LoadChallengeTestClass(BaseTestClass):
         mock_get_phases_by_challenge_pk.assert_called_with(self.challenge_pk)
         mock_extract_challenge_data.assert_called_with(self.challenge, self.phases)
 
-    @mock.patch("scripts.workers.remote_submission_worker.logger")
+    @mock.patch("scripts.workers.remote_submission_worker.logger.exception")
     def test_load_challenge_when_challenge_doesnt_exist(self, mock_logger, mock_extract_challenge_data,
                                                         mock_create_dir_as_python_package,
                                                         mock_get_challenge_by_queue_name):
