@@ -2,6 +2,8 @@ import mock
 
 from unittest import TestCase
 
+from django.contrib.auth.models import User
+
 from scripts.workers.remote_submission_worker import (
     make_request,
     get_message_from_sqs_queue,
@@ -152,6 +154,15 @@ class URLFormatTestCase(BaseTestClass):
 class LoadChallengeTestClass(BaseTestClass):
     def setUp(self):
         super(LoadChallengeTestClass, self).setUp()
+        self.user = User(
+            username='someuser',
+            email="user@test.com",
+            password='secret_password')
+
+        self.challenge_host_team = ChallengeHostTeam(
+            team_name='Test Challenge Host Team',
+            created_by=self.user)
+
         self.challenge = Challenge(
             id=self.challenge_pk,
             title='Test Challenge',
@@ -162,16 +173,16 @@ class LoadChallengeTestClass(BaseTestClass):
             published=True,
             approved_by_admin=True,
             enable_forum=True,
-            anonymous_leaderboard=False,
-        )
+            anonymous_leaderboard=False)
+
         self.challenge_phase = ChallengePhase(
             id=self.challenge_phase_pk,
             name='Challenge Phase',
             description='Description for Challenge Phase',
             leaderboard_public=False,
             is_public=True,
-            challenge=self.challenge,
-        )
+            challenge=self.challenge)
+
         self.phases = [self.challenge_phase]
 
         self.queue_name_patcher = mock.patch(
