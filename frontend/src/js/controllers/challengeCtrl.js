@@ -2010,10 +2010,8 @@
 
         // Edit Challenge Start and End Date
         vm.challengeDateDialog = function(ev) {
-            vm.challengeStartDate = vm.page.start_date;
-            vm.challengeStartDate = moment(vm.challengeStartDate);
-            vm.challengeEndDate = vm.page.end_date;
-            vm.challengeEndDate = moment(vm.challengeEndDate);
+            vm.challengeStartDate = moment(vm.page.start_date);
+            vm.challengeEndDate = moment(vm.page.end_date);
             $mdDialog.show({
                 scope: $scope,
                 preserveScope: true,
