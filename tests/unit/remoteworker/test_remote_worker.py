@@ -14,6 +14,7 @@ from scripts.workers.remote_submission_worker import (
     update_submission_status,
     return_url_per_environment,
 )
+from challenges.models import Challenge, ChallengePhase
 
 
 class BaseTestClass(TestCase):
@@ -23,6 +24,7 @@ class BaseTestClass(TestCase):
         self.challenge_phase_pk = 1
         self.data = {"test": "data"}
         self.headers = {"Authorization": "Token test_token"}
+        self.queue_name = "evalai_submission_queue"
 
     def make_request_url(self):
         return "/test/url"
@@ -141,3 +143,58 @@ class URLFormatTestCase(BaseTestClass):
         expected_url = "http://testserver:80{}".format(url)
         returned_url = return_url_per_environment(url)
         self.assertEqual(returned_url, expected_url)
+
+
+@mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
+@mock.patch("scripts.workers.remote_submission_worker.create_dir_as_python_package")
+class LoadChallengeTestClass(BaseTestClass):
+    def setUp(self):
+        super(LoadChallengeTestClass, self).setUp()
+        self.challenge = Challenge(
+            id=self.challenge_pk,
+            title='Test Challenge',
+            description='Description for test challenge',
+            terms_and_conditions='Terms and conditions for test challenge',
+            submission_guidelines='Submission guidelines for test challenge',
+            creator=self.challenge_host_team,
+            published=True,
+            approved_by_admin=True,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+        )
+        self.challenge_phase = ChallengePhase(
+            id=self.challenge_phase_pk,
+            name='Challenge Phase',
+            description='Description for Challenge Phase',
+            leaderboard_public=False,
+            is_public=True,
+            challenge=self.challenge,
+        )
+        self.phases = [self.challenge_phase]
+
+        self.queue_name_patcher = mock.patch(
+            "scripts.workers.remote_submission_worker.QUEUE_NAME", "evalai_submission_queue"
+        )
+        self.queue_name_patcher.start()
+
+    def tearDown():
+        self.queue_name_patcher.stop()
+        # super(LoadChallengeTestClass, self).tearDown()  # FUTURE
+
+    @mock.patch("scripts.workers.remote_submission_worker.extract_challenge_data")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phases_by_challenge_pk")
+    def test_load_challenge_success(self, mock_get_phases_by_pk, mock_extract_challenge_data,
+                                    mock_create_dir_as_pkg, mock_get_challenge_by_queue_name):
+        mock_get_challenge_by_queue_name.return_value = self.challenge
+        mock_get_phases_by_pk.return_value = self.phases
+        load_challenge()
+        mock_get_phases_by_pk.assert_called_with(self.challenge_pk)
+        mock_extract_challenge_data.assert_called_with(self.challenge, self.phases)
+
+    @mock.patch("scripts.workers.remote_submission_worker.logger")
+    def test_load_challenge_when_challenge_doesnt_exist(self, mock_logger, mock_create_dir_as_pkg,
+                                                        mock_get_challenge_by_queue_name):
+        mock_get_challenge_by_queue_name.side_effect = Exception
+        with self.assertRaises(Exception):
+            load_challenge_data()
+        mock_logger.assert_called_with("Challenge with queue name %s does not exists" % (self.queue_name))
