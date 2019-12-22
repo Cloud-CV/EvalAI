@@ -1,6 +1,19 @@
 import mock
+import os
+import shutil
 
-from unittest import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth.models import User
+
+from rest_framework.test import APIClient, APITestCase
+
+from challenges.models import (
+    Challenge,
+    ChallengePhase
+)
+from hosts.models import ChallengeHostTeam
+from jobs.models import Submission
+from participants.models import Participant, ParticipantTeam
 
 from scripts.workers.remote_submission_worker import (
     make_request,
@@ -10,13 +23,14 @@ from scripts.workers.remote_submission_worker import (
     get_challenge_phases_by_challenge_pk,
     get_challenge_by_queue_name,
     get_challenge_phase_by_pk,
+    process_submission_message,
     update_submission_data,
     update_submission_status,
     return_url_per_environment,
 )
 
 
-class BaseTestClass(TestCase):
+class BaseTestClass(APITestCase):
     def setUp(self):
         self.submission_pk = 1
         self.challenge_pk = 1
@@ -141,3 +155,112 @@ class URLFormatTestCase(BaseTestClass):
         expected_url = "http://testserver:80{}".format(url)
         returned_url = return_url_per_environment(url)
         self.assertEqual(returned_url, expected_url)
+
+
+class ProcessSubmissionMessage(BaseTestClass):
+    def setUp(self):
+        super(ProcessSubmissionMessage, self).setUp()
+
+        self.user = {
+            "username": "username",
+            "email": "user@test.com",
+            "password": "secret_password"
+        }
+
+        self.challenge_host_team = {
+            "team_name": "Test Challenge Host Team",
+            "created_by": self.user
+        }
+
+        self.participant_team = {
+            "team_name": "Participant Team for Challenge",
+            "created_by": self.user
+        }
+
+        self.participant = {
+            "user": self.user,
+            "status": Participant.SELF,
+            "team": self.participant_team
+        }
+
+        self.challenge = {
+            "id": self.challenge_pk,
+            "title": "Test Challenge",
+            "creator": self.challenge_host_team,
+        }
+
+        try:
+            os.makedirs("/tmp/evalai")
+        except OSError:
+            pass
+
+        with self.settings(MEDIA_ROOT="/tmp/evalai"):
+            self.challenge_phase = {
+                "id": self.challenge_phase_pk,
+                "name": "Challenge Phase",
+                "description": "Description for Challenge Phase",
+                "leaderboard_public": False,
+                "is_public": True,
+                "challenge": self.challenge,
+                "test_annotation": SimpleUploadedFile(
+                    "test_sample_file.txt",
+                    b"Dummy file content",
+                    content_type="text/plain"
+                )
+            }
+
+        self.submission = {
+            "id": self.submission_pk,
+            "participant_team": self.participant_team,
+            "challenge_phase": self.challenge_phase,
+            "created_by": self.challenge_host_team["created_by"],
+            "status": "submitted",
+            "input_file": SimpleUploadedFile(
+                "user_annotation_file.txt",
+                b"Dummy file content",
+                content_type="text/plain"
+            ),
+            "method_name": "Test Method",
+            "method_description": "Test Description",
+            "project_url": "http://testserver",
+            "publication_url": "http://testserver",
+            "is_public": True
+        }
+
+    def tearDown(self):
+        try:
+            shutil.rmtree("/tmp/evalai")
+        except OSError:
+            pass
+
+    @mock.patch("scripts.workers.remote_submission_worker.SUBMISSION_DATA_DIR", "mocked/dir/submission_{submission_id}")
+    @mock.patch("scripts.workers.remote_submission_worker.os.path.basename", return_value="user_annotation_file.txt")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phase_by_pk")
+    @mock.patch("scripts.workers.remote_submission_worker.get_submission_by_pk")
+    @mock.patch("scripts.workers.remote_submission_worker.create_dir_as_python_package")
+    @mock.patch("scripts.workers.remote_submission_worker.download_and_extract_file")
+    @mock.patch("scripts.workers.remote_submission_worker.run_submission")
+    def test_process_submission_message_successfully(self, mock_basename,
+                                                     mock_get_challenge_by_qn, mock_get_challenge_phase_by_pk,
+                                                     mock_get_submission_by_pk,
+                                                     mock_create_dir_as_python_package, mock_download_and_extract_file,
+                                                     mock_run_submission):
+        message = {
+            "challenge_pk": self.challenge_pk,
+            "phase_pk": self.challenge_phase_pk,
+            "submission_pk": self.submission_pk
+        }
+        user_annotation_file_path = "mocked/dir/submission_{}/user_annotation_file.txt".format(self.submission_pk)
+
+        mock_get_challenge_by_qn.return_value = self.challenge
+        mock_get_challenge_phase_by_pk.return_value = self.challenge_phase
+
+        with mock.patch("scripts.workers.remote_submission_worker.extract_submission_data") as mock_esd:
+            process_submission_message(message)
+            mock_esd.assert_called_with(self.submission_pk)
+
+        mock_get_submission_by_pk.return_value = self.submission
+        process_submission_message(message)
+
+        mock_run_submission.assert_called_with(self.challenge_pk, self.challenge_phase, self.submission, user_annotation_file_path)
