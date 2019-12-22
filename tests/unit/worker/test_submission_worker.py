@@ -172,7 +172,7 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
             zf.write(self.zip_file.getvalue())
 
         extract_zip_file(self.download_location, self.extract_location)
-        extracted_path = join(self.extract_location, self.zip_name, self.file_name)
+        extracted_path = join(self.extract_location, self.file_name)
         self.assertTrue(os.path.exists(extracted_path))
         with open(extracted_path, "rb") as extracted:
             self.assertEqual(extracted.read(), self.file_content)
