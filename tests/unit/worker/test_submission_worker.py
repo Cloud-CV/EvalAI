@@ -35,7 +35,7 @@ class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
         self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
-        self.test_server = "http://testserver"
+        self.testserver = "http://testserver"
         self.url = "/test/url"
         self.input_file = open(join(self.BASE_TEMP_DIR, 'dummy_input.txt'), "w+")
         self.input_file.write("file_content")
@@ -137,7 +137,6 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
         if os.path.exists(self.extract_location):
             shutil.rmtree(self.extract_location)
 
-
     @responses.activate
     @mock.patch("scripts.workers.submission_worker.delete_zip_file")
     @mock.patch("scripts.workers.submission_worker.extract_zip_file")
@@ -193,4 +192,4 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
         error_message = "Failed to remove zip file {}, error {}".format(self.download_location, e)
 
         delete_zip_file(self.download_location)
-        mock_logger.assert_called_with(error_message)        
+        mock_logger.assert_called_with(error_message)
