@@ -30,8 +30,8 @@ class BaseTestClass(TestCase):
     def get_message_from_sqs_queue_url(self, queue_name):
         return "/api/jobs/challenge/queues/{}/".format(queue_name)
 
-    def delete_message_from_sqs_queue_url(self, queue_name, receipt_handle):
-        return "/api/jobs/queues/{}/receipt/{}/".format(queue_name, receipt_handle)
+    def delete_message_from_sqs_queue_url(self, queue_name):
+        return "/api/jobs/queues/{}/".format(queue_name)
 
     def get_submission_by_pk_url(self, submission_pk):
         return "/api/jobs/submission/{}".format(submission_pk)
@@ -83,7 +83,7 @@ class APICallsTestClass(BaseTestClass):
 
     def test_delete_message_from_sqs_queue(self, mock_make_request, mock_url):
         test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
-        url = self.delete_message_from_sqs_queue_url("evalai_submission_queue", test_receipt_handle)
+        url = self.delete_message_from_sqs_queue_url("evalai_submission_queue")
         delete_message_from_sqs_queue(test_receipt_handle)
         mock_url.assert_called_with(url)
         url = mock_url(url)
