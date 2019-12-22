@@ -7,7 +7,7 @@ import tempfile
 import zipfile
 
 from datetime import timedelta
-from io import StringIO
+from io import BytesIO
 from moto import mock_sqs
 from os.path import join
 
@@ -128,20 +128,15 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
         create_dir(self.extract_location)
 
         self.file_name = "test_file.txt"
-        self.file_path = join(self.BASE_TEMP_DIR, self.file_name)
         self.file_content = b"file_content"
-        with open(self.file_path, 'wb') as fw:
-            fw.write(self.file_content)
 
-        self.zip_file = StringIO()
+        self.zip_file = BytesIO()
         with zipfile.ZipFile(self.zip_file, mode="w", compression=zipfile.ZIP_DEFLATED) as zipper:
-            zipper.write(self.file_path, arcname=self.file_name)
+            zipper.writestr(self.file_name, self.file_content)
 
     def tearDown(self):
         if os.path.exists(self.extract_location):
             shutil.rmtree(self.extract_location)
-        if os.path.exists(self.file_path):
-            os.remove(self.file_path)
 
     @responses.activate
     @mock.patch("scripts.workers.submission_worker.delete_zip_file")
