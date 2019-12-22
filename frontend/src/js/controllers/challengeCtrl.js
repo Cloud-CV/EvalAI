@@ -6,9 +6,9 @@
         .module('evalai')
         .controller('ChallengeCtrl', ChallengeCtrl);
 
-    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment'];
+    ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment', '$location', '$anchorScroll', '$timeout'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -68,6 +68,31 @@
         vm.subErrors = {};
 
         utilities.showLoader();
+
+        // scroll to the selected entry after page has been rendered
+        vm.scrollToEntryAfterLeaderboardLoads = function () {
+            // get unique rank number from the url & if exists hightlight the entry
+            $timeout(function() {
+                var elementId = $location.absUrl().split('?')[0].split('#')[1];
+                if (elementId) {
+                    $anchorScroll.yOffset = 90;
+                    $anchorScroll(elementId);
+                    $scope.isHighlight = elementId.split("leaderboardrank-")[1];
+                }
+            }, 500);
+        };
+
+         // scroll to the specific entry of the leaderboard
+        vm.scrollToSpecificEntryLeaderboard = function (elementId) {
+            var newHash = elementId.toString();
+            if ($location.hash() !== newHash) {
+                $location.hash(elementId);
+            } else {
+                $anchorScroll();
+            }
+            $scope.isHighlight = false;
+            $anchorScroll.yOffset = 90;
+        };
 
         vm.displayDockerSubmissionInstructions = function (isDockerBased, isParticipated) {
             // get remaining submission for docker based challenge
@@ -621,6 +646,8 @@
             parameters.callback = {
                 onSuccess: function (response) {
                     vm.selectedPhaseSplit = response.data;
+                    vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
+                        "Sort by best":"Sort by latest";
                 },
                 onError: function (response) {
                     var error = response.data;
@@ -704,6 +731,7 @@
                     vm.phaseName = vm.phaseSplitId;
                     vm.startLeaderboard();
                     vm.stopLoader();
+                    vm.scrollToEntryAfterLeaderboardLoads();
                 },
                 onError: function(response) {
                     var error = response.data;
@@ -1013,6 +1041,29 @@
                 }
             };
 
+            utilities.sendRequest(parameters);
+        };
+
+        vm.toggleShowLeaderboardByLatest = function() {
+            parameters.url = "challenges/challenge/create/challenge_phase_split/" + vm.phaseSplitId + "/";
+            parameters.method = "PATCH";
+            parameters.data = {
+                "show_leaderboard_by_latest_submission": !vm.selectedPhaseSplit.show_leaderboard_by_latest_submission
+            };
+            parameters.callback = {
+                onSuccess: function (response) {
+                    vm.selectedPhaseSplit = response.data;
+                    vm.getLeaderboard(vm.selectedPhaseSplit.id);
+                    vm.sortLeaderboardTextOption = (vm.selectedPhaseSplit.show_leaderboard_by_latest_submission) ?
+                        "Sort by best":"Sort by latest";
+                },
+                onError: function (response) {
+                    var error = response.data;
+                    vm.stopLoader();
+                    $rootScope.notify("error", error);
+                    return false;
+                }
+            };
             utilities.sendRequest(parameters);
         };
 
@@ -1840,10 +1891,8 @@
         vm.challengePhaseDialog = function(ev, phase) {
             vm.page.challenge_phase = phase;
             vm.page.max_submissions_per_day = phase.max_submissions_per_day;
-            vm.phaseStartDate = phase.start_date;
-            vm.phaseStartDate = moment(vm.phaseStartDate);
-            vm.phaseEndDate = phase.end_date;
-            vm.phaseEndDate = moment(vm.phaseEndDate);
+            vm.phaseStartDate = moment(phase.start_date);
+            vm.phaseEndDate = moment(phase.end_date);
             vm.testAnnotationFile = null;
             vm.sanityCheckPass = true;
             vm.sanityCheck = "";
@@ -1955,6 +2004,63 @@
             }, function() {
             // Nope
             });
+        };
+
+        // Edit Challenge Start and End Date
+        vm.challengeDateDialog = function(ev) {
+            vm.challengeStartDate = moment(vm.page.start_date);
+            vm.challengeEndDate = moment(vm.page.end_date);
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-date.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editChallengeDate = function(editChallengeDateForm) {
+            if (editChallengeDateForm) {
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge == vm.challengeId) {
+                        vm.challengeHostId = challengeHostList[challenge];
+                        break;
+                    }
+                }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                if (new Date(vm.challengeStartDate).valueOf() < new Date(vm.challengeEndDate).valueOf()) {
+                    parameters.data = {
+                        "start_date": vm.challengeStartDate,
+                        "end_date": vm.challengeEndDate
+                    };
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            utilities.hideLoader();
+                            if (status === 200) {
+                                vm.page.start_date = vm.challengeStartDate.format("MMM D, YYYY h:mm:ss A");
+                                vm.page.end_date = vm.challengeEndDate.format("MMM D, YYYY h:mm:ss A");
+                                $mdDialog.hide();
+                                $rootScope.notify("success", "The challenge start and end date is successfully updated!");
+                            }
+                        },
+                        onError: function(response) {
+                            utilities.hideLoader();
+                            $mdDialog.hide();
+                            var error = response.data;
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.showLoader();
+                    utilities.sendRequest(parameters);
+                } else {
+                    $rootScope.notify("error", "The challenge start date cannot be same or greater than end date.");
+                }
+            } else {
+                $mdDialog.hide();
+            }
         };
 
         $scope.$on('$destroy', function() {
