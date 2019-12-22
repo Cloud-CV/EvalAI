@@ -3,17 +3,10 @@ import os
 import shutil
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import User
 
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APITestCase
 
-from challenges.models import (
-    Challenge,
-    ChallengePhase
-)
-from hosts.models import ChallengeHostTeam
-from jobs.models import Submission
-from participants.models import Participant, ParticipantTeam
+from participants.models import Participant
 
 from scripts.workers.remote_submission_worker import (
     make_request,
@@ -233,34 +226,37 @@ class ProcessSubmissionMessage(BaseTestClass):
         except OSError:
             pass
 
-    @mock.patch("scripts.workers.remote_submission_worker.SUBMISSION_DATA_DIR", "mocked/dir/submission_{submission_id}")
-    @mock.patch("scripts.workers.remote_submission_worker.os.path.basename", return_value="user_annotation_file.txt")
-    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
-    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phase_by_pk")
-    @mock.patch("scripts.workers.remote_submission_worker.get_submission_by_pk")
-    @mock.patch("scripts.workers.remote_submission_worker.create_dir_as_python_package")
-    @mock.patch("scripts.workers.remote_submission_worker.download_and_extract_file")
-    @mock.patch("scripts.workers.remote_submission_worker.run_submission")
-    def test_process_submission_message_successfully(self, mock_basename,
-                                                     mock_get_challenge_by_qn, mock_get_challenge_phase_by_pk,
-                                                     mock_get_submission_by_pk,
-                                                     mock_create_dir_as_python_package, mock_download_and_extract_file,
-                                                     mock_run_submission):
+    @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
+    def test_process_submission_message_when_submission_does_not_exist(self, mock_esd):
+        self.submission_pk += 1
         message = {
             "challenge_pk": self.challenge_pk,
             "phase_pk": self.challenge_phase_pk,
             "submission_pk": self.submission_pk
         }
-        user_annotation_file_path = "mocked/dir/submission_{}/user_annotation_file.txt".format(self.submission_pk)
+        mock_esd.return_value = None
 
-        mock_get_challenge_by_qn.return_value = self.challenge
-        mock_get_challenge_phase_by_pk.return_value = self.challenge_phase
-
-        with mock.patch("scripts.workers.remote_submission_worker.extract_submission_data") as mock_esd:
-            process_submission_message(message)
-            mock_esd.assert_called_with(self.submission_pk)
-
-        mock_get_submission_by_pk.return_value = self.submission
         process_submission_message(message)
+        self.assertEqual(process_submission_message(message), None)
 
-        mock_run_submission.assert_called_with(self.challenge_pk, self.challenge_phase, self.submission, user_annotation_file_path)
+    @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phase_by_pk")
+    @mock.patch("scripts.workers.remote_submission_worker.logger.exception")
+    def test_process_submission_message_when_challenge_phase_does_not_exist(self, mock_esd,
+                                                                            mock_get_challenge_by_queue_name,
+                                                                            mock_get_challenge_phase_by_pk,
+                                                                            mock_logger):
+        self.challenge_phase_pk += 1
+        message = {
+            "challenge_pk": self.challenge_pk,
+            "phase_pk": self.challenge_phase_pk,
+            "submission_pk": self.submission_pk
+        }
+        mock_esd.return_value = self.submission
+        mock_get_challenge_by_queue_name.return_value = self.challenge
+        mock_get_challenge_phase_by_pk.return_value = None
+
+        with self.assertRaises(Exception):
+            process_submission_message(message)
+            mock_logger.assert_called_with("Challenge Phase {} does not exist".format(self.challenge_phase_pk))
