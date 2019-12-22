@@ -74,13 +74,6 @@ class BaseAPITestClass(APITestCase):
             ),
         )
 
-    def write_to_file_wb(filepath, content):
-        """
-        Helper method to write binary content to file
-        """
-        with open(filepath, 'wb') as fw:
-            fw.write(content)
-
     def test_create_dir(self):
         create_dir(self.temp_directory)
         self.assertTrue(os.path.isdir(self.temp_directory))
@@ -137,7 +130,8 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
         self.file_name = "test_file.txt"
         self.file_path = join(self.BASE_TEMP_DIR, self.file_name)
         self.file_content = b"file_content"
-        self.write_to_file_wb(self.file_path, self.file_content)
+        with open(self.filepath, 'wb') as fw:
+            fw.write(self.file_content)
 
         self.zip_file = StringIO()
         with zipfile.ZipFile(self.zip_file, mode="w", compression=zipfile.ZIP_DEFLATED) as zipper:
