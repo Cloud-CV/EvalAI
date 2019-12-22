@@ -226,6 +226,36 @@ class ProcessSubmissionMessage(BaseTestClass):
         except OSError:
             pass
 
+    @mock.patch("scripts.workers.remote_submission_worker.SUBMISSION_DATA_DIR", "mocked/dir/submission_{submission_id}")
+    @mock.patch("scripts.workers.remote_submission_worker.os.path.basename", return_value="user_annotation_file.txt")
+    @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phase_by_pk")
+    @mock.patch("scripts.workers.remote_submission_worker.run_submission")
+    def test_process_submission_message_successfully(self, mock_run_submission,
+                                                     mock_get_challenge_phase_by_pk,
+                                                     mock_get_challenge_by_queue_name,
+                                                     mock_esd, mock_basename):
+        message = {
+            "challenge_pk": self.challenge_pk,
+            "phase_pk": self.challenge_phase_pk,
+            "submission_pk": self.submission_pk
+        }
+        user_annotation_file_path = "mocked/dir/submission_{}/user_annotation_file.txt".format(self.submission_pk)
+        mock_esd.return_value = self.submission
+        mock_get_challenge_by_queue_name.return_value = self.challenge
+        mock_get_challenge_phase_by_pk.return_value = self.challenge_phase
+
+        process_submission_message(message)
+
+        mock_run_submission.assert_called_with(
+            self.challenge_pk,
+            self.challenge_phase,
+            self.submission,
+            user_annotation_file_path,
+            None
+        )
+
     @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
     def test_process_submission_message_when_submission_does_not_exist(self, mock_esd):
         self.submission_pk += 1
@@ -243,10 +273,10 @@ class ProcessSubmissionMessage(BaseTestClass):
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phase_by_pk")
     @mock.patch("scripts.workers.remote_submission_worker.logger.exception")
-    def test_process_submission_message_when_challenge_phase_does_not_exist(self, mock_esd,
-                                                                            mock_get_challenge_by_queue_name,
+    def test_process_submission_message_when_challenge_phase_does_not_exist(self, mock_logger,
                                                                             mock_get_challenge_phase_by_pk,
-                                                                            mock_logger):
+                                                                            mock_get_challenge_by_queue_name,
+                                                                            mock_esd):
         self.challenge_phase_pk += 1
         message = {
             "challenge_pk": self.challenge_pk,
@@ -259,4 +289,7 @@ class ProcessSubmissionMessage(BaseTestClass):
 
         with self.assertRaises(Exception):
             process_submission_message(message)
-            mock_logger.assert_called_with("Challenge Phase {} does not exist".format(self.challenge_phase_pk))
+        mock_logger.assert_called_with("Challenge Phase {} does not exist for queue {}".format(
+            self.challenge_phase_pk,
+            "evalai_submission_queue"
+        ))
