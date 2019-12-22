@@ -74,6 +74,13 @@ class BaseAPITestClass(APITestCase):
             ),
         )
 
+    def write_to_file_wb(filepath, content, mode="wb"):
+        """
+        Helper method to write binary content to file
+        """
+        with open(filepath, mode) as fw:
+            fw.write(content)
+
     def test_create_dir(self):
         create_dir(self.temp_directory)
         self.assertTrue(os.path.isdir(self.temp_directory))
@@ -128,14 +135,19 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
         create_dir(self.extract_location)
 
         self.file_name = "test_file.txt"
+        self.file_path = join(self.BASE_TEMP_DIR, self.file_name)
         self.file_content = b"file_content"
+        self.write_to_file_wb(self.file_path, self.file_content)
+
         self.zip_file = StringIO()
         with zipfile.ZipFile(self.zip_file, mode="w", compression=zipfile.ZIP_DEFLATED) as zipper:
-            zipper.writestr(self.file_name, self.file_content)
+            zipper.write(self.file_path, arcname=self.file_name)
 
     def tearDown(self):
         if os.path.exists(self.extract_location):
             shutil.rmtree(self.extract_location)
+        if os.path.exists(self.file_path):
+            os.remove(self.file_path)
 
     @responses.activate
     @mock.patch("scripts.workers.submission_worker.delete_zip_file")
