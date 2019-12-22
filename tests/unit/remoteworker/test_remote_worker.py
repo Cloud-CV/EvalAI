@@ -228,21 +228,31 @@ class ProcessSubmissionMessage(BaseTestClass):
 
     @mock.patch("scripts.workers.remote_submission_worker.SUBMISSION_DATA_DIR", "mocked/dir/submission_{submission_id}")
     @mock.patch("scripts.workers.remote_submission_worker.os.path.basename", return_value="user_annotation_file.txt")
-    @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
+    @mock.patch("scripts.workers.remote_submission_worker.get_submission_by_pk")
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phase_by_pk")
+    @mock.patch("scripts.workers.remote_submission_worker.create_dir_as_python_package")
+    @mock.patch("scripts.workers.remote_submission_worker.download_and_extract_file")
     @mock.patch("scripts.workers.remote_submission_worker.run_submission")
     def test_process_submission_message_successfully(self, mock_run_submission,
+                                                     mock_download_and_extract_file,
+                                                     mock_create_dir_as_python_package,
                                                      mock_get_challenge_phase_by_pk,
                                                      mock_get_challenge_by_queue_name,
-                                                     mock_esd, mock_basename):
+                                                     mock_get_submission_by_pk,
+                                                     mock_basename):
         message = {
             "challenge_pk": self.challenge_pk,
             "phase_pk": self.challenge_phase_pk,
             "submission_pk": self.submission_pk
         }
         user_annotation_file_path = "mocked/dir/submission_{}/user_annotation_file.txt".format(self.submission_pk)
-        mock_esd.return_value = self.submission
+
+        with mock.patch("scripts.workers.remote_submission_worker.extract_submission_data") as mock_esd:
+            process_submission_message(message)
+            mock_esd.assert_called_with(self.submission_pk)
+
+        mock_get_submission_by_pk.return_value = self.submission
         mock_get_challenge_by_queue_name.return_value = self.challenge
         mock_get_challenge_phase_by_pk.return_value = self.challenge_phase
 
