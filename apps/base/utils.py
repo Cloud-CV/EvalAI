@@ -228,3 +228,11 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
         logger.exception(
             "Exception raised while sending slack notification. \n Exception message: {}".format(e)
         )
+
+
+def mock_if_non_prod_aws(aws_mocker):
+    def decorator(func):
+        if not (settings.DEBUG or settings.TEST):
+            return func
+        return aws_mocker(func)
+    return decorator
