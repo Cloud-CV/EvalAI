@@ -36,6 +36,12 @@ export class ModalComponent implements OnInit {
   content = '';
 
   /**
+   * Invalid fields
+   */
+  invalidFields = [];
+  invalidFieldsAsText = '';
+
+  /**
    * Modal name
    */
   isButtonDisabled: boolean;
@@ -188,7 +194,6 @@ export class ModalComponent implements OnInit {
    */
   formValidate() {
     if (this.formComponents.length > 0) {
-      console.log(this.formComponents);
       if (this.title === 'Update Profile') {
         this.confirmed(this);
       } else {
@@ -230,6 +235,25 @@ export class ModalComponent implements OnInit {
     this.denyCallback();
   }
 
+  convertFieldArrayIntoText(fields) {
+    let finalText = '';
+    if (fields.length) {
+      if (fields.length > 1) {
+        finalText = `${fields.join(', ')} are not valid. \n\n\nBe sure to include HTTP/HTTPS.`;
+      } else {
+        finalText = `${fields.join('')} is not valid. \n\n\nBe sure to include HTTP/HTTPS.`;
+      }
+    } else {
+      finalText = '';
+    }
+    this.invalidFieldsAsText = finalText;
+  }
+
+  validURL(string) {
+    const res = string.match(/^((http|https):\/\/.)(www\.)?[-a-zA-Z0-9@:%._\+~#=]{0,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+    return (res !== null);
+  }
+
   validateModalInput(e) {
     this.inputErrorMessage = '';
     if (e.target.name === 'challegenDeleteInput') {
@@ -242,6 +266,39 @@ export class ModalComponent implements OnInit {
       this.isDisabled = e.target.value === this.user.last_name;
     } else if (e.target.name === 'update_affiliation') {
       this.isDisabled = e.target.value === this.user.affiliation;
+    } else if (e.target.name === 'update_google_scholar_url') {
+      if (this.validURL(e.target.value) || e.target.value === '') {
+        this.isDisabled = false;
+
+        this.invalidFields = this.invalidFields.filter(element => element !== 'Google Scholar');
+        this.convertFieldArrayIntoText(this.invalidFields);
+      } else {
+        if (!(this.invalidFields.find(element => element === 'Google Scholar'))) {
+          this.invalidFields.push('Google Scholar');
+        }
+      }
+    } else if (e.target.name === 'update_github_url') {
+      if (this.validURL(e.target.value) || e.target.value === '') {
+        this.isDisabled = false;
+
+        this.invalidFields = this.invalidFields.filter(element => element !== 'GitHub');
+        this.convertFieldArrayIntoText(this.invalidFields);
+      } else {
+        if (!(this.invalidFields.find(element => element === 'GitHub'))) {
+          this.invalidFields.push('GitHub');
+        }
+      }
+    } else if (e.target.name === 'update_linkedin_url') {
+      if (this.validURL(e.target.value) || e.target.value === '') {
+        this.isDisabled = false;
+
+        this.invalidFields = this.invalidFields.filter(element => element !== 'LinkedIn');
+        this.convertFieldArrayIntoText(this.invalidFields);
+      } else {
+        if (!(this.invalidFields.find(element => element === 'LinkedIn'))) {
+          this.invalidFields.push('LinkedIn');
+        }
+      }
     } else if (e.target.name === 'old_password') {
       this.oldPassword = e.target.value;
     } else if (e.target.name === 'new_password1') {
@@ -254,6 +311,11 @@ export class ModalComponent implements OnInit {
       if (e.target.value !== this.newPassword) {
         this.inputErrorMessage = 'Password do not match';
       }
+    }
+
+    if (this.invalidFields.length >= 1) {
+      this.convertFieldArrayIntoText(this.invalidFields);
+      this.isDisabled = true;
     }
   }
 

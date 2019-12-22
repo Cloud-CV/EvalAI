@@ -134,7 +134,6 @@ export class ProfileComponent implements OnInit {
     const SELF = this;
     SELF.apiCall = (params) => {
       const BODY = JSON.stringify(params);
-      console.log(params);
       SELF.apiService.putUrl(SELF.endpointsService.userDetailsURL(),
                              BODY).subscribe(
         data => {
@@ -197,8 +196,8 @@ export class ProfileComponent implements OnInit {
         {
           isRequired: false,
           label: 'linkedin_url',
-          name: 'linkedin_url',
-          placeholder: 'Linkedin Url',
+          name: 'update_linkedin_url',
+          placeholder: 'LinkedIn Url',
           type: 'url',
            value: linkedinUrl
          }
