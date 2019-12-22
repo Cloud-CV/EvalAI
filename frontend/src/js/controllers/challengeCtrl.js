@@ -1891,10 +1891,8 @@
         vm.challengePhaseDialog = function(ev, phase) {
             vm.page.challenge_phase = phase;
             vm.page.max_submissions_per_day = phase.max_submissions_per_day;
-            vm.phaseStartDate = phase.start_date;
-            vm.phaseStartDate = moment(vm.phaseStartDate);
-            vm.phaseEndDate = phase.end_date;
-            vm.phaseEndDate = moment(vm.phaseEndDate);
+            vm.phaseStartDate = moment(phase.start_date);
+            vm.phaseEndDate = moment(phase.end_date);
             vm.testAnnotationFile = null;
             vm.sanityCheckPass = true;
             vm.sanityCheck = "";
