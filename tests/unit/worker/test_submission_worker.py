@@ -130,7 +130,7 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
         self.file_name = "test_file.txt"
         self.file_path = join(self.BASE_TEMP_DIR, self.file_name)
         self.file_content = b"file_content"
-        with open(self.filepath, 'wb') as fw:
+        with open(self.file_path, 'wb') as fw:
             fw.write(self.file_content)
 
         self.zip_file = StringIO()
