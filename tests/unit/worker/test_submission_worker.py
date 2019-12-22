@@ -74,11 +74,11 @@ class BaseAPITestClass(APITestCase):
             ),
         )
 
-    def write_to_file_wb(filepath, content, mode="wb"):
+    def write_to_file_wb(filepath, content):
         """
         Helper method to write binary content to file
         """
-        with open(filepath, mode) as fw:
+        with open(filepath, 'wb') as fw:
             fw.write(content)
 
     def test_create_dir(self):
