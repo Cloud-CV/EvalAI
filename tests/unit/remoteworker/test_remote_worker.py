@@ -233,12 +233,12 @@ class ProcessSubmissionMessage(BaseTestClass):
     @mock.patch("scripts.workers.remote_submission_worker.download_and_extract_file")
     @mock.patch("scripts.workers.remote_submission_worker.run_submission")
     def test_process_submission_message_success(self, mock_run_submission,
-                                                     mock_download_and_extract_file,
-                                                     mock_create_dir_as_python_package,
-                                                     mock_get_challenge_phase_by_pk,
-                                                     mock_get_challenge_by_queue_name,
-                                                     mock_get_submission_by_pk,
-                                                     mock_basename):
+                                                mock_download_and_extract_file,
+                                                mock_create_dir_as_python_package,
+                                                mock_get_challenge_phase_by_pk,
+                                                mock_get_challenge_by_queue_name,
+                                                mock_get_submission_by_pk,
+                                                mock_basename):
         message = {
             "challenge_pk": self.challenge_pk,
             "phase_pk": self.challenge_phase_pk,
