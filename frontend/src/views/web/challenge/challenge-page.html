@@ -42,6 +42,28 @@
                                 </a>
                             </span>
                         </span>
+                        <br>
+                        <span>
+                            <strong class="text-light-black">Starts on:</strong>
+                            {{ challenge.page.start_date | date:'medium' }}
+                        </span>
+                        &nbsp;
+                        <span>
+                            <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
+                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                            </a>
+                        </span>
+                        <br>
+                        <span>
+                            <strong class="text-light-black">Ends on:</strong>
+                            {{ challenge.page.end_date | date:'medium' }}
+                        </span>
+                        &nbsp;
+                        <span>
+                            <a class="pointer" ng-click="challenge.challengeDateDialog($event)">
+                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                            </a>
+                        </span>
                     </p>
                 </div>
             </div>
