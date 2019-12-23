@@ -2182,12 +2182,12 @@ def get_challenge_phase_environment_url(request, slug):
     challenge = get_challenge_model(challenge_phase.challenge.pk)
     if not is_user_a_host_of_challenge(request.user, challenge.pk):
         response_data = {
-            "error": "Sorry, you are not authorized to access this."
+            "error": "Sorry, you are not authorized to access test environment URL."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     if not challenge.is_docker_based:
         response_data = {
-            "error": "Invalid resource"
+            "error": "The challenge doesn't require uploading Docker images, hence no test environment URL."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     response_data = {
