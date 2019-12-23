@@ -1,8 +1,14 @@
 import mock
+import os
+import shutil
+import tempfile
+
+from os.path import join
 
 from unittest import TestCase
 
 from scripts.workers.remote_submission_worker import (
+    create_dir_as_python_package,
     make_request,
     get_message_from_sqs_queue,
     delete_message_from_sqs_queue,
@@ -208,3 +214,21 @@ class LoadChallengeTestClass(BaseTestClass):
             load_challenge()
         mock_logger.assert_called_with("Challenge with queue name %s does not exists" % (self.queue_name))
         mock_extract_challenge_data.assert_not_called()
+
+
+class CreateDirAsPythonPackageTest(BaseTestClass):
+    def setUp(self):
+        super(CreateDirAsPythonPackageTest, self).setUp()
+
+        self.BASE_TEMP_DIR = tempfile.mkdtemp()
+        self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
+
+    def test_create_dir_as_python_package(self):
+        create_dir_as_python_package(self.temp_directory)
+        self.assertTrue(os.path.isfile(join(self.temp_directory, "__init__.py")))
+
+        with open(join(self.temp_directory, "__init__.py")) as f:
+            self.assertEqual(f.read(), "")
+
+        shutil.rmtree(self.temp_directory)
+        self.assertFalse(os.path.exists(self.temp_directory))
