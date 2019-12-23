@@ -323,4 +323,3 @@ class CreateDirAsPythonPackageTest(BaseTestClass):
 
         shutil.rmtree(self.temp_directory)
         self.assertFalse(os.path.exists(self.temp_directory))
-
