@@ -16,6 +16,7 @@ from scripts.workers.remote_submission_worker import (
     get_challenge_phases_by_challenge_pk,
     get_challenge_by_queue_name,
     get_challenge_phase_by_pk,
+    process_submission_callback,
     update_submission_data,
     update_submission_status,
     return_url_per_environment,
@@ -147,6 +148,35 @@ class URLFormatTestCase(BaseTestClass):
         expected_url = "http://testserver:80{}".format(url)
         returned_url = return_url_per_environment(url)
         self.assertEqual(returned_url, expected_url)
+
+
+class ProcessSubmissionCallback(BaseTestClass):
+    @mock.patch("scripts.workers.remote_submission_worker.logger.info")
+    @mock.patch("scripts.workers.remote_submission_worker.process_submission_message")
+    def test_process_submission_callback(self, mock_process_submission_message, mock_logger):
+        message = {
+            "challenge_pk": self.challenge_pk,
+            "phase_pk": self.challenge_phase_pk,
+            "submission_pk": self.submission_pk
+        }
+
+        process_submission_callback(message)
+        mock_process_submission_message.assert_called_with(message)
+        mock_logger.assert_called_with("[x] Received submission message {}".format(message))
+
+    @mock.patch("scripts.workers.remote_submission_worker.logger.exception")
+    @mock.patch("scripts.workers.remote_submission_worker.process_submission_message")
+    def test_process_submission_callback_with_exception(self, mock_process_submission_message, mock_logger):
+        message = {
+            "challenge_pk": self.challenge_pk,
+            "phase_pk": self.challenge_phase_pk,
+            "submission_pk": self.submission_pk
+        }
+
+        mock_process_submission_message.side_effect = Exception("test error")
+
+        process_submission_callback(message)
+        mock_logger.assert_called_with("Exception while processing message from submission queue with error test error")
 
 
 class CreateDirAsPythonPackageTest(BaseTestClass):
