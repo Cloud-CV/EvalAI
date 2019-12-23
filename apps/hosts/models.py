@@ -10,7 +10,7 @@ from base.models import TimeStampedModel
 
 class ChallengeHostTeam(TimeStampedModel):
     """
-    Model representing the Host Team for a partiuclar challenge
+    Model representing the Host Team for a particular challenge
     """
 
     team_name = models.CharField(max_length=100, unique=True)
