@@ -9,7 +9,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('challenges', '0057_add_task_def_arn_and_workers_field_to_challenge_model'),
+        ('challenges', '0058_add_show_leaderboard_by_latest_submission_field_in_challenge_phase_split_model'),
     ]
 
     operations = [
