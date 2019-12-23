@@ -20,11 +20,11 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **remote_evaluation**: True/False (specify whether evaluation will happen on a remote machine or not. Default is `False`)
 
-- **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` timezone
+- **start_date**: Start DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone
 
-- **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` timezone
+- **end_date**: End DateTime of the challenge (Format: YYYY-MM-DD HH:MM:SS, e.g. 2017-07-07 10:10:10) in `UTC` time zone
 
-- **published**: True/False (boolean field that gives the flexibility to publish the challenge once approved by EvalAI admin. Default is `False`)
+- **published**: True/False (Boolean field that gives the flexibility to publish the challenge once approved by EvalAI admin. Default is `False`)
 
 - **allowed_email_domains**: A list of domains allowed to participate in the challenge. Leave blank if everyone is allowed to participate. (e.g. `["domain1.com", "domain2.org", "domain3.in"]` Participants with these email domains will only be allowed to participate.)
 
@@ -59,7 +59,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 * **challenge_phases**:
 
-  There can be multiple [challenge phases](/glossary.html#challenge-phase) in a challenge. A challenge phase in a challenge contains the following subfields:
+  There can be multiple [challenge phases](https://evalai.readthedocs.io/en/latest/glossary.html#challenge-phase) in a challenge. A challenge phase in a challenge contains the following subfields:
 
   - **id**: Unique integer identifier for the challenge phase
 
@@ -89,7 +89,7 @@ Following fields are required (and can be customized) in the [`challenge_config.
 
 - **dataset_splits**:
 
-  Dataset splits define the the subset of test-set on which the submissions will be evaluated on. Generally, most challenges have two splits:
+  Dataset splits define the subset of test-set on which the submissions will be evaluated on. Generally, most challenges have two splits:
 
   1. **test-dev** (Allow participants to make large number of submissions, let them see how they are doing, and let them overfit)
   2. **test-challenge** (Allow small number of submissions so that they cannot mimic test-set. Use this split to decide the winners for the challenge)
