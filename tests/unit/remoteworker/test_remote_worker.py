@@ -232,7 +232,7 @@ class ProcessSubmissionMessage(BaseTestClass):
     @mock.patch("scripts.workers.remote_submission_worker.create_dir_as_python_package")
     @mock.patch("scripts.workers.remote_submission_worker.download_and_extract_file")
     @mock.patch("scripts.workers.remote_submission_worker.run_submission")
-    def test_process_submission_message_successfully(self, mock_run_submission,
+    def test_process_submission_message_success(self, mock_run_submission,
                                                      mock_download_and_extract_file,
                                                      mock_create_dir_as_python_package,
                                                      mock_get_challenge_phase_by_pk,
