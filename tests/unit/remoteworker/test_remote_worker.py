@@ -74,6 +74,10 @@ class MakeRequestTestClass(BaseTestClass):
         make_request(self.url, "PATCH", data=self.data)
         mock_make_request.patch.assert_called_with(url=self.url, headers=self.headers, data=self.data)
 
+    def test_make_request_post(self, mock_make_request):
+        make_request(self.url, "POST", data=self.data)
+        mock_make_request.post.assert_called_with(url=self.url, headers=self.headers, data=self.data)
+
 
 @mock.patch("scripts.workers.remote_submission_worker.QUEUE_NAME", "evalai_submission_queue")
 @mock.patch("scripts.workers.remote_submission_worker.return_url_per_environment")
@@ -93,7 +97,8 @@ class APICallsTestClass(BaseTestClass):
         delete_message_from_sqs_queue(test_receipt_handle)
         mock_url.assert_called_with(url)
         url = mock_url(url)
-        mock_make_request.assert_called_with(url, "GET")
+        expected_data = {"receipt_handle": "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"}
+        mock_make_request.assert_called_with(url, "POST", data=expected_data)
 
     def test_get_challenge_by_queue_name(self, mock_make_request, mock_url):
         url = self.get_challenge_by_queue_name_url("evalai_submission_queue")
