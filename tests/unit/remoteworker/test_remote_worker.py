@@ -3,9 +3,7 @@ import os
 import shutil
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-
 from rest_framework.test import APITestCase
-
 from participants.models import Participant
 
 from scripts.workers.remote_submission_worker import (
