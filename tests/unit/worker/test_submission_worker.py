@@ -3,9 +3,11 @@ import mock
 import os
 import shutil
 import tempfile
+import zipfile
 
 from datetime import timedelta
 from moto import mock_sqs
+from io import BytesIO
 from os.path import join
 
 from django.contrib.auth.models import User
