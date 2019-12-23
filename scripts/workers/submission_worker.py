@@ -142,7 +142,7 @@ def extract_zip_file(download_location, extract_location):
     zip_ref.close()
 
 
-def try_delete_zip_file(location):
+def delete_zip_file(location):
     """
     Helper function to remove zip file from location `download_location`
     Params:
@@ -178,7 +178,7 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         # extract zip file
         extract_zip_file(download_location, extract_location)
         # delete zip file
-        try_delete_zip_file(download_location)
+        delete_zip_file(download_location)
 
 
 def create_dir(directory):
