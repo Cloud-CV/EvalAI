@@ -130,35 +130,6 @@ def download_and_extract_file(url, download_location):
                     f.write(chunk)
 
 
-def extract_zip_file(download_location, extract_location):
-    """
-    Helper function to extract zip file
-    Params:
-        * `download_location`: Location of zip file
-        * `extract_location`: Location of directory for extracted file
-    """
-    zip_ref = zipfile.ZipFile(download_location, "r")
-    zip_ref.extractall(extract_location)
-    zip_ref.close()
-
-
-def delete_zip_file(download_location):
-    """
-    Helper function to remove zip file from location `download_location`
-    Params:
-        * `download_location`: Location of file to be removed.
-    """
-    try:
-        os.remove(download_location)
-    except Exception as e:
-        logger.error(
-            "Failed to remove zip file {}, error {}".format(
-                download_location, e
-            )
-        )
-        traceback.print_exc()
-
-
 def download_and_extract_zip_file(url, download_location, extract_location):
     """
         * Function to extract download a zip file, extract it and then removes the zip file.
@@ -176,9 +147,19 @@ def download_and_extract_zip_file(url, download_location, extract_location):
                 if chunk:
                     f.write(chunk)
         # extract zip file
-        extract_zip_file(download_location, extract_location)
+        zip_ref = zipfile.ZipFile(download_location, "r")
+        zip_ref.extractall(extract_location)
+        zip_ref.close()
         # delete zip file
-        delete_zip_file(download_location)
+        try:
+            os.remove(download_location)
+        except Exception as e:
+            logger.error(
+                "Failed to remove zip file {}, error {}".format(
+                download_location, e
+                )
+            )
+        traceback.print_exc()
 
 
 def create_dir(directory):
