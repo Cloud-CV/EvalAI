@@ -1,6 +1,8 @@
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
+from allauth.account.utils import send_email_confirmation
+
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -49,3 +51,11 @@ def get_auth_token(request):
 
     response_data = {"token": "{}".format(token)}
     return Response(response_data, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+@permission_classes((permissions.isAuthenticated,))
+@authentication_classes((ExpiringTokenAuthentication,))
+def resend_confirmation_email(request):
+    user = request.user
+    send_email_confirmation(request._request,user)
+    return Response(status = status.HTTP_200_OK)
