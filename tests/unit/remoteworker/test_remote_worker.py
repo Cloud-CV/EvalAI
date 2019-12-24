@@ -19,6 +19,7 @@ from scripts.workers.remote_submission_worker import (
     update_submission_data,
     update_submission_status,
     return_url_per_environment,
+    load_challenge
 )
 
 
