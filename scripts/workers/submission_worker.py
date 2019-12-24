@@ -156,10 +156,10 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         except Exception as e:
             logger.error(
                 "Failed to remove zip file {}, error {}".format(
-                download_location, e
+                    download_location, e
                 )
             )
-        traceback.print_exc()
+            traceback.print_exc()
 
 
 def create_dir(directory):
