@@ -276,31 +276,3 @@ class DownloadAndExtractZipFileTest(BaseAPITestClass):
         download_and_extract_zip_file(self.req_url, self.download_location, self.extract_location)
 
         mock_logger.assert_called_with(error_message)
-
-    def test_extract_zip_file(self):
-        with open(self.download_location, "wb") as zf:
-            zf.write(self.zip_file.getvalue())
-
-        extract_zip_file(self.download_location, self.extract_location)
-        extracted_path = join(self.extract_location, self.file_name)
-        self.assertTrue(os.path.exists(extracted_path))
-        with open(extracted_path, "rb") as extracted:
-            self.assertEqual(extracted.read(), self.file_content)
-
-    def test_delete_zip_file(self):
-        with open(self.download_location, "wb") as zf:
-            zf.write(self.zip_file.getvalue())
-
-        delete_zip_file(self.download_location)
-
-        self.assertFalse(os.path.exists(self.download_location))
-
-    @mock.patch("scripts.workers.submission_worker.logger.error")
-    @mock.patch("scripts.workers.submission_worker.os.remove")
-    def test_delete_zip_file_error(self, mock_remove, mock_logger):
-        e = "Error description"
-        mock_remove.side_effect = Exception(e)
-        error_message = "Failed to remove zip file {}, error {}".format(self.download_location, e)
-
-        delete_zip_file(self.download_location)
-        mock_logger.assert_called_with(error_message)
