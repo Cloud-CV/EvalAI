@@ -26,6 +26,8 @@ from participants.models import ParticipantTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
+    delete_zip_file,
+    extract_zip_file,
     extract_submission_data,
     load_challenge_and_return_max_submissions,
     return_file_url_per_environment,
