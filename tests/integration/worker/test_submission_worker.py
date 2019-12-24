@@ -247,33 +247,6 @@ class ExtractChallengeDataTestClass(BaseTestClass):
             mock_logger.assert_called_with("Exception raised while creating Python module for challenge_id: {}".format(self.challenge.pk))
 
 
-class LoadChallengeTestClass(BaseTestClass):
-    @mock.patch("scripts.workers.remote_submission_worker.CHALLENGE_DATA_BASE_DIR", "mocked/dir/challenge_data")
-    @mock.patch("scripts.workers.remote_submission_worker.create_dir_as_python_package")
-    @mock.patch("scripts.workers.remote_submission_worker.extract_challenge_data")
-    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phases_by_challenge_pk")
-    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
-    def test_load_challenge_successfully(self, mock_get_challenge_by_queue_name, mock_get_challenge_phases, mock_extract_challenge_data, mock_create_dir):
-        mock_challenge_data_base_dir = "mocked/dir/challenge_data"
-        mock_create_dir.assert_called_with(mock_challenge_data_base_dir)
-        mock_get_challenge_by_queue_name.return_value = {"id": self.challenge.pk}
-        submission_worker.load_challenge()
-        mock_get_challenge_phases.assert_called_with(self.challenge.pk)
-        mock_extract_challenge_data.assert_called()
-
-    @mock.patch("scripts.workers.remote_submission_worker.CHALLENGE_DATA_BASE_DIR", "mocked/dir/challenge_data")
-    @mock.patch("scripts.workers.remote_submission_worker.QUEUE_NAME", "evalai_submission_queue")
-    @mock.patch("scripts.workers.remote_submission_worker.create_dir_as_python_package")
-    @mock.patch("scripts.workers.remote_submission_worker.logger.exception")
-    def test_load_challenge_when_queue_name_does_not_exist(self, mock_logger, mock_create_dir):
-        mock_challenge_data_base_dir = "mocked/dir/challenge_data"
-        mock_create_dir.assert_called_with(mock_challenge_data_base_dir)
-        with self.assertRaises(Exception):
-            submission_worker.load_challenge()
-            mock_queue_name = "evalai_submission_queue"
-            mock_logger.assert_called_with("Challenge with queue name %s does not exists" % (mock_queue_name))
-
-
 @mock.patch("scripts.workers.submission_worker.SubmissionSerializer.data", "")
 @mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", "mocked/dir/submission_{submission_id}")
 @mock.patch("scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_PATH", "mocked/dir/challenge_data/challenge_{challenge_id}/phase_data/phase_{phase_id}/test_annotation_file.txt")
