@@ -246,6 +246,7 @@ class ExtractChallengeDataTestClass(BaseTestClass):
             submission_worker.extract_challenge_data(challenge, phases)
             mock_logger.assert_called_with("Exception raised while creating Python module for challenge_id: {}".format(self.challenge.pk))
 
+
 class LoadChallengeTestClass(BaseTestClass):
     @mock.patch("scripts.workers.submission_worker.CHALLENGE_DATA_BASE_DIR", "mocked/dir/challenge_data")
     @mock.patch("scripts.workers.submission_worker.create_dir_as_python_package")
