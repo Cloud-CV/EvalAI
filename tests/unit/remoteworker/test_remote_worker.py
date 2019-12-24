@@ -270,11 +270,10 @@ class ProcessSubmissionMessage(BaseTestClass):
 
     @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
     def test_process_submission_message_when_submission_does_not_exist(self, mock_esd):
-        self.submission_pk += 1
         message = {
             "challenge_pk": self.challenge_pk,
             "phase_pk": self.challenge_phase_pk,
-            "submission_pk": self.submission_pk
+            "submission_pk": self.submission_pk + 1
         }
         mock_esd.return_value = None
 
@@ -289,10 +288,9 @@ class ProcessSubmissionMessage(BaseTestClass):
                                                                             mock_get_challenge_phase_by_pk,
                                                                             mock_get_challenge_by_queue_name,
                                                                             mock_esd):
-        self.challenge_phase_pk += 1
         message = {
             "challenge_pk": self.challenge_pk,
-            "phase_pk": self.challenge_phase_pk,
+            "phase_pk": self.challenge_phase_pk + 1,
             "submission_pk": self.submission_pk
         }
         mock_esd.return_value = self.submission
@@ -302,7 +300,7 @@ class ProcessSubmissionMessage(BaseTestClass):
         with self.assertRaises(Exception):
             process_submission_message(message)
         mock_logger.assert_called_with("Challenge Phase {} does not exist for queue {}".format(
-            self.challenge_phase_pk,
+            self.challenge_phase_pk + 1,
             "evalai_submission_queue"
         ))
 
