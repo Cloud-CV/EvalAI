@@ -183,7 +183,7 @@ class LoadChallengeTestClass(BaseTestClass):
         mock_challenge_data_base_dir = "mocked/dir/challenge_data"
         mock_create_dir.assert_called_with(mock_challenge_data_base_dir)
         mock_get_challenge_by_queue_name.return_value = {"id": self.challenge.pk}
-        submission_worker.load_challenge()
+        load_challenge()
         mock_get_challenge_phases.assert_called_with(self.challenge.pk)
         mock_extract_challenge_data.assert_called()
 
@@ -195,7 +195,7 @@ class LoadChallengeTestClass(BaseTestClass):
         mock_challenge_data_base_dir = "mocked/dir/challenge_data"
         mock_create_dir.assert_called_with(mock_challenge_data_base_dir)
         with self.assertRaises(Exception):
-            submission_worker.load_challenge()
+            load_challenge()
             mock_queue_name = "evalai_submission_queue"
             mock_logger.assert_called_with("Challenge with queue name %s does not exists" % (mock_queue_name))
 
