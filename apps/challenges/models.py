@@ -85,7 +85,7 @@ class Challenge(TimeStampedModel):
         models.TextField(null=True, blank=True),
         default=[],
         blank=True,
-        null=True
+        null=True,
     )
     remote_evaluation = models.BooleanField(
         default=False, verbose_name="Remote Evaluation", db_index=True
@@ -123,11 +123,11 @@ class Challenge(TimeStampedModel):
         max_length=20, verbose_name="evalai-cli version", null=True, blank=True
     )
     # The number of active workers on Fargate of the challenge.
-    workers = models.IntegerField(
-        null=True, blank=True, default=None
-    )
+    workers = models.IntegerField(null=True, blank=True, default=None)
     # The task definition ARN for the challenge, used for updating and creating service.
-    task_def_arn = models.CharField(null=True, blank=True, max_length=2048, default="")
+    task_def_arn = models.CharField(
+        null=True, blank=True, max_length=2048, default=""
+    )
 
     class Meta:
         app_label = "challenges"
@@ -171,7 +171,9 @@ signals.post_save.connect(
     weak=False,
 )
 signals.post_save.connect(
-    model_field_name(field_name="evaluation_script")(restart_workers_signal_callback),
+    model_field_name(field_name="evaluation_script")(
+        restart_workers_signal_callback
+    ),
     sender=Challenge,
     weak=False,
 )
@@ -233,7 +235,9 @@ class ChallengePhase(TimeStampedModel):
         null=True,
     )
     slug = models.SlugField(max_length=200, null=True, unique=True)
-    environment_url = models.CharField(validators=[URLValidator()], null=True, max_length=2128)  # Max length of URL and tag is 2000 and 128 respectively
+    environment_url = models.CharField(
+        validators=[URLValidator()], null=True, blank=True, max_length=2128
+    )  # Max length of URL and tag is 2000 and 128 respectively
 
     class Meta:
         app_label = "challenges"
@@ -282,7 +286,9 @@ signals.post_save.connect(
     weak=False,
 )
 signals.post_save.connect(
-    model_field_name(field_name="test_annotation")(restart_workers_signal_callback),
+    model_field_name(field_name="test_annotation")(
+        restart_workers_signal_callback
+    ),
     sender=ChallengePhase,
     weak=False,
 )
