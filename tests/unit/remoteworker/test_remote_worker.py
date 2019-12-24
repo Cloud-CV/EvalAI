@@ -5,9 +5,9 @@ import tempfile
 
 from os.path import join
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 from participants.models import Participant
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from scripts.workers.remote_submission_worker import (
     create_dir_as_python_package,
