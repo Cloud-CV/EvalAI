@@ -180,11 +180,11 @@ class LoadChallengeTestClass(BaseTestClass):
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phases_by_challenge_pk")
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
     def test_load_challenge_successfully(self, mock_get_challenge_by_queue_name, mock_get_challenge_phases, mock_extract_challenge_data, mock_create_dir):
-        mock_get_challenge_by_queue_name.return_value = {"id": self.challenge.pk}
+        mock_get_challenge_by_queue_name.return_value = {"id": self.challenge_pk}
         load_challenge()
         mock_challenge_data_base_dir = "mocked/dir/challenge_data"
         mock_create_dir.assert_called_with(mock_challenge_data_base_dir)
-        mock_get_challenge_phases.assert_called_with(self.challenge.pk)
+        mock_get_challenge_phases.assert_called_with(self.challenge_pk)
         mock_extract_challenge_data.assert_called()
 
     @mock.patch("scripts.workers.remote_submission_worker.CHALLENGE_DATA_BASE_DIR", "mocked/dir/challenge_data")
@@ -198,4 +198,3 @@ class LoadChallengeTestClass(BaseTestClass):
             mock_create_dir.assert_called_with(mock_challenge_data_base_dir)
             mock_queue_name = "evalai_submission_queue"
             mock_logger.assert_called_with("Challenge with queue name %s does not exists" % (mock_queue_name))
-
