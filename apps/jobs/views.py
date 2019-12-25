@@ -1129,11 +1129,11 @@ def get_submission_message_from_queue(request, queue_name):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def delete_submission_message_from_queue(request, queue_name, receipt_handle):
+def delete_submission_message_from_queue(request, queue_name):
     """
     API to delete submission message from AWS SQS queue
     Arguments:
@@ -1151,13 +1151,14 @@ def delete_submission_message_from_queue(request, queue_name, receipt_handle):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge_pk = challenge.pk
+    receipt_handle = request.data["receipt_handle"]
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized to access this resource"
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_sqs_queue_object()
+    queue = get_sqs_queue_object(queue_name)
     try:
         message = queue.Message(receipt_handle)
         message.delete()
