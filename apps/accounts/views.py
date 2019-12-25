@@ -59,4 +59,4 @@ def get_auth_token(request):
 def resend_confirmation_email(request):
     user = request.user
     send_email_confirmation(request._request, user)
-    return Response(status status.HTTP_200_OK)
+    return Response(status=status.HTTP_200_OK)
