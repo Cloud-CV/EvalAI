@@ -15,6 +15,12 @@ import { EndpointsService } from '../../../services/endpoints.service';
   styleUrls: ['./challengesubmit.component.scss']
 })
 export class ChallengesubmitComponent implements OnInit {
+ /**
+  * Url error Message
+  */
+inputErrorMessage = '';
+validFileUrl = false;
+isSubmissionUsingUrl: any;
 
   /**
    * Is user logged in
@@ -45,16 +51,6 @@ export class ChallengesubmitComponent implements OnInit {
    * Is challenge currently active
    */
   isActive: any;
-
-  /**
-   * Submission input file
-   */
-  inputFile = true;
-
-  /**
-   * Disable submit button
-   */
-  disableSubmit = true;
 
   /**
    * Submission error
@@ -339,15 +335,12 @@ export class ChallengesubmitComponent implements OnInit {
         if (phaseDetails.submission_limit_exceeded) {
           this.selectedPhaseSubmissions.maxExceeded = true;
           this.selectedPhaseSubmissions.maxExceededMessage = phaseDetails.message;
-          this.disableSubmit = true;
         } else if (phaseDetails.remaining_submissions_today_count > 0) {
           this.selectedPhaseSubmissions.remainingSubmissions = phaseDetails;
           this.selectedPhaseSubmissions.showSubmissionDetails = true;
-          this.disableSubmit = false;
         } else {
           this.selectedPhaseSubmissions.showClock = true;
           this.selectedPhaseSubmissions.clockMessage = phaseDetails;
-          this.disableSubmit = true;
           SELF.timer = setInterval(function () {
             SELF.countDownTimer(SELF, eachPhase);
           }, 1000);
@@ -396,9 +389,13 @@ export class ChallengesubmitComponent implements OnInit {
     const submissionFile = self.globalService.formItemForLabel(self.components, 'input_file').fileValue;
     const submissionProjectUrl = self.globalService.formValueForLabel(self.components, 'project_url');
     const submissionPublicationUrl = self.globalService.formValueForLabel(self.components, 'publication_url');
-    const regex = new RegExp('([0-9A-Za-z-\\.@:%_\+~#=]+)+((\\.[a-zA-Z]{2,3})+)(/(.)*)?(\\?(.)*)?');
-    if (submissionFile === null || submissionFile === '') {
+    const submissionFileUrl = self.globalService.formItemForLabel(self.components, 'file_url');
+    const regex = new RegExp(/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/);
+    if (!self.isSubmissionUsingUrl && (submissionFile === null || submissionFile === '')) {
       self.submissionError = 'Please upload file!';
+      return;
+    } else if (self.isSubmissionUsingUrl && (submissionFileUrl !== '' && !self.validFileUrl)) {
+      self.submissionError = 'Please enter a valid Submission URL!';
       return;
     } else if (self.selectedPhase['id'] === undefined) {
       self.submissionError = 'Please select phase!';
@@ -413,7 +410,11 @@ export class ChallengesubmitComponent implements OnInit {
 
     const FORM_DATA: FormData = new FormData();
     FORM_DATA.append('status', 'submitting');
-    FORM_DATA.append('input_file', self.globalService.formItemForLabel(self.components, 'input_file').fileSelected);
+    if (!self.isSubmissionUsingUrl) {
+      FORM_DATA.append('input_file', self.globalService.formItemForLabel(self.components, 'input_file').fileSelected);
+    } else if (self.validFileUrl && self.isSubmissionUsingUrl) {
+      FORM_DATA.append('file_url', self.globalService.formValueForLabel(self.components, 'file_url'));
+    }
     FORM_DATA.append('method_name', self.globalService.formValueForLabel(self.components, 'method_name'));
     FORM_DATA.append('method_description', self.globalService.formValueForLabel(self.components, 'method_description'));
     FORM_DATA.append('project_url', self.globalService.formValueForLabel(self.components, 'project_url'));
@@ -423,7 +424,11 @@ export class ChallengesubmitComponent implements OnInit {
       self.selectedPhase['id'],
       FORM_DATA,
       () => {
-        self.globalService.setFormValueForLabel(self.components, 'input_file', null);
+        if (!self.isSubmissionUsingUrl) {
+          self.globalService.setFormValueForLabel(self.components, 'input_file', null);
+        } else if (self.validFileUrl && self.isSubmissionUsingUrl) {
+          self.globalService.setFormValueForLabel(self.components, 'file_url', '');
+          }
         self.globalService.setFormValueForLabel(self.components, 'method_name', '');
         self.globalService.setFormValueForLabel(self.components, 'method_description', '');
         self.globalService.setFormValueForLabel(self.components, 'project_url', '');
@@ -484,6 +489,17 @@ export class ChallengesubmitComponent implements OnInit {
   }
 
   validateInput(inputValue) {
-    this.inputFile = inputValue === null;
+    const regex = new RegExp(/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/);
+    const validExtensions = ['json', 'zip', 'csv'];
+    if (this.isSubmissionUsingUrl) {
+      const extension = inputValue.split('.').pop();
+      if (regex.test(inputValue) && validExtensions.includes(extension)) {
+        this.inputErrorMessage = '';
+        this.validFileUrl = true;
+      } else {
+        this.inputErrorMessage = 'Please enter a valid Submission URL!';
+        this.validFileUrl = false;
+      }
+    }
   }
 }

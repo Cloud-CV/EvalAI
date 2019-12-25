@@ -158,78 +158,96 @@
             <app-selectphase [phases]="filteredPhases"
               [phaseSelectionListType]="phaseSelectionListType"
               [phaseSelectionType]="phaseSelectionType"
-              [phaseSelected]="phaseSelected()"></app-selectphase>
-
-            <div class="form">
-              <div class="row row-lr-margin">
-                <div class="col-md-10 col-sm-10 col-lr-pad
-                  submit-upload-file">
-                  <app-input (change)="validateInput($event.target.value)"
-                    [label]="'input_file'" [accept]="'.json, .zip, .txt, .tsv, .gz'"
-                    [placeholder]="''" [type]="'file'" [value]="''"
-                    #formsubmit></app-input>
-                </div>
-              </div>
-
-              <div class="row row-lr-margin">
-                <div class="align-left col-sm-10 col-lr-pad">
-                  <div class="input-field align-left">
-                    <app-input [label]="'method_name'"
-                      [placeholder]="'Method name (Optional)'"
-                      [type]="'text'" [icon]="''" [value]="''"
-                      #formsubmit></app-input>
-                  </div>
-                </div>
-              </div>
-
-              <div class="row row-lr-margin">
-                <div class="align-left col-sm-10 col-lr-pad">
-                  <app-input [label]="'method_description'"
-                    [type]="'textarea'"
-                    [placeholder]="'Method description (Optional)'"
-                    #formsubmit></app-input><br>
-                </div>
-              </div>
-
-              <div class="row row-lr-margin">
-                <div class="align-left col-sm-10 col-lr-pad">
-                  <app-input [label]="'project_url'" [type]="'text'"
-                    [placeholder]="'Project URL (Optional)'" #formsubmit></app-input>
-                </div>
-              </div>
-
-              <div class="row row-lr-margin">
-                <div class="align-left col-sm-10 col-lr-pad">
-                  <app-input [label]="'publication_url'" [type]="'text'"
-                    [placeholder]="'Publication URL (Optional)'"
-                    #formsubmit></app-input>
-                </div>
-              </div>
-
-              <div *ngIf="submissionError" class="red-text col-lr-pad">
-                <strong class="fw-semibold">{{submissionError}}</strong><br><br>
-              </div>
-
-              <div class="pagination">
-                <div class="row rm-gut row-lr-margin">
-                  <div class="col-sm-12 col-md-12 col-lr-pad">
-                    <div class="align-left">
-                      <button class="btn btn-waves-effect grad-rec-btn
-                        waves-dark ev-btn-dark grad-btn-dark fw-light
-                        fs-14"
-                        [disabled]="disableSubmit || inputFile"
-                        (click)="formValidate()">Submit</button>
+              [phaseSelected]="phaseSelected()" (click)="isPhaseSelected=true"></app-selectphase>
+              <div [hidden]="!isPhaseSelected" class="row">
+                <div id="submission_option_style">
+                  <b class="fw-bold content fs-14">Submission Options:</b>
+                  <li>
+                    <input type="radio" name="submissionOptions" class="with-gap selectPhase"
+                      id="fileUrl" (click)="isSubmissionUsingUrl = true; showForm = true">
+                      <label for="fileUrl"></label>
+                      <div id="radio_button_url" class="show-member-title pointer">
+                        <strong class="text-med-black">Enter file URL (for file size > 400MB) </strong>
+                      </div>
+                      <input type="radio" name="submissionOptions" class="with-gap selectPhase"
+                        id="fileUpload" (click)="isSubmissionUsingUrl = false; showForm = true">
+                        <label for="fileUpload"></label>
+                    <div id="radio_button_file" class="show-member-title pointer">
+                      <strong  class="text-med-black">Upload file </strong>
                     </div>
-                    <br><br>
+                  </li>
+                </div>
+                <div  [hidden]="!showForm" class="form">
+                  <div class="row row-lr-margin">
+                    <div class="col-md-10 col-sm-10 col-lr-pad
+                      submit-upload-file">
+                      <div [hidden]="isSubmissionUsingUrl">
+                        <app-input (change)="validateInput($event.target.value)"
+                        [label]="'input_file'" [accept]="'.json, .zip, .txt, .tsv, .gz'"
+                        [placeholder]="''" [type]="'file'" [value]="''"
+                        #formsubmit></app-input>
+                      </div>
+                      <div [hidden]="!isSubmissionUsingUrl">
+                        <app-input (input)="validateInput($event.target.value)" 
+                        [label]="'file_url'" [placeholder]="'Submission file URL'"
+                        [type]="'URL'" [icon]="''" [value]="''" [message]="inputErrorMessage"
+                        #formsubmit></app-input>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row row-lr-margin">
+                    <div class="align-left col-sm-10 col-lr-pad">
+                      <div class="input-field align-left">
+                        <app-input [label]="'method_name'"
+                        [placeholder]="'Method name (Optional)'"
+                        [type]="'text'" [icon]="''" [value]="''"
+                        #formsubmit></app-input>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row row-lr-margin">
+                    <div class="align-left col-sm-10 col-lr-pad">
+                      <app-input [label]="'method_description'"
+                      [type]="'textarea'"
+                      [placeholder]="'Method description (Optional)'"
+                      #formsubmit></app-input><br>
+                    </div>
+                  </div>
+                  <div class="row row-lr-margin">
+                    <div class="align-left col-sm-10 col-lr-pad">
+                      <app-input [label]="'project_url'" [type]="'text'"
+                      [placeholder]="'Project URL (Optional)'" #formsubmit></app-input>
+                    </div>
+                  </div>
+                  <div class="row row-lr-margin">
+                    <div class="align-left col-sm-10 col-lr-pad">
+                      <app-input [label]="'publication_url'" [type]="'text'"
+                      [placeholder]="'Publication URL (Optional)'"
+                      #formsubmit></app-input>
+                    </div>
+                  </div>
+                  <div *ngIf="submissionError" class="red-text col-lr-pad">
+                    <strong class="fw-semibold">{{submissionError}}</strong><br><br>
+                  </div>
+                  <div class="pagination">
+                    <div class="row rm-gut row-lr-margin">
+                      <div class="col-sm-12 col-md-12 col-lr-pad">
+                        <div class="align-left">
+                          <button class="btn btn-waves-effect grad-rec-btn
+                          waves-dark ev-btn-dark grad-btn-dark fw-light fs-14"
+                          (click)="formValidate()">Submit</button>
+                        </div>
+                        <br><br>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </ul>
+            </ul>
+          </div>
         </div>
-      </div>
-
-      <div *ngIf="selectedPhaseSubmissions.maxExceeded" class="col-md-5 col-sm-4 col-xs-12">
+      <div *ngIf="selectedPhaseSubmissions.maxExceeded" 
+      class="col-md-5 col-sm-4 col-xs-12">
         <div class="ev-submission-card-body exist-team-card
           ev-remaining-submission remaining-submission-clock">
           <div class="row row-lr-margin">
@@ -241,11 +259,9 @@
           </div>
         </div>
       </div>
-
-      <div *ngIf="selectedPhaseSubmissions.showSubmissionDetails"
-        class="col-md-5 col-sm-5 col-xs-12">
-        <div class="ev-card-body exist-team-card ev-remaining-submission
-          remaining-submission-clock">
+      <div *ngIf="selectedPhaseSubmissions.showSubmissionDetails" class="col-md-5 col-sm-5 col-xs-12">
+        <div class="ev-card-body exist-team-card ev-remaining-submission 
+        remaining-submission-clock">
           <div class="row row-lr-margin">
             <span class="color-black">
               <strong class="fw-regular fs-15">
@@ -284,10 +300,9 @@
           </div>
         </div>
       </div>
-
       <div *ngIf="selectedPhaseSubmissions.showClock" class="col-md-5 col-sm-12 col-xs-12">
-        <div class="ev-card-body exist-team-card ev-remaining-submission
-          remaining-submission-clock">
+        <div class="ev-card-body exist-team-card ev-remaining-submission 
+        remaining-submission-clock">
           <div class="row row-lr-margin">
             <strong class="fw-regular text-med-black">
               Message:
