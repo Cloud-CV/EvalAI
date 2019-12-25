@@ -179,7 +179,7 @@ class LoadChallengeTestClass(BaseTestClass):
     @mock.patch("scripts.workers.remote_submission_worker.extract_challenge_data")
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phases_by_challenge_pk")
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
-    def test_load_challenge_successfully(self, mock_get_challenge_by_queue_name, mock_get_challenge_phases, mock_extract_challenge_data, mock_create_dir):
+    def test_load_challenge_success(self, mock_get_challenge_by_queue_name, mock_get_challenge_phases, mock_extract_challenge_data, mock_create_dir):
         mock_get_challenge_by_queue_name.return_value = {"id": self.challenge_pk}
         load_challenge()
         mock_challenge_data_base_dir = "mocked/dir/challenge_data"
