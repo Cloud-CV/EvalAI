@@ -54,7 +54,7 @@ def get_auth_token(request):
 
 
 @api_view(["POST"])
-@permission_classes((permissions.isAuthenticated,))
+@permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((ExpiringTokenAuthentication,))
 def resend_confirmation_email(request):
     user = request.user
