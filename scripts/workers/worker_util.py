@@ -16,18 +16,9 @@ URLS = {
 
 
 class EvalAI_Interface:
-
-    def __init__(
-            self,
-            AUTH_TOKEN,
-            DJANGO_SERVER,
-            DJANGO_SERVER_PORT,
-            QUEUE_NAME,
-
-    ):
+    def __init__(self, AUTH_TOKEN, EVALAI_API_SERVER, QUEUE_NAME):
         self.AUTH_TOKEN = AUTH_TOKEN
-        self.DJANGO_SERVER = DJANGO_SERVER
-        self.DJANGO_SERVER_PORT = DJANGO_SERVER_PORT
+        self.EVALAI_API_SERVER = EVALAI_API_SERVER
         self.QUEUE_NAME = QUEUE_NAME
 
     def get_request_headers(self):
@@ -37,7 +28,9 @@ class EvalAI_Interface:
     def make_request(self, url, method, data=None):
         headers = self.get_request_headers()
         try:
-            response = requests.request(method=method, url=url, headers=headers)
+            response = requests.request(
+                method=method, url=url, headers=headers, data=data
+            )
             response.raise_for_status()
         except requests.exceptions.RequestException:
             logger.info(
@@ -47,7 +40,7 @@ class EvalAI_Interface:
         return response.json()
 
     def return_url_per_environment(self, url):
-        base_url = "{0}:{1}".format(self.DJANGO_SERVER, self.DJANGO_SERVER_PORT)
+        base_url = "{0}".format(self.EVALAI_API_SERVER)
         url = "{0}{1}".format(base_url, url)
         return url
 
@@ -63,7 +56,7 @@ class EvalAI_Interface:
         )
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "GET")  # noqa
-        return
+        return response.status_code
 
     def get_submission_by_pk(self, submission_pk):
         url = URLS.get("get_submission_by_pk").format(submission_pk)
@@ -72,7 +65,9 @@ class EvalAI_Interface:
         return response
 
     def get_challenge_phases_by_challenge_pk(self, challenge_pk):
-        url = URLS.get("get_challenge_phases_by_challenge_pk").format(challenge_pk)
+        url = URLS.get("get_challenge_phases_by_challenge_pk").format(
+            challenge_pk
+        )
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "GET")
         return response
