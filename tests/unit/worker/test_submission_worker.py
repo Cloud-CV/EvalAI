@@ -1,6 +1,7 @@
 import boto3
 import mock
 import os
+import responses
 import shutil
 import tempfile
 
@@ -24,6 +25,7 @@ from participants.models import ParticipantTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
+    download_and_extract_file,
     extract_submission_data,
     load_challenge_and_return_max_submissions,
     return_file_url_per_environment,
@@ -220,3 +222,40 @@ class BaseAPITestClass(APITestCase):
         queue_url = self.sqs_client.get_queue_url(QueueName='test_queue_2')['QueueUrl']
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
+
+
+class DownloadAndExtractFileTest(BaseAPITestClass):
+    def setUp(self):
+        super(DownloadAndExtractFileTest, self).setUp()
+        self.req_url = "{}{}".format(self.testserver, self.url)
+        self.file_content = b"file content"
+
+        create_dir(self.temp_directory)
+        self.download_location = join(self.temp_directory, "dummy_file")
+
+    def tearDown(self):
+        if os.path.exists(self.temp_directory):
+            shutil.rmtree(self.temp_directory)
+
+    @responses.activate
+    def test_download_and_extract_file_success(self):
+        responses.add(self.req_url, responses.GET,
+                      body=self.file_content, status=200)
+
+        download_and_extract_file(self.req_url, self.download_location)
+
+        self.assertTrue(os.path.exists(self.download_location))
+        with open(self.download_location, "rb") as f:
+            self.assertEqual(f.read(), self.file_content)
+
+    @responses.activate
+    @mock.patch("scripts.workers.submission_worker.logger.error")
+    def test_download_and_extract_file_when_download_fails(self, mock_logger):
+        error = "ExampleError: Example Error description"
+        responses.add(self.req_url, responses.GET, body=Exception(error))
+        expected = "Failed to fetch file from {}, error {}".format(self.req_url, error)
+
+        download_and_extract_file(self.req_url, self.download_location)
+
+        mock_logger.assert_called_with(expected)
+        self.assertFalse(os.path.exists(self.download_location))
