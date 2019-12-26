@@ -1,11 +1,14 @@
 import boto3
 import mock
 import os
+import responses
 import shutil
 import tempfile
+import zipfile
 
 from datetime import timedelta
 from moto import mock_sqs
+from io import BytesIO
 from os.path import join
 
 from django.contrib.auth.models import User
@@ -24,6 +27,9 @@ from participants.models import ParticipantTeam
 from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
+    delete_zip_file,
+    download_and_extract_zip_file,
+    extract_zip_file,
     extract_submission_data,
     load_challenge_and_return_max_submissions,
     return_file_url_per_environment,
@@ -220,3 +226,81 @@ class BaseAPITestClass(APITestCase):
         queue_url = self.sqs_client.get_queue_url(QueueName='test_queue_2')['QueueUrl']
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
+
+
+class DownloadAndExtractZipFileTest(BaseAPITestClass):
+    def setUp(self):
+        super(DownloadAndExtractZipFileTest, self).setUp()
+        self.zip_name = "test"
+        self.req_url = "{}/{}".format(self.testserver, self.zip_name)
+        self.extract_location = join(self.BASE_TEMP_DIR, "test-dir")
+        self.download_location = join(self.extract_location, "{}.zip".format(self.zip_name))
+        create_dir(self.extract_location)
+
+        self.file_name = "test_file.txt"
+        self.file_content = b"file_content"
+
+        self.zip_file = BytesIO()
+        with zipfile.ZipFile(self.zip_file, mode="w", compression=zipfile.ZIP_DEFLATED) as zipper:
+            zipper.writestr(self.file_name, self.file_content)
+
+    def tearDown(self):
+        if os.path.exists(self.extract_location):
+            shutil.rmtree(self.extract_location)
+
+    @responses.activate
+    @mock.patch("scripts.workers.submission_worker.delete_zip_file")
+    @mock.patch("scripts.workers.submission_worker.extract_zip_file")
+    def test_download_and_extract_zip_file_success(self, mock_extract_zip, mock_delete_zip):
+        responses.add(
+            responses.GET, self.req_url,
+            content_type="application/zip",
+            body=self.zip_file.getvalue(), status=200)
+
+        download_and_extract_zip_file(self.req_url, self.download_location, self.extract_location)
+
+        with open(self.download_location, "rb") as downloaded:
+            self.assertEqual(downloaded.read(), self.zip_file.getvalue())
+        mock_extract_zip.assert_called_with(self.download_location, self.extract_location)
+        mock_delete_zip.assert_called_with(self.download_location)
+
+    @responses.activate
+    @mock.patch("scripts.workers.submission_worker.logger.error")
+    def test_download_and_extract_zip_file_when_download_fails(self, mock_logger):
+        e = "Error description"
+        responses.add(
+            responses.GET, self.req_url,
+            body=Exception(e))
+        error_message = "Failed to fetch file from {}, error {}".format(self.req_url, e)
+
+        download_and_extract_zip_file(self.req_url, self.download_location, self.extract_location)
+
+        mock_logger.assert_called_with(error_message)
+
+    def test_extract_zip_file(self):
+        with open(self.download_location, "wb") as zf:
+            zf.write(self.zip_file.getvalue())
+
+        extract_zip_file(self.download_location, self.extract_location)
+        extracted_path = join(self.extract_location, self.file_name)
+        self.assertTrue(os.path.exists(extracted_path))
+        with open(extracted_path, "rb") as extracted:
+            self.assertEqual(extracted.read(), self.file_content)
+
+    def test_delete_zip_file(self):
+        with open(self.download_location, "wb") as zf:
+            zf.write(self.zip_file.getvalue())
+
+        delete_zip_file(self.download_location)
+
+        self.assertFalse(os.path.exists(self.download_location))
+
+    @mock.patch("scripts.workers.submission_worker.logger.error")
+    @mock.patch("scripts.workers.submission_worker.os.remove")
+    def test_delete_zip_file_error(self, mock_remove, mock_logger):
+        e = "Error description"
+        mock_remove.side_effect = Exception(e)
+        error_message = "Failed to remove zip file {}, error {}".format(self.download_location, e)
+
+        delete_zip_file(self.download_location)
+        mock_logger.assert_called_with(error_message)
