@@ -1,6 +1,7 @@
 import boto3
 import mock
 import os
+import responses
 import shutil
 import tempfile
 import zipfile
@@ -27,6 +28,7 @@ from scripts.workers.submission_worker import (
     create_dir,
     create_dir_as_python_package,
     delete_zip_file,
+    download_and_extract_zip_file,
     extract_zip_file,
     extract_submission_data,
     load_challenge_and_return_max_submissions,
@@ -224,26 +226,6 @@ class BaseAPITestClass(APITestCase):
         queue_url = self.sqs_client.get_queue_url(QueueName='test_queue_2')['QueueUrl']
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
-
-
-class ZipFileUtilsTest(BaseAPITestClass):
-    def setUp(self):
-        super(ZipFileUtilsTest, self).setUp()
-        self.zip_name = "test"
-        self.extract_location = join(self.BASE_TEMP_DIR, "test-dir")
-        self.download_location = join(self.extract_location, "{}.zip".format(self.zip_name))
-        create_dir(self.extract_location)
-
-        self.file_name = "test_file.txt"
-        self.file_content = b"file_content"
-
-        self.zip_file = BytesIO()
-        with zipfile.ZipFile(self.zip_file, mode="w", compression=zipfile.ZIP_DEFLATED) as zipper:
-            zipper.writestr(self.file_name, self.file_content)
-
-    def tearDown(self):
-        if os.path.exists(self.extract_location):
-            shutil.rmtree(self.extract_location)
 
 
 class DownloadAndExtractZipFileTest(BaseAPITestClass):
