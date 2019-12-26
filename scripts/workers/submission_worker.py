@@ -110,6 +110,7 @@ def stderr_redirect(where):
 def alarm_handler(signum, frame):
     raise ExecutionTimeLimitExceeded
 
+
 def extract_zip_file(download_location, extract_location):
     """
     Helper function to extract zip file
@@ -137,6 +138,7 @@ def delete_zip_file(download_location):
             )
         )
         traceback.print_exc()
+
 
 def download_and_extract_file(url, download_location):
     """
