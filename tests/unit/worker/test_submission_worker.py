@@ -245,6 +245,56 @@ class ZipFileUtilsTest(BaseAPITestClass):
         if os.path.exists(self.extract_location):
             shutil.rmtree(self.extract_location)
 
+
+class DownloadAndExtractZipFileTest(BaseAPITestClass):
+    def setUp(self):
+        super(DownloadAndExtractZipFileTest, self).setUp()
+        self.zip_name = "test"
+        self.req_url = "{}/{}".format(self.testserver, self.zip_name)
+        self.extract_location = join(self.BASE_TEMP_DIR, "test-dir")
+        self.download_location = join(self.extract_location, "{}.zip".format(self.zip_name))
+        create_dir(self.extract_location)
+
+        self.file_name = "test_file.txt"
+        self.file_content = b"file_content"
+
+        self.zip_file = BytesIO()
+        with zipfile.ZipFile(self.zip_file, mode="w", compression=zipfile.ZIP_DEFLATED) as zipper:
+            zipper.writestr(self.file_name, self.file_content)
+
+    def tearDown(self):
+        if os.path.exists(self.extract_location):
+            shutil.rmtree(self.extract_location)
+
+    @responses.activate
+    @mock.patch("scripts.workers.submission_worker.delete_zip_file")
+    @mock.patch("scripts.workers.submission_worker.extract_zip_file")
+    def test_download_and_extract_zip_file_success(self, mock_extract_zip, mock_delete_zip):
+        responses.add(
+            responses.GET, self.req_url,
+            content_type="application/zip",
+            body=self.zip_file.getvalue(), status=200)
+
+        download_and_extract_zip_file(self.req_url, self.download_location, self.extract_location)
+
+        with open(self.download_location, "rb") as downloaded:
+            self.assertEqual(downloaded.read(), self.zip_file.getvalue())
+        mock_extract_zip.assert_called_with(self.download_location, self.extract_location)
+        mock_delete_zip.assert_called_with(self.download_location)
+
+    @responses.activate
+    @mock.patch("scripts.workers.submission_worker.logger.error")
+    def test_download_and_extract_zip_file_when_download_fails(self, mock_logger):
+        e = "Error description"
+        responses.add(
+            responses.GET, self.req_url,
+            body=Exception(e))
+        error_message = "Failed to fetch file from {}, error {}".format(self.req_url, e)
+
+        download_and_extract_zip_file(self.req_url, self.download_location, self.extract_location)
+
+        mock_logger.assert_called_with(error_message)
+
     def test_extract_zip_file(self):
         with open(self.download_location, "wb") as zf:
             zf.write(self.zip_file.getvalue())
