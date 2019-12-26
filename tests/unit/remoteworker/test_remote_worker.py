@@ -161,8 +161,8 @@ class ProcessSubmissionCallback(BaseTestClass):
         }
 
         process_submission_callback(message)
-        mock_process_submission_message.assert_called_with(message)
         mock_logger.assert_called_with("[x] Received submission message {}".format(message))
+        mock_process_submission_message.assert_called_with(message)
 
     @mock.patch("scripts.workers.remote_submission_worker.logger.exception")
     @mock.patch("scripts.workers.remote_submission_worker.process_submission_message")
