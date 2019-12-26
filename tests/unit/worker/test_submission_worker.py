@@ -239,8 +239,10 @@ class DownloadAndExtractFileTest(BaseAPITestClass):
 
     @responses.activate
     def test_download_and_extract_file_success(self):
-        responses.add(self.req_url, responses.GET,
-                      body=self.file_content, status=200)
+        responses.add(responses.GET, self.req_url,
+                      body=self.file_content,
+                      content_type='application/octet-stream',
+                      status=200)
 
         download_and_extract_file(self.req_url, self.download_location)
 
@@ -252,7 +254,7 @@ class DownloadAndExtractFileTest(BaseAPITestClass):
     @mock.patch("scripts.workers.submission_worker.logger.error")
     def test_download_and_extract_file_when_download_fails(self, mock_logger):
         error = "ExampleError: Example Error description"
-        responses.add(self.req_url, responses.GET, body=Exception(error))
+        responses.add(responses.GET, self.req_url, body=Exception(error))
         expected = "Failed to fetch file from {}, error {}".format(self.req_url, error)
 
         download_and_extract_file(self.req_url, self.download_location)
