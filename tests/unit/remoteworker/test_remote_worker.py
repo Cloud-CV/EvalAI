@@ -274,7 +274,9 @@ class ProcessSubmissionMessage(BaseTestClass):
         )
 
     @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
-    def test_process_submission_message_when_submission_does_not_exist(self, mock_esd):
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
+    def test_process_submission_message_when_submission_does_not_exist(self, mock_get_challenge_by_queue_name,
+                                                                       mock_esd):
         message = {
             "challenge_pk": self.challenge_pk,
             "phase_pk": self.challenge_phase_pk,
@@ -284,6 +286,7 @@ class ProcessSubmissionMessage(BaseTestClass):
 
         process_submission_message(message)
         self.assertEqual(process_submission_message(message), None)
+        mock_get_challenge_by_queue_name.assert_not_called()
 
     @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
     @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
