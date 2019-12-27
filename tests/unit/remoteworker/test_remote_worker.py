@@ -13,6 +13,7 @@ from scripts.workers.remote_submission_worker import (
     make_request,
     get_message_from_sqs_queue,
     delete_message_from_sqs_queue,
+    download_and_extract_file,
     get_submission_by_pk,
     get_challenge_phases_by_challenge_pk,
     get_challenge_by_queue_name,
