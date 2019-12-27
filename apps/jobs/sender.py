@@ -62,6 +62,7 @@ def publish_submission_message(message):
             - "challenge_pk": int
             - "phase_pk": int
             - "submission_pk": int
+            - "submitted_image_uri": string, Only for Docker Based Challenge submissions
 
     Returns:
         Returns SQS response
