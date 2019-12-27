@@ -29,7 +29,7 @@ In recent years, it has become increasingly difficult to compare an algorithm so
 - **Faster evaluation**: We warm-up the worker nodes at start-up by importing the challenge code and pre-loading the dataset in memory. We also split the dataset into small chunks that are simultaneously evaluated on multiple cores. These simple tricks result in faster evaluation and reduces the evaluation time by an order of magnitude in some cases.
 
 ## Platform Comparison
-|          Features          |          OpenML          |         TopCoder         |          Kaggle          |         AICrowd          |          ParlAI          |         Codalab          |       EvalAI       |
+|          Features          |          OpenML          |         TopCoder         |          Kaggle          |         AIcrowd          |          ParlAI          |         Codalab          |       EvalAI       |
 | :------------------------: | :----------------------: | :----------------------: | :----------------------: | :----------------------: | :----------------------: | :----------------------: | :----------------: |
 |    AI challenge hosting    | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    |    :white_check_mark:    | :heavy_multiplication_x: |    :white_check_mark:    | :white_check_mark: |
 |       Custom metrics       | :heavy_multiplication_x: | :heavy_multiplication_x: | :heavy_multiplication_x: |    :white_check_mark:    |    :white_check_mark:    |    :white_check_mark:    | :white_check_mark: |
