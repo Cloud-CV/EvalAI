@@ -230,7 +230,7 @@ class ProcessSubmissionMessageTest(BaseTestClass):
             "submission_pk": self.submission_pk,
         }
         self.submission = {"id": self.submission_pk, "input_file": self.input_file}
-        self.challenge = {"id": self.challenge_id, "remote_evaluation": self.remote_evaluation}
+        self.challenge = {"id": self.challenge_pk, "remote_evaluation": self.remote_evaluation}
         self.challenge_phase = {"id": self.challenge_phase_pk}
 
         self.patcher = mock.patch.multiple(
@@ -249,7 +249,7 @@ class ProcessSubmissionMessageTest(BaseTestClass):
     @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
     def test_process_submission_message_success(self, mock_extract_submission_data, mock_get_challenge_by_queue_name,
                                                 mock_get_challenge_phase_by_pk, mock_run_submission):
-        mock_extract_submission_data.return_value =  self.submission
+        mock_extract_submission_data.return_value = self.submission
         mock_get_challenge_by_queue_name.return_value = self.challenge
         mock_get_challenge_phase_by_pk.return_value = self.challenge_phase
 
@@ -295,7 +295,7 @@ class ProcessSubmissionMessageTest(BaseTestClass):
                                                                             mock_get_challenge_phase_by_pk,
                                                                             mock_run_submission):
         mock_extract_submission_data.return_value = self.submission
-        mock_get_challenge_by_queue_name.return_value =  self.challenge
+        mock_get_challenge_by_queue_name.return_value = self.challenge
         mock_get_challenge_phase_by_pk.return_value = None
 
         with self.assertRaises(Exception):
