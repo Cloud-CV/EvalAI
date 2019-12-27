@@ -66,7 +66,7 @@ def create(team):
             while not (
                 validators.url(team_url) or validators.domain(team_url)
             ):
-                echo("Sorry, please enter a valid link.")
+                echo(style("Sorry, please enter a valid link.", bold=True, fg="red"))
                 team_url = click.prompt("Team URL", type=str)
 
         is_host = team == "host"

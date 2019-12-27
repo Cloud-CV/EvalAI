@@ -42,5 +42,6 @@ def set_token(auth_token):
                     LEN_OF_TOKEN
                 ),
                 bold=True,
+                fg="red"
             )
         )

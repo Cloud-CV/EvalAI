@@ -93,6 +93,7 @@ def make_request(path, method, files=None, data=None):
                     response.get("id")
                 ),
                 bold=True,
+                fg="white"
             )
         )
         return response

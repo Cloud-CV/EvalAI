@@ -90,7 +90,7 @@ def display_teams(is_host):
     if len(teams) != 0:
         pretty_print_team_data(teams, is_host)
     else:
-        echo("Sorry, no teams found.")
+        echo(style("Sorry, no teams found.", bold=True, fg="red"))
 
 
 def create_team(team_name, team_url, is_host):

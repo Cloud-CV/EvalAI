@@ -79,6 +79,7 @@ def make_submission(challenge_id, phase_id, file, submission_metadata={}):
                 response["id"]
             ),
             bold=True,
+            fg="white"
         )
     )
 
@@ -103,6 +104,7 @@ def pretty_print_my_submissions_data(submissions, start_date, end_date):
             style(
                 "\nSorry, you have not made any submissions to this challenge phase.\n",
                 bold=True,
+                fg="red"
             )
         )
         sys.exit(1)
@@ -132,6 +134,7 @@ def pretty_print_my_submissions_data(submissions, start_date, end_date):
             style(
                 "\nSorry, no submissions were made during this time period.\n",
                 bold=True,
+                fg="red"
             )
         )
         sys.exit(1)
@@ -273,7 +276,7 @@ def display_submission_result(submission_id):
             style(
                 "\nThe Submission is yet to be evaluated.\n",
                 bold=True,
-                fg="yellow",
+                fg="red",
             )
         )
 
@@ -281,7 +284,6 @@ def display_submission_result(submission_id):
 def convert_bytes_to(byte, to, bsize=1024):
     """
     Convert bytes to KB, MB, GB etc.
-
     Arguments:
         bytes {int} -- The bytes which is to be converted
         to {str} -- To which unit it is to be converted
