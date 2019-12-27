@@ -31,6 +31,7 @@ class BaseTestClass(TestCase):
         self.challenge_phase_pk = 1
         self.data = {"test": "data"}
         self.headers = {"Authorization": "Token test_token"}
+        self.testserver = "http://testserver"
 
     def make_request_url(self):
         return "/test/url"
