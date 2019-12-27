@@ -18,6 +18,7 @@ from scripts.workers.remote_submission_worker import (
     get_challenge_phases_by_challenge_pk,
     get_challenge_by_queue_name,
     get_challenge_phase_by_pk,
+    process_submission_message,
     update_submission_data,
     update_submission_status,
     return_url_per_environment,
@@ -212,3 +213,98 @@ class DownloadAndExtractFileTest(BaseTestClass):
 
         mock_logger.assert_called_with(expected)
         self.assertFalse(os.path.exists(self.download_location))
+
+
+class ProcessSubmissionMessageTest(BaseTestClass):
+    def setUp(self):
+        super(ProcessSubmissionMessageTest, self).setUp()
+        self.queue_name = "evalai_submission_queue"
+        self.submission_data_dir = "tmp/test-dir/submission_{}".format(self.submission_pk)
+        self.input_file = "user_annotation_file.txt"
+        self.remote_evaluation = "Test Remote Evaluation"
+
+        # Creating sample outputs with minimal data for mocked functions
+        self.message = {
+            "challenge_pk": self.challenge_pk,
+            "phase_pk": self.challenge_phase_pk,
+            "submission_pk": self.submission_pk,
+        }
+        self.submission = {"id": self.submission_pk, "input_file": self.input_file}
+        self.challenge = {"id": self.challenge_id, "remote_evaluation": self.remote_evaluation}
+        self.challenge_phase = {"id": self.challenge_phase_pk}
+
+        self.patcher = mock.patch.multiple(
+            "scripts.workers.remote_submission_worker",
+            QUEUE_NAME=self.queue_name, SUBMISSION_DATA_DIR=self.submission_data_dir,
+        )
+
+        self.patcher.start()
+
+    def tearDown(self):
+        self.patcher.stop()
+
+    @mock.patch("scripts.workers.remote_submission_worker.run_submission")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phase_by_pk")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
+    @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
+    def test_process_submission_message_success(self, mock_extract_submission_data, mock_get_challenge_by_queue_name,
+                                                mock_get_challenge_phase_by_pk, mock_run_submission):
+        mock_extract_submission_data.return_value =  self.submission
+        mock_get_challenge_by_queue_name.return_value = self.challenge
+        mock_get_challenge_phase_by_pk.return_value = self.challenge_phase
+
+        user_annotation_file_path = join(self.submission_data_dir, self.input_file)
+
+        process_submission_message(self.message)
+
+        mock_extract_submission_data.assert_called_with(self.submission_pk)
+        mock_get_challenge_by_queue_name.assert_called()
+        mock_get_challenge_phase_by_pk.assert_called_with(self.challenge_pk, self.challenge_phase_pk)
+        mock_run_submission.assert_called_with(
+            self.challenge_pk,
+            self.challenge_phase,
+            self.submission,
+            user_annotation_file_path,
+            self.remote_evaluation,
+        )
+
+    @mock.patch("scripts.workers.remote_submission_worker.run_submission")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phase_by_pk")
+    @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
+    def test_process_submission_message_when_submission_does_not_exist(self,
+                                                                       mock_extract_submission_data,
+                                                                       mock_get_challenge_phase_by_pk,
+                                                                       mock_run_submission):
+        mock_extract_submission_data.return_value = None
+
+        process_submission_message(self.message)
+
+        mock_extract_submission_data.assert_called_with(self.submission_pk)
+        mock_get_challenge_phase_by_pk.assert_not_called()  # Avoid false positives when challenge phase does not exist
+        mock_run_submission.assert_not_called()
+
+    @mock.patch("scripts.workers.remote_submission_worker.run_submission")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_phase_by_pk")
+    @mock.patch("scripts.workers.remote_submission_worker.get_challenge_by_queue_name")
+    @mock.patch("scripts.workers.remote_submission_worker.extract_submission_data")
+    @mock.patch("scripts.workers.remote_submission_worker.logger.exception")
+    def test_process_submission_message_when_challenge_phase_does_not_exist(self,
+                                                                            mock_logger,
+                                                                            mock_extract_submission_data,
+                                                                            mock_get_challenge_by_queue_name,
+                                                                            mock_get_challenge_phase_by_pk,
+                                                                            mock_run_submission):
+        mock_extract_submission_data.return_value = self.submission
+        mock_get_challenge_by_queue_name.return_value =  self.challenge
+        mock_get_challenge_phase_by_pk.return_value = None
+
+        with self.assertRaises(Exception):
+            process_submission_message(self.message)
+
+        mock_extract_submission_data.assert_called_with(self.submission_pk)
+        mock_get_challenge_by_queue_name.assert_called()
+        mock_get_challenge_phase_by_pk.assert_called_with(self.challenge_pk, self.challenge_phase_pk)
+        mock_logger.assert_called_with(
+            "Challenge Phase {} does not exist for queue {}".format(self.challenge_phase_pk, self.queue_name)
+        )
+        mock_run_submission.assert_not_called()
