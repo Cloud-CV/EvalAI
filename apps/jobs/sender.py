@@ -58,7 +58,10 @@ def get_or_create_sqs_queue(queue_name):
 def publish_submission_message(message):
     """
     Args:
-        message
+        message: A Dict with following keys
+            - "challenge_pk": int
+            - "phase_pk": int
+            - "submission_pk": int
 
     Returns:
         Returns SQS response
