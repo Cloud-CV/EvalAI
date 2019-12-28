@@ -1,4 +1,5 @@
 import logging
+import requests
 
 from django.contrib import admin, messages
 

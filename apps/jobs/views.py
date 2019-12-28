@@ -277,8 +277,8 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             },
         )
         message = {
-                "challenge_pk": challenge_id,
-                "phase_pk": challenge_phase_id
+            "challenge_pk": challenge_id,
+            "phase_pk": challenge_phase_id
         }
         if challenge.is_docker_based:
             try:
