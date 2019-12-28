@@ -171,6 +171,10 @@ class BaseAPITestClass(APITestCase):
             "dummy_input.txt", b"file_content", content_type="text/plain"
         )
 
+        self.rl_submission_file = SimpleUploadedFile(
+            "submission.json", b'{"submitted_image_uri": "evalai-repo.com"}',
+        )
+
     def tearDown(self):
         shutil.rmtree("/tmp/evalai")
 
@@ -500,7 +504,7 @@ class BaseAPITestClass(APITestCase):
 
         response = self.client.post(
             self.url,
-            {"status": "submitting", "input_file": self.input_file},
+            {"status": "submitting", "input_file": self.rl_submission_file},
             format="multipart",
         )
 
