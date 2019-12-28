@@ -297,7 +297,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
             serializer.save()
             response_data = serializer.data
             submission = serializer.instance
-            message["submission_pk"]: submission.id
+            message["submission_pk"] = submission.id
             # publish message in the queue
             publish_submission_message(message)
             return Response(response_data, status=status.HTTP_201_CREATED)
