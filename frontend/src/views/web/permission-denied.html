@@ -8,7 +8,8 @@
                 <div class="card-stacked">
                     <div class="card-content">
                         <p><strong>Unable to create or select a team.</strong>
-                            <br> {{perm.emailError}}</p>
+                        	<br>Please verify your email!
+				<br><a class="btn btn-primary" href="{% url "resend_confirmation_email"%}">Resend Confirmation Email</a>
                     </div>
                 </div>
             </div>
