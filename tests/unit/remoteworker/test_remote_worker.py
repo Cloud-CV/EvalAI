@@ -229,8 +229,14 @@ class ProcessSubmissionMessageTest(BaseTestClass):
             "phase_pk": self.challenge_phase_pk,
             "submission_pk": self.submission_pk,
         }
-        self.submission = {"id": self.submission_pk, "input_file": self.input_file}
-        self.challenge = {"id": self.challenge_pk, "remote_evaluation": self.remote_evaluation}
+        self.submission = {
+            "id": self.submission_pk,
+            "input_file": self.input_file,
+        }
+        self.challenge = {
+            "id": self.challenge_pk,
+            "remote_evaluation": self.remote_evaluation,
+        }
         self.challenge_phase = {"id": self.challenge_phase_pk}
 
         self.patcher = mock.patch.multiple(
