@@ -1,7 +1,9 @@
 # Apps : 77.89%
+
 <details>
-    <summary>View Files</summary> 
+    <summary>View Files</summary>
     <br>
+    
 ## base
 
 ### Utils.py 
@@ -652,8 +654,6 @@ def delete_workers(queryset):
 
 </br>
 </details>
-</br>
-</details>
 
 ## jobs
 
@@ -828,6 +828,9 @@ def get_file_from_url(url):
 </details>
 </br>
 </details>
+</br>
+</details>
+
 
 # evalai : 72.22%
 <details>
