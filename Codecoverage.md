@@ -1,14 +1,15 @@
 # Apps : 77.89%
-
+<details>
+    <summary>View Files</summary> 
+    <br>
 ## base
 
 ### Utils.py 
 
 <details>
-    <summary>View Code</summary>
+    <summary>View Code</summary> 
     <br>
-    
-    
+     <br> Email sending </br> 
 ```
 def encode_data(data):
     """
@@ -66,6 +67,8 @@ def get_url_from_hostname(hostname):
     url = "{}://{}".format(scheme, hostname)
     return url
 ```
+ <br> Submission queue for Evalai </br> 
+
 ```
 return client
     except Exception as e:
@@ -99,6 +102,8 @@ def get_sqs_queue_object():
         queue = sqs.create_queue(QueueName=queue_name)
     return queue
 ```
+ <br> Exception while sending slack notification </br> 
+
 ```
 return requests.post(
             webhook,
@@ -125,7 +130,7 @@ def mock_if_non_prod_aws(aws_mocker):
 <details>
     <summary>View Code</summary>
     <br>
-    
+  <br> database seeder </br>    
 ```
 class Command(BaseCommand):
     help = "Seeds the database with random but sensible values."
@@ -165,7 +170,7 @@ class BaseConfig(AppConfig):
 <details>
     <summary>View Code</summary>
     <br>
-    
+     <br> Errors in various functions of select workers</br> 
 ```
  def start_selected_workers(self, request, queryset):
         response = start_workers(queryset)
@@ -301,7 +306,7 @@ class ChallengesConfig(AppConfig):
 <details>
     <summary>View Code</summary>
     <br>
-
+ <br> It is not tested at all </br> 
 ```
 def client_token_generator():
     """
@@ -645,15 +650,18 @@ def delete_workers(queryset):
 
 </br>
 </details>
-
+</br>
+</details>
 ## jobs
-
+<details>
+    <summary>View Files</summary>
+    <br>
 ### sender.py
 
 <details>
     <summary>View Code</summary>
     <br>
-    
+ <br> Challenge ID prompt error message </br>     
 ```
 except Challenge.DoesNotExist:
         logger.exception(
@@ -670,7 +678,7 @@ except Challenge.DoesNotExist:
 <details>
     <summary>View Code</summary>
     <br>
-
+ <br> Submission from url </br> 
 ```
 @app.task
 def download_file_and_publish_submission_message(
@@ -742,7 +750,7 @@ def download_file_and_publish_submission_message(
 <details>
     <summary>View Code</summary>
     <br>
-    
+    <br> Check for submission limit</br>  
 ```
  if submissions_done_count >= max_submissions_count:
         response_data = {
@@ -772,6 +780,8 @@ def download_file_and_publish_submission_message(
             }
         return response_data, status.HTTP_200_OK
 ```
+<br>Checks that a given URL is reachable</br>
+
 ```
 def is_url_valid(url):
     """
@@ -805,12 +815,15 @@ def get_file_from_url(url):
 
 </br>
 </details>
-
+</br>
+</details>
 
 # evalai : 72.22%
-
+<details>
+    <summary>View Files</summary>
+    <br>
 ### celery.py
-
+Full testing required
 ### urls.py
 
 <details>
@@ -833,16 +846,21 @@ if settings.DEBUG:
 
 </br>
 </details>
-
+</br>
+</details>
 
 # frontend/src/js/controllers : 78.77%
+
+<details>
+    <summary>View Files</summary>
+    <br>
 
 ### analyticsCtrl.js
 
 <details>
     <summary>View Code</summary>
     <br>
-
+<br> On success response for submission </br>
 ```
 onSuccess: function(response) {
                                         var status = response.status;
@@ -859,8 +877,6 @@ onSuccess: function(response) {
                                         }
                                     },
 
-```
-```
 onSuccess: function(response) {
                                         var status = response.status;
                                         var details = response.data;
@@ -875,6 +891,8 @@ onSuccess: function(response) {
                                         }
                                     },
 ```
+<br>Getting participants of a specific challenge ID</br>
+
 ```
   vm.downloadChallengeParticipantTeams = function() {
             parameters.url = "analytics/challenges/" + vm.challengeId + "/download_all_participants/";
@@ -905,7 +923,7 @@ onSuccess: function(response) {
 <details>
     <summary>View Code</summary>
     <br>
-    
+  <br>Check for various entries in sign up form</br>  
 ```
  if (response.status == 201) {
                             vm.isFormError = false;
@@ -944,6 +962,7 @@ onSuccess: function(response) {
                         vm.stopLoader();
                     }
 ```
+<br>Password stregth check and alerts for error in signup form </br>
 
 ```
 parameters.callback = {
@@ -989,6 +1008,7 @@ parameters.callback = {
         };
 
 ```
+<br>Reset password function</br>
 
 ```
  password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
@@ -1011,7 +1031,7 @@ parameters.callback = {
 <details>
     <summary>View Code</summary>
     <br>
-
+<br>Not tested at all</br>
 
 ```
  var elementId = $location.absUrl().split('?')[0].split('#')[1];
@@ -1532,7 +1552,7 @@ parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/chal
     <summary>View Code</summary>
     <br>
 
-
+<br>Pagination for host teams</br>
 ```
  var details = response.data;
                                 vm.existTeam = details;
@@ -1555,7 +1575,7 @@ parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/chal
                             vm.stopLoader();
                         }
 ```
-
+<br>Remove host team</br>
 ```
  vm.startLoader();
                 var parameters = {};
@@ -1612,7 +1632,7 @@ parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/chal
             }, function() {});
         };
 ```
-
+<br>Inviting host team</br>
 ```
  var parameters = {};
                 parameters.url = 'hosts/challenge_host_teams/' + hostTeamId + '/invite';
@@ -1644,7 +1664,7 @@ parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/chal
 <details>
     <summary>View Code</summary>
     <br>
-
+<br>Submission time picker</br>
 
 ```
 var dateTimeNow = moment(new Date());
@@ -1719,7 +1739,7 @@ var dateTimeNow = moment(new Date());
     <summary>View Code</summary>
     <br>
 
-
+<br>Pagination for team list</br>
 ```
  var details = response.data;
                                 vm.existTeam = details;
@@ -1744,6 +1764,7 @@ var dateTimeNow = moment(new Date());
                     };
 
 ```
+<br>Remove participation from a challenge</br>
 ```
 $mdDialog.show(confirm).then(function() {
                 vm.startLoader();
@@ -1828,10 +1849,15 @@ var parameters = {};
 
 </br>
 </details>
-
+</br>
+</details>
 
 
 #  scripts/workers : 42.96%
+
+Many parts of the code have not been tested yet drastically reducing coverage
+<details>
+    <summary>View files</summary>
 
 ### remote_submission_worker.py
 
@@ -1839,7 +1865,6 @@ var parameters = {};
 <details>
     <summary>View Code</summary>
     <br>
-
 
 ```
  try:
@@ -2668,8 +2693,10 @@ if __name__ == "__main__":
 
 </br>
 </details>
-
+</br>
+</details>
 
 # manage.py : 0%
+None of the code is tested yet
 
 
