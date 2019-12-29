@@ -10,6 +10,7 @@
     <summary>View Code</summary> 
     <br>
       Email sending  
+    
 ```
 def encode_data(data):
     """
