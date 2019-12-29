@@ -866,7 +866,7 @@ if settings.DEBUG:
 </br>
 </details>
 
-# frontend/src/js/controllers : 78.77%
+# Controllers : 78.77%
 
 <details>
     <summary>View Files</summary>
@@ -1894,7 +1894,7 @@ var parameters = {};
 </details>
 
 
-#  scripts/workers : 42.96%
+#  Workers : 42.96%
 
 Many parts of the code have not been tested yet drastically reducing coverage
 <details>
