@@ -9,7 +9,7 @@
 <details>
     <summary>View Code</summary> 
     <br>
-     <br> Email sending </br> 
+      Email sending  
 ```
 def encode_data(data):
     """
@@ -67,7 +67,7 @@ def get_url_from_hostname(hostname):
     url = "{}://{}".format(scheme, hostname)
     return url
 ```
- <br> Submission queue for Evalai </br> 
+  Submission queue for Evalai  
 
 ```
 return client
@@ -102,7 +102,7 @@ def get_sqs_queue_object():
         queue = sqs.create_queue(QueueName=queue_name)
     return queue
 ```
- <br> Exception while sending slack notification </br> 
+  Exception while sending slack notification  
 
 ```
 return requests.post(
@@ -130,7 +130,7 @@ def mock_if_non_prod_aws(aws_mocker):
 <details>
     <summary>View Code</summary>
     <br>
-  <br> database seeder </br>    
+   database seeder     
 ```
 class Command(BaseCommand):
     help = "Seeds the database with random but sensible values."
@@ -170,7 +170,7 @@ class BaseConfig(AppConfig):
 <details>
     <summary>View Code</summary>
     <br>
-     <br> Errors in various functions of select workers</br> 
+    Errors in various functions of select workers 
 ```
  def start_selected_workers(self, request, queryset):
         response = start_workers(queryset)
@@ -283,8 +283,8 @@ class BaseConfig(AppConfig):
                 )
                 messages.error(request, display_message)
 ```
-
 </br>
+
 </details>
 
 ### apps.py
@@ -306,7 +306,8 @@ class ChallengesConfig(AppConfig):
 <details>
     <summary>View Code</summary>
     <br>
- <br> It is not tested at all </br> 
+  It is not tested at all  
+    
 ```
 def client_token_generator():
     """
@@ -652,16 +653,20 @@ def delete_workers(queryset):
 </details>
 </br>
 </details>
+
 ## jobs
+
 <details>
     <summary>View Files</summary>
     <br>
+    
 ### sender.py
 
 <details>
     <summary>View Code</summary>
     <br>
- <br> Challenge ID prompt error message </br>     
+  Challenge ID prompt error message
+    
 ```
 except Challenge.DoesNotExist:
         logger.exception(
@@ -678,7 +683,9 @@ except Challenge.DoesNotExist:
 <details>
     <summary>View Code</summary>
     <br>
- <br> Submission from url </br> 
+ 
+ Submission from url 
+    
 ```
 @app.task
 def download_file_and_publish_submission_message(
@@ -750,7 +757,9 @@ def download_file_and_publish_submission_message(
 <details>
     <summary>View Code</summary>
     <br>
-    <br> Check for submission limit</br>  
+    
+ Check for submission limit
+    
 ```
  if submissions_done_count >= max_submissions_count:
         response_data = {
@@ -780,7 +789,9 @@ def download_file_and_publish_submission_message(
             }
         return response_data, status.HTTP_200_OK
 ```
-<br>Checks that a given URL is reachable</br>
+
+Checks that a given URL is reachable
+
 
 ```
 def is_url_valid(url):
@@ -812,7 +823,6 @@ def get_file_from_url(url):
     file_obj['temp_dir_path'] = BASE_TEMP_DIR
     return file_obj
 ```
-
 </br>
 </details>
 </br>
@@ -860,7 +870,9 @@ if settings.DEBUG:
 <details>
     <summary>View Code</summary>
     <br>
-<br> On success response for submission </br>
+
+On success response for submission 
+    
 ```
 onSuccess: function(response) {
                                         var status = response.status;
@@ -891,7 +903,9 @@ onSuccess: function(response) {
                                         }
                                     },
 ```
-<br>Getting participants of a specific challenge ID</br>
+
+Getting participants of a specific challenge ID
+
 
 ```
   vm.downloadChallengeParticipantTeams = function() {
@@ -923,7 +937,9 @@ onSuccess: function(response) {
 <details>
     <summary>View Code</summary>
     <br>
-  <br>Check for various entries in sign up form</br>  
+  
+  Check for various entries in sign up form
+  
 ```
  if (response.status == 201) {
                             vm.isFormError = false;
@@ -962,7 +978,9 @@ onSuccess: function(response) {
                         vm.stopLoader();
                     }
 ```
-<br>Password stregth check and alerts for error in signup form </br>
+
+Password stregth check and alerts for error in signup form
+
 
 ```
 parameters.callback = {
@@ -1008,7 +1026,9 @@ parameters.callback = {
         };
 
 ```
-<br>Reset password function</br>
+
+Reset password function
+
 
 ```
  password1_valid = typeof(response.data.new_password1) !== 'undefined' ? true : false;
@@ -1031,7 +1051,9 @@ parameters.callback = {
 <details>
     <summary>View Code</summary>
     <br>
-<br>Not tested at all</br>
+
+Not tested at all
+    
 
 ```
  var elementId = $location.absUrl().split('?')[0].split('#')[1];
@@ -1552,7 +1574,9 @@ parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/chal
     <summary>View Code</summary>
     <br>
 
-<br>Pagination for host teams</br>
+
+Pagination for host teams
+
 ```
  var details = response.data;
                                 vm.existTeam = details;
@@ -1575,7 +1599,9 @@ parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/chal
                             vm.stopLoader();
                         }
 ```
-<br>Remove host team</br>
+
+Remove host team
+
 ```
  vm.startLoader();
                 var parameters = {};
@@ -1632,7 +1658,9 @@ parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/chal
             }, function() {});
         };
 ```
-<br>Inviting host team</br>
+
+Inviting host team
+
 ```
  var parameters = {};
                 parameters.url = 'hosts/challenge_host_teams/' + hostTeamId + '/invite';
@@ -1664,7 +1692,9 @@ parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/chal
 <details>
     <summary>View Code</summary>
     <br>
-<br>Submission time picker</br>
+
+Submission time picker
+    
 
 ```
 var dateTimeNow = moment(new Date());
@@ -1739,7 +1769,9 @@ var dateTimeNow = moment(new Date());
     <summary>View Code</summary>
     <br>
 
-<br>Pagination for team list</br>
+
+Pagination for team list
+
 ```
  var details = response.data;
                                 vm.existTeam = details;
@@ -1764,7 +1796,9 @@ var dateTimeNow = moment(new Date());
                     };
 
 ```
-<br>Remove participation from a challenge</br>
+
+Remove participation from a challenge
+
 ```
 $mdDialog.show(confirm).then(function() {
                 vm.startLoader();
