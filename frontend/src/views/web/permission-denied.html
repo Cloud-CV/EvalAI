@@ -9,7 +9,13 @@
                     <div class="card-content">
                         <p><strong>Unable to create or select a team.</strong>
                         	<br>Please verify your email!
-				<br><a class="btn btn-primary" href="{% url "resend_confirmation_email"%}">Resend Confirmation Email</a>
+				<br>
+			<div ng-if="perm.sendMail">
+				<p>The verification email has been sent again.
+			    </div>
+			<div ng-if="!perm.sendMail">
+				<a class="btn btn-primary" href="{% url "perm.requestLink"%}">Resend Confirmation Email</a>
+			</div>
                     </div>
                 </div>
             </div>
