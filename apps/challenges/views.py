@@ -98,11 +98,8 @@ from .serializers import (
     ZipChallengePhaseSplitSerializer,
 )
 from .utils import (
-    create_federated_user,
-    convert_to_aws_ecr_compatible_format,
-    get_aws_credentials_for_challenge,
     get_file_content,
-    get_or_create_ecr_repository,
+    get_aws_credentials_for_submission,
 )
 
 logger = logging.getLogger(__name__)
@@ -1896,8 +1893,19 @@ def get_broker_url_by_challenge_pk(request, challenge_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_aws_credentials_for_participant_team(request, phase_pk):
     """
-    Returns:
-        Dictionary containing AWS credentials for the participant team for a particular challenge
+        Endpoint to generate AWS Credentails for CLI
+        Args:
+            - challenge: Challenge model
+            - participant_team: Participant Team Model
+        Returns:
+            - JSON: {
+                    "federated_user"
+                    "docker_repository_uri"
+                }
+        Raises:
+            - BadRequestException 400
+                - When participant_team has not participanted in challenge
+                - When Challenge is not Docker based
     """
     challenge_phase = get_challenge_phase_model(phase_pk)
     challenge = challenge_phase.challenge
@@ -1915,24 +1923,7 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
             "error": "You have not participated in this challenge."
         }
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-    aws_keys = get_aws_credentials_for_challenge(challenge.pk)
-    ecr_repository_name = "{}-participant-team-{}".format(
-        challenge.slug, participant_team.pk
-    )
-    ecr_repository_name = convert_to_aws_ecr_compatible_format(
-        ecr_repository_name
-    )
-    repository, created = get_or_create_ecr_repository(
-        ecr_repository_name, aws_keys
-    )
-    name = str(uuid.uuid4())[:32]
-    docker_repository_uri = repository["repositoryUri"]
-    federated_user = create_federated_user(name, ecr_repository_name, aws_keys)
-    data = {
-        "federated_user": federated_user,
-        "docker_repository_uri": docker_repository_uri,
-    }
+    data = get_aws_credentials_for_submission(challenge, participant_team)
     response_data = {"success": data}
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -2170,4 +2161,36 @@ def get_challenge_phase_by_slug(request, slug):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     serializer = ChallengePhaseSerializer(challenge_phase)
     response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_phase_environment_url(request, slug):
+    """
+    Returns environment image url and tag required for RL challenge evaluation
+    """
+    try:
+        challenge_phase = ChallengePhase.objects.get(slug=slug)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            "error": "Challenge phase with slug {} does not exist".format(slug)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge = get_challenge_model(challenge_phase.challenge.pk)
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access test environment URL."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if not challenge.is_docker_based:
+        response_data = {
+            "error": "The challenge doesn't require uploading Docker images, hence no test environment URL."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    response_data = {
+        "environment_url": challenge_phase.environment_url
+    }
     return Response(response_data, status=status.HTTP_200_OK)

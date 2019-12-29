@@ -1,12 +1,12 @@
 import logging
+import requests
 
-from django.contrib import admin
+from django.contrib import admin, messages
 
 from base.admin import ImportExportTimeStampedAdmin
 
 from .models import Submission
 from .sender import publish_submission_message
-
 
 logger = logging.getLogger(__name__)
 
@@ -69,9 +69,23 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
                     challenge_id, challenge_phase_id, submission_id
                 )
             )
-            publish_submission_message(
-                challenge_id, challenge_phase_id, submission.id
-            )
+            message = {
+                "challenge_pk": challenge_id,
+                "phase_pk": challenge_phase_id,
+                "submission_pk": submission.id
+            }
+
+            if submission.challenge_phase.challenge.is_docker_based:
+                try:
+                    response = requests.get(submission.input_file)
+                except Exception as e:
+                    messages.error(request, "Failed to get input_file with exception: {0}".format(e))
+                    return
+
+                if response and response.status_code == 200:
+                    message["submitted_image_uri"] = response.json()["submitted_image_uri"]
+
+            publish_submission_message(message)
             queryset.update(status=Submission.SUBMITTED)
 
     submit_job_to_worker.short_description = "Run selected submissions"
