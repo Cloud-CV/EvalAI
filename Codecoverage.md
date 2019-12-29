@@ -832,12 +832,15 @@ def get_file_from_url(url):
 </details>
 
 
-# evalai : 72.22%
+# Evalai : 72.22%
 <details>
     <summary>View Files</summary>
     <br>
+    
 ### celery.py
+
 Full testing required
+
 ### urls.py
 
 <details>
