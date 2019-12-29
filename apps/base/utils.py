@@ -91,7 +91,7 @@ def decode_data(data):
 
 def send_email(
     sender=settings.CLOUDCV_TEAM_EMAIL,
-    recepient=None,
+    recipient=None,
     template_id=None,
     template_data={},
 ):
@@ -99,7 +99,7 @@ def send_email(
 
     Keyword Arguments:
         sender {string} -- Email of sender (default: {settings.TEAM_EMAIL})
-        recepient {string} -- Recepient email address
+        recipient {string} -- Recipient email address
         template_id {string} -- Sendgrid template id
         template_data {dict} -- Dictionary to substitute values in subject and email body
     """
@@ -113,7 +113,7 @@ def send_email(
         mail.template_id = template_id
         to_list = Personalization()
         to_list.dynamic_template_data = template_data
-        to_email = Email(recepient)
+        to_email = Email(recipient)
         to_list.add_to(to_email)
         mail.add_personalization(to_list)
         sg.client.mail.send.post(request_body=mail.get())
