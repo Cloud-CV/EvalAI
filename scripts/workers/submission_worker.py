@@ -27,6 +27,9 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 from django.conf import settings
 
+from base.utils import send_email
+
+
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
@@ -529,6 +532,14 @@ def run_submission(
     submission.status = submission_status
     submission.completed_at = timezone.now()
     submission.save()
+
+    if submission.challenge_phase.challenge.is_docker_based:
+        sender_email = settings.CLOUDCV_TEAM_EMAIL
+        email = submission.created_by.email
+        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+            "TASK_DONE_NOTIFICATION"
+        )
+        send_email(sender_email, email, template_id)
 
     # after the execution is finished, set `status` to finished and hence `completed_at`
     if submission_output:

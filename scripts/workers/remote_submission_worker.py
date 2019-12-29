@@ -19,6 +19,10 @@ import zipfile
 
 from os.path import join
 
+from django.conf import settings
+
+from base.utils import send_email
+
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
@@ -576,6 +580,15 @@ def run_submission(
     else:
         status = "failed"
         submission_data["submission_status"] = status
+
+    if challenge_phase.get("challenge").get("is_docker_based"):
+        sender_email = settings.CLOUDCV_TEAM_EMAIL
+        email = submission.get("created_by").get("email")
+        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+            "TASK_DONE_NOTIFICATION"
+        )
+        send_email(sender_email, email, template_id)
+
     update_submission_data(submission_data, challenge_pk, submission_pk)
     shutil.rmtree(temp_run_dir)
     return
