@@ -606,6 +606,8 @@ def main():
                 if submission.get("status") == "finished":
                     message_receipt_handle = message.get("receipt_handle")
                     delete_message_from_sqs_queue(message_receipt_handle)
+                    if submission.challenge_phase.challenge.is_docker_based:
+                        pass
                 elif submission.get("status") == "running":
                     continue
                 else:
@@ -616,6 +618,8 @@ def main():
                     process_submission_callback(message_body)
                     # Let the queue know that the message is processed
                     delete_message_from_sqs_queue(message_receipt_handle)
+                    if submission.challenge_phase.challenge.is_docker_based:
+                        pass
         time.sleep(5)
         if killer.kill_now:
             break
