@@ -30,7 +30,7 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     paginated_queryset,
     StandardResultSetPagination,
-    get_sqs_queue_object,
+    get_or_create_sqs_queue_object,
     get_boto3_client,
 )
 from challenges.models import (
@@ -1145,7 +1145,7 @@ def get_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_sqs_queue_object(queue_name)
+    queue = get_or_create_sqs_queue_object(queue_name)
     try:
         messages = queue.receive_messages()
         if len(messages):
@@ -1201,7 +1201,7 @@ def delete_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_sqs_queue_object(queue_name)
+    queue = get_or_create_sqs_queue_object(queue_name)
     try:
         message = queue.Message(receipt_handle)
         message.delete()
