@@ -26,6 +26,6 @@
             
             utilities.sendRequest(parameters);
             
+        };
     }
-
 })();
