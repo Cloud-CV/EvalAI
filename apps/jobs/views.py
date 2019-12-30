@@ -30,7 +30,7 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     paginated_queryset,
     StandardResultSetPagination,
-    get_sqs_queue_object,
+    get_or_create_sqs_queue_object,
     get_boto3_client,
 )
 from challenges.models import (
@@ -279,17 +279,19 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
         )
         message = {
             "challenge_pk": challenge_id,
-            "phase_pk": challenge_phase_id
+            "phase_pk": challenge_phase_id,
         }
         if challenge.is_docker_based:
             try:
-                file_content = json.loads(
-                    request.FILES['input_file'].read()
-                )
-                message["submitted_image_uri"] = file_content["submitted_image_uri"]
-            except:
+                file_content = json.loads(request.FILES["input_file"].read())
+                message["submitted_image_uri"] = file_content[
+                    "submitted_image_uri"
+                ]
+            except Exception as ex:
                 response_data = {
-                    "error": "Error in deserializing submitted_image_uri from submission file"
+                    "error": "Error {} in submitted_image_uri from submission file".format(
+                        ex
+                    )
                 }
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
@@ -1047,7 +1049,7 @@ def re_run_submission(request, submission_pk):
     message = {
         "challenge_pk": challenge.pk,
         "phase_pk": challenge_phase.pk,
-        "submission_pk": submission.pk
+        "submission_pk": submission.pk,
     }
 
     if submission.challenge_phase.challenge.is_docker_based:
@@ -1055,12 +1057,18 @@ def re_run_submission(request, submission_pk):
             response = requests.get(submission.input_file)
         except Exception as e:
             response_data = {
-                "error": "Failed to get submission input file with error: {0}".format(e)
+                "error": "Failed to get submission input file with error: {0}".format(
+                    e
+                )
             }
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         if response and response.status_code == 200:
-            message["submitted_image_uri"] = response.json()["submitted_image_uri"]
+            message["submitted_image_uri"] = response.json()[
+                "submitted_image_uri"
+            ]
 
     publish_submission_message(message)
     response_data = {
@@ -1137,7 +1145,7 @@ def get_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_sqs_queue_object()
+    queue = get_or_create_sqs_queue_object(queue_name)
     try:
         messages = queue.receive_messages()
         if len(messages):
@@ -1193,7 +1201,7 @@ def delete_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_sqs_queue_object(queue_name)
+    queue = get_or_create_sqs_queue_object(queue_name)
     try:
         message = queue.Message(receipt_handle)
         message.delete()
