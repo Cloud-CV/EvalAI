@@ -65,7 +65,9 @@ def send_email(
         )
     return
 ```
+
 Get Url from Host.
+
 ```
 def get_url_from_hostname(hostname):
     if settings.DEBUG or settings.TEST:
@@ -75,7 +77,9 @@ def get_url_from_hostname(hostname):
     url = "{}://{}".format(scheme, hostname)
     return url
 ```
+
 Check if the queue exists. If no, then create one
+
 ```
 return client
     except Exception as e:
@@ -109,7 +113,9 @@ def get_sqs_queue_object():
         queue = sqs.create_queue(QueueName=queue_name)
     return queue
 ```
+
 Exception to be raised while sending slack notification  
+
 
 ```
 return requests.post(
@@ -137,7 +143,8 @@ def mock_if_non_prod_aws(aws_mocker):
 <details>
     <summary>View Code</summary>
     <br>
-   database seeder     
+   database seeder    
+    
 ```
 class Command(BaseCommand):
     help = "Seeds the database with random but sensible values."
@@ -161,7 +168,9 @@ class Command(BaseCommand):
 <details>
     <summary>View Code</summary>
     <br>
+    
  No test written, therefore 0% coverage   
+    
 ```
 class BaseConfig(AppConfig):
     name = "base"
@@ -177,6 +186,7 @@ class BaseConfig(AppConfig):
 <details>
     <summary>View Code</summary>
     <br>
+    
     Errors in various functions of select workers 
     
 ```
@@ -291,6 +301,7 @@ class BaseConfig(AppConfig):
                 )
                 messages.error(request, display_message)
 ```
+
 </br>
 
 </details>
@@ -301,9 +312,11 @@ class BaseConfig(AppConfig):
     <summary>View Code</summary>
     <br>
 No testing code available at all    
+    
 ```
 class ChallengesConfig(AppConfig):
     name = "challenges"
+    
 ```
 
 </br>
@@ -851,6 +864,7 @@ Full testing required
 <details>
     <summary>View Code</summary>
     <br>
+    
  URLs pattern test for debug mode
     
 ```
@@ -1068,6 +1082,7 @@ Reset password function
 Not tested at all
     
 Checking for unique rank number from the url & if exists hightlight the entry. It is a part of function ChallengeCtrl.
+
 ```
  var elementId = $location.absUrl().split('?')[0].split('#')[1];
                 if (elementId) {
@@ -1077,7 +1092,9 @@ Checking for unique rank number from the url & if exists hightlight the entry. I
                 }
                
 ```
+
 It scroll to the specific entry of the leaderboard.
+
 ```
 var newHash = elementId.toString();
             if ($location.hash() !== newHash) {
@@ -1117,7 +1134,9 @@ var error = response.data;
                                         utilities.hideLoader();
                                     }
 ```
+
 The function check for many thing like partication state ,challenge host list and wheather challenge registrations are open or not.
+
 ```
  var participationState;
             if (isRegistrationOpen) {
@@ -1159,7 +1178,9 @@ The function check for many thing like partication state ,challenge host list an
         };
 
 ```
+
 It is a part of function named isSubmissionUsingUrl and is checking for submission url format which include checking for extension also.
+
 ```
  var urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
                         var validExtensions = ["json", "zip", "csv"];
@@ -1172,7 +1193,9 @@ It is a part of function named isSubmissionUsingUrl and is checking for submissi
                             vm.subErrors.msg = "Please enter a valid URL which ends in json, zip or csv file extension!";
                             return false;
 ```
+
 The function is responsible to Get the leaderboard view.
+
 ```
  parameters.url = "jobs/" + "challenge_phase_split/" + vm.phaseSplitId + "/leaderboard/?page_size=1000";
                 parameters.method = 'GET';
@@ -1195,7 +1218,9 @@ The function is responsible to Get the leaderboard view.
             }, 5000);
         };
 ```
+
 It is the part of the function which is responsible to show leaderboard.
+
 ```
  vm.leaderboard[i]['submission__submitted_at_formatted'] = vm.leaderboard[i]['submission__submitted_at'];
                         vm.initial_ranking[vm.leaderboard[i].id] = i+1;
@@ -1256,7 +1281,9 @@ It is the part of the function which is responsible to show leaderboard.
                                 vm.leaderboard[i].timeSpan = 'seconds';
                             }
 ```
+
 The function is responsible to Get the leaderboard view.
+
 ```
 parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.phaseId + "/submission/?page=" + Math.ceil(vm.currentPage);
                     parameters.method = 'GET';
@@ -1291,7 +1318,9 @@ parameters.url = "jobs/challenge/" + vm.challengeId + "/challenge_phase/" + vm.p
                 }, 5000);
             };
 ```
+
 Reinitialize data and Set condition for pagination.
+
 ```
  var details = response.data;
                                 vm.submissionResult = details;
@@ -1314,7 +1343,9 @@ Reinitialize data and Set condition for pagination.
                             vm.stopLoader();
                         }
 ```
+
 A function to attemp submission again.
+
 ```
  submissionObject.classList = ['spin', 'progress-indicator'];
             parameters.url = 'jobs/submissions/' + submissionObject.id + '/re-run/';
@@ -1392,7 +1423,9 @@ A function to tongle or change leaderboard by latest category
                             vm.stopLoader();
                         }
 ```
+
 Tell wheather the submission is public or private or other.
+
 ```
  var status = response.status;
                     var message = "";
@@ -1408,7 +1441,9 @@ Tell wheather the submission is public or private or other.
                     }
                 },
 ```
+
 To Download the Submission.
+
 ```
  if (vm.phaseId) {
                 parameters.url = "challenges/" + vm.challengeId + "/phase/" + vm.phaseId + "/download_all_submissions/" + vm.fileSelected + "/";
@@ -1562,7 +1597,9 @@ parameters.url = "challenges/challenge_host_team/" + vm.page.creator.id + "/chal
             vm.stopLeaderboard();
         });
 ```
+
 Terms and condition status
+
 ```
  if (acceptTermsAndConditionsForm) {
                 if (vm.termsAndConditions) {
@@ -1871,6 +1908,7 @@ $mdDialog.show(confirm).then(function() {
             });
         };
 ```
+
 Display success or error message.
 
 ```
@@ -1915,7 +1953,9 @@ Many parts of the code have not been tested yet drastically reducing coverage
     <summary>View Code</summary>
     <br>
     
-Function to extract download a zip file, extract it and then removes the zip file.download_location` should include name of file as well.
+Function to extract download a zip file, extract it and then removes the zip file.download_location
+should include name of file as well.
+
 
 ```
  try:
@@ -1941,7 +1981,9 @@ Function to extract download a zip file, extract it and then removes the zip fil
             )
             traceback.print_exc()
 ```
+
 Creates python package for a challenge and extracts relevant data.
+
 ```
  create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
     try:
@@ -1955,6 +1997,7 @@ Creates python package for a challenge and extracts relevant data.
     phases = get_challenge_phases_by_challenge_pk(challenge_pk)
     extract_challenge_data(challenge, phases)
 ```
+
 Expects a challenge object and an array of phase object. Extracts evaluation_script for challenge and annotation_file for each phase
 
 ```
@@ -2016,7 +2059,9 @@ def process_submission_callback(body):
             )
         )
 ```
+
 Extracts the submission related metadata from the message and send the submission object for evaluation
+
 
 ```
 def process_submission_message(message):
@@ -2080,7 +2125,9 @@ def extract_submission_data(submission_pk):
     )
     return submission
 ```
+
 Different worker error message functions have not been tested yet
+
 ```
 except requests.exceptions.RequestException:
             logger.exception(
@@ -2142,7 +2189,9 @@ except requests.exceptions.RequestException:
             )
             raise
 ```
+
 Checking and sending the submission
+
 ```
 def read_file_content(file_path):
     with open(file_path, "r") as obj:
@@ -2303,6 +2352,7 @@ if __name__ == "__main__":
     <br>
 
  Expects a challenge object and an array of phase object. Extracts evaluation_script for challenge and annotation_file for each phase
+
 ```
 evaluation_script_url = return_file_url_per_environment(
         evaluation_script_url
