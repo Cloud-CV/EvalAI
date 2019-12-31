@@ -170,7 +170,7 @@ class WorkerUtilTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "PATCH", data=data)
         self.assertEqual(response, self.success_response)
 
-    @mock.patch("__main__.interface.make_request"):
+    @mock.patch("__main__.interface.make_request")
     def test_delete_message_from_sqs_queue(self, mock_make_request):
         test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
         data = {"receipt_handle": test_receipt_handle}
