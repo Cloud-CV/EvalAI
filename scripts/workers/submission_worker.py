@@ -635,7 +635,7 @@ def get_or_create_sqs_queue(queue_name):
     Returns:
         Returns the SQS Queue object
     """
-    sqs = get_sqs_service_resource(queue_name)
+    sqs = get_sqs_service_resource()
 
     if queue_name == "":
         queue_name = "evalai_submission_queue"
