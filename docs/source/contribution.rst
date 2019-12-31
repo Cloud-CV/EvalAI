@@ -2,9 +2,30 @@
 
 Thank you for your interest in contributing to EvalAI! Here are a few pointers about how you can help.
 
-### Setting things up
+## Installation instructions
 
-To set up the development environment, follow the instructions in README.
+Setting up EvalAI on your local machine is really easy. You can setup EvalAI using docker:
+The steps are:
+
+1. Install [docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/install/) on your machine.
+
+2. Get the source code on to your machine via git.
+
+    ```shell
+    git clone https://github.com/Cloud-CV/EvalAI.git evalai && cd evalai
+    ```
+
+3. Build and run the Docker containers. This might take a while.
+
+    ```
+    docker-compose up --build
+    ```
+
+4. That's it. Open web browser and hit the URL [http://127.0.0.1:8888](http://127.0.0.1:8888). Three users will be created by default which are listed below -
+
+    **SUPERUSER-** username: `admin` password: `password`  
+    **HOST USER-** username: `host` password: `password`  
+    **PARTICIPANT USER-** username: `participant` password: `password`
 
 ### Finding something to work on
 
