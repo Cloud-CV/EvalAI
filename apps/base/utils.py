@@ -176,7 +176,10 @@ def get_sqs_service_resource(queue_name=""):
 
 def get_sqs_queue_object():
     sqs = get_sqs_service_resource()
-    queue_name = "evalai_submission_queue"
+
+    # Use default queue name in dev and test environment
+    if settings.DEBUG or settings.TEST:
+        queue_name = "evalai_submission_queue"
 
     # Check if the queue exists. If no, then create one
     try:
