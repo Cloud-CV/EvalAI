@@ -617,7 +617,10 @@ def get_or_create_sqs_queue(queue_name):
     Returns:
         Returns the SQS Queue object
     """
-    queue_name = get_sqs_service_resource(queue_name)
+    sqs = get_sqs_service_resource(queue_name)
+
+    if queue_name == "":
+        queue_name = "evalai_submission_queue"
     # Check if the queue exists. If no, then create one
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)

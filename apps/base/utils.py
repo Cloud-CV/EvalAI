@@ -172,10 +172,7 @@ def get_sqs_service_resource(queue_name=""):
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
 
-    if queue_name == "":
-        queue_name = "evalai_submission_queue"
-
-    return queue_name
+    return sqs
 
 
 def get_sqs_queue_object():
