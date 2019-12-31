@@ -9,10 +9,11 @@ from unittest import TestCase
 from scripts.workers.worker_util import EvalAI_Interface
 
 
-auth_token = "".join(random.choice(string.ascii_lowercase) for _  in range(40))
+auth_token = "".join(random.choice(string.ascii_lowercase) for _ in range(40))
 evalai_api_server = "https://evalapi.cloudcv.org"
 queue_name = "evalai_submission_queue"
 interface = EvalAI_Interface(auth_token, evalai_api_server, queue_name)
+
 
 class BaseTestClass(TestCase):
     def setUp(self):
@@ -75,7 +76,7 @@ class WorkerUtilTestClass(BaseTestClass):
     @responses.activate
     @mock.patch("scripts.workers.worker_util.logger.info")
     def test_make_request_http_error(self, mock_logger):
-        url = "{0}{1}".format(evalai_api_server,  self.make_request_url())
+        url = "{0}{1}".format(evalai_api_server, self.make_request_url())
         responses.add(responses.GET, url,
                       json={"error": "404 Not Found"},
                       status=404)
@@ -106,17 +107,6 @@ class WorkerUtilTestClass(BaseTestClass):
 
         mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
-
-    @mock.patch(interface.make_request)
-    def test_delete_message_from_sqs_queue(self, mock_make_request):
-        url = "{}{}".format(evalai_api_server, self.delete_message_from_sqs_queue_url(queue_name))
-        test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
-        data = {"receipt_handle": test_receipt_handle}
-        mock_make_request.return_value =
-
-        response = interface.delete_message_from_sqs_queue(test_receipt_handle)
-
-        mock_make_request.assert_called_with(url, "GET", data)
 
     @mock.patch(interface.make_request)
     def test_get_submission_by_pk(self, mock_make_request):
