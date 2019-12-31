@@ -10,6 +10,8 @@ from django.conf import settings
 
 from challenges.models import Challenge
 
+from base.utils import get_sqs_service_resource
+
 logger = logging.getLogger(__name__)
 
 
@@ -20,26 +22,7 @@ def get_or_create_sqs_queue(queue_name):
     Returns:
         Returns the SQS Queue object
     """
-    if settings.DEBUG or settings.TEST:
-        sqs = boto3.resource(
-            "sqs",
-            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
-        )
-        # Use default queue name in dev and test environment
-        queue_name = "evalai_submission_queue"
-    else:
-        sqs = boto3.resource(
-            "sqs",
-            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-        )
-
-    if queue_name == "":
-        queue_name = "evalai_submission_queue"
+    queue_name = get_sqs_service_resource(queue_name)
 
     # Check if the queue exists. If not, then create one.
     try:

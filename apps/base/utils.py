@@ -153,10 +153,8 @@ def get_boto3_client(resource, aws_keys):
     except Exception as e:
         logger.exception(e)
 
-
-def get_sqs_queue_object():
+def get_sqs_service_resource(queue_name= ""):
     if settings.DEBUG or settings.TEST:
-        queue_name = "evalai_submission_queue"
         sqs = boto3.resource(
             "sqs",
             endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
@@ -164,6 +162,8 @@ def get_sqs_queue_object():
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
         )
+        # Use default queue name in dev and test environment
+        queue_name = "evalai_submission_queue"
     else:
         sqs = boto3.resource(
             "sqs",
@@ -171,6 +171,15 @@ def get_sqs_queue_object():
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
+
+    if queue_name == "":
+        queue_name = "evalai_submission_queue"
+
+    return queue_name
+
+
+def get_sqs_queue_object():
+    queue_name = get_sqs_service_resource()
     # Check if the queue exists. If no, then create one
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
