@@ -51,10 +51,10 @@ def publish_submission_message(message):
     """
 
     try:
-        challenge = Challenge.objects.get(pk=challenge_pk)
+        challenge = Challenge.objects.get(pk=message["challenge_pk"])
     except Challenge.DoesNotExist:
         logger.exception(
-            "Challenge does not exist for the given id {}".format(challenge_pk)
+            "Challenge does not exist for the given id {}".format(message["challenge_pk"])
         )
         return
     queue_name = challenge.queue
