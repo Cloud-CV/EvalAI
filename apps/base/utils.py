@@ -153,7 +153,7 @@ def get_boto3_client(resource, aws_keys):
     except Exception as e:
         logger.exception(e)
 
-def get_sqs_service_resource(queue_name= ""):
+def get_sqs_service_resource(queue_name=""):
     if settings.DEBUG or settings.TEST:
         sqs = boto3.resource(
             "sqs",
