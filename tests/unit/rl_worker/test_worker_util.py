@@ -53,8 +53,10 @@ class BaseTestClass(TestCase):
 class WorkerUtilTestClass(BaseTestClass):
     def setUp(self):
         super(WorkerUtilTestClass, self).setUp()
-        self.success_response = {"message": "success", "status_code": 200}
-        self.example_error = "ExampleError: Example description"
+        self.success_response = {"success": "success_message", "status_code": 200}
+        self.example_error_description = "Example description"
+
+        self.patcher = mock.patch(interface.make_request)
 
     def test_return_url_per_environment(self):
         returned_url = interface.return_url_per_environment(self.make_request_url())
@@ -91,15 +93,15 @@ class WorkerUtilTestClass(BaseTestClass):
     def test_make_request_connection_error(self, mock_logger):
         url = "{0}{1}".format(evalai_api_server, self.make_request_url())
         responses.add(responses.GET, url,
-                      body=Exception(self.example_error))
+                      body=requests.exceptions.RequestException(self.example_error_description))
 
         with self.assertRaises(requests.exceptions.RequestException):
             interface.make_request(url, "GET")
 
         mock_logger.assert_called_with("The worker is not able to establish connection with EvalAI")
 
-    @mock.patch("__main__.interface.make_request")
-    def test_get_message_from_sqs_queue(self, mock_make_request):
+    def test_get_message_from_sqs_queue(self):
+        mock_make_request = patcher.start()
         url = "{}{}".format(evalai_api_server, self.get_message_from_sqs_queue_url(queue_name))
         mock_make_request.return_value = self.success_response
 
@@ -108,8 +110,8 @@ class WorkerUtilTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
-    @mock.patch("__main__.interface.make_request")
-    def test_get_submission_by_pk(self, mock_make_request):
+    def test_get_submission_by_pk(self):
+        mock_make_request = patcher.start()
         url = "{}{}".format(evalai_api_server, self.get_submission_by_pk_url(self.submission_pk))
         mock_make_request.return_value = self.success_response
 
@@ -118,8 +120,8 @@ class WorkerUtilTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
-    @mock.patch("__main__.interface.make_request")
-    def test_get_challenge_phases_by_challenge_pk(self, mock_make_request):
+    def test_get_challenge_phases_by_challenge_pk(self):
+        mock_make_request = patcher.start()
         url = "{}{}".format(evalai_api_server, self.get_challenge_phases_by_challenge_pk_url(self.challenge_pk))
         mock_make_request.return_value = self.success_response
 
@@ -128,8 +130,8 @@ class WorkerUtilTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
-    @mock.patch("__main__.interface.make_request")
-    def test_get_challenge_by_queue_name(self, mock_make_request):
+    def test_get_challenge_by_queue_name(self):
+        mock_make_request = patcher.start()
         url = "{}{}".format(evalai_api_server, self.get_challenge_by_queue_name_url(queue_name))
         mock_make_request.return_value = self.success_response
 
@@ -138,8 +140,8 @@ class WorkerUtilTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
-    @mock.patch("__main__.interface.make_request")
-    def test_get_challenge_phase_by_pk(self, mock_make_request):
+    def test_get_challenge_phase_by_pk(self):
+        mock_make_request = patcher.start()
         url = "{}{}".format(evalai_api_server, self.get_challenge_phase_by_pk_url(self.challenge_phase_pk))
         mock_make_request.return_value = self.success_response
 
@@ -148,8 +150,8 @@ class WorkerUtilTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
-    @mock.patch("__main__.interface.make_request")
-    def test_update_submission_data(self, mock_make_request):
+    def test_update_submission_data(self):
+        mock_make_request = patcher.start()
         url = "{}{}".format(evalai_api_server, self.update_submission_data_url(self.challenge_pk))
         data = {"submission_pk": self.submission_pk, "test_field": "new_value"}
         mock_make_request.return_value = self.success_response
@@ -159,8 +161,8 @@ class WorkerUtilTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "PUT", data=data)
         self.assertEqual(response, self.success_response)
 
-    @mock.patch("__main__.interface.make_request")
-    def test_update_submission_status(self, mock_make_request):
+    def test_update_submission_status(self):
+        mock_make_request = patcher.start()
         url = "{}{}".format(evalai_api_server, self.update_submission_status_url(self.challenge_pk))
         data = {"test_field": "new_value"}
         mock_make_request.return_value = self.success_response
@@ -170,14 +172,14 @@ class WorkerUtilTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "PATCH", data=data)
         self.assertEqual(response, self.success_response)
 
-    @mock.patch("__main__.interface.make_request")
-    def test_delete_message_from_sqs_queue(self, mock_make_request):
+    def test_delete_message_from_sqs_queue(self):
+        mock_make_request = patcher.start()
         test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
         data = {"receipt_handle": test_receipt_handle}
         url = "{}{}".format(evalai_api_server, self.delete_message_from_sqs_queue_url(queue_name))
-        mock_make_request.return_value = 200
+        mock_make_request.return_value = self.success_response
 
         response = interface.delete_message_from_sqs_queue()
 
-        mock_make_request.assert_called_with(url, "POST", data=data, return_status_code=True)
-        self.assertEqual(response, 200)
+        mock_make_request.assert_called_with(url, "POST", data=data)
+        self.assertTrue("success" in response.keys())

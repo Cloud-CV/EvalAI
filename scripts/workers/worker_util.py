@@ -25,15 +25,12 @@ class EvalAI_Interface:
         headers = {"Authorization": "Token {}".format(self.AUTH_TOKEN)}
         return headers
 
-    def make_request(self, url, method, data=None, return_status_code=False):
+    def make_request(self, url, method, data=None):
         headers = self.get_request_headers()
         try:
             response = requests.request(
                 method=method, url=url, headers=headers, data=data
             )
-            if return_status_code:
-                return response.status_code
-
             response.raise_for_status()
         except requests.exceptions.RequestException:
             logger.info(
@@ -57,7 +54,7 @@ class EvalAI_Interface:
         url = URLS.get("delete_message_from_sqs_queue").format(self.QUEUE_NAME)
         url = self.return_url_per_environment(url)
         data = {"receipt_handle": receipt_handle}
-        response_status_code = self.make_request(url, "POST", data, return_status_code=True)  # noqa
+        response_status_code = self.make_request(url, "POST", data)  # noqa
         return response_status_code
 
     def get_submission_by_pk(self, submission_pk):
