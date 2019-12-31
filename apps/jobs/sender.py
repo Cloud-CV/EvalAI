@@ -1,12 +1,8 @@
 from __future__ import absolute_import
 
-import boto3
 import botocore
 import json
 import logging
-import os
-
-from django.conf import settings
 
 from challenges.models import Challenge
 
@@ -26,7 +22,7 @@ def get_or_create_sqs_queue(queue_name):
 
     if queue_name == "":
         queue_name = "evalai_submission_queue"
-        
+
     # Check if the queue exists. If not, then create one.
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
@@ -41,24 +37,27 @@ def get_or_create_sqs_queue(queue_name):
     return queue
 
 
-def publish_submission_message(message):
+def publish_submission_message(challenge_pk, phase_pk, submission_pk):
     """
     Args:
-        message: A Dict with following keys
-            - "challenge_pk": int
-            - "phase_pk": int
-            - "submission_pk": int
-            - "submitted_image_uri": str, (only available when the challenge is a code upload challenge)
+        challenge_pk: Challenge Id
+        phase_pk: Challenge Phase Id
+        submission_pk: Submission Id
 
     Returns:
         Returns SQS response
     """
+    message = {
+        "challenge_pk": challenge_pk,
+        "phase_pk": phase_pk,
+        "submission_pk": submission_pk,
+    }
 
     try:
-        challenge = Challenge.objects.get(pk=message["challenge_pk"])
+        challenge = Challenge.objects.get(pk=challenge_pk)
     except Challenge.DoesNotExist:
         logger.exception(
-            "Challenge does not exist for the given id {}".format(message["challenge_pk"])
+            "Challenge does not exist for the given id {}".format(challenge_pk)
         )
         return
     queue_name = challenge.queue
