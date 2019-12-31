@@ -7,6 +7,30 @@
 ## base
 
 ### Utils.py 
+<details>
+    <summary>View missing test cases</summary> 
+    1)def encode_data(data) : <br>
+    Turn `data` into a hash and an encoded string, suitable for use with `decode_data`.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L72
+    <br>
+    2)def decode_data(data)<br>
+    The inverse of `encode_data`.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L82
+    <br>
+    3)send_email :<br>
+    Function to send email<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L92
+    <br>
+    4)get_url_from_hostname(hostname) <br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L127
+    <br>
+    5)get_or_create_sqs_queue_object<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L157
+    <br>
+    6)send_slack_notification<br>
+    Exception raised while sending slack notification<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L222
+</details>    
 
 <details>
     <summary>View Code</summary> 
@@ -140,6 +164,8 @@ def mock_if_non_prod_aws(aws_mocker):
 
 ### management/commands/seed.py
 
+This file does'nt has any test cases.
+
 <details>
     <summary>View Code</summary>
     <br>
@@ -165,6 +191,8 @@ class Command(BaseCommand):
 
 ### apps.py
 
+This file does'nt has any test cases.
+
 <details>
     <summary>View Code</summary>
     <br>
@@ -182,6 +210,28 @@ class BaseConfig(AppConfig):
 ## challenges
 
 ### admin
+
+<details>
+    <summary>View missing test cases</summary>
+    <br>
+    1)start_selected_workers :<br>
+    message to display successful or unsuccessful start of selected workers<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L73<br>
+    2)stop_selected_workers : <br>
+    message to display successful or unsuccessful stop of selected workers<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L96<br>
+    3)scale_selected_workers :<br>
+    message to display successful or unsuccessful scale of selected workers<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L119<br>
+    4)restart_selected_workers :<br>
+    message to display successful or unsuccessful restart of selected workers<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L152<br>
+    5)delete_selected_workers :<br>
+    message to display successful or unsuccessful delete of selected workers<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L177 <br>
+    
+</details>    
+    
 
 <details>
     <summary>View Code</summary>
@@ -308,10 +358,11 @@ class BaseConfig(AppConfig):
 
 ### apps.py
 
+This file does'nt has any test cases.
+
 <details>
     <summary>View Code</summary>
-    <br>
-No testing code available at all    
+    <br>   
     
 ```
 class ChallengesConfig(AppConfig):
@@ -323,6 +374,10 @@ class ChallengesConfig(AppConfig):
 </details>
 
 ### aws_utils.py
+
+The coverage is extremely low and therefore the whole file must be considered for testing.
+
+</details>   
 
 <details>
     <summary>View Code</summary>
@@ -680,6 +735,13 @@ def delete_workers(queryset):
     <br>
     
 ### sender.py
+<details>
+    <summary>View missing test cases</summary>
+    <br>
+    1)publish_submission_message<br>
+    Display error message<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/jobs/sender.py#L73<br>
+</details>
 
 <details>
     <summary>View Code</summary>
@@ -698,6 +760,8 @@ except Challenge.DoesNotExist:
 </details>
 
 ### tasks.py
+
+A look at the file is required since the coverage is extremely low and none of it is tested
 
 <details>
     <summary>View Code</summary>
@@ -772,6 +836,21 @@ def download_file_and_publish_submission_message(
 </details>
 
 ### utils.py
+
+<details>
+    <summary>View missing test cases</summary>
+    <br>
+    1)get_remaining_submission_for_a_phase<br>
+    response messages are not tested. Monthly submission limit check for time and date is not tested.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/jobs/utils.py#L74<br>
+    2)is_url_valid:<br>
+     Checks that a given URL is reachable<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/jobs/utils.py#L140<br>
+    3)get_file_from_url<br>
+    Get file object from a url
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/jobs/utils.py#L155<br>
+    
+</details>
 
 <details>
     <summary>View Code</summary>
@@ -857,10 +936,21 @@ def get_file_from_url(url):
     
 ### celery.py
 
-Full testing required
+<details>
+    <summary>View missing test cases</summary>
+    <br>
+celery_dev does not have test code<br>
+developer settings to be used do not have test code<br>
+https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
+</details>
 
 ### urls.py
-
+<details>
+    <summary>View missing test cases</summary>
+    <br>
+ URLs pattern test for debug mode<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/urls.py#L99
+</details>
 <details>
     <summary>View Code</summary>
     <br>
@@ -893,6 +983,21 @@ if settings.DEBUG:
     <br>
 
 ### analyticsCtrl.js
+
+<details>
+    <summary>View missing test cases</summary>
+    <br>
+    1) onSuccess: function(response)<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L144<br>
+    2) navigate to permissions denied page<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L161    <br>
+    3) & 4) Similar at https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L184 & https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L200<br>
+    5)vm.downloadChallengeParticipantTeams = function()<br>
+    Response OnSuccess and OnError response ; Getting participants of a specific challenge ID<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L236<br>
+</details>
+
+<details>
 
 <details>
     <summary>View Code</summary>
@@ -960,6 +1065,25 @@ Getting participants of a specific challenge ID
 </details>
 
 ### authCtrl.js
+
+<details>
+    <summary>View missing test cases</summary>
+    <br>
+    1) toggle password visibility<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L58<br>
+    2) toggle confirm password visibility<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L64<br>
+    3)parameters.callback<br>
+    Check for different fields in webpage if valid or not. eg email, password etc. and show message "vm.regMsg = "Registered   <br>     
+    successfully, Login to continue!";" via vm.regmsg <br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L101<br>
+    5)parameters.callback<br>
+    Process user info and change the state accorddingly and message generation<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L163<br>
+    6)Check password strength<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L200<br>
+    7) New password function<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L282<br>
 
 <details>
     <summary>View Code</summary>
@@ -1074,12 +1198,71 @@ Reset password function
 
 ### challengeCtrl.js
 
+<details>
+    <summary>View missing test cases</summary>
+    <br>
+    1) timeout function for " get unique rank number from the url & if exists hightlight the entry".
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L76
+    2)scroll to the specific entry of the leaderboard
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L87
+    3)Error message while pagination when no teams are left
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L222
+    4)vm.existTeam = details;
+    reinitialized data
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L304
+    5) if (vm.existTeam.next === null)
+    condition for pagination
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L308
+    6) ev.stopPropagation(); partivipate in a competition promt and follow messages.
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L365
+    7) vm.startLoader("Making Submission")
+    Checks if url for submission is valid and submission
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L424
+    8)set the result display to true or false depending on the fact if it is private or public
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L512
+    9)vm.stopLeaderboard()
+    display my submissions call function.
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L605
+    10)vm.leaderboard = {};
+    Show leaderboard with respect to latest time stamp it has eg: hours, days etc.
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L671
+    11)vm.poller = $interval(function()
+    long polling (5s) for leaderboard
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L755
+    12) $http.get(url, { headers: headers }).then(function(response)
+    reinitialized data
+    condition for pagination
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L901
+    13)vm.reRunSubmission = function(submissionObject)
+    response message for submission 
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1006
+    14) vm.toggleShowLeaderboardByLatest = function()
+    sort leaderboard by latest to oldest
+    response message
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1048
+    15)vm.load = function(url)
+    A good description already present at the code
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1202
+    16)vm.downloadChallengeSubmissions = function()
+    Download submission; check for validity of phase id; 
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1407
+    17)Multiple occurance of
+    
+    ```
+     if (challenge == vm.challengeId) {
+                        vm.challengeHostId = challengeHostList[challenge];
+                        break;
+    ```
+    
+    18) multiple occurances after 
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1981
+    
+<details>
 
 <details>
     <summary>View Code</summary>
     <br>
 
-Not tested at all
     
 Checking for unique rank number from the url & if exists hightlight the entry. It is a part of function ChallengeCtrl.
 
