@@ -2,17 +2,17 @@
     <nav>
         <div class="nav-wrapper">
             <a href="#" data-activates="mobile-demo" class="button-collapse main-header-link"><i class="fa fa-bars"></i></a>
-            <ul class="hide-on-med-and-down">
-                <li><a class="waves-effect waves-dark main-header-link evalai-logo" ui-sref="home" ui-sref-active="active"><img src="dist/images/evalai-logo-single.png"></a></li>
-                <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.challenge-main">All Challenges</a></li>
-                <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai.readthedocs.io/en/latest/" target="_blank">Docs</a></li>
-                <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank">Forum</a></li>
+            <ul >
+                <li class="hide-on-small-only"><a class="waves-effect waves-dark main-header-link evalai-logo" ui-sref="home" ui-sref-active="active"><img src="dist/images/evalai-logo-single.png"></a></li>
+                <li ng-if="!isAuth" class="hideonsmall"><a class="waves-effect waves-dark main-header-link" ui-sref="web.challenge-main">All Challenges</a></li>
+                <li ng-if="!isAuth" class="hideonsmall"><a class="waves-effect waves-dark main-header-link" href="https://evalai.readthedocs.io/en/latest/" target="_blank">Docs</a></li>
+                <li ng-if="!isAuth" class="hideonsmall"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank">Forum</a></li>
                 <!-- show after authenticate user -->
                 <li ng-if="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
                 <li ng-if="isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai.readthedocs.io/en/latest/" target="_blank">Docs</a></li>
                 <li ng-if="isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank">Forum</a></li>
             </ul>
-            <ul class="right hide-on-med-and-down">
+            <ul class="right ">
                 <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active">Sign Up</a></li>
                 <li ng-if="!isAuth"><a class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" ui-sref="auth.login" ui-sref-active="active">Log In</a></li>
                 <!-- show after authenticate user -->
@@ -34,6 +34,8 @@
                 </li>
                 <li><a class="waves-effect waves-dark" ui-sref="home" ui-sref-active="active"><i class="fa fa-home"></i>Home</a></li>
                 <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.challenge-main"><i class="fa fa-fire"></i>All Challenges</a></li>
+                <li class="showonsmall"><a class="waves-effect waves-dark main-header-link" href="https://evalai.readthedocs.io/en/latest/" target="_blank"><i class="fa fa-file"></i>Docs</a></li>
+                <li class="showonsmall"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank"><i class="fa fa-comments"></i>Forum</a></li>
                 <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.signup" ui-sref-active="active"><i class="fa fa-sign-out"></i>Sign Up</a></li>
                 <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="auth.login" ui-sref-active="active"><i class="fa fa-sign-in"></i>Log In</a></li>
                 <!-- show after authenticate user -->

@@ -31,3 +31,14 @@ a.dashboard-evailai-logo {
         vertical-align: middle;
     }
 }
+.showonsmall {
+    display: none;
+}
+@media(max-width:665px){
+    .hideonsmall {
+        display: none;
+    }
+    .showonsmall {
+        display: block;
+    }
+}
