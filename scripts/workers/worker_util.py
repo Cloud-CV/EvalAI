@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 URLS = {
     "get_message_from_sqs_queue": "/api/jobs/challenge/queues/{}/",
-    "delete_message_from_sqs_queue": "/api/jobs/queues/{}/receipt/{}/",
+    "delete_message_from_sqs_queue": "/api/jobs/queues/{}/",
     "get_submission_by_pk": "/api/jobs/submission/{}",
     "get_challenge_phases_by_challenge_pk": "/api/challenges/{}/phases/",
     "get_challenge_by_queue_name": "/api/challenges/challenge/queues/{}/",
@@ -51,11 +51,10 @@ class EvalAI_Interface:
         return response
 
     def delete_message_from_sqs_queue(self, receipt_handle):
-        url = URLS.get("delete_message_from_sqs_queue").format(
-            self.QUEUE_NAME, receipt_handle
-        )
+        url = URLS.get("delete_message_from_sqs_queue").format(self.QUEUE_NAME)
         url = self.return_url_per_environment(url)
-        response = self.make_request(url, "GET")  # noqa
+        data = {"receipt_handle": receipt_handle}
+        response = self.make_request(url, "POST", data)  # noqa
         return response.status_code
 
     def get_submission_by_pk(self, submission_pk):
