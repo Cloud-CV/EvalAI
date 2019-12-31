@@ -37,21 +37,18 @@ def get_or_create_sqs_queue(queue_name):
     return queue
 
 
-def publish_submission_message(challenge_pk, phase_pk, submission_pk):
+def publish_submission_message(message):
     """
     Args:
-        challenge_pk: Challenge Id
-        phase_pk: Challenge Phase Id
-        submission_pk: Submission Id
+        message: A Dict with following keys
+            - "challenge_pk": int
+            - "phase_pk": int
+            - "submission_pk": int
+            - "submitted_image_uri": str, (only available when the challenge is a code upload challenge)
 
     Returns:
         Returns SQS response
     """
-    message = {
-        "challenge_pk": challenge_pk,
-        "phase_pk": phase_pk,
-        "submission_pk": submission_pk,
-    }
 
     try:
         challenge = Challenge.objects.get(pk=challenge_pk)
