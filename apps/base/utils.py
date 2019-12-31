@@ -153,6 +153,7 @@ def get_boto3_client(resource, aws_keys):
     except Exception as e:
         logger.exception(e)
 
+
 def get_sqs_service_resource(queue_name=""):
     if settings.DEBUG or settings.TEST:
         sqs = boto3.resource(
@@ -177,9 +178,8 @@ def get_sqs_service_resource(queue_name=""):
 
 def get_sqs_queue_object():
     sqs = get_sqs_service_resource()
-    if settings.DEBUG or settings.TEST:
-        queue_name = "evalai_submission_queue"
-        
+    queue_name = "evalai_submission_queue"
+
     # Check if the queue exists. If no, then create one
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
