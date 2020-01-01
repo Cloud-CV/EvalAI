@@ -1201,63 +1201,75 @@ Reset password function
 <details>
     <summary>View missing test cases</summary>
     <br>
-    1) timeout function for " get unique rank number from the url & if exists hightlight the entry".
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L76
-    2)scroll to the specific entry of the leaderboard
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L87
-    3)Error message while pagination when no teams are left
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L222
-    4)vm.existTeam = details;
-    reinitialized data
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L304
-    5) if (vm.existTeam.next === null)
-    condition for pagination
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L308
-    6) ev.stopPropagation(); partivipate in a competition promt and follow messages.
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L365
-    7) vm.startLoader("Making Submission")
-    Checks if url for submission is valid and submission
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L424
-    8)set the result display to true or false depending on the fact if it is private or public
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L512
-    9)vm.stopLeaderboard()
-    display my submissions call function.
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L605
-    10)vm.leaderboard = {};
-    Show leaderboard with respect to latest time stamp it has eg: hours, days etc.
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L671
-    11)vm.poller = $interval(function()
-    long polling (5s) for leaderboard
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L755
-    12) $http.get(url, { headers: headers }).then(function(response)
-    reinitialized data
-    condition for pagination
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L901
-    13)vm.reRunSubmission = function(submissionObject)
-    response message for submission 
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1006
-    14) vm.toggleShowLeaderboardByLatest = function()
-    sort leaderboard by latest to oldest
-    response message
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1048
-    15)vm.load = function(url)
-    A good description already present at the code
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1202
-    16)vm.downloadChallengeSubmissions = function()
-    Download submission; check for validity of phase id; 
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1407
-    17)Multiple occurance of
+    1) timeout function for " get unique rank number from the url & if exists hightlight the entry".<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L76<br>
+    2)scroll to the specific entry of the leaderboard<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L87<br>
+    3)Error message while pagination when no teams are left<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L222<br>
+    4)vm.existTeam = details;<br>
+    reinitialized data<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L304<br>
+    5) if (vm.existTeam.next === null)<br>
+    condition for pagination<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L308<br>
+    6) ev.stopPropagation(); partivipate in a competition promt and follow messages.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L365<br>
+    7) vm.startLoader("Making Submission")<br>
+    Checks if url for submission is valid and submission<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L424<br>
+    8)set the result display to true or false depending on the fact if it is private or public<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L512<br>
+    9)vm.stopLeaderboard()<br>
+    display my submissions call function.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L605<br>
+    10)vm.leaderboard = {};<br>
+    Show leaderboard with respect to latest time stamp it has eg: hours, days etc.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L671<br>
+    11)vm.poller = $interval(function()<br>
+    long polling (5s) for leaderboard<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L755<br>
+    12) $http.get(url, { headers: headers }).then(function(response)<br>
+    reinitialized data<br>
+    condition for pagination<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L901<br>
+    13)vm.reRunSubmission = function(submissionObject)<br>
+    response message for submission <br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1006<br>
+    14) vm.toggleShowLeaderboardByLatest = function()<br>
+    sort leaderboard by latest to oldest<br>
+    response message<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1048<br>
+    15)vm.load = function(url)<br>
+    A good description already present at the code<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1202<br>
+    16)vm.downloadChallengeSubmissions = function()<br>
+    Download submission; check for validity of phase id; <br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1407<br>
+    17)Multiple occurance of<br>
     
-    ```
-     if (challenge == vm.challengeId) {
-                        vm.challengeHostId = challengeHostList[challenge];
-                        break;
-    ```
+        ```
+             if (challenge == vm.challengeId) {
+                                vm.challengeHostId = challengeHostList[challenge];
+                                break;
+       ```
+   <br>
+   18)Confirm the state of the challenge, and then a message confirming it<br>
+   https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1980<br>
+   19)Edit Challenge Start and End Date<br>
+   https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L2011<br>
+   20) vm.challengeDateDialog = function(ev)<br>
+   Edit Challenge Start and End Date<br>
+   https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L2022<br>
+   21) vm.editChallengeDate<br>
+   The whole Function is missing test cases<br>
+   https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L2023<br>
+   22)vm.acceptTermsAndConditions<br>
+   Accepting terms and conditions and changing states accordingly.<br>
+   https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L2092<br>
+     
     
-    18) multiple occurances after 
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1981
-    
-<details>
+</details>
 
 <details>
     <summary>View Code</summary>
@@ -1804,6 +1816,25 @@ Terms and condition status
 ### challengeHostTeamsCtrl.js
 
 <details>
+    <summary>View missing test cases</summary>
+    <br>
+    1)Test for turning pagination off when no teams more teams exist.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeHostTeamsCtrl.js#L72<br>
+    2)Test for reinitializing data and checking condition for pagination when displaying teams.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeHostTeamsCtrl.js#L119<br>
+    3) $mdDialog.show(confirm).then(function()<br>
+    Display dialogue box for various purposes<br>
+        >Remove self from challenge<br>
+        >condition for pagination of teams<br>
+        >removing self from challenge<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeHostTeamsCtrl.js#L323<br>
+    4) $mdDialog.show(confirm).then(function(result)<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeHostTeamsCtrl.js#L400<br>
+    
+
+</details>
+
+<details>
     <summary>View Code</summary>
     <br>
 
@@ -1814,8 +1845,7 @@ Pagination for host teams
  var details = response.data;
                                 vm.existTeam = details;
                                 // condition for pagination
-                                if (vm.existTeam.next === null) {
-                                    vm.isNext = 'disabled';
+                                if (vm.existTeam.next === nu
                                     vm.currentPage = vm.existTeam.count / 100;
                                 } else {
                                     vm.isNext = '';
@@ -1923,6 +1953,15 @@ Inviting host team
 ### featuredChallengeCtrl.js
 
 <details>
+    <summary>View missing test cases</summary>
+    <br>
+    1)onSuccess: function(response)<br>
+    Test for arranging leaderboard according to timespan.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/featuredChallengeCtrl.js#L133<br>
+    
+</details>
+
+<details>
     <summary>View Code</summary>
     <br>
 
@@ -1997,6 +2036,12 @@ var dateTimeNow = moment(new Date());
 
 ### teamsCtrl.js
 
+<details>
+    <summary>View missing test cases</summary>
+    <br>
+    Exactly same like challengeHostTeamsCtrl.js
+    
+</details>
 
 <details>
     <summary>View Code</summary>
@@ -2125,12 +2170,13 @@ var parameters = {};
 
 #  Workers : 42.96%
 
-Many parts of the code have not been tested yet drastically reducing coverage
+
 <details>
     <summary>View files</summary>
 
 ### remote_submission_worker.py
 
+This file is extremely low on coverage and hence a thorough look is required at the file itself.
 
 <details>
     <summary>View Code</summary>
@@ -2529,8 +2575,38 @@ if __name__ == "__main__":
 
 ### submission_worker.py
 
-
 <details>
+    <summary>View missing test cases</summary>
+    <br>
+    1)def __init__(self)
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L83
+    2)def exit_gracefully(self, signum, frame)
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L87
+    3)def alarm_handler(signum, frame)
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L89
+    4) evaluation_script_url = challenge.evaluation_script.url
+    Missing test casses are as follows
+    >create challenge directory as package
+    >set entry in map
+    >create phase directory
+    >import the challenge after everything is finished
+    Please take a look at the code link as the code has a very good documentation for the function itself
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L229
+    5)def load_challenge(challenge)
+    test for Creating python package for a challenge and extracting relevant data
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L287
+    6)remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L380
+    7)Test for "Check if the dataset_split exists for the codename in the result"
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L488
+    8)def process_add_challenge_message(message)
+    getting challenge message if successful or not2
+    9)def main():
+    This whole function does not contain any test code
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L693
+    
+<details>
+    
     <summary>View Code</summary>
     <br>
 
@@ -2862,7 +2938,9 @@ class EvalAI_Interface:
 
 
 ### rl_submission_worker.py
-Not tested at all
+
+No testing code available at all
+
 <details>
     <summary>View Code</summary>
     <br>
@@ -2986,10 +3064,14 @@ if __name__ == "__main__":
 
 </br>
 </details>
+
+### worker_util.py
+No testing code available
+
 </br>
 </details>
 
 # manage.py : 0%
-None of the code is tested yet
+No testing code available
 
 
