@@ -11,7 +11,6 @@ from datetime import timedelta
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse_lazy
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -79,8 +78,7 @@ class BaseTestClass(APITestCase):
             published=True,
             approved_by_admin=True,
             enable_forum=True,
-            anonymous_leaderboard=False,
-            is_docker_based=True)
+            anonymous_leaderboard=False)
 
         try:
             os.makedirs("/tmp/evalai")
@@ -256,7 +254,6 @@ class ExtractChallengeDataTestClass(BaseTestClass):
 @mock.patch("scripts.workers.submission_worker.open")
 @mock.patch("scripts.workers.submission_worker.timezone")
 @mock.patch("scripts.workers.submission_worker.shutil")
-@mock.patch("scripts.workers.submission_worker.send_email")
 @mock.patch("scripts.workers.submission_worker.LeaderboardData.objects.bulk_create")
 @mock.patch("scripts.workers.submission_worker.create_dir")
 @mock.patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
@@ -287,14 +284,9 @@ class RunSubmissionTestClass(BaseTestClass):
             leaderboard=self.leaderboard,
             result={"metric1": self.metric},
         )
-        self.sender_email = settings.CLOUDCV_TEAM_EMAIL
-        self.email = "user@test.com"
-        self.template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
-            "TASK_DONE_NOTIFICATION"
-        )
 
     def test_run_submission_when_result_key_is_not_present_in_output(self, mock_map, mock_script_dict,
-                                                                     mock_createdir, mock_lb, mock_send_email,
+                                                                     mock_createdir, mock_lb,
                                                                      mock_shutil, mock_timezone,
                                                                      mock_open, mock_cf):
         challenge_pk = self.challenge.pk
@@ -335,8 +327,6 @@ class RunSubmissionTestClass(BaseTestClass):
 
         mock_lb.assert_not_called()
 
-        mock_send_email.assert_called_with(self.sender_email, self.email, self.template_id)
-
         self.assertEqual(self.submission.started_at, starting_time)
         self.assertEqual(self.submission.status, Submission.FAILED)
         self.assertEqual(self.submission.completed_at, ending_time)
@@ -344,7 +334,7 @@ class RunSubmissionTestClass(BaseTestClass):
         mock_shutil.rmtree.assert_called_with(temp_run_dir)
 
     def test_run_submission_when_challenge_phase_split_does_not_exist(self, mock_map, mock_script_dict,
-                                                                      mock_createdir, mock_lb, mock_send_email,
+                                                                      mock_createdir, mock_lb,
                                                                       mock_shutil, mock_timezone,
                                                                       mock_open, mock_cf):
         challenge_pk = self.challenge.pk
@@ -388,8 +378,6 @@ class RunSubmissionTestClass(BaseTestClass):
         )
 
         mock_lb.objects.bulk_create.assert_not_called()
-
-        mock_send_email.assert_called_with(self.sender_email, self.email, self.template_id)
 
         self.assertEqual(self.submission.started_at, starting_time)
         self.assertEqual(self.submission.status, Submission.FAILED)

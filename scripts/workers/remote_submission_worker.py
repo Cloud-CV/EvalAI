@@ -19,10 +19,6 @@ import zipfile
 
 from os.path import join
 
-from django.conf import settings
-
-from base.utils import send_email
-
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
@@ -580,15 +576,6 @@ def run_submission(
     else:
         status = "failed"
         submission_data["submission_status"] = status
-
-    if challenge_phase.get("challenge").get("is_docker_based"):
-        sender_email = settings.CLOUDCV_TEAM_EMAIL
-        user_email = submission.get("created_by").get("email")
-        template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
-            "TASK_DONE_NOTIFICATION"
-        )
-        send_email(sender_email, user_email, template_id)
-
     update_submission_data(submission_data, challenge_pk, submission_pk)
     shutil.rmtree(temp_run_dir)
     return
@@ -619,8 +606,6 @@ def main():
                 if submission.get("status") == "finished":
                     message_receipt_handle = message.get("receipt_handle")
                     delete_message_from_sqs_queue(message_receipt_handle)
-                    if submission.challenge_phase.challenge.is_docker_based:
-                        pass
                 elif submission.get("status") == "running":
                     continue
                 else:
@@ -631,8 +616,6 @@ def main():
                     process_submission_callback(message_body)
                     # Let the queue know that the message is processed
                     delete_message_from_sqs_queue(message_receipt_handle)
-                    if submission.challenge_phase.challenge.is_docker_based:
-                        pass
         time.sleep(5)
         if killer.kill_now:
             break

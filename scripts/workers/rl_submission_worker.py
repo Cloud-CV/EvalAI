@@ -117,8 +117,6 @@ def main():
                 if submission.get("status") == "finished":
                     message_receipt_handle = message.get("receipt_handle")
                     api.delete_message_from_sqs_queue(message_receipt_handle)
-                    if submission.challenge_phase.challenge.is_docker_based:
-                        pass
                 elif submission.get("status") == "running":
                     continue
                 else:
@@ -130,8 +128,6 @@ def main():
                     api.delete_message_from_sqs_queue(
                         message.get("receipt_handle")
                     )
-                    if submission.challenge_phase.challenge.is_docker_based:
-                        pass
         time.sleep(MESSAGE_FETCH_DEPLAY)
         if killer.kill_now:
             break
