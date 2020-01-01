@@ -1,9 +1,7 @@
 Code Coverage Analysis
 ======================
 
-*Every file has two section. A code snippet section which is directly taken from codecov codebase. There is also another 
-section which takes care of specific functions which dont have testing code. The description of functions and missing test cases
-are according to my understanding of the code and may not be 100% fool proof*
+*Every file has a section which takes care of specific functions which dont have testing code. The description of functions and missing test cases are according to my understanding of the code and may not be 100% fool proof*
 
 # Apps : 77.89%
 
