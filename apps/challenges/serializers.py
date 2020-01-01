@@ -113,6 +113,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "challenge_phase_name",
             "dataset_split_name",
             "visibility",
+            "show_leaderboard_by_latest_submission"
         )
 
     def get_dataset_split_name(self, obj):
