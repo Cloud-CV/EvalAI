@@ -984,11 +984,11 @@ def update_submission(request, challenge_pk):
 
         if submission.challenge_phase.challenge.is_docker_based:
             sender_email = settings.CLOUDCV_TEAM_EMAIL
-            email = submission.created_by.email
+            user_email = submission.created_by.email
             template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
                 "TASK_DONE_NOTIFICATION"
             )
-            send_email(sender_email, email, template_id)
+            send_email(sender_email, user_email, template_id)
 
         submission.status = submission_status
         submission.completed_at = timezone.now()
