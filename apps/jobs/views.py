@@ -12,6 +12,7 @@ from rest_framework.decorators import (
     throttle_classes,
 )
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import transaction, IntegrityError
 from django.db.models.expressions import RawSQL
@@ -29,6 +30,7 @@ from drf_yasg.utils import swagger_auto_schema
 from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     paginated_queryset,
+    send_email,
     StandardResultSetPagination,
     get_or_create_sqs_queue_object,
     get_boto3_client,
@@ -979,6 +981,14 @@ def update_submission(request, challenge_pk):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
+
+        if submission.challenge_phase.challenge.is_docker_based:
+            sender_email = settings.CLOUDCV_TEAM_EMAIL
+            email = submission.created_by.email
+            template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
+                "TASK_DONE_NOTIFICATION"
+            )
+            send_email(sender_email, email, template_id)
 
         submission.status = submission_status
         submission.completed_at = timezone.now()
