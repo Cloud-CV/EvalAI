@@ -7,8 +7,10 @@
 ## base
 
 ### Utils.py 
+
 <details>
     <summary>View missing test cases</summary> 
+    </br>
     1)def encode_data(data) : <br>
     Turn `data` into a hash and an encoded string, suitable for use with `decode_data`.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L72
@@ -30,6 +32,7 @@
     6)send_slack_notification<br>
     Exception raised while sending slack notification<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L222
+    
 </details>    
 
 <details>
@@ -376,8 +379,7 @@ class ChallengesConfig(AppConfig):
 ### aws_utils.py
 
 The coverage is extremely low and therefore the whole file must be considered for testing.
-
-</details>   
+ 
 
 <details>
     <summary>View Code</summary>
@@ -945,12 +947,14 @@ https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
 </details>
 
 ### urls.py
+
 <details>
     <summary>View missing test cases</summary>
     <br>
  URLs pattern test for debug mode<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/urls.py#L99
 </details>
+
 <details>
     <summary>View Code</summary>
     <br>
@@ -996,8 +1000,6 @@ if settings.DEBUG:
     Response OnSuccess and OnError response ; Getting participants of a specific challenge ID<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L236<br>
 </details>
-
-<details>
 
 <details>
     <summary>View Code</summary>
@@ -1084,7 +1086,8 @@ Getting participants of a specific challenge ID
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L200<br>
     7) New password function<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L282<br>
-
+</details>
+    
 <details>
     <summary>View Code</summary>
     <br>
