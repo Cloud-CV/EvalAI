@@ -583,11 +583,11 @@ def run_submission(
 
     if challenge_phase.get("challenge").get("is_docker_based"):
         sender_email = settings.CLOUDCV_TEAM_EMAIL
-        email = submission.get("created_by").get("email")
+        user_email = submission.get("created_by").get("email")
         template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
             "TASK_DONE_NOTIFICATION"
         )
-        send_email(sender_email, email, template_id)
+        send_email(sender_email, user_email, template_id)
 
     update_submission_data(submission_data, challenge_pk, submission_pk)
     shutil.rmtree(temp_run_dir)
