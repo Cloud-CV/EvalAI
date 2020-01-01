@@ -2581,35 +2581,36 @@ if __name__ == "__main__":
 <details>
     <summary>View missing test cases</summary>
     <br>
-    1)def __init__(self)
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L83
-    2)def exit_gracefully(self, signum, frame)
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L87
-    3)def alarm_handler(signum, frame)
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L89
-    4) evaluation_script_url = challenge.evaluation_script.url
-    Missing test casses are as follows
-    >create challenge directory as package
-    >set entry in map
-    >create phase directory
-    >import the challenge after everything is finished
-    Please take a look at the code link as the code has a very good documentation for the function itself
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L229
-    5)def load_challenge(challenge)
-    test for Creating python package for a challenge and extracting relevant data
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L287
-    6)remote_evaluation = submission.challenge_phase.challenge.remote_evaluation
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L380
-    7)Test for "Check if the dataset_split exists for the codename in the result"
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L488
-    8)def process_add_challenge_message(message)
-    getting challenge message if successful or not2
-    9)def main():
-    This whole function does not contain any test code
-    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L693
+    1)def __init__(self)<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L83<br>
+    2)def exit_gracefully(self, signum, frame)<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L87<br>
+    3)def alarm_handler(signum, frame)<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L89<br>
+    4) evaluation_script_url = challenge.evaluation_script.url<br>
+    Missing test casses are as follows<br>
+    >create challenge directory as package<br>
+    >set entry in map<br>
+    >create phase directory<br>
+    >import the challenge after everything is finished<br>
+    Please take a look at the code link as the code has a very good documentation for the function itself<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L229<br>
+    5)def load_challenge(challenge)<br>
+    test for Creating python package for a challenge and extracting relevant data<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L287<br>
+    6)remote_evaluation = submission.challenge_phase.challenge.remote_evaluation<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L380<br>
+    7)Test for "Check if the dataset_split exists for the codename in the result"<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L488<br>
+    8)def process_add_challenge_message(message)<br>
+    getting challenge message if successful or not2<br>
+    9)def main():<br>
+    This whole function does not contain any test code<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L693<br>
     
-<details>
-    
+</details>
+
+<details>    
     <summary>View Code</summary>
     <br>
 
@@ -3071,7 +3072,6 @@ if __name__ == "__main__":
 ### worker_util.py
 No testing code available
 
-</br>
 </details>
 
 # manage.py : 0%
