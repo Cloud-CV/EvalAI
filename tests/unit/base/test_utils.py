@@ -134,6 +134,21 @@ class TestDecodeData(BaseAPITestClass):
         self.assertEqual(data, expected)
 
 
+class TestGetURLFromHostname(BaseAPITestClass):
+    @mock.patch("django.conf.settings.DEBUG", "True")
+    def test_get_url_from_hostname_when_debug_is_true(self):
+        url = get_url_from_hostname('example.com')
+        expected = 'http://example.com'
+        self.assertEqual(url, expected)
+
+    @mock.patch("django.conf.settings.DEBUG", "False")
+    @mock.patch("django.conf.settings.DEBUG", "False")
+    def test_get_url_from_hostname_when_debug_is_false(self):
+        url = get_url_from_hostname('example.com')
+        expected = 'https://example.com'
+        self.assertEqual(url, expected)
+
+
 class TestSeeding(BaseAPITestClass):
     def test_if_seeding_works(self):
         seed.run(1)
