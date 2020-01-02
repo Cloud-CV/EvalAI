@@ -134,7 +134,7 @@ class WorkerUtilTestClass(BaseTestClass):
         self.assertEqual(response, self.success_response)
 
     def test_get_challenge_phase_by_pk(self):
-        url = "{}{}".format(evalai_api_server, self.get_challenge_phase_by_pk_url(self.challenge_phase_pk))
+        url = "{}{}".format(evalai_api_server, self.get_challenge_phase_by_pk_url(self.challenge_pk, self.challenge_phase_pk))
 
         with mock.patch(interface.make_request, return_value=self.success_response) as mock_make_request:
             response = interface.get_challenge_phase_by_pk(self.challenge_phase_pk)
