@@ -1,6 +1,7 @@
 import os
 import mock
 import boto3
+from moto import mock_sqs
 import requests
 import responses
 
@@ -97,6 +98,14 @@ class BaseAPITestClass(APITestCase):
             is_public=True,
         )
 
+        self.sqs_client = boto3.client(
+            "sqs",
+            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
+            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+        )
+
 
 class TestRandomFileName(BaseAPITestClass):
     def setUp(self):
@@ -136,29 +145,19 @@ class TestDecodeData(BaseAPITestClass):
         self.assertEqual(data, expected)
 
 
-# class GetOrCreateSQSObject(BaseAPITestClass):
-#     @mock.patch("apps.base.utils.boto3.resource.get_queue_by_name")
-#     @mock.patch("apps.base.utils.boto3.resource")
-#     def test_get_or_create_sqs_queue_object_when_test_is_true_and_queue_exists(self, mock_resource, mock_get_queue_by_name):
-#         sqs = boto3.resource(
-#             "sqs",
-#             endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
-#             region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-#             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
-#             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
-#         )
-#         queue_name = "evalai_submission_queue"
-#         queue = sqs.get_queue_by_name(QueueName=queue_name)
-#         sqs_queue_object = get_or_create_sqs_queue_object(queue_name)
-#         mock_resource.assert_called_with(
-#             "sqs",
-#             endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
-#             region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-#             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
-#             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
-#         )
-#         # mock_get_queue_by_name.assert_called_with(queue_name)
-#         self.assertEqual(queue, sqs_queue_object)
+# class TestGetBoto3Client(BaseAPITestClass):
+#     @mock_sqs()
+#     def test_get_boto3_client_success(self)
+
+
+class GetOrCreateSQSObject(BaseAPITestClass):
+    @mock_sqs()
+    def test_get_or_create_sqs_queue_oobject_for_existing_queue(self, mock_resource, mock_get_queue_by_name):
+        self.sqs_client.create_queue(QueueName="test_queue")
+        get_or_create_sqs_queue_object("test_queue")
+        queue_url = self.sqs_client.get_queue_url(QueueName='test_queue')['QueueUrl']
+        self.assertTrue(queue_url)
+        self.sqs_client.delete_queue(QueueUrl=queue_url)
 
 
 class TestGetURLFromHostname(BaseAPITestClass):
