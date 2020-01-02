@@ -203,4 +203,4 @@ class GetQueueName(BaseAPITestClass):
         mock_uuid.return_value = "070afd29-f15b-4073-ab6e-174606834298"
         queue_name = "This is a Test QUEUE name"
         expected = "this-is-a-test-queue-name-070afd29-f15b-4073-ab6e-174606834298"
-        self.assertEqual(get_queue_name(mock_queue_name), expected)
+        self.assertEqual(get_queue_name(queue_name), expected)
