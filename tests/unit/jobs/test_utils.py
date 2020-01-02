@@ -35,7 +35,7 @@ class GetFileFromUrlTestClass(BaseTestClass):
 
         self.temp_dir = tempfile.mkdtemp()
         self.file_name = "dummy"
-        self.file_content = "Dummy File Content"
+        self.file_content = b"Dummy File Content"
 
     def tearDown(self):
         if os.path.exists(self.temp_dir):
