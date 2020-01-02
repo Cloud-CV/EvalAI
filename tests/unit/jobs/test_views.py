@@ -808,7 +808,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data["phases"][0]["limits"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_remaining_submission_time_when_max_limit_is_exhausted(self):
+    def get_remaining_submission_time_when_max_limit_is_exhausted(self):
         self.url = reverse_lazy(
             "jobs:get_remaining_submissions",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -831,7 +831,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.data["phases"][0]["limits"], expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_remaining_submission_time_when_monthly_limit_is_exhausted(self):
+    def get_remaining_submission_time_when_monthly_limit_is_exhausted(self):
         self.url = reverse_lazy(
             "jobs:get_remaining_submissions",
             kwargs={"challenge_pk": self.challenge.pk},
@@ -856,7 +856,7 @@ class GetRemainingSubmissionTest(BaseAPITestClass):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_remaining_submission_time_when_both_monthly_and_daily_limit_is_exhausted(
+    def get_remaining_submission_time_when_both_monthly_and_daily_limit_is_exhausted(
         self
     ):
         self.url = reverse_lazy(
