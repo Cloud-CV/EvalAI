@@ -139,7 +139,7 @@ class TestDecodeData(BaseAPITestClass):
 class GetOrCreateSQSObject(BaseAPITestClass):
     @mock.patch("apps.base.utils.boto3.resource.get_queue_by_name")
     @mock.patch("apps.base.utils.boto3.resource")
-    def get_or_create_sqs_queue_object_when_test_is_true_and_queue_exists(self, mock_resource, mock_get_queue_by_name):
+    def test_get_or_create_sqs_queue_object_when_test_is_true_and_queue_exists(self, mock_resource, mock_get_queue_by_name):
         sqs = boto3.resource(
             "sqs",
             region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
