@@ -150,7 +150,7 @@ class GetOrCreateSQSObject(BaseAPITestClass):
         sqs_queue_object = get_or_create_sqs_queue_object(queue_name)
         mock_resource.assertCalledWith("sqs")
         mock_get_queue_by_name.assertCalledWith(queue_name)
-        self.asserEqual(queue, sqs_queue_object)
+        self.assertEqual(queue, sqs_queue_object)
 
 
 class TestGetURLFromHostname(BaseAPITestClass):
