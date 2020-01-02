@@ -1,12 +1,14 @@
 import os
-import responses
 import shutil
 import tempfile
 
 from unittest import mock
 from unittest import TestCase
 
-from jobs.utils import is_url_valid, get_file_from_url
+from jobs.utils import (
+    is_url_valid,
+    get_file_from_url
+)
 
 
 class BaseTestClass(TestCase):
@@ -20,19 +22,9 @@ class IsUrlValidTestClass(BaseTestClass):
     def setUp(self):
         super(IsUrlValidTestClass, self).setUp()
 
-        responses.add(responses.HEAD,
-                      self.reachable_url,
-                      status=200)
-
-        responses.add(responses.HEAD,
-                      self.unreachable_url,
-                      status=404)
-
-    @responses.activate
     def test_is_url_valid_when_url_is_reachable(self):
         self.assertTrue(is_url_valid(self.reachable_url))
 
-    @responses.activate
     def test_is_url_valid_when_url_is_unreachable(self):
         self.assertFalse(is_url_valid(self.unreachable_url))
 
@@ -53,14 +45,13 @@ class GetFileFromUrlTestClass(BaseTestClass):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
 
-    @responses.activate
     @mock.patch("jobs.utils.tempfile.mkdtemp")
     def test_get_file_from_url(self, mock_tempdir):
         mock_tempdir.return_value = self.temp_dir
         file_path = os.path.join(self.temp_dir, self.file_name)
 
         expected = {"name": self.file_name, "temp_dir_path": self.temp_dir}
-        file_obj = get_file_from_url(self.test_url)
+        file_obj = get_file_from_url(self.file_url)
 
         self.assertEqual(file_obj, expected)
         self.assertTrue(os.path.exists(file_path))
