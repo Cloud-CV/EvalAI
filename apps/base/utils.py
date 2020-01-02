@@ -75,7 +75,7 @@ def encode_data(data):
     """
     encoded = []
     for i in data:
-        encoded.append(base64.urlsafe_b64encode(i).rstrip(b"="))
+        encoded.append(base64.urlsafe_b64encode(b"%b" % i).rstrip(b"="))
     return encoded
 
 

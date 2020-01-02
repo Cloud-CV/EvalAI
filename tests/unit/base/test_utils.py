@@ -121,7 +121,7 @@ class TestRandomFileName(BaseAPITestClass):
 class TestEncodeData(BaseAPITestClass):
     def test_encode_data(self):
         mock_data = ['test_encode_data_on', 'test_encode_data_tw', 'test_encode_data_th']
-        expected = ['dGVzdF9lbmNvZGVfZGF0YV9vbg', 'dGVzdF9lbmNvZGVfZGF0YV90dw', 'dGVzdF9lbmNvZGVfZGF0YV90aA']
+        expected = [b'dGVzdF9lbmNvZGVfZGF0YV9vbg', b'dGVzdF9lbmNvZGVfZGF0YV90dw', b'dGVzdF9lbmNvZGVfZGF0YV90aA']
         data = encode_data(mock_data)
         self.assertEqual(data, expected)
 
