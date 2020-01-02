@@ -142,9 +142,10 @@ class GetOrCreateSQSObject(BaseAPITestClass):
     def test_get_or_create_sqs_queue_object_when_test_is_true_and_queue_exists(self, mock_resource, mock_get_queue_by_name):
         sqs = boto3.resource(
             "sqs",
+            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
             region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
         )
         queue_name = "evalai_submission_queue"
         queue = sqs.get_queue_by_name(QueueName=queue_name)
