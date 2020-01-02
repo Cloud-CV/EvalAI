@@ -1,4 +1,5 @@
 import os
+import mock
 import requests
 import responses
 
