@@ -136,14 +136,14 @@ class TestDecodeData(BaseAPITestClass):
 
 
 class TestGetURLFromHostname(BaseAPITestClass):
-    @mock.patch("apps.base.utils.settings.DEBUG", "True")
+    @mock.patch("apps.base.utils.settings", "DEBUG=True")
     def test_get_url_from_hostname_when_debug_is_true(self):
         url = get_url_from_hostname('example.com')
         expected = 'http://example.com'
         self.assertEqual(url, expected)
 
-    @mock.patch("apps.base.utils.settings.DEBUG", "False")
-    @mock.patch("apps.base.utils.settings.TEST", "False")
+    @mock.patch("apps.base.utils.settings", "DEBUG=False")
+    @mock.patch("apps.base.utils.settings", "TEST=False")
     def test_get_url_from_hostname_when_debug_is_false(self):
         url = get_url_from_hostname('example.com')
         expected = 'https://example.com'
