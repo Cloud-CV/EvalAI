@@ -222,6 +222,7 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
             headers={"Content-Type": "application/json"},
         )
     except Exception as e:
+        print(e)
         logger.exception(
             "Exception raised while sending slack notification. \n Exception message: {}".format(
                 e
