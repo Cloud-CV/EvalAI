@@ -1,6 +1,5 @@
 import os
 import tempfile
-import urllib.request
 import datetime
 import requests
 
@@ -143,13 +142,8 @@ def is_url_valid(url):
     :param url: A URL
     :return type: bool
     """
-    request = urllib.request.Request(url)
-    request.get_method = lambda: 'HEAD'
-    try:
-        urllib.request.urlopen(request)
-        return True
-    except urllib.request.HTTPError:
-        return False
+    r = requests.head(url)
+    return r.status_code < 400
 
 
 def get_file_from_url(url):
