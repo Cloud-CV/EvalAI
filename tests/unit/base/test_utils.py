@@ -4,6 +4,7 @@ import boto3
 from moto import mock_sqs
 import requests
 import responses
+import botocore
 
 from datetime import timedelta
 
@@ -158,7 +159,7 @@ class TestGetOrCreateSQSObject(BaseAPITestClass):
     @mock.patch("apps.base.utils.logger.exception")
     def test_get_or_create_sqs_queue_object_for_not_existing_queue(self, mock_logger):
         self.sqs_client.create_queue(QueueName="test_queue")
-        with self.assertRaises(Exception):
+        with self.assertRaises(botocore.exceptions.ClientError):
             get_or_create_sqs_queue_object("test_queue_invalid")
             mock_logger.assert_called_with(
                     "Cannot get queue: {}".format("test_queue_invalid")
