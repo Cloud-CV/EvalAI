@@ -138,7 +138,9 @@ class TestDecodeData(BaseAPITestClass):
 class GetOrCreateSQSObject(BaseAPITestClass):
     @mock.patch("apps.base.utils.boto3.resource")
     def get_or_create_sqs_queue_object_when_test_is_true(self, mock_resource):
+        sqs_object = get_or_create_sqs_queue_object()
         mock_resource.assertCalledWith("sqs")
+
 
 
 class TestGetURLFromHostname(BaseAPITestClass):
