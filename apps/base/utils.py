@@ -87,7 +87,7 @@ def decode_data(data):
     for i in data:
         padding = 4 - (len(i) % 4)
         i = i + ("=" * padding)
-        decoded.append(str(bytes_stringbase64.urlsafe_b64decode(i), 'utf-8'))
+        decoded.append(str(base64.urlsafe_b64decode(i), 'utf-8'))
     return decoded
 
 
