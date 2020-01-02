@@ -152,9 +152,10 @@ class GetOrCreateSQSObject(BaseAPITestClass):
         sqs_queue_object = get_or_create_sqs_queue_object(queue_name)
         mock_resource.assert_called_with(
             "sqs",
+            endpoint_url=os.environ.get("AWS_SQS_ENDPOINT", "http://sqs:9324"),
             region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
-            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
         )
         mock_get_queue_by_name.assert_called_with(queue_name)
         self.assertEqual(queue, sqs_queue_object)
