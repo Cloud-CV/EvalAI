@@ -129,7 +129,7 @@ class TestEncodeData(BaseAPITestClass):
 class TestDecodeData(BaseAPITestClass):
     def test_decode_data(self):
         mock_data = ['dGVzdF9lbmNvZGVfZGF0YV9vbg', 'dGVzdF9lbmNvZGVfZGF0YV90dw', 'dGVzdF9lbmNvZGVfZGF0YV90aA']
-        expected = [b'test_encode_data_on', b'test_encode_data_tw', b'test_encode_data_th']
+        expected = ['test_encode_data_on', 'test_encode_data_tw', 'test_encode_data_th']
         data = decode_data(mock_data)
         self.assertEqual(data, expected)
 

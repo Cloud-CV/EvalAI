@@ -75,7 +75,7 @@ def encode_data(data):
     """
     encoded = []
     for i in data:
-        encoded.append(base64.b64encode(bytes(i, "utf-8")))
+        encoded.append(base64.urlsafe_b64encode(i)).rstrip("=")
     return encoded
 
 
@@ -85,7 +85,9 @@ def decode_data(data):
     """
     decoded = []
     for i in data:
-        decoded.append(base64.decodestring((i + "==").encode()))
+        padding = 4 - (len(i) % 4)
+        i = i + ("=" * padding)
+        decoded.append(base64.urlsafe_b64decode(i))
     return decoded
 
 
