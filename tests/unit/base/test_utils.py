@@ -13,7 +13,7 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName, send_slack_notification
+from base.utils import RandomFileName, send_slack_notification, encode_data, decode_data
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -118,6 +118,21 @@ class TestRandomFileName(BaseAPITestClass):
         self.assertEqual(filepath, expected)
 
 
+
+class TestEncodeData(BaseAPITestClass):
+    def test_encode_data(self):
+        mock_data = ['test_encode_data_on', 'test_encode_data_tw', 'test_encode_data_th']
+        expected = ['dGVzdF9lbmNvZGVfZGF0YV9vbg', 'dGVzdF9lbmNvZGVfZGF0YV90dw', 'dGVzdF9lbmNvZGVfZGF0YV90aA']
+        data = encode_data(mock_data)
+
+class TestDecodeData(BaseAPITestClass):
+    def test_decode_data(self):
+        mock_data = ['dGVzdF9lbmNvZGVfZGF0YV9vbg', 'dGVzdF9lbmNvZGVfZGF0YV90dw', 'dGVzdF9lbmNvZGVfZGF0YV90aA']
+        expected = ['test_encode_data_on', 'test_encode_data_tw', 'test_encode_data_th']
+        data = decode_data(mock_data)
+
+
+
 class TestSeeding(BaseAPITestClass):
     def test_if_seeding_works(self):
         seed.run(1)
@@ -140,3 +155,18 @@ class TestSlackNotification(BaseAPITestClass):
         )
         self.assertEqual(type(response), requests.models.Response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    # @mock.patch("apps.base.utils.logger.exception")
+    # def test_slack_notification_when_error(self, mock_logger):
+    #     with self.assertRaises(Exception):
+    #         response = send_slack_notification(
+    #             message=message
+    #         )
+    #         mock_logger.assertCalledWith(
+    #             "Exception raised while sending slack notification. \n Exception message: {}".format(
+    #                 e
+    #             )
+    #         )
+
+
+
