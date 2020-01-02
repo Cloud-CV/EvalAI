@@ -197,6 +197,7 @@ class GetSlug(BaseAPITestClass):
         expected = "this-is-a-test-slug"
         self.assertEqual(get_slug(slug), expected)
 
+
 class GetQueueName(BaseAPITestClass):
     @mock.patch("apps.base.utils.uuid.uuid4")
     def test_get_queue_name(self, mock_uuid):
