@@ -14,7 +14,7 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName, send_slack_notification, encode_data, decode_data, get_url_from_hostname
+from base.utils import RandomFileName, send_slack_notification, encode_data, decode_data, get_url_from_hostname, get_slug
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -189,3 +189,11 @@ class TestSlackNotification(BaseAPITestClass):
                     message["text"]
                 )
             )
+
+
+class GetSlug(BaseAPITestClass):
+    def test_get_slug(self):
+    mock_slug = "this is a test slug"
+    expected = "-------------------"
+    mock_get_slug = get_slug(mock_slug)
+    self.assertEqual(mock_slug, expected)
