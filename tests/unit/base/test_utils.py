@@ -1,5 +1,6 @@
 import os
 import mock
+import boto3
 import requests
 import responses
 
