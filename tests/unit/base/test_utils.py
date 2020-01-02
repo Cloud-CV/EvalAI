@@ -193,7 +193,14 @@ class TestSlackNotification(BaseAPITestClass):
 
 class GetSlug(BaseAPITestClass):
     def test_get_slug(self):
-        mock_slug = "this is a test slug"
+        slug = "This is A test slug"
         expected = "this-is-a-test-slug"
-        mock_get_slug = get_slug(mock_slug)
-        self.assertEqual(mock_get_slug, expected)
+        self.assertEqual(get_slug(slug), expected)
+
+class GetQueueMame(BaseAPITestClass):
+    @mock.patch("apps.base.utils.uuid.uuid4")
+    def test_get_queue_name(self, mock_uuid):
+        mock_uuid.return_value = "070afd29-f15b-4073-ab6e-174606834298"
+        queue_name = "This is a Test QUEUE name"
+        expected = "this-is-a-test-queue-name-070afd29-f15b-4073-ab6e-174606834298"
+        self.assertEqual(get_queue_name(mock_queue_name), expected)
