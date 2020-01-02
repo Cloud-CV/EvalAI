@@ -136,10 +136,12 @@ class TestDecodeData(BaseAPITestClass):
 
 
 class GetOrCreateSQSObject(BaseAPITestClass):
+    @mock.patch("apps.base.utils.boto3.resource.get_queue_by_name")
     @mock.patch("apps.base.utils.boto3.resource")
-    def get_or_create_sqs_queue_object_when_test_is_true_and_queue_exists(self, mock_resource):
+    def get_or_create_sqs_queue_object_when_test_is_true_and_queue_exists(self, mock_resource, mock_get_queue_by_name):
         sqs_object = get_or_create_sqs_queue_object()
         mock_resource.assertCalledWith("sqs")
+        mock_get_queue_by_name.assertCalledWith("evalai_submission_queue")
 
 
 class TestGetURLFromHostname(BaseAPITestClass):
