@@ -40,7 +40,7 @@ class IsUrlValidTestClass(TestCase):
 
 class GetFileFromUrlTestClass(TestCase):
     def setUp(self):
-        super(GetFileFromUrlTestClass,self).setUp()
+        super(GetFileFromUrlTestClass, self).setUp()
 
         self.temp_dir = tempfile.mkdtemp()
         self.filename = "dummy_file"
@@ -64,7 +64,7 @@ class GetFileFromUrlTestClass(TestCase):
         expected = {"name": self.filename, "temp_dir_path": self.temp_dir}
         file_obj = get_file_from_url(self.test_url)
 
-        self.assertEqual(file_obj, expectd)
+        self.assertEqual(file_obj, expected)
         self.assertTrue(os.path.exists(filepath))
 
         with open(filepath, "rb") as f:
