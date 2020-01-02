@@ -123,7 +123,7 @@ class TestEncodeData(BaseAPITestClass):
         mock_data = ['test_encode_data_on', 'test_encode_data_tw', 'test_encode_data_th']
         expected = ['dGVzdF9lbmNvZGVfZGF0YV9vbg', 'dGVzdF9lbmNvZGVfZGF0YV90dw', 'dGVzdF9lbmNvZGVfZGF0YV90aA']
         data = encode_data(mock_data)
-        self.assertEqual(mock_data, expected)
+        self.assertEqual(data, expected)
 
 
 class TestDecodeData(BaseAPITestClass):
@@ -131,7 +131,7 @@ class TestDecodeData(BaseAPITestClass):
         mock_data = ['dGVzdF9lbmNvZGVfZGF0YV9vbg', 'dGVzdF9lbmNvZGVfZGF0YV90dw', 'dGVzdF9lbmNvZGVfZGF0YV90aA']
         expected = ['test_encode_data_on', 'test_encode_data_tw', 'test_encode_data_th']
         data = decode_data(mock_data)
-        self.assertEqual(mock_data, expected)
+        self.assertEqual(data, expected)
 
 
 class TestSeeding(BaseAPITestClass):
