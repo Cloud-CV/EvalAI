@@ -75,8 +75,7 @@ def encode_data(data):
     """
     encoded = []
     for i in data:
-        i = b'%b' % i.encode()
-        encoded.append(base64.b64encode(i).split("=")[0])
+        encoded.append(base64.b64encode(bytes(i, "utf-8")).split("=")[0])
     return encoded
 
 
