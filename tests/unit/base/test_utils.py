@@ -156,15 +156,12 @@ class TestGetOrCreateSQSObject(BaseAPITestClass):
         self.sqs_client.delete_queue(QueueUrl=queue_url)
 
     @mock_sqs()
-    @mock.patch("apps.base.utils.logger.exception")
-    def test_get_or_create_sqs_queue_object_for_not_existing_queue(self, mock_logger):
-        self.sqs_client.create_queue(QueueName="test_queue")
-        with self.assertRaises(botocore.exceptions.ClientError):
-            get_or_create_sqs_queue_object("test_queue_invalid")
-            mock_logger.assert_called_with(
-                    "Cannot get queue: {}".format("test_queue_invalid")
-                )
+    def test_get_or_create_sqs_queue_object_when_test_is_false(self):
+        with self.settings(DEBUG=False, TEST=False):
+            self.sqs_client.create_queue(QueueName="test_queue")
+            get_or_create_sqs_queue_object("test_queue")
             queue_url = self.sqs_client.get_queue_url(QueueName='test_queue')['QueueUrl']
+            self.assertTrue(queue_url)
             self.sqs_client.delete_queue(QueueUrl=queue_url)
 
 
