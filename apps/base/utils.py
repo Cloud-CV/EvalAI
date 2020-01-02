@@ -75,7 +75,7 @@ def encode_data(data):
     """
     encoded = []
     for i in data:
-        encoded.append(base64.encodestring(i).split("=")[0])
+        encoded.append(base64.encodestring(i).split("=")[0].encode())
     return encoded
 
 
@@ -85,7 +85,7 @@ def decode_data(data):
     """
     decoded = []
     for i in data:
-        decoded.append(base64.decodestring(i + "=="))
+        decoded.append(base64.decodestring(i + "==").encode())
     return decoded
 
 
