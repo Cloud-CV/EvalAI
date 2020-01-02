@@ -193,7 +193,7 @@ class TestSlackNotification(BaseAPITestClass):
 
 class GetSlug(BaseAPITestClass):
     def test_get_slug(self):
-    mock_slug = "this is a test slug"
-    expected = "-------------------"
-    mock_get_slug = get_slug(mock_slug)
-    self.assertEqual(mock_slug, expected)
+        mock_slug = "this is a test slug"
+        expected = "-------------------"
+        mock_get_slug = get_slug(mock_slug)
+        self.assertEqual(mock_slug, expected)
