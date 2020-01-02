@@ -2,6 +2,7 @@ import os
 import responses
 import shutil
 import tempfile
+import urllib.request
 
 from unittest import mock
 from unittest import TestCase
@@ -14,20 +15,22 @@ from jobs.utils import (
 
 class BaseTestClass(TestCase):
     def setUp(self):
-        self.reachable_url = "http://httpstat.us/200"
-        self.unreachable_url = "http://httpstat.us/404"
-        self.file_url = "http://testserver/dummy"
+        self.test_url = "http://testserver/dummy"
 
 
 class IsUrlValidTestClass(BaseTestClass):
     def setUp(self):
         super(IsUrlValidTestClass, self).setUp()
 
-    def test_is_url_valid_when_url_is_reachable(self):
-        self.assertTrue(is_url_valid(self.reachable_url))
+    @mock.patch("jobs.utils.urllib.request.urlopen")
+    def test_is_url_valid_when_url_is_reachable(self, mock_urlopen):
+        mock_urlopen.return_value = 200
+        self.assertTrue(is_url_valid(self.test_url))
 
-    def test_is_url_valid_when_url_is_unreachable(self):
-        self.assertFalse(is_url_valid(self.unreachable_url))
+    @mock.patch("jobs.utils.urllib.request.urlopen")
+    def test_is_url_valid_when_url_is_unreachable(self, mock_urlopen):
+        mock_urlopen.side_effect = urllib.request.HTTPError
+        self.assertFalse(is_url_valid(self.test_url))
 
 
 class GetFileFromUrlTestClass(BaseTestClass):
@@ -38,7 +41,7 @@ class GetFileFromUrlTestClass(BaseTestClass):
         self.file_name = "dummy"
         self.file_content = b"Dummy File Content"
 
-        responses.add(responses.GET, self.file_url,
+        responses.add(responses.GET, self.test_url,
                       body=self.file_content,
                       content_type="application/octet-stream")
 
@@ -53,7 +56,7 @@ class GetFileFromUrlTestClass(BaseTestClass):
         file_path = os.path.join(self.temp_dir, self.file_name)
 
         expected = {"name": self.file_name, "temp_dir_path": self.temp_dir}
-        file_obj = get_file_from_url(self.file_url)
+        file_obj = get_file_from_url(self.test_url)
 
         self.assertEqual(file_obj, expected)
         self.assertTrue(os.path.exists(file_path))
