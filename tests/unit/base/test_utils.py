@@ -4,7 +4,6 @@ import boto3
 from moto import mock_sqs
 import requests
 import responses
-import botocore
 
 from datetime import timedelta
 
