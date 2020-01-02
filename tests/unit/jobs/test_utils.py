@@ -1,4 +1,5 @@
 import os
+import responses
 import shutil
 import tempfile
 
@@ -15,7 +16,7 @@ class BaseTestClass(TestCase):
     def setUp(self):
         self.reachable_url = "http://httpstat.us/200"
         self.unreachable_url = "http://httpstat.us/404"
-        self.file_url = "https://gist.githubusercontent.com/nikochiko/8572a636ed5049e658a5fe999eb6d031/raw/31edd0a6bf4c03392153294f178f33f38ad3737f/dummy"
+        self.file_url = "http://testserver/dummy"
 
 
 class IsUrlValidTestClass(BaseTestClass):
@@ -37,10 +38,15 @@ class GetFileFromUrlTestClass(BaseTestClass):
         self.file_name = "dummy"
         self.file_content = b"Dummy File Content"
 
+        responses.add(responses.GET, self.file_url,
+                      body=self.file_content,
+                      content_type="application/octet-stream")
+
     def tearDown(self):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
 
+    @responses.activate
     @mock.patch("jobs.utils.tempfile.mkdtemp")
     def test_get_file_from_url(self, mock_tempdir):
         mock_tempdir.return_value = self.temp_dir
