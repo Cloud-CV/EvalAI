@@ -14,7 +14,7 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName, send_slack_notification, encode_data, decode_data, get_url_from_hostname, get_slug, get_queue_name
+from base.utils import RandomFileName, send_slack_notification, encode_data, decode_data, get_url_from_hostname, get_slug, get_queue_name, get_or_create_sqs_queue_object
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
@@ -137,10 +137,9 @@ class TestDecodeData(BaseAPITestClass):
 
 class GetOrCreateSQSObject(BaseAPITestClass):
     @mock.patch("apps.base.utils.boto3.resource")
-    def get_or_create_sqs_queue_object_when_test_is_true(self, mock_resource):
+    def get_or_create_sqs_queue_object_when_test_is_true_and_queue_exists(self, mock_resource):
         sqs_object = get_or_create_sqs_queue_object()
         mock_resource.assertCalledWith("sqs")
-
 
 
 class TestGetURLFromHostname(BaseAPITestClass):
