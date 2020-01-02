@@ -19,19 +19,19 @@ class IsUrlValidTestClass(BaseTestClass):
         super(IsUrlValidTestClass, self).setUp()
 
         self.reachable_url = "{0}{1}".format(self.testserver, "/test/reachable")
-        self.unreachable_test_url = "{0}{1}".format(self.testserver, "/test/unreachable")
+        self.unreachable_url = "{0}{1}".format(self.testserver, "/test/unreachable")
 
         responses.add(responses.HEAD,
                       self.reachable_url,
                       status=200)
 
         responses.add(responses.HEAD,
-                      self.unreachable_test_url,
+                      self.unreachable_url,
                       status=404)
 
     @responses.activate
     def test_is_url_valid_when_url_is_reachable(self):
-        self.assertTrue(is_url_valid(self.test_url))
+        self.assertTrue(is_url_valid(self.reachable_url))
 
     @responses.activate
     def test_is_url_valid_when_url_is_unreachable(self):
@@ -43,7 +43,7 @@ class GetFileFromUrlTestClass(BaseTestClass):
         super(GetFileFromUrlTestClass, self).setUp()
 
         self.temp_dir = tempfile.mkdtemp()
-        self.filename = "dummy_file"
+        self.file_name = "dummy_file"
         self.file_url = "{0}{1}".format(self.testserver, self.filename)
         self.file_content = b'file_content'
 
@@ -59,13 +59,13 @@ class GetFileFromUrlTestClass(BaseTestClass):
     @mock.patch("jobs.utils.tempfile.mkdtemp")
     def test_get_file_from_url(self, mock_tempdir):
         mock_tempdir.return_value = self.temp_dir
-        filepath = os.path.join(self.temp_dir, self.file_name)
+        file_path = os.path.join(self.temp_dir, self.file_name)
 
         expected = {"name": self.filename, "temp_dir_path": self.temp_dir}
         file_obj = get_file_from_url(self.test_url)
 
         self.assertEqual(file_obj, expected)
-        self.assertTrue(os.path.exists(filepath))
+        self.assertTrue(os.path.exists(file_path))
 
-        with open(filepath, "rb") as f:
+        with open(file_path, "rb") as f:
             self.assertEqual(f.read(), self.file_content)
