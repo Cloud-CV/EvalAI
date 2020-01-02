@@ -139,10 +139,19 @@ class GetOrCreateSQSObject(BaseAPITestClass):
     @mock.patch("apps.base.utils.boto3.resource.get_queue_by_name")
     @mock.patch("apps.base.utils.boto3.resource")
     def get_or_create_sqs_queue_object_when_test_is_true_and_queue_exists(self, mock_resource, mock_get_queue_by_name):
+        sqs = boto3.resource(
+            "sqs",
+            region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+        )
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
+
         queue_name = "evalai_submission_queue"
-        get_or_create_sqs_queue_object(queue_name)
+        sqs_queue_object = get_or_create_sqs_queue_object(queue_name)
         mock_resource.assertCalledWith("sqs")
         mock_get_queue_by_name.assertCalledWith(queue_name)
+        self.asserEqual(queue, sqs_queue_object)
 
 
 class TestGetURLFromHostname(BaseAPITestClass):
