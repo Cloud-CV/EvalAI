@@ -152,7 +152,7 @@ class TestDecodeData(BaseAPITestClass):
 
 class GetOrCreateSQSObject(BaseAPITestClass):
     @mock_sqs()
-    def test_get_or_create_sqs_queue_oobject_for_existing_queue(self):
+    def test_get_or_create_sqs_queue_object_for_existing_queue(self):
         self.sqs_client.create_queue(QueueName="test_queue")
         get_or_create_sqs_queue_object("test_queue")
         queue_url = self.sqs_client.get_queue_url(QueueName='test_queue')['QueueUrl']
