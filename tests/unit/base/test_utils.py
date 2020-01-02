@@ -145,9 +145,8 @@ class GetOrCreateSQSObject(BaseAPITestClass):
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
-        queue = sqs.get_queue_by_name(QueueName=queue_name)
-
         queue_name = "evalai_submission_queue"
+        queue = sqs.get_queue_by_name(QueueName=queue_name)
         sqs_queue_object = get_or_create_sqs_queue_object(queue_name)
         mock_resource.assertCalledWith("sqs")
         mock_get_queue_by_name.assertCalledWith(queue_name)
