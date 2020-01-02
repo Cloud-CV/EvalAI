@@ -145,12 +145,7 @@ class TestDecodeData(BaseAPITestClass):
         self.assertEqual(data, expected)
 
 
-# class TestGetBoto3Client(BaseAPITestClass):
-#     @mock_sqs()
-#     def test_get_boto3_client_success(self)
-
-
-class GetOrCreateSQSObject(BaseAPITestClass):
+class TestGetOrCreateSQSObject(BaseAPITestClass):
     @mock_sqs()
     def test_get_or_create_sqs_queue_object_for_existing_queue(self):
         self.sqs_client.create_queue(QueueName="test_queue")
@@ -158,6 +153,18 @@ class GetOrCreateSQSObject(BaseAPITestClass):
         queue_url = self.sqs_client.get_queue_url(QueueName='test_queue')['QueueUrl']
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
+
+    @mock_sqs()
+    @mock.patch("apps.base.utils.logger.exception")
+    def test_get_or_create_sqs_queue_object_for_not_existing_queue(self, mock_logger):
+        self.sqs_client.create_queue(QueueName="test_queue")
+        with self.assertRaises(Exception):
+            get_or_create_sqs_queue_object("test_queue_invalid")
+            mock_logger.assert_called_with(
+                    "Cannot get queue: {}".format("test_queue_invalid")
+                )
+            queue_url = self.sqs_client.get_queue_url(QueueName='test_queue')['QueueUrl']
+            self.sqs_client.delete_queue(QueueUrl=queue_url)
 
 
 class TestGetURLFromHostname(BaseAPITestClass):
