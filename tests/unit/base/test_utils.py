@@ -14,7 +14,7 @@ from allauth.account.models import EmailAddress
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from base.utils import RandomFileName, send_slack_notification, encode_data, decode_data, get_url_from_hostname, get_slug
+from base.utils import RandomFileName, send_slack_notification, encode_data, decode_data, get_url_from_hostname, get_slug, get_queue_name
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
