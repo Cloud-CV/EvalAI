@@ -196,4 +196,4 @@ class GetSlug(BaseAPITestClass):
         mock_slug = "this is a test slug"
         expected = "-------------------"
         mock_get_slug = get_slug(mock_slug)
-        self.assertEqual(mock_slug, expected)
+        self.assertEqual(mock_get_slug, expected)
