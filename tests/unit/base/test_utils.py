@@ -168,6 +168,3 @@ class TestSlackNotification(BaseAPITestClass):
     #                 e
     #             )
     #         )
-
-
-
