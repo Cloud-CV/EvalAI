@@ -172,20 +172,20 @@ class TestSlackNotification(BaseAPITestClass):
         self.assertEqual(type(response), requests.models.Response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # @mock.patch("apps.base.utils.logger.exception")
-    # def test_slack_notification_when_error(self, mock_logger):
-    #     with self.assertRaises(Exception):
-    #         message = {
-    #             "text": "Testing slack functionality failure",
-    #             "fields": []
-    #         }
-    #         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=400)
-    #         response = send_slack_notification(
-    #             message=message
-    #         )
-    #         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #         mock_logger.assertCalledWith(
-    #             "Exception raised while sending slack notification. \n Exception message: {}".format(
-    #                 message["text"]
-    #             )
-    #         )
+    @mock.patch("apps.base.utils.logger.exception")
+    def test_slack_notification_when_error(self, mock_logger):
+        with self.assertRaises(Exception):
+            message = {
+                "text": "Testing slack functionality failure",
+                "fields": []
+            }
+            responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=400)
+            response = send_slack_notification(
+                message=message
+            )
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            mock_logger.assertCalledWith(
+                "Exception raised while sending slack notification. \n Exception message: {}".format(
+                    message["text"]
+                )
+            )
