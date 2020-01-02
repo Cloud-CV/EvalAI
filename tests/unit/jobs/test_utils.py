@@ -37,10 +37,6 @@ class GetFileFromUrlTestClass(BaseTestClass):
         self.file_name = "dummy"
         self.file_content = "Dummy File Content"
 
-        responses.add(responses.GET, self.file_url,
-                      body=self.file_content,
-                      content_type="application/octet-stream")
-
     def tearDown(self):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
