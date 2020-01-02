@@ -142,7 +142,7 @@ class TestGetURLFromHostname(BaseAPITestClass):
         self.assertEqual(url, expected)
 
     @mock.patch("django.conf.settings.DEBUG", "False")
-    @mock.patch("django.conf.settings.DEBUG", "False")
+    @mock.patch("django.conf.settings.TEST", "False")
     def test_get_url_from_hostname_when_debug_is_false(self):
         url = get_url_from_hostname('example.com')
         expected = 'https://example.com'
