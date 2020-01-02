@@ -14,7 +14,7 @@ class BaseTestClass(TestCase):
         self.testserver = "http://testserver"
 
 
-class IsUrlValidTestClass(TestCase):
+class IsUrlValidTestClass(BaseTestClass):
     def setUp(self):
         super(IsUrlValidTestClass, self).setUp()
 
@@ -38,7 +38,7 @@ class IsUrlValidTestClass(TestCase):
         self.assertFalse(is_url_valid(self.unreachable_url))
 
 
-class GetFileFromUrlTestClass(TestCase):
+class GetFileFromUrlTestClass(BaseTestClass):
     def setUp(self):
         super(GetFileFromUrlTestClass, self).setUp()
 
