@@ -143,7 +143,7 @@ class TestGetURLFromHostname(BaseAPITestClass):
             self.assertEqual(url, expected)
 
     def test_get_url_from_hostname_when_debug_is_false(self):
-        with self.settings(TEST=True, DEBUG=True):
+        with self.settings(TEST=False, DEBUG=False):
             url = get_url_from_hostname('example.com')
             expected = 'https://example.com'
             self.assertEqual(url, expected)
