@@ -616,7 +616,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
 
         self.user4_email = EmailAddress.objects.create(
             user=self.user4,
-            email=user3.email,
+            email=self.user4.email,
             primary=True,
             verified=True,
         )
