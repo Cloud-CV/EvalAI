@@ -2251,7 +2251,7 @@ class UpdateSubmissionTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_submission_for_docker_based_challenge(self):
-        self.challenge.update(is_docker_based=True)
+        self.challenge.is_docker_based = True
 
         self.url = reverse_lazy(
             "jobs:update_submission",
