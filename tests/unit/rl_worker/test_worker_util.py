@@ -100,7 +100,7 @@ class WorkerUtilTestClass(BaseTestClass):
 
     def test_get_message_from_sqs_queue(self):
         url = "{}{}".format(evalai_api_server, self.get_message_from_sqs_queue_url(queue_name))
-        with mock.patch("__main__.interface.make_request", return_value=self.success_response) as mock_make_request:
+        with mock.patch("__main__.EvalAI_Interface.make_request", return_value=self.success_response) as mock_make_request:
             response = interface.get_message_from_sqs_queue()
 
         mock_make_request.assert_called_with(url, "GET")
@@ -109,7 +109,7 @@ class WorkerUtilTestClass(BaseTestClass):
     def test_get_submission_by_pk(self):
         url = "{}{}".format(evalai_api_server, self.get_submission_by_pk_url(self.submission_pk))
 
-        with mock.patch("__main__.interface.make_request", return_value=self.success_response) as mock_make_request:
+        with mock.patch("__main__.EvalAI_Interface.make_request", return_value=self.success_response) as mock_make_request:
             response = interface.get_submission_by_pk(self.submission_pk)
 
         mock_make_request.assert_called_with(url, "GET")
@@ -118,7 +118,7 @@ class WorkerUtilTestClass(BaseTestClass):
     def test_get_challenge_phases_by_challenge_pk(self):
         url = "{}{}".format(evalai_api_server, self.get_challenge_phases_by_challenge_pk_url(self.challenge_pk))
 
-        with mock.patch("__main__.interface.make_request", return_value=self.success_response) as mock_make_request:
+        with mock.patch("__main__.EvalAI_Interface.make_request", return_value=self.success_response) as mock_make_request:
             response = interface.get_challenge_phases_by_challenge_pk(self.challenge_pk)
 
         mock_make_request.assert_called_with(url, "GET")
@@ -127,7 +127,7 @@ class WorkerUtilTestClass(BaseTestClass):
     def test_get_challenge_by_queue_name(self):
         url = "{}{}".format(evalai_api_server, self.get_challenge_by_queue_name_url(queue_name))
 
-        with mock.patch("__main__.interface.make_request", return_value=self.success_response) as mock_make_request:
+        with mock.patch("__main__.EvalAI_Interface.make_request", return_value=self.success_response) as mock_make_request:
             response = interface.get_challenge_by_queue_name()
 
         mock_make_request.assert_called_with(url, "GET")
@@ -136,7 +136,7 @@ class WorkerUtilTestClass(BaseTestClass):
     def test_get_challenge_phase_by_pk(self):
         url = "{}{}".format(evalai_api_server, self.get_challenge_phase_by_pk_url(self.challenge_pk, self.challenge_phase_pk))
 
-        with mock.patch("__main__.interface.make_request", return_value=self.success_response) as mock_make_request:
+        with mock.patch("__main__.EvalAI_Interface.make_request", return_value=self.success_response) as mock_make_request:
             response = interface.get_challenge_phase_by_pk(self.challenge_phase_pk)
 
         mock_make_request.assert_called_with(url, "GET")
@@ -156,7 +156,7 @@ class WorkerUtilTestClass(BaseTestClass):
         url = "{}{}".format(evalai_api_server, self.update_submission_status_url(self.challenge_pk))
         data = {"test_field": "new_value"}
 
-        with mock.patch("__main__.interface.make_request", return_value=self.success_response) as mock_make_request:
+        with mock.patch("__main__.EvalAI_Interface.make_request", return_value=self.success_response) as mock_make_request:
             response = interface.update_submission_status(data, self.challenge_pk)
 
         mock_make_request.assert_called_with(url, "PATCH", data=data)
@@ -167,7 +167,7 @@ class WorkerUtilTestClass(BaseTestClass):
         data = {"receipt_handle": test_receipt_handle}
         url = "{}{}".format(evalai_api_server, self.delete_message_from_sqs_queue_url(queue_name))
 
-        with mock.patch("__main__.interface.make_request", return_value=self.success_response) as mock_make_request:
+        with mock.patch("__main__.EvalAI_Interface.make_request", return_value=self.success_response) as mock_make_request:
             response = interface.delete_message_from_sqs_queue()
 
         mock_make_request.assert_called_with(url, "POST", data=data)
