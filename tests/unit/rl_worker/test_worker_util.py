@@ -146,7 +146,7 @@ class WorkerUtilTestClass(BaseTestClass):
         url = "{}{}".format(evalai_api_server, self.update_submission_data_url(self.challenge_pk))
         data = {"submission_pk": self.submission_pk, "test_field": "new_value"}
 
-        with mock.patch(interface.make_request, return_value=self.success_response) as mock_make_request:
+        with mock.patch('__main__.interface.make_request', return_value=self.success_response) as mock_make_request:
             response = interface.update_submission_data(data, self.challenge_pk)
 
         mock_make_request.assert_called_with(url, "PUT", data=data)
