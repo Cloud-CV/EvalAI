@@ -32,8 +32,9 @@ from base.utils import (
     paginated_queryset,
     send_email,
     StandardResultSetPagination,
-    get_or_create_sqs_queue_object,
     get_boto3_client,
+    get_or_create_sqs_queue_object,
+    get_url_from_hostname,
 )
 from challenges.models import (
     ChallengePhase,
@@ -982,13 +983,17 @@ def update_submission(request, challenge_pk):
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
 
-        if submission.challenge_phase.challenge.is_docker_based:
+        challenge = submission.challenge_phase.challenge
+        if challenge.is_docker_based:
             sender_email = settings.CLOUDCV_TEAM_EMAIL
             user_email = submission.created_by.email
             template_id = settings.SENDGRID_SETTINGS.get("TEMPLATES").get(
                 "TASK_DONE_NOTIFICATION"
             )
-            send_email(sender_email, user_email, template_id)
+            hostname = get_url_from_hostname(settings.HOSTNAME)
+            challenge_url = "{}/web/challenges/challenge-page/{}/overview".format(hostname, challenge.pk)
+            template_data = {"username": submission.created_by.username, "challenge_url": challenge_url}
+            send_email(sender_email, user_email, template_id, template_data)
 
         submission.status = submission_status
         submission.completed_at = timezone.now()
