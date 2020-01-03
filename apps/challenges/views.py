@@ -307,7 +307,7 @@ def add_participant_team_to_challenge(
     for user in participant_team_user_ids:
         try:
             unverified_user = EmailAddress.objects.get(user=user, verified=False)
-            unverified_emails.append(unverified_user)
+            unverified_emails.append(unverified_user.email)
         except EmailAddress.DoesNotExist:
             continue
 
