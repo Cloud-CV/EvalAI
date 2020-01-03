@@ -614,6 +614,13 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
             team=self.participant_team3,
         )
 
+        self.user4_email = EmailAddress.objects.create(
+            user=self.user4,
+            email=user3.email,
+            primary=True,
+            verified=True,
+        )
+
     def test_registration_is_closed_for_a_particular_challenge(self):
         self.challenge2.is_registration_open = False
         self.challenge2.save()
@@ -770,6 +777,25 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         response = self.client.post(self.url, {})
         message = "Sorry, users with {} email domain(s) are only allowed to participate in this challenge."
         expected = {"error": message.format("example1/example2")}
+
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_participation_when_team_members_have_unverified_email(self):
+        self.user4_email.verified = False
+        self.user4_email.save()
+        self.url = reverse_lazy(
+            "challenges:add_participant_team_to_challenge",
+            kwargs={
+                "challenge_pk": self.challenge2.pk,
+                "participant_team_pk": self.participant_team2.pk,
+            },
+        )
+
+        response = self.client.post(self.url, {})
+        message = "All team members need to have verified emails in order to participate. \
+        Users with the following email addresses have unverified emails:\n{}"
+        expected = {"error": message.format(self.user4.email)}
 
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
