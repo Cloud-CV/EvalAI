@@ -269,19 +269,6 @@ def add_participant_team_to_challenge(
                     response_data, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
 
-    # Check if all participants have verified emails
-    unverified_users = []
-    for user in participant_team_user_ids:
-        if EmailAddress.objects.filter(user=user, verified=False).exists():
-            unverified_users.append(user)
-    if unverified_users:
-        message = "All team members need to have verified emails in order to participate. \
-        Users with the following user ids have unverified emails:\n{}".format(
-            "\n".join(unverified_users)
-        )
-        response_data = {"error": message}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-
     # Check if user is in allowed list.
     user_email = request.user.email
     if len(challenge.allowed_email_domains) > 0:
@@ -314,6 +301,23 @@ def add_participant_team_to_challenge(
         .filter(team__id=participant_team_pk)
         .values_list("user", flat=True)
     )
+
+    # Check if all participants have verified emails
+    unverified_emails = []
+    for user in participant_team_user_ids:
+        try:
+            unverified_user = EmailAddress.objects.get(user=user, verified=False)
+            unverified_emails.append(unverified_user)
+        except EmailAddress.DoesNotExist:
+            continue
+
+    if unverified_emails:
+        message = "All team members need to have verified emails in order to participate. \
+        Users with the following email addresses have unverified emails:\n{}".format(
+            "\n".join(unverified_emails)
+        )
+        response_data = {"error": message}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     for user in participant_team_user_ids:
         if has_user_participated_in_challenge(user, challenge_pk):
