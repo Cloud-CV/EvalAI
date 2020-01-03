@@ -17,25 +17,28 @@ Code Coverage Analysis
     <summary>View missing test cases</summary> 
     </br>
     1)def encode_data(data) : <br>
-    Turn `data` into a hash and an encoded string, suitable for use with `decode_data`.<br>
+    Turn a test `data` into a hash and an encoded string, suitable for use with `decode_data`.<br>
+    def decode_data(data)<br>
+    then use The inverse of `encode_data` to find if the test was successfully carried 
+    out or not.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L72
     <br>
-    2)def decode_data(data)<br>
-    The inverse of `encode_data`.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L82
     <br>
     3)send_email :<br>
-    Function to send email<br>
+    Test to confirm if the send email function was performed correctly<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L92
     <br>
     4)get_url_from_hostname(hostname) <br>
+    Test to check if the url is https or http when the developer mode has been switched off and on respectively.</br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L127
     <br>
     5)get_or_create_sqs_queue_object<br>
+    Test to check if queue evalai_submission_queue is created or not.</br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L157
     <br>
     6)send_slack_notification<br>
-    Exception raised while sending slack notification<br>
+    To test that when exception is raised a slack notification is sent or not<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L222
     
 </details>    
