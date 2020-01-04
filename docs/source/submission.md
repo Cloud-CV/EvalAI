@@ -12,7 +12,7 @@ Exchange receives the message and then routes it to the queue `submission_task_q
 
 The worker can be run with
 
-```
+```bash
 # assuming the current working directory is where manage.py lives
 python scripts/workers/submission_worker.py
 ```
@@ -21,7 +21,7 @@ python scripts/workers/submission_worker.py
 
 Submission worker is a python script which mostly runs as a daemon on a production server and simply acts as a python process in a development environment. To run submission worker in a development environment:
 
-```
+```bash
 python scripts/workers/submission_worker.py
 ```
 
@@ -31,7 +31,7 @@ Before a worker fully starts, it does the following actions:
 
 * Fetches the list of active challenges from the database. Active challenges are published challenges whose start date is less than present time and end date greater than present time. It loads all the challenge evaluation scripts in a variable called `EVALUATION_SCRIPTS`, with the challenge id as its key. The maps looks like this:
 
-    ```
+    ```python
     EVALUATION_SCRIPTS = {
         <challenge_pk> : <evalutaion_script_loaded_as_module>,
         ....
@@ -66,7 +66,7 @@ Expressing it informally it will be something like
 
 When a worker starts, it fetches active challenges from the database and then loads all the challenge evaluation scripts in a variable called `EVALUATION_SCRIPTS`, with challenge id as its key. The map would look like
 
-```
+```python
 EVALUATION_SCRIPTS = {
     <challenge_pk> : <evalutaion_script_loaded_as_module>,
     ....
@@ -96,7 +96,7 @@ When the user makes a submission on the frontend, the following actions happen s
 
 The format of the message is
 
-```
+```python
 {
     "challenge_id": <challenge_pk_here>,
     "phase_id": <challenge_phase_pk_here>,
