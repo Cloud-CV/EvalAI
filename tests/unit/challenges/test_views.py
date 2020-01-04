@@ -793,8 +793,8 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         )
 
         response = self.client.post(self.url, {})
-        message = "All team members need to have verified emails in order to participate. \
-        Users with the following email addresses have unverified emails:\n{}"
+        message = message = "Sorry, all team members must be verified through Email before participating. \
+        The following users have unverified email address:\n{}"
         expected = {"error": message.format(self.user4.email)}
 
         self.assertEqual(response.data, expected)

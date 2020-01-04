@@ -312,8 +312,8 @@ def add_participant_team_to_challenge(
             continue
 
     if unverified_emails:
-        message = "All team members need to have verified emails in order to participate. \
-        Users with the following email addresses have unverified emails:\n{}".format(
+        message = "Sorry, all team members must be verified through Email before participating. \
+        The following users have unverified email address:\n{}".format(
             "\n".join(unverified_emails)
         )
         response_data = {"error": message}
