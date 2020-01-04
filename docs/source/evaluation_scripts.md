@@ -6,7 +6,7 @@ Evaluation scripts are required to have an `evaluate()` function. This is the ma
 
 The syntax of evaluate function is:
 
-```
+```python
 def evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs):
     pass
 ```
@@ -23,7 +23,7 @@ After reading the files, some custom actions can be performed. This varies per c
 
 The `evaluate()` method also accepts keyword arguments. By default, we provide you metadata of each submission to your challenge which you can use to send notifications to your slack channel or to some other webhook service. Following is an example code showing how to get the submission metadata in your evaluation script and send a slack notification if the accuracy is more than some value `X` (X being 90 in the example given below).
 
-```
+```python
 def evaluate(test_annotation_file, user_annotation_file, phase_codename, **kwargs):
 
     submission_metadata = kwargs.get("submission_metadata")
@@ -50,7 +50,7 @@ The above example can be modified and used to find if some participant team is c
 
 After all the processing is done, this `evaluate()` should return an output, which is used to populate the leaderboard. The output should be in the following format:
 
-```
+```python
 output = {}
 output['result'] = [
             {
