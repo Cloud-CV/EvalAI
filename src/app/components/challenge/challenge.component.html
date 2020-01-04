@@ -64,6 +64,11 @@
                                         </a>
                                     </span>
                                 </span>
+                                <br>
+                                <mat-checkbox color="primary" class="fw-semibold" *ngIf="isChallengeHost"
+                                    [checked]="!challenge['is_registration_open']"
+                                    (click)="stopParticipation($event)">Close Participation
+                                </mat-checkbox>
                             </p>
                         </div>
                     </div>
