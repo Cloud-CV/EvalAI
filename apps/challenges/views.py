@@ -510,6 +510,7 @@ def challenge_phase_list(request, challenge_pk):
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes(
@@ -520,7 +521,6 @@ def challenge_phase_list(request, challenge_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def participate_auth(request):
     return Response(status=status.HTTP_202_ACCEPTED)
-
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
