@@ -1,7 +1,6 @@
-import os
-import mock
 import boto3
-from moto import mock_sqs
+import mock
+import os
 import requests
 import responses
 
@@ -28,6 +27,7 @@ from base.utils import (
 from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
+from moto import mock_sqs
 from participants.models import Participant, ParticipantTeam
 
 from scripts import seed
@@ -140,7 +140,9 @@ class TestRandomFileName(BaseAPITestClass):
 class TestEncodeData(BaseAPITestClass):
     def test_encode_data(self):
         mock_data = ['test_encode_data_on', 'test_encode_data_tw', 'test_encode_data_th']
-        expected = [b'dGVzdF9lbmNvZGVfZGF0YV9vbg', b'dGVzdF9lbmNvZGVfZGF0YV90dw', b'dGVzdF9lbmNvZGVfZGF0YV90aA']
+        expected = []
+        for i in mock_data:
+            expected.append(base64.urlsafe_b64encode(i.encode('utf-8')).rstrip(b"="))
         data = encode_data(mock_data)
         self.assertEqual(data, expected)
 
@@ -148,7 +150,11 @@ class TestEncodeData(BaseAPITestClass):
 class TestDecodeData(BaseAPITestClass):
     def test_decode_data(self):
         mock_data = ['dGVzdF9lbmNvZGVfZGF0YV9vbg', 'dGVzdF9lbmNvZGVfZGF0YV90dw', 'dGVzdF9lbmNvZGVfZGF0YV90aA']
-        expected = ['test_encode_data_on', 'test_encode_data_tw', 'test_encode_data_th']
+        expected = []
+        for i in mock_data:
+            padding = 4 - (len(i) % 4)
+            i = i + ("=" * padding)
+            expected.append(str(base64.urlsafe_b64decode(i), 'utf-8'))
         data = decode_data(mock_data)
         self.assertEqual(data, expected)
 
