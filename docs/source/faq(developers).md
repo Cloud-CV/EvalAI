@@ -62,7 +62,7 @@ Couldn't import Django,"when using command python manage.py migrate
 Firstly, check that you have activated the virtualenv.
 Install python dependencies using the following commands on the command line
 
-```
+```bash
 cd evalai
 pip install -r requirements/dev.txt
 ```
@@ -75,7 +75,7 @@ Can not load reporter “mocha”,it is not registered
 
 Uninstall karma and then install
 
-```
+```bash
 npm uninstall -g generator-karma && npm install -g generator-angular.
 ```
 
@@ -87,7 +87,7 @@ bower: command not found
 
 Execute the following command first :
 
-```
+```bash
 npm install -g bower
 ```
 
@@ -99,7 +99,7 @@ gulp: command not found
 
 Execute the following command first
 
-```
+```bash
 npm install -g gulp-cli
 ```
 
@@ -114,7 +114,7 @@ Error: Gem sass is not installed.
 
 Execute the following command first :
 
-```
+```bash
 gem install sass
 ```
 
@@ -142,7 +142,9 @@ npm ERR!     /home/ubuntu/Desktop/Python-2.7.14/npm-debug.log
 
 To solve, execute the following commands:
 
-1. `npm config set registry=registry.npmjs.org`
+```bash
+npm config set registry=registry.npmjs.org
+```
 
 If the above does not work, try deleting them by following commands:
 
@@ -209,7 +211,9 @@ ERROR: for db Cannot start service db: driver failed programming external connec
 The following solution only works on Linux.
 
 Execute :
-`sudo netstat -lpn |grep :5432`
+```bash
+sudo netstat -lpn | grep :5432
+```
 
 The output of the above would be in the following form:
 
@@ -219,7 +223,7 @@ tcp 0 0 127.0.0.1:5432 0.0.0.0:* LISTEN 25273/postgres
 
 Execute the following command:
 
-```
+```bash
 sudo kill 25273 ## This would vary and you can change with the output in the first step
 ```
 
@@ -252,7 +256,7 @@ TypeError: Cannot read properly 'apply of undefined'
 
 Execute the following command:
 
-```
+```bash
 rm -rf node_modules/
 rm -rf bower_components
 npm install
