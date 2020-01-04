@@ -17,13 +17,11 @@ from .serializers import SubmissionSerializer
 from .utils import get_file_from_url
 from .sender import publish_submission_message
 
-QUEUE_NAME = os.environ.get('QUEUE_NAME', 'evalai_submission_queue')
-
 logger = logging.getLogger(__name__)
 dramatiq.set_broker(broker)
 
 
-@dramatiq.actor(queue=QUEUE_NAME)
+@dramatiq.actor
 def download_file_and_publish_submission_message(
     request_data,
     user_pk,
