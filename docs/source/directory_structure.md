@@ -78,7 +78,7 @@ A folder for storing helper scripts, e.g. a script to fetch pull request
 
 One of the main directories, which contains the code for submission worker. Submission worker is a normal python worker which is responsible for processing and evaluating submission of a user. The command to start a worker is:
 
-```
+```bash
 python scripts/workers/submission_worker.py
 ```
 
@@ -90,6 +90,6 @@ All of the codebase related to testing resides in `tests` folder in the root dir
 
 To perform certain actions like seeding the database, we use Django management commands. Since the management commands are common throughout the project, they are present in `base` application directory. At the moment, the only management command is `seed`, which is used to populate the database with some random values. The command can be invoked by calling
 
-```
+```bash
 python manage.py seed
 ```
