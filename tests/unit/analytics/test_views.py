@@ -887,7 +887,7 @@ class GetLastSubmissionDateTimeAnalysisTest(BaseAPITestClass):
             },
         )
         expected = {
-            "message": "You dont have any submissions in this challenge!"
+            "message": "You don't have any submissions in this challenge!"
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)

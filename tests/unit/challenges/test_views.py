@@ -2800,7 +2800,7 @@ class CreateChallengeUsingZipFile(APITestCase):
             kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
         )
         expected = {
-            "error": "A server error occured while processing zip file. Please try again!"
+            "error": "A server error occurred while processing zip file. Please try again!"
         }
         response = self.client.post(
             self.url,
