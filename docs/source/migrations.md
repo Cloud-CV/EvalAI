@@ -8,14 +8,14 @@
 
 * We recommend you to create migrations per app, where the changes are only about a single issue or feature.
 
-```
+```bash
 # migration only for jobs app
 python manage.py makemigrations jobs
 ```
 
 * Always create named migrations. You can name migrations by passing `-n` or `--name` argument
 
-```
+```bash
 python manage.py makemigrations jobs -n=execution_time_limit
 # or
 python manage.py makemigrations jobs --name=execution_time_limit
@@ -23,7 +23,7 @@ python manage.py makemigrations jobs --name=execution_time_limit
 
 * While creating migrations on local environment, don't forget to add development settings.
 
-```
+```bash
 python manage.py makemigrations
 ```
 
