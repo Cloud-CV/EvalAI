@@ -27,7 +27,7 @@ services:
     volumes:
       - .:/code
 
-  celery:
+  dramatiq:
     hostname: dramatiq
     env_file:
       - docker/dev/docker.env
