@@ -26,8 +26,9 @@ Let's assume that we want to approve a challenge with name `Random Number Genera
 Since you have just approved the challenge, the submission worker has to be reloaded so that it can fetch the evaluation script and other related files for your challenge from the database. Now reload the submission worker using the following command:
 
 Run the following command:
-
-    docker-compose restart worker
+```bash
+docker-compose restart worker
+```
 
 **Submission worker has been successfully reloaded!**
 
