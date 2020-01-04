@@ -286,4 +286,43 @@ export class ChallengeComponent implements OnInit {
     };
     SELF.globalService.showModal(PARAMS);
   }
+
+  stopParticipation(event) {
+    event.preventDefault();
+    const participationState = (this.challenge['is_registration_open']) ? 'Close' : 'Open';
+
+    this.apiCall = () => {
+      if (this.isChallengeHost && this.challenge['id'] !== null) {
+        const BODY = JSON.stringify({
+          'is_registration_open': !this.challenge['is_registration_open']
+        });
+        this.apiService.patchUrl(
+          this.endpointsService.editChallengeDetailsURL(this.challenge.creator.id, this.challenge.id),
+          BODY
+        ).subscribe(
+          () => {
+            this.challenge['is_registration_open'] = !this.challenge['is_registration_open'];
+            this.globalService.showToast(
+              'success', 'Participation is ' + participationState.replace('n', 'ne') + 'd successfully', 5
+            );
+          },
+          err => {
+            this.globalService.handleApiError(err, true);
+            this.globalService.showToast('error', err);
+          },
+          () => {}
+          );
+      }
+    };
+
+    const PARAMS = {
+      title: participationState + ' participation in the challenge?',
+      content: '',
+      confirm: 'Yes, I\'m sure',
+      deny: 'No',
+      confirmCallback: this.apiCall
+    };
+    this.globalService.showConfirm(PARAMS);
+  }
+
 }
