@@ -28,12 +28,12 @@ services:
       - .:/code
 
   celery:
-    hostname: celery
+    hostname: dramatiq
     env_file:
       - docker/dev/docker.env
     build:
       context: ./
-      dockerfile: docker/dev/celery/Dockerfile
+      dockerfile: docker/dev/dramatiq/Dockerfile
     depends_on:
       - django
     volumes:
