@@ -28,7 +28,7 @@ class Contact(TimeStampedModel):
 
 
 class Subscribers(TimeStampedModel):
-    """Model representing subbscribed user's email"""
+    """Model representing subscribed user's email"""
 
     email = models.EmailField(max_length=70)
 

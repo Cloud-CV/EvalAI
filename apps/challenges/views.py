@@ -365,7 +365,7 @@ def get_all_challenges(request, challenge_time):
 
     elif challenge_time.lower() == "future":
         q_params["start_date__gt"] = timezone.now()
-    # for `all` we dont need any condition in `q_params`
+    # for `all` we don't need any condition in `q_params`
 
     # don't return disabled challenges
     q_params["is_disabled"] = False
@@ -441,7 +441,7 @@ def get_challenges_based_on_teams(request):
         response_data = {"error": "Invalid url pattern!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    # either mode should be there or one of paricipant team and host team
+    # either mode should be there or one of participant team and host team
     if mode and (participant_team_id or challenge_host_team_id):
         response_data = {"error": "Invalid url pattern!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -661,7 +661,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 
     except requests.exceptions.RequestException:
         message = (
-            "A server error occured while processing zip file. "
+            "A server error occurred while processing zip file. "
             "Please try again!"
         )
         response_data = {"error": message}
@@ -862,7 +862,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
             yaml_file_data["evaluation_details"] = None
     except KeyError:
         message = (
-            "There is no key for evalutaion details. "
+            "There is no key for evaluation details. "
             "Please add it and then try again!"
         )
         response_data = {"error": message}
@@ -1426,7 +1426,7 @@ def download_all_submissions(
                         "Team Name",
                         "Team Members",
                         "Team Members Email Id",
-                        "Team Members Affiliaton",
+                        "Team Members Affiliation",
                         "Challenge Phase",
                         "Status",
                         "Created By",
@@ -1904,7 +1904,7 @@ def get_aws_credentials_for_participant_team(request, phase_pk):
                 }
         Raises:
             - BadRequestException 400
-                - When participant_team has not participanted in challenge
+                - When participant_team has not participated in challenge
                 - When Challenge is not Docker based
     """
     challenge_phase = get_challenge_phase_model(phase_pk)
@@ -2076,7 +2076,7 @@ def get_challenge_by_queue_name(request, queue_name):
     """
     API endpoint to fetch the challenge details by using pk
     Arguments:
-        queue_name -- Challenge queue name for which the challenge deatils are fetched
+        queue_name -- Challenge queue name for which the challenge details are fetched
     Returns:
         Response Object -- An object containing challenge details
     """

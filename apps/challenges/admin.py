@@ -80,7 +80,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         else:
             messages.success(
                 request,
-                "{} challenge workers were succesfully started.".format(count),
+                "{} challenge workers were successfully started.".format(count),
             )
             for fail in failures:
                 challenge_pk, message = fail["challenge_pk"], fail["message"]
@@ -103,7 +103,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         else:
             messages.success(
                 request,
-                "{} challenge workers were succesfully stopped.".format(count),
+                "{} challenge workers were successfully stopped.".format(count),
             )
             for fail in failures:
                 challenge_pk, message = fail["challenge_pk"], fail["message"]
@@ -127,7 +127,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
             else:
                 messages.success(
                     request,
-                    "{} challenge workers were succesfully scaled.".format(
+                    "{} challenge workers were successfully scaled.".format(
                         count
                     ),
                 )
@@ -159,7 +159,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         else:
             messages.success(
                 request,
-                "{} challenge workers were succesfully restarted.".format(
+                "{} challenge workers were successfully restarted.".format(
                     count
                 ),
             )
@@ -184,7 +184,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         else:
             messages.success(
                 request,
-                "{} challenge workers were succesfully deleted.".format(count),
+                "{} challenge workers were successfully deleted.".format(count),
             )
             for fail in failures:
                 challenge_pk, message = fail["challenge_pk"], fail["message"]

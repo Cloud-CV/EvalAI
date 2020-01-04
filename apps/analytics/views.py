@@ -124,7 +124,7 @@ def get_submission_count(request, challenge_pk, duration):
         since_date = (timezone.now() - timedelta(days=30)).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
-    # for `all` we dont need any condition in `q_params`
+    # for `all` we don't need any condition in `q_params`
     if since_date:
         q_params["submitted_at__gte"] = since_date
 
@@ -235,7 +235,7 @@ def get_last_submission_datetime_analysis(
 
     if not submissions:
         response_data = {
-            "message": "You dont have any submissions in this challenge!"
+            "message": "You don't have any submissions in this challenge!"
         }
         return Response(response_data, status.HTTP_200_OK)
 
@@ -249,7 +249,7 @@ def get_last_submission_datetime_analysis(
 
     if not submissions_in_a_phase:
         last_submission_timestamp_in_challenge_phase = (
-            "You dont have any submissions in this challenge phase!"
+            "You don't have any submissions in this challenge phase!"
         )
     else:
         last_submission_timestamp_in_challenge_phase = submissions_in_a_phase.order_by(
