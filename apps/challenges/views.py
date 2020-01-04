@@ -473,7 +473,6 @@ def get_challenges_based_on_teams(request):
 @permission_classes(
     (
         permissions.IsAuthenticatedOrReadOnly,
-        HasVerifiedEmail,
         IsChallengeCreator,
     )
 )
@@ -510,6 +509,18 @@ def challenge_phase_list(request, challenge_pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes(
+    (
+        HasVerifiedEmail,
+    )
+)
+@authentication_classes((ExpiringTokenAuthentication,))
+def participate_auth(request):
+    return Response(status=status.HTTP_202_ACCEPTED)
+
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])

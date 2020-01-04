@@ -156,4 +156,9 @@ urlpatterns = [
         views.get_challenge_phase_environment_url,
         name="get_challenge_phase_environment_url",
     ),
+    url(
+        r"^participate/$",
+        views.participate_auth,
+        name="participateAuth",
+    ),
 ]
