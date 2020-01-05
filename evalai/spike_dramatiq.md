@@ -1,11 +1,12 @@
 # Check the feasibility of using dramatiq instead of Celery
 * Motivation
    -
-   - ElasticMQ was initially incorporated into the EvalAI project when we moved from RabbitMQ to AWS SQS in the production environment. This was done so as to enable a SQS-style interface in developer mode to mock the same.
+   - ElasticMQ was initially incorporated into the EvalAI project when we moved from RabbitMQ to AWS SQS in the production environment. 
+   - ElasticMQ was added so as to enable a SQS-style interface in developer mode to mock the same.
    - Refer: https://github.com/Cloud-CV/EvalAI/pull/1752
    - But as per recent builds, while Celery works with SQS, it seems incompatible with ElasticMQ.
    - Refer: https://github.com/celery/celery/issues/5406
-   - Therefore we are having to move to another broker which supports ElasticMQ and this report looks into [dramatiq](https://github.com/bogdanp/dramatiq_sqs) as an option for the same.
+   - Therefore we are having to move to another worker which supports ElasticMQ and this report looks into [dramatiq](https://github.com/bogdanp/dramatiq_sqs) as an option.
 * Required changes:
   -
   - Dependency changes
