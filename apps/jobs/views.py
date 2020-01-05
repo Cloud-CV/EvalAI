@@ -259,7 +259,7 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 return Response(
                     response_data, status=status.HTTP_400_BAD_REQUEST
                 )
-            download_file_and_publish_submission_message.delay(
+            download_file_and_publish_submission_message.send(
                 request.data,
                 request.user.id,
                 request.method,

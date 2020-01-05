@@ -7,7 +7,6 @@ from challenges.models import ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpRequest
-from evalai.dramatiq import broker
 from participants.models import ParticipantTeam
 from participants.utils import (
     get_participant_team_id_of_user_for_a_challenge
@@ -18,7 +17,6 @@ from .utils import get_file_from_url
 from .sender import publish_submission_message
 
 logger = logging.getLogger(__name__)
-dramatiq.set_broker(broker)
 
 
 @dramatiq.actor

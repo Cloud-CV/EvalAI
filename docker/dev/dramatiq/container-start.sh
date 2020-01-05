@@ -1,3 +1,3 @@
 #!/bin/sh
 cd /code && \
-dramatiq evalai
+python manage.py rundramatiq

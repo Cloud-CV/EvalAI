@@ -5,6 +5,7 @@ coverage==4.2
 coveralls==1.1
 django-autofixture==0.12.1
 django-debug-toolbar==1.8
+django_dramatiq==0.8.0
 django-extensions==1.7.8
 django-silk==1.0.0
 django-spaghetti-and-meatballs==0.2.2

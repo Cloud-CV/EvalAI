@@ -34,13 +34,16 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
-INSTALLED_APPS += [  # noqa: ignore=F405
+THIRD_PARTY_APPS += [  # noqa: ignore=F405
+    "django_dramatiq",
     "django_spaghetti",
     "autofixture",
     "debug_toolbar",
     "django_extensions",
     "silk",
 ]
+
+INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS  # noqa
 
 SPAGHETTI_SAUCE = {
     "apps": [
@@ -69,6 +72,30 @@ MIDDLEWARE += [  # noqa: ignore=F405
 ]
 
 SILKY_PYTHON_PROFILER = True
+
+DRAMATIQ_BROKER = {
+    "BROKER": "dramatiq_sqs.SQSBroker",
+    "OPTIONS": {
+        "endpoint_url": os.environ.get('AWS_SQS_ENDPOINT', 'http://127.0.0.1:9324'),
+        "region_name": os.environ.get('AWS_SQS_REGION', 'us-east-1'),
+        "aws_access_key_id": os.environ.get('AWS_ACCESS_KEY_ID', 'x'),
+        "aws_secret_access_key": os.environ.get('AWS_SECRET_ACCESS_KEY', 'x'),
+    },
+    "NAMESPACE": "dramatiq_sqs_tests",
+    "MIDDLEWARE": [
+        "dramatiq.middleware.Prometheus",
+        "dramatiq.middleware.AgeLimit",
+        "dramatiq.middleware.TimeLimit",
+        "dramatiq.middleware.Callbacks",
+        "dramatiq.middleware.Retries",
+        "django_dramatiq.middleware.AdminMiddleware",
+        "django_dramatiq.middleware.DbConnectionsMiddleware",
+    ],
+}
+
+# Defines which database should be used to persist Task objects when the
+# AdminMiddleware is enabled.  The default value is "default"
+DRAMATIQ_TASKS_DATABASE = "evalai"
 
 # Prevents Datetime warning by showing errors
 warnings.filterwarnings(
