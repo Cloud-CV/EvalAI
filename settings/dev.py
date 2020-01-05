@@ -76,10 +76,10 @@ SILKY_PYTHON_PROFILER = True
 DRAMATIQ_BROKER = {
     "BROKER": "dramatiq_sqs.SQSBroker",
     "OPTIONS": {
-        "endpoint_url": os.environ.get('AWS_SQS_ENDPOINT', 'http://127.0.0.1:9324'),
-        "region_name": os.environ.get('AWS_SQS_REGION', 'us-east-1'),
-        "aws_access_key_id": os.environ.get('AWS_ACCESS_KEY_ID', 'x'),
-        "aws_secret_access_key": os.environ.get('AWS_SECRET_ACCESS_KEY', 'x'),
+        "endpoint_url": os.environ.get('AWS_SQS_ENDPOINT', 'http://127.0.0.1:9324'),  # noqa: ignore=F405
+        "region_name": os.environ.get('AWS_SQS_REGION', 'us-east-1'),  # noqa: ignore=F405
+        "aws_access_key_id": os.environ.get('AWS_ACCESS_KEY_ID', 'x'),  # noqa: ignore=F405
+        "aws_secret_access_key": os.environ.get('AWS_SECRET_ACCESS_KEY', 'x'),  # noqa: ignore=F405
     },
     "NAMESPACE": "dramatiq_sqs_tests",
     "MIDDLEWARE": [

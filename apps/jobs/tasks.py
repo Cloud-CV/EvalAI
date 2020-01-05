@@ -3,6 +3,8 @@ import logging
 import os
 import shutil
 
+from evalai.dramatiq import broker
+
 from challenges.models import ChallengePhase
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +19,7 @@ from .utils import get_file_from_url
 from .sender import publish_submission_message
 
 logger = logging.getLogger(__name__)
+dramatiq.set_broker(broker)
 
 
 @dramatiq.actor
