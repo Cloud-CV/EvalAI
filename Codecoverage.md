@@ -30,11 +30,11 @@ Code Coverage Analysis
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L92
     <br>
     4)get_url_from_hostname(hostname) <br>
-    Test to check if the url is https or http when the developer mode has been switched off and on respectively.</br>
+    Test to check if the url is https or http when the developer mode has been switched off and on respectively.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L127
     <br>
     5)get_or_create_sqs_queue_object<br>
-    Test to check if queue evalai_submission_queue is created or not.</br>
+    Test to check if queue evalai_submission_queue is created or not.A blank queue can be used for testing.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/base/utils.py#L157
     <br>
     6)send_slack_notification<br>
@@ -63,21 +63,36 @@ This file does'nt has any test cases.
 <details>
     <summary>View missing test cases</summary>
     <br>
-    1)start_selected_workers :<br>
+    1)Test to check if the selected_workers have carried out their operations successfully, that is, to, start, stop, scale,
+    restart and delete. To check if the corresponding messages are displayed correctly of not.</br>
+    start_selected_workers :<br>
     message to display successful or unsuccessful start of selected workers<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L73<br>
-    2)stop_selected_workers : <br>
+    )stop_selected_workers : <br>
     message to display successful or unsuccessful stop of selected workers<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L96<br>
-    3)scale_selected_workers :<br>
+    )scale_selected_workers :<br>
     message to display successful or unsuccessful scale of selected workers<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L119<br>
-    4)restart_selected_workers :<br>
+    )restart_selected_workers :<br>
     message to display successful or unsuccessful restart of selected workers<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L152<br>
-    5)delete_selected_workers :<br>
+    )delete_selected_workers :<br>
     message to display successful or unsuccessful delete of selected workers<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L177 <br>
+    2)Test to check if the returned value of challenge name corresponding to phase-split is correct or not.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L259
+    Similar tests required to check returned values for<br>
+    >challenge name and id for a challenge<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L328<br>
+    >username and id of a user<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L335<br>
+    >the host team name and the member name<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L342<br>
+    >challenge name corresponding to leaderboard data entry<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L300<br>
+    >challenge name corresponding to phase<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/challenges/admin.py#L233<br>
     
 </details>    
     
@@ -106,6 +121,10 @@ The coverage is extremely low and therefore the whole file must be considered fo
     1)publish_submission_message<br>
     Display error message<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/jobs/sender.py#L73<br>
+    2) similar queue start test as " Test to check if queue evalai_submission_queue is created or not"
+    A blank queue can be used for testing.<br>
+    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/jobs/sender.py#L42
+    
 </details>
 
 
@@ -123,12 +142,15 @@ A look at the file is required since the coverage is extremely low and none of i
     <br>
     1)get_remaining_submission_for_a_phase<br>
     response messages are not tested. Monthly submission limit check for time and date is not tested.<br>
+    if submissions_done_today_count >= max_submissions_per_day_count, to make a test for blank submissions and test out diffrent outputs 
+    and messages.
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/jobs/utils.py#L74<br>
     2)is_url_valid:<br>
-     Checks that a given URL is reachable<br>
+    Test to check urllib.request.Request is working properly(url)<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/jobs/utils.py#L140<br>
     3)get_file_from_url<br>
-    Get file object from a url
+    Test for proper download of a file from a url. A blank file may be used from a specific test url
+    to do so.
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/apps/jobs/utils.py#L155<br>
     
 </details>
@@ -151,7 +173,7 @@ A look at the file is required since the coverage is extremely low and none of i
     <summary>View missing test cases</summary>
     <br>
 celery_dev does not have test code<br>
-developer settings to be used do not have test code<br>
+Check for this app.conf.task_default_queue = 'celery_dev' when developers setting is  enabled<br>
 https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
 </details>
 
@@ -160,7 +182,7 @@ https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
 <details>
     <summary>View missing test cases</summary>
     <br>
- URLs pattern test for debug mode<br>
+ Test for  adding " urlpatterns += "<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/urls.py#L99
 </details>
 
@@ -179,13 +201,17 @@ https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
 <details>
     <summary>View missing test cases</summary>
     <br>
-    1) onSuccess: function(response)<br>
+    1) onSuccess: function(response)
+    <br>
+    Test to check if this function is working properly "  if (challengePhaseId[i] == response.data.challenge_phase)"<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L144<br>
     2) navigate to permissions denied page<br>
+    Test navigation to permission denied page<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L161    <br>
     3) & 4) Similar at https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L184 & https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L200<br>
     5)vm.downloadChallengeParticipantTeams = function()<br>
     Response OnSuccess and OnError response ; Getting participants of a specific challenge ID<br>
+    We need a test case which will ensure the download of CSV file.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/analyticsCtrl.js#L236<br>
 </details>
 
@@ -195,20 +221,22 @@ https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
 <details>
     <summary>View missing test cases</summary>
     <br>
-    1) toggle password visibility<br>
+    1)Test to ensure that password's visibility has been toggled<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L58<br>
-    2) toggle confirm password visibility<br>
+    2)Test to ensure that confirm password's visibility has been toggled<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L64<br>
     3)parameters.callback<br>
-    Check for different fields in webpage if valid or not. eg email, password etc. and show message "vm.regMsg = "Registered   <br>     
+    Test to check for different diversity of field in webpage and
+    respective forwarding of state. eg email, password etc. and show message "vm.regMsg = "Registered   <br>     
     successfully, Login to continue!";" via vm.regmsg <br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L101<br>
     5)parameters.callback<br>
-    Process user info and change the state accorddingly and message generation<br>
+    Cross the list, is fields are "'undefined' ? true : false" Process user info and change the state accorddingly
+    and message generation<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L163<br>
-    6)Check password strength<br>
+    6)Test to check if password strength is correctly displayed<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L200<br>
-    7) New password function<br>
+    7) Test for reset password function error<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/authCtrl.js#L282<br>
 </details>
     
@@ -219,13 +247,14 @@ https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
 <details>
     <summary>View missing test cases</summary>
     <br>
-    1) timeout function for " get unique rank number from the url & if exists hightlight the entry".<br>
+    1) Test for " get unique rank number from the url & if exists hightlight the entry" by using a test string and highlighting for
+    testing purposes.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L76<br>
-    2)scroll to the specific entry of the leaderboard<br>
+    2)Test for $location, $scroll and $anchor<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L87<br>
-    3)Error message while pagination when no teams are left<br>
+    3)Test for onerror pagination message<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L222<br>
-    4)vm.existTeam = details;<br>
+    4)All functions related to pagination must be tested<br>
     reinitialized data<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L304<br>
     5) if (vm.existTeam.next === null)<br>
