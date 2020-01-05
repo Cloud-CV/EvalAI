@@ -534,7 +534,8 @@ def run_submission(
     if submission_output:
         output = {}
         output["result"] = submission_output.get("result", "")
-        submission.output = output
+        if successful_submission_flag:
+            submission.output = output
 
         # Save submission_result_file
         submission_result = submission_output.get("submission_result", "")
