@@ -1,5 +1,7 @@
 # Details to setup EvalAI for Development and Production
 
+The first thing you need to do is enable EvalAI in your TraviCI dashboard so that all builds will be covered by TravisCI.
+
 ### Step 1
 #### Create .travis.yml file
 
