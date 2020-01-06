@@ -134,34 +134,18 @@
         };
         return directive;
         
-        function controller($scope) {
+        function controller($scope,$rootScope) {
             $scope.year = new Date().getFullYear();
             var js = document.createElement("script");
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
             document.getElementsByTagName("head")[0].appendChild(js);
-       }
-    }
-})();
-//Dashboard Footer directive
-(function() {
-    'use strict';
-    // dynamic header directive
-    angular.module('evalai').directive('dashboardFooter', dashboardFooter);
-
-    function dashboardFooter() {
-        var directive = {
-            templateUrl: 'dist/views/web/partials/dashboard-footer.html',
-            transclude: true,
-            restrict: 'EA',
-            controller: controller
-        };
-        return directive;
-
-        function controller($scope) {
-            $scope.year = new Date().getFullYear();
-           var js = document.createElement("script");
-            js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
-            document.getElementsByTagName("head")[0].appendChild(js);
+            if ($rootScope.isAuth === true) {
+                document.getElementById("footer").classList.add('dashboard-footer');
+                document.getElementById("footer").classList.remove('ev-footer');
+            } else if ($rootScope.isAuth === false) {
+                document.getElementById("footer").classList.add('ev-footer');
+                document.getElementById("footer").classList.remove('dashboard-footer');
+            }
        }
     }
 })();
