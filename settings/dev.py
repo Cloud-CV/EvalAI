@@ -34,13 +34,15 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
 
 # DJANGO-SPAGHETTI-AND-MEATBALLS SETTINGS
-INSTALLED_APPS += [  # noqa: ignore=F405
+THIRD_PARTY_APPS += [  # noqa: ignore=F405
     "django_spaghetti",
     "autofixture",
     "debug_toolbar",
     "django_extensions",
     "silk",
 ]
+
+INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + OUR_APPS  # noqa
 
 SPAGHETTI_SAUCE = {
     "apps": [
@@ -69,6 +71,7 @@ MIDDLEWARE += [  # noqa: ignore=F405
 ]
 
 SILKY_PYTHON_PROFILER = True
+
 
 # Prevents Datetime warning by showing errors
 warnings.filterwarnings(
