@@ -10,7 +10,7 @@ django-extensions==1.7.8
 django-silk==1.0.0
 django-spaghetti-and-meatballs==0.2.2
 dramatiq==1.7.0
-dramatiq_sqs==0.0.10
+dramatiq_sqs==0.0.11
 flake8==3.0.4
 mock==2.0.0
 pre-commit==1.14.4

@@ -80,6 +80,7 @@ DRAMATIQ_BROKER = {
         "region_name": 'elasticmq',
         "aws_access_key_id": 'x',
         "aws_secret_access_key": 'x',
+        "use_ssl": False,
     },
     "MIDDLEWARE": [
         "dramatiq.middleware.Prometheus",
