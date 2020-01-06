@@ -251,3 +251,19 @@ md-select.md-default-theme .md-select-value span:first-child:after, md-select .m
     display: inline-block;
     padding-left: 10px;
 }
+#showonVerified {
+    display: block;
+}
+#showonUnverified {
+    display: none;
+}
+.collapsible-body p {
+    padding: 0;
+}
+
+.listofchallenge {
+    margin-bottom: 0;
+}
+.ev-btn-scroll {
+    bottom: 20px;
+}

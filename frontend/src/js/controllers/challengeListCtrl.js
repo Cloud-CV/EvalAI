@@ -168,13 +168,17 @@
         vm.scrollUp = function() {
             utilities.hideButton();
             angular.element($window).bind('scroll', function() {
-                if (this.pageYoffset >= 100) {
+                if (window.pageYOffset >= 200) {
                     utilities.showButton();
                 } else {
                     utilities.hideButton();
                 }
             });
         };
+        $(document).ready(function(){
+            $('.collapsible').collapsible();
+          });
+        
     }
 
 })();
