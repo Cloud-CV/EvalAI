@@ -2543,6 +2543,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             visibility=ChallengePhaseSplit.PUBLIC,
             leaderboard_decimal_precision=2,
             is_leaderboard_order_descending=True,
+            show_leaderboard_by_latest_submission=False
         )
 
         self.challenge_phase_split_host = ChallengePhaseSplit.objects.create(
@@ -2550,6 +2551,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.HOST,
+            show_leaderboard_by_latest_submission=False
         )
 
     def tearDown(self):
@@ -2573,6 +2575,8 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
+                "show_leaderboard_by_latest_submission":
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
             }
         ]
         self.client.force_authenticate(user=self.participant_user)
@@ -2608,6 +2612,8 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
+                "show_leaderboard_by_latest_submission":
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
             },
             {
                 "id": self.challenge_phase_split_host.id,
@@ -2616,6 +2622,8 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split_host.id,
                 "dataset_split_name": self.dataset_split_host.name,
                 "visibility": self.challenge_phase_split_host.visibility,
+                "show_leaderboard_by_latest_submission":
+                    self.challenge_phase_split_host.show_leaderboard_by_latest_submission
             },
         ]
         self.client.force_authenticate(user=self.user)
@@ -4012,3 +4020,96 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GetAWSCredentialsForParticipantTeamTest(BaseChallengePhaseClass):
+    def setUp(self):
+        super(GetAWSCredentialsForParticipantTeamTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:star_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        self.user1 = User.objects.create(
+            username="otheruser1",
+            password="other_secret_password",
+            email="user1@test.com",
+        )
+
+        self.user2 = User.objects.create(
+            username="otheruser2",
+            password="other_secret_password",
+            email="user2@test.com",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email="user1@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email="user2@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name="Participant Team for Challenge8", created_by=self.user1
+        )
+
+        self.participant1 = Participant.objects.create(
+            user=self.user1,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+        self.challenge.participant_teams.add(self.participant_team)
+        self.client.force_authenticate(user=self.user1)
+        self.challenge.is_docker_based = True
+        self.challenge.save()
+
+    def test_get_aws_credentials_when_challenge_is_not_docker_based(self):
+        self.challenge.is_docker_based = False
+        self.challenge.save()
+
+        self.url = reverse_lazy(
+            "challenges:get_aws_credentials_for_participant_team",
+            kwargs={"phase_pk": self.challenge_phase.pk},
+        )
+        expected = {
+            "error": "Sorry, this is not a docker based challenge."
+        }
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_aws_credentials_when_not_participated(self):
+        self.url = reverse_lazy(
+            "challenges:get_aws_credentials_for_participant_team",
+            kwargs={"phase_pk": self.challenge_phase.pk},
+        )
+        expected = {
+            "error": "You have not participated in this challenge."
+        }
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_aws_credentials(self):
+        self.url = reverse_lazy(
+            "challenges:get_aws_credentials_for_participant_team",
+            kwargs={"phase_pk": self.challenge_phase.pk},
+        )
+        response = self.client.get(self.url, {})
+        data = response.data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Check if all fields for cli exists
+        self.assertTrue("federated_user" in data["success"])
+        self.assertTrue("docker_repository_uri" in data["success"])
+        federated_user = data["success"]["federated_user"]
+        self.assertTrue("AccessKeyId" in federated_user["Credentials"])
+        self.assertTrue("SecretAccessKey" in federated_user["Credentials"])
+        self.assertTrue("SessionToken" in federated_user["Credentials"])

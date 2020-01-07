@@ -1,11 +1,19 @@
 import mock
+import os
+import responses
+import shutil
+import tempfile
+
+from os.path import join
 
 from unittest import TestCase
 
 from scripts.workers.remote_submission_worker import (
+    create_dir_as_python_package,
     make_request,
     get_message_from_sqs_queue,
     delete_message_from_sqs_queue,
+    download_and_extract_file,
     get_submission_by_pk,
     get_challenge_phases_by_challenge_pk,
     get_challenge_by_queue_name,
@@ -23,6 +31,7 @@ class BaseTestClass(TestCase):
         self.challenge_phase_pk = 1
         self.data = {"test": "data"}
         self.headers = {"Authorization": "Token test_token"}
+        self.testserver = "http://testserver"
 
     def make_request_url(self):
         return "/test/url"
@@ -30,8 +39,8 @@ class BaseTestClass(TestCase):
     def get_message_from_sqs_queue_url(self, queue_name):
         return "/api/jobs/challenge/queues/{}/".format(queue_name)
 
-    def delete_message_from_sqs_queue_url(self, queue_name, receipt_handle):
-        return "/api/jobs/queues/{}/receipt/{}/".format(queue_name, receipt_handle)
+    def delete_message_from_sqs_queue_url(self, queue_name):
+        return "/api/jobs/queues/{}/".format(queue_name)
 
     def get_submission_by_pk_url(self, submission_pk):
         return "/api/jobs/submission/{}".format(submission_pk)
@@ -68,6 +77,10 @@ class MakeRequestTestClass(BaseTestClass):
         make_request(self.url, "PATCH", data=self.data)
         mock_make_request.patch.assert_called_with(url=self.url, headers=self.headers, data=self.data)
 
+    def test_make_request_post(self, mock_make_request):
+        make_request(self.url, "POST", data=self.data)
+        mock_make_request.post.assert_called_with(url=self.url, headers=self.headers, data=self.data)
+
 
 @mock.patch("scripts.workers.remote_submission_worker.QUEUE_NAME", "evalai_submission_queue")
 @mock.patch("scripts.workers.remote_submission_worker.return_url_per_environment")
@@ -83,11 +96,12 @@ class APICallsTestClass(BaseTestClass):
 
     def test_delete_message_from_sqs_queue(self, mock_make_request, mock_url):
         test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
-        url = self.delete_message_from_sqs_queue_url("evalai_submission_queue", test_receipt_handle)
+        url = self.delete_message_from_sqs_queue_url("evalai_submission_queue")
         delete_message_from_sqs_queue(test_receipt_handle)
         mock_url.assert_called_with(url)
         url = mock_url(url)
-        mock_make_request.assert_called_with(url, "GET")
+        expected_data = {"receipt_handle": "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"}
+        mock_make_request.assert_called_with(url, "POST", data=expected_data)
 
     def test_get_challenge_by_queue_name(self, mock_make_request, mock_url):
         url = self.get_challenge_by_queue_name_url("evalai_submission_queue")
@@ -141,3 +155,60 @@ class URLFormatTestCase(BaseTestClass):
         expected_url = "http://testserver:80{}".format(url)
         returned_url = return_url_per_environment(url)
         self.assertEqual(returned_url, expected_url)
+
+
+class CreateDirAsPythonPackageTest(BaseTestClass):
+    def setUp(self):
+        super(CreateDirAsPythonPackageTest, self).setUp()
+
+        self.BASE_TEMP_DIR = tempfile.mkdtemp()
+        self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
+
+    def test_create_dir_as_python_package(self):
+        create_dir_as_python_package(self.temp_directory)
+        self.assertTrue(os.path.isfile(join(self.temp_directory, "__init__.py")))
+
+        with open(join(self.temp_directory, "__init__.py")) as f:
+            self.assertEqual(f.read(), "")
+
+        shutil.rmtree(self.temp_directory)
+        self.assertFalse(os.path.exists(self.temp_directory))
+
+
+class DownloadAndExtractFileTest(BaseTestClass):
+    def setUp(self):
+        super(DownloadAndExtractFileTest, self).setUp()
+        self.req_url = "{}{}".format(self.testserver, self.make_request_url())
+        self.file_content = b'file content'
+
+        self.temp_directory = tempfile.mkdtemp()
+        self.download_location = join(self.temp_directory, "dummy_file")
+
+    def tearDown(self):
+        if os.path.exists(self.temp_directory):
+            shutil.rmtree(self.temp_directory)
+
+    @responses.activate
+    def test_download_and_extract_file_success(self):
+        responses.add(responses.GET, self.req_url,
+                      body=self.file_content,
+                      content_type='application/octet-stream',
+                      status=200)
+
+        download_and_extract_file(self.req_url, self.download_location)
+
+        self.assertTrue(os.path.exists(self.download_location))
+        with open(self.download_location, "rb") as f:
+            self.assertEqual(f.read(), self.file_content)
+
+    @responses.activate
+    @mock.patch("scripts.workers.remote_submission_worker.logger.error")
+    def test_download_and_extract_file_when_download_fails(self, mock_logger):
+        error = "ExampleError: Example Error description"
+        responses.add(responses.GET, self.req_url, body=Exception(error))
+        expected = "Failed to fetch file from {}, error {}".format(self.req_url, error)
+
+        download_and_extract_file(self.req_url, self.download_location)
+
+        mock_logger.assert_called_with(expected)
+        self.assertFalse(os.path.exists(self.download_location))
