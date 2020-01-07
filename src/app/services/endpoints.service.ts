@@ -209,6 +209,14 @@ export class EndpointsService {
   }
 
   /**
+   * Returns or Updates challenge phase split
+   * @param phaseSplitId  phase split id
+   */
+  particularChallengePhaseSplitUrl(phaseSplitId) {
+    return `${this.challenges}${this.challenge}create/challenge_phase_split/${phaseSplitId}/`;
+  }
+
+  /**
    * Challenge Submission
    * @param challenge  challenge id
    * @param phase  phase id
