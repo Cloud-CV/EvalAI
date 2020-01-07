@@ -33,7 +33,7 @@
       <label for="email" [class.active]="isemailFocused">Email</label>
       <div class="wrn-msg text-highlight"
            *ngIf="email.invalid && (email.dirty || email.touched || signupForm.submitted)">
-        <p *ngIf="email.errors.minlength">Please enter valid email address.</p>
+        <p *ngIf="email.errors.minlength">Please enter a valid email address.</p>
         <p *ngIf="email.errors.required">Email address is required.</p>
       </div>
     </div>
