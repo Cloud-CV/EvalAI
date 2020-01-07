@@ -15,7 +15,7 @@ broker = SQSBroker(
         Pipelines(),
         Retries(min_backoff=1000, max_backoff=900000, max_retries=96),
     ],
-    endpoint_url=os.environ.get("AWS_ENDPOINT_URL", "http://sqs:9324"),
+    endpoint_url=os.environ.get("AWS_SQS_ENDPOINT_URL", "http://localhost:9324"),
     region_name=os.environ.get("AWS_DEFAULT_REGION", "elasticmq"),
     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
