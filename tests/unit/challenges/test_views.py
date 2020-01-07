@@ -2543,6 +2543,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             visibility=ChallengePhaseSplit.PUBLIC,
             leaderboard_decimal_precision=2,
             is_leaderboard_order_descending=True,
+            show_leaderboard_by_latest_submission=False
         )
 
         self.challenge_phase_split_host = ChallengePhaseSplit.objects.create(
@@ -2550,6 +2551,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.HOST,
+            show_leaderboard_by_latest_submission=False
         )
 
     def tearDown(self):
@@ -2573,6 +2575,8 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
+                "show_leaderboard_by_latest_submission":
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
             }
         ]
         self.client.force_authenticate(user=self.participant_user)
@@ -2608,6 +2612,8 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
+                "show_leaderboard_by_latest_submission":
+                    self.challenge_phase_split.show_leaderboard_by_latest_submission
             },
             {
                 "id": self.challenge_phase_split_host.id,
@@ -2616,6 +2622,8 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split_host.id,
                 "dataset_split_name": self.dataset_split_host.name,
                 "visibility": self.challenge_phase_split_host.visibility,
+                "show_leaderboard_by_latest_submission":
+                    self.challenge_phase_split_host.show_leaderboard_by_latest_submission
             },
         ]
         self.client.force_authenticate(user=self.user)
