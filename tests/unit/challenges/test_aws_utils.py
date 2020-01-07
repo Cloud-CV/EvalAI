@@ -1,24 +1,19 @@
-import mock
 import boto3
+import challenges.aws_utils as aws_utils
+import mock
 import os
 
+from allauth.account.models import EmailAddress
+from challenges.models import Challenge, ChallengePhase
+from datetime import timedelta
+from django.contrib.auth.models import User
+from django.utils import timezone
+from hosts.models import ChallengeHost, ChallengeHostTeam
+from http import HTTPStatus
+from moto import mock_ecs
+from rest_framework.test import APITestCase, APIClient
 from unittest import TestCase
 
-from moto import mock_ecs
-from datetime import timedelta
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
-
-from allauth.account.models import EmailAddress
-from django.contrib.auth.models import User
-from http import HTTPStatus
-
-from rest_framework.test import APITestCase, APIClient
-
-from hosts.models import ChallengeHost, ChallengeHostTeam
-
-import challenges.aws_utils as aws_utils
-from challenges.models import Challenge, ChallengePhase
 
 
 class BaseTestClass(APITestCase):
