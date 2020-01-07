@@ -257,21 +257,21 @@ https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
     4)All functions related to pagination must be tested<br>
     reinitialized data<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L304<br>
-    5) if (vm.existTeam.next === null)<br>
+    >) if (vm.existTeam.next === null)<br>
     condition for pagination<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L308<br>
-    6) ev.stopPropagation(); partivipate in a competition promt and follow messages.<br>
+    6) ev.stopPropagation(); Test for participation in a competition promt and follow messages.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L365<br>
     7) vm.startLoader("Making Submission")<br>
-    Checks if url for submission is valid and submission<br>
+    Test a url for submission<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L424<br>
-    8)set the result display to true or false depending on the fact if it is private or public<br>
+    8)set a test result display to true or false depending on the fact if it is private or public<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L512<br>
     9)vm.stopLeaderboard()<br>
-    display my submissions call function.<br>
+    Test for displaying blank or test submission; call function.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L605<br>
     10)vm.leaderboard = {};<br>
-    Show leaderboard with respect to latest time stamp it has eg: hours, days etc.<br>
+    Show a test leaderboard with respect to latest time stamp it has eg: hours, days etc.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L671<br>
     11)vm.poller = $interval(function()<br>
     long polling (5s) for leaderboard<br>
@@ -281,10 +281,10 @@ https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
     condition for pagination<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L901<br>
     13)vm.reRunSubmission = function(submissionObject)<br>
-    response message for submission <br>
+    response message for a test submission <br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1006<br>
     14) vm.toggleShowLeaderboardByLatest = function()<br>
-    sort leaderboard by latest to oldest<br>
+    sort leaderboard by latest to oldest for a test submission set<br>
     response message<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1048<br>
     15)vm.load = function(url)<br>
@@ -301,18 +301,18 @@ https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
                                 break;
        ```
    <br>
-   18)Confirm the state of the challenge, and then a message confirming it<br>
+   18)Test the state of the challenge, followed by the valid message confirming it<br>
    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L1980<br>
-   19)Edit Challenge Start and End Date<br>
+   19)Test to verify a change in Challenge Start and End Date<br>
    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L2011<br>
    20) vm.challengeDateDialog = function(ev)<br>
-   Edit Challenge Start and End Date<br>
+   Test to edit Challenge Start and End Date<br>
    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L2022<br>
    21) vm.editChallengeDate<br>
    The whole Function is missing test cases<br>
    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L2023<br>
    22)vm.acceptTermsAndConditions<br>
-   Accepting terms and conditions and changing states accordingly.<br>
+   Test for changing states when Accepting terms and conditions.<br>
    https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeCtrl.js#L2092<br>
      
     
@@ -325,12 +325,12 @@ https://codecov.io/gh/Cloud-CV/EvalAI/src/master/evalai/celery.py#L9<br>
 <details>
     <summary>View missing test cases</summary>
     <br>
-    1)Test for turning pagination off when no teams more teams exist.<br>
+    1)Test for pagination "off" when no dummy teams exist in the list.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeHostTeamsCtrl.js#L72<br>
     2)Test for reinitializing data and checking condition for pagination when displaying teams.<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/frontend/src/js/controllers/challengeHostTeamsCtrl.js#L119<br>
     3) $mdDialog.show(confirm).then(function()<br>
-    Display dialogue box for various purposes<br>
+    Test : Display dialogue box for various purposes<br>
         >Remove self from challenge<br>
         >condition for pagination of teams<br>
         >removing self from challenge<br>
@@ -411,7 +411,7 @@ This file is extremely low on coverage and hence a thorough look is required at 
     7)Test for "Check if the dataset_split exists for the codename in the result"<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L488<br>
     8)def process_add_challenge_message(message)<br>
-    getting challenge message if successful or not2<br>
+    Test for getting challenge message if successful or not<br>
     9)def main():<br>
     This whole function does not contain any test code<br>
     https://codecov.io/gh/Cloud-CV/EvalAI/src/master/scripts/workers/submission_worker.py#L693<br>
