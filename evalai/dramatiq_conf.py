@@ -13,7 +13,7 @@ broker = SQSBroker(
         Pipelines(),
         Retries(min_backoff=1000, max_backoff=900000, max_retries=96),
     ],
-    endpoint_url="http://0.0.0.0:9324",
+    endpoint_url="http://sqs:9324",
     region_name="elasticmq",
     aws_access_key_id="x",
     aws_secret_access_key="x",
