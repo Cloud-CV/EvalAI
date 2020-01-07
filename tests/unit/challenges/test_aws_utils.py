@@ -2,11 +2,11 @@ import mock
 import boto3
 import os
 
-from unittest import TestCase
+
 
 from moto import mock_ecs
 from datetime import timedelta
-from django.core.files.uploadedfile import SimpleUploadedFile
+
 from django.utils import timezone
 
 from djangoallauth.allauth.account.models import EmailAddress
@@ -42,7 +42,7 @@ class BaseTestClass(APITestCase):
         self.partic_user = User.objects.create(
             username="particUser",
             email="particUser@test.com",
-            password = "password",
+            password="password",
         )
 
         EmailAddress.objects.create(
@@ -110,16 +110,16 @@ class BaseTestClass(APITestCase):
         self.ecs_client = boto3.client("ecs", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
 
         self.challenge3 = Challenge.objects.create(
-            title = "Test Challenge 3",
-            creator = self.challenge_host_team,
-            queue = "test_queue_3",
-            start_date = timezone.now()-timedelta(days=1),
-            end_date = timezone.now()+timedelta(days=1)
+            title="Test Challenge 3",
+            creator=self.challenge_host_team,
+            queue="test_queue_3",
+            start_date=timezone.now()-timedelta(days=1),
+            end_date=timezone.now()+timedelta(days=1)
         )
         self.ecs_client.create_cluster(clusterName="testcluster")
         self.client_token = "123qwe"
 
-
+        
         def queryset(cls, pk_list):
             queryset = Challenge.objects.filter(pk_in=pk_list)
             queryset = sorted(queryset, key=lambda i: pk_list.index(i.pk))
@@ -136,11 +136,11 @@ class TestDeleteWorkers(BaseTestClass):
             self.challenge,
             self.client_token)
         aws_utils.create_service_by_challenge_pk(
-            self.ecs_client, 
-            self.challenge2, 
+            self.ecs_client,
+            self.challenge2,
             self.client_token)
         aws_utils.create_service_by_challenge_pk(
-            self.ecs_client, 
+            self.ecs_client,
             self.challenge3,
             self.client_token)
 
@@ -170,11 +170,12 @@ class TestDeleteWorkers(BaseTestClass):
 
         count = 2
         expected_workers = [None, None, None]
-        failures=[]
+        failures = []
         expected_response = {"count": count, "failures": failures}
         response = aws_utils.delete_workers(queryset)
         assert response == expected_response
         assert list(c.workers for c in queryset) == expected_workers
+
     @mock.patch("challenges.aws_utils.delete_service_by_challenge_pk")
     def test_delete_workers_exception(self, mock_delete_service_by_pk):
         aws_utils.create_service_by_challenge_pk(
@@ -194,9 +195,7 @@ class TestDeleteWorkers(BaseTestClass):
         queryset = super(TestDeleteWorkers, self).queryset(pk_list)
 
         message = "errMessage"
-        exception_message = {"Error": message,
-                             "ResponseMetaData": {"HTTPStatusCode": HTTPStatus.NOT_FOUND}
-                            }
+        exception_message = {"Error": message, "ResponseMetaData": {"HTTPStatusCode": HTTPStatus.NOT_FOUND}}
         mock_delete_service_by_pk.return_value = exception_message
 
         count = 0
@@ -208,4 +207,4 @@ class TestDeleteWorkers(BaseTestClass):
         expected_response = {"count": count, "failures": failures}
         response = aws_utils.delete_workers(queryset)
         assert expected_response==response
-        assert list(c.workers for c in queryset)==[1,1,1]
+        assert list(c.workers for c in queryset)==[1, 1, 1]
