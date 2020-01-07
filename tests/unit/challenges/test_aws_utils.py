@@ -2,14 +2,12 @@ import mock
 import boto3
 import os
 
-
-
 from moto import mock_ecs
 from datetime import timedelta
 
 from django.utils import timezone
 
-from djangoallauth.allauth.account.models import EmailAddress
+from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
 from http import HTTPStatus
 
@@ -113,13 +111,12 @@ class BaseTestClass(APITestCase):
             title="Test Challenge 3",
             creator=self.challenge_host_team,
             queue="test_queue_3",
-            start_date=timezone.now()-timedelta(days=1),
-            end_date=timezone.now()+timedelta(days=1)
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() + timedelta(days=1)
         )
         self.ecs_client.create_cluster(clusterName="testcluster")
         self.client_token = "123qwe"
 
-        
         def queryset(cls, pk_list):
             queryset = Challenge.objects.filter(pk_in=pk_list)
             queryset = sorted(queryset, key=lambda i: pk_list.index(i.pk))
@@ -128,7 +125,6 @@ class BaseTestClass(APITestCase):
 class TestDeleteWorkers(BaseTestClass):
     def setUp(self):
         super(TestDeleteWorkers, self).setUp()
-
 
     def test_delete_workers_when_all_three_challenges_have_active_workers(self):
         aws_utils.create_service_by_challenge_pk(
@@ -203,8 +199,8 @@ class TestDeleteWorkers(BaseTestClass):
             {"message": message, "challenge_pk": self.challenge.pk},
             {"message": message, "challenge_pk": self.challenge2.pk},
             {"message": message, "challenge_pk": self.challenge3.pk}
-            ]
+        ]
         expected_response = {"count": count, "failures": failures}
         response = aws_utils.delete_workers(queryset)
-        assert expected_response==response
-        assert list(c.workers for c in queryset)==[1, 1, 1]
+        assert expected_response == response
+        assert list(c.workers for c in queryset) == [1, 1, 1]
