@@ -116,7 +116,7 @@ class BaseTestClass(APITestCase):
             end_date=timezone.now() + timedelta(days=1)
         )
         self.ecs_client.create_cluster(clusterName="testcluster")
-        self.client_token = "123qwe"
+        self.client_token = "qwe123"
 
         def queryset(cls, pk_list):
             queryset = Challenge.objects.filter(pk_in=pk_list)
