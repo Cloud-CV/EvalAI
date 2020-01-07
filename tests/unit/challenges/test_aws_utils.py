@@ -165,12 +165,9 @@ class TestStartWorkers(BaseAdminCallClass):
     def test_start_workers_for_all_new_challenges_with_no_worker_service(self):
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
-
         expected_count = 3
         expected_failures = []
         expected_response = {"count": expected_count, "failures": expected_failures}
-
         aws_start_workers = aws_utils.start_workers(queryset)
-
         self.assertEqual(aws_start_workers, expected_response)
         self.assertTrue(all(i.workers == 1 for i in queryset))
