@@ -102,14 +102,14 @@ Example
 ```
 deploy:
   provider: s3
-  acces_key_id = "Key ID"
+  access_key_id = "Key ID"
   secret_access_key = "Secret"
   bucket: "S3 Bucket"
   on:
     condition: "$CC = gcc"
  ```
  
- The above will only run is the env variable `$CC` is set to gcc.
+ The above will only run if the env variable `$CC` is set to gcc.
  
  This is the way EvalAI could be setup with Travis for Development anf Production. We just have to set the conditions for the deploy section
 
