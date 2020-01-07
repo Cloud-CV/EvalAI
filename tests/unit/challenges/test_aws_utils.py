@@ -1,6 +1,5 @@
 import boto3
 import challenges.aws_utils as aws_utils
-import mock
 import os
 
 from allauth.account.models import EmailAddress
@@ -9,11 +8,8 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
-from http import HTTPStatus
 from moto import mock_ecs
 from rest_framework.test import APITestCase, APIClient
-from unittest import TestCase
-
 
 
 class BaseTestClass(APITestCase):
@@ -102,10 +98,11 @@ class BaseTestClass(APITestCase):
         self.client.force_authenticate(user=self.user)
         self.ecs_client = boto3.client("ecs", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
 
+
 @mock_ecs
 class BaseAdminCallClass(BaseTestClass):
     def setUp(self):
-        super(BaseAdminCallsClass, self).setUp()
+        super(BaseAdminCallClass, self).setUp()
 
         self.challenge3 = Challenge.objects.create(
             title="Test Challenge 3",
@@ -123,7 +120,8 @@ class BaseAdminCallClass(BaseTestClass):
         queryset = sorted(queryset, key=lambda i: pklist.index(i.pk))
         return queryset
 
-class TestStartWorkers(BaseAdminCallsClass):
+
+class TestStartWorkers(BaseAdminCallClass):
     def setUp(self):
         super(TestStartWorkers, self).setUp()
 
@@ -131,7 +129,7 @@ class TestStartWorkers(BaseAdminCallsClass):
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
 
-        expected_count = 2 # we will set the workers of challenge1 and challenge3
+        expected_count = 2  # we will set the workers of challenge1 and challenge3
         expected_num_of_workers = [1, 1, 1]
         expected_message = "Please select challenge with inactive workers only."
         expected_failures = [{"message": expected_message, "challenge_pk": self.challenge2.pk}]
@@ -140,9 +138,9 @@ class TestStartWorkers(BaseAdminCallsClass):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
-        self.challenge.workers = 0 # change challenge workers to zero to ensure test success
+        self.challenge.workers = 0  # change challenge workers to zero to ensure test success
         self.challenge.save()
-        self.challenge3.workers = 0 # change challenge workers to zero to ensure test success
+        self.challenge3.workers = 0  # change challenge workers to zero to ensure test success
         self.challenge3.save()
 
         aws_start_workers = aws_utils.start_workers(queryset)
