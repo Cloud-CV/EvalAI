@@ -202,29 +202,31 @@ task_definition = """
 
 service_definition = """
 {{
-    "cluster":"{CLUSTER}",
-    "serviceName":"{service_name}",
-    "taskDefinition":"{task_def_arn}",
-    "desiredCount":1,
-    "clientToken":"{client_token}",
-    "launchType":"FARGATE",
-    "platformVersion":"LATEST",
-    "networkConfiguration":{{
-        "awsvpcConfiguration": {{
-            "subnets": [
-                "{SUBNET_1}",
-                "{SUBNET_2}",
-            ],
-            'securityGroups': [
-                "{SUBNET_SECURITY_GROUP}",
-            ],
-            "assignPublicIp": "ENABLED"
-        }}
-    }},
-    "schedulingStrategy":"REPLICA",
-    "deploymentController":{
+    "service": {{
+        "cluster":"{CLUSTER}",
+        "serviceName":"{service_name}",
+        "taskDefinition":"{task_def_arn}",
+        "desiredCount":1,
+        "clientToken":"{client_token}",
+        "launchType":"FARGATE",
+        "platformVersion":"LATEST",
+        "networkConfiguration":{{
+            "awsvpcConfiguration": {{
+                "subnets": [
+                    "{SUBNET_1}",
+                    "{SUBNET_2}",
+                ],
+                'securityGroups': [
+                    "{SUBNET_SECURITY_GROUP}",
+                ],
+                "assignPublicIp": "ENABLED"
+            }}
+        }},
+        "schedulingStrategy":"REPLICA",
+    }}
+    "deploymentController":{{
         "type": "ECS"
-    },
+    }},
 }}
 """
 
