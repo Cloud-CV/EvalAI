@@ -18,10 +18,11 @@ from hosts.models import ChallengeHost, ChallengeHostTeam
 import challenges.aws_utils as aws_utils
 from challenges.models import Challenge, ChallengePhase
 
+
 @mock_ecs
 class BaseTestClass(APITestCase):
     def setUp(self):
-        aws.utils.COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"] = "arn:aws:iam::us-east-1:012345678910:role/ecsTaskExecutionRole"
+        aws_utils.COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"] = "arn:aws:iam::us-east-1:012345678910:role/ecsTaskExecutionRole"
 
         self.client = APIClient(enforce_csrf_checks=True)
 
@@ -121,6 +122,7 @@ class BaseTestClass(APITestCase):
             queryset = Challenge.objects.filter(pk_in=pk_list)
             queryset = sorted(queryset, key=lambda i: pk_list.index(i.pk))
             return queryset
+
 
 class TestDeleteWorkers(BaseTestClass):
     def setUp(self):
