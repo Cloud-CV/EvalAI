@@ -1,9 +1,9 @@
 import dramatiq
+import os
 
 from dramatiq.middleware import AgeLimit, TimeLimit, Callbacks, Pipelines, Prometheus, Retries
 from dramatiq_sqs import SQSBroker
 
-# These settings are to be used in developer env only.
 
 if os.environ.get('IN_DOCKER'):
     endpoint_url = "http://sqs:9324"
