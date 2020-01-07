@@ -28,7 +28,7 @@
    * The API for dramatiq is easy-to-understand.
    * A python function can be converted into an *actor* (app.task in celery) by adding a dramatiq.actor decorator. See [actors](https://dramatiq.io/guide.html#actors).
    * When this actor function is called with a syntax as `function.send(args)`, a message is sent to the intended queue. This is similar to `function.delay(args)` in Celery.
-   * Like the workers in celery have to be activate with `celery -A tasks worker --loglevel=info`, it has to be run in dramatiq as `python manage.py rundramatiq`.
+   * Like the workers in celery have to be activate with `celery -A tasks worker --loglevel=info`, it has to be run in dramatiq as `python manage.py rundramatiq` (with django_dramatiq library) or `dramatiq workerfile` (with vanilla dramatiq).
    * To get a clearer idea of codebase differences in EvalAI, please refer: https://github.com/Cloud-CV/EvalAI/pull/2583/files
  * Settings changes per  environment
    -
@@ -55,3 +55,11 @@
   - The SQSBroker (dramatiq_sqs) does not have many users. It has a lack of tutorials and contributors. The latest update to dramatiq_sqs was made in 2018.
   - Not as customizable as Celery (but satisfies our use case very well).
   - Needs some prior testing before being implemented in development/production environments.
+* Conclusion:
+  -
+  - Dramatiq solves the main problem of incompatibility of Celery with ElasticMQ.
+  - It provides several other advantages over Celery (see [Pros](https://github.com/nikochiko/EvalAI/blob/SpikeDramatiq/evalai/spike_dramatiq.md#pros) above).
+  - However, Celery works well on the production side of the project. Other than that, dramatiq (especially dramatiq_sqs) is poorly documented and does not have many examples.
+  - On a project as big as EvalAI, this can make the implementation harder and even leave it prone to misconfigurations.
+  - Due to this reason, I think switching to dramatiq is only feasible on the development side for now. 
+  - With enough security/performance testing on the dev side, we could later use it in production as well.
