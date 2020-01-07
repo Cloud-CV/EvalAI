@@ -174,4 +174,3 @@ class TestStartWorkers(BaseAdminCallClass):
 
         self.assertEqual(aws_start_workers, expected_response)
         self.assertTrue(all(i.workers == 1 for i in queryset))
-        
