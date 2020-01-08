@@ -38,5 +38,4 @@ urlpatterns = [
         views.participant_team_detail,
         name="get_participant_team_details",
     )
-    
 ]

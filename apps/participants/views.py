@@ -320,9 +320,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     if request.user.is_anonymous:
         emailverified = True
     else:
-        if EmailAddress.objects.filter(
-            user=request.user, verified=True
-            ).exists():
+        if EmailAddress.objects.filter(user=request.user, verified=True).exists():
             emailverified = True
         else:
             emailverified = False
@@ -357,10 +355,8 @@ def get_teams_and_corresponding_challenges_for_a_participant(
         ChallengeParticipantTeamList(challenge_participated_teams)
     )
     response_data = serializer.data
-    if (emailverified != True):
-        response_data = {
-            "error":"Please Verify yoru email first!"
-            }
+    if emailverified is not True:
+        response_data = { "error": "Please Verify yoru email first!" }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     else:
         response_data["is_challenge_host"] = is_challenge_host

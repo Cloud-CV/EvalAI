@@ -156,5 +156,4 @@ urlpatterns = [
         views.get_challenge_phase_environment_url,
         name="get_challenge_phase_environment_url",
     ),
-    
 ]

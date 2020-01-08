@@ -511,8 +511,6 @@ def challenge_phase_list(request, challenge_pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes(
