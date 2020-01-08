@@ -341,6 +341,8 @@
                             utilities.hideLoader();
                         },
                         onError: function() {
+                            document.getElementById("showonVerified").style.display = 'none';
+                            document.getElementById("showonUnverified").style.display = 'block';
                             utilities.hideLoader();
                         }
                     };

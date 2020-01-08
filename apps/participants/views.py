@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-
+from allauth.account.models import EmailAddress
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -316,6 +316,16 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     """
     Returns list of teams and corresponding challenges for a participant
     """
+    emailverified = False
+    if request.user.is_anonymous:
+        emailverified = True
+    else:
+        if EmailAddress.objects.filter(
+            user=request.user, verified=True
+            ).exists():
+            emailverified = True
+        else:
+            emailverified = False
     # first get list of all the participants and teams related to the user
     participant_objs = Participant.objects.filter(
         user=request.user
@@ -347,8 +357,14 @@ def get_teams_and_corresponding_challenges_for_a_participant(
         ChallengeParticipantTeamList(challenge_participated_teams)
     )
     response_data = serializer.data
-    response_data["is_challenge_host"] = is_challenge_host
-    return Response(response_data, status=status.HTTP_200_OK)
+    if (emailverified != True):
+        response_data = {
+            "error":"Please Verify yoru email first!"
+            }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        response_data["is_challenge_host"] = is_challenge_host
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(["DELETE"])

@@ -227,8 +227,8 @@
             parent: "web.challenge-main.challenge-page",
             url: "/participate",
             templateUrl: baseUrl + "/web/challenge/participate.html",
-            controller: 'ParticipateCtrl',
-            controllerAs: 'participateCtrl',
+            controller: 'ChallengeCtrl',
+            controllerAs: 'challenge',
             title: 'Participate',
         };
 
