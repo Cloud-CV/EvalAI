@@ -356,7 +356,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     )
     response_data = serializer.data
     if emailverified is not True:
-        response_data = { "error": "Please Verify yoru email first!" }
+        response_data = {"error": "Please Verify yoru email first!"}
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     else:
         response_data["is_challenge_host"] = is_challenge_host
@@ -398,3 +398,4 @@ def remove_self_from_participant_team(request, participant_team_pk):
         if participants.count() == 0:
             participant_team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+        
