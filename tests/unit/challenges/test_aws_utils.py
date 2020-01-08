@@ -114,6 +114,7 @@ class BaseAdminCallClass(BaseTestClass):
         self.ecs_client.create_cluster(clusterName="cluster")
         self.client_token = "abc123"
 
+
     @classmethod
     def queryset(cls, pklist):
         queryset = Challenge.objects.filter(pk__in=pklist)
@@ -125,11 +126,13 @@ class TestStartWorkers(BaseAdminCallClass):
     def setUp(self):
         super(TestStartWorkers, self).setUp()
 
+    @mock.patch("apps.challenges.aws_utils.COMMON_SETTINGS_DICT['CLUSTER']", "cluster")
+    @mock.patch("apps.challenges.aws_utils.client_token_generator")
     @mock_ecs
-    def test_start_workers_when_two_challenges_have_zero_or_none_workers(self):
+    def test_start_workers_when_two_challenges_have_zero_or_none_workers(self, mock_generator):
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
-
+        mock_generator.return_value = "abc123"
         expected_count = 2  # we will set the workers of challenge1 and challenge3
         expected_num_of_workers = [1, 1, 1]
         expected_message = "Please select challenge with inactive workers only."
