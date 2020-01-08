@@ -125,6 +125,7 @@ class TestStartWorkers(BaseAdminCallClass):
     def setUp(self):
         super(TestStartWorkers, self).setUp()
 
+    @mock_ecs
     def test_start_workers_when_two_challenges_have_zero_or_none_workers(self):
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
@@ -147,6 +148,7 @@ class TestStartWorkers(BaseAdminCallClass):
         self.assertEqual(aws_start_workers, expected_response)
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
+    @mock_ecs
     def test_start_workers_with_two_active_workers(self):
         Challenge.objects.filter(pk=self.challenge2.pk).update(workers=0)
 
@@ -162,6 +164,7 @@ class TestStartWorkers(BaseAdminCallClass):
         response = aws_utils.start_workers(queryset)
         self.assertEqual(response, expected_response)
 
+    @mock_ecs
     def test_start_workers_for_all_new_challenges_with_no_worker_service(self):
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
