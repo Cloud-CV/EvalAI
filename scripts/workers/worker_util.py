@@ -54,7 +54,7 @@ class EvalAI_Interface:
         url = URLS.get("delete_message_from_sqs_queue").format(self.QUEUE_NAME)
         url = self.return_url_per_environment(url)
         data = {"receipt_handle": receipt_handle}
-        response = self.make_request(url, "POST", data)  # noqa
+        response = self.make_request(url, "POST", data)
         return response
 
     def get_submission_by_pk(self, submission_pk):
