@@ -130,6 +130,13 @@ class TestStartWorkers(BaseAdminCallClass):
 
     @mock.patch("apps.challenges.aws_utils.client_token_generator")
     def test_start_workers_when_two_challenges_have_zero_or_none_workers(self, mock_generator):
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
+        self.challenge.workers = 0  # change challenge workers to zero to ensure test success
+        self.challenge.save()
+        self.challenge3.workers = 0  # change challenge workers to zero to ensure test success
+        self.challenge3.save()
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
         mock_generator.return_value = self.client_token
@@ -138,15 +145,6 @@ class TestStartWorkers(BaseAdminCallClass):
         expected_message = "Please select challenge with inactive workers only."
         expected_failures = [{"message": expected_message, "challenge_pk": self.challenge2.pk}]
         expected_response = {"count": expected_count, "failures": expected_failures}
-
-        self.challenge.workers = 0  # change challenge workers to zero to ensure test success
-        self.challenge.save()
-        self.challenge3.workers = 0  # change challenge workers to zero to ensure test success
-        self.challenge3.save()
-
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
 
         aws_start_workers = aws_utils.start_workers(queryset)
         self.assertEqual(aws_start_workers, expected_response)
