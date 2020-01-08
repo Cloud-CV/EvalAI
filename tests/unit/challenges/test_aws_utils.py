@@ -112,7 +112,7 @@ class BaseAdminCallClass(BaseTestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.ecs_client.create_cluster(clusterName="cluster")
+        self.ecs_client.create_cluster(clusterName="evalai-prod-cluster")
         self.client_token = "abc123"
 
 
