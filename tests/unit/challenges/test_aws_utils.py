@@ -1,5 +1,6 @@
 import boto3
 import challenges.aws_utils as aws_utils
+import mock
 import os
 
 from allauth.account.models import EmailAddress
