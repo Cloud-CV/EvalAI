@@ -139,13 +139,14 @@ class TestStartWorkers(BaseAdminCallClass):
         expected_failures = [{"message": expected_message, "challenge_pk": self.challenge2.pk}]
         expected_response = {"count": expected_count, "failures": expected_failures}
 
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
         self.challenge.workers = 0  # change challenge workers to zero to ensure test success
         self.challenge.save()
         self.challenge3.workers = 0  # change challenge workers to zero to ensure test success
         self.challenge3.save()
+
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
 
         aws_start_workers = aws_utils.start_workers(queryset)
         self.assertEqual(aws_start_workers, expected_response)
