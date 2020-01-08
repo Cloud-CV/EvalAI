@@ -103,6 +103,7 @@ class BaseTestClass(APITestCase):
 @mock_ecs
 class BaseAdminCallClass(BaseTestClass):
     def setUp(self):
+        aws_utils.COMMON_SETTINGS_DICT["CLUSTER"] = "cluster"
         super(BaseAdminCallClass, self).setUp()
 
         self.challenge3 = Challenge.objects.create(
@@ -112,7 +113,7 @@ class BaseAdminCallClass(BaseTestClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        self.ecs_client.create_cluster(clusterName="evalai-prod-cluster")
+        self.ecs_client.create_cluster(clusterName="cluster")
         self.client_token = "abc123"
 
 
@@ -127,7 +128,6 @@ class TestStartWorkers(BaseAdminCallClass):
     def setUp(self):
         super(TestStartWorkers, self).setUp()
 
-    @mock.patch("apps.challenges.aws_utils.COMMON_SETTINGS_DICT['CLUSTER']", "cluster")
     @mock.patch("apps.challenges.aws_utils.client_token_generator")
     @mock_ecs
     def test_start_workers_when_two_challenges_have_zero_or_none_workers(self, mock_generator):
