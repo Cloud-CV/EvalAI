@@ -21,7 +21,6 @@ class BaseTestClass(TestCase):
         self.challenge_phase_pk = 2
         self.submission_pk = 3
 
-
         self.interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER, EVALAI_QUEUE_NAME)
         self.success_response = {"success": "success_message", "status_code": 200}
         self.example_error_description = "Example description"
@@ -163,5 +162,5 @@ class WorkerUtilTestClass(BaseTestClass):
         url = "{}{}".format(EVALAI_API_SERVER, self.delete_message_from_sqs_queue_url(EVALAI_QUEUE_NAME))
         response = self.interface.delete_message_from_sqs_queue(test_receipt_handle)
 
-        self.interface.make_request.assert_called_with(url, "POST", data=data)
+        self.interface.make_request.assert_called_with(url, "POST", data)
         self.assertEqual(response, self.success_response)
