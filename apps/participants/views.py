@@ -398,4 +398,3 @@ def remove_self_from_participant_team(request, participant_team_pk):
         if participants.count() == 0:
             participant_team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        
