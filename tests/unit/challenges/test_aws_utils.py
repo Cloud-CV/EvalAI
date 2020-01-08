@@ -151,6 +151,8 @@ class TestStartWorkers(BaseAdminCallClass):
 
     def test_start_workers_with_two_active_workers(self):
         Challenge.objects.filter(pk=self.challenge2.pk).update(workers=0, task_def_arn="test_queue_2")
+        Challenge.objects.filter(pk=self.challenge.pk).update(workers=3)
+        Challenge.objects.filter(pk=self.challenge3.pk).update(workers=3)
 
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
