@@ -129,11 +129,10 @@ class TestStartWorkers(BaseAdminCallClass):
         super(TestStartWorkers, self).setUp()
 
     @mock.patch("apps.challenges.aws_utils.client_token_generator")
-    @mock_ecs
     def test_start_workers_when_two_challenges_have_zero_or_none_workers(self, mock_generator):
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
-        mock_generator.return_value = "abc123"
+        mock_generator.return_value = self.client_token
         expected_count = 2  # we will set the workers of challenge1 and challenge3
         expected_num_of_workers = [1, 1, 1]
         expected_message = "Please select challenge with inactive workers only."
@@ -152,7 +151,6 @@ class TestStartWorkers(BaseAdminCallClass):
         self.assertEqual(aws_start_workers, expected_response)
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
-    @mock_ecs
     def test_start_workers_with_two_active_workers(self):
         Challenge.objects.filter(pk=self.challenge2.pk).update(workers=0)
 
@@ -168,7 +166,6 @@ class TestStartWorkers(BaseAdminCallClass):
         response = aws_utils.start_workers(queryset)
         self.assertEqual(response, expected_response)
 
-    @mock_ecs
     def test_start_workers_for_all_new_challenges_with_no_worker_service(self):
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
