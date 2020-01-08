@@ -151,7 +151,7 @@ class TestStartWorkers(BaseAdminCallClass):
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
     def test_start_workers_with_two_active_workers(self):
-        Challenge.objects.filter(pk=self.challenge2.pk).update(workers=0)
+        Challenge.objects.filter(pk=self.challenge2.pk).update(workers=0, task_def_arn="test_def")
 
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)
