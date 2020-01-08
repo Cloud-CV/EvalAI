@@ -116,7 +116,6 @@ class BaseAdminCallClass(BaseTestClass):
         self.ecs_client.create_cluster(clusterName="cluster")
         self.client_token = "abc123"
 
-
     @classmethod
     def queryset(cls, pklist):
         queryset = Challenge.objects.filter(pk__in=pklist)
@@ -151,7 +150,7 @@ class TestStartWorkers(BaseAdminCallClass):
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
     def test_start_workers_with_two_active_workers(self):
-        Challenge.objects.filter(pk=self.challenge2.pk).update(workers=0, task_def_arn="test_def")
+        Challenge.objects.filter(pk=self.challenge2.pk).update(workers=0, task_def_arn="""{{"family": "test_queue_2"}}""")
 
         pks = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestStartWorkers, self).queryset(pks)

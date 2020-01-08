@@ -69,7 +69,7 @@ VPC_DICT = {
     "SUBNET_SECURITY_GROUP": os.environ.get(
         "SUBNET_SECURITY_GROUP", "sg-148b4a5e"
     ),
-    "deploymentController":{
+    "deploymentController": {
         "type": "ECS"
     },
 }
