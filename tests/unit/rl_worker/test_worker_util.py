@@ -109,7 +109,7 @@ class WorkerUtilTestClass(BaseTestClass):
         self.assertEqual(returned_url, expected)
 
     def test_get_message_from_sqs_queue(self):
-        url = "{}{}".format(EVALAI_API_SERVER, self.get_message_from_sqs_queue_url(QUEUE_NAME))
+        url = "{}{}".format(EVALAI_API_SERVER, self.get_message_from_sqs_queue_url(EVALAI_QUEUE_NAME))
         response = interface.get_message_from_sqs_queue()
 
         self.mock_make_request.assert_called_with(url, "GET")
@@ -138,7 +138,7 @@ class WorkerUtilTestClass(BaseTestClass):
 
     def test_get_challenge_phase_by_pk(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_challenge_phase_by_pk_url(self.challenge_pk, self.challenge_phase_pk))
-        response = interface.get_challenge_phase_by_pk(self.challenge_phase_pk)
+        response = interface.get_challenge_phase_by_pk(self.challenge_pk, self.challenge_phase_pk)
 
         self.mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
@@ -162,7 +162,7 @@ class WorkerUtilTestClass(BaseTestClass):
     def test_delete_message_from_sqs_queue(self):
         test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
         data = {"receipt_handle": test_receipt_handle}
-        url = "{}{}".format(EVALAI_API_SERVER, self.delete_message_from_sqs_queue_url(QUEUE_NAME))
+        url = "{}{}".format(EVALAI_API_SERVER, self.delete_message_from_sqs_queue_url(EVALAI_QUEUE_NAME))
         response = interface.delete_message_from_sqs_queue()
 
         self.mock_make_request.assert_called_with(url, "POST", data=data)
