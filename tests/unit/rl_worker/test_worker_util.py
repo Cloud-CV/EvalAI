@@ -13,8 +13,6 @@ AUTH_TOKEN = "".join(random.choice(string.ascii_lowercase) for _ in range(40))
 EVALAI_API_SERVER = "https://evalapi.cloudcv.org"
 EVALAI_QUEUE_NAME = "evalai_submission_queue"
 
-interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER, EVALAI_QUEUE_NAME)
-
 
 class BaseTestClass(TestCase):
     def setUp(self):
@@ -23,6 +21,8 @@ class BaseTestClass(TestCase):
         self.challenge_phase_pk = 2
         self.submission_pk = 3
 
+
+        self.interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER, EVALAI_QUEUE_NAME)
         self.success_response = {"success": "success_message", "status_code": 200}
         self.example_error_description = "Example description"
 
@@ -64,7 +64,7 @@ class MakeRequestTestClass(BaseTestClass):
                       content_type='application/json',
                       status=200)
 
-        response = interface.make_request(url, "GET")
+        response = self.interface.make_request(url, "GET")
 
         self.assertEqual(response, self.success_response)
 
@@ -77,7 +77,7 @@ class MakeRequestTestClass(BaseTestClass):
                       status=404)
 
         with self.assertRaises(requests.exceptions.HTTPError):
-            interface.make_request(url, "GET")
+            self.interface.make_request(url, "GET")
 
         mock_logger.assert_called_with("The worker is not able to establish connection with EvalAI")
 
@@ -89,7 +89,7 @@ class MakeRequestTestClass(BaseTestClass):
                       body=requests.exceptions.RequestException(self.example_error_description))
 
         with self.assertRaises(requests.exceptions.RequestException):
-            interface.make_request(url, "GET")
+            self.interface.make_request(url, "GET")
 
         mock_logger.assert_called_with("The worker is not able to establish connection with EvalAI")
 
@@ -99,71 +99,69 @@ class WorkerUtilTestClass(BaseTestClass):
     def setUp(self):
         super(WorkerUtilTestClass, self).setUp()
 
-        self.mock_make_request = mock.MagicMock()
-        interface.make_request = self.mock_make_request
-        self.mock_make_request.return_value = self.success_response
+        self.interface.make_request = mock.MagicMock(return_value=self.success_response)
 
     def test_return_url_per_environment(self):
-        returned_url = interface.return_url_per_environment(self.make_request_url())
+        returned_url = self.interface.return_url_per_environment(self.make_request_url())
         expected = "{0}{1}".format(EVALAI_API_SERVER, self.make_request_url())
         self.assertEqual(returned_url, expected)
 
     def test_get_message_from_sqs_queue(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_message_from_sqs_queue_url(EVALAI_QUEUE_NAME))
-        response = interface.get_message_from_sqs_queue()
+        response = self.interface.get_message_from_sqs_queue()
 
-        self.mock_make_request.assert_called_with(url, "GET")
+        self.interface.make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_get_submission_by_pk(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_submission_by_pk_url(self.submission_pk))
-        response = interface.get_submission_by_pk(self.submission_pk)
+        response = self.interface.get_submission_by_pk(self.submission_pk)
 
-        self.mock_make_request.assert_called_with(url, "GET")
+        self.interface.make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_get_challenge_phases_by_challenge_pk(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_challenge_phases_by_challenge_pk_url(self.challenge_pk))
-        response = interface.get_challenge_phases_by_challenge_pk(self.challenge_pk)
+        response = self.interface.get_challenge_phases_by_challenge_pk(self.challenge_pk)
 
-        self.mock_make_request.assert_called_with(url, "GET")
+        self.interface.make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_get_challenge_by_queue_name(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_challenge_by_queue_name_url(EVALAI_QUEUE_NAME))
-        response = interface.get_challenge_by_queue_name()
+        response = self.interface.get_challenge_by_queue_name()
 
-        self.mock_make_request.assert_called_with(url, "GET")
+        self.interface.make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_get_challenge_phase_by_pk(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_challenge_phase_by_pk_url(self.challenge_pk, self.challenge_phase_pk))
-        response = interface.get_challenge_phase_by_pk(self.challenge_pk, self.challenge_phase_pk)
+        response = self.interface.get_challenge_phase_by_pk(self.challenge_pk, self.challenge_phase_pk)
 
-        self.mock_make_request.assert_called_with(url, "GET")
+        self.interface.make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_update_submission_data(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.update_submission_data_url(self.challenge_pk))
         data = {"submission_pk": self.submission_pk, "test_field": "new_value"}
-        response = interface.update_submission_data(data, self.challenge_pk)
+        response = self.interface.update_submission_data(data, self.challenge_pk)
 
-        self.mock_make_request.assert_called_with(url, "PUT", data=data)
+        self.interface.make_request.assert_called_with(url, "PUT", data=data)
         self.assertEqual(response, self.success_response)
 
     def test_update_submission_data_partially(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.update_submission_status_url(self.challenge_pk))
         data = {"test_field": "new_value"}
-        response = interface.update_submission_status(data, self.challenge_pk)
+        response = self.interface.update_submission_status(data, self.challenge_pk)
 
-        self.mock_make_request.assert_called_with(url, "PATCH", data=data)
+        self.interface.make_request.assert_called_with(url, "PATCH", data=data)
         self.assertEqual(response, self.success_response)
 
     def test_delete_message_from_sqs_queue(self):
         test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
         data = {"receipt_handle": test_receipt_handle}
         url = "{}{}".format(EVALAI_API_SERVER, self.delete_message_from_sqs_queue_url(EVALAI_QUEUE_NAME))
-        response = interface.delete_message_from_sqs_queue()
+        response = self.interface.delete_message_from_sqs_queue(test_receipt_handle)
 
-        self.mock_make_request.assert_called_with(url, "POST", data=data)
+        self.interface.make_request.assert_called_with(url, "POST", data=data)
         self.assertEqual(response, self.success_response)
