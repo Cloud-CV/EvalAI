@@ -568,7 +568,7 @@ def scale_workers(queryset, num_of_tasks):
 
     Parameters:
     queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
-    num_of_task (int): Number of workers to scale to.
+    num_of_tasks (int): Number of workers to scale to.
 
     Returns:
     dict: keys-> 'count': the number of workers successfully started.
