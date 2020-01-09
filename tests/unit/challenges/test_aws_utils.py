@@ -1,10 +1,10 @@
 import boto3
-import challenges.aws_utils as aws_utils
 import mock
 import os
 
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge, ChallengePhase
+import challenges.aws_utils as aws_utils
 from datetime import timedelta
 from django.contrib.auth.models import User
 from django.utils import timezone
