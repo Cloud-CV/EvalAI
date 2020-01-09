@@ -218,7 +218,7 @@ class BaseAPITestClass(APITestCase):
     def test_submission_output_not_saved_when_submission_not_successful(self, mock_run_submission, mock_challenge_phase_split):
         original_output = self.submission.output
         mock_challenge_phase_split.return_value = Exception("error message")
-        arbitrary_challenge_id = 1;
+        arbitrary_challenge_id = 1
         mock_run_submission(arbitrary_challenge_id, self.challenge_phase, self.submission, "test_sample_file.txt")
         self.assertEquals(original_output, self.submission.output)
 
