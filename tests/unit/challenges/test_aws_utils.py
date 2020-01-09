@@ -169,7 +169,7 @@ class TestDeleteWorkers(BaseAdminCallClass):
 
         pk_list = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestDeleteWorkers, self).queryset(pk_list)
-        
+
         message = "Please select challenges with active workers only."
 
         count = 2
