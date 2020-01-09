@@ -229,9 +229,6 @@ update_service_args = """
 {{
     "cluster":"{CLUSTER}",
     "service":"{service_name}",
-    "deploymentController": {
-        "type": "ECS"
-    },
     "desiredCount":num_of_tasks,
     "taskDefinition":"{task_def_arn}",
     "forceNewDeployment":{force_new_deployment}
