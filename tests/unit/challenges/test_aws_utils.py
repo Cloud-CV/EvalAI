@@ -118,6 +118,8 @@ class BaseTestClass(APITestCase):
         self.ecs_client.create_cluster(clusterName="testcluster")
         self.client_token = "123asd"
 
+        aws_utils.COMMON_SETTINGS_DICT["CLUSTER"] = "cluster"
+
         def queryset(cls, pk_list):
             queryset = Challenge.objects.filter(pk_in=pk_list)
             queryset = sorted(queryset, key=lambda i: pk_list.index(i.pk))
