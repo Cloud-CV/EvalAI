@@ -132,15 +132,15 @@ class TestDeleteWorkers(BaseTestClass):
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
             self.challenge,
-            aws_utils.client_token_generator())
+            self.client_token)
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
             self.challenge2,
-            aws_utils.client_token_generator())
+            self.client_token)
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
             self.challenge3,
-            aws_utils.client_token_generator())
+            self.client_token)
 
         pk_list = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestDeleteWorkers, self).queryset(pk_list)
@@ -157,11 +157,11 @@ class TestDeleteWorkers(BaseTestClass):
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
             self.challenge2,
-            aws_utils.client_token_generator())
+            self.client_token)
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
             self.challenge2,
-            aws_utils.client_token_generator())
+            self.client_token)
 
         pk_list = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestDeleteWorkers, self).queryset(pk_list)
@@ -179,15 +179,15 @@ class TestDeleteWorkers(BaseTestClass):
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
             self.challenge,
-            aws_utils.client_token_generator())
+            self.client_token)
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
             self.challenge2,
-            aws_utils.client_token_generator())
+            self.client_token)
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
             self.challenge3,
-            aws_utils.client_token_generator())
+            self.client_token)
 
         pk_list = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestDeleteWorkers, self).queryset(pk_list)
