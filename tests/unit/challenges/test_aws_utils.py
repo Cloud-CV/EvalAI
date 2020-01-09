@@ -1,7 +1,9 @@
 import boto3
+import mock
 import os
 
 from datetime import timedelta
+from http import HTTPStatus
 from moto import mock_ecs
 
 from allauth.account.models import EmailAddress
@@ -162,5 +164,25 @@ class TestScaleWorkers(BaseAdminCallClass):
         expected_message = "Please scale to a different number. Challenge has {} worker(s).".format(num_of_tasks)
         expected_failures = [{"message": expected_message, "challenge_pk": self.challenge2.pk}]
         expected_response = {"count": expected_count, "failures": expected_failures}
+        response = aws_utils.scale_workers(queryset, num_of_tasks)
+        self.assertEqual(response, expected_response)
+
+    @mock.patch("challenges.aws_utils.update_service_by_challenge_pk")
+    def test_scale_workers_when_http_connection_failed(self, mock_update_service_by_challenge_pk):
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
+
+        pklist = [self.challenge.pk]
+        queryset = super(TestScaleWorkers, self).queryset(pklist)
+        num_of_tasks = self.challenge.workers + 3
+        expected_count = 0
+        expected_message = "Test Error Message"
+        expected_failures = [{"message": expected_message, "challenge_pk": self.challenge.pk}]
+        expected_response = {"count": expected_count, "failures": expected_failures}
+        mock_update_service_by_challenge_pk.return_value = {
+            "Error": expected_message,
+            "ResponseMetadata": {
+                "HTTPStatusCode": HTTPStatus.NOT_FOUND
+            }
+        }
         response = aws_utils.scale_workers(queryset, num_of_tasks)
         self.assertEqual(response, expected_response)
