@@ -168,7 +168,7 @@ class TestScaleWorkers(BaseAdminCallClass):
         self.assertEqual(response, expected_response)
 
     @mock.patch("challenges.aws_utils.update_service_by_challenge_pk")
-    def test_scale_workers_when_http_connection_failed(self, mock_update_service_by_challenge_pk):
+    def test_scale_workers_when_http_connection_fails(self, mock_update_service_by_challenge_pk):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
 
         pklist = [self.challenge.pk]
