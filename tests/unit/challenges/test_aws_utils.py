@@ -164,7 +164,7 @@ class TestDeleteWorkers(BaseAdminCallClass):
             self.client_token)
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
-            self.challenge2,
+            self.challenge3,
             self.client_token)
 
         pk_list = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
@@ -199,7 +199,7 @@ class TestDeleteWorkers(BaseAdminCallClass):
         queryset = super(TestDeleteWorkers, self).queryset(pk_list)
 
         message = "errMessage"
-        exception_message = {"Error": message, "ResponseMetaData": {"HTTPStatusCode": HTTPStatus.NOT_FOUND}}
+        exception_message = {"Error": message, "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.NOT_FOUND}}
         mock_delete_service_by_pk.return_value = exception_message
 
         count = 0
