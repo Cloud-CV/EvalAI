@@ -213,6 +213,15 @@ class BaseAPITestClass(APITestCase):
             load_challenge_and_return_max_submissions({"pk": non_existing_challenge_pk})
             mock_logger.assert_called_with("Challenge with pk {} doesn't exist".format(non_existing_challenge_pk))
 
+    @mock.patch("scripts.workers.submission_worker.submission.output")
+    @mock.patch("scripts.workers.submission_worker.challenge_phase_split.dataset_split")
+    def test_submission_output_not_saved_when_submission_not_successful(self, mock_output, mock_dataset_split):
+        original_output = mock_output
+        e = "error description"
+        mock_dataset_split.side_effect = Exception(e);
+        run_submission(self.challenge_id, self.challenge_phase, self.submission, "test_sample_file.txt")
+        self.assertEquals(original_output, mock_output)
+
     @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
         self.sqs_client.create_queue(QueueName="test_queue")
