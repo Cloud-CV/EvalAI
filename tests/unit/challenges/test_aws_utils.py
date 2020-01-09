@@ -109,7 +109,7 @@ class BaseTestClass(APITestCase):
 
 
 @mock_ecs
-class BaseAdminsCallClass(BaseTestClass):
+class BaseAdminCallClass(BaseTestClass):
     def setUp(self):
         aws_utils.COMMON_SETTINGS_DICT["CLUSTER"] = "cluster"
         super(BaseAdminCallClass, self).setUp()
