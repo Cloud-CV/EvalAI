@@ -1,22 +1,21 @@
-import mock
 import boto3
+import mock
 import os
 
-from moto import mock_ecs
 from datetime import timedelta
-
-from django.utils import timezone
+from http import HTTPStatus
+from moto import mock_ecs
 
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
-from http import HTTPStatus
+from django.utils import timezone
 
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APIClient, APITestCase
 
+from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHost, ChallengeHostTeam
 
 import challenges.aws_utils as aws_utils
-from challenges.models import Challenge, ChallengePhase
 
 
 class BaseTestClass(APITestCase):
@@ -27,39 +26,37 @@ class BaseTestClass(APITestCase):
 
         self.user = User.objects.create(
             username="myUser",
-            email="myUser@test.com",
-            password="password",
+            email="user@test.com",
+            password="secret_password",
         )
 
         EmailAddress.objects.create(
-            user=self.user,
-            email="myUser@gmail.com",
-            primary=True,
-            verified=True,
+            user=self.user, email="user@test.com", primary=True, verified=True
         )
-        self.partic_user = User.objects.create(
-            username="particUser",
-            email="particUser@test.com",
-            password="password",
+
+        self.participant_user = User.objects.create(
+            username="myParticipantUser",
+            email="participantuser@test.com",
+            password="secret_password",
         )
 
         EmailAddress.objects.create(
-            user=self.partic_user,
-            email="particUser@test.com",
+            user=self.participant_user,
+            email="participantuser@test.com",
             primary=True,
             verified=True,
         )
 
         self.challenge_host_team = ChallengeHostTeam.objects.create(
-            team_name="Challenge Host Team Test",
-            created_by=self.user
+            team_name="Test Challenge Host Team", created_by=self.user
         )
+
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
-            short_description="Short description Test",
-            description="Description for test challenge",
-            terms_and_conditions="Terms and conditions for test challenge",
-            submission_guidelines="Submission guidelines for test challenge",
+            short_description="Short description",
+            description="Descriptione",
+            terms_and_conditions="Terms and conditions",
+            submission_guidelines="Submission guidelines",
             creator=self.challenge_host_team,
             published=False,
             is_registration_open=True,
@@ -86,12 +83,12 @@ class BaseTestClass(APITestCase):
             creator=self.challenge_host_team,
             queue="test_queue_2",
             start_date=timezone.now() - timedelta(days=1),
-            end_date=timezone.now() + timedelta(days=1)
+            end_date=timezone.now() + timedelta(days=1),
         )
         with self.settings(MEDIA_ROOT="/tmp/evalai"):
             self.challenge_phase = ChallengePhase.objects.create(
-                name="Challenge Phase 1",
-                description="Description for Challenge Phase 1",
+                name="Challenge Phase",
+                description="Description for Challenge Phase",
                 start_date=timezone.now() - timedelta(days=1),
                 end_date=timezone.now() + timedelta(days=1),
                 challenge=self.challenge,
@@ -111,25 +108,24 @@ class BaseTestClass(APITestCase):
 @mock_ecs
 class BaseAdminCallClass(BaseTestClass):
     def setUp(self):
-        aws_utils.COMMON_SETTINGS_DICT["CLUSTER"] = "cluster"
+        aws_utils.COMMON_SETTINGS_DICT["CLUSTER"] = "testcluster"
         super(BaseAdminCallClass, self).setUp()
 
         self.challenge3 = Challenge.objects.create(
             title="Test Challenge 3",
             creator=self.challenge_host_team,
             queue="test_queue_3",
-            start_date=timezone.now() - timedelta(days=1),
-            end_date=timezone.now() + timedelta(days=1)
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
         )
-
         self.ecs_client.create_cluster(clusterName="testcluster")
-        self.client_token = "123asd"
+        self.client_token = "abi481"
 
-        @classmethod
-        def queryset(cls, pk_list):
-            queryset = Challenge.objects.filter(pk_in=pk_list)
-            queryset = sorted(queryset, key=lambda i: pk_list.index(i.pk))
-            return queryset
+    @classmethod
+    def queryset(cls, pklist):
+        queryset = Challenge.objects.filter(pk__in=pklist)
+        queryset = sorted(queryset, key=lambda i: pklist.index(i.pk))
+        return queryset
 
 
 class TestDeleteWorkers(BaseAdminCallClass):
