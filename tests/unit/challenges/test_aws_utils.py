@@ -19,7 +19,6 @@ import challenges.aws_utils as aws_utils
 from challenges.models import Challenge, ChallengePhase
 
 
-@mock_ecs
 class BaseTestClass(APITestCase):
     def setUp(self):
         aws_utils.COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"] = "arn:aws:iam::us-east-1:012345678910:role/ecsTaskExecutionRole"
@@ -108,6 +107,13 @@ class BaseTestClass(APITestCase):
         self.client.force_authenticate(user=self.user)
         self.ecs_client = boto3.client("ecs", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
 
+
+@mock_ecs
+class BaseAdminsCallClass(BaseTestClass):
+    def setUp(self):
+        aws_utils.COMMON_SETTINGS_DICT["CLUSTER"] = "cluster"
+        super(BaseAdminCallClass, self).setUp()
+
         self.challenge3 = Challenge.objects.create(
             title="Test Challenge 3",
             creator=self.challenge_host_team,
@@ -115,18 +121,18 @@ class BaseTestClass(APITestCase):
             start_date=timezone.now() - timedelta(days=1),
             end_date=timezone.now() + timedelta(days=1)
         )
+
         self.ecs_client.create_cluster(clusterName="testcluster")
         self.client_token = "123asd"
 
-        aws_utils.COMMON_SETTINGS_DICT["CLUSTER"] = "cluster"
-
+        @classmethod
         def queryset(cls, pk_list):
             queryset = Challenge.objects.filter(pk_in=pk_list)
             queryset = sorted(queryset, key=lambda i: pk_list.index(i.pk))
             return queryset
 
 
-class TestDeleteWorkers(BaseTestClass):
+class TestDeleteWorkers(BaseAdminCallClass):
     def setUp(self):
         super(TestDeleteWorkers, self).setUp()
 
