@@ -157,7 +157,6 @@ class TestDeleteWorkers(BaseAdminCallClass):
         assert response == expected_response
         assert list(c.workers for c in queryset) == expected_workers
 
-    @mock.patch("challenges.aws_utils.delete_service_by_challenge_pk")
     def test_delete_workers_when_challenge1_has_no_workers(self):
         aws_utils.create_service_by_challenge_pk(
             self.ecs_client,
@@ -172,8 +171,6 @@ class TestDeleteWorkers(BaseAdminCallClass):
         queryset = super(TestDeleteWorkers, self).queryset(pk_list)
         
         message = "Please select challenges with active workers only."
-        exception_message = {"message": message, "challenge_pk}
-        mock_delete_service_by_pk.return_value = exception_message
 
         count = 2
         expected_workers = [None, None, None]
