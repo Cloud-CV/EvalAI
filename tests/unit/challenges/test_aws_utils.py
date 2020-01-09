@@ -116,7 +116,7 @@ class BaseTestClass(APITestCase):
             end_date=timezone.now() + timedelta(days=1)
         )
         self.ecs_client.create_cluster(clusterName="testcluster")
-        self.client_token = aws_utils.client_token_generator()
+        self.client_token = "123asd"
 
         def queryset(cls, pk_list):
             queryset = Challenge.objects.filter(pk_in=pk_list)
