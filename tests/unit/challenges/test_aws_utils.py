@@ -14,7 +14,6 @@ from challenges.models import Challenge, ChallengePhase
 from hosts.models import ChallengeHost, ChallengeHostTeam
 
 import challenges.aws_utils as aws_utils
-from challenges.aws_utils import scale_workers
 
 
 class BaseTestClass(APITestCase):
