@@ -2,7 +2,7 @@ import mock
 import responses
 import requests
 
-from rest_framework import status
+# from rest_framework import status
 from rest_framework.test import APITestCase
 
 from scripts.workers.worker_util import EvalAI_Interface
