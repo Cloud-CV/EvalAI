@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from base.models import TimeStampedModel
+from django.core.validators import RegexValidator
 
 # from challenges.models import (Challenge, )
 
@@ -13,7 +14,10 @@ class ChallengeHostTeam(TimeStampedModel):
     Model representing the Host Team for a particular challenge
     """
 
-    team_name = models.CharField(max_length=100, unique=True)
+    team_name = models.CharField(max_length=100,
+                                 validators=[RegexValidator(r'^[\x00-\x7F]*$',
+                                                            "Invalid letter is contained")],
+                                 unique=True)
     created_by = models.ForeignKey(
         User, related_name="challenge_host_team_creator"
     )

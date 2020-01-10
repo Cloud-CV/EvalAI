@@ -233,14 +233,6 @@
 
         // function to create new team
         vm.createNewTeam = function() {
-            var teamNameRegex= /[^\x00-\x80]+/;
-
-            if(teamNameRegex.test(vm.team.name))
-            {
-                $rootScope.notify("error",  "Invalid letter is contained");
-                vm.team.error = "Invalid letter is contained";
-                return
-            }
             vm.isLoader = true;
             vm.loaderTitle = '';
 
