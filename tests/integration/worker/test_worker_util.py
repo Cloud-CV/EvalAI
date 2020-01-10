@@ -32,7 +32,7 @@ class TestGetRequestHeaders(BaseAPITestClass):
 
 
 class TestMakeRequest(BaseAPITestClass):
-        def setUp(self):
+    def setUp(self):
         self.evalai_interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER, QUEUE_NAME)
 
         url = "{}{}"
