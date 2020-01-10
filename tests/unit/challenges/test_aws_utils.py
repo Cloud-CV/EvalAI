@@ -145,8 +145,8 @@ class TestStartWorkers(BaseAdminCallClass):
         expected_failures = [{"message": expected_message, "challenge_pk": self.challenge2.pk}]
         expected_response = {"count": expected_count, "failures": expected_failures}
 
-        aws_start_workers = aws_utils.start_workers(queryset)
-        self.assertEqual(aws_start_workers, expected_response)
+        response = aws_utils.start_workers(queryset)
+        self.assertEqual(response, expected_response)
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
     def test_start_workers_with_two_active_workers(self):
@@ -172,6 +172,6 @@ class TestStartWorkers(BaseAdminCallClass):
         expected_count = 3
         expected_failures = []
         expected_response = {"count": expected_count, "failures": expected_failures}
-        aws_start_workers = aws_utils.start_workers(queryset)
-        self.assertEqual(aws_start_workers, expected_response)
+        response = aws_utils.start_workers(queryset)
+        self.assertEqual(response, expected_response)
         self.assertTrue(all(i.workers == 1 for i in queryset))
