@@ -170,8 +170,6 @@ class TestDeleteWorkers(BaseAdminCallClass):
         pk_list = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestDeleteWorkers, self).queryset(pk_list)
 
-        message = "Please select challenges with active workers only."
-
         expected_message = "Please select challenges with active workers only."
         expected_count = 2
         expected_workers = [None, None, None]
