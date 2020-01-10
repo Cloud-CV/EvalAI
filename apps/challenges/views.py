@@ -473,7 +473,6 @@ def get_challenges_based_on_teams(request):
 @permission_classes(
     (
         permissions.IsAuthenticatedOrReadOnly,
-        HasVerifiedEmail,
         IsChallengeCreator,
     )
 )
@@ -517,6 +516,7 @@ def challenge_phase_list(request, challenge_pk):
 @permission_classes(
     (
         permissions.IsAuthenticatedOrReadOnly,
+        HasVerifiedEmail,
         IsChallengeCreator,
     )
 )
