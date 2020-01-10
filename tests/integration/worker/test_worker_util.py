@@ -66,22 +66,22 @@ class TestReturnUrlPerEnvironment(BaseAPITestClass):
         self.assertEqual(expected, result)
 
 
-class TestDeleteMessageFromSQS(BaseAPITestClass):
-    def setUp(self):
-        super(TestDeleteMessageFromSQS, self).setUp()
+# class TestDeleteMessageFromSQS(BaseAPITestClass):
+#     def setUp(self):
+#         super(TestDeleteMessageFromSQS, self).setUp()
 
-        url = "{}{}"
-        responses.add(
-            responses.POST,
-            url.format(
-                EVALAI_API_SERVER,
-                URLS.get("delete_message_from_sqs_queue").format(QUEUE_NAME)
-            ),
-            status=200
-        )
+#         url = "{}{}"
+#         responses.add(
+#             responses.POST,
+#             url.format(
+#                 EVALAI_API_SERVER,
+#                 URLS.get("delete_message_from_sqs_queue").format(QUEUE_NAME)
+#             ),
+#             status=200
+#         )
 
-    @responses.activate
-    def test_delete_message_from_sqs_queue(self):
-        receipt_handle = "test-receipt-handle"
-        response = self.evalai_interface.delete_message_from_sqs_queue(receipt_handle)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     @responses.activate
+#     def test_delete_message_from_sqs_queue(self):
+#         receipt_handle = "test-receipt-handle"
+#         response = self.evalai_interface.delete_message_from_sqs_queue(receipt_handle)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
