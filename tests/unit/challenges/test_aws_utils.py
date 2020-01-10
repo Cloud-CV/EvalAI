@@ -140,7 +140,7 @@ class TestRestartWorkers(BaseAdminCallsClass):
         self.set_challenge_workers(challenge, num_of_tasks)
         return self.response_OK
 
-    @mock.patch("aws_utils.service_manager")
+    @mock.patch("challenges.aws_utils.service_manager")
     def test_restart_workers_when_all_challenges_have_active_workers(self, mock_sm):
         mock_sm.side_effect = self.sm_side_effect
 
@@ -159,7 +159,7 @@ class TestRestartWorkers(BaseAdminCallsClass):
         self.assertEqual(response, expected_response)
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
-    @mock.patch("aws_utils.service_manager")
+    @mock.patch("challenges.aws_utils.service_manager")
     def test_restart_workers_when_first_challenge_has_zero_workers(self, mock_sm):
         mock_sm.side_effect = self.sm_side_effect
 
@@ -179,7 +179,7 @@ class TestRestartWorkers(BaseAdminCallsClass):
         self.assertEqual(response, expected_response)
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
-    @mock.patch("aws_utils.service_manager")
+    @mock.patch("challenges.aws_utils.service_manager")
     def test_restart_workers_when_service_manager_fails_for_second_challenge(self, mock_sm):
         self.set_challenge_workers(self.challenge, 1)
         self.set_challenge_workers(self.challenge, 1)
@@ -198,41 +198,3 @@ class TestRestartWorkers(BaseAdminCallsClass):
         response = aws_utils.restart_workers(queryset)
         self.assertEqual(response, expected_response)
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
-
-    @mock.patch("challenges.aws_utils.restart_workers")
-    def test_restart_workers_signal_callback_evaluation_script(self, mock_restart_workers):
-        self.set_challenge_workers(self.challenge, 1)
-        self.set_challenge_workers(self.challenge2, 1)
-        self.set_challenge_workers(self.challenge3, 1)
-
-        self.challenge.evaluation_script = SimpleUploadedFile(
-            "test_sample_file_changer.zip",
-            b"Dummy content.",
-            content_type="zip",
-        )
-        self.challenge.save()
-
-        mock_restart_workers.assert_called_with([self.challenge])
-
-    @mock.patch("challenges.aws_utils.restart_workers")
-    def test_restart_workers_signal_callback_test_annotation(self, mock_restart_workers):
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
-
-        self.challenge_phase.test_annotation = SimpleUploadedFile(
-            "test_sample_annotation1.txt",
-            b"Dummy content 1.",
-            content_type="text/plain",
-        )
-        self.challenge_phase.save()
-        self.challenge_phase2.test_annotation = SimpleUploadedFile(
-            "test_sample_annotation2.txt",
-            b"Dummy content 2.",
-            content_type="text/plain",
-        )
-        self.challenge_phase2.save()
-
-        mock_call_args = mock_restart_workers.call_args_list
-        mock_call_1 = mock.call([self.challenge])
-        mock_call_2 = mock.call([self.challenge2])
-        self.assertEqual(mock_call_args, [mock_call_1, mock_call_2])
