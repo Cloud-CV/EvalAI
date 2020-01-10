@@ -86,3 +86,4 @@ class TestDeleteMessageFromSQS(BaseAPITestClass):
         receipt_handle = "test-receipt-handle"
         response = self.evalai_interface.delete_message_from_sqs_queue(receipt_handle)
         self.assertEqual(response, status.HTTP_200_OK)
+        
