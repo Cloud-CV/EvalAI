@@ -78,7 +78,7 @@ class TestDeleteMessageFromSQS(BaseAPITestClass):
                 URLS.get("delete_message_from_sqs_queue").format(QUEUE_NAME)
             ),
             status=200,
-            json={"success": True}
+            json={"status_code": 200}
         )
 
     @responses.activate
