@@ -344,8 +344,9 @@
                         onError: function(response) {
                             var error = response.data;                            
                             $rootScope.notify("error", error.detail);
-                            document.getElementById("showonVerified").style.display = 'none';
-                            document.getElementById("showonUnverified").style.display = 'block';
+                            // document.getElementById("showonVerified").style.display = 'none';
+                            // document.getElementById("showonUnverified").style.display = 'block';
+                            vm.emailVerification = !true;
                             vm.emailError = error.detail;
                             utilities.hideLoader();
                         }
