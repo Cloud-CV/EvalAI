@@ -77,12 +77,11 @@ class TestDeleteMessageFromSQS(BaseAPITestClass):
                 EVALAI_API_SERVER,
                 URLS.get("delete_message_from_sqs_queue").format(QUEUE_NAME)
             ),
-            status=200,
-            json={"status_code": 200}
+            status=200
         )
 
     @responses.activate
     def test_delete_message_from_sqs_queue(self):
         receipt_handle = "test-receipt-handle"
         response = self.evalai_interface.delete_message_from_sqs_queue(receipt_handle)
-        self.assertEqual(response, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
