@@ -473,6 +473,7 @@ def get_challenges_based_on_teams(request):
 @permission_classes(
     (
         permissions.IsAuthenticatedOrReadOnly,
+        HasVerifiedEmail,
         IsChallengeCreator,
     )
 )
@@ -1772,12 +1773,13 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def star_challenge(request, challenge_pk, view, self):
+def star_challenge(request, challenge_pk):
     """
     API endpoint for starring and unstarring
     a challenge.
     """
     challenge = get_challenge_model(challenge_pk)
+
     if request.method == "POST":
         try:
             starred_challenge = StarChallenge.objects.get(
