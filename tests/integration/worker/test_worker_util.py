@@ -33,7 +33,7 @@ class TestGetRequestHeaders(BaseAPITestClass):
 
 class TestMakeRequest(BaseAPITestClass):
     def setUp(self):
-        self.evalai_interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER, QUEUE_NAME)
+        super(TestMakeRequest, self).setUp()
 
         url = "{}{}"
         responses.add(
@@ -66,3 +66,23 @@ class TestReturnUrlPerEnvironment(BaseAPITestClass):
         expected = "{0}{1}".format(EVALAI_API_SERVER, self.test_url)
         result = self.evalai_interface.return_url_per_environment(self.test_url)
         self.assertEqual(expected, result)
+
+
+class TestDeleteMessageFromSQS(BaseAPITestClass):
+    def setUp(self):
+        super(TestDeleteMessageFromSQS, self).setUp()
+
+        url = "{}{}"
+        responses.add(
+            responses.POST,
+            url.format(
+                EVALAI_API_SERVER,
+                URLS.get("delete_message_from_sqs_queue").format(self.QUEUE_NAME)
+            ),
+            status=200
+        )
+
+    def test_delete_message_from_sqs_queue(self):
+        receipt_handle = "test-receipt-handle"
+        response = self.evalai_interface.delete_message_from_sqs_queue(receipt_handle)
+        self.assertEqual(response, status.HTTP_200_OK)
