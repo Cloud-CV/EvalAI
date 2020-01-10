@@ -149,10 +149,10 @@ class TestDeleteWorkers(BaseAdminCallClass):
         pk_list = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestDeleteWorkers, self).queryset(pk_list)
 
-        count = 3
+        expected_count = 3
         expected_workers = [None, None, None]
-        failures = []
-        expected_response = {"count": count, "failures": failures}
+        expected_failures = []
+        expected_response = {"count": expected_count, "failures": expected_failures}
         response = aws_utils.delete_workers(queryset)
         assert response == expected_response
         assert list(c.workers for c in queryset) == expected_workers
@@ -172,10 +172,11 @@ class TestDeleteWorkers(BaseAdminCallClass):
 
         message = "Please select challenges with active workers only."
 
-        count = 2
+        expected_message = "Please select challenges with active workers only."
+        expected_count = 2
         expected_workers = [None, None, None]
-        failures = [{"message": message, "challenge_pk": self.challenge.pk}]
-        expected_response = {"count": count, "failures": failures}
+        expected_failures = [{"message": message, "challenge_pk": self.challenge.pk}]
+        expected_response = {"count": expected_count, "failures": expected_failures}
         response = aws_utils.delete_workers(queryset)
         assert response == expected_response
         assert list(c.workers for c in queryset) == expected_workers
@@ -202,13 +203,14 @@ class TestDeleteWorkers(BaseAdminCallClass):
         exception_message = {"Error": message, "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.NOT_FOUND}}
         mock_delete_service_by_pk.return_value = exception_message
 
-        count = 0
-        failures = [
+        expected_message = "errMessage"
+        expected_count = 0
+        expected_failures = [
             {"message": message, "challenge_pk": self.challenge.pk},
             {"message": message, "challenge_pk": self.challenge2.pk},
             {"message": message, "challenge_pk": self.challenge3.pk}
         ]
-        expected_response = {"count": count, "failures": failures}
+        expected_response = {"count": expected_count, "failures": expected_failures}
         response = aws_utils.delete_workers(queryset)
         assert expected_response == response
         assert list(c.workers for c in queryset) == [1, 1, 1]
