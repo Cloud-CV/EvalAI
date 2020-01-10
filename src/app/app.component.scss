@@ -1,0 +1,18 @@
+#up-arrow {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 30px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background-color: #ffbe25;
+  color: white;
+  cursor: pointer;
+  padding: 10px 12px 12px 12px;
+  border-radius: 100px;
+}
+
+#up-arrow:hover {
+  background-color: #808080;
+}
