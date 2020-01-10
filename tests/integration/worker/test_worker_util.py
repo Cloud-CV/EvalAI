@@ -77,7 +77,8 @@ class TestDeleteMessageFromSQS(BaseAPITestClass):
                 EVALAI_API_SERVER,
                 URLS.get("delete_message_from_sqs_queue").format(QUEUE_NAME)
             ),
-            status=200
+            status=200,
+            json={"success": True}
         )
 
     @responses.activate
