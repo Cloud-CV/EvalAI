@@ -175,7 +175,7 @@ class TestDeleteWorkers(BaseAdminCallClass):
         expected_message = "Please select challenges with active workers only."
         expected_count = 2
         expected_workers = [None, None, None]
-        expected_failures = [{"message": message, "challenge_pk": self.challenge.pk}]
+        expected_failures = [{"message": expected_message, "challenge_pk": self.challenge.pk}]
         expected_response = {"count": expected_count, "failures": expected_failures}
         response = aws_utils.delete_workers(queryset)
         assert response == expected_response
@@ -206,9 +206,9 @@ class TestDeleteWorkers(BaseAdminCallClass):
         expected_message = "errMessage"
         expected_count = 0
         expected_failures = [
-            {"message": message, "challenge_pk": self.challenge.pk},
-            {"message": message, "challenge_pk": self.challenge2.pk},
-            {"message": message, "challenge_pk": self.challenge3.pk}
+            {"message": expected_message, "challenge_pk": self.challenge.pk},
+            {"message": expected_message, "challenge_pk": self.challenge2.pk},
+            {"message": expected_message, "challenge_pk": self.challenge3.pk}
         ]
         expected_response = {"count": expected_count, "failures": expected_failures}
         response = aws_utils.delete_workers(queryset)
