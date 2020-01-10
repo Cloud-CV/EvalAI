@@ -341,9 +341,12 @@
                             vm.displayDockerSubmissionInstructions(vm.page.is_docker_based, vm.isParticipated);
                             utilities.hideLoader();
                         },
-                        onError: function() {
+                        onError: function(response) {
+                            var error = response.data;                            
+                            $rootScope.notify("error", error.detail);
                             document.getElementById("showonVerified").style.display = 'none';
                             document.getElementById("showonUnverified").style.display = 'block';
+                            vm.emailError = error.detail;
                             utilities.hideLoader();
                         }
                     };
@@ -1532,7 +1535,6 @@
         };
 
         vm.starChallenge = function() {
-            console.log("5")
             parameters.url = "challenges/" + vm.challengeId + "/";
             parameters.method = 'POST';
             parameters.data = {};
@@ -1549,9 +1551,7 @@
                 },
                 onError: function(response) {
                     var error = response.data;
-                    $rootScope.notify("error", error);
-                    document.getElementById("showonVerified").style.display = 'none';
-                    document.getElementById("showonUnverified").style.display = 'block';
+                    $rootScope.notify("error", error.detail);
                 }
             };
             utilities.sendRequest(parameters);
