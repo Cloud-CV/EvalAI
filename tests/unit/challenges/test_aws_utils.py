@@ -2,8 +2,6 @@ import mock
 import boto3
 import os
 
-from unittest import TestCase
-
 from moto import mock_ecs
 from datetime import timedelta
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -18,7 +16,7 @@ from rest_framework.test import APITestCase, APIClient
 from hosts.models import ChallengeHost, ChallengeHostTeam
 
 import challenges.aws_utils as aws_utils
-from challenges.models import Challenge, ChallengePhase
+from challenges.models import Challenge
 
 
 class BaseTestClass(APITestCase):
@@ -88,21 +86,6 @@ class BaseTestClass(APITestCase):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
-        with self.settings(MEDIA_ROOT="/tmp/evalai"):
-            self.challenge_phase = ChallengePhase.objects.create(
-                name="Challenge Phase",
-                description="Description for Challenge Phase",
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
-                challenge=self.challenge,
-            )
-            self.challenge_phase2 = ChallengePhase.objects.create(
-                name="Challenge Phase 2",
-                description="Description for Challenge Phase",
-                start_date=timezone.now() - timedelta(days=2),
-                end_date=timezone.now() + timedelta(days=1),
-                challenge=self.challenge2,
-            )
 
         self.client.force_authenticate(user=self.user)
         self.ecs_client = boto3.client(
@@ -111,6 +94,10 @@ class BaseTestClass(APITestCase):
             aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
+
+    def set_challenge_workers(self, challenge, num_workers):
+        challenge.workers = num_workers
+        challenge.save()
 
 
 @mock_ecs
@@ -137,10 +124,29 @@ class BaseAdminCallsClass(BaseTestClass):
 
 class TestRestartWorkers(BaseAdminCallsClass):
 
-    def test_restart_workers_when_all_challenges_have_active_workers(self):
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
+    def setUp(self):
+        super(TestRestartWorkers, self).setUp()
+
+        self.example_error = "Example Error Description"
+        self.response_OK = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
+        }
+        self.response_BAD_REQUEST = {
+            "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.BAD_REQUEST},
+            "Error": self.example_error
+        }
+
+    def sm_side_effect(self, client, challenge, num_of_tasks, force_new_deployment):
+        self.set_challenge_workers(challenge, num_of_tasks)
+        return self.response_OK
+
+    @mock.patch("aws_utils.service_manager")
+    def test_restart_workers_when_all_challenges_have_active_workers(self, mock_sm):
+        mock_sm.side_effect = self.sm_side_effect
+
+        self.set_challenge_workers(self.challenge, 1)
+        self.set_challenge_workers(self.challenge2, 1)
+        self.set_challenge_workers(self.challenge3, 1)
 
         pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestRestartWorkers, self).queryset(pklist)
@@ -153,11 +159,13 @@ class TestRestartWorkers(BaseAdminCallsClass):
         self.assertEqual(response, expected_response)
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
-    def test_restart_workers_when_first_challenge_has_zero_workers(self):
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
-        aws_utils.scale_workers([self.challenge], 0)
+    @mock.patch("aws_utils.service_manager")
+    def test_restart_workers_when_first_challenge_has_zero_workers(self, mock_sm):
+        mock_sm.side_effect = self.sm_side_effect
+
+        self.set_challenge_workers(self.challenge, 0)
+        self.set_challenge_workers(self.challenge2, 1)
+        self.set_challenge_workers(self.challenge3, 1)
 
         pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestRestartWorkers, self).queryset(pklist)
@@ -171,11 +179,31 @@ class TestRestartWorkers(BaseAdminCallsClass):
         self.assertEqual(response, expected_response)
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
+    @mock.patch("aws_utils.service_manager")
+    def test_restart_workers_when_service_manager_fails_for_second_challenge(self, mock_sm):
+        self.set_challenge_workers(self.challenge, 1)
+        self.set_challenge_workers(self.challenge, 1)
+        self.set_challenge_workers(self.challenge, 1)
+
+        mock_sm.side_effect = [self.response_OK, self.response_BAD_REQUEST, self.response_OK]
+
+        pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
+        queryset = super(TestRestartWorkers, self).queryset(pklist)
+
+        expected_count = 2
+        expected_num_of_workers = [1, 1, 1]
+        expected_message = self.example_error
+        expected_failures = [{"message": expected_message, "challenge_pk": self.challenge2.pk}]
+        expected_response = {"count": expected_count, "failures": expected_failures}
+        response = aws_utils.restart_workers(queryset)
+        self.assertEqual(response, expected_response)
+        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
+
     @mock.patch("challenges.aws_utils.restart_workers")
     def test_restart_workers_signal_callback_evaluation_script(self, mock_restart_workers):
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
-        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
+        self.set_challenge_workers(self.challenge, 1)
+        self.set_challenge_workers(self.challenge2, 1)
+        self.set_challenge_workers(self.challenge3, 1)
 
         self.challenge.evaluation_script = SimpleUploadedFile(
             "test_sample_file_changer.zip",
