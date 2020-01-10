@@ -59,10 +59,12 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.document.documentElement.scrollTop > 50) {
       if (this.scrolledState === false) {
         this.globalService.scrolledStateChange(true);
+        document.getElementById('up-arrow').style.display = 'block';
       }
     } else {
       if (this.scrolledState === true) {
         this.globalService.scrolledStateChange(false);
+        document.getElementById('up-arrow').style.display = 'none';
       }
     }
     }
@@ -142,5 +144,9 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.globalServiceSubscriptionScrollTop) {
       this.globalServiceSubscriptionScrollTop.unsubscribe();
     }
+  }
+
+  scrollUp() {
+    document.body.scrollIntoView({behavior: 'smooth'});
   }
 }

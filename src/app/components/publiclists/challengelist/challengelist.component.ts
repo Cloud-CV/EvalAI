@@ -310,8 +310,4 @@ export class ChallengelistComponent implements OnInit {
       () => {}
     );
   }
-
-  scrollUp() {
-    this.document.getElementById('ongoing-challenges').scrollIntoView({behavior: 'smooth'});
-  }
 }
