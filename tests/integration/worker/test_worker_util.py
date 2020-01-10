@@ -9,7 +9,7 @@ from scripts.workers.worker_util import EvalAI_Interface, URLS
 
 
 AUTH_TOKEN = "mock_auth_token123456"
-EVALAI_API_SERVER = "http://testserver"
+EVALAI_API_SERVER = "http://testserver.com"
 QUEUE_NAME = "evalai_submissions_queue"
 
 
