@@ -5,7 +5,7 @@ import requests
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from scripts.workers.worker_util import EvalAI_Interface, URLS
+from scripts.workers.worker_util import EvalAI_Interface
 
 
 AUTH_TOKEN = "mock_auth_token123456"
@@ -40,20 +40,20 @@ class TestMakeRequest(BaseAPITestClass):
             status=200
         )
 
-        @responses.activate
-        @mock.patch('scripts.workers.worker_util.get_request_headers')
-        def test_make_request_success(self, mock_headers):
-            mock_headers.return_value = {"Authorization": "Token {}".format(AUTH_TOKEN)}
-            response = self.evalai_interface.make_request(self.test_url, "GET")
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
+    @responses.activate
+    @mock.patch('scripts.workers.worker_util.get_request_headers')
+    def test_make_request_success(self, mock_headers):
+        mock_headers.return_value = {"Authorization": "Token {}".format(AUTH_TOKEN)}
+        response = self.evalai_interface.make_request(self.test_url, "GET")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        @mock.patch('scripts.workers.worker_util.logger.info')
-        @mock.patch('scripts.workers.worker_util.get_request_headers')
-        def test_make_request_with_request_exception(self, mock_headers, mock_logger):
-            mock_headers.return_value = {"Authorization": "Token {}".format(AUTH_TOKEN)}
-            with self.assertRaises(requests.exceptions.RequestException):
-                self.evalai_interface.make_request(self.test_url, "GET")
-                mock_logger.assert_called_with("The worker is not able to establish connection with EvalAI")
+    @mock.patch('scripts.workers.worker_util.logger.info')
+    @mock.patch('scripts.workers.worker_util.get_request_headers')
+    def test_make_request_with_request_exception(self, mock_headers, mock_logger):
+        mock_headers.return_value = {"Authorization": "Token {}".format(AUTH_TOKEN)}
+        with self.assertRaises(requests.exceptions.RequestException):
+            self.evalai_interface.make_request(self.test_url, "GET")
+            mock_logger.assert_called_with("The worker is not able to establish connection with EvalAI")
 
 
 class TestReturnUrlPerEnvironment(BaseAPITestClass):
