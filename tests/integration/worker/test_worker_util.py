@@ -41,16 +41,12 @@ class TestMakeRequest(BaseAPITestClass):
         )
 
     @responses.activate
-    @mock.patch('scripts.workers.worker_util.get_request_headers')
-    def test_make_request_success(self, mock_headers):
-        mock_headers.return_value = {"Authorization": "Token {}".format(AUTH_TOKEN)}
+    def test_make_request_success(self):
         response = self.evalai_interface.make_request(self.test_url, "GET")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @mock.patch('scripts.workers.worker_util.logger.info')
-    @mock.patch('scripts.workers.worker_util.get_request_headers')
-    def test_make_request_with_request_exception(self, mock_headers, mock_logger):
-        mock_headers.return_value = {"Authorization": "Token {}".format(AUTH_TOKEN)}
+    def test_make_request_with_request_exception(self, mock_logger):
         with self.assertRaises(requests.exceptions.RequestException):
             self.evalai_interface.make_request(self.test_url, "GET")
             mock_logger.assert_called_with("The worker is not able to establish connection with EvalAI")
