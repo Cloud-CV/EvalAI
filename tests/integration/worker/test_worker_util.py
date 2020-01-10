@@ -1,6 +1,4 @@
-import json
 import mock
-import os
 import responses
 import requests
 
@@ -54,7 +52,7 @@ class TestMakeRequest(BaseAPITestClass):
         def test_make_request_with_request_exception(self, mock_headers, mock_logger):
             mock_headers.return_value = {"Authorization": "Token {}".format(AUTH_TOKEN)}
             with self.assertRaises(requests.exceptions.RequestException):
-                response = self.evalai_interface.make_request(self.test_url, "GET")
+                self.evalai_interface.make_request(self.test_url, "GET")
                 mock_logger.assert_called_with("The worker is not able to establish connection with EvalAI")
 
 
@@ -86,4 +84,3 @@ class TestDeleteMessageFromSQS(BaseAPITestClass):
         receipt_handle = "test-receipt-handle"
         response = self.evalai_interface.delete_message_from_sqs_queue(receipt_handle)
         self.assertEqual(response, status.HTTP_200_OK)
-        
