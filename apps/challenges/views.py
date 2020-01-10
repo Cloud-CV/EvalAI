@@ -1772,15 +1772,25 @@ def get_or_update_challenge_phase_split(request, challenge_phase_split_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticatedOrReadOnly, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def star_challenge(request, challenge_pk):
+def star_challenge(request, challenge_pk, view, self):
     """
     API endpoint for starring and unstarring
     a challenge.
     """
+    emailverified = False
     challenge = get_challenge_model(challenge_pk)
-
     if request.method == "POST":
         try:
+            if request.user.is_anonymous:
+                emailverified = True
+            else:
+                if EmailAddress.objects.filter(user=request.user, verified=True).exists():
+                    emailverified = True
+                else:
+                    emailverified = False
+            if emailverified is not True:
+                response_data = {"error": "Please Verify yoru email first!"}
+                return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
             starred_challenge = StarChallenge.objects.get(
                 user=request.user.pk, challenge=challenge
             )

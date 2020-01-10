@@ -45,6 +45,7 @@
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
         vm.disableSubmit = true;
+        vm.emailVerification = true;
         // save initial ranking
         vm.initial_ranking = {};
       // loader for existing teams
@@ -1531,6 +1532,7 @@
         };
 
         vm.starChallenge = function() {
+            console.log("5")
             parameters.url = "challenges/" + vm.challengeId + "/";
             parameters.method = 'POST';
             parameters.data = {};
@@ -1548,6 +1550,8 @@
                 onError: function(response) {
                     var error = response.data;
                     $rootScope.notify("error", error);
+                    document.getElementById("showonVerified").style.display = 'none';
+                    document.getElementById("showonUnverified").style.display = 'block';
                 }
             };
             utilities.sendRequest(parameters);
