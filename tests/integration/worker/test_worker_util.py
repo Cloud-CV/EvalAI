@@ -79,7 +79,8 @@ class TestDeleteMessageFromSQS(BaseAPITestClass):
             ),
             status=200
         )
-
+        
+    @responses.activate
     def test_delete_message_from_sqs_queue(self):
         receipt_handle = "test-receipt-handle"
         response = self.evalai_interface.delete_message_from_sqs_queue(receipt_handle)
