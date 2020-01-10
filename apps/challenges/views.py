@@ -517,7 +517,6 @@ def challenge_phase_list(request, challenge_pk):
 @permission_classes(
     (
         permissions.IsAuthenticatedOrReadOnly,
-        HasVerifiedEmail,
         IsChallengeCreator,
     )
 )
