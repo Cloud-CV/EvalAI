@@ -320,15 +320,19 @@ def get_teams_and_corresponding_challenges_for_a_participant(
     participant_objs = Participant.objects.filter(
         user=request.user
     ).prefetch_related("team")
+
     is_challenge_host = is_user_a_host_of_challenge(
         user=request.user, challenge_pk=challenge_pk
     )
+
     challenge_participated_teams = []
     for participant_obj in participant_objs:
         participant_team = participant_obj.team
+
         challenges = Challenge.objects.filter(
             participant_teams=participant_team
         )
+        
         if challenges.count():
             for challenge in challenges:
                 challenge_participated_teams.append(
