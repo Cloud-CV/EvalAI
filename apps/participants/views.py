@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from allauth.account.models import EmailAddress
+
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
