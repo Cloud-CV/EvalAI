@@ -4,7 +4,6 @@ import os
 
 from moto import mock_ecs
 from datetime import timedelta
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
@@ -182,8 +181,8 @@ class TestRestartWorkers(BaseAdminCallsClass):
     @mock.patch("challenges.aws_utils.service_manager")
     def test_restart_workers_when_service_manager_fails_for_second_challenge(self, mock_sm):
         self.set_challenge_workers(self.challenge, 1)
-        self.set_challenge_workers(self.challenge, 1)
-        self.set_challenge_workers(self.challenge, 1)
+        self.set_challenge_workers(self.challenge2, 1)
+        self.set_challenge_workers(self.challenge3, 1)
 
         mock_sm.side_effect = [self.response_OK, self.response_BAD_REQUEST, self.response_OK]
 
