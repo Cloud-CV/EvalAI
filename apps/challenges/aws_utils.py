@@ -642,7 +642,7 @@ def restart_workers(queryset):
     """
     The function called by the admin action method to restart all the selected workers.
 
-    Calls the delete_service_by_challenge_pk method. Before calling, verifies that the challenge worker(s) is(are) active.
+    Calls the service_manager method. Before calling, verifies that the challenge worker(s) is(are) active.
 
     Parameters:
     queryset (<class 'django.db.models.query.QuerySet'>): The queryset of selected challenges in the django admin page.
