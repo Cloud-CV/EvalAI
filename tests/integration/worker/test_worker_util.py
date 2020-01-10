@@ -28,7 +28,7 @@ class TestGetRequestHeaders(BaseAPITestClass):
     def test_get_request_headers(self):
         expected = {"Authorization": "Token {}".format(AUTH_TOKEN)}
         result = self.evalai_interface.get_request_headers()
-        self.assertEqual(expected, response)
+        self.assertEqual(expected, result)
 
 
 class TestMakeRequest(BaseAPITestClass):
