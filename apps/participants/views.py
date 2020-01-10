@@ -332,7 +332,7 @@ def get_teams_and_corresponding_challenges_for_a_participant(
         challenges = Challenge.objects.filter(
             participant_teams=participant_team
         )
-        
+
         if challenges.count():
             for challenge in challenges:
                 challenge_participated_teams.append(
