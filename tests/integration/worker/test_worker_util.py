@@ -13,6 +13,9 @@ class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.evalai_interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER, QUEUE_NAME)
         self.test_url = "/test-url"
+        self.submission_pk = 1
+        self.challenge_pk = 1
+        self.challenge_phase_pk = 1
         self.data = {"test": "data"}
         self.url_per_environment = "{0}{1}".format(EVALAI_API_SERVER, self.test_url)
 
