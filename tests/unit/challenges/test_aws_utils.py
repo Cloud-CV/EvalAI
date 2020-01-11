@@ -1,8 +1,6 @@
 import boto3
 import mock
 import os
-import random
-import string
 
 from moto import mock_ecs
 from datetime import timedelta
