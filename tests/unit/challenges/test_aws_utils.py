@@ -114,7 +114,7 @@ class BaseAdminCallsClass(BaseTestClass):
             end_date=timezone.now() + timedelta(days=1),
         )
         self.ecs_client.create_cluster(clusterName="cluster")
-        self.client_token = "".join(random.choice(string.ascii_lowercase) for _ in range(6))
+        self.client_token = aws_utils.client_token_generator()
 
     @classmethod
     def queryset(cls, pklist):
