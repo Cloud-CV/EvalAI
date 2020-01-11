@@ -38,9 +38,6 @@
   margin-bottom: 20px;
 }
 
-table {
-  width: 160% !important;
-}
 
 .cbx-label {
   margin-left: 55px;
@@ -49,4 +46,84 @@ table {
 
 .cbx:checked ~ .cbx-label {
   background: #4CAF50;
+}
+
+.collapsible-table {
+  overflow: auto;
+
+  .table-header {
+    color: rgba(0,0,0,0.87) !important;
+    font-weight: bold;
+    text-align: center !important;
+  }
+}
+
+.cell-outside {
+  padding: 8px;
+}
+
+.detail-row {
+  height: 0;
+  overflow: hidden;
+}
+
+.collapsed-td {
+  padding: 0px 58px !important;
+}
+
+.expanded-row {
+  margin-top: 24px;
+  margin-bottom: 14px;
+}
+
+.elements {
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+
+.elements-detail {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-right-color: lightgrey;
+
+  padding-right: 80px;
+}
+
+.elements-action {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin-left: 40px;
+}
+
+.element-icon {
+  margin-right: 10px;
+}
+
+@include screen-small {
+  .elements {
+    flex-direction: column;
+  }
+  .elements-action {
+    margin-left: 0;
+    margin-top: 20px;
+  }
+  .elements-detail {
+    border-right-style: none;
+    padding-right: 0;
+
+    border-bottom-style: solid;
+    border-bottom-color: lightgrey;
+    border-bottom-width: 1px;
+    padding-bottom: 20px;
+  }
+  .element {
+    display: flex;
+    flex-direction: column;
+  }
 }
