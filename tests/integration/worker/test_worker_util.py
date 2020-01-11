@@ -64,7 +64,7 @@ class TestReturnUrlPerEnvironment(BaseAPITestClass):
 
 @mock.patch("scripts.workers.worker_util.return_url_per_environment")
 @mock.patch("scripts.workers.worker_util.make_request")
-class APICallsTestClass(BaseTestClass):
+class APICallsTestClass(BaseAPITestClass):
 
     def test_get_message_from_sqs_queue(self, mock_make_request, mock_url):
         url = URLS.get("get_message_from_sqs_queue").format(QUEUE_NAME)
@@ -76,7 +76,7 @@ class APICallsTestClass(BaseTestClass):
     def test_delete_message_from_sqs_queue(self, mock_make_request, mock_url):
         test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
         url = URLS.get("delete_message_from_sqs_queue").format(QUEUE_NAME)
-        delete_message_from_sqs_queue(test_receipt_handle)
+        self.evalai_interface.delete_message_from_sqs_queue(test_receipt_handle)
         mock_url.assert_called_with(self.test_url)
         url = mock_url(self.test_url)
         expected_data = {"receipt_handle": "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"}
@@ -119,7 +119,7 @@ class APICallsTestClass(BaseTestClass):
 
     def test_update_submission_status(self, mock_make_request, mock_url):
         self.evalai_interface.update_submission_status(self.data, self.challenge_pk)
-        url = URLS.get("update_submission_status").format(challenge_pk)
+        url = URLS.get("update_submission_status").format(self.challenge_pk)
         mock_url.assert_called_with(self.test_url)
         url = mock_url(self.test_url)
         mock_make_request.assert_called_with(url, "PATCH", data=self.data)
