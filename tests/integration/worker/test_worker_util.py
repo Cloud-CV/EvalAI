@@ -4,21 +4,19 @@ from rest_framework.test import APITestCase
 from scripts.workers.worker_util import EvalAI_Interface, URLS
 
 
-AUTH_TOKEN = "mock_auth_token123456"
-EVALAI_API_SERVER = "http://testserver.com"
-QUEUE_NAME = "evalai_submissions_queue"
-
-
 class BaseAPITestClass(APITestCase):
     def setUp(self):
-        self.evalai_interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER, QUEUE_NAME)
+        self.AUTH_TOKEN = "mock_auth_token123456"
+        self.self.EVALAI_API_SERVER = "http://testserver.com"
+        self.QUEUE_NAME = "evalai_submissions_queue"
+        self.evalai_interface = EvalAI_Interface(self.AUTH_TOKEN, self.EVALAI_API_SERVER, self.QUEUE_NAME)
         self.test_url = "/test-url"
         self.submission_pk = 1
         self.challenge_pk = 1
         self.challenge_phase_pk = 1
         self.data = {"test": "data"}
-        self.headers = {"Authorization": "Token {}".format(AUTH_TOKEN)}
-        self.url_per_environment = "{0}{1}".format(EVALAI_API_SERVER, self.test_url)
+        self.headers = {"Authorization": "Token {}".format(self.AUTH_TOKEN)}
+        self.url_per_environment = "{0}{1}".format(self.EVALAI_API_SERVER, self.test_url)
 
 
 class TestGetRequestHeaders(BaseAPITestClass):
@@ -69,7 +67,7 @@ class TestReturnUrlPerEnvironment(BaseAPITestClass):
 class APICallsTestClass(BaseAPITestClass):
 
     def test_get_message_from_sqs_queue(self, mock_make_request, mock_url):
-        url = URLS.get("get_message_from_sqs_queue").format(QUEUE_NAME)
+        url = URLS.get("get_message_from_sqs_queue").format(self.QUEUE_NAME)
         self.evalai_interface.get_message_from_sqs_queue()
         mock_url.assert_called_with(url)
         url = mock_url(url)
@@ -77,7 +75,7 @@ class APICallsTestClass(BaseAPITestClass):
 
     def test_delete_message_from_sqs_queue(self, mock_make_request, mock_url):
         test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
-        url = URLS.get("delete_message_from_sqs_queue").format(QUEUE_NAME)
+        url = URLS.get("delete_message_from_sqs_queue").format(self.QUEUE_NAME)
         self.evalai_interface.delete_message_from_sqs_queue(test_receipt_handle)
         mock_url.assert_called_with(url)
         url = mock_url(url)
@@ -85,7 +83,7 @@ class APICallsTestClass(BaseAPITestClass):
         mock_make_request.assert_called_with(url, "POST", expected_data)
 
     def test_get_challenge_by_queue_name(self, mock_make_request, mock_url):
-        url = URLS.get("get_challenge_by_queue_name").format(QUEUE_NAME)
+        url = URLS.get("get_challenge_by_queue_name").format(self.QUEUE_NAME)
         self.evalai_interface.get_challenge_by_queue_name()
         mock_url.assert_called_with(url)
         url = mock_url(url)
