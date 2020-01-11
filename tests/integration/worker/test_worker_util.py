@@ -7,7 +7,7 @@ from scripts.workers.worker_util import EvalAI_Interface, URLS
 class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.AUTH_TOKEN = "mock_auth_token123456"
-        self.self.EVALAI_API_SERVER = "http://testserver.com"
+        self.EVALAI_API_SERVER = "http://testserver.com"
         self.QUEUE_NAME = "evalai_submissions_queue"
         self.evalai_interface = EvalAI_Interface(self.AUTH_TOKEN, self.EVALAI_API_SERVER, self.QUEUE_NAME)
         self.test_url = "/test-url"
