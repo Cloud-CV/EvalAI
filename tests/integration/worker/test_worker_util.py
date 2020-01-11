@@ -17,6 +17,7 @@ class BaseAPITestClass(APITestCase):
         self.challenge_pk = 1
         self.challenge_phase_pk = 1
         self.data = {"test": "data"}
+        self.headers = {"Authorization": "Token {}".format(AUTH_TOKEN)}
         self.url_per_environment = "{0}{1}".format(EVALAI_API_SERVER, self.test_url)
 
 
@@ -25,7 +26,7 @@ class TestGetRequestHeaders(BaseAPITestClass):
         super(TestGetRequestHeaders, self).setUp()
 
     def test_get_request_headers(self):
-        expected = {"Authorization": "Token {}".format(AUTH_TOKEN)}
+        expected = self.headers
         result = self.evalai_interface.get_request_headers()
         self.assertEqual(expected, result)
 
@@ -38,19 +39,19 @@ class TestMakeRequest(BaseAPITestClass):
 
     def test_make_request_get(self, mock_make_request):
         self.evalai_interface.make_request(self.url, "GET")
-        mock_make_request.assert_called_with(url=self.url, method="GET")
+        mock_make_request.assert_called_with(url=self.url, method="GET", data=None, headers=self.headers)
 
     def test_make_request_put(self, mock_make_request):
         self.evalai_interface.make_request(self.url, "PUT", data=self.data)
-        mock_make_request.assert_called_with(url=self.url, method="PUT", data=self.data)
+        mock_make_request.assert_called_with(url=self.url, method="PUT", data=self.data, headers=self.headers)
 
     def test_make_request_patch(self, mock_make_request):
         self.evalai_interface.make_request(self.url, "PATCH", data=self.data)
-        mock_make_request.assert_called_with(url=self.url, method="PATCH", data=self.data)
+        mock_make_request.assert_called_with(url=self.url, method="PATCH", data=self.data, headers=self.headers)
 
     def test_make_request_post(self, mock_make_request):
         self.evalai_interface.make_request(self.url, "POST", data=self.data)
-        mock_make_request.assert_called_with(url=self.url, method="POSTs", data=self.data)
+        mock_make_request.assert_called_with(url=self.url, method="POST", data=self.data, headers=self.headers)
 
 
 class TestReturnUrlPerEnvironment(BaseAPITestClass):
