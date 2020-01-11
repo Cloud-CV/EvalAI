@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import mock
 import os
 import responses
 import shutil
@@ -14,7 +15,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
-import mock
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
@@ -29,10 +29,10 @@ from challenges.models import (
     Leaderboard,
     StarChallenge,
 )
-from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from jobs.serializers import ChallengeSubmissionManagementSerializer
+from participants.models import Participant, ParticipantTeam
 
 
 class BaseAPITestClass(APITestCase):
