@@ -65,7 +65,7 @@ class TestReturnUrlPerEnvironment(BaseAPITestClass):
 
 
 @mock.patch("scripts.workers.worker_util.return_url_per_environment")
-@mock.patch("scripts.workers.worker_util.make_request")
+@mock.patch("scripts.workers.worker_util.EvalAI_Interface.make_request")
 class APICallsTestClass(BaseAPITestClass):
 
     def test_get_message_from_sqs_queue(self, mock_make_request, mock_url):
