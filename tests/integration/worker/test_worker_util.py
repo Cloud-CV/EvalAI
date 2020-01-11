@@ -30,7 +30,7 @@ class TestGetRequestHeaders(BaseAPITestClass):
         self.assertEqual(expected, result)
 
 
-@mock.patch("scripts.workers.worker_util.requests")
+@mock.patch("scripts.workers.worker_util.requests.request")
 class TestMakeRequest(BaseAPITestClass):
     def setUp(self):
         super(TestMakeRequest, self).setUp()
