@@ -38,19 +38,19 @@ class TestMakeRequest(BaseAPITestClass):
 
     def test_make_request_get(self, mock_make_request):
         self.evalai_interface.make_request(self.url, "GET")
-        mock_make_request.get.assert_called_with(url=self.url, method="GET")
+        mock_make_request.assert_called_with(url=self.url, method="GET")
 
     def test_make_request_put(self, mock_make_request):
         self.evalai_interface.make_request(self.url, "PUT", data=self.data)
-        mock_make_request.put.assert_called_with(url=self.url, method="PUT", data=self.data)
+        mock_make_request.assert_called_with(url=self.url, method="PUT", data=self.data)
 
     def test_make_request_patch(self, mock_make_request):
         self.evalai_interface.make_request(self.url, "PATCH", data=self.data)
-        mock_make_request.patch.assert_called_with(url=self.url, method="PATCH", data=self.data)
+        mock_make_request.assert_called_with(url=self.url, method="PATCH", data=self.data)
 
     def test_make_request_post(self, mock_make_request):
         self.evalai_interface.make_request(self.url, "POST", data=self.data)
-        mock_make_request.post.assert_called_with(url=self.url, method="POSTs", data=self.data)
+        mock_make_request.assert_called_with(url=self.url, method="POSTs", data=self.data)
 
 
 class TestReturnUrlPerEnvironment(BaseAPITestClass):
@@ -61,6 +61,7 @@ class TestReturnUrlPerEnvironment(BaseAPITestClass):
         expected = self.url_per_environment
         result = self.evalai_interface.return_url_per_environment(self.test_url)
         self.assertEqual(expected, result)
+
 
 @mock.patch("scripts.workers.worker_util.return_url_per_environment")
 @mock.patch("scripts.workers.worker_util.make_request")
