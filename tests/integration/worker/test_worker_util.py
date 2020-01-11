@@ -64,7 +64,7 @@ class TestReturnUrlPerEnvironment(BaseAPITestClass):
         self.assertEqual(expected, result)
 
 
-@mock.patch("scripts.workers.worker_util.return_url_per_environment")
+@mock.patch("scripts.workers.worker_util.EvalAI_Interface.return_url_per_environment")
 @mock.patch("scripts.workers.worker_util.EvalAI_Interface.make_request")
 class APICallsTestClass(BaseAPITestClass):
 
