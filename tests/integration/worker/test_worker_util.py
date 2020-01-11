@@ -82,7 +82,7 @@ class APICallsTestClass(BaseAPITestClass):
         mock_url.assert_called_with(url)
         url = mock_url(url)
         expected_data = {"receipt_handle": "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"}
-        mock_make_request.assert_called_with(url, "POST", data=expected_data)
+        mock_make_request.assert_called_with(url, "POST", expected_data)
 
     def test_get_challenge_by_queue_name(self, mock_make_request, mock_url):
         url = URLS.get("get_challenge_by_queue_name").format(QUEUE_NAME)
@@ -93,14 +93,14 @@ class APICallsTestClass(BaseAPITestClass):
 
     def test_get_submission_by_pk(self, mock_make_request, mock_url):
         self.evalai_interface.get_submission_by_pk(self.submission_pk)
-        url = URLS.get("get_submission_by_pk").format(self.submission.pk)
+        url = URLS.get("get_submission_by_pk").format(self.submission_pk)
         mock_url.assert_called_with(url)
         url = mock_url(url)
         mock_make_request.assert_called_with(url, "GET")
 
     def test_get_challenge_phases_by_challenge_pk(self, mock_make_request, mock_url):
         self.evalai_interface.get_challenge_phases_by_challenge_pk(self.challenge_pk)
-        url = URLS.get("get_challenge_phases_by_challenge_pk").format(self.challenge.pk)
+        url = URLS.get("get_challenge_phases_by_challenge_pk").format(self.challenge_pk)
         mock_url.assert_called_with(url)
         url = mock_url(url)
         mock_make_request.assert_called_with(url, "GET")
