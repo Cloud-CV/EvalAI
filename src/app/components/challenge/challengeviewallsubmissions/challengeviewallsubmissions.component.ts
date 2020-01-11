@@ -8,6 +8,7 @@ import { EndpointsService } from '../../../services/endpoints.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SelectphaseComponent } from '../../utility/selectphase/selectphase.component';
 import { environment } from '../../../../environments/environment.staging';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 /**
  * Component Class
@@ -15,7 +16,14 @@ import { environment } from '../../../../environments/environment.staging';
 @Component({
   selector: 'app-challengeviewallsubmissions',
   templateUrl: './challengeviewallsubmissions.component.html',
-  styleUrls: ['./challengeviewallsubmissions.component.scss']
+  styleUrls: ['./challengeviewallsubmissions.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({height: '0px', minHeight: '0'})),
+      state('expanded', style({height: '*'})),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
 })
 export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewInit {
 
@@ -133,6 +141,11 @@ export class ChallengeviewallsubmissionsComponent implements OnInit, AfterViewIn
    * API call inside the modal
    */
   apiCall: any;
+
+  columnsToDisplay = ['participant_team', 'created_by', 'status', 'execution_time', 'submitted_file', 'submission_result_file'];
+  columnsHeadings = ['Team Name', 'Created By', 'Status', 'Execution Time', 'Submitted File', 'Result File'];
+
+  expandedElement: null;
 
   /**
    * Constructor.
