@@ -17,6 +17,7 @@ class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.evalai_interface = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER, QUEUE_NAME)
         self.test_url = "/test-url"
+        self.data = {"test": "data"}
 
 
 class TestGetRequestHeaders(BaseAPITestClass):
@@ -29,27 +30,27 @@ class TestGetRequestHeaders(BaseAPITestClass):
         self.assertEqual(expected, result)
 
 
+@mock.patch("scripts.workers.remote_submission_worker.requests")
 class TestMakeRequest(BaseAPITestClass):
     def setUp(self):
         super(TestMakeRequest, self).setUp()
+        self.url = super(TestMakeRequest, self).test_url
 
-        url = "{}{}"
-        responses.add(
-            responses.GET,
-            url.format(EVALAI_API_SERVER, self.test_url),
-            status=200
-        )
+    def test_make_request_get(self, mock_make_request):
+        self.evalai_interface.make_request(self.url, "GET")
+        mock_make_request.get.assert_called_with(url=self.url, method="GET")
 
-    # @responses.activate
-    # def test_make_request_success(self):
-    #     response = self.evalai_interface.make_request(self.test_url, "GET")
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_make_request_put(self, mock_make_request):
+        self.evalai_interface.make_request(self.url, "PUT", data=self.data)
+        mock_make_request.put.assert_called_with(url=self.url, method="PUT", data=self.data)
 
-    @mock.patch('scripts.workers.worker_util.logger.info')
-    def test_make_request_with_request_exception(self, mock_logger):
-        with self.assertRaises(requests.exceptions.RequestException):
-            self.evalai_interface.make_request(self.test_url, "GET")
-            mock_logger.assert_called_with("The worker is not able to establish connection with EvalAI")
+    def test_make_request_patch(self, mock_make_request):
+        self.evalai_interface.make_request(self.url, "PATCH", data=self.data)
+        mock_make_request.patch.assert_called_with(url=self.url, method="PATCH", data=self.data)
+
+    def test_make_request_post(self, mock_make_request):
+        self.evalai_interface.make_request(self.url, "POST", data=self.data)
+        mock_make_request.post.assert_called_with(url=self.url, method="POSTs", data=self.data)
 
 
 class TestReturnUrlPerEnvironment(BaseAPITestClass):
