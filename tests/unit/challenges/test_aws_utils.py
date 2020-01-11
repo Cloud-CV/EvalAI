@@ -1,6 +1,8 @@
-import mock
 import boto3
+import mock
 import os
+import random
+import string
 
 from moto import mock_ecs
 from datetime import timedelta
@@ -112,7 +114,7 @@ class BaseAdminCallsClass(BaseTestClass):
             end_date=timezone.now() + timedelta(days=1),
         )
         self.ecs_client.create_cluster(clusterName="cluster")
-        self.client_token = "abc123"
+        self.client_token = "".join(random.choice(string.ascii_lowercase) for _ in range(6))
 
     @classmethod
     def queryset(cls, pklist):
