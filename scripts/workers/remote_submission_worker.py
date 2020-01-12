@@ -444,7 +444,7 @@ def get_challenge_phase_by_pk(challenge_pk, challenge_phase_pk):
     return response
 
 
-def update_submission_data(data, challenge_pk, submission_pk):
+def update_submission_data(data, challenge_pk):
     url = URLS.get("update_submission_data").format(challenge_pk)
     url = return_url_per_environment(url)
     response = make_request(url, "PUT", data=data)
@@ -547,7 +547,7 @@ def run_submission(
             "stdout": stdout_content,
             "stderr": stderr_content,
         }
-        update_submission_data(submission_data, challenge_pk, submission_pk)
+        update_submission_data(submission_data, challenge_pk)
 
         shutil.rmtree(temp_run_dir)
         return
@@ -576,7 +576,7 @@ def run_submission(
     else:
         status = "failed"
         submission_data["submission_status"] = status
-    update_submission_data(submission_data, challenge_pk, submission_pk)
+    update_submission_data(submission_data, challenge_pk)
     shutil.rmtree(temp_run_dir)
     return
 

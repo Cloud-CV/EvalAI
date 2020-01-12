@@ -132,7 +132,7 @@ class APICallsTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "GET")
 
     def test_update_submission_data(self, mock_make_request, mock_url):
-        update_submission_data(self.data, self.challenge_pk, self.submission_pk)
+        update_submission_data(self.data, self.challenge_pk)
         url = self.update_submission_data_url(self.challenge_pk)
         mock_url.assert_called_with(url)
         url = mock_url(url)
