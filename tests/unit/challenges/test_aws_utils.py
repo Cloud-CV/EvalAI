@@ -2,20 +2,19 @@ import boto3
 import mock
 import os
 
-from moto import mock_ecs
 from datetime import timedelta
-from django.utils import timezone
+from http import HTTPStatus
+from moto import mock_ecs
 
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
-from http import HTTPStatus
+from django.utils import timezone
 
 from rest_framework.test import APITestCase, APIClient
 
-from hosts.models import ChallengeHost, ChallengeHostTeam
-
 import challenges.aws_utils as aws_utils
 from challenges.models import Challenge
+from hosts.models import ChallengeHost, ChallengeHostTeam
 
 
 class BaseTestClass(APITestCase):
@@ -126,6 +125,9 @@ class TestRestartWorkers(BaseAdminCallsClass):
     def setUp(self):
         super(TestRestartWorkers, self).setUp()
 
+        self.no_active_workers = 0
+        self.one_active_worker = 1
+
         self.example_error = "Example Error Description"
         self.response_OK = {
             "ResponseMetadata": {"HTTPStatusCode": HTTPStatus.OK},
@@ -143,15 +145,15 @@ class TestRestartWorkers(BaseAdminCallsClass):
     def test_restart_workers_when_all_challenges_have_active_workers(self, mock_sm):
         mock_sm.side_effect = self.sm_side_effect
 
-        self.set_challenge_workers(self.challenge, 1)
-        self.set_challenge_workers(self.challenge2, 1)
-        self.set_challenge_workers(self.challenge3, 1)
+        self.set_challenge_workers(self.challenge, self.one_active_worker)
+        self.set_challenge_workers(self.challenge2, self.one_active_worker)
+        self.set_challenge_workers(self.challenge3, self.one_active_worker)
 
         pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestRestartWorkers, self).queryset(pklist)
 
         expected_count = 3
-        expected_num_of_workers = [1, 1, 1]
+        expected_num_of_workers = [self.one_active_worker, self.one_active_worker, self.one_active_worker]
         expected_failures = []
         expected_response = {"count": expected_count, "failures": expected_failures}
         response = aws_utils.restart_workers(queryset)
@@ -162,15 +164,15 @@ class TestRestartWorkers(BaseAdminCallsClass):
     def test_restart_workers_when_first_challenge_has_zero_workers(self, mock_sm):
         mock_sm.side_effect = self.sm_side_effect
 
-        self.set_challenge_workers(self.challenge, 0)
-        self.set_challenge_workers(self.challenge2, 1)
-        self.set_challenge_workers(self.challenge3, 1)
+        self.set_challenge_workers(self.challenge, self.no_active_workers)
+        self.set_challenge_workers(self.challenge2, self.one_active_worker)
+        self.set_challenge_workers(self.challenge3, self.one_active_worker)
 
         pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
         queryset = super(TestRestartWorkers, self).queryset(pklist)
 
         expected_count = 2
-        expected_num_of_workers = [0, 1, 1]
+        expected_num_of_workers = [self.no_active_workers, self.one_active_worker, self.one_active_worker]
         expected_message = "Please select challenges with active workers only."
         expected_failures = [{"message": expected_message, "challenge_pk": self.challenge.pk}]
         expected_response = {"count": expected_count, "failures": expected_failures}
@@ -180,9 +182,9 @@ class TestRestartWorkers(BaseAdminCallsClass):
 
     @mock.patch("challenges.aws_utils.service_manager")
     def test_restart_workers_when_service_manager_fails_for_second_challenge(self, mock_sm):
-        self.set_challenge_workers(self.challenge, 1)
-        self.set_challenge_workers(self.challenge2, 1)
-        self.set_challenge_workers(self.challenge3, 1)
+        self.set_challenge_workers(self.challenge, self.one_active_worker)
+        self.set_challenge_workers(self.challenge2, self.one_active_worker)
+        self.set_challenge_workers(self.challenge3, self.one_active_worker)
 
         mock_sm.side_effect = [self.response_OK, self.response_BAD_REQUEST, self.response_OK]
 
@@ -190,7 +192,7 @@ class TestRestartWorkers(BaseAdminCallsClass):
         queryset = super(TestRestartWorkers, self).queryset(pklist)
 
         expected_count = 2
-        expected_num_of_workers = [1, 1, 1]
+        expected_num_of_workers = [self.one_active_worker, self.one_active_worker, self.one_active_worker]
         expected_message = self.example_error
         expected_failures = [{"message": expected_message, "challenge_pk": self.challenge2.pk}]
         expected_response = {"count": expected_count, "failures": expected_failures}
