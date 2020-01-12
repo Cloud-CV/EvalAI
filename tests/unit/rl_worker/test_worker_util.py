@@ -43,6 +43,9 @@ class BaseTestClass(TestCase):
     def update_submission_data_url(self, challenge_pk):
         return URLS.get("update_submission_data").format(challenge_pk)
 
+    def update_submission_status_url(self, challenge_pk):
+        return URLS.get("update_submission_status").format(challenge_pk)
+
 
 class GetRequestHeadersTestClass(BaseTestClass):
     def setUp(self):
@@ -151,3 +154,11 @@ class APICallsTestClass(BaseTestClass):
         self.evalai_interface.update_submission_data(expected_data, self.challenge_pk, self.submission_pk)
         mock_make_request.assert_called_with(expected_url, "PUT", data=expected_data)
 
+    def test_update_submission_status(self, mock_make_request):
+        expected_url = self.evalai_interface.return_url_per_environment(
+            self.update_submission_status_url(self.challenge_pk)
+        )
+        expected_data = {"test": "test"}
+
+        self.evalai_interface.update_submission_status(expected_data, self.challenge_pk)
+        mock_make_request.assert_called_with(expected_url, "PATCH", data=expected_data)
