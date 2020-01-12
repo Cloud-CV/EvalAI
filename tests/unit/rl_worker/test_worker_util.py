@@ -54,6 +54,13 @@ class GetRequestHeadersTestClass(BaseTestClass):
         self.assertEqual(expected, response)
 
 
+class ReturnURLPerEnvironment(BaseTestClass):
+    def test_return_url_per_environment(self):
+        expected = "{}{}".format(self.EVALAI_API_SERVER, self.make_request_url())
+        response = self.evalai_interface.return_url_per_environment(self.make_request_url())
+        self.assertEqual(expected, response)
+
+
 class MakeRequestTestClass(BaseTestClass):
     def setUp(self):
         super(MakeRequestTestClass, self).setUp()
