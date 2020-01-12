@@ -64,7 +64,7 @@ class ReturnURLPerEnvironment(BaseTestClass):
 class MakeRequestTestClass(BaseTestClass):
     def setUp(self):
         super(MakeRequestTestClass, self).setUp()
-        self.url = "{}{}".format(self.EVALAI_API_SERVER, self.make_request_url())
+        self.url = self.evalai_interface.return_url_per_environment(self.make_request_url())
 
     @responses.activate
     def test_make_request_success(self):
