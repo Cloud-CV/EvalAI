@@ -344,7 +344,7 @@
                         onError: function(response) {
                             var error = response.data;                            
                             $rootScope.notify("error", error.detail);
-                            vm.emailVerification = !true;
+                            vm.emailVerification = false;
                             vm.emailError = error.detail;
                             utilities.hideLoader();
                         }
