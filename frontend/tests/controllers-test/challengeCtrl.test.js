@@ -536,8 +536,6 @@ describe('Unit tests for challenge controller', function () {
             spyOn($state, 'go');
             spyOn(utilities, 'hideLoader');
             vm = createController();
-            expect(utilities.storeData).toHaveBeenCalledWith('emailError', errorResponse.detail);
-            expect($state.go).toHaveBeenCalledWith('web.permission-denied');
             expect(utilities.hideLoader).toHaveBeenCalled();
         });
 
