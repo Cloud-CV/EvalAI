@@ -472,8 +472,7 @@ def get_challenges_based_on_teams(request):
 @throttle_classes([UserRateThrottle])
 @permission_classes(
     (
-        permissions.IsAuthenticatedOrReadOnly,
-        HasVerifiedEmail,
+        permissions.IsAuthenticatedOrReadOnly
         IsChallengeCreator,
     )
 )
