@@ -556,7 +556,7 @@ def run_submission(
     stderr_content = open(stderr_file, "r").read()
     stdout_content = open(stdout_file, "r").read()
 
-    # TODO :: see if two updates can be combine into a single update.
+    # TODO :: see if two updates can be combined into a single update.
     with open(stdout_file, "r") as stdout:
         stdout_content = stdout.read()
         submission.stdout_file.save("stdout.txt", ContentFile(stdout_content))
