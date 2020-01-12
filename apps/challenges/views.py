@@ -474,6 +474,7 @@ def get_challenges_based_on_teams(request):
     (
         permissions.IsAuthenticatedOrReadOnly,
         IsChallengeCreator,
+        HasVerifiedEmail,
     )
 )
 @authentication_classes((ExpiringTokenAuthentication,))
