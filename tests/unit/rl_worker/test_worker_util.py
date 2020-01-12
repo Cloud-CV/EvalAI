@@ -48,9 +48,6 @@ class BaseTestClass(TestCase):
 
 
 class GetRequestHeadersTestClass(BaseTestClass):
-    def setUp(self):
-        super(GetRequestHeadersTestClass, self).setUp()
-
     def test_get_request_headers(self):
         expected = self.headers
         response = self.evalai_interface.get_request_headers()
@@ -92,9 +89,6 @@ class MakeRequestTestClass(BaseTestClass):
 
 @mock.patch("scripts.workers.worker_util.EvalAI_Interface.make_request")
 class APICallsTestClass(BaseTestClass):
-    def setUp(self):
-        super(APICallsTestClass, self).setUp()
-
     def test_get_message_from_sqs_queue(self, mock_make_request):
         expected_url = self.evalai_interface.return_url_per_environment(
             self.get_message_from_sqs_queue_url(self.QUEUE_NAME)
