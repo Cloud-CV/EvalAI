@@ -50,15 +50,15 @@ class BaseTestClass(TestCase):
 class GetRequestHeadersTestClass(BaseTestClass):
     def test_get_request_headers(self):
         expected = self.headers
-        response = self.evalai_interface.get_request_headers()
-        self.assertEqual(expected, response)
+        result = self.evalai_interface.get_request_headers()
+        self.assertEqual(expected, result)
 
 
 class ReturnURLPerEnvironment(BaseTestClass):
     def test_return_url_per_environment(self):
         expected = "{}{}".format(self.EVALAI_API_SERVER, self.make_request_url())
-        response = self.evalai_interface.return_url_per_environment(self.make_request_url())
-        self.assertEqual(expected, response)
+        result = self.evalai_interface.return_url_per_environment(self.make_request_url())
+        self.assertEqual(expected, result)
 
 
 class MakeRequestTestClass(BaseTestClass):
