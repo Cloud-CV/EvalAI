@@ -2,10 +2,8 @@ import mock
 import requests
 import responses
 
-from unittest import TestCase
-
 from scripts.workers.worker_util import EvalAI_Interface, URLS
-
+from unittest import TestCase
 
 class BaseTestClass(TestCase):
     def setUp(self):
