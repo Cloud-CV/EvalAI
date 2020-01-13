@@ -5,6 +5,7 @@ import responses
 from scripts.workers.worker_util import EvalAI_Interface, URLS
 from unittest import TestCase
 
+
 class BaseTestClass(TestCase):
     def setUp(self):
         self.AUTH_TOKEN = "test_token"
