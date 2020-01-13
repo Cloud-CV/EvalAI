@@ -43,7 +43,7 @@ class BaseTestClass(TestCase):
         return URLS.get("update_submission_data").format(challenge_pk)
 
     def update_submission_status_url(self, challenge_pk):
-        return URLS.get("update_submission_status").format(challenge_pk)
+        return "/api/jobs/challenge/{}/update_submission/".format(challenge_pk)
 
 
 class GetRequestHeadersTestClass(BaseTestClass):
