@@ -8,6 +8,7 @@ omit =
     */migrations/*
     */tests/*
     */middleware/*
+    apps/jobs/*
     frontend/
     settings/custom_storages.py
     settings/staging.py

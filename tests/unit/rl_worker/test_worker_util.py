@@ -98,7 +98,11 @@ class WorkerUtilTestClass(BaseTestClass):
     def setUp(self):
         super(WorkerUtilTestClass, self).setUp()
 
-        self.interface.make_request = mock.MagicMock(return_value=self.success_response)
+        self.patcher = mock.patch("scripts.worker.worker_util.EvalAI_Interface.make_request")
+        self.mock_make_request = self.patcher.start()
+
+    def tearDown(self):
+        self.patcher.stop()
 
     def test_return_url_per_environment(self):
         returned_url = self.interface.return_url_per_environment(self.make_request_url())
@@ -109,35 +113,35 @@ class WorkerUtilTestClass(BaseTestClass):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_message_from_sqs_queue_url(EVALAI_QUEUE_NAME))
         response = self.interface.get_message_from_sqs_queue()
 
-        self.interface.make_request.assert_called_with(url, "GET")
+        self.mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_get_submission_by_pk(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_submission_by_pk_url(self.submission_pk))
         response = self.interface.get_submission_by_pk(self.submission_pk)
 
-        self.interface.make_request.assert_called_with(url, "GET")
+        self.mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_get_challenge_phases_by_challenge_pk(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_challenge_phases_by_challenge_pk_url(self.challenge_pk))
         response = self.interface.get_challenge_phases_by_challenge_pk(self.challenge_pk)
 
-        self.interface.make_request.assert_called_with(url, "GET")
+        self.mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_get_challenge_by_queue_name(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_challenge_by_queue_name_url(EVALAI_QUEUE_NAME))
         response = self.interface.get_challenge_by_queue_name()
 
-        self.interface.make_request.assert_called_with(url, "GET")
+        self.mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_get_challenge_phase_by_pk(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.get_challenge_phase_by_pk_url(self.challenge_pk, self.challenge_phase_pk))
         response = self.interface.get_challenge_phase_by_pk(self.challenge_pk, self.challenge_phase_pk)
 
-        self.interface.make_request.assert_called_with(url, "GET")
+        self.mock_make_request.assert_called_with(url, "GET")
         self.assertEqual(response, self.success_response)
 
     def test_update_submission_data(self):
@@ -145,7 +149,7 @@ class WorkerUtilTestClass(BaseTestClass):
         data = {"submission_pk": self.submission_pk, "test_field": "new_value"}
         response = self.interface.update_submission_data(data, self.challenge_pk)
 
-        self.interface.make_request.assert_called_with(url, "PUT", data=data)
+        self.mock_make_request.assert_called_with(url, "PUT", data=data)
         self.assertEqual(response, self.success_response)
 
     def test_update_submission_data_partially(self):
@@ -153,7 +157,7 @@ class WorkerUtilTestClass(BaseTestClass):
         data = {"test_field": "new_value"}
         response = self.interface.update_submission_status(data, self.challenge_pk)
 
-        self.interface.make_request.assert_called_with(url, "PATCH", data=data)
+        self.mock_make_request.assert_called_with(url, "PATCH", data=data)
         self.assertEqual(response, self.success_response)
 
     def test_delete_message_from_sqs_queue(self):
@@ -162,5 +166,5 @@ class WorkerUtilTestClass(BaseTestClass):
         url = "{}{}".format(EVALAI_API_SERVER, self.delete_message_from_sqs_queue_url(EVALAI_QUEUE_NAME))
         response = self.interface.delete_message_from_sqs_queue(test_receipt_handle)
 
-        self.interface.make_request.assert_called_with(url, "POST", data)
+        self.mock_make_request.assert_called_with(url, "POST", data)
         self.assertEqual(response, self.success_response)
