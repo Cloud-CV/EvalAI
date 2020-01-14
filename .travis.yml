@@ -41,7 +41,7 @@ before_install:
 services:
 - xvfb
 install:
-- pip install awscli coveralls
+- pip install awscli coveralls 
 - pip install -r requirements/dev.txt
 script:
 - flake8 ./
