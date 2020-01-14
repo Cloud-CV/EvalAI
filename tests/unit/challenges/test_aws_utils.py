@@ -121,12 +121,6 @@ class BaseAdminCallClass(BaseTestClass):
         self.ecs_client.create_cluster(clusterName="cluster")
         self.client_token = "abc123"
 
-    @classmethod
-    def queryset(cls, pklist):
-        queryset = Challenge.objects.filter(pk__in=pklist)
-        queryset = sorted(queryset, key=lambda i: pklist.index(i.pk))
-        return queryset
-
 
 class TestScaleWorkers(BaseAdminCallClass):
     def setUp(self):
