@@ -131,24 +131,28 @@ class BaseAdminCallClass(BaseTestClass):
 class TestScaleWorkers(BaseAdminCallClass):
     def setUp(self):
         super(TestScaleWorkers, self).setUp()
+        pk_list = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
+        self.challenges = Challenge.objects.filter(pk__in=pk_list).order_by("pk")
 
     def test_scale_workers_when_third_challenge_is_new_with_no_worker_service(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
 
-        pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
-        queryset = super(TestScaleWorkers, self).queryset(pklist)
-        num_of_tasks = self.challenge2.workers + 3
-        expected_count = 2
+        expected_num_of_workers = [1, 1, None]
+        self.assertEqual(list(c.workers for c in self.challenges), expected_num_of_workers)
+
+        num_of_tasks = 3
         expected_num_of_workers = [num_of_tasks, num_of_tasks, None]
-        expected_message = "Please start worker(s) before scaling."
-        expected_failures = [
-            {"message": expected_message, "challenge_pk": self.challenge3.pk},
-        ]
-        expected_response = {"count": expected_count, "failures": expected_failures}
-        response = aws_utils.scale_workers(queryset, num_of_tasks)
+        expected_failures = [{
+            "message": "Please start worker(s) before scaling.",
+            "challenge_pk": self.challenge3.pk,
+        }]
+        expected_counts = 2
+        expected_response = {"count": expected_counts, "failures": expected_failures}
+
+        response = aws_utils.scale_workers(self.challenges, num_of_tasks)
+        self.assertEqual(list(c.workers for c in self.challenges), expected_num_of_workers)
         self.assertEqual(response, expected_response)
-        self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
     def test_scale_workers_when_second_challenge_is_scaled_to_same_number_of_workers(self):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
@@ -157,26 +161,37 @@ class TestScaleWorkers(BaseAdminCallClass):
         self.challenge2.workers = 3
         self.challenge2.save()
 
-        pklist = [self.challenge.pk, self.challenge2.pk, self.challenge3.pk]
-        queryset = super(TestScaleWorkers, self).queryset(pklist)
+        expected_num_of_workers = [1, 3, 1]
+        self.assertEqual(list(c.workers for c in self.challenges), expected_num_of_workers)
+
         num_of_tasks = self.challenge2.workers
-        expected_count = 2
+        expected_num_of_workers = [num_of_tasks, num_of_tasks, num_of_tasks]
         expected_message = "Please scale to a different number. Challenge has {} worker(s).".format(num_of_tasks)
         expected_failures = [{"message": expected_message, "challenge_pk": self.challenge2.pk}]
+        expected_count = 2
         expected_response = {"count": expected_count, "failures": expected_failures}
-        response = aws_utils.scale_workers(queryset, num_of_tasks)
+
+        response = aws_utils.scale_workers(self.challenges, num_of_tasks)
+        self.assertEqual(list(c.workers for c in self.challenges), expected_num_of_workers)
         self.assertEqual(response, expected_response)
 
     @mock.patch("challenges.aws_utils.update_service_by_challenge_pk")
     def test_scale_workers_when_http_connection_fails(self, mock_update_service_by_challenge_pk):
         aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge2, self.client_token)
+        aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge3, self.client_token)
 
-        pklist = [self.challenge.pk]
-        queryset = super(TestScaleWorkers, self).queryset(pklist)
+        expected_num_of_workers = [1, 1, 1]
+        self.assertEqual(list(c.workers for c in self.challenges), expected_num_of_workers)
+
         num_of_tasks = self.challenge.workers + 3
-        expected_count = 0
         expected_message = "Test Error Message"
-        expected_failures = [{"message": expected_message, "challenge_pk": self.challenge.pk}]
+        expected_failures = [
+            {"message": expected_message, "challenge_pk": self.challenge.pk},
+            {"message": expected_message, "challenge_pk": self.challenge2.pk},
+            {"message": expected_message, "challenge_pk": self.challenge3.pk}
+        ]
+        expected_count = 0
         expected_response = {"count": expected_count, "failures": expected_failures}
         mock_update_service_by_challenge_pk.return_value = {
             "Error": expected_message,
@@ -184,5 +199,7 @@ class TestScaleWorkers(BaseAdminCallClass):
                 "HTTPStatusCode": HTTPStatus.NOT_FOUND
             }
         }
-        response = aws_utils.scale_workers(queryset, num_of_tasks)
+
+        response = aws_utils.scale_workers(self.challenges, num_of_tasks)
+        self.assertEqual(list(c.workers for c in self.challenges), expected_num_of_workers)
         self.assertEqual(response, expected_response)
