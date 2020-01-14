@@ -222,7 +222,7 @@ service_definition = """
         }}
     }},
     "deploymentController": {{
-        "type": "ECS
+        "type": "ECS"
     }},
     "schedulingStrategy":"REPLICA",
 }}
