@@ -98,7 +98,7 @@ class WorkerUtilTestClass(BaseTestClass):
     def setUp(self):
         super(WorkerUtilTestClass, self).setUp()
 
-        self.patcher = mock.patch("scripts.worker.worker_util.EvalAI_Interface.make_request")
+        self.patcher = mock.patch("scripts.workers.worker_util.EvalAI_Interface.make_request")
         self.mock_make_request = self.patcher.start()
 
     def tearDown(self):
