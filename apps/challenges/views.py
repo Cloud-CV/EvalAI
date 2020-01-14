@@ -112,7 +112,7 @@ except NameError:
 
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_list(request, challenge_host_team_pk):
     try:
@@ -162,7 +162,7 @@ def challenge_list(request, challenge_host_team_pk):
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
 @throttle_classes([UserRateThrottle])
 @permission_classes(
-    (permissions.IsAuthenticated, HasVerifiedEmail, IsChallengeCreator)
+    (permissions.IsAuthenticated, IsChallengeCreator)
 )
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_detail(request, challenge_host_team_pk, challenge_pk):
@@ -429,7 +429,7 @@ def get_challenge_by_pk(request, pk):
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenges_based_on_teams(request):
     q_params = {"approved_by_admin": True, "published": True}
@@ -473,7 +473,6 @@ def get_challenges_based_on_teams(request):
 @permission_classes(
     (
         permissions.IsAuthenticatedOrReadOnly,
-        HasVerifiedEmail,
         IsChallengeCreator,
     )
 )
@@ -517,7 +516,6 @@ def challenge_phase_list(request, challenge_pk):
 @permission_classes(
     (
         permissions.IsAuthenticatedOrReadOnly,
-        HasVerifiedEmail,
         IsChallengeCreator,
     )
 )
@@ -1304,7 +1302,7 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
 )
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_all_submissions_of_challenge(
     request, challenge_pk, challenge_phase_pk
@@ -1382,7 +1380,7 @@ def get_all_submissions_of_challenge(
 
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def download_all_submissions(
     request, challenge_pk, challenge_phase_pk, file_type
@@ -1723,7 +1721,7 @@ def get_or_update_dataset_split(request, dataset_split_pk):
 
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def create_challenge_phase_split(request):
     """
@@ -1833,7 +1831,7 @@ def star_challenge(request, challenge_pk):
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_broker_urls(request):
     """
@@ -1860,7 +1858,7 @@ def get_broker_urls(request):
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_broker_url_by_challenge_pk(request, challenge_pk):
     """
@@ -2070,7 +2068,7 @@ def accept_challenge_invitation(request, invitation_key):
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_by_queue_name(request, queue_name):
     """
@@ -2106,7 +2104,7 @@ def get_challenge_by_queue_name(request, queue_name):
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phases_by_challenge_pk(request, challenge_pk):
     """
@@ -2166,7 +2164,7 @@ def get_challenge_phase_by_slug(request, slug):
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenge_phase_environment_url(request, slug):
     """
