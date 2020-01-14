@@ -42,7 +42,7 @@ services:
 - xvfb
 install:
 - pip install -r requirements/dev.txt
-- pip install awscli==1.16.57 coveralls
+- pip install awscli coveralls
 script:
 - flake8 ./
 - karma start --single-run
