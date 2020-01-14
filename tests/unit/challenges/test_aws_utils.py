@@ -198,6 +198,7 @@ class TestRestartWorkers(BaseAdminCallsClass):
         self.assertEqual(list(c.workers for c in queryset), expected_num_of_workers)
 
     def test_create_service_by_challenge_pk(self):
+        self.ecs_client.create_cluster(clusterName=aws_utils.COMMON_SETTINGS_DICT["CLUSTER"])
         response = aws_utils.create_service_by_challenge_pk(self.ecs_client, self.challenge, self.client_token)
         self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK)
         self.assertEqual(self.challenge.workers, 1)
