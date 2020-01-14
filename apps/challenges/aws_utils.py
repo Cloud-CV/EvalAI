@@ -221,6 +221,9 @@ service_definition = """
             "assignPublicIp": "ENABLED"
         }}
     }},
+    "deploymentController": {{
+        "type": "ECS
+    }},
     "schedulingStrategy":"REPLICA",
 }}
 """
