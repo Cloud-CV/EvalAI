@@ -41,8 +41,8 @@ before_install:
 services:
 - xvfb
 install:
+- pip install awscli coveralls boto3 botocore moto
 - pip install -r requirements/dev.txt
-- pip install --upgrade awscli coveralls boto3 botocore moto
 script:
 - flake8 ./
 - karma start --single-run
