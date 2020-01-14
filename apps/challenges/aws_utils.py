@@ -222,9 +222,6 @@ service_definition = """
         }}
     }},
     "schedulingStrategy":"REPLICA",
-    "deploymentController":{{
-        "type": "ECS"
-    }},
 }}
 """
 
@@ -352,6 +349,7 @@ def create_service_by_challenge_pk(client, challenge, client_token):
             **VPC_DICT
         )
         definition = eval(definition)
+        definition['deploymentController'] = {"type": "ECS"}
         try:
             response = client.create_service(**definition)
             if response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK:
