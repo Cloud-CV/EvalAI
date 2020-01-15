@@ -149,7 +149,7 @@ class WorkerUtilTestClass(BaseTestClass):
     def test_update_submission_data(self):
         url = "{}{}".format(EVALAI_API_SERVER, self.update_submission_data_url(self.challenge_pk))
         data = {"submission_pk": self.submission_pk, "test_field": "new_value"}
-        response = self.interface.update_submission_data(data, self.challenge_pk)
+        response = self.interface.update_submission_data(data, self.challenge_pk, self.submission_pk)
 
         self.mock_make_request.assert_called_with(url, "PUT", data=data)
         self.assertEqual(response, self.success_response)
