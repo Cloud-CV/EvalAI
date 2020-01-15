@@ -334,3 +334,18 @@
         }
     }
 })();
+(function() {
+    'use strict';
+    angular.module('evalai').directive('permissionDenied', permissionDenied);
+
+    function permissionDenied() {
+        var directive = {
+            templateUrl: 'dist/views/web/permission-denied.html',
+            transclude: true,
+            restrict: 'EA',
+        };
+        return directive;
+
+
+    }
+})();

@@ -1777,7 +1777,7 @@ describe('Unit tests for challenge controller', function () {
         it('backend error', function () {
             success = false;
             vm.starChallenge();
-            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse);
+            expect($rootScope.notify).toHaveBeenCalledWith("error", errorResponse.detail);
         });
     });
 

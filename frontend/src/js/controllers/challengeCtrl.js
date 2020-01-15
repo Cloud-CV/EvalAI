@@ -45,6 +45,7 @@
         vm.reverseSort = false;
         vm.columnIndexSort = 0;
         vm.disableSubmit = true;
+        vm.emailVerification = true;
         // save initial ranking
         vm.initial_ranking = {};
       // loader for existing teams
@@ -341,6 +342,10 @@
                             utilities.hideLoader();
                         },
                         onError: function() {
+                            var error = response.data;
+                            $rootScope.notify("error", error.detail);
+                            vm.emailVerification = false;
+                            vm.emailError = error.detail;
                             utilities.hideLoader();
                         }
                     };
@@ -1545,7 +1550,7 @@
                 },
                 onError: function(response) {
                     var error = response.data;
-                    $rootScope.notify("error", error);
+                    $rootScope.notify("error", error.detail);
                 }
             };
             utilities.sendRequest(parameters);

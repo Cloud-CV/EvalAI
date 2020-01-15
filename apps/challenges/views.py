@@ -429,7 +429,7 @@ def get_challenge_by_pk(request, pk):
 
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
-@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@permission_classes((permissions.IsAuthenticated,))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_challenges_based_on_teams(request):
     q_params = {"approved_by_admin": True, "published": True}
