@@ -12,6 +12,9 @@
     bottom: 0;
     left: 0;
 }
+#darksidebox {
+    color: white;
+}
 
 
 /* media queries */
@@ -22,3 +25,18 @@
         padding-left: 220px;
     }
 }
+html[data-theme= 'dark'] {
+    #darksidebox {
+        color: #121212;
+    }
+    .white-text {
+        color: #121212 !important;
+    }
+    #footercolor {
+        background: #fff;
+    }
+    .footershadow {
+        box-shadow: 6px -1px 9px $super-light-shadow;
+    }
+}
+

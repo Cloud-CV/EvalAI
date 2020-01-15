@@ -1,5 +1,9 @@
 /*main container style*/
-
+html[data-theme = 'dark'] {
+    .web-container {
+        background: #222833;
+    }
+}
 .dashboard-flex {
     display: flex;
     flex-direction: column;

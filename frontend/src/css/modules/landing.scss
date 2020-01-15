@@ -1,5 +1,54 @@
 /*dynamic header style*/
-
+html[data-theme= 'dark'] {
+    .ev-details {
+        background: #252833;
+        padding: 20px 40px;
+    }
+    .ev-reverse-details {
+        background: #252833;
+    }
+    #vt-logo {
+        height: 45%;
+        content: url(http://localhost:8888/dist/images/dark_images/organizations/vt.png);
+    }
+    #umbc-logo{
+        height: 45%;
+        padding-top: 5%;
+        content: url(http://localhost:8888/dist/images/dark_images/organizations/umbc.png);
+    }
+    #adelaide-logo{
+        height: 50%;
+        padding-top: 5%;
+        content: url(http://localhost:8888/dist/images/dark_images/organizations/adelaide.png);
+    }
+    #aptiv-logo {
+        height: 35%;
+        padding-top: 5%;
+        content: url(http://localhost:8888/dist/images/dark_images/organizations/aptiv.png);
+    }
+    #draper-logo {
+        height: 50%;
+        padding-bottom: 7%;
+        content: url(http://localhost:8888/dist/images/dark_images/organizations/draper.png);
+    }
+    #gt-logo {
+        height: 40%;
+        content: url(http://localhost:8888/dist/images/dark_images/organizations/gt.png);
+    }
+    #mapillary-logo{
+        height: 40%;
+        padding-top: 7%;
+        content: url(http://localhost:8888/dist/images/dark_images/organizations/mapillary.png);
+    }
+    .sim-header nav {
+        background-color: black;
+    }
+    .ev-details,
+    .ev-reverse-details {
+        position: relative;
+        box-shadow: none;
+}
+}
 .dyn-header {
     position: relative;
     z-index: 999;
@@ -92,7 +141,6 @@ section.bg-section {
 .ev-reverse-details {
     position: relative;
     box-shadow: 6px -1px 9px $super-light-shadow;
-    padding: 0;
 }
 
 .ev-reverse-details {
@@ -463,94 +511,115 @@ a.view-more {
 #aptiv-logo {
     height: 35%;
     padding-top: 5%;
+    content: url(http://localhost:8888/dist/images/organizations/aptiv.png);
 }
 
 #cmu-logo {
     height: 50%;
+    content: url(http://localhost:8888/dist/images/organizations/cmu.png);
 }
 
 #draper-logo {
     height: 50%;
     padding-bottom: 7%;
+    content: url(http://localhost:8888/dist/images/organizations/draper.png);
 }
 
 #ebay-logo{
     height: 35%;
     padding-top: 3%;
+    content: url(http://localhost:8888/dist/images/organizations/ebay.png);
 }
 
 #fb-logo{
     height: 30%;
     padding-top: 7%;
+    content: url(http://localhost:8888/dist/images/organizations/fb.png);
 }
 
 #gt-logo {
     height: 40%;
+    content: url(http://localhost:8888/dist/images/organizations/gt.png);
 }
 
 #google-logo {
     height: 40%;
+    content: url(http://localhost:8888/dist/images/organizations/google.png);
 }
 
 #ibm-logo {
     height: 35%;
     padding-top: 5%;
+    content: url(http://localhost:8888/dist/images/organizations/ibm.png);
 }
 
 #uiuc-logo {
     height: 25%;
     padding-top: 5%;
+    content: url(http://localhost:8888/dist/images/organizations/illinois.png);
 }
 
 #iitm-logo{
     height: 50%;
+    content: url(http://localhost:8888/dist/images/organizations/iitm.png);
 }
 
 #intel-logo {
     height: 45%;
+    content: url(http://localhost:8888/dist/images/organizations/intel.png);
 }
 
 #ju-logo {
     height: 50%;
+    content: url(http://localhost:8888/dist/images/organizations/ju.png);
 }
 
 #mapillary-logo{
     height: 40%;
     padding-top: 7%;
+    content: url(http://localhost:8888/dist/images/organizations/mapillary.png);
 }
 
 #mit-logo {
     height: 35%;
     padding-top: 7%;
+    content: url(http://localhost:8888/dist/images/organizations/mit.png);
 }
   
 #nu-logo {
     height: 50%;
+    content: url(http://localhost:8888/dist/images/organizations/nu.png);
 }
 
 #siop-logo {
     height: 50%;
+    content: url(http://localhost:8888/dist/images/organizations/siop.png);
 }
 
 #stanford-logo {
     height: 50%;
+    content: url(http://localhost:8888/dist/images/organizations/stanford.png);
 }
 
 #adelaide-logo{
     height: 50%;
     padding-top: 5%;
+    content: url(http://localhost:8888/dist/images/organizations/adelaide.png);
 }
 
 #umbc-logo{
     height: 45%;
     padding-top: 5%;
+    content: url(http://localhost:8888/dist/images/organizations/umbc.png);
 }
 
 #pitt-logo{
     height: 50%;
     padding-top: 5%;
+    content: url(http://localhost:8888/dist/images/organizations/pitt.png);
 }
 
 #vt-logo {
     height: 45%;
+    content: url(http://localhost:8888/dist/images/organizations/vt.png);
 }

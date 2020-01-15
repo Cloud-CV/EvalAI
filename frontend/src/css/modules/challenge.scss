@@ -1,3 +1,18 @@
+html[data-theme = 'dark'] {
+    .challenge-container {
+        background: black;
+    }
+    md-dialog {
+        background-color: black;
+        color: #fff;
+    }
+    .md-title {
+        color: #fff;
+    }
+    .md-input {
+        border-color: #fff;
+    }
+}
 .challenge-title-container {
     padding-bottom: 0px;
     ul.inline-list {
@@ -30,7 +45,9 @@ a.active-challenge {
 }
 
 .challenge-container {
-    margin: 0px 10px -30px 10px;
+    margin: 0px 20px -30px 20px;
+    margin-top: 50px;
+    border-radius: 20px;
 }
 
 .eval-card {

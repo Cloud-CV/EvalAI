@@ -1,3 +1,19 @@
+html[data-theme= 'dark'] {
+    .main-header {
+        nav {
+            background-color: black;
+        }
+        a.main-header-link {
+            color: $light-link;
+        }
+    }
+    #evalai-logo-single {
+        content: url(http://localhost:8888/dist/images/dark_images/evalai-logo-single.png);
+    }
+    #evalai-logo {
+        content: url(http://localhost:8888/dist/images/dark_images/evalai-logo.png);
+    }
+}
 .org-link {
     margin-right: 30px;
 }
@@ -49,4 +65,10 @@
     .side-nav .userView{
         padding: 28px;
     }
+}
+#evalai-logo-single {
+    content: url(http://localhost:8888/dist/images/evalai-logo-single.png);
+}
+#evalai-logo {
+    content: url(http://localhost:8888/dist/images/evalai-logo.png);
 }

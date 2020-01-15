@@ -55,6 +55,76 @@ body,
 html {
     font-family: 'Roboto';
 }
+html[data-theme= 'dark'] {
+    input.dark-autofill:-webkit-autofill,
+    input.dark-autofill:-webkit-autofill:hover,
+    input.dark-autofill:-webkit-autofill:focus,
+    input.dark-autofill:-webkit-autofill:active {
+        -webkit-text-fill-color: #fff !important;
+    }
+    .input-field input[type=email]:focus,
+    .input-field input[type=password]:focus,
+    .input-field input[type=text]:focus {
+        color: #fff;
+    }
+    .input-field input[type=email],
+    .input-field input[type=password],
+    .input-field input[type=text] {
+        color: #fff;
+    }
+    .content {
+        flex: 1;
+        background: #252833;
+    }
+    .text-dark-black {
+        color: $light-link;
+    }
+    .text-med-black {
+        color: $light-link;
+    }
+    a.dark-link {
+        color: $light-link;
+    }
+    a.dark-link:hover {
+        color: $highlight;
+    }
+    .ev-dark-bg {
+        background-color: $light-link;
+    }
+    .text-light-gray {
+        color: $dark-link;
+    }
+    p {
+        color: $light-link;
+    }
+    li {
+        color: $light-link;
+    }
+    .ev-container {
+    width: unset;
+    background: black;
+    border-radius: 20px;
+    margin: 20px;
+    }
+    body {
+        color: $light-link;
+    }
+    .ev-card-panel {
+        background-color: black;
+    }
+    .text-light-black {
+        color: #fff;
+    }
+    h {
+        color: #fff;
+    }
+    .ev-btn-dark {
+        background: #3d0069;
+    }
+    input[type=text]:disabled {
+        border-bottom: 1px dotted #fff;
+    }
+}
 
 a {
     color: $med-gray;
@@ -426,11 +496,6 @@ nav {
 
 .ev-z-depth-1 {
     box-shadow: 0px 0px 2px $shadow-black;
-}
-
-.ev-view {
-    padding-top: 20px;
-    padding-bottom: 20px;
 }
 
 .btn {

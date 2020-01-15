@@ -1,3 +1,15 @@
+html[data-theme = 'dark'] {
+    ul {
+        li {
+            .collapsible-header {
+                background-color: black;
+            }
+            .collapsible-body {
+                background-color: black;
+            }
+        }
+    }
+}
 .exist-team-card {
     ul {
         &.collapsible {

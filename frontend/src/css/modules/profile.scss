@@ -1,3 +1,9 @@
+html[data-theme = 'dark'] {
+    #profilelayout {
+        background: black;
+        border-radius: 20px;
+    }
+}
 .profile-sidebar {
     position: fixed;
     z-index: 9;

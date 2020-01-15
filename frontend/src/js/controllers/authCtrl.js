@@ -304,5 +304,10 @@
         $rootScope.$on('$stateChangeStart', function() {
             vm.resetForm();
         });
+        if (utilities.getData('theme') == 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
     }
 })();

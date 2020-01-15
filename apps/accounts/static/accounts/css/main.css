@@ -1750,7 +1750,7 @@ a.dashboard-evailai-logo img {
 .links-section li a.side-active-link {
   /*background-color: $dust-gray;*/
   color: #4d4d4d;
-  border-right: 1px solid #ffaf4b;
+  border-right: 2px solid #ffaf4b;
 }
 
 .side-link-icon {

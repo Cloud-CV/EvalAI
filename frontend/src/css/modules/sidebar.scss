@@ -1,13 +1,21 @@
+html[data-theme = 'dark'] {
+    .ev-sidebar {
+        background-color: black;
+    }
+}
 .ev-sidebar {
     display: block;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 60px);
     width: 220px;
     border-right: 1px solid $grad-light-black;
     background-color: $transparent;
     color: #fff;
     z-index: 10;
-    top: 98px;
+    top: 64px;
     text-align: center;
+}
+.links-section {
+    margin-top: 40px;
 }
 
 .side-logo {

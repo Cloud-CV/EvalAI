@@ -134,7 +134,33 @@
         };
         return directive;
         
-        function controller($scope) {
+        function controller($scope, utilities) {
+            var checkbox = document.querySelector('input[name=theme]');
+            checkbox.addEventListener('change', function() {
+                if(this.checked) {
+                    trans();
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    utilities.storeData('theme', 'dark');
+                } else {
+                    trans();
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    utilities.storeData('theme', 'light');
+                }
+            });
+            if (utilities.getData('theme') == 'dark') {
+                document.getElementById("switch").checked = true;
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.getElementById("switch").checked = false;
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+    
+            let trans = () => {
+                document.documentElement.classList.add('transition');
+                window.setTimeout(() => {
+                    document.documentElement.classList.remove('transition');
+                }, 1000);
+            };
             $scope.year = new Date().getFullYear();
             var js = document.createElement("script");
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
@@ -157,9 +183,35 @@
         };
         return directive;
 
-        function controller($scope) {
+        function controller($scope, utilities) {
+            var checkbox = document.querySelector('input[name=theme]');
+            checkbox.addEventListener('change', function() {
+                if(this.checked) {
+                    trans();
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    utilities.storeData('theme', 'dark');
+                } else {
+                    trans();
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    utilities.storeData('theme', 'light');
+                }
+            });
+            if (utilities.getData('theme') == 'dark') {
+                document.getElementById("switch").checked = true;
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.getElementById("switch").checked = false;
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+    
+            let trans = () => {
+                document.documentElement.classList.add('transition');
+                window.setTimeout(() => {
+                    document.documentElement.classList.remove('transition');
+                }, 1000);
+            };
             $scope.year = new Date().getFullYear();
-           var js = document.createElement("script");
+            var js = document.createElement("script");
             js.src = (/^http:/.test(document.location) ? "http" : "https") + "://buttons.github.io/buttons.js";
             document.getElementsByTagName("head")[0].appendChild(js);
        }

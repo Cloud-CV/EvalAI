@@ -3,3 +3,9 @@
 .ev-about-us {
 	margin-top: 50px;
 }
+html[data-theme = 'dark'] {
+	.aboutlayout {
+		margin-top: 90px;
+		margin-bottom: 40px;
+	}
+}
