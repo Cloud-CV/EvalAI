@@ -14,10 +14,6 @@ from moto import mock_ecs
 from rest_framework.test import APIClient, APITestCase
 
 
-
-
-
-
 class BaseTestClass(APITestCase):
     def setUp(self):
         aws_utils.COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"] = "arn:aws:iam::us-east-1:012345678910:role/ecsTaskExecutionRole"
