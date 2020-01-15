@@ -12,11 +12,6 @@ class BaseTestClass(TestCase):
         self.EVALAI_API_SERVER = "http://testserver.com"
         self.QUEUE_NAME = "evalai_submission_queue"
         self.evalai_interface = EvalAI_Interface(self.AUTH_TOKEN, self.EVALAI_API_SERVER, self.QUEUE_NAME)
-        self.headers = {"Authorization": "Token {}".format(self.AUTH_TOKEN)}
-
-        self.challenge_pk = 1
-        self.challenge_phase_pk = 1
-        self.submission_pk = 1
 
     def make_request_url(self):
         return "/test/url"
@@ -47,6 +42,10 @@ class BaseTestClass(TestCase):
 
 
 class GetRequestHeadersTestClass(BaseTestClass):
+    def setUp(self):
+        super(GetRequestHeadersTestClass, self).setUp()
+        self.headers = {"Authorization": "Token {}".format(self.AUTH_TOKEN)}
+
     def test_get_request_headers(self):
         expected = self.headers
         result = self.evalai_interface.get_request_headers()
@@ -95,6 +94,12 @@ class MakeRequestTestClass(BaseTestClass):
 
 @mock.patch("scripts.workers.worker_util.EvalAI_Interface.make_request")
 class APICallsTestClass(BaseTestClass):
+    def setUp(self):
+        super(APICallsTestClass, self).setUp()
+        self.challenge_pk = 1
+        self.challenge_phase_pk = 1
+        self.submission_pk = 1
+
     def test_get_message_from_sqs_queue(self, mock_make_request):
         expected_url = self.evalai_interface.return_url_per_environment(
             self.get_message_from_sqs_queue_url(self.QUEUE_NAME)
