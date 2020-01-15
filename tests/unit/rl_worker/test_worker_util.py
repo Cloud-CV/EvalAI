@@ -161,3 +161,12 @@ class WorkerUtilTestClass(BaseTestClass):
 
         self.mock_make_request.assert_called_with(url, "PATCH", data=data)
         self.assertEqual(response, self.success_response)
+
+    def test_delete_message_from_sqs_queue(self):
+        test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
+        data = {"receipt_handle": test_receipt_handle}
+        url = "{}{}".format(EVALAI_API_SERVER, self.delete_message_from_sqs_queue_url(EVALAI_QUEUE_NAME))
+        response = self.interface.delete_message_from_sqs_queue(test_receipt_handle)
+
+        self.mock_make_request.assert_called_with(url, "POST", data)
+        self.assertEqual(response, self.success_response)
