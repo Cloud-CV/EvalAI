@@ -1,4 +1,5 @@
 import unittest, mock
+from mock import Mock
 from rest_framework.test import APITestCase
 from rest_framework import permissions
 
@@ -25,11 +26,10 @@ class HasVerifiedEmailTest(BaseAPITestClass):
         self.assertTrue(test_has_verified_email.has_permission(test_request, test_view))
 
     @mock.patch("allauth.account.models.EmailAddress.objects")
-    @mock.patch("allauth.account.models.EmailAddress.objects.filter")
-    @mock.patch("allauth.account.models.EmailAddress.objects.exists")
-    def test_has_verified_email_when_verified_email_address_objects_exist(self, mock_email_address_exists, mock_email_address_filter, mock_email_address_objects):
-        mock_email_address_filter.return_value = mock_email_address_objects
-        mock_email_address_exists.return_value = True
+    def test_has_verified_email_when_verified_email_address_objects_exist(self, mock_email_address_objects):
+        mock_email_address_objects_filter = Mock()
+        mock_email_address_objects.filter.return_value = mock_email_address_objects_filter
+        mock_email_address_objects_filter.exists.return_value = True
 
         test_request = self.factory.get('challenge/')
         test_request.user = User()
@@ -38,11 +38,10 @@ class HasVerifiedEmailTest(BaseAPITestClass):
         self.assertTrue(test_has_verified_email.has_permission(test_request, test_view))
 
     @mock.patch("allauth.account.models.EmailAddress.objects")
-    @mock.patch("allauth.account.models.EmailAddress.objects.filter")
-    @mock.patch("allauth.account.models.EmailAddress.objects.exists")
-    def test_has_verified_email_when_verified_email_address_objects_do_not_exist(self, mock_email_address_exists, mock_email_address_filter, mock_email_address_objects):
-        mock_email_address_filter.return_value = mock_email_address_objects
-        mock_email_address_exists.return_value = False
+    def test_has_verified_email_when_verified_email_address_objects_do_not_exist(self, mock_email_address_objects):
+        mock_email_address_objects_filter = Mock()
+        mock_email_address_objects.filter.return_value = mock_email_address_objects_filter
+        mock_email_address_objects_filter.exists.return_value = False
 
         test_request = self.factory.get('challenge/')
         test_request.user = User()
