@@ -52,6 +52,10 @@ class BaseTestClass(TestCase):
     def update_submission_status_url(self, challenge_pk):
         return "/api/jobs/challenge/{}/update_submission/".format(challenge_pk)
 
+    def generate_random_string(self, length):
+        char_base = string.ascii_letters + string.digits + "+"
+        return "".join(random.choice(char_base) for _ in range(length))
+
 
 class MakeRequestTestClass(BaseTestClass):
 
@@ -163,7 +167,7 @@ class WorkerUtilTestClass(BaseTestClass):
         self.assertEqual(response, self.success_response)
 
     def test_delete_message_from_sqs_queue(self):
-        test_receipt_handle = "MbZj6wDWli+JvwwJaBV+3dcjk2YW2vA3+STFFljTM8tJJg6HRG6PYSasuWXPJB+Cw"
+        test_receipt_handle = self.generate_random_string(64)
         data = {"receipt_handle": test_receipt_handle}
         url = "{}{}".format(EVALAI_API_SERVER, self.delete_message_from_sqs_queue_url(EVALAI_QUEUE_NAME))
         response = self.interface.delete_message_from_sqs_queue(test_receipt_handle)
