@@ -1,9 +1,7 @@
-import unittest, mock
+import mock
 from mock import Mock
 from rest_framework.test import APITestCase
-from rest_framework import permissions
 
-from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User, AnonymousUser
 from django.test.client import RequestFactory
 
@@ -13,9 +11,11 @@ class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
+
 class HasVerifiedEmailTest(BaseAPITestClass):
     def setUp(self):
         super(HasVerifiedEmailTest, self).setUp()
+
 
     def test_has_verified_email_when_request_user_is_anonymous(self):
         test_request = self.factory.get('challenge/')
