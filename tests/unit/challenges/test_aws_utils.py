@@ -205,6 +205,7 @@ class TestDeleteWorkers(BaseAdminCallClass):
             {"message": expected_message, "challenge_pk": self.challenge3.pk}
         ]
         expected_response = {"count": expected_count, "failures": expected_failures}
+        expected_workers = [1, 1, 1]
         response = aws_utils.delete_workers(queryset)
         assert expected_response == response
-        assert list(c.workers for c in queryset) == [1, 1, 1]
+        assert list(c.workers for c in queryset) == expected_workers
