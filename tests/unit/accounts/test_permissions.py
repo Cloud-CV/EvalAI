@@ -7,6 +7,7 @@ from django.test.client import RequestFactory
 
 from accounts.permissions import HasVerifiedEmail
 
+
 class BaseAPITestClass(APITestCase):
     def setUp(self):
         self.factory = RequestFactory()
@@ -15,7 +16,6 @@ class BaseAPITestClass(APITestCase):
 class HasVerifiedEmailTest(BaseAPITestClass):
     def setUp(self):
         super(HasVerifiedEmailTest, self).setUp()
-
 
     def test_has_verified_email_when_request_user_is_anonymous(self):
         test_request = self.factory.get('challenge/')
