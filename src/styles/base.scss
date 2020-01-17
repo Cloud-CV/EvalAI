@@ -1429,23 +1429,34 @@ code {
     font-size: $fs-16;
     color: $gray-darker;
     padding: 30px;
-    .title {
-      color: $med-black;
-      padding: 10px;
-      font-size: $fs-18;
-      font-weight: $fw-bolder;
+    .modal-wrapper {
+      height:100%;
+      .title {
+        color: $med-black;
+        padding: 10px;
+        font-size: $fs-18;
+        font-weight: $fw-bolder;
+      }
+      .content {
+        padding: 10px;
+      }
+      .form {
+        padding: 10px;
+      }
+      .buttons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #fff;
+        padding: 10px;
+        text-align: right;
+      }
+      .modal-content {
+        overflow-y: auto;
+        max-height: 485px;
+      }
     }
-    .content {
-      padding: 10px;
-    }
-    .form {
-      padding: 10px;
-    }
-    .buttons {
-      padding: 10px;
-      text-align: right;
-    }
-    overflow-y: auto
   }
 }
 

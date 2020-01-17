@@ -1,43 +1,47 @@
 <div class="modal-container">
   <div class="modal-card">
-    <div class="title">
-      {{title}}
-    </div>
-    <div class="content">
-      {{content}}
-    </div>
-    <div class="editor-validation-message fs-12" *ngIf="isEditorRequired &&
-      isInputMessage">
-      {{editorValidationMessage}}</div>
-    <div *ngIf="isEditorRequired" class="edit-global-modal" [froalaEditor]
-      [(froalaModel)]="editorContent"></div>
-    <div class="form modal-inputs">
-      <div *ngFor="let item of form">
-        <app-input *ngIf="item['type'] != 'file'" [name]="item['name']"
-          (input)="validateModalInput($event)" [isRequired]="item['isRequired']"
-          [label]="item['label']" [placeholder]="item['placeholder']"
-          [type]="item['type']" [icon]="item['icon']" [value]="item['value']"
-          [message]="inputErrorMessage" #formmodal></app-input>
-        <app-input *ngIf="item['type'] == 'file'" [name]="item['name']"
-          (change)="validateFileInput($event)" [isRequired]="item['isRequired']"
-          [label]="item['label']" [placeholder]="item['placeholder']"
-          [type]="item['type']" [icon]="item['icon']" [value]="item['value']"
-          #formmodal></app-input>
+    <div class="modal-wrapper">
+      <div class="title">
+        {{title}}
       </div>
-      <small class="editor-validation-message">{{invalidFieldsAsText}}</small><br>
-    </div>
-    <div class="buttons">
-      <ul style="margin-right: 20px;" class="inline-list pointer">
-        <li>
-          <a appClickstop (click)="denied()" class="dark-link pointer">
-            <strong class="fw-semibold">{{deny}}</strong></a>
-        </li>
-        <li>
-          <button [disabled]="isDisabled" appClickstop (click)="formValidate()"
-            class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn
-            grad-btn-dark fs-14">{{confirm}}</button>
-        </li>
-      </ul>
+      <div class="modal-content">
+        <div class="content">
+          {{content}}
+        </div>
+        <div class="editor-validation-message fs-12" *ngIf="isEditorRequired &&
+          isInputMessage">
+          {{editorValidationMessage}}</div>
+        <div *ngIf="isEditorRequired" class="edit-global-modal" [froalaEditor]
+          [(froalaModel)]="editorContent"></div>
+        <div class="form modal-inputs">
+          <div *ngFor="let item of form">
+            <app-input *ngIf="item['type'] != 'file'" [name]="item['name']"
+              (input)="validateModalInput($event)" [isRequired]="item['isRequired']"
+              [label]="item['label']" [placeholder]="item['placeholder']"
+              [type]="item['type']" [icon]="item['icon']" [value]="item['value']"
+              [message]="inputErrorMessage" #formmodal></app-input>
+            <app-input *ngIf="item['type'] == 'file'" [name]="item['name']"
+              (change)="validateFileInput($event)" [isRequired]="item['isRequired']"
+              [label]="item['label']" [placeholder]="item['placeholder']"
+              [type]="item['type']" [icon]="item['icon']" [value]="item['value']"
+              #formmodal></app-input>
+            </div>
+          <small class="editor-validation-message">{{invalidFieldsAsText}}</small><br>
+        </div>
+      </div>
+      <div class="buttons">
+        <ul class="inline-list pointer">
+          <li>
+            <a appClickstop (click)="denied()" class="dark-link pointer">
+              <strong class="fw-semibold">{{deny}}</strong></a>
+          </li>
+          <li>
+            <button [disabled]="isDisabled" appClickstop (click)="formValidate()"
+              class="btn ev-btn-dark btn-waves-effect waves-dark grad-btn
+              grad-btn-dark fs-14">{{confirm}}</button>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
