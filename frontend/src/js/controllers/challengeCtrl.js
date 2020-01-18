@@ -341,8 +341,8 @@
                             vm.displayDockerSubmissionInstructions(vm.page.is_docker_based, vm.isParticipated);
                             utilities.hideLoader();
                         },
-                        onError: function() {
-                            var error = response.data;
+                        onError: function(response) {
+                            var error = response.data;                            
                             $rootScope.notify("error", error.detail);
                             vm.emailVerification = false;
                             vm.emailError = error.detail;
