@@ -43,6 +43,8 @@ services:
 install:
 - pip install -r requirements/dev.txt
 - pip install awscli
+- pip uninstall boto3 botocore moto
+- pip install boto3 botocore moto
 script:
 - flake8 ./
 - karma start --single-run
