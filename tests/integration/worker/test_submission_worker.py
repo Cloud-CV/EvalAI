@@ -396,7 +396,7 @@ class RunSubmissionTestClass(BaseTestClass):
         mock_map[challenge_pk] = mock.Mock()
         mock_map.get(challenge_pk).get.return_value = "test_annotation_file.txt"
         mock_script_dict[challenge_pk] = mock.Mock()
-        mock_script_dict[challenge_pk].evaluate.return_value = {"result": [{"split1": {"metric1": self.metric}},], "submission_metadata": {"foo": "bar"}, "submission_result": ["foo", "bar"],}
+        mock_script_dict[challenge_pk].evaluate.return_value = {"result": [{"split1": {"metric1": self.metric}}, ], "submission_metadata": {"foo": "bar"}, "submission_result": ["foo", "bar"], }
 
         starting_time = timezone.now()
         time.sleep(0.5)
