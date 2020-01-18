@@ -17,7 +17,6 @@ from django.utils import timezone
 
 from rest_framework.test import APITestCase
 
-import challenges.aws_utils as aws_utils
 from challenges.models import (
     Challenge,
     ChallengePhase,
@@ -39,6 +38,7 @@ from scripts.workers.submission_worker import (
 )
 
 
+@mock_sqs
 class BaseAPITestClass(APITestCase):
     def setUp(self):
 
@@ -214,18 +214,14 @@ class BaseAPITestClass(APITestCase):
             load_challenge_and_return_max_submissions({"pk": non_existing_challenge_pk})
             mock_logger.assert_called_with("Challenge with pk {} doesn't exist".format(non_existing_challenge_pk))
 
-    @mock_sqs()
     def test_get_or_create_sqs_queue_for_existing_queue(self):
-        aws_utils.COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"] = "arn:aws:iam::us-east-1:012345678910:role/ecsTaskExecutionRole"
         self.sqs_client.create_queue(QueueName="test_queue")
         get_or_create_sqs_queue("test_queue")
         queue_url = self.sqs_client.get_queue_url(QueueName='test_queue')['QueueUrl']
         self.assertTrue(queue_url)
         self.sqs_client.delete_queue(QueueUrl=queue_url)
 
-    @mock_sqs()
     def test_get_or_create_sqs_queue_for_non_existing_queue(self):
-        aws_utils.COMMON_SETTINGS_DICT["EXECUTION_ROLE_ARN"] = "arn:aws:iam::us-east-1:012345678910:role/ecsTaskExecutionRole"
         get_or_create_sqs_queue("test_queue_2")
         queue_url = self.sqs_client.get_queue_url(QueueName='test_queue_2')['QueueUrl']
         self.assertTrue(queue_url)
