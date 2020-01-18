@@ -199,9 +199,6 @@ class BaseAPITestClass(APITestCase):
         mock_logger.assert_called_with("Submission {} does not exist".format(non_existing_submission_pk))
         self.assertEqual(value, None)
 
-    def test_successful_run_submission(self):
-        pass
-
     @mock.patch("scripts.workers.submission_worker.load_challenge")
     def test_load_challenge_and_return_max_submissions(self, mocked_load_challenge):
         q_params = {"pk": self.challenge.pk}
