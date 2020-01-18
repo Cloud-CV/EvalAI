@@ -385,3 +385,48 @@ class RunSubmissionTestClass(BaseTestClass):
 
         mock_shutil.rmtree.assert_called_with(temp_run_dir)
         patcher.stop()
+
+    def test_run_submission_success(self, mock_map, mock_script_dict, mock_createdir, mock_lb, mock_shutil, mock_timezone,
+                                    mock_open, mock_cf):
+        challenge_pk = self.challenge.pk
+        phase_pk = self.challenge_phase.pk
+        user_annotation_file_path = "tests/integration/worker/data/user_annotation.txt"
+        temp_run_dir = "mocked/dir/submission_{}/run".format(self.submission.pk)
+
+        mock_map[challenge_pk] = mock.Mock()
+        mock_map.get(challenge_pk).get.return_value = "test_annotation_file.txt"
+        mock_script_dict[challenge_pk] = mock.Mock()
+        mock_script_dict[challenge_pk].evaluate.return_value = {"result": [{"split1": {"metric1": self.metric}},], "submission_metadata": {"foo": "bar"}, "submission_result": ["foo", "bar"],}
+
+        starting_time = timezone.now()
+        time.sleep(0.5)
+        ending_time = timezone.now()
+        mock_timezone.now.side_effect = [starting_time, ending_time]
+
+        if not os.path.exists(temp_run_dir):
+            os.makedirs(temp_run_dir)
+
+        patcher = mock.patch("scripts.workers.submission_worker.ContentFile")
+        mock_cf = patcher.start()
+        mock_cf.return_value = ContentFile("")
+
+        submission_worker.run_submission(challenge_pk, self.challenge_phase, self.submission, user_annotation_file_path)
+
+        annotation_file_path = "mocked/dir/challenge_data/challenge_{}/phase_data/phase_{}/test_annotation_file.txt".format(
+            challenge_pk, phase_pk)
+
+        mock_createdir.assert_called_with(temp_run_dir)
+
+        mock_script_dict[challenge_pk].evaluate.assert_called_with(
+            annotation_file_path,
+            user_annotation_file_path,
+            self.challenge_phase.codename,
+            submission_metadata="",
+        )
+
+        self.assertEqual(self.submission.started_at, starting_time)
+        self.assertEqual(self.submission.status, Submission.FINISHED)
+        self.assertEqual(self.submission.completed_at, ending_time)
+
+        mock_shutil.rmtree.assert_called_with(temp_run_dir)
+        patcher.stop()
