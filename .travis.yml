@@ -43,7 +43,7 @@ services:
 install:
 - pip install -r requirements/dev.txt
 - pip install awscli
-- pip uninstall boto3 botocore moto
+- pip uninstall -y boto3 botocore moto
 - pip install boto3 botocore moto
 script:
 - flake8 ./
