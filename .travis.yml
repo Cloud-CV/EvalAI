@@ -42,7 +42,7 @@ services:
 - xvfb
 install:
 - pip install -r requirements/dev.txt
-- pip install --upgrade awscli botocore boto3 moto
+- pip install awscli
 script:
 - flake8 ./
 - karma start --single-run
