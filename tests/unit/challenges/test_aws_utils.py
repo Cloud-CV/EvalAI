@@ -1,6 +1,5 @@
 import boto3
 import challenges.aws_utils as aws_utils
-import mock
 import os
 
 from allauth.account.models import EmailAddress
@@ -129,7 +128,7 @@ class TestCreateServiceByChallengePK(BaseAdminCallsClass):
 class TestRegisterTaskDefByChallengePK(BaseAdminCallsClass):
 
     def test_register_task_def_by_challenge_pk(self):
-        self.ecs_client.create_cluster(clusterName=aws.utils.COMMON_SETTINGS_DICT["CLUSTER"])
+        self.ecs_client.create_cluster(clusterName=aws_utils.COMMON_SETTINGS_DICT["CLUSTER"])
         response = aws_utils.create_task_def_by_challenge_pk(
             self.ecs_client, self.challenge.queue, self.challenge)
         self.assertEqual(
