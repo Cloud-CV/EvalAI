@@ -15,7 +15,7 @@ describe('Unit tests for challenge controller', function () {
         $interval = _$interval_;
         $mdDialog = _$mdDialog_;
         moment = _moment_;
-        
+
         $scope = $rootScope.$new();
         createController = function () {
             return $controller('ChallengeCtrl', {$scope: $scope});
@@ -214,7 +214,7 @@ describe('Unit tests for challenge controller', function () {
         team_list.forEach(response => {
             it('pagination next is ' + response.next + ' and previous is ' + response.previous + '\
                 `participants/participant_team`', function () {;
-                challengeSuccess = true;    
+                challengeSuccess = true;
                 participantTeamChallengeSuccess = true;
                 participantTeamSuccess = true;
                 selectExistTeamSuccess = null;
@@ -446,7 +446,7 @@ describe('Unit tests for challenge controller', function () {
                 }
             };
             utilities.storeData('userKey', 'encrypted key');
-       
+
             vm = createController();
             spyOn(vm, 'startLoader');
             spyOn($http, 'get').and.callFake(function () {
@@ -1055,7 +1055,7 @@ describe('Unit tests for challenge controller', function () {
                 // get submissions response
                 next: "page=4",
                 previous: "page=2",
-            };      
+            };
             vm.getResults(phaseId);
             spyOn($http, 'get').and.callFake(function () {
                 var deferred = $injector.get('$q').defer();
@@ -2394,7 +2394,7 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('change challenge state from `public` to `private`', function () {
-            vm.isPublished = true; 
+            vm.isPublished = true;
             vm.publishChallenge(ev);
             expect(vm.publishDesc).toEqual(null);
             expect(ev.stopPropagation).toHaveBeenCalled();
@@ -2402,7 +2402,7 @@ describe('Unit tests for challenge controller', function () {
         });
 
         it('change challenge state from `private` to `public`', function () {
-            vm.isPublished = false; 
+            vm.isPublished = false;
             vm.publishChallenge(ev);
             expect(vm.publishDesc).toEqual(null);
             expect(ev.stopPropagation).toHaveBeenCalled();
