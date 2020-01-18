@@ -129,7 +129,7 @@ class TestRegisterTaskDefByChallengePK(BaseAdminCallsClass):
 
     def test_register_task_def_by_challenge_pk(self):
         self.ecs_client.create_cluster(clusterName=aws_utils.COMMON_SETTINGS_DICT["CLUSTER"])
-        response = aws_utils.create_task_def_by_challenge_pk(
+        response = aws_utils.register_task_def_by_challenge_pk(
             self.ecs_client, self.challenge.queue, self.challenge)
         self.assertEqual(
             response["ResponseMetadata"]["HTTPStatusCode"], HTTPStatus.OK)
