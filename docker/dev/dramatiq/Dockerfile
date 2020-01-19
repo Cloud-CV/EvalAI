@@ -9,4 +9,4 @@ ADD requirements/* /code/
 
 RUN pip install -r dev.txt
 
-CMD ["./docker/wait-for-it.sh", "django:8000", "--", "sh", "/code/docker/dev/celery/container-start.sh"]
+CMD ["./docker/wait-for-it.sh", "django:8000", "--", "sh", "/code/docker/dev/dramatiq/container-start.sh"]
