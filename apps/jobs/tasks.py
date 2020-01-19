@@ -18,6 +18,7 @@ from .sender import publish_submission_message
 
 logger = logging.getLogger(__name__)
 
+
 @task_wrapper
 def download_file_and_publish_submission_message(
     request_data,
