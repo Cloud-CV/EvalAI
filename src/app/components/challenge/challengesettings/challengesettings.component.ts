@@ -24,6 +24,11 @@ export class ChallengesettingsComponent implements OnInit {
   bannedEmailIds: string[];
 
   /**
+   * Former participants banned emails ids
+   */
+  formerBannedEmailIds: string[];
+
+  /**
    * Email validation for the banned email ids
    */
   isValidationError = false;
@@ -63,7 +68,8 @@ export class ChallengesettingsComponent implements OnInit {
   }
 
   updateView() {
-    this.bannedEmailIds = this.challenge.banned_email_ids;
+    this.bannedEmailIds = this.challenge.banned_email_ids || [];
+    this.formerBannedEmailIds = this.bannedEmailIds.concat(); // Creating deep copy
   }
 
   /**
@@ -87,9 +93,6 @@ export class ChallengesettingsComponent implements OnInit {
       }
     }
 
-    if (value !== '' && !SELF.isValidationError) {
-      SELF.updateBannedEmailList();
-    }
     // Reset the input value
     if (input && !SELF.isValidationError) {
       input.value = '';
@@ -107,7 +110,6 @@ export class ChallengesettingsComponent implements OnInit {
     if (index >= 0) {
       this.bannedEmailIds.splice(index, 1);
     }
-    SELF.updateBannedEmailList();
   }
 
   validateEmail(email) {
@@ -116,6 +118,16 @@ export class ChallengesettingsComponent implements OnInit {
     }
     const regex = /^\s*[\w\-\+_]+(\.[\w\-\+_]+)*\@[\w\-\+_]+\.[\w\-\+_]+(\.[\w\-\+_]+)*\s*$/;
     return String(email).search (regex) !== -1;
+  }
+
+  reflectChange() {
+    if (this.bannedEmailIds.toString() === this.formerBannedEmailIds.toString()) {
+      this.globalService.showToast('error', 'No change to reflect!');
+    } else if (this.isValidationError) {
+      this.globalService.showToast('error', 'Please enter a valid email!');
+    } else {
+      this.updateBannedEmailList();
+    }
   }
 
   updateBannedEmailList() {
@@ -131,6 +143,7 @@ export class ChallengesettingsComponent implements OnInit {
           SELF.challenge.banned_email_ids = data.banned_email_ids;
           SELF.isBannedEmailInputVisible = false;
           SELF.globalService.showToast('success', 'Banned participant emails are successfully updated!', 5);
+          this.formerBannedEmailIds = this.bannedEmailIds.concat(); // Creating deep copy
         },
         err => {
           SELF.globalService.handleApiError(err, true);
@@ -139,5 +152,4 @@ export class ChallengesettingsComponent implements OnInit {
         () => {}
       );
   }
-
 }
