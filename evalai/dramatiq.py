@@ -4,6 +4,11 @@ from dramatiq.middleware import AgeLimit, TimeLimit, Callbacks, Pipelines, Prome
 from dramatiq_sqs import SQSBroker
 
 
+if settings.DEBUG:
+    sqs_endpoint = os.environ.get("AWS_SQS_ENDPOINT_URL", "http://sqs:9324")  # For local env
+else:
+    sqs_endpoint = os.environ.get("AWS_SQS_ENDPOINT_URL", "http://localhost:9324")  # For CI tests
+
 broker = SQSBroker(
     namespace="dramatiq_sqs_tests",
     middleware=[
@@ -14,7 +19,7 @@ broker = SQSBroker(
         Pipelines(),
         Retries(min_backoff=1000, max_backoff=900000, max_retries=96),
     ],
-    endpoint_url=os.environ.get("AWS_SQS_ENDPOINT_URL", "http://localhost:9324"),
+    endpoint_url=sqs_endpoint,
     region_name=os.environ.get("AWS_DEFAULT_REGION", "elasticmq"),
     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
