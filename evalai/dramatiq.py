@@ -7,7 +7,7 @@ from dramatiq_sqs import SQSBroker
 if settings.DEBUG:
     sqs_endpoint = os.environ.get("AWS_SQS_ENDPOINT_URL", "http://sqs:9324")  # For local env
 else:
-    sqs_endpoint = os.environ.get("AWS_SQS_ENDPOINT_URL", "http://localhost:9324")  # For CI tests
+    sqs_endpoint = os.environ.get("AWS_SQS_ENDPOINT_URL", "http://localhost:9324")  # For CI test
 
 broker = SQSBroker(
     namespace="dramatiq_sqs_tests",
