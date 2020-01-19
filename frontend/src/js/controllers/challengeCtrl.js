@@ -8,7 +8,7 @@
 
     ChallengeCtrl.$inject = ['utilities', 'loaderService', '$scope', '$state', '$http', '$stateParams', '$rootScope', 'Upload', '$interval', '$mdDialog', 'moment', '$location', '$anchorScroll', '$timeout'];
 
-    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout) {
+    function ChallengeCtrl(utilities, loaderService, $scope, $state, $http, $stateParams, $rootScope, Upload, $interval, $mdDialog, moment, $location, $anchorScroll, $timeout, $controller) {
         var vm = this;
         vm.challengeId = $stateParams.challengeId;
         vm.phaseId = null;
@@ -342,11 +342,13 @@
                             utilities.hideLoader();
                         },
                         onError: function(response) {
+                            if ($state.current.title == "Participate") {
                             var error = response.data;                            
                             $rootScope.notify("error", error.detail);
                             vm.emailVerification = false;
                             vm.emailError = error.detail;
                             utilities.hideLoader();
+                            }
                         }
                     };
                     utilities.sendRequest(parameters);

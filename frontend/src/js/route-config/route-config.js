@@ -228,7 +228,7 @@
             url: "/participate",
             templateUrl: baseUrl + "/web/challenge/participate.html",
             controller: 'ChallengeCtrl',
-            controllerAs: 'challenge',
+            controllerAs: 'participate',
             title: 'Participate',
         };
 
