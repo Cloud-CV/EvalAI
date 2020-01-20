@@ -108,7 +108,7 @@ class Submission(TimeStampedModel):
     publication_url = models.CharField(max_length=1000, default="", blank=True)
     project_url = models.CharField(max_length=1000, default="", blank=True)
     is_baseline = models.BooleanField(default=False)
-    job_id = ArrayField(
+    job_name = ArrayField(
         models.TextField(null=True, blank=True),
         default=[],
         blank=True,
