@@ -11,7 +11,7 @@ URLS = {
     "get_challenge_phases_by_challenge_pk": "/api/challenges/{}/phases/",
     "get_challenge_by_queue_name": "/api/challenges/challenge/queues/{}/",
     "get_challenge_phase_by_pk": "/api/challenges/challenge/{}/challenge_phase/{}",
-    "update_submission_data": "/api/jobs/challenge/{}/update_submission/",
+    "update_submission": "/api/jobs/challenge/{}/update_submission/",
 }
 
 
@@ -86,13 +86,13 @@ class EvalAI_Interface:
         return response
 
     def update_submission_data(self, data, challenge_pk, submission_pk):
-        url = URLS.get("update_submission_data").format(challenge_pk)
+        url = URLS.get("update_submission").format(challenge_pk)
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "PUT", data=data)
         return response
 
     def update_submission_status(self, data, challenge_pk):
-        url = URLS.get("update_submission_data").format(challenge_pk)
+        url = URLS.get("update_submission").format(challenge_pk)
         url = self.return_url_per_environment(url)
         response = self.make_request(url, "PATCH", data=data)
         return response
