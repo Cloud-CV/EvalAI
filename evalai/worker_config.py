@@ -5,7 +5,7 @@ def task_wrapper(fn, *args, **kwargs):
     def inner(fn):
         if settings.DEBUG:
             import dramatiq  # noqa
-            from evalai.dramatiq import broker  # noqa
+            from evalai.dramatiq_conf import broker  # noqa
             dramatiq.set_broker(broker)
             res = dramatiq.actor(fn, *args, **kwargs)
             res.action = res.send
