@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from moto import mock_ecr, mock_sts
+from rest_framework.test import APIClient, APITestCase
 
 import challenges.utils as utils
 
