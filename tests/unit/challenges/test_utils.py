@@ -119,5 +119,5 @@ class TestECRRepository(BaseTestCase):
     @mock.patch("boto3.client.get_federation_token")
     def test_create_federated_user(self, mock_get_token, client):
         client.return_value = self.sts_client
-        response = create_federated_user("testTeam", "testRepo", self.aws_keys)
+        response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
         mock_get_token.assert_called()
