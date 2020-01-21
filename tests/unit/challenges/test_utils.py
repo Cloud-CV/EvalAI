@@ -119,6 +119,25 @@ class TestECRRepository(BaseTestCase):
     @mock.patch("base.utils.get_boto3_client")
     def test_create_federated_user(self, client):
         client.return_value = self.sts_client
+        expected = {
+            'Credentials': {
+                'AccessKeyId': 'AKIAIOSFODNN7EXAMPLE', 
+                'SecretAccessKey': 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLEKEY', 
+                'SessionToken': 'AQoDYXdzEPT//////////wEXAMPLEtc764bNrC9SAPBSM22wDOk4x4HIZ8j4FZTwdQWLWsKWHGBuFqwAeMicRXmxfpSPfIeoIYRqTflfKD8YUuwthAx7mSEI/qkPpKPi/kMcGdQrmGdeehM4IC1NtBmUpp2wUE8phUZampKsburEDy0KPkyQDYwT7WZ0wq5VSXDvp75YU9HFvlRd8Tx6q6fE8YQcHNVXAkiY9q6d+xo0rKwT38xVqr7ZD0u0iPPkUL64lIZbqBAz+scqKmlzm8FDrypNC9Yjc8fPOLn9FX9KSYvKTr4rvx3iSIlTJabIQwj2ICCR/oLxBA==', 
+                'Expiration': datetime.datetime(2020, 1, 22, 8, 30, 27, 186000, tzinfo=tzlocal())
+            }, 
+            'FederatedUser': {
+                'FederatedUserId': '123456789012:testTeam',
+                'Arn': 'arn:aws:sts::123456789012:federated-user/testTeam'
+            }, 
+            'PackedPolicySize': 6, 
+            'ResponseMetadata': {
+                'RequestId': 'c6104cbe-af31-11e0-8154-cbc7ccf896c7',
+                'HTTPStatusCode': 200, 
+                'HTTPHeaders': {'server': 'amazon.com'}, 'RetryAttempts': 0
+            }
+        }
+
         response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
         print(response)
-        client.get_federation_token.assert_called()
+        assert response == expected
