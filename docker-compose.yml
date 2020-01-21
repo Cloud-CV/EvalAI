@@ -10,7 +10,7 @@ services:
     image: pakohan/elasticmq
     hostname: sqs
     ports:
-      - 9324:9324
+      - "9324:9324"
 
   django:
     hostname: django
@@ -27,13 +27,13 @@ services:
     volumes:
       - .:/code
 
-  celery:
-    hostname: celery
+  dramatiq:
+    hostname: dramatiq
     env_file:
       - docker/dev/docker.env
     build:
       context: ./
-      dockerfile: docker/dev/celery/Dockerfile
+      dockerfile: docker/dev/dramatiq/Dockerfile
     depends_on:
       - django
     volumes:
