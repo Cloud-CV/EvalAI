@@ -14,6 +14,8 @@ import challenges.utils as utils
 
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+
         self.test_file_path = os.path.join(
             settings.BASE_DIR, "examples", "example1", "test_annotation.txt"
         )
@@ -62,7 +64,7 @@ class BaseTestCase(unittest.TestCase):
             "AWS_SECRET_ACCESS_KEY": self.challenge.aws_secret_access_key,
             "AWS_REGION": self.challenge.aws_region,
         }
-
+        self.client.force_authenticate(user=self.user)
         self.ecr_client = boto3.client("ecr", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
     def test_get_file_content(self):
         test_file_content = utils.get_file_content(self.test_file_path, "rb")
