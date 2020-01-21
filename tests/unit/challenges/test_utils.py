@@ -3,7 +3,6 @@ import datetime
 import os
 import unittest
 import mock
-import tzlocal
 
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge
@@ -126,7 +125,6 @@ class TestECRRepository(BaseTestCase):
                 'AccessKeyId': 'AKIAIOSFODNN7EXAMPLE', 
                 'SecretAccessKey': 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLEKEY', 
                 'SessionToken': 'AQoDYXdzEPT//////////wEXAMPLEtc764bNrC9SAPBSM22wDOk4x4HIZ8j4FZTwdQWLWsKWHGBuFqwAeMicRXmxfpSPfIeoIYRqTflfKD8YUuwthAx7mSEI/qkPpKPi/kMcGdQrmGdeehM4IC1NtBmUpp2wUE8phUZampKsburEDy0KPkyQDYwT7WZ0wq5VSXDvp75YU9HFvlRd8Tx6q6fE8YQcHNVXAkiY9q6d+xo0rKwT38xVqr7ZD0u0iPPkUL64lIZbqBAz+scqKmlzm8FDrypNC9Yjc8fPOLn9FX9KSYvKTr4rvx3iSIlTJabIQwj2ICCR/oLxBA==', 
-                'Expiration': datetime.datetime(2020, 1, 22, 8, 30, 27, 186000, tzinfo=tzlocal())
             }, 
             'FederatedUser': {
                 'FederatedUserId': '123456789012:testTeam',
@@ -142,4 +140,5 @@ class TestECRRepository(BaseTestCase):
 
         response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
         print(response)
+        del response["Credentials"]["Expiration"]
         assert response == expected
