@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 
+import requests
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -29,7 +30,7 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     paginated_queryset,
     StandardResultSetPagination,
-    get_sqs_queue_object,
+    get_or_create_sqs_queue_object,
     get_boto3_client,
 )
 from challenges.models import (
@@ -276,14 +277,32 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "request": request,
             },
         )
+        message = {
+            "challenge_pk": challenge_id,
+            "phase_pk": challenge_phase_id,
+        }
+        if challenge.is_docker_based:
+            try:
+                file_content = json.loads(request.FILES["input_file"].read())
+                message["submitted_image_uri"] = file_content[
+                    "submitted_image_uri"
+                ]
+            except Exception as ex:
+                response_data = {
+                    "error": "Error {} in submitted_image_uri from submission file".format(
+                        ex
+                    )
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
             submission = serializer.instance
+            message["submission_pk"] = submission.id
             # publish message in the queue
-            publish_submission_message(
-                challenge_id, challenge_phase_id, submission.id
-            )
+            publish_submission_message(message)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(
             serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -1027,7 +1046,31 @@ def re_run_submission(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    publish_submission_message(challenge.pk, challenge_phase.pk, submission.pk)
+    message = {
+        "challenge_pk": challenge.pk,
+        "phase_pk": challenge_phase.pk,
+        "submission_pk": submission.pk,
+    }
+
+    if submission.challenge_phase.challenge.is_docker_based:
+        try:
+            response = requests.get(submission.input_file)
+        except Exception as e:
+            response_data = {
+                "error": "Failed to get submission input file with error: {0}".format(
+                    e
+                )
+            }
+            return Response(
+                response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        if response and response.status_code == 200:
+            message["submitted_image_uri"] = response.json()[
+                "submitted_image_uri"
+            ]
+
+    publish_submission_message(message)
     response_data = {
         "success": "Submission is successfully submitted for re-running"
     }
@@ -1102,7 +1145,7 @@ def get_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_sqs_queue_object()
+    queue = get_or_create_sqs_queue_object(queue_name)
     try:
         messages = queue.receive_messages()
         if len(messages):
@@ -1129,11 +1172,11 @@ def get_submission_message_from_queue(request, queue_name):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def delete_submission_message_from_queue(request, queue_name, receipt_handle):
+def delete_submission_message_from_queue(request, queue_name):
     """
     API to delete submission message from AWS SQS queue
     Arguments:
@@ -1151,13 +1194,14 @@ def delete_submission_message_from_queue(request, queue_name, receipt_handle):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge_pk = challenge.pk
+    receipt_handle = request.data["receipt_handle"]
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized to access this resource"
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_sqs_queue_object()
+    queue = get_or_create_sqs_queue_object(queue_name)
     try:
         message = queue.Message(receipt_handle)
         message.delete()
