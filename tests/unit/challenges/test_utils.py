@@ -107,7 +107,7 @@ class TestECRRepository(BaseTestCase):
         expected = self.ecr_client.create_repository(repositoryName="TestRepo")
         self.aws_keys["AWS_ACCOUNT_ID"] = expected["repository"]["registryId"]
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
-        assert expected["repository"] == response["repositories"][0]
+        assert expected["repository"] == response[0]
         self.aws_keys["AWS_ACCOUNT_ID"] = self.challenge.aws_account_id
 
     @mock.patch("base.utils.get_boto3_client")
