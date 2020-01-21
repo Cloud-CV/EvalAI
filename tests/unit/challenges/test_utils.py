@@ -1,11 +1,12 @@
 import boto3
+import datetime
 import os
 import unittest
 import mock
 
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge
-from datetime import timedelta
+import datetime.timedelta as timedelta
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
