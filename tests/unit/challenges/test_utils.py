@@ -67,7 +67,7 @@ class BaseTestCase(unittest.TestCase):
         response = utils.convert_to_aws_federated_user_format(input)
         assert expected == response
         
-    def test_get_aws_credentials_for_challenge_when_get_host_credentials(self):
+    def test_get_aws_credentials_for_challenge(self):
         expected = self.aws_keys
         response = utils.get_aws_credentials_for_challenge(self.challenge)
         assert expected == response
