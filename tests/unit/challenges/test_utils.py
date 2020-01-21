@@ -112,7 +112,7 @@ class TestECRRepository(BaseTestCase):
     def test_get_or_create_ecr_repository_when_repository_does_not_exist(self, client):
         client.return_value = self.ecr_client
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
-        expected = ecr_client.describe_repositories(repositoryNames="TestRepo")
+        expected = self.ecr_client.describe_repositories(repositoryNames="TestRepo")
         assert (response["repository"], True) == expected["repositories"][0]
 
     @mock.patch("base.utils.get_boto3_client")
