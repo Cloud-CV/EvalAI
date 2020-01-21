@@ -70,7 +70,7 @@ class BaseTestCase(APITestCase):
         }
         self.client.force_authenticate(user=self.user)
         self.ecr_client = boto3.client("ecr", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
-        self.sts_client = boto3.client("sts", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), account_id=os.environ.get("AWS_ACCOUNT_ID"))
+        self.sts_client = boto3.client("sts", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
     def test_get_file_content(self):
         test_file_content = utils.get_file_content(self.test_file_path, "rb")
         expected = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n"
