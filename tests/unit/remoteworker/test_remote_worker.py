@@ -173,10 +173,13 @@ class ProcessSubmissionCallback(BaseTestClass):
             "submission_pk": self.submission_pk
         }
 
-        mock_process_submission_message.side_effect = Exception("test error")
+        error = "Exception"
+        mock_process_submission_message.side_effect = Exception(error)
 
         process_submission_callback(message)
-        mock_logger.assert_called_with("Exception while processing message from submission queue with error test error")
+        mock_logger.assert_called_with("Exception while processing message from submission queue with error {}".format(
+            error
+        ))
 
 
 class CreateDirAsPythonPackageTest(BaseTestClass):
