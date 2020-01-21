@@ -1,11 +1,14 @@
+import boto3
 import os
 import unittest
 import mock
 
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge
+from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils import timezone
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from moto import mock_ecr, mock_sts
 from rest_framework.test import APIClient, APITestCase
