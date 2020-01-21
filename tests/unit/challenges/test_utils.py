@@ -4,6 +4,7 @@ import mock
 
 from challenges.models import Challenge
 from django.conf import settings
+from moto import mock_ecr, mock_sts
 
 import challenges.utils as utils
 
@@ -39,6 +40,15 @@ class BaseTestCase(unittest.TestCase):
         )[:199]
         self.challenge.save()
 
+        self.participant_team = 
+
+        self.aws_keys = {
+            "AWS_ACCOUNT_ID": self.challenge.aws_account_id,
+            "AWS_ACCESS_KEY_ID": self.challenge.aws_access_key_id,
+            "AWS_SECRET_ACCESS_KEY": self.challenge.aws_secret_access_key,
+            "AWS_REGION": self.challenge.aws_region,
+        }
+
         self.ecr_client = boto3.client("ecr", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
     def test_get_file_content(self):
         test_file_content = utils.get_file_content(self.test_file_path, "rb")
@@ -57,21 +67,37 @@ class BaseTestCase(unittest.TestCase):
         response = utils.convert_to_aws_federated_user_format(input)
         assert expected == response
         
-    def test_get_aws_credentials_for_challenge_when_get_host_credentials_is_true(self):
-        expected = {
-            "AWS_ACCOUNT_ID": self.challenge.aws_account_id,
-            "AWS_ACCESS_KEY_ID": self.challenge.aws_access_key_id,
-            "AWS_SECRET_ACCESS_KEY": self.challenge.aws_secret_access_key,
-            "AWS_REGION": self.challenge.aws_region,
-        }
+    def test_get_aws_credentials_for_challenge_when_get_host_credentials(self):
+        expected = self.aws_keys
         response = utils.get_aws_credentials_for_challenge(self.challenge)
         assert expected == response
+        
+        
+@mock_ecr
+@mock_sts
+class TestECRRepository(BaseTestCase):
+    def setup(self):
+        super(TestECRRepository, self).setup()
 
-    @mock.patch("os.environ.get(\"AWS_ACCOUNT_ID\", \"aws_account_id\")")
-    @mock.patch("os.environ.get(\"AWS_ACCESS_KEY_ID\", \"aws_access_key_id\")")
-    @mock.patch
-    def test_get_aws_credentials_for_challenge_when_get_host_credentials_is_true(self):
-        
-        
-        
-    def 
+        self.sts_client = boto3.client("sts", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), account_id=os.environ.get("AWS_ACCOUNT_ID"))
+
+    @mock.patch("base.utils.get_boto3_client")
+    def test_get_or_create_ecr_repository_when_repository_exists(self, client):
+        client.return_value = self.ecr_client
+        expected = (self.ecr_client.create_repository(repositoryName="TestRepo"), False)
+        response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
+        assert expected["repository"] == response["repositories"][0]
+
+    @mock.patch("base.utils.get_boto3_client")
+    def test_get_or_create_ecr_repository_when_repository_does_not_exist(self, client):
+        client.return_value = self.ecr_client
+        response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
+        expected = utils.describe_repositories(repositoryNames="TestRepo")
+        assert (response["repository"], True) == expected["repositories"][0]
+
+    @mock.patch("base.utils.get_boto3_client")
+    @mock.patch("boto3.client.get_federation_token")
+    def test_create_federated_user(self, mock_get_token, client):
+        client.return_value = self.sts_client
+        response = create_federated_user("testTeam", "testRepo", self.aws_keys)
+        mock_get_token.assert_called()
