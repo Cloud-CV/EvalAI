@@ -14,6 +14,19 @@ class BaseTestCase(unittest.TestCase):
         self.test_file_path = os.path.join(
             settings.BASE_DIR, "examples", "example1", "test_annotation.txt"
         )
+        self.user = User.objects.create(
+            username="myUser",
+            email="user@test.com",
+            password="secret_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user, email="user@test.com", primary=True, verified=True
+        )
+
+        self.challenge_host_team = ChallengeHostTeam.objects.create(
+            team_name="Test Challenge Host Team", created_by=self.user
+        )
 
         self.challenge = Challenge.objects.create(
             title="Test Challenge",
