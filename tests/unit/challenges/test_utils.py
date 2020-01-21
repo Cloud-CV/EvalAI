@@ -6,7 +6,7 @@ import mock
 
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge
-import datetime.timedelta as timedelta
+from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
