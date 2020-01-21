@@ -78,7 +78,7 @@ class BaseTestCase(APITestCase):
     def test_convert_to_aws_ecr_compatible_format(self):
         input = "Test Convert to Compatible!"
         expected = "test-convert-to-compatible!"
-        response = utils.convert_to_aws_ecr_compatible_format()
+        response = utils.convert_to_aws_ecr_compatible_format(input)
         assert expected == response
 
     def test_convert_to_aws_federated_user_format(self):
@@ -116,7 +116,7 @@ class TestECRRepository(BaseTestCase):
         assert (response["repository"], True) == expected["repositories"][0]
 
     @mock.patch("base.utils.get_boto3_client")
-    @mock.patch("boto3.client.get_federation_token")
+    @mock.patch("boto3.client(\"sts\").get_federation_token")
     def test_create_federated_user(self, mock_get_token, client):
         client.return_value = self.sts_client
         response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
