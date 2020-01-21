@@ -32,7 +32,7 @@ class BaseTestCase(unittest.TestCase):
             approved_by_admin=False,
             aws_account_id="id",
             aws_access_key_id="accesskeyid",
-            aws_secret_access-key="secretkey",
+            aws_secret_access_key="secretkey",
             use_host_credentials=True,
         )
         self.challenge.slug = "{}-{}".format(
