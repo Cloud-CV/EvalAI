@@ -16,7 +16,7 @@ from rest_framework.test import APIClient, APITestCase
 import challenges.utils as utils
 
 
-class BaseTestCase(unittest.TestCase):
+class BaseTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
 
