@@ -40,8 +40,6 @@ class BaseTestCase(unittest.TestCase):
         )[:199]
         self.challenge.save()
 
-        self.participant_team = 
-
         self.aws_keys = {
             "AWS_ACCOUNT_ID": self.challenge.aws_account_id,
             "AWS_ACCESS_KEY_ID": self.challenge.aws_access_key_id,
