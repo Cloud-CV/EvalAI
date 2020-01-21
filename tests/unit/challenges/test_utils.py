@@ -3,6 +3,7 @@ import datetime
 import os
 import unittest
 import mock
+import tzlocal
 
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge
