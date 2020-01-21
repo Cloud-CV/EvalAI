@@ -2,8 +2,11 @@ import os
 import unittest
 import mock
 
+from allauth.account.models import EmailAddress
 from challenges.models import Challenge
 from django.conf import settings
+from django.contrib.auth.models import User
+from hosts.models import ChallengeHost, ChallengeHostTeam
 from moto import mock_ecr, mock_sts
 
 import challenges.utils as utils
