@@ -78,7 +78,7 @@ class BaseTestCase(APITestCase):
     def test_convert_to_aws_ecr_compatible_format(self):
         input = "Test Convert to Compatible!"
         expected = "test-convert-to-compatible!"
-        response = utils.convert_to_aws_ecr_compatible_format
+        response = utils.convert_to_aws_ecr_compatible_format()
         assert expected == response
 
     def test_convert_to_aws_federated_user_format(self):
@@ -89,7 +89,7 @@ class BaseTestCase(APITestCase):
         
     def test_get_aws_credentials_for_challenge(self):
         expected = self.aws_keys
-        response = utils.get_aws_credentials_for_challenge(self.challenge)
+        response = utils.get_aws_credentials_for_challenge(self.challenge.pk)
         assert expected == response
         
         
