@@ -120,4 +120,5 @@ class TestECRRepository(BaseTestCase):
     def test_create_federated_user(self, client):
         client.return_value = self.sts_client
         response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
+        print(response)
         client.get_federation_token.assert_called()
