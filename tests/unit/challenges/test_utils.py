@@ -146,8 +146,9 @@ class TestWithAWSClients(BaseTestCase):
         assert response == (expected["repositories"][0], True)
     @mock.patch("base.utils.get_boto3_client")
     @mock.patch("logging.Logger.exception")
-    @mock.patch("botocore.client")
-    def test_get_or_create_ecr_repository_exceptions(self, client, mock_logger, get_client):
+    @mock.patch("boto3.client")
+    def test_get_or_create_ecr_repository_exceptions(self, mock_client, mock_logger, get_client):
+        client = mock_client("ecr", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
         get_client.return_value = client
         err_message = {"Error": {"Code": 406}}
         e = ClientError(err_message, "test")
