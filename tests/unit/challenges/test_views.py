@@ -2543,7 +2543,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             visibility=ChallengePhaseSplit.PUBLIC,
             leaderboard_decimal_precision=2,
             is_leaderboard_order_descending=True,
-            show_leaderboard_by_latest_submission=False
+            show_leaderboard_by_latest_submission=False,
         )
 
         self.challenge_phase_split_host = ChallengePhaseSplit.objects.create(
@@ -2551,7 +2551,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.HOST,
-            show_leaderboard_by_latest_submission=False
+            show_leaderboard_by_latest_submission=False,
         )
 
     def tearDown(self):
@@ -2575,8 +2575,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission":
-                    self.challenge_phase_split.show_leaderboard_by_latest_submission
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
             }
         ]
         self.client.force_authenticate(user=self.participant_user)
@@ -2612,8 +2611,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
-                "show_leaderboard_by_latest_submission":
-                    self.challenge_phase_split.show_leaderboard_by_latest_submission
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
             },
             {
                 "id": self.challenge_phase_split_host.id,
@@ -2622,8 +2620,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split_host.id,
                 "dataset_split_name": self.dataset_split_host.name,
                 "visibility": self.challenge_phase_split_host.visibility,
-                "show_leaderboard_by_latest_submission":
-                    self.challenge_phase_split_host.show_leaderboard_by_latest_submission
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
             },
         ]
         self.client.force_authenticate(user=self.user)
@@ -3206,6 +3203,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "is_flagged": self.submission1.is_flagged,
                 "when_made_public": self.submission1.when_made_public,
                 "is_baseline": self.submission1.is_baseline,
+                "job_name": self.submission1.job_name,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
@@ -3720,7 +3718,7 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "visibility": self.challenge_phase_split.visibility,
             "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,
             "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,
-            "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission
+            "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
@@ -4078,9 +4076,7 @@ class GetAWSCredentialsForParticipantTeamTest(BaseChallengePhaseClass):
             "challenges:get_aws_credentials_for_participant_team",
             kwargs={"phase_pk": self.challenge_phase.pk},
         )
-        expected = {
-            "error": "Sorry, this is not a docker based challenge."
-        }
+        expected = {"error": "Sorry, this is not a docker based challenge."}
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -4090,9 +4086,7 @@ class GetAWSCredentialsForParticipantTeamTest(BaseChallengePhaseClass):
             "challenges:get_aws_credentials_for_participant_team",
             kwargs={"phase_pk": self.challenge_phase.pk},
         )
-        expected = {
-            "error": "You have not participated in this challenge."
-        }
+        expected = {"error": "You have not participated in this challenge."}
         self.client.force_authenticate(user=self.user2)
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
