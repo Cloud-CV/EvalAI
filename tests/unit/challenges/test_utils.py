@@ -5,6 +5,7 @@ import mock
 
 from allauth.account.models import EmailAddress
 from botocore.exceptions import ClientError
+from botocore.client import ECR
 from challenges.models import Challenge
 from datetime import timedelta
 from django.conf import settings
@@ -140,11 +141,12 @@ class TestWithAWSClients(BaseTestCase):
 
     @mock.patch("base.utils.get_boto3_client")
     @mock.patch("logging.Logger.exception")
-    def test_get_or_create_ecr_repository_exceptions(self, mock_logger, client):
-        client.return_value = self.ecr_client
+    @mock.patch("botocore.client.ECR.describe_repositories")
+    def test_get_or_create_ecr_repository_exceptions(self, client_des, mock_logger, get_client):
+        get_client.return_value = self.ecr_client
         err_message = {"Error": {"Code": 406}}
         e = ClientError(err_message, "test")
-        self.ecr_client.describe_repositories.return_value = e
+        client_des.return_value = e
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         mock_logger.assert_called_with(e)
         
