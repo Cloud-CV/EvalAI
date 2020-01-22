@@ -1,4 +1,3 @@
-import dramatiq
 import logging
 import os
 import shutil
@@ -18,7 +17,6 @@ from .utils import get_file_from_url
 from .sender import publish_submission_message
 
 logger = logging.getLogger(__name__)
-dramatiq.set_broker(broker)
 
 
 @task_wrapper

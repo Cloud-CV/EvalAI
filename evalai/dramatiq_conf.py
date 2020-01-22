@@ -1,3 +1,4 @@
+import dramatiq
 import os
 
 from dramatiq.middleware import AgeLimit, TimeLimit, Callbacks, Pipelines, Prometheus, Retries
@@ -19,3 +20,4 @@ broker = SQSBroker(
     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
 )
+dramatiq.set_broker(broker)
