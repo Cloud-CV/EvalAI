@@ -19,3 +19,4 @@ broker = SQSBroker(
     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
 )
+dramatiq.set_broker(broker)
