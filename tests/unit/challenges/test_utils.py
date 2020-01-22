@@ -1,4 +1,5 @@
 import boto3
+import json
 import logging
 import os
 import mock
@@ -226,7 +227,7 @@ class TestWithAWSClients(BaseTestCase):
         response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
         client.get_federation_token.assert_called_with(
             Name="testTeam",
-            Policy=json.dumps(policy),
+            Policy=json.dumps(self.policy),
             DurationSeconds=43200,
         )
         '''
