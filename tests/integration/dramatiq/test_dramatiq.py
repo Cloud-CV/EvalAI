@@ -6,6 +6,8 @@ from moto import mock_sqs
 
 from evalai.dramatiq_conf import broker
 
+dramatiq.set_broker(broker)
+
 
 @mock_sqs
 class TestDramatiqWorker(TestCase):
@@ -16,8 +18,6 @@ class TestDramatiqWorker(TestCase):
         self.dummy_data = {"test_field": "test_data"}
         self.queue_name = "dramatiq_test_queue"
         self.dummy_task = dramatiq.actor(self.dummy_method, queue_name=self.queue_name)
-
-        dramatiq.set_broker(broker)
 
     def dummy_method(self, data):
         self.db.append(data)
