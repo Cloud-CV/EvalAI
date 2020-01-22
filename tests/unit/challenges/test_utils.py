@@ -20,6 +20,7 @@ from botocore.exceptions import ClientError
 import botocore.client
 '''
 
+
 class BaseTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
