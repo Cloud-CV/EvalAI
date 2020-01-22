@@ -211,7 +211,7 @@ class TestWithAWSClients(BaseTestCase):
                 "Effect": "Allow",
                 "Action": "ecr:*",
                 "Resource": "arn:aws:ecr:{}:{}:repository/{}".format(
-                    self.aws_keys.get("AWS_REGION"), self.aws_keys.get("AWS_ACCOUNT_ID"), "TestRepo"
+                    self.aws_keys.get("AWS_REGION"), self.aws_keys.get("AWS_ACCOUNT_ID"), "testRepo"
                 ),
             },
             {
