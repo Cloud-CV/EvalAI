@@ -34,6 +34,7 @@ before_script:
 - psql -c "CREATE DATABASE evalai" -U postgres
 - wget https://s3-eu-west-1.amazonaws.com/softwaremill-public/elasticmq-server-0.14.2.jar
 - java -jar elasticmq-server-0.14.2.jar &
+- dramatiq evalai.dramatiq_conf &
 before_install:
 - sudo rm -f /etc/boto.cfg
 - export CHROME_BIN=chromium-browser
@@ -46,7 +47,6 @@ install:
 script:
 - flake8 ./
 - karma start --single-run
-- dramatiq tests.integration.dramatiq.test_dramatiq &
 - py.test --cov . --cov-config .coveragerc
 after_success:
 - bash <(curl -s https://codecov.io/bash)
