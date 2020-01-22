@@ -1,8 +1,10 @@
 import boto3
+import logging
 import os
 import mock
 
 from allauth.account.models import EmailAddress
+from botocore.exceptions import ClientError
 from challenges.models import Challenge
 from datetime import timedelta
 from django.conf import settings
@@ -118,6 +120,8 @@ class TestWithAWSClients(BaseTestCase):
     def setup(self):
         super(TestWithAWSClients, self).setup()
 
+        self.logger = logging.getLogger(__name__)
+
     @mock.patch("base.utils.get_boto3_client")
     def test_get_or_create_ecr_repository_when_repository_exists(self, client):
         client.return_value = self.ecr_client
@@ -133,6 +137,17 @@ class TestWithAWSClients(BaseTestCase):
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         expected = self.ecr_client.describe_repositories(repositoryNames=["TestRepo"])
         assert response == (expected["repositories"][0], True)
+
+    @mock.patch("base.utils.get_boto3_client")
+    @mock.patch("logging.Logger.exception")
+    def test_get_or_create_ecr_repository_exceptions(self, mock_logger, client):
+        client.return_value = self.ecr_client
+        err_message = {"Error": {"Code": 406}}
+        e = ClientError(err, "test")
+        self.ecr_client.describe_repositories.return_value = e
+        response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
+        mock_logger.assert_called_with(e)
+        
 
     @mock.patch("base.utils.get_boto3_client")
     def test_create_federated_user(self, client):
