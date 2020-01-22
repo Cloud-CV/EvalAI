@@ -4,8 +4,8 @@ import os
 import mock
 
 from allauth.account.models import EmailAddress
-from botocore.exceptions import ClientError
-import botocore.client
+#from botocore.exceptions import ClientError
+#import botocore.client
 from challenges.models import Challenge
 from datetime import timedelta
 from django.conf import settings
