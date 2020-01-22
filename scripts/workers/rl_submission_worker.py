@@ -1,11 +1,13 @@
 import logging
 import os
 import signal
-import time
 
-from worker_util import EvalAI_Interface
+from worker_utils import EvalAI_Interface
 
 from kubernetes import client, config
+
+# TODO: Add exception in all the commands
+# from kubernetes.client.rest import ApiException
 
 
 class GracefulKiller:
@@ -20,6 +22,8 @@ class GracefulKiller:
 
 
 logger = logging.getLogger(__name__)
+config.load_kube_config()
+batch_v1 = client.BatchV1Api()
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "auth_token")
 EVALAI_API_SERVER = os.environ.get(
@@ -27,19 +31,31 @@ EVALAI_API_SERVER = os.environ.get(
 )
 QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 ENVIRONMENT_IMAGE = os.environ.get("ENVIRONMENT_IMAGE", "image_name:tag")
-MESSAGE_FETCH_DEPLAY = int(os.environ.get("MESSAGE_FETCH_DEPLAY", "5"))
 
 
-def create_deployment_object(image, submission, message):
+def create_job_object(message):
+    """Function to create the AWS EKS Job object
+
+    Arguments:
+        message {[dict]} -- Submission message from AWS SQS queue
+
+    Returns:
+        [AWS EKS Job class object] -- AWS EKS Job class object
+    """
+
     PYTHONUNBUFFERED_ENV = client.V1EnvVar(name="PYTHONUNBUFFERED", value="1")
     AUTH_TOKEN_ENV = client.V1EnvVar(name="AUTH_TOKEN", value=AUTH_TOKEN)
     EVALAI_API_SERVER_ENV = client.V1EnvVar(
         name="EVALAI_API_SERVER", value=EVALAI_API_SERVER
     )
     MESSAGE_BODY_ENV = client.V1EnvVar(name="BODY", value=str(message))
+    submission_pk = message["submission_pk"]
+    image = message["submitted_image_uri"]
+    # Configureate Pod agent container
     agent_container = client.V1Container(
         name="agent", image=image, env=[PYTHONUNBUFFERED_ENV]
     )
+    # Configureate Pod environment container
     environment_container = client.V1Container(
         name="environment",
         image=ENVIRONMENT_IMAGE,
@@ -50,85 +66,129 @@ def create_deployment_object(image, submission, message):
             MESSAGE_BODY_ENV,
         ],
     )
+    # Create and configurate a spec section
     template = client.V1PodTemplateSpec(
         metadata=client.V1ObjectMeta(labels={"app": "evaluation"}),
         spec=client.V1PodSpec(
-            containers=[environment_container, agent_container]
+            containers=[environment_container, agent_container],
+            restart_policy="Never",
         ),
     )
-    spec = client.ExtensionsV1beta1DeploymentSpec(
-        replicas=1, template=template
-    )
-    deployment = client.ExtensionsV1beta1Deployment(
-        api_version="extensions/v1beta1",
-        kind="Deployment",
-        metadata=client.V1ObjectMeta(name="submission-{0}".format(submission)),
+    # Create the specification of deployment
+    spec = client.V1JobSpec(backoff_limit=1, template=template)
+    # Instantiate the job object
+    job = client.V1Job(
+        api_version="batch/v1",
+        kind="Job",
+        metadata=client.V1ObjectMeta(
+            name="submission-{0}".format(submission_pk)
+        ),
         spec=spec,
     )
-    return deployment
+    return job
 
 
-def create_deployment(api_instance, deployment):
-    api_response = api_instance.create_namespaced_deployment(
-        body=deployment, namespace="default"
+def create_job(api_instance, job):
+    """Function to create a job on AWS EKS cluster
+
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for creating job
+        job {[AWS EKS job object]} -- Job object returned after running create_job_object fucntion
+
+    Returns:
+        [V1Job object] -- [AWS EKS V1Job]
+        For reference: https://github.com/kubernetes-client/python/blob/master/kubernetes/docs/V1Job.md
+    """
+    api_response = api_instance.create_namespaced_job(
+        body=job, namespace="default", pretty=True
     )
     logger.info("Deployment created. status='%s'" % str(api_response.status))
+    return api_response
 
 
-def process_submission_callback(message, api):
-    config.load_kube_config()
-    extensions_v1beta1 = client.ExtensionsV1beta1Api()
-    logger.info(message)
-    submission_data = {
-        "submission_status": "running",
-        "submission": message["submission_pk"],
-    }
-    logger.info(submission_data)
-    api.update_submission_status(submission_data, message["challenge_pk"])
-    dep = create_deployment_object(
-        message["submitted_image_uri"], message["submission_pk"], message
+def delete_job(api_instance, job_name):
+    """Function to delete a job on AWS EKS cluster
+
+    Arguments:
+        api_instance {[AWS EKS API object]} -- API object for deleting job
+        job_name {[string]} -- Name of the job to be terminated
+    """
+    api_response = api_instance.delete_namespaced_job(
+        name=job_name,
+        namespace="default",
+        body=client.V1DeleteOptions(
+            propagation_policy="Foreground", grace_period_seconds=5
+        ),
     )
-    create_deployment(extensions_v1beta1, dep)
+    logger.info("Job deleted. status='%s'" % str(api_response.status))
+
+
+def process_submission_callback(body, evalai):
+    """Function to process submission message from SQS Queue
+
+    Arguments:
+        body {[dict]} -- Submission message body from AWS SQS Queue
+        evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
+    """
+    try:
+        logger.info("[x] Received submission message %s" % body)
+        job = create_job_object(body)
+        response = create_job(batch_v1, job)
+        submission_data = {
+            "submission_status": "running",
+            "submission": body["submission_pk"],
+            "job_name": response.metadata.name,
+        }
+        evalai.update_submission_status(submission_data, body["challenge_pk"])
+    except Exception as e:
+        logger.exception(
+            "Exception while receiving message from submission queue with error {}".format(
+                e
+            )
+        )
 
 
 def main():
-    api = EvalAI_Interface(
+    killer = GracefulKiller()
+    evalai = EvalAI_Interface(
         AUTH_TOKEN=AUTH_TOKEN,
         EVALAI_API_SERVER=EVALAI_API_SERVER,
         QUEUE_NAME=QUEUE_NAME,
     )
     logger.info(
-        "String RL Worker for {}".format(
-            api.get_challenge_by_queue_name()["title"]
+        "Deploying Worker for {}".format(
+            evalai.get_challenge_by_queue_name()["title"]
         )
     )
-    killer = GracefulKiller()
     while True:
         logger.info(
             "Fetching new messages from the queue {}".format(QUEUE_NAME)
         )
-        message = api.get_message_from_sqs_queue()
-        logger.info(message)
+        message = evalai.get_message_from_sqs_queue()
         message_body = message.get("body")
         if message_body:
             submission_pk = message_body.get("submission_pk")
-            submission = api.get_submission_by_pk(submission_pk)
+            submission = evalai.get_submission_by_pk(submission_pk)
             if submission:
-                if submission.get("status") == "finished":
+                if (
+                    submission.get("status") == "finished"
+                    or submission.get("status") == "failed"
+                ):
+                    # Fetch the last job name from the list as it is the latest running job
+                    job_name = submission.get("job_name")[-1]
+                    delete_job(batch_v1, job_name)
                     message_receipt_handle = message.get("receipt_handle")
-                    api.delete_message_from_sqs_queue(message_receipt_handle)
+                    evalai.delete_message_from_sqs_queue(
+                        message_receipt_handle
+                    )
                 elif submission.get("status") == "running":
                     continue
                 else:
                     message_receipt_handle = message.get("receipt_handle")
                     logger.info(
-                        "Processing message body: {}".format(message_body)
+                        "Processing message body: {0}".format(message_body)
                     )
-                    process_submission_callback(message_body, api)
-                    api.delete_message_from_sqs_queue(
-                        message.get("receipt_handle")
-                    )
-        time.sleep(MESSAGE_FETCH_DEPLAY)
+                    process_submission_callback(message_body, evalai)
         if killer.kill_now:
             break
 
