@@ -21,6 +21,8 @@ class TestDramatiqWorker(TestCase):
 
     def dummy_method(self, data):
         self.db.append(data)
+        print("Task completed")
+        print(self.db)
 
     def test_enqueue_and_process_message(self):
         message = self.dummy_task.send(self.dummy_data)
