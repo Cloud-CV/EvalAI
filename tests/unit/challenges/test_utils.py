@@ -163,9 +163,7 @@ class TestWithAWSClients(BaseTestCase):
                 {
                     "Effect": "Allow",
                     "Action": "ecr:*",
-                    "Resource": "arn:aws:ecr:{}:{}:repository/{}".format(
-                        self.aws_keys.get("AWS_REGION"), self.aws_keys.get("AWS_ACCOUNT_ID"), "testRepo"
-                    ),
+                    "Resource": "arn:aws:ecr:{}:{}:repository/{}".format(self.aws_keys.get("AWS_REGION"), self.aws_keys.get("AWS_ACCOUNT_ID"), "testRepo"),
                 },
                 {
                     "Effect": "Allow",
@@ -174,7 +172,6 @@ class TestWithAWSClients(BaseTestCase):
                 },
             ],
         }
-
         utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
         client.get_federation_token.assert_called_with(
             Name="testTeam",
