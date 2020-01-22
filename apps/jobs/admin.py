@@ -34,6 +34,7 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "stderr_file",
         "submission_result_file",
         "submission_metadata_file",
+        "job_name",
     )
     list_filter = (
         "challenge_phase__challenge",

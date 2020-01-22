@@ -172,7 +172,7 @@ class BaseAPITestClass(APITestCase):
         )
 
         self.rl_submission_file = SimpleUploadedFile(
-            "submission.json", b'{"submitted_image_uri": "evalai-repo.com"}',
+            "submission.json", b'{"submitted_image_uri": "evalai-repo.com"}'
         )
 
     def tearDown(self):
@@ -638,6 +638,7 @@ class GetChallengeSubmissionTest(BaseAPITestClass):
                 "is_flagged": self.submission.is_flagged,
                 "when_made_public": self.submission.when_made_public,
                 "is_baseline": self.submission.is_baseline,
+                "job_name": self.submission.job_name,
             }
         ]
         self.challenge.participant_teams.add(self.participant_team)
@@ -1309,6 +1310,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
+            "job_name": self.submission.job_name,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
@@ -1354,6 +1356,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.private_submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
+            "job_name": self.submission.job_name,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1417,15 +1420,14 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
+            "job_name": self.submission.job_name,
         }
         self.challenge.participant_teams.add(self.participant_team)
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_toggle_baseline_when_user_is_not_a_host(
-        self
-    ):
+    def test_toggle_baseline_when_user_is_not_a_host(self):
         self.url = reverse_lazy(
             "jobs:change_submission_data_and_visibility",
             kwargs={
@@ -1437,14 +1439,14 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
         self.data = {"is_baseline": True}
         self.challenge.save()
         self.client.force_authenticate(user=self.user1)
-        expected = {"error": "Sorry, you are not authorized to make this request"}
+        expected = {
+            "error": "Sorry, you are not authorized to make this request"
+        }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_toggle_baseline_when_user_is_host(
-        self
-    ):
+    def test_toggle_baseline_when_user_is_host(self):
         self.url = reverse_lazy(
             "jobs:change_submission_data_and_visibility",
             kwargs={
@@ -1474,14 +1476,17 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
             "stderr_file": None,
             "submission_result_file": None,
             "submitted_at": "{0}{1}".format(
-                self.host_participant_team_submission.submitted_at.isoformat(), "Z"
+                self.host_participant_team_submission.submitted_at.isoformat(),
+                "Z",
             ).replace("+00:00", ""),
             "is_public": self.host_participant_team_submission.is_public,
             "is_flagged": self.host_participant_team_submission.is_flagged,
             "when_made_public": "{0}{1}".format(
-                self.host_participant_team_submission.when_made_public.isoformat(), "Z"
+                self.host_participant_team_submission.when_made_public.isoformat(),
+                "Z",
             ).replace("+00:00", ""),
             "is_baseline": True,
+            "job_name": self.host_participant_team_submission.job_name,
         }
         response = self.client.patch(self.url, self.data)
         self.assertEqual(response.data, expected)
@@ -1555,6 +1560,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
+            "job_name": self.submission.job_name,
         }
 
         self.client.force_authenticate(user=self.submission.created_by)
@@ -1595,6 +1601,7 @@ class ChangeSubmissionDataAndVisibilityTest(BaseAPITestClass):
                 self.submission.when_made_public.isoformat(), "Z"
             ).replace("+00:00", ""),
             "is_baseline": self.submission.is_baseline,
+            "job_name": self.submission.job_name,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -1734,9 +1741,15 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
 
         self.result_json_2 = {"score": 10.0, "test-score": 20.0}
 
-        self.result_json_host_participant_team = {"score": 52.0, "test-score": 80.0}
+        self.result_json_host_participant_team = {
+            "score": 52.0,
+            "test-score": 80.0,
+        }
 
-        self.result_json_host_participant_team_2 = {"score": 20.0, "test-score": 60.0}
+        self.result_json_host_participant_team_2 = {
+            "score": 20.0,
+            "test-score": 60.0,
+        }
 
         self.expected_results = [
             self.result_json["score"],
@@ -1889,7 +1902,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__submitted_at": self.submission.submitted_at,
                     "submission__is_baseline": False,
                     "submission__method_name": self.submission.method_name,
-                }
+                },
             ],
         }
         expected = collections.OrderedDict(expected)
@@ -1975,7 +1988,7 @@ class ChallengeLeaderboardTest(BaseAPITestClass):
                     "submission__submitted_at": self.host_participant_team_submission_2.submitted_at,
                     "submission__is_baseline": True,
                     "submission__method_name": self.host_participant_team_submission_2.method_name,
-                }
+                },
             ],
         }
         expected = collections.OrderedDict(expected)

@@ -999,11 +999,20 @@ def update_submission(request, challenge_pk):
     if request.method == "PATCH":
         submission_pk = request.data.get("submission")
         submission_status = request.data.get("submission_status", "").lower()
+        job_name = request.data.get("job_name", "").lower()
         submission = get_submission_model(submission_pk)
+        jobs = submission.job_name
+        if job_name:
+            jobs.append(job_name)
         if submission_status not in [Submission.RUNNING]:
             response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        data = {"status": submission_status, "started_at": timezone.now()}
+
+        data = {
+            "status": submission_status,
+            "started_at": timezone.now(),
+            "job_name": jobs,
+        }
         serializer = SubmissionSerializer(
             submission, data=data, partial=True, context={"request": request}
         )
