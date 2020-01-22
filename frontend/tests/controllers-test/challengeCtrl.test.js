@@ -2280,6 +2280,7 @@ describe('Unit tests for challenge controller', function () {
             vm.challengePhaseDialog(ev, phase);
             expect(vm.page.challenge_phase).toEqual(phase);
             expect(vm.page.max_submissions_per_day).toEqual(phase.max_submissions_per_day);
+            expect(vm.page.max_submissions_per_month).toEqual(phase.max_submissions_per_month);
             expect(vm.phaseStartDate).toEqual(moment(phase.start_date));
             expect(vm.phaseEndDate).toEqual(moment(phase.end_date));
             expect(vm.testAnnotationFile).toEqual(null);
