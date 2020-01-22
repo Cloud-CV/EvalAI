@@ -13,7 +13,7 @@ class TestDramatiqWorker(TestCase):
         self.db = []  # Dummy database to perform operations
         self.n_messages = 3
         self.dummy_data = {"test_field": "test_data"}
-        self.queue_name = "default"
+        self.queue_name = "dramatiq_test_queue"
         self.dummy_task = dramatiq.actor(self.dummy_method, queue_name=self.queue_name)
         self.worker = dramatiq.Worker(broker)
         self.worker.start()
