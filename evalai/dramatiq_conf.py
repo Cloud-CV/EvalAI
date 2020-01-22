@@ -5,7 +5,7 @@ from dramatiq_sqs import SQSBroker
 
 
 broker = SQSBroker(
-    namespace="dramatiq_",
+    namespace="dramatiq_sqs_tests",
     middleware=[
         Prometheus(),
         AgeLimit(),
