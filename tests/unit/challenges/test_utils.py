@@ -1,7 +1,5 @@
 import boto3
-import datetime
 import os
-import unittest
 import mock
 
 from allauth.account.models import EmailAddress
@@ -10,7 +8,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
-from hosts.models import ChallengeHost, ChallengeHostTeam
+from hosts.models import ChallengeHostTeam
 from moto import mock_ecr, mock_sts
 from rest_framework.test import APIClient, APITestCase
 
@@ -72,6 +70,7 @@ class BaseTestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         self.ecr_client = boto3.client("ecr", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
         self.sts_client = boto3.client("sts", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
+
     def test_get_file_content(self):
         test_file_content = utils.get_file_content(self.test_file_path, "rb")
         expected = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n"
@@ -88,13 +87,13 @@ class BaseTestCase(APITestCase):
         expected = "1234asdf@,.-=-"
         response = utils.convert_to_aws_federated_user_format(input)
         assert expected == response
-        
+
     def test_get_aws_credentials_for_challenge(self):
         expected = self.aws_keys
         response = utils.get_aws_credentials_for_challenge(self.challenge.pk)
         assert expected == response
-        
-        
+
+
 @mock_ecr
 @mock_sts
 class TestECRRepository(BaseTestCase):
@@ -122,18 +121,18 @@ class TestECRRepository(BaseTestCase):
         client.return_value = self.sts_client
         expected = {
             'Credentials': {
-                'AccessKeyId': 'AKIAIOSFODNN7EXAMPLE', 
-                'SecretAccessKey': 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLEKEY', 
-                'SessionToken': 'AQoDYXdzEPT//////////wEXAMPLEtc764bNrC9SAPBSM22wDOk4x4HIZ8j4FZTwdQWLWsKWHGBuFqwAeMicRXmxfpSPfIeoIYRqTflfKD8YUuwthAx7mSEI/qkPpKPi/kMcGdQrmGdeehM4IC1NtBmUpp2wUE8phUZampKsburEDy0KPkyQDYwT7WZ0wq5VSXDvp75YU9HFvlRd8Tx6q6fE8YQcHNVXAkiY9q6d+xo0rKwT38xVqr7ZD0u0iPPkUL64lIZbqBAz+scqKmlzm8FDrypNC9Yjc8fPOLn9FX9KSYvKTr4rvx3iSIlTJabIQwj2ICCR/oLxBA==', 
-            }, 
+                'AccessKeyId': 'AKIAIOSFODNN7EXAMPLE',
+                'SecretAccessKey': 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLEKEY',
+                'SessionToken': 'AQoDYXdzEPT//////////wEXAMPLEtc764bNrC9SAPBSM22wDOk4x4HIZ8j4FZTwdQWLWsKWHGBuFqwAeMicRXmxfpSPfIeoIYRqTflfKD8YUuwthAx7mSEI/qkPpKPi/kMcGdQrmGdeehM4IC1NtBmUpp2wUE8phUZampKsburEDy0KPkyQDYwT7WZ0wq5VSXDvp75YU9HFvlRd8Tx6q6fE8YQcHNVXAkiY9q6d+xo0rKwT38xVqr7ZD0u0iPPkUL64lIZbqBAz+scqKmlzm8FDrypNC9Yjc8fPOLn9FX9KSYvKTr4rvx3iSIlTJabIQwj2ICCR/oLxBA==',
+            },
             'FederatedUser': {
                 'FederatedUserId': '123456789012:testTeam',
                 'Arn': 'arn:aws:sts::123456789012:federated-user/testTeam'
-            }, 
-            'PackedPolicySize': 6, 
+            },
+            'PackedPolicySize': 6,
             'ResponseMetadata': {
                 'RequestId': 'c6104cbe-af31-11e0-8154-cbc7ccf896c7',
-                'HTTPStatusCode': 200, 
+                'HTTPStatusCode': 200,
                 'HTTPHeaders': {'server': 'amazon.com'}, 'RetryAttempts': 0
             }
         }
