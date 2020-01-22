@@ -2,7 +2,7 @@ import mock
 import requests
 import responses
 
-from scripts.workers.worker_util import EvalAI_Interface, URLS
+from scripts.workers.worker_utils import EvalAI_Interface, URLS
 from unittest import TestCase
 
 
