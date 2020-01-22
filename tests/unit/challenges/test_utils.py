@@ -144,7 +144,6 @@ class TestWithAWSClients(BaseTestCase):
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         expected = self.ecr_client.describe_repositories(repositoryNames=["TestRepo"])
         assert response == (expected["repositories"][0], True)
-    '''
     @mock.patch("base.utils.get_boto3_client")
     @mock.patch("logging.Logger.exception")
     @mock.patch("botocore.client")
@@ -156,54 +155,12 @@ class TestWithAWSClients(BaseTestCase):
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         print(response)
         mock_logger.assert_called_with(e)
-    '''
 
     @mock.patch("base.utils.get_boto3_client")
     @mock.patch("boto3.client")
     def test_create_federated_user(self, mock_client, mock_get_client):
         client = mock_client("sts", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
         mock_get_client.return_value = client
-        keyid = ''.join(random.choices(string.ascii_uppercase + string.digits, k=13))
-        secretkey = ''.join(random.choices(string.ascii_letters + string.digits + "/", k=31))
-        token = ''.join(random.choices(string.ascii_letters + string.digits + "/", k=104))
-        userid = ''.join(random.choices(string.digits, k=12))
-        arn = "arn:aws:sts::"+userid+":federated-user/testTeam"
-        '''
-        expected = {
-            'Credentials': {
-                'AccessKeyId': 'AKIAIOSFODNN7EXAMPLE',
-                'SecretAccessKey': 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLEKEY',
-                'SessionToken': 'AQoDYXdzEPT//////////wEXAMPLEtc764bNrC9SAPBSM22wDOk4x4HIZ8j4FZTwdQWLWsKWHGBuFqwAeMicRXmxfpSPfIeoIYRqTflfKD8YUuwthAx7mSEI/qkPpKPi/kMcGdQrmGdeehM4IC1NtBmUpp2wUE8phUZampKsburEDy0KPkyQDYwT7WZ0wq5VSXDvp75YU9HFvlRd8Tx6q6fE8YQcHNVXAkiY9q6d+xo0rKwT38xVqr7ZD0u0iPPkUL64lIZbqBAz+scqKmlzm8FDrypNC9Yjc8fPOLn9FX9KSYvKTr4rvx3iSIlTJabIQwj2ICCR/oLxBA==',
-            },
-            'FederatedUser': {
-                'FederatedUserId': '123456789012:testTeam',
-                'Arn': 'arn:aws:sts::123456789012:federated-user/testTeam'
-            },
-            'PackedPolicySize': 6,
-            'ResponseMetadata': {
-                'RequestId': 'c6104cbe-af31-11e0-8154-cbc7ccf896c7',
-                'HTTPStatusCode': 200,
-                'HTTPHeaders': {'server': 'amazon.com'}, 'RetryAttempts': 0
-            }
-        }
-        '''
-        expected = {
-            'Credentials': {
-                'AccessKeyId': keyid,
-                'SecretAccessKey': secretkey,
-                'SessionToken': token,
-            },
-            'FederatedUser': {
-                'FederatedUserId': userid+':testTeam',
-                'Arn': arn
-            },
-            'PackedPolicySize': 6,
-            'ResponseMetadata': {
-                'RequestId': 'c6104cbe-af31-11e0-8154-cbc7ccf896c7',
-                'HTTPStatusCode': 200,
-                'HTTPHeaders': {'server': 'amazon.com'}, 'RetryAttempts': 0
-            }
-        }
         policy = {
         "Version": "2012-10-17",
         "Statement": [
@@ -228,8 +185,3 @@ class TestWithAWSClients(BaseTestCase):
             Policy=json.dumps(policy),
             DurationSeconds=43200,
         )
-        '''
-        print(response)
-        del response["Credentials"]["Expiration"]
-        assert response == expected
-        '''
