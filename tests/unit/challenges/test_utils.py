@@ -100,23 +100,23 @@ class BaseTestCase(APITestCase):
         bad_email = "useremail@badtest.com"
         response = utils.is_user_in_allowed_email_domains(good_email, self.challenge.pk)
         bad_response = utils.is_user_in_allowed_email_domains(bad_email, self.challenge.pk)
-        assert response == True
-        assert bad_response == False
+        assert response
+        assert ~bad_response
 
     def test_is_user_in_blocked_email_domains_when_true(self):
         blocked_email = "useremail@badtest.com"
         good_email = "useremail@test.com"
         blocked_response = utils.is_user_in_blocked_email_domains(blocked_email, self.challenge.pk)
         good_response = utils.is_user_in_blocked_email_domains(good_email, self.challenge.pk)
-        assert blocked_response == True
-        assert good_response == False
+        assert blocked_response
+        assert ~good_response
 
 
 @mock_ecr
 @mock_sts
 class TestWithAWSClients(BaseTestCase):
     def setup(self):
-        super(TestECRRepository, self).setup()
+        super(TestWithAWSClients, self).setup()
 
     @mock.patch("base.utils.get_boto3_client")
     def test_get_or_create_ecr_repository_when_repository_exists(self, client):
