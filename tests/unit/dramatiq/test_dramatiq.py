@@ -24,7 +24,7 @@ class TestDramatiqWorker(TestCase):
     def dummy_method(self, data):
         self.db.append(data)
 
-    def test_enqueue_and_process_message(self, worker):
+    def test_enqueue_and_process_message(self):
         message = self.dummy_task.send(self.dummy_data)
 
         # wait for task to complete
@@ -36,7 +36,7 @@ class TestDramatiqWorker(TestCase):
         # verify task success
         self.assertEqual(self.db, [self.dummy_data])
 
-    def test_enqueue_and_process_multiple_messages(self, worker):
+    def test_enqueue_and_process_multiple_messages(self):
         data_list = [i for i in range(self.n_messages)]
 
         @dramatiq.actor(queue_name=self.queue_name)
