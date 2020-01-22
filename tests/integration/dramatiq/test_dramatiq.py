@@ -13,15 +13,16 @@ class TestDramatiqWorker(TestCase):
         self.n_messages = 3
         self.dummy_data = {"test_field": "test_data"}
         self.queue_name = "dramatiq_sqs_tests"
-        self.dummy_task = dramatiq.actor(self.dummy_method, queue_name=self.queue_name)
 
         dramatiq.set_broker(broker)
 
-    def dummy_method(self, data):
-        self.db.append(data)
-
     def test_enqueue_and_process_message(self):
-        message = self.dummy_task.send(self.dummy_data)
+
+        @dramatiq.actor(queue_name=self.queue_name)
+        def dummy_method(data):
+            self.db.append(data)
+
+        message = dummy_method.send(self.dummy_data)
 
         # wait for task to complete
         time.sleep(1)
@@ -35,7 +36,11 @@ class TestDramatiqWorker(TestCase):
     def test_enqueue_and_process_multiple_messages(self):
         data_list = [i for i in range(self.n_messages)]
 
-        messages = [self.dummy_task.send(data) for data in data_list]
+        @dramatiq.actor(queue_name=self.queue_name)
+        def dummy_method(data):
+            self.db.append(data)
+
+        messages = [dummy_method.send(data) for data in data_list]
         time.sleep(2)  # wait for task to finish
 
         # verify all messages are sent to correct queue
