@@ -225,7 +225,7 @@ class TestWithAWSClients(BaseTestCase):
         response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
         client.get_federation_token.assert_called_with(
             Name="testTeam",
-            Policy=json.dumps(self.policy),
+            Policy=json.dumps(policy),
             DurationSeconds=43200,
         )
         '''
