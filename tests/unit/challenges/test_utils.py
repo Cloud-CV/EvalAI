@@ -141,12 +141,12 @@ class TestWithAWSClients(BaseTestCase):
 
     @mock.patch("base.utils.get_boto3_client")
     @mock.patch("logging.Logger.exception")
-    @mock.patch("botocore.client.ECR.describe_repositories")
-    def test_get_or_create_ecr_repository_exceptions(self, client_des, mock_logger, get_client):
-        get_client.return_value = self.ecr_client
+    @mock.patch("botocore.client")
+    def test_get_or_create_ecr_repository_exceptions(self, client, mock_logger, get_client):
+        get_client.return_value = client
         err_message = {"Error": {"Code": 406}}
         e = ClientError(err_message, "test")
-        client_des.return_value = e
+        client.return_value = e
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         mock_logger.assert_called_with(e)
         
