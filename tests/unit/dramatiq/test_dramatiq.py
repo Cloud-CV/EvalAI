@@ -1,5 +1,4 @@
 import dramatiq
-import pytest
 import time
 
 from evalai.dramatiq_conf import broker
