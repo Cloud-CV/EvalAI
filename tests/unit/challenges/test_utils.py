@@ -3,8 +3,6 @@ import json
 import logging
 import os
 import mock
-import random
-import string
 
 from allauth.account.models import EmailAddress
 from botocore.exceptions import ClientError
@@ -140,6 +138,7 @@ class TestWithAWSClients(BaseTestCase):
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         expected = self.ecr_client.describe_repositories(repositoryNames=["TestRepo"])
         assert response == (expected["repositories"][0], True)
+
     @mock.patch("base.utils.get_boto3_client")
     @mock.patch("logging.Logger.exception")
     @mock.patch("boto3.client")
@@ -161,22 +160,22 @@ class TestWithAWSClients(BaseTestCase):
         policy = {
         "Version": "2012-10-17",
         "Statement": [
-            {
-                "Effect": "Allow",
-                "Action": "ecr:*",
-                "Resource": "arn:aws:ecr:{}:{}:repository/{}".format(
-                    self.aws_keys.get("AWS_REGION"), self.aws_keys.get("AWS_ACCOUNT_ID"), "testRepo"
-                ),
-            },
-            {
-                "Effect": "Allow",
-                "Action": ["ecr:GetAuthorizationToken"],
-                "Resource": "*",
-            },
-        ],
-    }
-        
-        response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
+                {
+                    "Effect": "Allow",
+                    "Action": "ecr:*",
+                    "Resource": "arn:aws:ecr:{}:{}:repository/{}".format(
+                        self.aws_keys.get("AWS_REGION"), self.aws_keys.get("AWS_ACCOUNT_ID"), "testRepo"
+                    ),
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": ["ecr:GetAuthorizationToken"],
+                    "Resource": "*",
+                },
+            ],
+        }
+
+        utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
         client.get_federation_token.assert_called_with(
             Name="testTeam",
             Policy=json.dumps(policy),
