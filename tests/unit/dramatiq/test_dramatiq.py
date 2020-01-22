@@ -8,14 +8,6 @@ from unittest import TestCase
 dramatiq.set_broker(broker)
 
 
-@pytest.fixture
-def worker():
-    worker = dramatiq.Worker(broker)
-    worker.start()
-    yield worker
-    worker.stop()
-
-
 class TestDramatiqWorker(TestCase):
 
     def setUp(self):
@@ -24,6 +16,11 @@ class TestDramatiqWorker(TestCase):
         self.dummy_data = {"test_field": "test_data"}
         self.queue_name = "default"
         self.dummy_task = dramatiq.actor(self.dummy_method, queue_name=self.queue_name)
+        self.worker = dramatiq.Worker(broker)
+        self.worker.start()
+
+    def tearDown(self):
+        self.worker.stop()
 
     def dummy_method(self, data):
         self.db.append(data)
