@@ -158,8 +158,8 @@ class TestWithAWSClients(BaseTestCase):
         client = mock_client("sts", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
         mock_get_client.return_value = client
         policy = {
-        "Version": "2012-10-17",
-        "Statement": [
+            "Version": "2012-10-17",
+            "Statement": [
                 {
                     "Effect": "Allow",
                     "Action": "ecr:*",
