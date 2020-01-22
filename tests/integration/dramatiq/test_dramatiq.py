@@ -8,7 +8,7 @@ from evalai.dramatiq_conf import broker
 
 class TestDramatiqWorker(TestCase):
 
-    def setup(self):
+    def setUp(self):
         self.db = []  # Dummy database to perform operations
         self.n_messages = 3
         self.dummy_data = {"test_field": "test_data"}
