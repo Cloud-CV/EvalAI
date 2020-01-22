@@ -125,9 +125,9 @@
                                     [routerLink]="['./leaderboard']"
                                     class="text-light-black fw-semibold fs-15">
                                     <i class="fa fa-th-list"></i> Leaderboard</a></li>
-                            <li *ngIf=""><a
+                            <li *ngIf="challenge.forum_url && challenge.enable_forum"><a
                                     [class.selected]="localRouter.url.endsWith('discussions')"
-                                    href="{{challenge.forumURL}}"
+                                    href="{{challenge.forum_url}}"
                                     target="_blank"
                                     class="text-light-black fw-semibold fs-15">
                                     <i class="fa fa-comments"></i> Discussions
