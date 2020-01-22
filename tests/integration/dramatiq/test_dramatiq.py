@@ -17,6 +17,9 @@ class TestDramatiqWorker(TestCase):
 
         dramatiq.set_broker(broker)
 
+    def dummy_method(self, data):
+        self.db.append(data)
+
     def test_enqueue_and_process_message(self):
         message = self.dummy_task.send(self.dummy_data)
 
