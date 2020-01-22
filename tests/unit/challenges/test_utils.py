@@ -143,7 +143,7 @@ class TestWithAWSClients(BaseTestCase):
     def test_get_or_create_ecr_repository_exceptions(self, mock_logger, client):
         client.return_value = self.ecr_client
         err_message = {"Error": {"Code": 406}}
-        e = ClientError(err, "test")
+        e = ClientError(err_message, "test")
         self.ecr_client.describe_repositories.return_value = e
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         mock_logger.assert_called_with(e)
