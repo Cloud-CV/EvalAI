@@ -127,6 +127,24 @@ class TestWithAWSClients(BaseTestCase):
         super(TestWithAWSClients, self).setup()
 
         self.logger = logging.getLogger(__name__)
+        
+        self.policy = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": "ecr:*",
+                "Resource": "arn:aws:ecr:{}:{}:repository/{}".format(
+                    self.aws_keys.get("AWS_REGION"), self.aws_keys.get("AWS_ACCOUNT_ID"), "TestRepo"
+                ),
+            },
+            {
+                "Effect": "Allow",
+                "Action": ["ecr:GetAuthorizationToken"],
+                "Resource": "*",
+            },
+        ],
+    }
 
     @mock.patch("base.utils.get_boto3_client")
     def test_get_or_create_ecr_repository_when_repository_exists(self, client):
@@ -206,7 +224,11 @@ class TestWithAWSClients(BaseTestCase):
         client.return_value["Credentials"]["AccessKeyId"] = keyid
         
         response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
-        client.get_federation_token.assert_called()
+        client.get_federation_token.assert_called_with(
+            Name="testTeam",
+            Policy=json.dumps(policy),
+            DurationSeconds=43200,
+        )
         '''
         print(response)
         del response["Credentials"]["Expiration"]
