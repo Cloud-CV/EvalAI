@@ -2,6 +2,8 @@ import boto3
 import logging
 import os
 import mock
+import random
+import string
 
 from allauth.account.models import EmailAddress
 from challenges.models import Challenge
@@ -149,15 +151,23 @@ class TestWithAWSClients(BaseTestCase):
         get_client.return_value = client
         err_message = {"Error": {"Code": 406}}
         e = ClientError(err_message, "test")
-        client.return_value = e
+        client.side_effect = e
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         print(response)
         mock_logger.assert_called_with(e)
     '''
 
     @mock.patch("base.utils.get_boto3_client")
-    def test_create_federated_user(self, client):
-        client.return_value = self.sts_client
+    @mock.patch("boto3.client")
+    def test_create_federated_user(self, mock_client, mock_get_client):
+        client = mock_client("sts", region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"), aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"), aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),)
+        mock_get_client.return_value = client
+        keyid = ''.join(random.choices(string.ascii_uppercase + string.digits, k=13))
+        secretkey = ''.join(random.choices(string.ascii_letters + string.digits + "/", k=31))
+        token = ''.join(random.choices(string.ascii_letters + string.digits + "/", k=104))
+        userid = ''.join(random.choices(string.digits, k=12))
+        arn = "arn:aws:sts::"+userid+":federated-user/testTeam"
+        '''
         expected = {
             'Credentials': {
                 'AccessKeyId': 'AKIAIOSFODNN7EXAMPLE',
@@ -175,8 +185,30 @@ class TestWithAWSClients(BaseTestCase):
                 'HTTPHeaders': {'server': 'amazon.com'}, 'RetryAttempts': 0
             }
         }
-
+        '''
+        expected = {
+            'Credentials': {
+                'AccessKeyId': keyid,
+                'SecretAccessKey': secretkey,
+                'SessionToken': token,
+            },
+            'FederatedUser': {
+                'FederatedUserId': userid+':testTeam',
+                'Arn': arn
+            },
+            'PackedPolicySize': 6,
+            'ResponseMetadata': {
+                'RequestId': 'c6104cbe-af31-11e0-8154-cbc7ccf896c7',
+                'HTTPStatusCode': 200,
+                'HTTPHeaders': {'server': 'amazon.com'}, 'RetryAttempts': 0
+            }
+        }
+        client.return_value["Credentials"]["AccessKeyId"] = keyid
+        
         response = utils.create_federated_user("testTeam", "testRepo", self.aws_keys)
+        client.get_federation_token.assert_called()
+        '''
         print(response)
         del response["Credentials"]["Expiration"]
         assert response == expected
+        '''
