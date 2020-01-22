@@ -9,6 +9,7 @@ from evalai.dramatiq_conf import broker
 dramatiq.set_broker(broker)
 
 
+@mock_sqs
 class TestDramatiqWorker(TestCase):
 
     @classmethod
