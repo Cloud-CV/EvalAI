@@ -1,3 +1,4 @@
+import dramatiq
 import os
 
 from dramatiq.middleware import AgeLimit, TimeLimit, Callbacks, Pipelines, Prometheus, Retries
