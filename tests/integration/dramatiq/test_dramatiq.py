@@ -2,14 +2,12 @@ import time
 from unittest import TestCase
 
 import dramatiq
-from moto import mock_sqs
 
 from evalai.dramatiq_conf import broker
 
 dramatiq.set_broker(broker)
 
 
-@mock_sqs
 class TestDramatiqWorker(TestCase):
 
     def setUp(self):
