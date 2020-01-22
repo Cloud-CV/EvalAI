@@ -138,7 +138,7 @@ class TestWithAWSClients(BaseTestCase):
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         expected = self.ecr_client.describe_repositories(repositoryNames=["TestRepo"])
         assert response == (expected["repositories"][0], True)
-
+    '''
     @mock.patch("base.utils.get_boto3_client")
     @mock.patch("logging.Logger.exception")
     @mock.patch("botocore.client")
@@ -150,7 +150,7 @@ class TestWithAWSClients(BaseTestCase):
         response = utils.get_or_create_ecr_repository("TestRepo", self.aws_keys)
         print(response)
         mock_logger.assert_called_with(e)
-        
+    '''
 
     @mock.patch("base.utils.get_boto3_client")
     def test_create_federated_user(self, client):
