@@ -2,6 +2,7 @@ import time
 from unittest import TestCase
 
 import dramatiq
+import pytest
 from moto import mock_sqs
 
 from evalai.dramatiq_conf import broker
@@ -9,13 +10,15 @@ from evalai.dramatiq_conf import broker
 dramatiq.set_broker(broker)
 
 
-@mock_sqs
-class TestDramatiqWorker(TestCase):
+@pytest.fixture
+def worker():
+    worker = dramatiq.Worker(broker)
+    worker.start()
+    yield worker
+    worker.stop()
 
-    @classmethod
-    def setUpClass(cls):
-        worker = dramatiq.Worker(broker)
-        worker.start()
+
+class TestDramatiqWorker(TestCase):
 
     def setUp(self):
         self.db = []  # Dummy database to perform operations
@@ -26,10 +29,8 @@ class TestDramatiqWorker(TestCase):
 
     def dummy_method(self, data):
         self.db.append(data)
-        print("Task completed")
-        print(self.db)
 
-    def test_enqueue_and_process_message(self):
+    def test_enqueue_and_process_message(self, worker):
         message = self.dummy_task.send(self.dummy_data)
 
         # wait for task to complete
@@ -41,7 +42,7 @@ class TestDramatiqWorker(TestCase):
         # verify task success
         self.assertEqual(self.db, [self.dummy_data])
 
-    def test_enqueue_and_process_multiple_messages(self):
+    def test_enqueue_and_process_multiple_messages(self, worker):
         data_list = [i for i in range(self.n_messages)]
 
         @dramatiq.actor(queue_name=self.queue_name)
