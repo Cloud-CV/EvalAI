@@ -1,11 +1,9 @@
-import time
-from unittest import TestCase
-
 import dramatiq
 import pytest
-from moto import mock_sqs
+import time
 
 from evalai.dramatiq_conf import broker
+from unittest import TestCase
 
 dramatiq.set_broker(broker)
 
