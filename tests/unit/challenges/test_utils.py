@@ -7,6 +7,7 @@ import random
 import string
 
 from allauth.account.models import EmailAddress
+from botocore.exceptions import ClientError
 from challenges.models import Challenge
 from datetime import timedelta
 from django.conf import settings
@@ -17,11 +18,6 @@ from moto import mock_ecr, mock_sts
 from rest_framework.test import APIClient, APITestCase
 
 import challenges.utils as utils
-
-'''
-from botocore.exceptions import ClientError
-import botocore.client
-'''
 
 
 class BaseTestCase(APITestCase):
