@@ -4,8 +4,6 @@ import os
 import mock
 
 from allauth.account.models import EmailAddress
-#from botocore.exceptions import ClientError
-#import botocore.client
 from challenges.models import Challenge
 from datetime import timedelta
 from django.conf import settings
@@ -17,6 +15,10 @@ from rest_framework.test import APIClient, APITestCase
 
 import challenges.utils as utils
 
+'''
+from botocore.exceptions import ClientError
+import botocore.client
+'''
 
 class BaseTestCase(APITestCase):
     def setUp(self):
