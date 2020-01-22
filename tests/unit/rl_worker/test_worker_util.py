@@ -78,7 +78,7 @@ class MakeRequestTestClass(BaseTestClass):
         self.assertEqual(expected, response)
 
     @responses.activate
-    @mock.patch("scripts.workers.worker_util.logger.info")
+    @mock.patch("scripts.workers.worker_utils.logger.info")
     def test_make_request_when_url_is_invalid(self, mock_logger):
         invalid_url = "invalid-url"
         responses.add(
@@ -92,7 +92,7 @@ class MakeRequestTestClass(BaseTestClass):
         mock_logger.assert_called_with("The worker is not able to establish connection with EvalAI")
 
 
-@mock.patch("scripts.workers.worker_util.EvalAI_Interface.make_request")
+@mock.patch("scripts.workers.worker_utils.EvalAI_Interface.make_request")
 class APICallsTestClass(BaseTestClass):
     def setUp(self):
         super(APICallsTestClass, self).setUp()
