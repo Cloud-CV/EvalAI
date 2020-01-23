@@ -342,13 +342,13 @@
                             utilities.hideLoader();
                         },
                         onError: function(response) {
-                            if ($state.current.title == "Participate") {
-                            var error = response.data;                            
+                            var error = response.data; 
+                            if ($state.current.title == "Participate") {                           
                             $rootScope.notify("error", error.detail);
+                            }
                             vm.emailVerification = false;
                             vm.emailError = error.detail;
                             utilities.hideLoader();
-                            }
                         }
                     };
                     utilities.sendRequest(parameters);
