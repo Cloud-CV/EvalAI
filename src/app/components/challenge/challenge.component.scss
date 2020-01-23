@@ -1,27 +1,33 @@
 @import './variables.scss';
 @import './mixins.scss';
 
+.challenge-flex {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: calc(100% - 223px);
+  float: right;
+  &.center {
+    float: none;
+    margin: 0 auto;
+    text-align: left;
+    overflow: hidden;
+  }
+}
+
+.challenge-content {
+  flex: 1;
+  min-height: 100vh;
+}
+
+.web-container {
+  padding-top: 70px;
+  overflow-x: hidden;
+}
+
 .challenge-container {
-  width: 83.5%;
   margin: 0 auto;
   margin-bottom:50px;
-  padding-top: 70px;
-}
-
-@include screen-medium {
-  .challenge-container {
-    width: 90%;
-  }
-}
-
-@include screen-small {
-  .challenge-container {
-    width: 95%;
-  }
-}
-
-.mid-container {
-  background-color: #fafafa;
 }
 
 .card-content p {
@@ -61,4 +67,10 @@
 .top-card-container ul.inline-list li {
   margin: 0 40px 1.5% 0;
   min-height: 40px;
+}
+
+@media only screen and (max-width: $med-screen) {
+  .challenge-flex {
+    width: 100%;
+  }
 }

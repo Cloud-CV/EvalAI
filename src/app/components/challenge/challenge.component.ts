@@ -84,7 +84,7 @@ export class ChallengeComponent implements OnInit {
    */
   constructor(@Inject(DOCUMENT) document: any, private router: Router, private route: ActivatedRoute,
               private apiService: ApiService, private globalService: GlobalService,
-              private challengeService: ChallengeService, private authService: AuthService,
+              private challengeService: ChallengeService, public authService: AuthService,
               private endpointsService: EndpointsService, private meta: Meta) { }
 
   /**
