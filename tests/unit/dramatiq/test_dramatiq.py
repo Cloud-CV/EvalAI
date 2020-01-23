@@ -43,8 +43,10 @@ class TestDramatiqWorker(TestCase):
         def dummy_method(data):
             self.db.append(data)
 
-        messages = [self.dummy_task.send(data) for data in data_list]
-        time.sleep(2)  # wait for task to finish
+        messages = []
+        for data in data_list:
+            messages.append(self.dummy_task.send(data))
+            time.sleep(0.5)  # Wait for previous task to finish
 
         # verify all messages are sent to correct queue
         for message in messages:
