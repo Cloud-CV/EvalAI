@@ -51,7 +51,7 @@
                 <i *ngIf="authService.canShowPassword" class="fa fa-eye-slash pointer"></i>
             </span>
       <label for="password" [class.active]="ispasswordFocused">
-        <strong>Password-minlength:8 required</strong>
+        <strong>Password (Minimum 8 Characters) *</strong>
         <span [style.color]="color">{{' ' + message}}</span>
       </label>
       <div class="wrn-msg text-highlight"
