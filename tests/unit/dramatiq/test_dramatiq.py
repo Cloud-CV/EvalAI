@@ -15,11 +15,11 @@ class TestDramatiqWorker(TestCase):
         self.dummy_data = {"test_field": "test_data"}
         self.queue_name = "dramatiq_test_queue"
         self.dummy_task = dramatiq.actor(self.dummy_method, queue_name=self.queue_name)
-        # self.worker = dramatiq.Worker(broker)
-        # elf.worker.start()
+        self.worker = dramatiq.Worker(broker)
+        self.worker.start()
 
-    # def tearDown(self):
-        # self.worker.stop()
+    def tearDown(self):
+        self.worker.stop()
 
     def dummy_method(self, data):
         self.db.append(data)
