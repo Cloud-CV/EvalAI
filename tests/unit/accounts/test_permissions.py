@@ -48,4 +48,3 @@ class HasVerifiedEmailTest(BaseAPITestClass):
         test_view = None
         test_has_verified_email = HasVerifiedEmail()
         self.assertFalse(test_has_verified_email.has_permission(test_request, test_view))
-        
