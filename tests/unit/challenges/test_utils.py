@@ -1,8 +1,8 @@
 import boto3
 import json
 import logging
-import os
 import mock
+import os
 
 from allauth.account.models import EmailAddress
 from botocore.exceptions import ClientError
