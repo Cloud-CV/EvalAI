@@ -158,10 +158,10 @@ class URLFormatTestCase(BaseTestClass):
         self.assertEqual(returned_url, expected_url)
 
 
+@mock.patch("scripts.workers.remote_submission_worker.process_submission_message")
 class ProcessSubmissionCallback(BaseTestClass):
     @mock.patch("scripts.workers.remote_submission_worker.logger.info")
-    @mock.patch("scripts.workers.remote_submission_worker.process_submission_message")
-    def test_process_submission_callback(self, mock_process_submission_message, mock_logger):
+    def test_process_submission_callback(self, mock_logger, mock_process_submission_message):
         message = {
             "challenge_pk": self.challenge_pk,
             "phase_pk": self.challenge_phase_pk,
@@ -173,8 +173,7 @@ class ProcessSubmissionCallback(BaseTestClass):
         mock_process_submission_message.assert_called_with(message)
 
     @mock.patch("scripts.workers.remote_submission_worker.logger.exception")
-    @mock.patch("scripts.workers.remote_submission_worker.process_submission_message")
-    def test_process_submission_callback_with_exception(self, mock_process_submission_message, mock_logger):
+    def test_process_submission_callback_with_exception(self, mock_logger, mock_process_submission_message):
         message = {
             "challenge_pk": self.challenge_pk,
             "phase_pk": self.challenge_phase_pk,
