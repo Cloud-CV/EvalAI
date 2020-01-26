@@ -55,7 +55,7 @@ class EvalAI_Interface:
         url = self.return_url_per_environment(url)
         data = {"receipt_handle": receipt_handle}
         response = self.make_request(url, "POST", data)  # noqa
-        return response.status_code
+        return response
 
     def get_submission_by_pk(self, submission_pk):
         url = URLS.get("get_submission_by_pk").format(submission_pk)
