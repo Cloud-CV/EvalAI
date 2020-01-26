@@ -182,7 +182,7 @@ describe('Unit tests for dashboard controller', function () {
                 },
             ];
             vm = createController();
-            expect(vm.hostTeamCount).toEqual(successResponse.results.length);
+            expect(vm.hostTeamCount).toEqual(successResponse.length);
         });
 
         it('403 backend error on getting host team details `hosts/challenge_host_team/`', function () {
@@ -235,7 +235,7 @@ describe('Unit tests for dashboard controller', function () {
                 },
             ];
             vm = createController();
-            expect(vm.participatedTeamCount).toEqual(successResponse.results.length);
+            expect(vm.participatedTeamCount).toEqual(successResponse.length);
         });
 
         it('403 backend error on getting participated team details `participants/participant_team`', function () {
