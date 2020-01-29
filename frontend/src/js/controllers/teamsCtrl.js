@@ -180,7 +180,7 @@
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_p": vm.team.name,
+                "team_name": vm.team.name,
                 "team_url": vm.team.url
             };
             parameters.token = userKey;

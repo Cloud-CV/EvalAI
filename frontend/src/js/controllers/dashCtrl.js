@@ -99,7 +99,7 @@
                 var status = response.status;
                 var details = response.data;
                 if (status == 200) {
-                    vm.hostTeamCount = details.results.length;
+                    vm.hostTeamCount = details.count;
                 }
             },
             onError: function(response) {
@@ -131,7 +131,7 @@
                 var status = response.status;
                 var details = response.data;
                 if (status == 200) {
-                    vm.participatedTeamCount = details.results.length;
+                    vm.participatedTeamCount = details.count;
                 }
             },
             onError: function(response) {
