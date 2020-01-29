@@ -168,19 +168,19 @@ describe('Unit tests for dashboard controller', function () {
             isHostTeam = true;
             isParticipantTeam = null;
             successResponse = [
-                    {
-                        id: 1,
-                        team_name: "Host team name 1",
-                        created_by: "user 1",
-                        team_url: "https://team1.url"
-                    },
-                    {
-                        id: 2,
-                        team_name: "Host team name 2",
-                        created_by: "user 2",
-                        team_url: "https://team2.url"
-                    },
-                ];
+                {
+                    id: 1,
+                    team_name: "Host team name 1",
+                    created_by: "user 1",
+                    team_url: "https://team1.url"
+                },
+                {
+                    id: 2,
+                    team_name: "Host team name 2",
+                    created_by: "user 2",
+                    team_url: "https://team2.url"
+                },
+            ];
             vm = createController();
             expect(vm.hostTeamCount).toEqual(successResponse.count);
         });
@@ -221,19 +221,19 @@ describe('Unit tests for dashboard controller', function () {
             isHostTeam = null;
             isParticipantTeam = true;
             successResponse = [
-                    {
-                        id: 1,
-                        team_name: "Participants team name 1",
-                        created_by: "user 1",
-                        team_url: "https://team1.url"
-                    },
-                    {
-                        id: 2,
-                        team_name: "Participants team name 2",
-                        created_by: "user 2",
-                        team_url: "https://team2.url"
-                    },
-                ]
+                {
+                    id: 1,
+                    team_name: "Participants team name 1",
+                    created_by: "user 1",
+                    team_url: "https://team1.url"
+                },
+                {
+                    id: 2,
+                    team_name: "Participants team name 2",
+                    created_by: "user 2",
+                    team_url: "https://team2.url"
+                },
+            ];
             vm = createController();
             expect(vm.participatedTeamCount).toEqual(successResponse.count);
         });
