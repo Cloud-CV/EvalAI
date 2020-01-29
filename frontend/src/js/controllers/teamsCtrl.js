@@ -25,6 +25,7 @@
         vm.isPrev = '';
         vm.team.error = false;
         vm.showPagination = false;
+        vm.participantTeamId = null;
 
         // loader for existng teams// loader for exisiting teams
         vm.isExistLoader = false;
@@ -179,7 +180,7 @@
             parameters.url = 'participants/participant_team';
             parameters.method = 'POST';
             parameters.data = {
-                "team_name": vm.team.name,
+                "team_p": vm.team.name,
                 "team_url": vm.team.url
             };
             parameters.token = userKey;
@@ -370,8 +371,8 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    vm.team.name = response.data.team_name;
-                    vm.team.url = response.data.team_url;
+                    vm.team.pname = response.data.team_name;
+                    vm.team.purl = response.data.team_url;
                 },
                 onError: function(response) {
                     var error = response.data['error'];
@@ -395,8 +396,8 @@
             parameters.url = 'participants/participant_team/' + vm.participantTeamId;
             parameters.method = 'PATCH';
             parameters.data = {
-                "team_name": vm.team.name,
-                "team_url": vm.team.url
+                "team_name": vm.team.pname,
+                "team_url": vm.team.purl
             };
             parameters.token = userKey;
             parameters.callback = {
