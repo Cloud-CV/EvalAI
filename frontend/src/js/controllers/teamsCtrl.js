@@ -371,8 +371,8 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    vm.team.pname = response.data.team_name;
-                    vm.team.purl = response.data.team_url;
+                    vm.team.participantName = response.data.team_name;
+                    vm.team.participantNameUrl = response.data.team_url;
                 },
                 onError: function(response) {
                     var error = response.data['error'];
@@ -396,8 +396,8 @@
             parameters.url = 'participants/participant_team/' + vm.participantTeamId;
             parameters.method = 'PATCH';
             parameters.data = {
-                "team_name": vm.team.pname,
-                "team_url": vm.team.purl
+                "team_name": vm.team.participantName,
+                "team_url": vm.team.participantNameUrl
             };
             parameters.token = userKey;
             parameters.callback = {

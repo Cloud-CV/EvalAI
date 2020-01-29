@@ -257,8 +257,8 @@ describe('Unit tests for teams controller', function () {
             `participants/participant_team`', function () {;
                 success = true;
                 successResponse = response;
-                vm.team.pname = "Team Name";
-                vm.team.purl = "https://team.url";
+                vm.team.participantName = "Team Name";
+                vm.team.participantNameUrl = "https://team.url";
                 vm.createNewTeam();
                 expect(vm.isExistLoader).toBeTruthy();
                 expect(vm.loaderTitle).toEqual('');
@@ -384,8 +384,8 @@ describe('Unit tests for teams controller', function () {
             var ev = new Event('click');
             vm.showMdDialog(ev, participantTeamId);
             expect(vm.participantTeamId).toEqual(participantTeamId);
-            expect(vm.team.pname).toEqual(successResponse.team_name);
-            expect(vm.team.purl).toEqual(successResponse.team_url);
+            expect(vm.team.participantName).toEqual(successResponse.team_name);
+            expect(vm.team.participantNameUrl).toEqual(successResponse.team_url);
         });
 
         it('backend error', function () {
