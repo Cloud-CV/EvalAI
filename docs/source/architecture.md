@@ -6,7 +6,7 @@ EvalAI helps researchers, students, and data scientists to create, collaborate, 
 
 #### Django
 
-Django is the heart of the application, which powers our backend. We use Django version 1.11.18.
+Django is the heart of the application, which powers our backend. We use Django version 1.11.23.
 
 #### Django Rest Framework
 
