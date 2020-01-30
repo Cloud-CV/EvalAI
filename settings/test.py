@@ -26,16 +26,24 @@ CACHES = {
     "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}
 }
 
-THIRD_PARTY_APPS += ["django_dramatiq"]
-INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + OUR_APPS
+THIRD_PARTY_APPS += ["django_dramatiq"]  # noqa: ignore=F405
+INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + OUR_APPS  # noqa: ignore=F405
 
 DRAMATIQ_BROKER = {
     "BROKER": "dramatiq_sqs.SQSBroker",
     "OPTIONS": {
-        "endpoint_url": os.environ.get("AWS_SQS_ENDPOINT_URL", "http://localhost:9324"),
-        "region_name": os.environ.get("AWS_DEFAULT_REGION", "elasticmq"),
-        "aws_access_key_id": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
-        "aws_secret_access_key": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+        "endpoint_url": os.environ.get(  # noqa: ignore=F405
+            "AWS_SQS_ENDPOINT_URL", "http://localhost:9324",
+        ),
+        "region_name": os.environ.get(  # noqa: ignore=F405
+            "AWS_DEFAULT_REGION", "elasticmq",
+        ),
+        "aws_access_key_id": os.environ.get(  #noqa: ignore=F405
+            "AWS_ACCESS_KEY_ID", "x",
+        ),
+        "aws_secret_access_key": os.environ.get(  # noqa: ignore=F405
+            "AWS_SECRET_ACCESS_KEY", "x"
+        ),
     },
     "MIDDLEWARE": [
         "dramatiq.middleware.Prometheus",
