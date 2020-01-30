@@ -26,6 +26,9 @@ CACHES = {
     "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}
 }
 
+THIRD_PARTY_APPS += ["django_dramatiq"]
+INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + OUR_APPS
+
 DRAMATIQ_BROKER = {
     "BROKER": "dramatiq_sqs.SQSBroker",
     "OPTIONS": {
