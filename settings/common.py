@@ -73,7 +73,7 @@ THIRD_PARTY_APPS = [
     "django_filters",
 ]
 
-INSTALLED_APPS = DEFAULT_APPS + OUR_APPS + THIRD_PARTY_APPS
+INSTALLED_APPS = DEFAULT_APPS + THIRD_PARTY_APPS + OUR_APPS
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",

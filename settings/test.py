@@ -26,4 +26,23 @@ CACHES = {
     "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}
 }
 
+DRAMATIQ_BROKER = {
+    "BROKER": "dramatiq_sqs.SQSBroker",
+    "OPTIONS": {
+        "endpoint_url": os.environ.get("AWS_SQS_ENDPOINT_URL", "http://localhost:9324"),
+        "region_name": os.environ.get("AWS_DEFAULT_REGION", "elasticmq"),
+        "aws_access_key_id": os.environ.get("AWS_ACCESS_KEY_ID", "x"),
+        "aws_secret_access_key": os.environ.get("AWS_SECRET_ACCESS_KEY", "x"),
+    },
+    "MIDDLEWARE": [
+        "dramatiq.middleware.Prometheus",
+        "dramatiq.middleware.AgeLimit",
+        "dramatiq.middleware.TimeLimit",
+        "dramatiq.middleware.Callbacks",
+        "dramatiq.middleware.Retries",
+        "django_dramatiq.middleware.AdminMiddleware",
+        "django_dramatiq.middleware.DbConnectionsMiddleware",
+    ],
+}
+
 TEST = True
