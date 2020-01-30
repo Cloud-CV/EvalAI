@@ -38,7 +38,7 @@ DRAMATIQ_BROKER = {
         "region_name": os.environ.get(  # noqa: ignore=F405
             "AWS_DEFAULT_REGION", "elasticmq",
         ),
-        "aws_access_key_id": os.environ.get(  #noqa: ignore=F405
+        "aws_access_key_id": os.environ.get(  # noqa: ignore=F405
             "AWS_ACCESS_KEY_ID", "x",
         ),
         "aws_secret_access_key": os.environ.get(  # noqa: ignore=F405
