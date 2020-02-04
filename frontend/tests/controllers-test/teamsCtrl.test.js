@@ -257,8 +257,8 @@ describe('Unit tests for teams controller', function () {
             `participants/participant_team`', function () {;
                 success = true;
                 successResponse = response;
-                vm.team.participantName = "Team Name";
-                vm.team.participantNameUrl = "https://team.url";
+                vm.team.name = "Team Name";
+                vm.team.url = "https://team.url";
                 vm.createNewTeam();
                 expect(vm.isExistLoader).toBeTruthy();
                 expect(vm.loaderTitle).toEqual('');
@@ -327,6 +327,31 @@ describe('Unit tests for teams controller', function () {
         });
     });
 
+    describe('Unit tests for confirmMemberDelete function', function () {
+        beforeEach(function () {
+            spyOn($mdDialog, 'show').and.callFake(function () {
+                var deferred = $injector.get('$q').defer();
+                return deferred.promise;
+            });
+        });
+
+        it('open dialog to confirm delete', function () {
+            var participantTeamId = 1;
+            var MemberId = 1;
+            var ev = new Event('$click');
+            var confirm = $mdDialog.confirm()
+                .title('Would you like to this member?')
+                .textContent('Note: This action will remove this member from the team.')
+                .ariaLabel('Lucky day')
+                .targetEvent(ev)
+                .ok('Yes')
+                .cancel("No");
+            vm.confirmMemberDelete(ev, participantTeamId, MemberId);
+            expect($mdDialog.show).toHaveBeenCalledWith(confirm);
+        });
+    });
+
+
     describe('Unit tests for inviteOthers function', function () {
         beforeEach(function () {
             spyOn($mdDialog, 'show').and.callFake(function () {
@@ -384,8 +409,8 @@ describe('Unit tests for teams controller', function () {
             var ev = new Event('click');
             vm.showMdDialog(ev, participantTeamId);
             expect(vm.participantTeamId).toEqual(participantTeamId);
-            expect(vm.team.participantName).toEqual(successResponse.team_name);
-            expect(vm.team.participantNameUrl).toEqual(successResponse.team_url);
+            expect(vm.team.name).toEqual(successResponse.team_name);
+            expect(vm.team.url).toEqual(successResponse.team_url);
         });
 
         it('backend error', function () {

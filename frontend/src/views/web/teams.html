@@ -31,7 +31,9 @@
                             </div>
                             <div class="collapsible-body">
                                 <h6><b>Team Members:</b></h6>
-                                <p ng-repeat="member in value.members">{{member.member_name}}</p>
+                                <p ng-repeat="member in value.members">{{member.member_name}}  
+                                    <a class="show-member-title pointer" ng-click="teams.confirmMemberDelete($event, value.id, member.member_id)"><i class="fa fa-trash list-icon text-highlight w-300 right"></i></a>
+                                </p>
                             </div>
                         </li>
                     </ul>

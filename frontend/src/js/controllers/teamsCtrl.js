@@ -25,7 +25,6 @@
         vm.isPrev = '';
         vm.team.error = false;
         vm.showPagination = false;
-        vm.participantTeamId = null;
 
         // loader for existng teams// loader for exisiting teams
         vm.isExistLoader = false;
@@ -245,6 +244,7 @@
 
         };
 
+        // Delete participant along with members
         vm.confirmDelete = function(ev, participantTeamId) {
             ev.stopPropagation();
             // Appending dialog to document.body to cover sidenav in docs app
@@ -325,6 +325,87 @@
             });
         };
 
+// Delete only a particular member
+vm.confirmMemberDelete = function(ev, ParticipantTeamId, MemberId) {
+    ev.stopPropagation();
+    // Appending dialog to document.body to cover sidenav in docs app
+    var confirm = $mdDialog.confirm()
+        .title('Would you like to remove this member?')
+        .textContent('Note: This action will remove this member from the team.')
+        .ariaLabel('Lucky day')
+        .targetEvent(ev)
+        .ok('Yes')
+        .cancel("No");
+
+    $mdDialog.show(confirm).then(function() {
+        vm.startLoader();
+        var parameters = {};
+        parameters.url = 'participants/participant_team/' + ParticipantTeamId + '/participant/' + MemberId;
+        parameters.method = 'DELETE';
+        parameters.data = {};
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function() {
+
+                vm.team.error = false;
+                $rootScope.notify("info", "You have removed the member successfully");
+
+                var parameters = {};
+                parameters.url = 'participants/participant_team';
+                parameters.method = 'GET';
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var details = response.data;
+                        if (status == 200) {
+                            vm.existTeam = details;
+
+
+                            // condition for pagination
+                            if (vm.existTeam.next === null) {
+                                vm.isNext = 'disabled';
+                                vm.currentPage = vm.existTeam.count / 10;
+                            } else {
+                                vm.isNext = '';
+                                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+                            }
+
+                            if (vm.existTeam.previous === null) {
+                                vm.isPrev = 'disabled';
+                            } else {
+                                vm.isPrev = '';
+                            }
+
+
+                            if (vm.existTeam.count === 0) {
+
+                                vm.showPagination = false;
+                                vm.paginationMsg = "No team exists for now. Start by creating a new team!";
+                            } else {
+                                vm.showPagination = true;
+                                vm.paginationMsg = "";
+                            }
+                        }
+
+                        vm.stopLoader();
+                    }
+                };
+                utilities.sendRequest(parameters);
+            },
+            onError: function(response) {
+                var error = response.data['error'];
+                vm.stopLoader();
+                $rootScope.notify("error", error);
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
+    }, function() {
+    });
+};
+    // End of delete member
 
         vm.inviteOthers = function(ev, participantTeamId) {
             ev.stopPropagation();
@@ -371,8 +452,8 @@
             parameters.token = userKey;
             parameters.callback = {
                 onSuccess: function(response) {
-                    vm.team.participantName = response.data.team_name;
-                    vm.team.participantNameUrl = response.data.team_url;
+                    vm.team.name = response.data.team_name;
+                    vm.team.url = response.data.team_url;
                 },
                 onError: function(response) {
                     var error = response.data['error'];
@@ -396,8 +477,8 @@
             parameters.url = 'participants/participant_team/' + vm.participantTeamId;
             parameters.method = 'PATCH';
             parameters.data = {
-                "team_name": vm.team.participantName,
-                "team_url": vm.team.participantNameUrl
+                "team_name": vm.team.name,
+                "team_url": vm.team.url
             };
             parameters.token = userKey;
             parameters.callback = {
