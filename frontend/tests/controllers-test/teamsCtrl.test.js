@@ -340,7 +340,7 @@ describe('Unit tests for teams controller', function () {
             var MemberId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.confirm()
-                .title('Would you like to this member?')
+                .title('Would you like to remove this member?')
                 .textContent('Note: This action will remove this member from the team.')
                 .ariaLabel('Lucky day')
                 .targetEvent(ev)
