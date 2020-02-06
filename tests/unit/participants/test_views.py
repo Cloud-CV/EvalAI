@@ -580,6 +580,11 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
         self.participant = Participant.objects.create(
             user=self.user, status=Participant.SELF, team=self.participant_team
         )
+        self.user = User.objects.create(
+            username="user",
+            email="user@platform.com",
+            password="user_password",
+        )
 
         self.user2 = User.objects.create(
             username="user2",
@@ -606,7 +611,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk,
-                "participant_pk": self.participant2.pk + 1,
+                "participant_pk": self.user2.pk + 1,
             },
         )
 
@@ -621,7 +626,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk + 1,
-                "participant_pk": self.participant2.pk,
+                "participant_pk": self.user2.pk,
             },
         )
 
@@ -636,7 +641,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk,
-                "participant_pk": self.participant.pk,
+                "participant_pk": self.user.pk,
             },
         )
 
@@ -655,7 +660,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk,
-                "participant_pk": self.participant2.pk,
+                "participant_pk": self.user2.pk,
             },
         )
 
@@ -693,7 +698,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk,
-                "participant_pk": self.participant2.pk,
+                "participant_pk": self.user2.pk,
             },
         )
         response = self.client.delete(self.url, {})
