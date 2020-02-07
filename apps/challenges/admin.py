@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin, messages
+
 from django.contrib.admin.helpers import ActionForm
 
 from base.admin import ImportExportTimeStampedAdmin
@@ -11,6 +12,8 @@ from .aws_utils import (
     start_workers,
     stop_workers,
 )
+
+from .admin_filters import ChallengeFilter
 
 from .models import (
     Challenge,
@@ -52,6 +55,7 @@ class ChallengeAdmin(ImportExportTimeStampedAdmin):
         "task_def_arn",
     )
     list_filter = (
+        ChallengeFilter,
         "published",
         "is_registration_open",
         "enable_forum",
