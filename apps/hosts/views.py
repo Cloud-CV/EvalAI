@@ -254,6 +254,47 @@ def remove_self_from_challenge_host_team(request, challenge_host_team_pk):
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
 
+@api_view(["DELETE"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def delete_challenge_host_from_team(request, challenge_host_team_pk, challenge_host_pk):
+    """
+    Deletes a challenge_host from a challenge_host_Team
+    """
+    try:
+        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+    except ChallengeHostTeam.DoesNotExist:
+        response_data = {"error": "ChallengeHostTeam does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    try:
+        challenge_host = ChallengeHost.objects.get(pk=challenge_host_pk)
+    except ChallengeHost.DoesNotExist:
+        response_data = {"error": "ChallengeHost does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if challenge_host_team.created_by == request.user:
+
+        if (
+            challenge_host.user == request.user
+        ):  # when the user tries to remove himself
+            response_data = {
+                "error": "You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!"
+            }  # noqa: ignore=E501
+            return Response(
+                response_data, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+        else:
+            challenge_host.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+        response_data = {
+            "error": "Sorry, you do not have permissions to remove this challenge host"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+
 @api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))

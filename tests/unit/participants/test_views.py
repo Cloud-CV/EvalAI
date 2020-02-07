@@ -79,11 +79,13 @@ class GetParticipantTeamTest(BaseAPITestClass):
                 "team_url": self.participant_team.team_url,
                 "members": [
                     {
+                        "id": self.participant.pk,
                         "member_name": self.participant.user.username,
                         "status": self.participant.status,
                         "member_id": self.participant.user.id,
                     },
                     {
+                        "id": self.participant2.pk,
                         "member_name": self.participant2.user.username,
                         "status": self.participant2.status,
                         "member_id": self.participant2.user.id,
@@ -167,11 +169,13 @@ class GetParticularParticipantTeam(BaseAPITestClass):
             "team_url": self.participant_team.team_url,
             "members": [
                 {
+                    "id": self.participant.pk,
                     "member_name": self.participant.user.username,
                     "status": self.participant.status,
                     "member_id": self.participant.user.id,
                 },
                 {
+                    "id": self.participant2.pk,
                     "member_name": self.participant2.user.username,
                     "status": self.participant2.status,
                     "member_id": self.participant2.user.id,

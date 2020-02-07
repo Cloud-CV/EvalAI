@@ -14,6 +14,12 @@ class BaseAPITestClass(APITestCase):
             password="secret_password",
         )
 
+        self.invite_user = User.objects.create(
+            username="otheruser",
+            email="other@platform.com",
+            password="other_secret_password",
+        )
+
         self.challenge_host_team = ChallengeHostTeam.objects.create(
             team_name="Test Challenge Host Team", created_by=self.user
         )
@@ -90,4 +96,20 @@ class TestStringMethods(BaseAPITestClass):
             "/api/hosts/challenge_host_teams/"
             + str(self.challenge_host_team.pk)
             + "/invite",
+        )
+
+        url = reverse_lazy(
+            "hosts:delete_challenge_host_from_team",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk,
+                "challenge_host_pk": self.invite_user.pk,
+            },
+        )
+        self.assertEqual(
+            url,
+            "/api/hosts/challenge_host_team/"
+            + str(self.challenge_host_team.pk)
+            + "/challenge_host/"
+            + str(self.invite_user.pk)
+            + "/delete",
         )

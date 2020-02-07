@@ -385,6 +385,87 @@
             }, function() {});
         };
 
+// Delete a particular host
+vm.confirmMemberDelete = function(ev, hostTeamId, HostId) {
+    ev.stopPropagation();
+    // Appending dialog to document.body to cover sidenav in docs app
+    var confirm = $mdDialog.confirm()
+        .title('Would you like to remove this member?')
+        .textContent('Note: This action will remove this member from the team.')
+        .ariaLabel('Lucky day')
+        .targetEvent(ev)
+        .ok('Yes')
+        .cancel("No");
+
+    $mdDialog.show(confirm).then(function() {
+        vm.startLoader();
+        var parameters = {};
+        parameters.url = 'hosts/challenge_host_team/' + hostTeamId + '/challenge_host/' + HostId + '/delete';
+        parameters.method = 'DELETE';
+        parameters.data = {};
+        parameters.token = userKey;
+        parameters.callback = {
+            onSuccess: function() {
+
+                vm.team.error = false;
+                $rootScope.notify("info", "You have removed the member successfully");
+
+                var parameters = {};
+                parameters.url = 'hosts/challenge_host_team';
+                parameters.method = 'GET';
+                parameters.token = userKey;
+                parameters.callback = {
+                    onSuccess: function(response) {
+                        var status = response.status;
+                        var details = response.data;
+                        if (status == 200) {
+                            vm.existTeam = details;
+
+
+                            // condition for pagination
+                            if (vm.existTeam.next === null) {
+                                vm.isNext = 'disabled';
+                                vm.currentPage = vm.existTeam.count / 10;
+                            } else {
+                                vm.isNext = '';
+                                vm.currentPage = parseInt(vm.existTeam.next.split('page=')[1] - 1);
+                            }
+
+                            if (vm.existTeam.previous === null) {
+                                vm.isPrev = 'disabled';
+                            } else {
+                                vm.isPrev = '';
+                            }
+
+
+                            if (vm.existTeam.count === 0) {
+
+                                vm.showPagination = false;
+                                vm.paginationMsg = "No team exists for now. Start by creating a new team!";
+                            } else {
+                                vm.showPagination = true;
+                                vm.paginationMsg = "";
+                            }
+                        }
+
+                        vm.stopLoader();
+                    }
+                };
+                utilities.sendRequest(parameters);
+            },
+            onError: function(response) {
+                var error = response.data['error'];
+                vm.stopLoader();
+                $rootScope.notify("error", error);
+            }
+        };
+
+        utilities.sendRequest(parameters);
+
+    }, function() {
+    });
+};
+
         vm.inviteOthers = function(ev, hostTeamId) {
             ev.stopPropagation();
             // Appending dialog to document.body 
