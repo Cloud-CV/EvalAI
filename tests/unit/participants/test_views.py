@@ -576,20 +576,9 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
 class DeleteParticipantFromTeamTest(BaseAPITestClass):
     def setUp(self):
         super(DeleteParticipantFromTeamTest, self).setUp()
-        self.user = User.objects.create(
-            username="user",
-            email="user@platform.com",
-            password="user_password",
-        )
+
         self.participant = Participant.objects.create(
-            user=self.user, 
-            status=Participant.SELF, 
-            team=self.participant_team
-        )
-        self.user1 = User.objects.create(
-            username="user1",
-            email="user1@platform.com",
-            password="user1_password",
+            user=self.user, status=Participant.SELF, team=self.participant_team
         )
 
         self.user2 = User.objects.create(
@@ -617,7 +606,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk,
-                "participant_pk": self.user1.pk ,
+                "participant_pk": self.participant2.pk + 1,
             },
         )
 
@@ -632,7 +621,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk + 1,
-                "participant_pk": self.user2.pk,
+                "participant_pk": self.participant2.pk,
             },
         )
 
@@ -647,7 +636,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk,
-                "participant_pk": self.user.pk,
+                "participant_pk": self.participant.pk,
             },
         )
 
@@ -666,7 +655,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk,
-                "participant_pk": self.user2.pk,
+                "participant_pk": self.participant2.pk,
             },
         )
 
@@ -704,7 +693,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk,
-                "participant_pk": self.user2.pk,
+                "participant_pk": self.participant2.pk,
             },
         )
         response = self.client.delete(self.url, {})

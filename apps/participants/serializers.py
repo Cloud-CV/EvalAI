@@ -66,10 +66,9 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
     member_name = serializers.SerializerMethodField()
     member_id = serializers.SerializerMethodField()
-
     class Meta:
         model = Participant
-        fields = ("member_name", "status", "member_id")
+        fields = ("member_name", "status", "member_id", "id")
 
     def get_member_name(self, obj):
         return obj.user.username
@@ -77,6 +76,8 @@ class ParticipantSerializer(serializers.ModelSerializer):
     def get_member_id(self, obj):
         return obj.user.id
 
+    def get_participant_id(self, obj):
+        return obj.id
 
 class ParticipantTeamDetailSerializer(serializers.ModelSerializer):
     """Serializer for Participant Teams and Participant Combined."""

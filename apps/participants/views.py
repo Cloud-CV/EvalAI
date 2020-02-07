@@ -278,9 +278,9 @@ def delete_participant_from_team(request, participant_team_pk, participant_pk):
     except ParticipantTeam.DoesNotExist:
         response_data = {"error": "ParticipantTeam does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
-    user = User.objects.get(id=participant_pk)
+
     try:
-        participant = Participant.objects.get(user=user, team=participant_team)
+        participant = Participant.objects.get(pk=participant_pk)
         print(participant)
     except Participant.DoesNotExist:
         response_data = {"error": "Participant does not exist"}
