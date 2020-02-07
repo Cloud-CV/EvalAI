@@ -641,7 +641,7 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
             "participants:delete_participant_from_team",
             kwargs={
                 "participant_team_pk": self.participant_team.pk,
-                "participant_pk": self.user2.pk,
+                "participant_pk": self.user.pk,
             },
         )
 
