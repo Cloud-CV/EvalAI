@@ -576,14 +576,15 @@ class InviteParticipantToTeamTest(BaseAPITestClass):
 class DeleteParticipantFromTeamTest(BaseAPITestClass):
     def setUp(self):
         super(DeleteParticipantFromTeamTest, self).setUp()
-
-        self.participant = Participant.objects.create(
-            user=self.user, status=Participant.SELF, team=self.participant_team
-        )
         self.user = User.objects.create(
             username="user",
             email="user@platform.com",
             password="user_password",
+        )
+        self.participant = Participant.objects.create(
+            user=self.user, 
+            status=Participant.SELF, 
+            team=self.participant_team
         )
         self.user1 = User.objects.create(
             username="user1",
