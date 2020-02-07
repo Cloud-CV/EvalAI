@@ -580,10 +580,15 @@ class DeleteParticipantFromTeamTest(BaseAPITestClass):
         self.participant = Participant.objects.create(
             user=self.user, status=Participant.SELF, team=self.participant_team
         )
-        self.user1 = User.objects.create(
+        self.user = User.objects.create(
             username="user",
             email="user@platform.com",
             password="user_password",
+        )
+        self.user1 = User.objects.create(
+            username="user1",
+            email="user1@platform.com",
+            password="user1_password",
         )
 
         self.user2 = User.objects.create(
