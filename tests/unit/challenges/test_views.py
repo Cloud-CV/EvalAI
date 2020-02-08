@@ -33,7 +33,6 @@ from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from jobs.serializers import ChallengeSubmissionManagementSerializer
-import logging
 
 
 class BaseAPITestClass(APITestCase):
