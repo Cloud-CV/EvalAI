@@ -33,6 +33,7 @@ from participants.models import Participant, ParticipantTeam
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from jobs.models import Submission
 from jobs.serializers import ChallengeSubmissionManagementSerializer
+import logging
 
 
 class BaseAPITestClass(APITestCase):
@@ -2090,6 +2091,115 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         response = self.client.post(self.url, self.data, format="multipart")
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    
+    def test_max_submissions_per_month_existing(self):
+        self.zip_file = open(join(settings.BASE_DIR, "examples",
+                              "maxsub_example", "test_zip_file.zip"), "rb")
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+
+        self.zip_configuration = ChallengeConfiguration.objects.create(
+            user=self.user,
+            challenge=self.challenge,
+            zip_configuration=SimpleUploadedFile(
+                self.zip_file.name,
+                self.zip_file.read(),
+                content_type="application/zip",
+            ),
+            stdout_file=None,
+            stderr_file=None,
+        )
+        self.client.force_authenticate(user=self.user)
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.url = reverse_lazy(
+            "challenges:create_challenge_using_zip_file",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {"zip_configuration": self.input_zip_file},
+                format="multipart",
+            )
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        for zipTestPhase in ChallengePhase.objects.all(): 
+            max_per_month_field = zipTestPhase._meta.get_field('max_submissions_per_month')
+            max_per_month = max_per_month_field.value_from_object(zipTestPhase)
+            id_field = zipTestPhase._meta.get_field('name')
+            id_val = id_field.value_from_object(zipTestPhase)
+            print(id_val)
+            if (id_val == 'max_sub_test'): 
+                self.assertEqual(max_per_month, 345)
+
+    def test_max_submissions_per_month_autofill(self):
+        self.zip_file = open(join(settings.BASE_DIR, "examples",
+                              "example1", "test_zip_file.zip"), "rb")
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+
+        self.zip_configuration = ChallengeConfiguration.objects.create(
+            user=self.user,
+            challenge=self.challenge,
+            zip_configuration=SimpleUploadedFile(
+                self.zip_file.name,
+                self.zip_file.read(),
+                content_type="application/zip",
+            ),
+            stdout_file=None,
+            stderr_file=None,
+        )
+        self.client.force_authenticate(user=self.user)
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.url = reverse_lazy(
+            "challenges:create_challenge_using_zip_file",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {"zip_configuration": self.input_zip_file},
+                format="multipart",
+            )
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        for zipTestPhase in ChallengePhase.objects.all(): 
+            max_per_month_field = zipTestPhase._meta.get_field('max_submissions_per_month')
+            max_per_month = max_per_month_field.value_from_object(zipTestPhase)
+
+            max_field = zipTestPhase._meta.get_field('max_submissions')
+            max_total = max_field.value_from_object(zipTestPhase)
+
+            self.assertEqual(max_per_month, max_total)
+    
+
 
     def test_create_challenge_phase_with_no_data(self):
         del self.data["name"]
