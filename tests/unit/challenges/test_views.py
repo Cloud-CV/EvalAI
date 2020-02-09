@@ -2094,10 +2094,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
     def test_max_submissions_per_month_existing(self):
         self.zip_file = open(
             join(
-                settings.BASE_DIR,
-                "examples",
-                "maxsub_example",
-                "test_zip_file.zip",
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip",
             ),
             "rb",
         )
@@ -2149,9 +2146,8 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             max_per_month = max_per_month_field.value_from_object(zipTestPhase)
             id_field = zipTestPhase._meta.get_field("name")
             id_val = id_field.value_from_object(zipTestPhase)
-            print(id_val)
-            if id_val == "max_sub_test":
-                self.assertEqual(max_per_month, 345)
+            if id_val == "Challenge Name of the challenge phase":
+                self.assertEqual(max_per_month, 1000)
 
     def test_max_submissions_per_month_autofill(self):
         self.zip_file = open(
