@@ -599,14 +599,6 @@ class DeleteChallengeHostFromTeamTest(BaseAPITestClass):
             permissions=ChallengeHost.ACCEPTED,
         )
 
-        self.url = reverse_lazy(
-            "hosts:delete_challenge_host_from_team",
-            kwargs={
-                "challenge_host_team_pk": self.challenge_host_team.pk,
-                "challenge_host_pk": self.invite_user.pk,
-            },
-        )
-
     def test_delete_challenge_host_when_does_not_exist_in_team(self):
         self.url = reverse_lazy(
             "hosts:delete_challenge_host_from_team",
