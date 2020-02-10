@@ -5,9 +5,11 @@
             <ul class="hide-on-med-and-down">
                 <li><a class="waves-effect waves-dark main-header-link evalai-logo" ui-sref="home" ui-sref-active="active"><img src="dist/images/evalai-logo-single.png"></a></li>
                 <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.challenge-main">All Challenges</a></li>
+                <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai.readthedocs.io/en/latest/" target="_blank">Docs</a></li>
                 <li ng-if="!isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank">Forum</a></li>
                 <!-- show after authenticate user -->
                 <li ng-if="isAuth"><a class="waves-effect waves-dark main-header-link" ui-sref="web.dashboard" ui-sref-active="active">Dashboard</a></li>
+                <li ng-if="isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai.readthedocs.io/en/latest/" target="_blank">Docs</a></li>
                 <li ng-if="isAuth"><a class="waves-effect waves-dark main-header-link" href="https://evalai-forum.cloudcv.org/" target="_blank">Forum</a></li>
             </ul>
             <ul class="right hide-on-med-and-down">

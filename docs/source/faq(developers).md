@@ -9,7 +9,7 @@ Alternatively, if you come across a new bug on the site, please file a new issue
 
 Please refer to [Technologies Used](https://evalai.readthedocs.io/en/latest/architecture.html)
 
-#### Q. Where could I learn Github Commands?
+#### Q. Where could I learn GitHub Commands?
 
 Refer to [GitHub Guide](https://help.github.com/articles/git-and-github-learning-resources/).
 

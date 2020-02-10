@@ -73,7 +73,11 @@ def download_file_and_publish_submission_message(
             submission = serializer.instance
 
             # publish messages in the submission worker queue
-            publish_submission_message(challenge_phase.challenge.pk, challenge_phase.pk, submission.pk)
+            publish_submission_message({
+                "challenge_pk": challenge_phase.challenge.pk,
+                "phase_pk": challenge_phase.pk,
+                "submission_pk": submission.pk
+            })
             logger.info("Message published to submission worker successfully!")
             shutil.rmtree(downloaded_file['temp_dir_path'])
     except Exception as e:
