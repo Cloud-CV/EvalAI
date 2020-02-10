@@ -14,7 +14,7 @@ class BaseAPITestClass(APITestCase):
             password="secret_password",
         )
 
-        self.invite_user = User.objects.create(
+        self.invite_host_user = User.objects.create(
             username="otheruser",
             email="other@platform.com",
             password="other_secret_password",
@@ -102,7 +102,7 @@ class TestStringMethods(BaseAPITestClass):
             "hosts:delete_challenge_host_from_team",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
-                "challenge_host_pk": self.invite_user.pk,
+                "challenge_host_pk": self.invite_host_user.pk,
             },
         )
         self.assertEqual(
@@ -110,6 +110,6 @@ class TestStringMethods(BaseAPITestClass):
             "/api/hosts/challenge_host_team/"
             + str(self.challenge_host_team.pk)
             + "/challenge_host/"
-            + str(self.invite_user.pk)
+            + str(self.invite_host_user.pk)
             + "/delete",
         )
