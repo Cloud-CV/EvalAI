@@ -607,7 +607,7 @@ class DeleteChallengeHostFromTeamTest(BaseAPITestClass):
             },
         )
 
-    def test_challenge_host_does_not_exist_in_team(self):
+    def test_delete_challenge_host_when_does_not_exist_in_team(self):
         self.url = reverse_lazy(
             "hosts:delete_challenge_host_from_team",
             kwargs={
@@ -622,7 +622,7 @@ class DeleteChallengeHostFromTeamTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_when_challenge_host_team_does_not_exist(self):
+    def test_delete_challenge_host_when_challenge_host_team_does_not_exist(self):
         self.url = reverse_lazy(
             "hosts:delete_challenge_host_from_team",
             kwargs={
@@ -637,7 +637,7 @@ class DeleteChallengeHostFromTeamTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_when_challenge_host_is_admin_and_wants_to_delete_himself(self):
+    def test_delete_challenge_host_when_challenge_host_is_admin_and_wants_to_delete_himself(self):
         self.url = reverse_lazy(
             "hosts:delete_challenge_host_from_team",
             kwargs={
@@ -654,7 +654,7 @@ class DeleteChallengeHostFromTeamTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_when_challenge_host_does_not_have_permissions_to_remove_another_challenge_host(
+    def test_delete_challenge_host_when_challenge_host_does_not_have_permissions_to_remove_another_challenge_host(
         self
     ):
         self.url = reverse_lazy(
@@ -664,7 +664,8 @@ class DeleteChallengeHostFromTeamTest(BaseAPITestClass):
                 "challenge_host_pk": self.challenge_host2.pk,
             },
         )
-
+    def setUp(self):
+        sum(DeleteChallengeHostFromTeamTest, self).setUp()
         self.user3 = User.objects.create(
             username="user3",
             email="user3@platform.com",
@@ -695,7 +696,7 @@ class DeleteChallengeHostFromTeamTest(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_when_a_challenge_host_is_successfully_removed_from_team(self):
+    def test_delete_challenge_host_when_a_challenge_host_is_successfully_removed_from_team(self):
         self.url = reverse_lazy(
             "hosts:delete_challenge_host_from_team",
             kwargs={

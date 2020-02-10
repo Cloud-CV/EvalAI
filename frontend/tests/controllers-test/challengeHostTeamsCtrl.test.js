@@ -415,7 +415,7 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
          it('open dialog to confirm delete', function () {
-            var challengeHostTeamId = 1;
+            var hostTeamId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove yourself?')
@@ -424,7 +424,7 @@ describe('Unit tests for challenge host team controller', function () {
                 .targetEvent(ev)
                 .ok('Yes')
                 .cancel("No");
-            vm.confirmDelete(ev, challengeHostTeamId);
+            vm.confirmDelete(ev, hostTeamId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
     });
@@ -438,8 +438,8 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
         it('open dialog to confirm delete', function () {
-            var challengeHostTeamId = 1;
-            var challengeHostId = 1;
+            var hostTeamId = 1;
+            var HostId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove this member?')
@@ -448,7 +448,7 @@ describe('Unit tests for challenge host team controller', function () {
                 .targetEvent(ev)
                 .ok('Yes')
                 .cancel("No");
-            vm.confirmMemberDelete(ev, challengeHostTeamId, challengeHostId);
+            vm.confirmMemberDelete(ev, hostTeamId, HostId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
     });
@@ -463,7 +463,7 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
          it('open dialog to invite others', function () {
-            var challengeHostTeamId = 1;
+            var HostId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.prompt()
                 .title('Add other members to your team')
@@ -473,7 +473,7 @@ describe('Unit tests for challenge host team controller', function () {
                 .targetEvent(ev)
                 .ok('Add')
                 .cancel('Cancel');
-            vm.inviteOthers(ev, challengeHostTeamId);
+            vm.inviteOthers(ev, HostId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
     });
