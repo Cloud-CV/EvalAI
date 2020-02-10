@@ -1032,6 +1032,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                             test_annotation_file.read(),
                             test_annotation_file_path,
                         )
+                if data.get('max_submissions_per_month', None) is None:
+                    data['max_submissions_per_month'] = data.get('max_submissions', None)
 
                 serializer = ChallengePhaseCreateSerializer(
                     data=data,
