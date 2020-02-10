@@ -599,28 +599,6 @@ class DeleteChallengeHostFromTeamTest(BaseAPITestClass):
             permissions=ChallengeHost.ACCEPTED,
         )
 
-        self.user3 = User.objects.create(
-            username="user3",
-            email="user3@platform.com",
-            password="user3_password",
-        )
-
-        EmailAddress.objects.create(
-            user=self.user3,
-            email="user3@platform.com",
-            primary=True,
-            verified=True,
-        )
-
-        self.challenge_host3 = ChallengeHost.objects.create(
-            user=self.user3,
-            team_name=self.challenge_host_team,
-            status=ChallengeHost.ACCEPTED,
-            permissions=ChallengeHost.ACCEPTED,
-        )
-
-        self.client.force_authenticate(user=self.user3)
-
         self.url = reverse_lazy(
             "hosts:delete_challenge_host_from_team",
             kwargs={
@@ -686,6 +664,28 @@ class DeleteChallengeHostFromTeamTest(BaseAPITestClass):
                 "challenge_host_pk": self.challenge_host2.pk,
             },
         )
+
+        self.user3 = User.objects.create(
+            username="user3",
+            email="user3@platform.com",
+            password="user3_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user3,
+            email="user3@platform.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host3 = ChallengeHost.objects.create(
+            user=self.user3,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ACCEPTED,
+        )
+
+        self.client.force_authenticate(user=self.user3)
 
         expected = {
             "error": "Sorry, you do not have permissions to remove this challenge host"
