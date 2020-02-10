@@ -84,7 +84,7 @@ If you are using EvalAI for hosting challenges, please cite the following techni
 }
 ```
 <p>
-    <a href="https://arxiv.org/abs/1902.03570"><img src="docs/source/_static/img/evalai-paper.jpg"/></a>
+    <a href="http://learningsys.org/sosp19/assets/papers/23_CameraReadySubmission_EvalAI_SOSP_2019%20(8)%20(1).pdf"><img src="docs/source/_static/img/evalai-paper.jpg"/></a>
 </p>
 
 ## Team
