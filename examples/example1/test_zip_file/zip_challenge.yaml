@@ -25,6 +25,7 @@ challenge_phases:
     codename: Challenge phase codename
     max_submissions_per_day: 100
     max_submissions: 1000
+    max_submissions_per_month: 345
 
 dataset_splits:
   - id: 1
