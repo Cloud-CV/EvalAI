@@ -475,7 +475,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             "hosts:get_challenge_host_delete",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
-                "challenge_host_pk": self.challenge_host2.pk + 1,
+                "challenge_host_pk": self.challenge_host3.pk + 1,
             },
         )
 
