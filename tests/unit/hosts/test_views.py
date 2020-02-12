@@ -521,7 +521,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         self
     ):
 
-         self.url = reverse_lazy(
+        self.url = reverse_lazy(
             "hosts:get_challenge_host_delete",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
