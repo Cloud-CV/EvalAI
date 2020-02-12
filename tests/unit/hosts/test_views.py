@@ -328,56 +328,56 @@ class CreateChallengeHostTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class GetParticularChallengeHost(BaseAPITestClass):
-    def setUp(self):
-        super(GetParticularChallengeHost, self).setUp()
-        self.url = reverse_lazy(
-            "hosts:get_challenge_host_details",
-            kwargs={
-                "challenge_host_team_pk": self.challenge_host_team.pk,
-                "pk": self.challenge_host.pk,
-            },
-        )
+# class GetParticularChallengeHost(BaseAPITestClass):
+#     def setUp(self):
+#         super(GetParticularChallengeHost, self).setUp()
+#         self.url = reverse_lazy(
+#             "hosts:get_challenge_host_details",
+#             kwargs={
+#                 "challenge_host_team_pk": self.challenge_host_team.pk,
+#                 "pk": self.challenge_host.pk,
+#             },
+#         )
 
-    def test_get_particular_challenge_host(self):
-        expected = {
-            "id": self.challenge_host.pk,
-            "user": self.challenge_host.user.username,
-            "team_name": self.challenge_host.team_name.pk,
-            "status": self.challenge_host.status,
-            "permissions": self.challenge_host.permissions,
-        }
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     def test_get_particular_challenge_host(self):
+#         expected = {
+#             "id": self.challenge_host.pk,
+#             "user": self.challenge_host.user.username,
+#             "team_name": self.challenge_host.team_name.pk,
+#             "status": self.challenge_host.status,
+#             "permissions": self.challenge_host.permissions,
+#         }
+#         response = self.client.get(self.url, {})
+#         self.assertEqual(response.data, expected)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_particular_challenge_host_does_not_exist(self):
-        self.url = reverse_lazy(
-            "hosts:get_challenge_host_details",
-            kwargs={
-                "challenge_host_team_pk": self.challenge_host_team.pk,
-                "pk": self.challenge_host.pk + 1,
-            },
-        )
-        expected = {"error": "ChallengeHost does not exist"}
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+#     def test_particular_challenge_host_does_not_exist(self):
+#         self.url = reverse_lazy(
+#             "hosts:get_challenge_host_details",
+#             kwargs={
+#                 "challenge_host_team_pk": self.challenge_host_team.pk,
+#                 "pk": self.challenge_host.pk + 1,
+#             },
+#         )
+#         expected = {"error": "ChallengeHost does not exist"}
+#         response = self.client.get(self.url, {})
+#         self.assertEqual(response.data, expected)
+#         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_particular_challenge_host_team_for_challenge_host_does_not_exist(
-        self
-    ):
-        self.url = reverse_lazy(
-            "hosts:get_challenge_host_details",
-            kwargs={
-                "challenge_host_team_pk": self.challenge_host_team.pk + 1,
-                "pk": self.challenge_host.pk,
-            },
-        )
-        expected = {"error": "ChallengeHostTeam does not exist"}
-        response = self.client.get(self.url, {})
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+#     def test_particular_challenge_host_team_for_challenge_host_does_not_exist(
+#         self
+#     ):
+#         self.url = reverse_lazy(
+#             "hosts:get_challenge_host_details",
+#             kwargs={
+#                 "challenge_host_team_pk": self.challenge_host_team.pk + 1,
+#                 "pk": self.challenge_host.pk,
+#             },
+#         )
+#         expected = {"error": "ChallengeHostTeam does not exist"}
+#         response = self.client.get(self.url, {})
+#         self.assertEqual(response.data, expected)
+#         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
 
 class UpdateParticularChallengeHost(BaseAPITestClass):
@@ -547,7 +547,6 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         )
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
 
     def test_particular_challenge_host_delete(self):
         response = self.client.delete(self.url, {})
