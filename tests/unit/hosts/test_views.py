@@ -242,17 +242,18 @@ class UpdateParticularChallengeHostTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
 
-class DeleteParticularChallengeHostTeam(BaseAPITestClass):
-    def setUp(self):
-        super(DeleteParticularChallengeHostTeam, self).setUp()
-        self.url = reverse_lazy(
-            "hosts:get_challenge_host_team_details",
-            kwargs={"pk": self.challenge_host_team.pk},
-        )
+# Commenting this part of code due to duplication.
+# class DeleteParticularChallengeHostTeam(BaseAPITestClass):
+#     def setUp(self):
+#         super(DeleteParticularChallengeHostTeam, self).setUp()
+#         self.url = reverse_lazy(
+#             "hosts:get_challenge_host_team_details",
+#             kwargs={"pk": self.challenge_host_team.pk},
+#         )
 
-    def test_particular_challenge_host_team_delete(self):
-        response = self.client.delete(self.url, {})
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+#     def test_particular_challenge_host_team_delete(self):
+#         response = self.client.delete(self.url, {})
+#         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class GetChallengeHostTest(BaseAPITestClass):
