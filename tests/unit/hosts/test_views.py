@@ -451,7 +451,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
     def test_delete_challenge_host_when_does_not_exist_in_team(self):
         self.url = reverse_lazy(
-            "hosts:delete_challenge_host_from_team",
+            "hosts:get_challenge_host_delete",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host2.pk + 1,
@@ -466,7 +466,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
     def test_delete_challenge_host_when_challenge_host_team_does_not_exist(self):
         self.url = reverse_lazy(
-            "hosts:delete_challenge_host_from_team",
+            "hosts:get_challenge_host_delete",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk + 1,
                 "challenge_host_pk": self.challenge_host2.pk,
@@ -481,7 +481,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
     def test_delete_challenge_host_when_challenge_host_is_admin_and_wants_to_delete_himself(self):
         self.url = reverse_lazy(
-            "hosts:delete_challenge_host_from_team",
+            "hosts:get_challenge_host_delete",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host.pk,
@@ -500,7 +500,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         self
     ):
         self.url = reverse_lazy(
-            "hosts:delete_challenge_host_from_team",
+            "hosts:get_challenge_host_delete",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host2.pk,
@@ -539,7 +539,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
     def test_delete_challenge_host_when_a_challenge_host_is_successfully_removed_from_team(self):
         self.url = reverse_lazy(
-            "hosts:delete_challenge_host_from_team",
+            "hosts:get_challenge_host_delete",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host2.pk,
