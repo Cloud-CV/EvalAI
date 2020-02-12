@@ -328,6 +328,7 @@ class CreateChallengeHostTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+#Commenting due to absence of url to these tests along with these two test cases are pointing to the same url name i.e get_challenge_host_details.
 # class GetParticularChallengeHost(BaseAPITestClass):
 #     def setUp(self):
 #         super(GetParticularChallengeHost, self).setUp()
@@ -549,6 +550,13 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_particular_challenge_host_delete(self):
+        self.url = reverse_lazy(
+            "hosts:get_challenge_host_delete",
+            kwargs={
+                "challenge_host_team_pk": self.challenge_host_team.pk,
+                "challenge_host_pk": self.challenge_host.pk,
+            },
+        )
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
