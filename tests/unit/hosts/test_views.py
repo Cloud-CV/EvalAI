@@ -380,50 +380,50 @@ class CreateChallengeHostTest(BaseAPITestClass):
 #         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
 
-class UpdateParticularChallengeHost(BaseAPITestClass):
-    def setUp(self):
-        super(UpdateParticularChallengeHost, self).setUp()
-        self.url = reverse_lazy(
-            "hosts:get_challenge_host_details",
-            kwargs={
-                "challenge_host_team_pk": self.challenge_host_team.pk,
-                "pk": self.challenge_host.pk,
-            },
-        )
-        self.data = {
-            "status": ChallengeHost.SELF,
-            "permissions": ChallengeHost.WRITE,
-        }
-        self.partial_update_data = {"status": ChallengeHost.DENIED}
+# class UpdateParticularChallengeHost(BaseAPITestClass):
+#     def setUp(self):
+#         super(UpdateParticularChallengeHost, self).setUp()
+#         self.url = reverse_lazy(
+#             "hosts:get_challenge_host_details",
+#             kwargs={
+#                 "challenge_host_team_pk": self.challenge_host_team.pk,
+#                 "pk": self.challenge_host.pk,
+#             },
+#         )
+#         self.data = {
+#             "status": ChallengeHost.SELF,
+#             "permissions": ChallengeHost.WRITE,
+#         }
+#         self.partial_update_data = {"status": ChallengeHost.DENIED}
 
-    def test_particular_challenge_host_partial_update(self):
-        expected = {
-            "id": self.challenge_host.pk,
-            "user": self.challenge_host.user.username,
-            "team_name": self.challenge_host.team_name.pk,
-            "status": ChallengeHost.DENIED,
-            "permissions": self.challenge_host.permissions,
-        }
-        response = self.client.patch(self.url, self.partial_update_data)
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     def test_particular_challenge_host_partial_update(self):
+#         expected = {
+#             "id": self.challenge_host.pk,
+#             "user": self.challenge_host.user.username,
+#             "team_name": self.challenge_host.team_name.pk,
+#             "status": ChallengeHost.DENIED,
+#             "permissions": self.challenge_host.permissions,
+#         }
+#         response = self.client.patch(self.url, self.partial_update_data)
+#         self.assertEqual(response.data, expected)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_particular_challenge_host_update(self):
-        expected = {
-            "id": self.challenge_host.pk,
-            "user": self.challenge_host.user.username,
-            "team_name": self.challenge_host.team_name.pk,
-            "status": ChallengeHost.SELF,
-            "permissions": ChallengeHost.WRITE,
-        }
-        response = self.client.put(self.url, self.data)
-        self.assertEqual(response.data, expected)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     def test_particular_challenge_host_update(self):
+#         expected = {
+#             "id": self.challenge_host.pk,
+#             "user": self.challenge_host.user.username,
+#             "team_name": self.challenge_host.team_name.pk,
+#             "status": ChallengeHost.SELF,
+#             "permissions": ChallengeHost.WRITE,
+#         }
+#         response = self.client.put(self.url, self.data)
+#         self.assertEqual(response.data, expected)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_particular_challenge_host_update_with_no_data(self):
-        self.data = {"status": ""}
-        response = self.client.put(self.url, self.data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+#     def test_particular_challenge_host_update_with_no_data(self):
+#         self.data = {"status": ""}
+#         response = self.client.put(self.url, self.data)
+#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class DeleteParticularChallengeHost(BaseAPITestClass):
