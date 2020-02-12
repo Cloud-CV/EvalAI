@@ -429,13 +429,6 @@ class UpdateParticularChallengeHost(BaseAPITestClass):
 class DeleteParticularChallengeHost(BaseAPITestClass):
     def setUp(self):
         super(DeleteParticularChallengeHost, self).setUp()
-        self.url = reverse_lazy(
-            "hosts:get_challenge_host_details",
-            kwargs={
-                "challenge_host_team_pk": self.challenge_host_team.pk,
-                "pk": self.challenge_host.pk,
-            },
-        )
 
         self.challenge_host = ChallengeHost.objects.create(
             user=self.user,
