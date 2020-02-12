@@ -450,6 +450,26 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             permissions=ChallengeHost.ACCEPTED,
         )
 
+        self.user3 = User.objects.create(
+            username="user3",
+            email="user3@platform.com",
+            password="user3_password",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user3,
+            email="user3@platform.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.challenge_host3 = ChallengeHost.objects.create(
+            user=self.user3,
+            team_name=self.challenge_host_team,
+            status=ChallengeHost.ACCEPTED,
+            permissions=ChallengeHost.ACCEPTED,
+        )
+
     def test_delete_challenge_host_when_does_not_exist_in_team(self):
         self.url = reverse_lazy(
             "hosts:get_challenge_host_delete",
@@ -500,32 +520,13 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
     def test_delete_challenge_host_when_challenge_host_does_not_have_permissions_to_remove_another_challenge_host(
         self
     ):
-        self.url = reverse_lazy(
+
+         self.url = reverse_lazy(
             "hosts:get_challenge_host_delete",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host2.pk,
             },
-        )
-
-        self.user3 = User.objects.create(
-            username="user3",
-            email="user3@platform.com",
-            password="user3_password",
-        )
-
-        EmailAddress.objects.create(
-            user=self.user3,
-            email="user3@platform.com",
-            primary=True,
-            verified=True,
-        )
-
-        self.challenge_host3 = ChallengeHost.objects.create(
-            user=self.user3,
-            team_name=self.challenge_host_team,
-            status=ChallengeHost.ACCEPTED,
-            permissions=ChallengeHost.ACCEPTED,
         )
 
         self.client.force_authenticate(user=self.user3)
