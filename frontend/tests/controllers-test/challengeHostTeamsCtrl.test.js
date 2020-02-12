@@ -439,7 +439,7 @@ describe('Unit tests for challenge host team controller', function () {
 
         it('open dialog to confirm delete', function () {
             var hostTeamId = 1;
-            var HostId = 1;
+            var hostId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove this member?')
@@ -448,7 +448,7 @@ describe('Unit tests for challenge host team controller', function () {
                 .targetEvent(ev)
                 .ok('Yes')
                 .cancel("No");
-            vm.confirmMemberDelete(ev, hostTeamId, HostId);
+            vm.confirmMemberDelete(ev, hostTeamId, hostId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
     });
@@ -463,7 +463,7 @@ describe('Unit tests for challenge host team controller', function () {
         });
 
          it('open dialog to invite others', function () {
-            var HostId = 1;
+            var hostId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.prompt()
                 .title('Add other members to your team')
@@ -473,7 +473,7 @@ describe('Unit tests for challenge host team controller', function () {
                 .targetEvent(ev)
                 .ok('Add')
                 .cancel('Cancel');
-            vm.inviteOthers(ev, HostId);
+            vm.inviteOthers(ev, hostId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
     });

@@ -386,7 +386,7 @@
         };
 
 // Delete a particular host
-vm.confirmMemberDelete = function(ev, hostTeamId, HostId) {
+vm.confirmMemberDelete = function(ev, hostTeamId, hostId) {
     ev.stopPropagation();
     // Appending dialog to document.body to cover sidenav in docs app
     var confirm = $mdDialog.confirm()
@@ -400,7 +400,7 @@ vm.confirmMemberDelete = function(ev, hostTeamId, HostId) {
     $mdDialog.show(confirm).then(function() {
         vm.startLoader();
         var parameters = {};
-        parameters.url = 'hosts/challenge_host_team/' + hostTeamId + '/challenge_host/' + HostId + '/delete';
+        parameters.url = 'hosts/challenge_host_team/' + hostTeamId + '/challenge_host/' + hostId;
         parameters.method = 'DELETE';
         parameters.data = {};
         parameters.token = userKey;

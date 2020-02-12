@@ -337,7 +337,7 @@ describe('Unit tests for teams controller', function () {
 
         it('open dialog to confirm delete', function () {
             var participantTeamId = 1;
-            var MemberId = 1;
+            var participantId = 1;
             var ev = new Event('$click');
             var confirm = $mdDialog.confirm()
                 .title('Would you like to remove this member?')
@@ -346,7 +346,7 @@ describe('Unit tests for teams controller', function () {
                 .targetEvent(ev)
                 .ok('Yes')
                 .cancel("No");
-            vm.confirmMemberDelete(ev, participantTeamId, MemberId);
+            vm.confirmMemberDelete(ev, participantTeamId, participantId);
             expect($mdDialog.show).toHaveBeenCalledWith(confirm);
         });
     });

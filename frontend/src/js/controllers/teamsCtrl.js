@@ -326,7 +326,7 @@
         };
 
 // Delete only a particular member
-vm.confirmMemberDelete = function(ev, ParticipantTeamId, MemberId) {
+vm.confirmMemberDelete = function(ev, participantTeamId, participantId) {
     ev.stopPropagation();
     // Appending dialog to document.body to cover sidenav in docs app
     var confirm = $mdDialog.confirm()
@@ -340,7 +340,7 @@ vm.confirmMemberDelete = function(ev, ParticipantTeamId, MemberId) {
     $mdDialog.show(confirm).then(function() {
         vm.startLoader();
         var parameters = {};
-        parameters.url = 'participants/participant_team/' + ParticipantTeamId + '/participant/' + MemberId;
+        parameters.url = 'participants/participant_team/' + participantTeamId + '/participant/' + participantId;
         parameters.method = 'DELETE';
         parameters.data = {};
         parameters.token = userKey;
