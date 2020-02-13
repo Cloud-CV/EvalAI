@@ -2091,7 +2091,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_max_submissions_per_month_existing(self):
+    def test_max_submissions_per_month_if_field_exist(self):
         self.zip_file = open(
             join(
                 settings.BASE_DIR, "examples", "example1", "test_zip_file.zip",
@@ -2149,7 +2149,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             if id_val == "Challenge Name of the challenge phase":
                 self.assertEqual(max_per_month, 1000)
 
-    def test_max_submissions_per_month_autofill(self):
+    def test_max_submissions_per_month_if_field_doesnt_exist(self):
         self.zip_file = open(
             join(
                 settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
