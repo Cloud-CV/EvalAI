@@ -1,6 +1,8 @@
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
+from .models import Profile
+
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -49,3 +51,20 @@ def get_auth_token(request):
 
     response_data = {"token": "{}".format(token)}
     return Response(response_data, status=status.HTTP_200_OK)
+
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def profile_picture(request): 
+    try: 
+        profile = Profile.objects.all().filter(user=request.user)
+        # TODO: see if this works
+        #user = User.objects.get(email=request.user.email)
+    except User.DoesNotExist: 
+        response_data = {"error": "This User account doesn't exist"}
+        Response(response_data, status.HTTP_404_NOT_FOUND)
+
+    current_picture = profile.user_avatar # TODO: replace with picture model
+    username = "test user name"
+    title = username + "'s avatar"
+    return render(request, 'profile_picture.html', {'title': title, 'username': username, 'current_picture': current_picture})

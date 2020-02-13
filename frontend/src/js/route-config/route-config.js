@@ -371,6 +371,17 @@
             authenticate: true
         };
 
+        var upload_picture = {
+            name: "web.upload-picture",
+            parent: "web",
+            url: "/upload-picture",
+            templateUrl: baseUrl + "/web/upload-picture.html",
+            title: "Upload Avatar",
+            controller: 'updateProfileCtrl',
+            controllerAs: 'updateProfile',
+            authenticate: true
+        }; 
+
         var contact_us = {
             name: "contact-us",
             url: "/contact",
@@ -515,6 +526,9 @@
         $stateProvider.state(contact_us);
         $stateProvider.state(challenge_invitation);
         $stateProvider.state(get_submission_related_files);
+
+
+        $stateProvider.state(upload_picture); 
 
         $urlRouterProvider.otherwise(function($injector, $location) {
             var state = $injector.get('$state');

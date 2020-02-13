@@ -4,7 +4,13 @@
         <div class="ev-md-container ev-card-panel ev-z-depth-5
             challenge-title-container">
             <div class="col s12 m3 l3 center">
+                <!-- TODO: add display and mod logic -->
                 <img src="dist/images/pro-pic.png" class="profile-pic">
+                <!-- 
+                        
+                <img src={{test_folder_variable}} class="profile-pic"> 
+                
+                -->
                 <div>{{profile.user.username}}</div>
                 <div class="text-light-black w-300">{{profile.user.email}}</div>
                 <br><br>
@@ -73,6 +79,17 @@
                     <li><a class="btn ev-btn-dark waves-effect waves-dark
                             grad-btn grad-btn-dark fs-14"
                             ui-sref="web.update-profile">Update Profile</a></li>
+
+
+                    <!-- This part is crucial --- migrate upload-picture to set it as a django template and redirect to that address from this entry point
+                    To match this template with the corresponding view function, rename the html to function name and place it under the folder
+                    -->
+                    <li><a class="btn ev-btn-dark waves-effect waves-dark
+                            grad-btn grad-btn-dark fs-14"
+                            ui-sref="web.upload-picture">Update Picture</a></li>
+
+
+                            
                 </ul>
             </div>
         </div>
