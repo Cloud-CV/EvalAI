@@ -486,7 +486,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
     def test_delete_challenge_host_when_challenge_host_team_does_not_exist(self):
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk + 1,
                 "pk": self.challenge_host2.pk,
@@ -501,7 +501,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
     def test_delete_challenge_host_when_challenge_host_is_admin_and_wants_to_delete_himself(self):
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "pk": self.challenge_host.pk,
@@ -521,7 +521,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
     ):
 
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "pk": self.challenge_host2.pk,
@@ -540,7 +540,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
     def test_delete_challenge_host_when_a_challenge_host_is_successfully_removed_from_team(self):
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "pk": self.challenge_host2.pk,
@@ -551,7 +551,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
     def test_particular_challenge_host_delete(self):
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "pk": self.challenge_host2.pk,
