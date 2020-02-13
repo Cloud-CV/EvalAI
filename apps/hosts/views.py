@@ -154,9 +154,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_delete(request, challenge_host_team_pk, challenge_host_pk):
     try:
-        challenge_host_team = ChallengeHostTeam.objects.get(
-            pk=challenge_host_team_pk
-        )
+        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
     except ChallengeHostTeam.DoesNotExist:
         response_data = {"error": "ChallengeHostTeam does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -197,16 +195,12 @@ def challenge_host_delete(request, challenge_host_team_pk, challenge_host_pk):
             response_data = serializer.data
             return Response(response_data, status=status.HTTP_200_OK)
         else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
         if challenge_host_team.created_by == request.user:
 
-            if (
-                challenge_host.user == request.user
-            ):  # when the user tries to remove himself
+            if (challenge_host.user == request.user):  # when the user tries to remove himself
                 response_data = {
                     "error": "You are not allowed to remove yourself since you are admin. Please delete the team if you want to do so!"
                 }  # noqa: ignore=E501
