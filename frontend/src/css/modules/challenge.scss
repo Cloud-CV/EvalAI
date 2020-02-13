@@ -22,6 +22,14 @@ a.active-challenge {
     box-sizing: border-box;
     border-bottom: 2px solid $highlight;
 }
+a.btn-card-detail:focus{
+    color: $dark-black;
+    display: block;
+    height: 40px;
+    box-sizing: border-box;
+    border-bottom: 2px solid $highlight;
+    background-color: white;
+}
 
 .ev-challenge-view {
     margin-top: 0px;
