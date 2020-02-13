@@ -471,7 +471,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
 
     def test_delete_challenge_host_when_does_not_exist_in_team(self):
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_detail",
+            "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "pk": self.challenge_host3.pk + 1,
