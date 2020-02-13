@@ -469,7 +469,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             permissions=ChallengeHost.ACCEPTED,
         )
 
-    def test_delete_challenge_host_when_does_not_exist_in_team(self):
+    def test_delete_challenge_host_when_challenge_host_does_not_exist(self):
         self.url = reverse_lazy(
             "hosts:get_challenge_host_details",
             kwargs={
@@ -499,7 +499,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_delete_challenge_host_when_challenge_host_is_admin_and_wants_to_delete_himself(self):
+    def test_delete_challenge_host_when_admin_tries_to_delete_himself(self):
         self.url = reverse_lazy(
             "hosts:get_challenge_host_details",
             kwargs={
@@ -516,7 +516,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    def test_delete_challenge_host_when_challenge_host_does_not_have_permissions_to_remove_another_challenge_host(
+    def test_delete_challenge_host_when_challenge_host_does_not_have_permission(
         self
     ):
 
@@ -538,7 +538,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_delete_challenge_host_when_a_challenge_host_is_successfully_removed_from_team(self):
+    def test_delete_challenge_host_success(self):
         self.url = reverse_lazy(
             "hosts:get_challenge_host_details",
             kwargs={
