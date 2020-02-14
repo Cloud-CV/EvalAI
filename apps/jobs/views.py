@@ -402,7 +402,7 @@ def change_submission_data_and_visibility(
             required=True,
         )
     ],
-    operation_id="Get_Leaderboard_Data",
+    operation_id="leaderboard",
     responses={
         status.HTTP_200_OK: openapi.Response(
             description="",
@@ -464,6 +464,12 @@ def change_submission_data_and_visibility(
 def leaderboard(request, challenge_phase_split_id):
     """
     Returns leaderboard for a corresponding Challenge Phase Split
+
+    - Arguments:
+        ``challenge_phase_split_id``: Primary key for the challenge phase split for which leaderboard is to be fetched
+
+    - Returns:
+        Leaderboard entry objects in a list
     """
 
     # check if the challenge exists or not
@@ -1190,12 +1196,12 @@ def get_submission_message_from_queue(request, queue_name):
     """
     API to fetch submission message from AWS SQS queue.
 
-    Path Parameters:
-     - ``queue_name``: AWS SQS queue name
+    - Arguments:
+        ``queue_name``: AWS SQS queue name
 
-    Response Schema:
-     - ``body``: The message body content
-     - ``receipt_handle``: The message receipt handle
+    - Returns:
+        ``body``: The message body content as a key-value pair
+        ``receipt_handle``: The message receipt handle
     """
     try:
         challenge = Challenge.objects.get(queue=queue_name)  # noqa
