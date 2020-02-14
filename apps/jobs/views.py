@@ -816,6 +816,41 @@ def get_submission_by_pk(request, submission_id):
         ),
     },
 )
+@swagger_auto_schema(
+    methods=["patch"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True,
+        )
+    ],
+    operation_id="update_submission",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "submission": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Submission ID"
+            ),
+            "job_name": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Job name for the running submission",
+            ),
+            "submission_status": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Updated status of submission from submitted i.e. RUNNING",
+            ),
+        },
+    ),
+    responses={
+        status.HTTP_200_OK: openapi.Response("{<updated submission-data>}"),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
 @api_view(["PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
