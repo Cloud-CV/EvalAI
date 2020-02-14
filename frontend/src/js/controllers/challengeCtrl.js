@@ -1891,10 +1891,9 @@
         vm.challengePhaseDialog = function(ev, phase) {
             vm.page.challenge_phase = phase;
             vm.page.max_submissions_per_day = phase.max_submissions_per_day;
-            vm.phaseStartDate = phase.start_date;
-            vm.phaseStartDate = moment(vm.phaseStartDate);
-            vm.phaseEndDate = phase.end_date;
-            vm.phaseEndDate = moment(vm.phaseEndDate);
+            vm.page.max_submissions_per_month = phase.max_submissions_per_month;
+            vm.phaseStartDate = moment(phase.start_date);
+            vm.phaseEndDate = moment(phase.end_date);
             vm.testAnnotationFile = null;
             vm.sanityCheckPass = true;
             vm.sanityCheck = "";
@@ -1918,6 +1917,7 @@
                 formData.append("start_date", vm.phaseStartDate.toISOString());
                 formData.append("end_date", vm.phaseEndDate.toISOString());
                 formData.append("max_submissions_per_day", vm.page.challenge_phase.max_submissions_per_day);
+                formData.append("max_submissions_per_month", vm.page.challenge_phase.max_submissions_per_month);
                 formData.append("max_submissions", vm.page.challenge_phase.max_submissions);
                 if (vm.testAnnotationFile) {
                     formData.append("test_annotation", vm.testAnnotationFile);
@@ -2006,6 +2006,63 @@
             }, function() {
             // Nope
             });
+        };
+
+        // Edit Challenge Start and End Date
+        vm.challengeDateDialog = function(ev) {
+            vm.challengeStartDate = moment(vm.page.start_date);
+            vm.challengeEndDate = moment(vm.page.end_date);
+            $mdDialog.show({
+                scope: $scope,
+                preserveScope: true,
+                targetEvent: ev,
+                templateUrl: 'dist/views/web/challenge/edit-challenge/edit-challenge-date.html',
+                escapeToClose: false
+            });
+        };
+
+        vm.editChallengeDate = function(editChallengeDateForm) {
+            if (editChallengeDateForm) {
+                var challengeHostList = utilities.getData("challengeCreator");
+                for (var challenge in challengeHostList) {
+                    if (challenge == vm.challengeId) {
+                        vm.challengeHostId = challengeHostList[challenge];
+                        break;
+                    }
+                }
+                parameters.url = "challenges/challenge_host_team/" + vm.challengeHostId + "/challenge/" + vm.challengeId;
+                parameters.method = 'PATCH';
+                if (new Date(vm.challengeStartDate).valueOf() < new Date(vm.challengeEndDate).valueOf()) {
+                    parameters.data = {
+                        "start_date": vm.challengeStartDate,
+                        "end_date": vm.challengeEndDate
+                    };
+                    parameters.callback = {
+                        onSuccess: function(response) {
+                            var status = response.status;
+                            utilities.hideLoader();
+                            if (status === 200) {
+                                vm.page.start_date = vm.challengeStartDate.format("MMM D, YYYY h:mm:ss A");
+                                vm.page.end_date = vm.challengeEndDate.format("MMM D, YYYY h:mm:ss A");
+                                $mdDialog.hide();
+                                $rootScope.notify("success", "The challenge start and end date is successfully updated!");
+                            }
+                        },
+                        onError: function(response) {
+                            utilities.hideLoader();
+                            $mdDialog.hide();
+                            var error = response.data;
+                            $rootScope.notify("error", error);
+                        }
+                    };
+                    utilities.showLoader();
+                    utilities.sendRequest(parameters);
+                } else {
+                    $rootScope.notify("error", "The challenge start date cannot be same or greater than end date.");
+                }
+            } else {
+                $mdDialog.hide();
+            }
         };
 
         $scope.$on('$destroy', function() {
