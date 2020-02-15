@@ -2,7 +2,7 @@ import logging
 import os
 import signal
 
-from worker_utils import EvalAI_Interface
+from .worker_utils import EvalAI_Interface
 
 from kubernetes import client, config
 
