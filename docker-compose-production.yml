@@ -68,3 +68,14 @@ services:
     command: ["python", "-m", "scripts.workers.remote_submission_worker"]
     env_file:
       - docker/prod/docker_remote_worker.env
+
+  rl-worker:
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/evalai-staging-rl-worker:${COMMIT_ID}
+    env_file:
+      - docker/prod/docker_rl_worker.env
+    build:
+      context: ./
+      dockerfile: docker/prod/rl-worker/Dockerfile
+    volumes:
+      - ~/.kube:/root/.kube/
+    command: ["python", "-m", "scripts.workers.rl_submission_worker"]
