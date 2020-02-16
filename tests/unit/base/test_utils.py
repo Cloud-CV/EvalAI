@@ -141,8 +141,8 @@ class TestSlackNotification(BaseAPITestClass):
         self.assertEqual(type(response), requests.models.Response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-class TestEncodeDecodeData(BaseAPITestClass):
 
+class TestEncodeDecodeData(BaseAPITestClass):
     def setUp(self):
         super(TestEncodeDecodeData, self).setUp()
 
