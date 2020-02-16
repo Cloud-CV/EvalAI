@@ -147,5 +147,5 @@ class TestEncodeDecodeData(BaseAPITestClass):
         super(TestEncodeDecodeData, self).setUp()
 
     def test_encode_decode_data(self):
-        self.testString = 'Test String'.encode('utf-8')
+        self.testString = ['Test String'.encode('utf-8')]
         self.assertEqual(decode_data(encode_data(self.testString)), self.testString)
