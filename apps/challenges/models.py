@@ -128,12 +128,6 @@ class Challenge(TimeStampedModel):
     task_def_arn = models.CharField(
         null=True, blank=True, max_length=2048, default=""
     )
-    # Field to store the kubernetes cluster config for the challenge
-    evaluation_cluster_config = models.FileField(
-        null=True,
-        blank=True,
-        upload_to=RandomFileName("evaluation_cluster_config"),
-    )
 
     class Meta:
         app_label = "challenges"
