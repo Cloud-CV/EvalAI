@@ -56,6 +56,11 @@ urlpatterns = [
         name="get_submission_message_from_queue",
     ),
     url(
+        r"^count/queues/(?P<queue_name>[\w-]+)/$",
+        views.get_total_messages_in_queue,
+        name="get_total_messages_in_queue",
+    ),
+    url(
         r"^submission_files/$",
         views.get_signed_url_for_submission_related_file,
         name="get_signed_url_for_submission_related_file",

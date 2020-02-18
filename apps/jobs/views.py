@@ -1361,6 +1361,79 @@ def delete_submission_message_from_queue(request, queue_name):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="queue_name",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Queue Name",
+            required=True,
+        )
+    ],
+    operation_id="get_total_messages_in_queue",
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            description="dict object for count",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "total_messages": openapi.Schema(
+                        type=openapi.TYPE_INTEGER,
+                        description="SQS message queue dict object",
+                    ),
+                },
+            ),
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_total_messages_in_queue(request, queue_name):
+    """
+    API to fetch total number of messages in AWS SQS queue.
+
+    - Arguments:
+        ``queue_name``: AWS SQS queue name
+
+    - Returns:
+        ``total messages``: The total messages a key-value pair in a dict
+    """
+    try:
+        challenge = Challenge.objects.get(queue=queue_name)  # noqa
+    except Challenge.DoesNotExist:
+        response_data = {
+            "error": "Challenge with queue name {} does not exist".format(
+                queue_name
+            )
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access this resource"
+        }
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+
+    queue = get_or_create_sqs_queue_object(queue_name)
+    try:
+        total_messages = int(queue.attributes.get('ApproximateNumberOfMessages', "0"))
+        response_data = {
+            "total_messages": total_messages,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+    except botocore.exceptions.ClientError as ex:
+        response_data = {"error": ex}
+        logger.exception("Exception raised: {}".format(ex))
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
