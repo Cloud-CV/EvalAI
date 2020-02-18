@@ -9,19 +9,13 @@ from django.utils import timezone
 
 from allauth.account.models import EmailAddress
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient 
+from rest_framework.test import APITestCase, APIClient
 
 from challenges.models import Challenge
 from hosts.models import ChallengeHost, ChallengeHostTeam
 from participants.models import ParticipantTeam
 from jobs.sender import get_or_create_sqs_queue, publish_submission_message
 
-'''
-    publish submission message (to different queue)
-    test fetch message api
-    test delete message api
-    test get count message api
-'''
 
 class BaseAPITestClass(APITestCase):
     def setUp(self):
@@ -81,12 +75,13 @@ class BaseAPITestClass(APITestCase):
         )
 
         self.client.force_authenticate(user=self.host_user)
-        #self.client.force_authenticate(user=self.user)
+        # self.client.force_authenticate(user=self.user)
         settings.DEBUG = True
+
 
 class TestSQSQueueAPI(BaseAPITestClass):
     def setUp(self):
-        super(TestSQSQueueAPI, self).setUp() 
+        super(TestSQSQueueAPI, self).setUp()
 
         self.queue = get_or_create_sqs_queue(self.challenge.queue)
         time.sleep(0.5)
@@ -100,7 +95,7 @@ class TestSQSQueueAPI(BaseAPITestClass):
         }
 
     def test_get_submission_message_from_queue(self):
-        #submit message to queue
+        # submit message to queue
         self.message['submission_pk'] += 1
         publish_submission_message(self.message)
 
@@ -111,13 +106,13 @@ class TestSQSQueueAPI(BaseAPITestClass):
             },
         )
 
-        #get message from sqs queue
+        # get message from sqs queue
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['body'], self.message)
-    
+
     def test_get_total_messages_in_queue(self):
-        #submit message to queue
+        # submit message to queue
         self.url = reverse_lazy(
             "jobs:get_total_messages_in_queue",
             kwargs={
@@ -134,12 +129,7 @@ class TestSQSQueueAPI(BaseAPITestClass):
             self.message['submission_pk'] += 1
             publish_submission_message(self.message)
 
-        #get message from sqs queue
+        # get message from sqs queue
         response = self.client.get(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['total_messages'], self.expected_count)
-        
-    
-
-    
- 
