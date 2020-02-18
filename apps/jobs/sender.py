@@ -29,7 +29,7 @@ def get_or_create_sqs_queue(queue_name):
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "x"),
         )
         # Use default queue name in dev and test environment
-        #queue_name = "evalai_submission_queue"
+        # queue_name = "evalai_submission_queue"
     else:
         sqs = boto3.resource(
             "sqs",
