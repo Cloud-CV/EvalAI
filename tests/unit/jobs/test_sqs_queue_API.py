@@ -1,8 +1,6 @@
-import time
 from datetime import timedelta
 
 from django.core.urlresolvers import reverse_lazy
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -74,8 +72,6 @@ class BaseAPITestClass(APITestCase):
         )
 
         self.client.force_authenticate(user=self.host_user)
-        # self.client.force_authenticate(user=self.user)
-        settings.DEBUG = True
 
 
 class TestSQSQueueAPI(BaseAPITestClass):
@@ -83,7 +79,6 @@ class TestSQSQueueAPI(BaseAPITestClass):
         super(TestSQSQueueAPI, self).setUp()
 
         self.queue = get_or_create_sqs_queue(self.challenge.queue)
-        time.sleep(0.5)
 
         self.submission_pk = 0
         self.phase_pk = 1
