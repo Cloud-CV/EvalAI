@@ -1,4 +1,9 @@
 from django.contrib.auth.models import User
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.urls import reverse
+from django.conf import settings
+
 
 from rest_framework import permissions, status
 from rest_framework.decorators import (
@@ -22,7 +27,9 @@ from .serializers import (
     InviteHostToTeamSerializer,
     HostTeamDetailSerializer,
 )
-from .utils import is_user_part_of_host_team
+from .utils import host_invitations_token_generator, is_user_part_of_host_team
+
+
 
 
 @api_view(["GET", "POST"])
@@ -288,18 +295,65 @@ def invite_host_to_team(request, pk):
         response_data = {"error": "User is already part of the team!"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    serializer = InviteHostToTeamSerializer(
-        data=request.data,
-        context={
-            "challenge_host_team": challenge_host_team,
-            "request": request,
-        },
-    )
+    user_data = {
+        "user": user,
+        "challenge_host_team": challenge_host_team
+    }
+    token = host_invitations_token_generator.make_token(user_data)
+    print(token)
+    link = "{}/accept-host-invitation/{}/{}".format(settings.HOSTNAME, token, pk)
+    print(link)
 
-    if serializer.is_valid():
-        serializer.save()
-        response_data = {
-            "message": "User has been added successfully to the host team"
-        }
-        return Response(response_data, status=status.HTTP_202_ACCEPTED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def add_self_to_host_team(request, challenge_host_team_pk, host_invitation_token):
+    print('reached here')
+    try:
+        challenge_host_team = ChallengeHostTeam.objects.get(pk=challenge_host_team_pk)
+    except ChallengeHostTeam.DoesNotExist:
+        response_data = {"error": "Host Team does not exist"}
+        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    #
+    # email = request.data.get("email")
+    # try:
+    #     user = User.objects.get(email=email)
+    # except User.DoesNotExist:
+    #     response_data = {
+    #         "error": "User does not exist with this email address!"
+    #     }
+    #     return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+    #
+    # # Check if the user requesting this API is part of host team
+    # if not is_user_part_of_host_team(request.user, challenge_host_team):
+    #     response_data = {"error": "You are not a member of this team!"}
+    #     return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    #
+    # host = ChallengeHost.objects.filter(
+    #     team_name=challenge_host_team, user=user
+    # )
+    #
+    # if host.exists():
+    #     response_data = {"error": "User is already part of the team!"}
+    #     return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    # serializer = InviteHostToTeamSerializer(
+    #     data=request.data,
+    #     context={
+    #         "challenge_host_team": challenge_host_team,
+    #         "request": request,
+    #     },
+    # )
+    #
+    # if serializer.is_valid():
+    #     serializer.save()
+    #     response_data = {
+    #         "message": "User has been added successfully to the host team"
+    #     }
+    #     return Response(response_data, status=status.HTTP_202_ACCEPTED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

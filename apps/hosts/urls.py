@@ -38,4 +38,9 @@ urlpatterns = [
         views.invite_host_to_team,
         name="invite_host_to_team",
     ),
+    url(
+        r"^add_self_to_host_team/(?P<challenge_host_team_pk>[0-9]+)/join/(?P<host_invitation_token>[\w-]+)$",
+        views.add_self_to_host_team,
+        name="add_self_to_host_team",
+    ),
 ]

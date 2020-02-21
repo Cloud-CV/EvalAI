@@ -443,6 +443,15 @@
             title: "Accept challenge invitation"
         };
 
+        var host_invitation = {
+            name: "host-invitation",
+            url: "/accept-host-invitation/:token/:pk",
+            controller: "HostInviteCtrl",
+            controllerAs: "host_invitation",
+            // templateUrl: baseUrl + "/web/challenge-invite.html",
+            title: "Accept invitation to join host team"
+        };
+
         var get_submission_related_files = {
             name: "get-submission-related-files",
             url: "/web/submission-files?bucket&key",
@@ -472,6 +481,7 @@
 
         // challenge host teams
         $stateProvider.state(challenge_host_teams);
+        $stateProvider.state(host_invitation);
 
         // challenges list page
         $stateProvider.state(challenge_main);
