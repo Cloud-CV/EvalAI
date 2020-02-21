@@ -62,7 +62,7 @@
                 vm.user.linkedin_url = vm.user.linkedin_url === null ? "" : vm.user.linkedin_url;
                 vm.startLoader("Updating Your Profile");
                 var parameters = {};
-                parameters.url = 'auth/user/';
+                parameters.url = 'auth/user/'; // why is this PUT and where is the corresponding view? 
                 parameters.method = 'PUT';
                 parameters.data = {
                     "username": vm.user.username,
@@ -71,7 +71,8 @@
                     "affiliation": vm.user.affiliation,
                     "github_url": vm.user.github_url,
                     "google_scholar_url": vm.user.google_scholar_url,
-                    "linkedin_url": vm.user.linkedin_url
+                    "linkedin_url": vm.user.linkedin_url, 
+                    "avatar_image": vm.user.avatar_image, // check if this matches well in parameters.url, Where does this url leads to in Django? 
                 };
                 parameters.token = userKey;
                 parameters.callback = {

@@ -2,7 +2,9 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 
 from .models import Profile
+from django import forms
 
+from rest_framework.parsers import FileUploadParser
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -11,6 +13,7 @@ from rest_framework.decorators import (
     authentication_classes,
     permission_classes,
     throttle_classes,
+    parser_classes,
 )
 from rest_framework.throttling import UserRateThrottle
 from rest_framework_expiring_authtoken.authentication import (
@@ -52,7 +55,9 @@ def get_auth_token(request):
     response_data = {"token": "{}".format(token)}
     return Response(response_data, status=status.HTTP_200_OK)
 
-@throttle_classes([UserRateThrottle])
+
+
+'''@throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def profile_picture(request): 
@@ -64,7 +69,20 @@ def profile_picture(request):
         response_data = {"error": "This User account doesn't exist"}
         Response(response_data, status.HTTP_404_NOT_FOUND)
 
-    current_picture = profile.user_avatar # TODO: replace with picture model
+    if request.method == 'POST': 
+        postForm = AvatarForm(request.POST, request.FILES)
+        if postForm.is_valid(): 
+            avatar = Avatar()
+            avatar.name = postForm.cleaned_data["name"]
+            avatar.image = postForm.cleaned_data["image"]
+            avatar.save()
+            profile.user_avatar = avatar; 
+            profile.save() # check if this works at all
+
+    current_picture = profile.user_avatar.image # TODO: replace with picture model
+    form_class = AvatarForm
     username = "test user name"
     title = username + "'s avatar"
-    return render(request, 'profile_picture.html', {'title': title, 'username': username, 'current_picture': current_picture})
+    
+    return render(request, 'profile_picture.html', {'title': title, 'username': username, 'current_picture': current_picture})'''
+

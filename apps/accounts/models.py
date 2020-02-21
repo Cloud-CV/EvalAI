@@ -4,6 +4,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.dispatch import receiver
+from django.conf import settings
+import os
 
 from base.models import TimeStampedModel
 
@@ -33,6 +35,9 @@ class UserStatus(TimeStampedModel):
     class Meta:
         app_label = "accounts"
 
+#class AvatarImage(models.Model): 
+#    user = models.OneToOneField(User)
+#    file = models.ImageField(upload_to='test_folder', default='/frontend/src/images/pro-pic.png')
 
 class Profile(TimeStampedModel):
     """
@@ -47,8 +52,7 @@ class Profile(TimeStampedModel):
     github_url = models.URLField(max_length=200, null=True, blank=True)
     google_scholar_url = models.URLField(max_length=200, null=True, blank=True)
     linkedin_url = models.URLField(max_length=200, null=True, blank=True)
-
-    user_avatar = models.ImageField(upload_to='test_folder', blank=True)
+    avatar_image = models.ImageField(upload_to='test_folder', default='/frontend/src/images/pro-pic.png')
 
     def __str__(self):
         return "{}".format(self.user)

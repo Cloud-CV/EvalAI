@@ -375,7 +375,7 @@
             name: "web.upload-picture",
             parent: "web",
             url: "/upload-picture",
-            templateUrl: baseUrl + "/web/upload-picture.html",
+            templateUrl: baseUrl + "/web/upload-picture.html", // THIS is probably where the routing for Django should be added
             title: "Upload Avatar",
             controller: 'updateProfileCtrl',
             controllerAs: 'updateProfile',

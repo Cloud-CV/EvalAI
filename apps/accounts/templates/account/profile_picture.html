@@ -14,8 +14,13 @@
                             <p ng-message="minlength"> Username is too short </p>
                         </div>
                     </div>
-                    <!--make this working-->
-                    <img src="{{ profile.profile.user_avatar.url }}" width="240">
+                    <!--make this work-->
+                    <img src="{{ profile.profile.user_avatar.image.url }}" width="240">
+                    <form name="form" enctype="multipart/form-data" method="POST">{% csrf_token %}
+                        <input type="text" style="margin-left:20%" placeholder="test_name" name="name"/>
+                        <input type="file" style="margin-left:20%" placeholder="avatar" name="avatar"/>
+                    </form>
+
 
                     <div class="align-left reg-control">
                         <button class="btn ev-btn-dark waves-effect waves-dark grad-btn grad-btn-dark fs-14" type="submit" value="Submit">Submit</button>
