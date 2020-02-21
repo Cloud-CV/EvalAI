@@ -59,8 +59,6 @@ class InviteHostToTeamSerializer(serializers.Serializer):
             self.user = context.get("request").user
 
     def validate_email(self, value):
-        if value == self.user.email:
-            raise serializers.ValidationError("A host cannot invite himself")
         try:
             User.objects.get(email=value)
         except User.DoesNotExist:
