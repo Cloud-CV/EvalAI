@@ -11,10 +11,6 @@ class TokenGenerator(PasswordResetTokenGenerator):
         """Custom Token Generator for Host Invitations"""
         user = user_data['user']
         challenge_host_team = user_data['challenge_host_team']
-        print(six.text_type(user.pk))
-        print(six.text_type(timestamp))
-        # print(six.text_type(user.is_user_host))
-        print(six.text_type(challenge_host_team.pk))
         return (
             six.text_type(user.pk) + six.text_type(timestamp) + six.text_type(challenge_host_team.pk)
         )

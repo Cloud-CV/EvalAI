@@ -300,7 +300,6 @@ def invite_host_to_team(request, pk):
         "challenge_host_team": challenge_host_team
     }
     token = host_invitations_token_generator.make_token(user_data)
-    print(token)
     link = "{}/accept-host-invitation/{}/{}".format(settings.HOSTNAME, token, pk)
     print(link)
 
@@ -353,5 +352,4 @@ def add_self_to_host_team(request, challenge_host_team_pk, host_invitation_token
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         response_data = {"error": "Could not join host team, invalid or expired URL."}
-        print("This is artificially intelligent")
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
