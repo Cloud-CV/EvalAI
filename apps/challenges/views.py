@@ -1033,6 +1033,8 @@ def create_challenge_using_zip_file(request, challenge_host_team_pk):
                             test_annotation_file.read(),
                             test_annotation_file_path,
                         )
+                if data.get('max_submissions_per_month', None) is None:
+                    data['max_submissions_per_month'] = data.get('max_submissions', None)
 
                 serializer = ChallengePhaseCreateSerializer(
                     data=data,
@@ -2161,4 +2163,36 @@ def get_challenge_phase_by_slug(request, slug):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
     serializer = ChallengePhaseSerializer(challenge_phase)
     response_data = serializer.data
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@throttle_classes([UserRateThrottle])
+@permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
+@authentication_classes((ExpiringTokenAuthentication,))
+def get_challenge_phase_environment_url(request, slug):
+    """
+    Returns environment image url and tag required for RL challenge evaluation
+    """
+    try:
+        challenge_phase = ChallengePhase.objects.get(slug=slug)
+    except ChallengePhase.DoesNotExist:
+        response_data = {
+            "error": "Challenge phase with slug {} does not exist".format(slug)
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    challenge = get_challenge_model(challenge_phase.challenge.pk)
+    if not is_user_a_host_of_challenge(request.user, challenge.pk):
+        response_data = {
+            "error": "Sorry, you are not authorized to access test environment URL."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    if not challenge.is_docker_based:
+        response_data = {
+            "error": "The challenge doesn't require uploading Docker images, hence no test environment URL."
+        }
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    response_data = {
+        "environment_url": challenge_phase.environment_url
+    }
     return Response(response_data, status=status.HTTP_200_OK)

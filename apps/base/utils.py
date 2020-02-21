@@ -154,7 +154,7 @@ def get_boto3_client(resource, aws_keys):
         logger.exception(e)
 
 
-def get_sqs_queue_object():
+def get_or_create_sqs_queue_object(queue_name):
     if settings.DEBUG or settings.TEST:
         queue_name = "evalai_submission_queue"
         sqs = boto3.resource(
@@ -212,21 +212,18 @@ def send_slack_notification(webhook=settings.SLACK_WEB_HOOK_URL, message=""):
     try:
         data = {
             "text": message["text"],
-            "attachments": [
-                {
-                    "color": "ffaf4b",
-                    "fields": message["fields"]
-                }
-            ]
+            "attachments": [{"color": "ffaf4b", "fields": message["fields"]}],
         }
         return requests.post(
             webhook,
             data=json.dumps(data),
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
     except Exception as e:
         logger.exception(
-            "Exception raised while sending slack notification. \n Exception message: {}".format(e)
+            "Exception raised while sending slack notification. \n Exception message: {}".format(
+                e
+            )
         )
 
 
@@ -235,4 +232,5 @@ def mock_if_non_prod_aws(aws_mocker):
         if not (settings.DEBUG or settings.TEST):
             return func
         return aws_mocker(func)
+
     return decorator

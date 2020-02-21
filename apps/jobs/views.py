@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 
+import requests
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -29,7 +30,7 @@ from accounts.permissions import HasVerifiedEmail
 from base.utils import (
     paginated_queryset,
     StandardResultSetPagination,
-    get_sqs_queue_object,
+    get_or_create_sqs_queue_object,
     get_boto3_client,
 )
 from challenges.models import (
@@ -276,14 +277,32 @@ def challenge_submission(request, challenge_id, challenge_phase_id):
                 "request": request,
             },
         )
+        message = {
+            "challenge_pk": challenge_id,
+            "phase_pk": challenge_phase_id,
+        }
+        if challenge.is_docker_based:
+            try:
+                file_content = json.loads(request.FILES["input_file"].read())
+                message["submitted_image_uri"] = file_content[
+                    "submitted_image_uri"
+                ]
+            except Exception as ex:
+                response_data = {
+                    "error": "Error {} in submitted_image_uri from submission file".format(
+                        ex
+                    )
+                }
+                return Response(
+                    response_data, status=status.HTTP_400_BAD_REQUEST
+                )
         if serializer.is_valid():
             serializer.save()
             response_data = serializer.data
             submission = serializer.instance
+            message["submission_pk"] = submission.id
             # publish message in the queue
-            publish_submission_message(
-                challenge_id, challenge_phase_id, submission.id
-            )
+            publish_submission_message(message)
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(
             serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE
@@ -383,7 +402,7 @@ def change_submission_data_and_visibility(
             required=True,
         )
     ],
-    operation_id="Get_Leaderboard_Data",
+    operation_id="leaderboard",
     responses={
         status.HTTP_200_OK: openapi.Response(
             description="",
@@ -443,7 +462,15 @@ def change_submission_data_and_visibility(
 @api_view(["GET"])
 @throttle_classes([AnonRateThrottle])
 def leaderboard(request, challenge_phase_split_id):
-    """Returns leaderboard for a corresponding Challenge Phase Split"""
+    """
+    Returns leaderboard for a corresponding Challenge Phase Split
+
+    - Arguments:
+        ``challenge_phase_split_id``: Primary key for the challenge phase split for which leaderboard is to be fetched
+
+    - Returns:
+        Leaderboard entry objects in a list
+    """
 
     # check if the challenge exists or not
     try:
@@ -789,6 +816,41 @@ def get_submission_by_pk(request, submission_id):
         ),
     },
 )
+@swagger_auto_schema(
+    methods=["patch"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="challenge_pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Challenge ID",
+            required=True,
+        )
+    ],
+    operation_id="update_submission",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "submission": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Submission ID"
+            ),
+            "job_name": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Job name for the running submission",
+            ),
+            "submission_status": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Updated status of submission from submitted i.e. RUNNING",
+            ),
+        },
+    ),
+    responses={
+        status.HTTP_200_OK: openapi.Response("{<updated submission-data>}"),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
 @api_view(["PUT", "PATCH"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -980,11 +1042,20 @@ def update_submission(request, challenge_pk):
     if request.method == "PATCH":
         submission_pk = request.data.get("submission")
         submission_status = request.data.get("submission_status", "").lower()
+        job_name = request.data.get("job_name", "").lower()
         submission = get_submission_model(submission_pk)
+        jobs = submission.job_name
+        if job_name:
+            jobs.append(job_name)
         if submission_status not in [Submission.RUNNING]:
             response_data = {"error": "Sorry, submission status is invalid"}
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        data = {"status": submission_status, "started_at": timezone.now()}
+
+        data = {
+            "status": submission_status,
+            "started_at": timezone.now(),
+            "job_name": jobs,
+        }
         serializer = SubmissionSerializer(
             submission, data=data, partial=True, context={"request": request}
         )
@@ -1027,7 +1098,31 @@ def re_run_submission(request, submission_pk):
         }
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    publish_submission_message(challenge.pk, challenge_phase.pk, submission.pk)
+    message = {
+        "challenge_pk": challenge.pk,
+        "phase_pk": challenge_phase.pk,
+        "submission_pk": submission.pk,
+    }
+
+    if submission.challenge_phase.challenge.is_docker_based:
+        try:
+            response = requests.get(submission.input_file)
+        except Exception as e:
+            response_data = {
+                "error": "Failed to get submission input file with error: {0}".format(
+                    e
+                )
+            }
+            return Response(
+                response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        if response and response.status_code == 200:
+            message["submitted_image_uri"] = response.json()[
+                "submitted_image_uri"
+            ]
+
+    publish_submission_message(message)
     response_data = {
         "success": "Submission is successfully submitted for re-running"
     }
@@ -1076,15 +1171,72 @@ def get_submissions_for_challenge(request, challenge_pk):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    methods=["get"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="queue_name",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Queue Name",
+            required=True,
+        )
+    ],
+    operation_id="get_submission_message_from_queue",
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            description="",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "body": openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        description="SQS message queue dict object",
+                        properties={
+                            "challenge_pk": openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="Primary key for the challenge in the database",
+                            ),
+                            "phase_pk": openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="Primary key for the challenge phase in the database",
+                            ),
+                            "submission_pk": openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="Primary key for the submission in the database",
+                            ),
+                            "submitted_image_uri": openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description="The AWS ECR URL for the pushed docker image in docker based challenges",
+                            ),
+                        },
+                    ),
+                    "receipt_handle": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="SQS message receipt handle",
+                    ),
+                },
+            ),
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
 @api_view(["GET"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_submission_message_from_queue(request, queue_name):
     """
-    API to fetch submission message from AWS SQS queue
-    Arguments:
-        queue_name  -- The unique authentication token provided by challenge hosts
+    API to fetch submission message from AWS SQS queue.
+
+    - Arguments:
+        ``queue_name``: AWS SQS queue name
+
+    - Returns:
+        ``body``: The message body content as a key-value pair
+        ``receipt_handle``: The message receipt handle
     """
     try:
         challenge = Challenge.objects.get(queue=queue_name)  # noqa
@@ -1102,7 +1254,7 @@ def get_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_sqs_queue_object()
+    queue = get_or_create_sqs_queue_object(queue_name)
     try:
         messages = queue.receive_messages()
         if len(messages):
@@ -1124,21 +1276,54 @@ def get_submission_message_from_queue(request, queue_name):
         }
         return Response(response_data, status=status.HTTP_200_OK)
     except botocore.exceptions.ClientError as ex:
-        response_data = ex
+        response_data = {"error": ex}
         logger.exception("Exception raised: {}".format(ex))
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
+@swagger_auto_schema(
+    methods=["post"],
+    manual_parameters=[
+        openapi.Parameter(
+            name="queue_name",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description="Queue Name",
+            required=True,
+        )
+    ],
+    operation_id="delete_submission_message_from_queue",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "receipt_handle": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Receipt handle for the message to be deleted",
+            )
+        },
+    ),
+    responses={
+        status.HTTP_200_OK: openapi.Response(
+            "{'success': 'Message deleted successfully from the queue <queue-name>'}"
+        ),
+        status.HTTP_400_BAD_REQUEST: openapi.Response(
+            "{'error': 'Error message goes here'}"
+        ),
+    },
+)
+@api_view(["POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def delete_submission_message_from_queue(request, queue_name, receipt_handle):
+def delete_submission_message_from_queue(request, queue_name):
     """
     API to delete submission message from AWS SQS queue
-    Arguments:
-        queue_name  -- The unique authentication token provided by challenge hosts
-        receipt_handle -- The receipt handle of the message to be deleted
+
+    - Arguments:
+        ``queue_name``  -- The unique authentication token provided by challenge hosts
+
+    - Request Body:
+        ``receipt_handle`` -- The receipt handle of the message to be deleted
     """
     try:
         challenge = Challenge.objects.get(queue=queue_name)
@@ -1151,13 +1336,14 @@ def delete_submission_message_from_queue(request, queue_name, receipt_handle):
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     challenge_pk = challenge.pk
+    receipt_handle = request.data["receipt_handle"]
     if not is_user_a_host_of_challenge(request.user, challenge_pk):
         response_data = {
             "error": "Sorry, you are not authorized to access this resource"
         }
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
 
-    queue = get_sqs_queue_object()
+    queue = get_or_create_sqs_queue_object(queue_name)
     try:
         message = queue.Message(receipt_handle)
         message.delete()
@@ -1168,7 +1354,7 @@ def delete_submission_message_from_queue(request, queue_name, receipt_handle):
         }
         return Response(response_data, status=status.HTTP_200_OK)
     except botocore.exceptions.ClientError as ex:
-        response_data = ex
+        response_data = {"error": ex}
         logger.exception(
             "SQS message is not deleted due to {}".format(response_data)
         )
