@@ -114,7 +114,7 @@ class ChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "challenge_phase_name",
             "dataset_split_name",
             "visibility",
-            "show_leaderboard_by_latest_submission"
+            "show_leaderboard_by_latest_submission",
         )
 
     def get_dataset_split_name(self, obj):
@@ -216,7 +216,7 @@ class ZipChallengePhaseSplitSerializer(serializers.ModelSerializer):
             "visibility",
             "leaderboard_decimal_precision",
             "is_leaderboard_order_descending",
-            "show_leaderboard_by_latest_submission"
+            "show_leaderboard_by_latest_submission",
         )
 
 
