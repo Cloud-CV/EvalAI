@@ -26,6 +26,7 @@ challenge_phases:
     max_submissions_per_day: 100
     max_submissions: 1000
     max_submissions_per_month: 345
+    max_concurrent_submissions_allowed: 5
 
 dataset_splits:
   - id: 1
