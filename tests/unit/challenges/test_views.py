@@ -2986,7 +2986,6 @@ class CreateChallengeUsingZipFile(APITestCase):
             )
             max_con = max_con_field.value_from_object(zipTestPhase)
             id_field = zipTestPhase._meta.get_field("name")
-            id_val = id_field.value_from_object(zipTestPhase)
             print("value of maxcon: " + str(max_con))
             self.assertTrue(max_con == 5 or max_con == 3)
 
