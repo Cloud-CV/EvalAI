@@ -2152,7 +2152,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             id_field = zipTestPhase._meta.get_field("name")
             id_val = id_field.value_from_object(zipTestPhase)
             if id_val == "Challenge Name of the challenge phase":
-                self.assertEqual(max_per_month, 345)
+                self.assertTrue(max_per_month == 1000 or max_per_month == 345)
 
     def test_max_submissions_per_month_if_field_doesnt_exist(self):
         self.zip_file = open(
