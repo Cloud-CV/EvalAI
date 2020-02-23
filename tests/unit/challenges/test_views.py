@@ -2152,7 +2152,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             id_field = zipTestPhase._meta.get_field("name")
             id_val = id_field.value_from_object(zipTestPhase)
             if id_val == "Challenge Name of the challenge phase":
-                self.assertTrue(max_per_month == 1000 or max_per_month == 345)
+                self.assertEqual(max_per_month, 345)
 
     def test_max_submissions_per_month_if_field_doesnt_exist(self):
         self.zip_file = open(
@@ -2975,9 +2975,11 @@ class CreateChallengeUsingZipFile(APITestCase):
         response = self.client.post(self.url, {})
         self.assertEqual(list(response.data.values())[0], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
+
     @responses.activate
-    def test_create_challenge_using_zip_file_when_max_concurrent_submissions_allowed_exists(self): 
+    def test_create_challenge_using_zip_file_when_max_concurrent_submissions_allowed_exists(
+        self,
+    ):
         for zipTestPhase in ChallengePhase.objects.all():
             max_con_field = zipTestPhase._meta.get_field(
                 "max_concurrent_submissions_allowed"
@@ -2986,7 +2988,7 @@ class CreateChallengeUsingZipFile(APITestCase):
             id_field = zipTestPhase._meta.get_field("name")
             id_val = id_field.value_from_object(zipTestPhase)
             print("value of maxcon: " + str(max_con))
-            self.assertTrue(max_con == 5 or max_con == 3) 
+            self.assertTrue(max_con == 5 or max_con == 3)
 
     @responses.activate
     def test_create_challenge_using_zip_file_success(self):

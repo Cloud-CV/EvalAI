@@ -240,7 +240,7 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         )
 
     def test_challenge_phase_create_serializer_wihout_max_submissions_per_month(
-        self
+        self,
     ):
 
         data = (
@@ -309,10 +309,14 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
             data["max_concurrent_submissions_allowed"],
             self.serializer_data["max_concurrent_submissions_allowed"],
         )
-    
-    def test_challenge_phase_create_serializer_without_max_concurrent_submissions_allowed(self):
 
-        data = self.challenge_phase_create_serializer_without_max_concurrent_submissions_allowed.data
+    def test_challenge_phase_create_serializer_without_max_concurrent_submissions_allowed(
+        self,
+    ):
+
+        data = (
+            self.challenge_phase_create_serializer_without_max_concurrent_submissions_allowed.data
+        )
 
         self.assertEqual(
             sorted(list(data.keys())),
@@ -371,7 +375,6 @@ class ChallengePhaseCreateSerializerTest(BaseTestCase):
         )
         self.assertEqual(data["is_active"], self.serializer_data["is_active"])
         self.assertEqual(data["slug"], self.serializer_data["slug"])
-
 
     def test_challenge_phase_create_serializer_with_invalid_data(self):
 
