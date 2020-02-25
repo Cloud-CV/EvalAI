@@ -87,6 +87,16 @@
                             <span class="form-icon"><i class="fa fa-text"></i></span>
                         </div>
                     </div>
+                    <div class="col s12 m4 l4">
+                        <div class="input-field align-left">
+                            <span class="text-med-black w-400 fs-16">Submissions/Concurrent</span>
+                            <input type="number" step="1" min="0" id="max_concurrent_submissions_allowed"
+                                name="max_concurrent_submissions_allowed"
+                                ng-model="challenge.page.challenge_phase.max_concurrent_submissions_allowed"
+                                value="{{challenge.page.challenge_phase.max_concurrent_submissions_allowed}}" required>
+                            <span class="form-icon"><i class="fa fa-text"></i></span>
+                        </div>
+                    </div>
             <div class="row">
                 <div class="col s12 m6 l6">
                     <div class="file-field input-field">
