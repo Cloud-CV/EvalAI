@@ -117,7 +117,7 @@ def download_and_extract_file(url, download_location):
         * `download_location` should include name of file as well.
     """
     try:
-        response = requests.get(url)
+        response = requests.get(url, stream=True)
     except Exception as e:
         logger.error("Failed to fetch file from {}, error {}".format(url, e))
         traceback.print_exc()
@@ -125,7 +125,38 @@ def download_and_extract_file(url, download_location):
 
     if response and response.status_code == 200:
         with open(download_location, "wb") as f:
-            f.write(response.content)
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+
+
+def extract_zip_file(download_location, extract_location):
+    """
+    Helper function to extract zip file
+    Params:
+        * `download_location`: Location of zip file
+        * `extract_location`: Location of directory for extracted file
+    """
+    zip_ref = zipfile.ZipFile(download_location, "r")
+    zip_ref.extractall(extract_location)
+    zip_ref.close()
+
+
+def delete_zip_file(download_location):
+    """
+    Helper function to remove zip file from location `download_location`
+    Params:
+        * `download_location`: Location of file to be removed.
+    """
+    try:
+        os.remove(download_location)
+    except Exception as e:
+        logger.error(
+            "Failed to remove zip file {}, error {}".format(
+                download_location, e
+            )
+        )
+        traceback.print_exc()
 
 
 def download_and_extract_zip_file(url, download_location, extract_location):
@@ -134,28 +165,20 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         * `download_location` should include name of file as well.
     """
     try:
-        response = requests.get(url)
+        response = requests.get(url, stream=True)
     except Exception as e:
         logger.error("Failed to fetch file from {}, error {}".format(url, e))
         response = None
 
     if response and response.status_code == 200:
         with open(download_location, "wb") as f:
-            f.write(response.content)
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
         # extract zip file
-        zip_ref = zipfile.ZipFile(download_location, "r")
-        zip_ref.extractall(extract_location)
-        zip_ref.close()
+        extract_zip_file(download_location, extract_location)
         # delete zip file
-        try:
-            os.remove(download_location)
-        except Exception as e:
-            logger.error(
-                "Failed to remove zip file {}, error {}".format(
-                    download_location, e
-                )
-            )
-            traceback.print_exc()
+        delete_zip_file(download_location)
 
 
 def create_dir(directory):

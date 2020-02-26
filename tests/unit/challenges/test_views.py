@@ -643,7 +643,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_for_mapping_with_participant_team_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
@@ -692,7 +692,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_particular_participant_team_for_mapping_with_challenge_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
@@ -707,7 +707,7 @@ class MapChallengeAndParticipantTeam(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_add_participant_team_to_challenge_when_some_members_have_already_participated(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:add_participant_team_to_challenge",
@@ -833,7 +833,7 @@ class DisableChallengeTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_when_user_does_not_have_permission_to_disable_particular_challenge(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:disable_challenge",
@@ -846,7 +846,7 @@ class DisableChallengeTest(BaseAPITestClass):
         self.assertEqual(list(response.data.values())[0], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_disable_challenge_when_user_is_not_creator(self):
+    def test_disable_challenge_when_user_is_a_part_of_host_team(self):
         self.url = reverse_lazy(
             "challenges:disable_challenge",
             kwargs={"challenge_pk": self.challenge2.pk},
@@ -858,13 +858,8 @@ class DisableChallengeTest(BaseAPITestClass):
             status=ChallengeHost.ACCEPTED,
             permissions=ChallengeHost.ADMIN,
         )
-
-        expected = {
-            "error": "Sorry, you are not allowed to perform this operation!"
-        }
         response = self.client.post(self.url, {})
-        self.assertEqual(list(response.data.values())[0], expected["error"])
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_disable_a_challenge_when_user_is_not_authenticated(self):
         self.client.force_authenticate(user=None)
@@ -2096,6 +2091,123 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_max_submissions_per_month_if_field_exist(self):
+        self.zip_file = open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip",
+            ),
+            "rb",
+        )
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+
+        self.zip_configuration = ChallengeConfiguration.objects.create(
+            user=self.user,
+            challenge=self.challenge,
+            zip_configuration=SimpleUploadedFile(
+                self.zip_file.name,
+                self.zip_file.read(),
+                content_type="application/zip",
+            ),
+            stdout_file=None,
+            stderr_file=None,
+        )
+        self.client.force_authenticate(user=self.user)
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.url = reverse_lazy(
+            "challenges:create_challenge_using_zip_file",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {"zip_configuration": self.input_zip_file},
+                format="multipart",
+            )
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        for zipTestPhase in ChallengePhase.objects.all():
+            max_per_month_field = zipTestPhase._meta.get_field(
+                "max_submissions_per_month"
+            )
+            max_per_month = max_per_month_field.value_from_object(zipTestPhase)
+            id_field = zipTestPhase._meta.get_field("name")
+            id_val = id_field.value_from_object(zipTestPhase)
+            if id_val == "Challenge Name of the challenge phase":
+                self.assertEqual(max_per_month, 1000)
+
+    def test_max_submissions_per_month_if_field_doesnt_exist(self):
+        self.zip_file = open(
+            join(
+                settings.BASE_DIR, "examples", "example1", "test_zip_file.zip"
+            ),
+            "rb",
+        )
+        self.test_zip_file = SimpleUploadedFile(
+            self.zip_file.name,
+            self.zip_file.read(),
+            content_type="application/zip",
+        )
+
+        self.zip_configuration = ChallengeConfiguration.objects.create(
+            user=self.user,
+            challenge=self.challenge,
+            zip_configuration=SimpleUploadedFile(
+                self.zip_file.name,
+                self.zip_file.read(),
+                content_type="application/zip",
+            ),
+            stdout_file=None,
+            stderr_file=None,
+        )
+        self.client.force_authenticate(user=self.user)
+
+        self.input_zip_file = SimpleUploadedFile(
+            "test_sample.zip",
+            b"Dummy File Content",
+            content_type="application/zip",
+        )
+
+        self.url = reverse_lazy(
+            "challenges:create_challenge_using_zip_file",
+            kwargs={"challenge_host_team_pk": self.challenge_host_team.pk},
+        )
+        with mock.patch("challenges.views.requests.get") as m:
+            resp = mock.Mock()
+            resp.content = self.test_zip_file.read()
+            resp.status_code = 200
+            m.return_value = resp
+            response = self.client.post(
+                self.url,
+                {"zip_configuration": self.input_zip_file},
+                format="multipart",
+            )
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        for zipTestPhase in ChallengePhase.objects.all():
+            max_per_month_field = zipTestPhase._meta.get_field(
+                "max_submissions_per_month"
+            )
+            max_per_month = max_per_month_field.value_from_object(zipTestPhase)
+
+            max_field = zipTestPhase._meta.get_field("max_submissions")
+            max_total = max_field.value_from_object(zipTestPhase)
+
+            self.assertEqual(max_per_month, max_total)
+
     def test_create_challenge_phase_with_no_data(self):
         del self.data["name"]
         response = self.client.post(self.url, self.data)
@@ -2110,7 +2222,7 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         self.assertEqual(list(response.data.values())[0], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_create_challenge_phase_when_user_is_not_creator(self):
+    def test_create_challenge_phase_when_user_is_a_part_of_host_team(self):
         self.user1 = User.objects.create(
             username="otheruser", password="other_secret_password"
         )
@@ -2140,7 +2252,71 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() + timedelta(days=1),
         )
+        data = {
+            "name": "Challenge Phase 2",
+            "description": "Description for Challenge Phase 2",
+            "leaderboard_public": False,
+            "is_public": True,
+            "start_date": timezone.now() - timedelta(days=2),
+            "end_date": timezone.now() + timedelta(days=1),
+            "test_annotation": SimpleUploadedFile(
+                "test_sample_file.txt",
+                b"Dummy file content",
+                content_type="text/plain",
+            ),
+            "max_submissions_per_day": 100000,
+            "max_submissions_per_month": 100000,
+            "max_submissions": 100000,
+            "codename": "Phase Code Name 2",
+        }
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phase_list",
+            kwargs={"challenge_pk": self.challenge2.pk},
+        )
+        response = self.client.post(self.url, data, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_create_challenge_phase_when_user_is_not_part_of_host_team(self):
+        self.user2 = User.objects.create(
+            username="user_is_not_part_of_host_team",
+            password="other_secret_password",
+        )
+
+        self.challenge_host_team2 = ChallengeHostTeam.objects.create(
+            team_name="Other Test Challenge Host Team 2", created_by=self.user2
+        )
+
+        self.challenge2 = Challenge.objects.create(
+            title="Other Test Challenge",
+            short_description="Short description for other test challenge",
+            description="Description for other test challenge",
+            terms_and_conditions="Terms and conditions for other test challenge",
+            submission_guidelines="Submission guidelines for other test challenge",
+            creator=self.challenge_host_team2,
+            published=False,
+            enable_forum=True,
+            anonymous_leaderboard=False,
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=1),
+        )
+
+        data = {
+            "name": "Challenge Phase 2",
+            "description": "Description for Challenge Phase 2",
+            "leaderboard_public": False,
+            "is_public": True,
+            "start_date": timezone.now() - timedelta(days=2),
+            "end_date": timezone.now() + timedelta(days=1),
+            "test_annotation": SimpleUploadedFile(
+                "test_sample_file.txt",
+                b"Dummy file content",
+                content_type="text/plain",
+            ),
+            "max_submissions_per_day": 100000,
+            "max_submissions_per_month": 100000,
+            "max_submissions": 100000,
+            "codename": "Phase Code Name 2",
+        }
         self.url = reverse_lazy(
             "challenges:get_challenge_phase_list",
             kwargs={"challenge_pk": self.challenge2.pk},
@@ -2149,8 +2325,8 @@ class CreateChallengePhaseTest(BaseChallengePhaseClass):
         expected = {
             "error": "Sorry, you are not allowed to perform this operation!"
         }
-        response = self.client.post(self.url, {})
-        self.assertEqual(list(response.data.values())[0], expected["error"])
+        response = self.client.post(self.url, data, format="multipart")
+        self.assertEqual(response.data["detail"], expected["error"])
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
@@ -2276,12 +2452,17 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_particular_challenge_phase_does_not_exist(self):
-        self.url = reverse_lazy('challenges:get_challenge_phase_detail',
-                                kwargs={'challenge_pk': self.challenge.pk,
-                                        'pk': self.challenge_phase.pk + 2})
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phase_detail",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "pk": self.challenge_phase.pk + 2,
+            },
+        )
         expected = {
-            'error': 'Challenge phase {} does not exist for challenge {}'.format(
-                (self.challenge_phase.pk + 2), self.challenge.pk)
+            "error": "Challenge phase {} does not exist for challenge {}".format(
+                (self.challenge_phase.pk + 2), self.challenge.pk
+            )
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -2301,7 +2482,7 @@ class GetParticularChallengePhase(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
     def test_get_particular_challenge_phase_when_user_is_not_authenticated(
-        self
+        self,
     ):
         self.client.force_authenticate(user=None)
 
@@ -2478,7 +2659,8 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.PUBLIC,
             leaderboard_decimal_precision=2,
-            is_leaderboard_order_descending=True
+            is_leaderboard_order_descending=True,
+            show_leaderboard_by_latest_submission=False,
         )
 
         self.challenge_phase_split_host = ChallengePhaseSplit.objects.create(
@@ -2486,6 +2668,7 @@ class BaseChallengePhaseSplitClass(BaseAPITestClass):
             challenge_phase=self.challenge_phase,
             leaderboard=self.leaderboard,
             visibility=ChallengePhaseSplit.HOST,
+            show_leaderboard_by_latest_submission=False,
         )
 
     def tearDown(self):
@@ -2509,6 +2692,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
             }
         ]
         self.client.force_authenticate(user=self.participant_user)
@@ -2517,7 +2701,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phase_split_when_challenge_phase_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:challenge_phase_split_list",
@@ -2544,6 +2728,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split.id,
                 "dataset_split_name": self.dataset_split.name,
                 "visibility": self.challenge_phase_split.visibility,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
             },
             {
                 "id": self.challenge_phase_split_host.id,
@@ -2552,6 +2737,7 @@ class GetChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
                 "dataset_split": self.dataset_split_host.id,
                 "dataset_split_name": self.dataset_split_host.name,
                 "visibility": self.challenge_phase_split_host.visibility,
+                "show_leaderboard_by_latest_submission": self.challenge_phase_split_host.show_leaderboard_by_latest_submission,
             },
         ]
         self.client.force_authenticate(user=self.user)
@@ -2687,7 +2873,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded(
-        self
+        self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
@@ -2701,7 +2887,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_zip_file_is_not_uploaded_successfully(
-        self
+        self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
@@ -2740,7 +2926,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_challenge_host_team_does_not_exists(
-        self
+        self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
@@ -2764,7 +2950,7 @@ class CreateChallengeUsingZipFile(APITestCase):
 
     @responses.activate
     def test_create_challenge_using_zip_file_when_user_is_not_authenticated(
-        self
+        self,
     ):
         responses.add(responses.POST, settings.SLACK_WEB_HOOK_URL, status=200)
         self.url = reverse_lazy(
@@ -3085,6 +3271,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                     "submission_result_file": None,
                     "submission_metadata_file": None,
                     "participant_team_members_email_ids": ["user6@test.com"],
+                    "participant_team_members_affiliations": [""],
                     "participant_team_members": [
                         {"username": "participant", "email": "user6@test.com"}
                     ],
@@ -3133,6 +3320,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
                 "is_flagged": self.submission1.is_flagged,
                 "when_made_public": self.submission1.when_made_public,
                 "is_baseline": self.submission1.is_baseline,
+                "job_name": self.submission1.job_name,
             }
         ]
         self.challenge5.participant_teams.add(self.participant_team6)
@@ -3142,7 +3330,7 @@ class GetAllSubmissionsTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_all_submissions_when_user_is_neither_host_nor_participant_of_challenge(
-        self
+        self,
     ):
         self.client.force_authenticate(user=self.user7)
         self.url = reverse_lazy(
@@ -3263,7 +3451,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_download_all_submissions_when_challenge_phase_does_not_exist(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:download_all_submissions",
@@ -3309,36 +3497,58 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_download_all_submissions_for_host_with_custom_fields(self):
-        self.url = reverse_lazy('challenges:download_all_submissions',
-                                kwargs={'challenge_pk': self.challenge.pk,
-                                        'challenge_phase_pk': self.challenge_phase.pk,
-                                        'file_type': self.file_type_csv})
-        submissions = Submission.objects.filter(challenge_phase__challenge=self.challenge).order_by('-submitted_at')
-        submissions = ChallengeSubmissionManagementSerializer(submissions, many=True)
+        self.url = reverse_lazy(
+            "challenges:download_all_submissions",
+            kwargs={
+                "challenge_pk": self.challenge.pk,
+                "challenge_phase_pk": self.challenge_phase.pk,
+                "file_type": self.file_type_csv,
+            },
+        )
+        submissions = Submission.objects.filter(
+            challenge_phase__challenge=self.challenge
+        ).order_by("-submitted_at")
+        submissions = ChallengeSubmissionManagementSerializer(
+            submissions, many=True
+        )
         expected = io.StringIO()
         expected_submissions = csv.writer(expected)
-        expected_submissions.writerow(['id', 'Team Members', 'Team Members Email Id', 'Challenge Phase'])
-        self.data = ["participant_team_members", "participant_team_members_email", "challenge_phase"]
+        expected_submissions.writerow(
+            ["id", "Team Members", "Team Members Email Id", "Challenge Phase"]
+        )
+        self.data = [
+            "participant_team_members",
+            "participant_team_members_email",
+            "challenge_phase",
+        ]
         for submission in submissions.data:
-                row = [submission['id']]
-                for field in self.data:
-                    if field == 'participant_team_members':
-                        row.append(
-                            ",".join(username['username'] for username in submission['participant_team_members'])
+            row = [submission["id"]]
+            for field in self.data:
+                if field == "participant_team_members":
+                    row.append(
+                        ",".join(
+                            username["username"]
+                            for username in submission[
+                                "participant_team_members"
+                            ]
                         )
-                    elif field == 'participant_team_members_email':
-                        row.append(
-                            ",".join(email['email'] for email in submission['participant_team_members'])
+                    )
+                elif field == "participant_team_members_email":
+                    row.append(
+                        ",".join(
+                            email["email"]
+                            for email in submission["participant_team_members"]
                         )
-                    elif field == 'created_at':
-                        row.append(
-                            submission['created_at'].strftime('%m/%d/%Y %H:%M:%S')
-                        )
-                    else:
-                        row.append(submission[field])
-                expected_submissions.writerow(row)
+                    )
+                elif field == "created_at":
+                    row.append(
+                        submission["created_at"].strftime("%m/%d/%Y %H:%M:%S")
+                    )
+                else:
+                    row.append(submission[field])
+            expected_submissions.writerow(row)
         response = self.client.post(self.url, self.data)
-        self.assertEqual(response.content.decode('utf-8'), expected.getvalue())
+        self.assertEqual(response.content.decode("utf-8"), expected.getvalue())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_download_all_submissions_when_user_is_challenge_participant(self):
@@ -3357,7 +3567,7 @@ class DownloadAllSubmissionsFileTest(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_download_all_submissions_when_user_is_neither_a_challenge_host_nor_a_participant(
-        self
+        self,
     ):
         self.url = reverse_lazy(
             "challenges:download_all_submissions",
@@ -3624,7 +3834,8 @@ class GetOrUpdateChallengePhaseSplitTest(BaseChallengePhaseSplitClass):
             "challenge_phase": self.challenge_phase.pk,
             "visibility": self.challenge_phase_split.visibility,
             "leaderboard_decimal_precision": self.challenge_phase_split.leaderboard_decimal_precision,
-            "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending
+            "is_leaderboard_order_descending": self.challenge_phase_split.is_leaderboard_order_descending,
+            "show_leaderboard_by_latest_submission": self.challenge_phase_split.show_leaderboard_by_latest_submission,
         }
         response = self.client.get(self.url)
         self.assertEqual(response.data, expected)
@@ -3773,11 +3984,12 @@ class StarChallengesTest(BaseAPITestClass):
 
 
 class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
-
     def setUp(self):
         super(GetChallengePhaseByPkTest, self).setUp()
-        self.url = reverse_lazy('challenges:get_challenge_phase_by_pk',
-                                kwargs={'pk': self.challenge_phase.pk})
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phase_by_pk",
+            kwargs={"pk": self.challenge_phase.pk},
+        )
 
     def test_get_challenge_phase_by_pk(self):
         expected = {
@@ -3785,11 +3997,15 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
             "name": self.challenge_phase.name,
             "description": self.challenge_phase.description,
             "leaderboard_public": self.challenge_phase.leaderboard_public,
-            "start_date": "{0}{1}".format(self.challenge_phase.start_date.isoformat(), 'Z').replace("+00:00", ""),
-            "end_date": "{0}{1}".format(self.challenge_phase.end_date.isoformat(), 'Z').replace("+00:00", ""),
+            "start_date": "{0}{1}".format(
+                self.challenge_phase.start_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
+            "end_date": "{0}{1}".format(
+                self.challenge_phase.end_date.isoformat(), "Z"
+            ).replace("+00:00", ""),
             "challenge": self.challenge_phase.challenge.pk,
             "max_submissions_per_day": self.challenge_phase.max_submissions_per_day,
-            'max_submissions_per_month': self.challenge_phase.max_submissions_per_month,
+            "max_submissions_per_month": self.challenge_phase.max_submissions_per_month,
             "max_submissions": self.challenge_phase.max_submissions,
             "is_public": self.challenge_phase.is_public,
             "is_active": True,
@@ -3801,10 +4017,14 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_challenge_phase_by_pk_if_pk_does_not_exist(self):
-        self.url = reverse_lazy('challenges:get_challenge_phase_by_pk',
-                                kwargs={'pk': self.challenge_phase.pk + 2})
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phase_by_pk",
+            kwargs={"pk": self.challenge_phase.pk + 2},
+        )
         expected = {
-            'detail': 'ChallengePhase {} does not exist'.format(self.challenge_phase.pk + 2)
+            "detail": "ChallengePhase {} does not exist".format(
+                self.challenge_phase.pk + 2
+            )
         }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
@@ -3812,11 +4032,12 @@ class GetChallengePhaseByPkTest(BaseChallengePhaseClass):
 
 
 class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
-
     def setUp(self):
         super(GetChallengePhasesByChallengePkTest, self).setUp()
-        self.url = reverse_lazy('challenges:get_challenge_phases_by_challenge_pk',
-                                kwargs={"challenge_pk": self.challenge.pk},)
+        self.url = reverse_lazy(
+            "challenges:get_challenge_phases_by_challenge_pk",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
 
         self.user1 = User.objects.create(
             username="someuser1",
@@ -3878,15 +4099,17 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
                 "test_annotation": "http://testserver%s"
                 % (self.challenge_phase.test_annotation.url),
                 "slug": self.challenge_phase.slug,
-            }
+            },
         ]
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_get_challenge_phases_by_challenge_pk_when_challenge_does_not_exist(self):
+    def test_get_challenge_phases_by_challenge_pk_when_challenge_does_not_exist(
+        self,
+    ):
         self.url = reverse_lazy(
-            'challenges:get_challenge_phases_by_challenge_pk',
+            "challenges:get_challenge_phases_by_challenge_pk",
             kwargs={"challenge_pk": self.challenge.pk + 10},
         )
 
@@ -3899,12 +4122,105 @@ class GetChallengePhasesByChallengePkTest(BaseChallengePhaseClass):
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_get_challenge_phases_by_challenge_pk_when_user_is_not_challenge_host(self):
+    def test_get_challenge_phases_by_challenge_pk_when_user_is_not_challenge_host(
+        self,
+    ):
         """
         This is the case in which a user is not a challenge host
         """
         self.client.force_authenticate(user=self.user1)
-        expected = {"error": "Sorry, you are not authorized to access these challenge phases."}
+        expected = {
+            "error": "Sorry, you are not authorized to access these challenge phases."
+        }
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GetAWSCredentialsForParticipantTeamTest(BaseChallengePhaseClass):
+    def setUp(self):
+        super(GetAWSCredentialsForParticipantTeamTest, self).setUp()
+        self.url = reverse_lazy(
+            "challenges:star_challenge",
+            kwargs={"challenge_pk": self.challenge.pk},
+        )
+
+        self.user1 = User.objects.create(
+            username="otheruser1",
+            password="other_secret_password",
+            email="user1@test.com",
+        )
+
+        self.user2 = User.objects.create(
+            username="otheruser2",
+            password="other_secret_password",
+            email="user2@test.com",
+        )
+
+        EmailAddress.objects.create(
+            user=self.user1,
+            email="user1@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        EmailAddress.objects.create(
+            user=self.user2,
+            email="user2@test.com",
+            primary=True,
+            verified=True,
+        )
+
+        self.participant_team = ParticipantTeam.objects.create(
+            team_name="Participant Team for Challenge8", created_by=self.user1
+        )
+
+        self.participant1 = Participant.objects.create(
+            user=self.user1,
+            status=Participant.ACCEPTED,
+            team=self.participant_team,
+        )
+        self.challenge.participant_teams.add(self.participant_team)
+        self.client.force_authenticate(user=self.user1)
+        self.challenge.is_docker_based = True
+        self.challenge.save()
+
+    def test_get_aws_credentials_when_challenge_is_not_docker_based(self):
+        self.challenge.is_docker_based = False
+        self.challenge.save()
+
+        self.url = reverse_lazy(
+            "challenges:get_aws_credentials_for_participant_team",
+            kwargs={"phase_pk": self.challenge_phase.pk},
+        )
+        expected = {"error": "Sorry, this is not a docker based challenge."}
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_aws_credentials_when_not_participated(self):
+        self.url = reverse_lazy(
+            "challenges:get_aws_credentials_for_participant_team",
+            kwargs={"phase_pk": self.challenge_phase.pk},
+        )
+        expected = {"error": "You have not participated in this challenge."}
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.get(self.url, {})
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_aws_credentials(self):
+        self.url = reverse_lazy(
+            "challenges:get_aws_credentials_for_participant_team",
+            kwargs={"phase_pk": self.challenge_phase.pk},
+        )
+        response = self.client.get(self.url, {})
+        data = response.data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Check if all fields for cli exists
+        self.assertTrue("federated_user" in data["success"])
+        self.assertTrue("docker_repository_uri" in data["success"])
+        federated_user = data["success"]["federated_user"]
+        self.assertTrue("AccessKeyId" in federated_user["Credentials"])
+        self.assertTrue("SecretAccessKey" in federated_user["Credentials"])
+        self.assertTrue("SessionToken" in federated_user["Credentials"])

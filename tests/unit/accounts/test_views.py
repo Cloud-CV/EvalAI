@@ -42,6 +42,9 @@ class TestUpdateUser(BaseAPITestClass):
         self.data = {
             "username": "anotheruser",
             "affiliation": "some_affiliation",
+            "github_url": "https://github.url",
+            "google_scholar_url": "https://google-scholar.url",
+            "linkedin_url": "https://linkedin.url",
             "password": "secret_password",
         }
         response = self.client.put(

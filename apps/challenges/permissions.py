@@ -2,6 +2,8 @@ from rest_framework import permissions
 
 from .models import Challenge
 
+from hosts.utils import is_user_a_host_of_challenge
+
 
 class IsChallengeCreator(permissions.BasePermission):
     """
@@ -23,6 +25,8 @@ class IsChallengeCreator(permissions.BasePermission):
                 return False
 
             if request.user.id == challenge.creator.created_by.id:
+                return True
+            elif is_user_a_host_of_challenge(request.user, challenge.id):
                 return True
             else:
                 return False

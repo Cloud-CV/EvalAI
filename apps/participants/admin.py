@@ -22,7 +22,7 @@ class ParticipantAdmin(ImportExportTimeStampedAdmin):
 
     list_display = ("user", "status", "team")
     search_fields = ("user__username", "status", "team__team_name")
-    list_filter = ("status", "team")
+    list_filter = ("status",)
     resource_class = ParticipantResource
 
 
@@ -34,4 +34,4 @@ class ParticipantTeamAdmin(ImportExportTimeStampedAdmin):
     """
 
     list_display = ("team_name", "get_all_participants_email", "team_url")
-    list_filter = ("team_name",)
+    search_fields = ("team_name", "team_url", "created_by__username")

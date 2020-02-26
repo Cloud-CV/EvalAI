@@ -13,6 +13,7 @@ coverage
 .cache
 coverage.xml
 *,cover
+mocked/
 
 # Django stuff:
 *.log

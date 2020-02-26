@@ -65,7 +65,7 @@ reviewed. To submit code, follow these steps:
 
 3. Once the code is pushed, create a pull request:
 
-   -  On your Github fork, select your branch and click “New pull
+   -  On your GitHub fork, select your branch and click “New pull
       request”. Select “master” as the base branch and your branch in
       the “compare” dropdown. If the code is mergeable (you get a
       message saying “Able to merge”), go ahead and create the pull

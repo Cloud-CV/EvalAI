@@ -15,7 +15,7 @@ describe('Unit tests for profile controller', function () {
         createController = function () {
             return $controller('profileCtrl', {$scope: $scope});
         };
-        vm = createController();
+        vm = $controller('profileCtrl', { $scope: $scope });
     }));
 
     describe('Global variables', function () {
