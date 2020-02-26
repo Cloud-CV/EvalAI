@@ -11,15 +11,14 @@ import importlib
 import json
 import logging
 import os
-import requests
-import signal
 import shutil
 import sys
 import tempfile
 import time
-import traceback
 import yaml
-import zipfile
+
+import scripts.workers.worker_util as w_u
+from scripts.workers.worker_util import GracefulKiller
 
 from os.path import join
 
@@ -31,7 +30,6 @@ from django.conf import settings
 BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
 
-logger = logging.getLogger(__name__)
 django.setup()
 
 DJANGO_SETTINGS_MODULE = os.environ.get(
@@ -74,133 +72,6 @@ PHASE_ANNOTATION_FILE_NAME_MAP = {}
 django.db.close_old_connections()
 
 
-class GracefulKiller:
-    kill_now = False
-
-    def __init__(self):
-        signal.signal(signal.SIGINT, self.exit_gracefully)
-        signal.signal(signal.SIGTERM, self.exit_gracefully)
-
-    def exit_gracefully(self, signum, frame):
-        self.kill_now = True
-
-
-class ExecutionTimeLimitExceeded(Exception):
-    pass
-
-
-@contextlib.contextmanager
-def stdout_redirect(where):
-    sys.stdout = where
-    try:
-        yield where
-    finally:
-        sys.stdout = sys.__stdout__
-
-
-@contextlib.contextmanager
-def stderr_redirect(where):
-    sys.stderr = where
-    try:
-        yield where
-    finally:
-        sys.stderr = sys.__stderr__
-
-
-def alarm_handler(signum, frame):
-    raise ExecutionTimeLimitExceeded
-
-
-def download_and_extract_file(url, download_location):
-    """
-        * Function to extract download a file.
-        * `download_location` should include name of file as well.
-    """
-    try:
-        response = requests.get(url, stream=True)
-    except Exception as e:
-        logger.error("Failed to fetch file from {}, error {}".format(url, e))
-        traceback.print_exc()
-        response = None
-
-    if response and response.status_code == 200:
-        with open(download_location, "wb") as f:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-
-
-def extract_zip_file(download_location, extract_location):
-    """
-    Helper function to extract zip file
-    Params:
-        * `download_location`: Location of zip file
-        * `extract_location`: Location of directory for extracted file
-    """
-    zip_ref = zipfile.ZipFile(download_location, "r")
-    zip_ref.extractall(extract_location)
-    zip_ref.close()
-
-
-def delete_zip_file(download_location):
-    """
-    Helper function to remove zip file from location `download_location`
-    Params:
-        * `download_location`: Location of file to be removed.
-    """
-    try:
-        os.remove(download_location)
-    except Exception as e:
-        logger.error(
-            "Failed to remove zip file {}, error {}".format(
-                download_location, e
-            )
-        )
-        traceback.print_exc()
-
-
-def download_and_extract_zip_file(url, download_location, extract_location):
-    """
-        * Function to extract download a zip file, extract it and then removes the zip file.
-        * `download_location` should include name of file as well.
-    """
-    try:
-        response = requests.get(url, stream=True)
-    except Exception as e:
-        logger.error("Failed to fetch file from {}, error {}".format(url, e))
-        response = None
-
-    if response and response.status_code == 200:
-        with open(download_location, "wb") as f:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-        # extract zip file
-        extract_zip_file(download_location, extract_location)
-        # delete zip file
-        delete_zip_file(download_location)
-
-
-def create_dir(directory):
-    """
-        Creates a directory if it does not exists
-    """
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-
-def create_dir_as_python_package(directory):
-    """
-        Create a directory and then makes it a python
-        package by creating `__init__.py` file.
-    """
-    create_dir(directory)
-    init_file_path = join(directory, "__init__.py")
-    with open(init_file_path, "w") as init_file:  # noqa
-        # to create empty file
-        pass
-
-
 def return_file_url_per_environment(url):
 
     if DJANGO_SETTINGS_MODULE == "settings.dev":
@@ -228,7 +99,7 @@ def extract_challenge_data(challenge, phases):
         evaluation_script_url
     )
     # create challenge directory as package
-    create_dir_as_python_package(challenge_data_directory)
+    w_u.create_dir_as_python_package(challenge_data_directory)
 
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id] = {}
@@ -236,21 +107,21 @@ def extract_challenge_data(challenge, phases):
     challenge_zip_file = join(
         challenge_data_directory, "challenge_{}.zip".format(challenge.id)
     )
-    download_and_extract_zip_file(
+    w_u.download_and_extract_zip_file(
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
 
     phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
         challenge_id=challenge.id
     )
-    create_dir(phase_data_base_directory)
+    w_u.create_dir(phase_data_base_directory)
 
     for phase in phases:
         phase_data_directory = PHASE_DATA_DIR.format(
             challenge_id=challenge.id, phase_id=phase.id
         )
         # create phase directory
-        create_dir(phase_data_directory)
+        w_u.create_dir(phase_data_directory)
         annotation_file_url = phase.test_annotation.url
         annotation_file_url = return_file_url_per_environment(
             annotation_file_url
@@ -264,7 +135,7 @@ def extract_challenge_data(challenge, phases):
             phase_id=phase.id,
             annotation_file=annotation_file_name,
         )
-        download_and_extract_file(annotation_file_url, annotation_file_path)
+        w_u.download_and_extract_file(annotation_file_url, annotation_file_path)
 
     try:
         # import the challenge after everything is finished
@@ -286,7 +157,7 @@ def load_challenge(challenge):
         Creates python package for a challenge and extracts relevant data
     """
     # make sure that the challenge base directory exists
-    create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
+    w_u.create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
 
@@ -299,7 +170,7 @@ def extract_submission_data(submission_id):
     try:
         submission = Submission.objects.get(id=submission_id)
     except Submission.DoesNotExist:
-        logger.critical("Submission {} does not exist".format(submission_id))
+        w_u.logger.critical("Submission {} does not exist".format(submission_id))
         traceback.print_exc()
         # return from here so that the message can be acked
         # This also indicates that we don't want to take action
@@ -376,7 +247,7 @@ def run_submission(
 
     if remote_evaluation:
         try:
-            logger.info(
+            w_u.logger.info(
                 "Sending submission {} for remote evaluation".format(
                     submission.id
                 )
@@ -588,7 +459,7 @@ def process_submission_message(message):
     try:
         challenge_phase = ChallengePhase.objects.get(id=phase_id)
     except ChallengePhase.DoesNotExist:
-        logger.exception("Challenge Phase {} does not exist".format(phase_id))
+        w_u.logger.exception("Challenge Phase {} does not exist".format(phase_id))
         raise
 
     user_annotation_file_path = join(
@@ -609,7 +480,7 @@ def process_add_challenge_message(message):
     try:
         challenge = Challenge.objects.get(id=challenge_id)
     except Challenge.DoesNotExist:
-        logger.exception("Challenge {} does not exist".format(challenge_id))
+        w_u.logger.exception("Challenge {} does not exist".format(challenge_id))
 
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
@@ -617,12 +488,12 @@ def process_add_challenge_message(message):
 
 def process_submission_callback(body):
     try:
-        logger.info("[x] Received submission message %s" % body)
+        w_u.logger.info("[x] Received submission message %s" % body)
         body = yaml.safe_load(body)
         body = dict((k, int(v)) for k, v in body.items())
         process_submission_message(body)
     except Exception as e:
-        logger.exception(
+        w_u.logger.exception(
             "Exception while receiving message from submission queue with error {}".format(
                 e
             )
@@ -659,7 +530,7 @@ def get_or_create_sqs_queue(queue_name):
             ex.response["Error"]["Code"]
             != "AWS.SimpleQueueService.NonExistentQueue"
         ):
-            logger.exception("Cannot get queue: {}".format(queue_name))
+            w_u.logger.exception("Cannot get queue: {}".format(queue_name))
         queue = sqs.create_queue(QueueName=queue_name)
     return queue
 
@@ -668,7 +539,7 @@ def load_challenge_and_return_max_submissions(q_params):
     try:
         challenge = Challenge.objects.get(**q_params)
     except Challenge.DoesNotExist:
-        logger.exception(
+        w_u.logger.exception(
             "Challenge with pk {} doesn't exist".format(q_params["pk"])
         )
         raise
@@ -681,10 +552,10 @@ def load_challenge_and_return_max_submissions(q_params):
 
 def main():
     killer = GracefulKiller()
-    logger.info(
+    w_u.logger.info(
         "Using {0} as temp directory to store data".format(BASE_TEMP_DIR)
     )
-    create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
+    w_u.create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     q_params = {"approved_by_admin": True}
@@ -698,7 +569,7 @@ def main():
     if settings.DEBUG or settings.TEST:
         if eval(LIMIT_CONCURRENT_SUBMISSION_PROCESSING):
             if not challenge_pk:
-                logger.exception(
+                w_u.logger.exception(
                     "Please add CHALLENGE_PK for the challenge to be loaded in the docker.env file."
                 )
                 sys.exit(1)
@@ -715,7 +586,7 @@ def main():
         )
 
     # create submission base data directory
-    create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
+    w_u.create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name)
     while True:
@@ -732,14 +603,14 @@ def main():
                     ):
                         pass
                     else:
-                        logger.info(
+                        w_u.logger.info(
                             "Processing message body: {0}".format(message.body)
                         )
                         process_submission_callback(message.body)
                         # Let the queue know that the message is processed
                         message.delete()
                 else:
-                    logger.info(
+                    w_u.logger.info(
                         "Processing message body: {0}".format(message.body)
                     )
                     process_submission_callback(message.body)
@@ -755,7 +626,7 @@ def main():
                 ):
                     pass
                 else:
-                    logger.info(
+                    w_u.logger.info(
                         "Processing message body: {0}".format(message.body)
                     )
                     process_submission_callback(message.body)
@@ -768,4 +639,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    logger.info("Quitting Submission Worker.")
+    w_u.logger.info("Quitting Submission Worker.")

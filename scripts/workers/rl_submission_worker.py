@@ -8,24 +8,9 @@ from worker_util import EvalAI_Interface
 from kubernetes import client, config
 
 
-class GracefulKiller:
-    kill_now = False
-
-    def __init__(self):
-        signal.signal(signal.SIGINT, self.exit_gracefully)
-        signal.signal(signal.SIGTERM, self.exit_gracefully)
-
-    def exit_gracefully(self, signum, frame):
-        self.kill_now = True
-
-
-logger = logging.getLogger(__name__)
-
-AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "auth_token")
 EVALAI_API_SERVER = os.environ.get(
     "EVALAI_API_SERVER", "http://localhost:8000"
 )
-QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 ENVIRONMENT_IMAGE = os.environ.get("ENVIRONMENT_IMAGE", "image_name:tag")
 MESSAGE_FETCH_DEPLAY = int(os.environ.get("MESSAGE_FETCH_DEPLAY", "5"))
 
