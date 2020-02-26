@@ -15,7 +15,7 @@ import time
 import traceback
 
 import worker_util as w_u
-from worker_util import EvalAI_Interface
+from worker_util import EvalAI_Interface, GracefulKiller
 
 from os.path import join
 

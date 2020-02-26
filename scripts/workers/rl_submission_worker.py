@@ -3,7 +3,8 @@ import os
 import signal
 import time
 
-from worker_util import EvalAI_Interface
+import worker_util as w_u
+from worker_util import EvalAI_Interface, GracefulKiller
 
 from kubernetes import client, config
 
@@ -58,18 +59,18 @@ def create_deployment(api_instance, deployment):
     api_response = api_instance.create_namespaced_deployment(
         body=deployment, namespace="default"
     )
-    logger.info("Deployment created. status='%s'" % str(api_response.status))
+    w_u.logger.info("Deployment created. status='%s'" % str(api_response.status))
 
 
 def process_submission_callback(message, api):
     config.load_kube_config()
     extensions_v1beta1 = client.ExtensionsV1beta1Api()
-    logger.info(message)
+    w_u.logger.info(message)
     submission_data = {
         "submission_status": "running",
         "submission": message["submission_pk"],
     }
-    logger.info(submission_data)
+    w_u.logger.info(submission_data)
     api.update_submission_status(submission_data, message["challenge_pk"])
     dep = create_deployment_object(
         message["submitted_image_uri"], message["submission_pk"], message
@@ -83,18 +84,18 @@ def main():
         EVALAI_API_SERVER=EVALAI_API_SERVER,
         QUEUE_NAME=QUEUE_NAME,
     )
-    logger.info(
+    w_u.logger.info(
         "String RL Worker for {}".format(
             api.get_challenge_by_queue_name()["title"]
         )
     )
     killer = GracefulKiller()
     while True:
-        logger.info(
+        w_u.logger.info(
             "Fetching new messages from the queue {}".format(QUEUE_NAME)
         )
         message = api.get_message_from_sqs_queue()
-        logger.info(message)
+        w_u.logger.info(message)
         message_body = message.get("body")
         if message_body:
             submission_pk = message_body.get("submission_pk")
@@ -107,7 +108,7 @@ def main():
                     continue
                 else:
                     message_receipt_handle = message.get("receipt_handle")
-                    logger.info(
+                    w_u.logger.info(
                         "Processing message body: {}".format(message_body)
                     )
                     process_submission_callback(message_body, api)
@@ -121,4 +122,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    logger.info("Quitting Submission Worker.")
+    w_u.logger.info("Quitting Submission Worker.")
