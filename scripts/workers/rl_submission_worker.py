@@ -11,6 +11,7 @@ from kubernetes import client, config
 EVALAI_API_SERVER = os.environ.get(
     "EVALAI_API_SERVER", "http://localhost:8000"
 )
+QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 ENVIRONMENT_IMAGE = os.environ.get("ENVIRONMENT_IMAGE", "image_name:tag")
 MESSAGE_FETCH_DEPLAY = int(os.environ.get("MESSAGE_FETCH_DEPLAY", "5"))
 

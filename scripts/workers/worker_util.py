@@ -8,7 +8,6 @@ from os.path import join
 import zipfile
 
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
-QUEUE_NAME = os.environ.get("QUEUE_NAME", "evalai_submission_queue")
 
 logger = logging.getLogger(__name__)
 
