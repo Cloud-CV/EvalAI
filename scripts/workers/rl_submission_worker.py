@@ -1,9 +1,8 @@
 import logging
 import os
-import signal
 
-import worker_utils as w_u
-from worker_utils import EvalAI_Interface, GracefulKiller
+import scripts.workers.worker_utils as w_u
+from scripts.workers.worker_utils import EvalAI_Interface, GracefulKiller
 
 from kubernetes import client, config
 
@@ -93,6 +92,7 @@ def create_job(api_instance, job):
     )
     w_u.logger.info("Deployment created. status='%s'" % str(api_response.status))
     return api_response
+
 
 def delete_job(api_instance, job_name):
     """Function to delete a job on AWS EKS cluster

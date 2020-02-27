@@ -5,17 +5,15 @@ from __future__ import unicode_literals
 
 import importlib
 import json
-import logging
 import os
-import requests
 import shutil
 import sys
 import tempfile
 import time
 import traceback
 
-import worker_utils as w_u
-from worker_utils import EvalAI_Interface, GracefulKiller
+import scripts.workers.worker_utils as w_u
+from scripts.workers.worker_utils import EvalAI_Interface, GracefulKiller
 
 from os.path import join
 
@@ -50,10 +48,12 @@ EVALAI_ERROR_CODES = [400, 401, 406]
 # this saves db query just to fetch phase annotation file name
 PHASE_ANNOTATION_FILE_NAME_MAP = {}
 
+
 def return_url_per_environment(url):
     base_url = "http://{0}:{1}".format(DJANGO_SERVER, DJANGO_SERVER_PORT)
     url = "{0}{1}".format(base_url, url)
     return url
+
 
 def load_challenge(api):
     """
@@ -176,6 +176,7 @@ def process_submission_message(message, api):
         submission_instance,
         user_annotation_file_path,
         remote_evaluation,
+        api
     )
 
 
@@ -225,6 +226,7 @@ def run_submission(
     submission,
     user_annotation_file_path,
     remote_evaluation,
+    api
 ):
     """
     * Checks whether the corresponding evaluation script and the annotation file for the challenge exists or not
@@ -258,7 +260,7 @@ def run_submission(
         "submission_status": "running",
         "submission": submission_pk,
     }
-    update_submission_status(submission_data, challenge_pk)
+    api.update_submission_status(submission_data, challenge_pk)
     status = "running"
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
@@ -272,10 +274,10 @@ def run_submission(
     stderr = open(stderr_file, "a+")
 
     try:
-        logger.info(
+        w_u.logger.info(
             "Sending submission {} for evaluation".format(submission_pk)
         )
-        with stdout_redirect(stdout), stderr_redirect(stderr):
+        with w_u.stdout_redirect(stdout), w_u.stderr_redirect(stderr):
             submission_output = EVALUATION_SCRIPTS[challenge_pk].evaluate(
                 annotation_file_path,
                 user_annotation_file_path,
@@ -300,7 +302,7 @@ def run_submission(
             "stdout": stdout_content,
             "stderr": stderr_content,
         }
-        update_submission_data(submission_data, challenge_pk, submission_pk)
+        api.update_submission_data(submission_data, challenge_pk, submission_pk)
 
         shutil.rmtree(temp_run_dir)
         return
@@ -329,7 +331,7 @@ def run_submission(
     else:
         status = "failed"
         submission_data["submission_status"] = status
-    update_submission_data(submission_data, challenge_pk, submission_pk)
+    api.update_submission_data(submission_data, challenge_pk, submission_pk)
     shutil.rmtree(temp_run_dir)
     return
 

@@ -3,6 +3,7 @@ import logging
 import os
 import requests
 import signal
+import sys
 import traceback
 from os.path import join
 import zipfile
@@ -10,6 +11,7 @@ import zipfile
 AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
 
 logger = logging.getLogger(__name__)
+
 
 @contextlib.contextmanager
 def stdout_redirect(where):
@@ -28,8 +30,10 @@ def stderr_redirect(where):
     finally:
         sys.stderr = sys.__stderr__
 
+
 def alarm_handler(signum, frame):
     raise ExecutionTimeLimitExceeded
+
 
 class GracefulKiller:
     kill_now = False
@@ -59,14 +63,14 @@ class EvalAI_Interface:
             "get_challenge_by_queue_name": "/api/challenges/challenge/queues/{}/",
             "get_challenge_phase_by_pk": "/api/challenges/challenge/{}/challenge_phase/{}",
             "update_submission_data": "/api/jobs/challenge/{}/update_submission/",
-                }
+        }
 
     def get_request_headers(self):
         headers = {"Authorization": "Token {}".format(self.AUTH_TOKEN)}
         return headers
 
-    def make_request(url, method, data=None):
-        headers = get_request_headers()
+    def make_request(self, url, method, data=None):
+        headers = self.get_request_headers()
         if method == "GET":
             try:
                 response = requests.get(url=url, headers=headers)
@@ -188,6 +192,7 @@ class EvalAI_Interface:
         response = self.make_request(url, "PATCH", data=data)
         return response
 
+
 def download_and_extract_file(url, download_location):
     """
         * Function to extract download a file.
@@ -205,6 +210,7 @@ def download_and_extract_file(url, download_location):
             for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     f.write(chunk)
+
 
 def extract_zip_file(download_location, extract_location):
     """
@@ -255,6 +261,7 @@ def download_and_extract_zip_file(url, download_location, extract_location):
         extract_zip_file(download_location, extract_location)
         # delete zip file
         delete_zip_file(download_location)
+
 
 def create_dir(directory):
     """

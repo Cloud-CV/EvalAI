@@ -139,7 +139,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
         submission_worker.process_submission_callback(body)
         mock_psm.assert_called_with(message)
 
-    @mock.patch("scripts.workers.submission_worker.logger.exception")
+    @mock.patch("scripts.workers.worker_utils.logger.exception")
     @mock.patch("scripts.workers.submission_worker.process_submission_message")
     def test_process_submission_callback_with_exception(self, mock_psm, mock_logger):
         message = {
@@ -188,7 +188,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
         self.assertEqual(submission_worker.process_submission_message(message), None)
 
     @mock.patch("scripts.workers.submission_worker.extract_submission_data")
-    @mock.patch("scripts.workers.submission_worker.logger.exception")
+    @mock.patch("scripts.workers.worker_utils.logger.exception")
     def test_process_submission_message_when_challenge_phase_does_not_exist(self, mock_logger, mock_esd):
         message = {
             "challenge_pk": self.challenge.pk,
@@ -204,7 +204,7 @@ class ProcessSubmissionCallbackTestClass(BaseTestClass):
 
 
 class ExtractSubmissionDataTestClass(BaseTestClass):
-    @mock.patch("scripts.workers.submission_worker.logger.critical")
+    @mock.patch("scripts.workers.worker_utils.logger.critical")
     def test_extract_submission_data_when_submission_does_not_exist(self, mock_logger):
         submission_pk = self.submission.pk - 999
         value = submission_worker.extract_submission_data(submission_pk)
@@ -213,8 +213,8 @@ class ExtractSubmissionDataTestClass(BaseTestClass):
 
     @mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", "mocked/dir/submission_{submission_id}")
     @mock.patch("scripts.workers.submission_worker.SUBMISSION_INPUT_FILE_PATH", "mocked/dir/submission_{submission_id}/{input_file}")
-    @mock.patch("scripts.workers.submission_worker.download_and_extract_file")
-    @mock.patch("scripts.workers.submission_worker.create_dir_as_python_package")
+    @mock.patch("scripts.workers.worker_utils.download_and_extract_file")
+    @mock.patch("scripts.workers.worker_utils.create_dir_as_python_package")
     def test_extract_submission_data_succesfully(self, mock_createdir, mock_down_ext):
         with mock.patch("scripts.workers.submission_worker.return_file_url_per_environment") as mock_url:
             submission_worker.extract_submission_data(self.submission.pk)
@@ -235,7 +235,7 @@ class ExtractSubmissionDataTestClass(BaseTestClass):
 
 class ExtractChallengeDataTestClass(BaseTestClass):
     @mock.patch("scripts.workers.submission_worker.importlib.import_module")
-    @mock.patch("scripts.workers.submission_worker.logger.exception")
+    @mock.patch("scripts.workers.worker_utils.logger.exception")
     def test_extract_challenge_data_import_error(self, mock_logger, mock_import):
         phases = [self.challenge_phase]
         challenge = self.challenge
@@ -255,7 +255,7 @@ class ExtractChallengeDataTestClass(BaseTestClass):
 @mock.patch("scripts.workers.submission_worker.timezone")
 @mock.patch("scripts.workers.submission_worker.shutil")
 @mock.patch("scripts.workers.submission_worker.LeaderboardData.objects.bulk_create")
-@mock.patch("scripts.workers.submission_worker.create_dir")
+@mock.patch("scripts.workers.worker_utils.create_dir")
 @mock.patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
 @mock.patch("scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP")
 class RunSubmissionTestClass(BaseTestClass):
@@ -360,7 +360,6 @@ class RunSubmissionTestClass(BaseTestClass):
         mock_cf.return_value = ContentFile("")
 
         submission_worker.run_submission(challenge_pk, self.challenge_phase, self.submission, user_annotation_file_path)
-
         self.assertEqual(mock_open.return_value.write.call_args_list[0],
                          mock.call("ORGINIAL EXCEPTION: No such relation between Challenge Phase and DatasetSplit"
                                    " specified by Challenge Host \n"))

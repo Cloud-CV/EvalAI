@@ -5,11 +5,9 @@ from __future__ import unicode_literals
 
 import boto3
 import botocore
-import contextlib
 import django
 import importlib
 import json
-import logging
 import os
 import shutil
 import sys
@@ -146,7 +144,7 @@ def extract_challenge_data(challenge, phases):
         )
         EVALUATION_SCRIPTS[challenge.id] = challenge_module
     except Exception:
-        logger.exception(
+        w_u.logger.exception(
             "Exception raised while creating Python module for challenge_id: %s"
             % (challenge.id)
         )
@@ -253,7 +251,7 @@ def run_submission(
                     submission.id
                 )
             )
-            with stdout_redirect(stdout) as new_stdout, stderr_redirect(
+            with w_u.stdout_redirect(stdout) as new_stdout, w_u.stderr_redirect(
                 stderr
             ) as new_stderr:
                 submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
@@ -288,7 +286,7 @@ def run_submission(
     # call `main` from globals and set `status` to running and hence `started_at`
     try:
         successful_submission_flag = True
-        with stdout_redirect(stdout) as new_stdout, stderr_redirect(  # noqa
+        with w_u.stdout_redirect(stdout) as new_stdout, w_u.stderr_redirect(  # noqa
             stderr
         ) as new_stderr:  # noqa
             submission_output = EVALUATION_SCRIPTS[challenge_id].evaluate(
