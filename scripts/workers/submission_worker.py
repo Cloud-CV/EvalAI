@@ -15,10 +15,11 @@ import shutil
 import sys
 import tempfile
 import time
+import traceback
 import yaml
 
-import scripts.workers.worker_util as w_u
-from scripts.workers.worker_util import GracefulKiller
+import scripts.workers.worker_utils as w_u
+from scripts.workers.worker_utils import GracefulKiller
 
 from os.path import join
 
@@ -191,9 +192,9 @@ def extract_submission_data(submission_id):
         submission_id=submission.id, input_file=submission_input_file_name
     )
     # create submission directory
-    create_dir_as_python_package(submission_data_directory)
+    w_u.create_dir_as_python_package(submission_data_directory)
 
-    download_and_extract_file(
+    w_u.download_and_extract_file(
         submission_input_file, submission_input_file_path
     )
 
@@ -235,7 +236,7 @@ def run_submission(
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, "run")
-    create_dir(temp_run_dir)
+    w_u.create_dir(temp_run_dir)
 
     stdout_file = join(temp_run_dir, "temp_stdout.txt")
     stderr_file = join(temp_run_dir, "temp_stderr.txt")

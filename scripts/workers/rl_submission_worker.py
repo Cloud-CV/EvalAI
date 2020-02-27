@@ -2,8 +2,8 @@ import logging
 import os
 import signal
 
-import worker_util as w_u
-from worker_util import EvalAI_Interface, GracefulKiller
+import worker_utils as w_u
+from worker_utils import EvalAI_Interface, GracefulKiller
 
 from kubernetes import client, config
 

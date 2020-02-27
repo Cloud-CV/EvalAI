@@ -14,8 +14,8 @@ import tempfile
 import time
 import traceback
 
-import worker_util as w_u
-from worker_util import EvalAI_Interface, GracefulKiller
+import worker_utils as w_u
+from worker_utils import EvalAI_Interface, GracefulKiller
 
 from os.path import join
 
@@ -156,7 +156,6 @@ def process_submission_message(message, api):
     # so that the further execution does not happen
     if not submission_instance:
         return
-    #api
     challenge = api.get_challenge_by_queue_name()
     remote_evaluation = challenge.get("remote_evaluation")
     challenge_phase = api.get_challenge_phase_by_pk(challenge_pk, phase_pk)
