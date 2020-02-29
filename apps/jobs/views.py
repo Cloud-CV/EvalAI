@@ -1397,7 +1397,7 @@ def delete_submission_message_from_queue(request, queue_name):
 @authentication_classes((ExpiringTokenAuthentication,))
 def get_message_count_from_queue(request, queue_name):
     """
-    API to fetch total number of messages in AWS SQS queue.
+    API to get the total number of pending messages in AWS SQS queue.
 
     - Arguments:
         ``queue_name``: AWS SQS queue name

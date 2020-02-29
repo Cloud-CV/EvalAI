@@ -44,7 +44,7 @@ class BaseTestClass(TestCase):
         return "/api/jobs/queues/{}/".format(queue_name)
 
     def get_message_count_from_sqs_queue_url(self, queue_name):
-        return "/api/jobs/count/queues/{}/".format(queue_name)
+        return "/api/messages/{}/count".format(queue_name)
 
     def get_submission_by_pk_url(self, submission_pk):
         return "/api/jobs/submission/{}".format(submission_pk)

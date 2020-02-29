@@ -56,7 +56,7 @@ urlpatterns = [
         name="get_submission_message_from_queue",
     ),
     url(
-        r"^count/queues/(?P<queue_name>[\w-]+)/$",
+        r"^messages/(?P<queue_name>[\w-]+)/count$",
         views.get_message_count_from_queue,
         name="get_message_count_from_queue",
     ),
