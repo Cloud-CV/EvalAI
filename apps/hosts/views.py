@@ -155,7 +155,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def challenge_host_detail(request, challenge_host_team_pk, challenge_host_pk):
+def challenge_host_details(request, challenge_host_team_pk, challenge_host_pk):
     get_challenge_host_model = get_model_object(ChallengeHostTeam)
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(
