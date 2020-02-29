@@ -1,5 +1,4 @@
 from datetime import timedelta
-import time
 
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
@@ -81,7 +80,6 @@ class TestSQSQueueAPI(BaseAPITestClass):
         super(TestSQSQueueAPI, self).setUp()
 
         self.queue = get_or_create_sqs_queue(self.challenge.queue)
-        time.sleep(5)
 
         self.submission_pk = 0
         self.phase_pk = 1
@@ -94,7 +92,6 @@ class TestSQSQueueAPI(BaseAPITestClass):
     def test_get_submission_message_from_sqs_queue(self):
         # clear queue and wait for purging
         self.queue.purge()
-        time.sleep(5)
 
         # submit message to queue
         self.message['submission_pk'] += 1
