@@ -1,4 +1,5 @@
 from datetime import timedelta
+import time
 
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.models import User
@@ -75,10 +76,12 @@ class BaseAPITestClass(APITestCase):
 
 
 class TestSQSQueueAPI(BaseAPITestClass):
+
     def setUp(self):
         super(TestSQSQueueAPI, self).setUp()
 
         self.queue = get_or_create_sqs_queue(self.challenge.queue)
+        time.sleep(5)
 
         self.submission_pk = 0
         self.phase_pk = 1
@@ -89,6 +92,10 @@ class TestSQSQueueAPI(BaseAPITestClass):
         }
 
     def test_get_submission_message_from_sqs_queue(self):
+        # clear queue and wait for purging
+        self.queue.purge()
+        time.sleep(60)
+
         # submit message to queue
         self.message['submission_pk'] += 1
         publish_submission_message(self.message)
@@ -125,5 +132,6 @@ class TestSQSQueueAPI(BaseAPITestClass):
 
         # get message from sqs queue
         response = self.client.get(self.url, {})
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['total_messages'], self.expected_count)
