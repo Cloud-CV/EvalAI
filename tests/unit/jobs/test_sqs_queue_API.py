@@ -89,6 +89,10 @@ class TestSQSQueueAPI(BaseAPITestClass):
         }
 
     def test_get_submission_message_from_sqs_queue(self):
+        messages = queue.receive_messages()
+        for message in messages:
+            message.delete()
+
         # submit message to queue
         self.message['submission_pk'] += 1
         publish_submission_message(self.message)
@@ -106,6 +110,11 @@ class TestSQSQueueAPI(BaseAPITestClass):
         self.assertEqual(response.data['body'], self.message)
 
     def test_get_message_count_from_sqs_queue(self):
+        messages = queue.receive_messages()
+        for message in messages:
+            message.delete()
+
+
         # submit message to queue
         self.url = reverse_lazy(
             "jobs:get_message_count_from_queue",
