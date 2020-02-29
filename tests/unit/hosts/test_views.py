@@ -332,7 +332,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
     def setUp(self):
         super(GetParticularChallengeHost, self).setUp()
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_detail",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host.pk,
@@ -353,7 +353,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
 
     def test_particular_challenge_host_does_not_exist(self):
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_detail",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host.pk + 1,
@@ -368,7 +368,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
         self
     ):
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_detail",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk + 1,
                 "challenge_host_pk": self.challenge_host.pk,
@@ -384,7 +384,7 @@ class UpdateParticularChallengeHost(BaseAPITestClass):
     def setUp(self):
         super(UpdateParticularChallengeHost, self).setUp()
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_detail",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host.pk,
@@ -430,14 +430,14 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
     def setUp(self):
         super(DeleteParticularChallengeHost, self).setUp()
         self.url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challenge_host_detail",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host.pk,
             },
         )
 
-    def test_particular_challenge_host_delete(self):
+    def test_particular_challenge_host_detail(self):
         response = self.client.delete(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
