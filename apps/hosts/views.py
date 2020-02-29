@@ -14,7 +14,10 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import (
+    paginated_queryset,
+    get_model_object,
+)
 from .models import ChallengeHost, ChallengeHostTeam
 from .serializers import (
     ChallengeHostSerializer,
@@ -153,7 +156,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_detail(request, challenge_host_team_pk, challenge_host_pk):
-    get_challenge_host_model = get_model_object(ChallengeHost)
+    get_challenge_host_model = get_model_object(ChallengeHostTeam)
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(
             pk=challenge_host_team_pk
