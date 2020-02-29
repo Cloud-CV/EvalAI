@@ -88,7 +88,7 @@ class TestSQSQueueAPI(BaseAPITestClass):
             'submission_pk': self.submission_pk,
         }
 
-    def test_get_submission_message_from_queue(self):
+    def test_get_submission_message_from_sqs_queue(self):
         # submit message to queue
         self.message['submission_pk'] += 1
         publish_submission_message(self.message)
@@ -105,10 +105,10 @@ class TestSQSQueueAPI(BaseAPITestClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['body'], self.message)
 
-    def test_get_total_messages_in_queue(self):
+    def test_get_message_count_from_sqs_queue(self):
         # submit message to queue
         self.url = reverse_lazy(
-            "jobs:get_total_messages_in_queue",
+            "jobs:get_message_count_from_queue",
             kwargs={
                 "queue_name": self.challenge.queue,
             },

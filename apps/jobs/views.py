@@ -1372,7 +1372,7 @@ def delete_submission_message_from_queue(request, queue_name):
             required=True,
         )
     ],
-    operation_id="get_total_messages_in_queue",
+    operation_id="get_message_count_from_queue",
     responses={
         status.HTTP_200_OK: openapi.Response(
             description="dict object for count",
@@ -1395,7 +1395,7 @@ def delete_submission_message_from_queue(request, queue_name):
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
-def get_total_messages_in_queue(request, queue_name):
+def get_message_count_from_queue(request, queue_name):
     """
     API to fetch total number of messages in AWS SQS queue.
 

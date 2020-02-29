@@ -650,7 +650,7 @@ def get_or_create_sqs_queue(queue_name):
             aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
         )
     if queue_name == "":
-        queue_name = "evalai_submission_queue"
+        # queue_name = "evalai_submission_queue"
     # Check if the queue exists. If no, then create one
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
