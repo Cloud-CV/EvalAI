@@ -94,7 +94,7 @@ class TestSQSQueueAPI(BaseAPITestClass):
     def test_get_submission_message_from_sqs_queue(self):
         # clear queue and wait for purging
         self.queue.purge()
-        time.sleep(60)
+        time.sleep(5)
 
         # submit message to queue
         self.message['submission_pk'] += 1
