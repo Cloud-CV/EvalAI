@@ -57,7 +57,7 @@ class TestStringMethods(BaseAPITestClass):
         )
 
         url = reverse_lazy(
-            "hosts:get_challenge_host_delete",
+            "hosts:get_challlenge_host_detail",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
                 "challenge_host_pk": self.challenge_host.pk,
