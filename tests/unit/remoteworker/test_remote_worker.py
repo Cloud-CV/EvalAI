@@ -108,7 +108,7 @@ class APICallsTestClass(BaseTestClass):
         mock_make_request.assert_called_with(url, "POST", data=expected_data)
 
     def test_get_message_count_from_sqs_queue(self, mock_make_request, mock_url):
-        url = self.get_message_count_from_sqs_queue_url"evalai_submission_queue")
+        url = self.get_message_count_from_sqs_queue_url("evalai_submission_queue")
         get_message_count_from_queue()
         mock_url.assert_called_with(url)
         url = mock_url(url)
