@@ -34,6 +34,7 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
         "stderr_file",
         "submission_result_file",
         "submission_metadata_file",
+        "job_name",
     )
     list_filter = (
         "challenge_phase__challenge",
@@ -98,15 +99,15 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
     submit_job_to_worker.short_description = "Run selected submissions"
 
     def make_submission_public(self, request, queryset):
-        for submision in queryset:
-            submision.is_public = True
-            submision.save()
+        for submission in queryset:
+            submission.is_public = True
+            submission.save()
 
     make_submission_public.short_description = "Make submission public"
 
     def make_submission_private(self, request, queryset):
-        for submision in queryset:
-            submision.is_public = False
-            submision.save()
+        for submission in queryset:
+            submission.is_public = False
+            submission.save()
 
     make_submission_public.short_description = "Make submission private"
