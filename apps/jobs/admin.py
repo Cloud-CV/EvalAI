@@ -52,7 +52,7 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
 
     def get_challenge_name_and_id(self, obj):
         """Return challenge name corresponding to phase"""
-        return "%s - %s" % (
+        return "{} - {}".format(
             obj.challenge_phase.challenge.title,
             obj.challenge_phase.challenge.id,
         )
