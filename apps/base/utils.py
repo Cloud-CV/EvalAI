@@ -86,7 +86,7 @@ def decode_data(data):
     decoded = []
     for i in data:
         s = i + "=="
-        decoded.append(base64.decodebytes(s.encode()))
+        decoded.append(base64.decodebytes((i + "==").encode()))
     return decoded
 
 
