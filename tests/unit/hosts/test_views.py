@@ -359,8 +359,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
                 "pk": self.challenge_host.pk + 1,
             },
         )
-        pk = self.challenge_host.pk + 1
-        expected = {"error": "ChallengeHost " + pk + " does not exist"}
+        expected = {"error": "ChallengeHost does not exist"}
         response = self.client.get(self.url, {})
         self.assertEqual(response.data, expected)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
