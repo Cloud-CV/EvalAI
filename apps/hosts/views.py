@@ -158,6 +158,7 @@ def challenge_host_list(request, challenge_host_team_pk):
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
 @authentication_classes((ExpiringTokenAuthentication,))
 def challenge_host_get_update_delete(request, challenge_host_team_pk, pk):
+    challengeHost = get_challenge_host_model(pk)
     try:
         challenge_host_team = ChallengeHostTeam.objects.get(
             pk=challenge_host_team_pk
@@ -167,8 +168,8 @@ def challenge_host_get_update_delete(request, challenge_host_team_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge_host = get_challenge_host_model(pk)
-    except challenge_host.DoesNotExist:
+        challengeHost = get_challenge_host_model(pk)
+    except ChallengeHost.DoesNotExist:
         response_data = {"error": "ChallengeHost does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
