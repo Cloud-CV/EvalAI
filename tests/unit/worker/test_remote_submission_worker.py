@@ -1,10 +1,8 @@
 import json
 import mock
 import os
-from os.path import join
 import responses
 import shutil
-import tempfile
 from unittest import TestCase
 
 from tests.data import challenge_response, submission_response
@@ -24,13 +22,12 @@ class BaseTestClass(TestCase):
             os.makedirs(self.SUBMISSION_DATA_BASE_DIR)
         except OSError:
             pass
-            
         self.api = EvalAI_Interface(
-            AUTH_TOKEN = "test_token", 
-            EVALAI_API_SERVER = "http://testserver",
-            QUEUE_NAME = "test_queue"
+            AUTH_TOKEN="test_token",
+            EVALAI_API_SERVER="http://testserver",
+            QUEUE_NAME="test_queue"
         )
-    
+
     def tearDown(self):
         try:
             shutil.rmtree(self.BASE_TEMP_DIR)
@@ -51,7 +48,7 @@ class ChallengeDataTestClass(BaseTestClass):
     @mock.patch("scripts.workers.remote_submission_worker.importlib.import_module")
     def test_extract_challenge_data_successfully(self, mock_import, mock_cd, mock_dezf, mock_cdapp, mock_def):
         remote_submission_worker.extract_challenge_data(self.challenge, self.phases)
-        
+
         challenge_dir = self.CHALLENGE_DATA_BASE_DIR + "/challenge_1"
         mock_cdapp.assert_any_call(challenge_dir)
 
@@ -65,17 +62,16 @@ class ChallengeDataTestClass(BaseTestClass):
 
         challenge_phase_dir = challenge_dir + "/phase_data"
         mock_cd.assert_any_call(challenge_phase_dir)
-        
+
         mock_cd.assert_any_call(challenge_phase_dir + "/phase_1")
         mock_def.assert_any_call("http://test_annotation.txt", challenge_phase_dir + "/phase_2/test_annotation.txt")
-        
-        
+
         mock_cd.assert_any_call(challenge_phase_dir + "/phase_2")
         mock_def.assert_any_call("http://test_annotation.txt", challenge_phase_dir + "/phase_2/test_annotation.txt")
-        
+
         import_string = "challenge_data" + "." + "challenge_1"
         mock_import.assert_called_with(import_string)
-    
+
     @responses.activate
     @mock.patch("scripts.workers.worker_utils.create_dir_as_python_package")
     @mock.patch("scripts.workers.remote_submission_worker.extract_challenge_data")
@@ -83,26 +79,25 @@ class ChallengeDataTestClass(BaseTestClass):
         responses.add(
             responses.GET,
             'http://testserver/api/challenges/challenge/queues/test_queue/',
-            json = self.challenge
+            json=self.challenge
         )
         responses.add(
             responses.GET,
             'http://testserver/api/challenges/1/phases/',
-            json = self.phases
+            json=self.phases
         )
         remote_submission_worker.load_challenge(self.api)
 
         mock_cdapp(self.CHALLENGE_DATA_BASE_DIR)
         mock_ecd(self.challenge, self.phases)
 
-
     @responses.activate
     @mock.patch("scripts.workers.worker_utils.logger.critical")
     def test_load_challenge_fails(self, mock_logger):
         responses.add(
-            responses.GET, 
+            responses.GET,
             'http://testserver/api/challenges/challenge/queues/non_existent_queue/',
-            json = {}
+            json={}
         )
         self.api.QUEUE_NAME = 'non_existent_queue'
         remote_submission_worker.load_challenge(self.api)
@@ -111,7 +106,6 @@ class ChallengeDataTestClass(BaseTestClass):
         mock_logger.assert_called_with(
             "Challenge with queue name non_existent_queue does not exists"
         )
-    
 
     @mock.patch("scripts.workers.remote_submission_worker.importlib.import_module")
     @mock.patch("scripts.workers.worker_utils.logger.exception")
@@ -120,7 +114,7 @@ class ChallengeDataTestClass(BaseTestClass):
         mock_import.side_effect = ImportError
 
         with self.assertRaises(Exception):
-            submission_worker.extract_challenge_data(self.challenge, self.phases)
+            remote_submission_worker.extract_challenge_data(self.challenge, self.phases)
             mock_logger.assert_called_with("Exception raised while creating Python module for challenge_id: {}".format(self.challenge.pk))
 
 
@@ -128,7 +122,7 @@ class SubmissionDataTestClass(BaseTestClass):
     def setUp(self):
         super(SubmissionDataTestClass, self).setUp()
         self.submission = json.loads(submission_response.submission_result)
-    
+
     @responses.activate
     @mock.patch("scripts.workers.worker_utils.download_and_extract_file")
     @mock.patch("scripts.workers.worker_utils.create_dir_as_python_package")
@@ -136,7 +130,7 @@ class SubmissionDataTestClass(BaseTestClass):
         responses.add(
             responses.GET,
             'http://testserver/api/jobs/submission/1',
-            json = self.submission
+            json=self.submission
         )
         self.submission_pk = 1
         remote_submission_worker.extract_submission_data(self.submission_pk, self.api)
@@ -147,17 +141,17 @@ class SubmissionDataTestClass(BaseTestClass):
         submission_input_file = "http://testserver/media/submission_files/submission_1/2224fb89-6828-47f4-b170-1279290ad900.json"
         submission_input_file_path = submission_data_directory + "/2224fb89-6828-47f4-b170-1279290ad900.json"
         mock_def.assert_called_with(
-            submission_input_file, 
+            submission_input_file,
             submission_input_file_path
         )
-    
+
     @responses.activate
     @mock.patch("scripts.workers.worker_utils.logger.critical")
     def test_extract_submission_not_exist(self, mock_logger):
         responses.add(
             responses.GET,
             'http://testserver/api/jobs/submission/2',
-            json = {}
+            json={}
         )
         self.submission_pk = 2
         remote_submission_worker.extract_submission_data(self.submission_pk, self.api)
@@ -182,36 +176,36 @@ class ProcessSubmissionTestClass(BaseTestClass):
         remote_submission_worker.process_submission_callback(self.queue_message, self.api)
         mock_logger.assert_called_with("[x] Received submission message %s" % self.queue_message)
         mock_psm.assert_called_with(self.queue_message, self.api)
-    
+
     @responses.activate
     @mock.patch("scripts.workers.remote_submission_worker.run_submission")
     def test_process_submission_message_success(self, mock_rs):
         responses.add(
             responses.GET,
             'http://testserver/api/challenges/challenge/queues/test_queue/',
-            json = self.challenge
+            json=self.challenge
         )
         responses.add(
             responses.GET,
             'http://testserver/api/jobs/challenge/queues/test_queue/',
-            json = self.queue_message
+            json=self.queue_message
         )
         responses.add(
             responses.GET,
             'http://testserver/api/challenges/challenge/1/challenge_phase/1',
-            json = self.phase
+            json=self.phase
         )
         responses.add(
             responses.GET,
             'http://testserver/api/jobs/submission/2',
-            json = self.submission
+            json=self.submission
         )
 
         remote_submission_worker.process_submission_message(self.queue_message, self.api)
 
         user_annotation_file_path = self.SUBMISSION_DATA_BASE_DIR + "/submission_2" + \
             "/2224fb89-6828-47f4-b170-1279290ad900.json"
-        
+
         remote_evaluation = True
 
         mock_rs.assert_called_with(
