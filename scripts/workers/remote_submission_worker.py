@@ -61,13 +61,12 @@ def load_challenge(api):
     """
     # make sure that the challenge base directory exists
     w_u.create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
-    try:
-        challenge = api.get_challenge_by_queue_name()
-    except Exception:
-        w_u.logger.exception(
-            "Challenge with queue name %s does not exists" % (QUEUE_NAME)
+    challenge = api.get_challenge_by_queue_name()
+    if not challenge:
+        w_u.logger.critical(
+            "Challenge with queue name %s does not exists" % (api.QUEUE_NAME)
         )
-        raise
+        return
     challenge_pk = challenge.get("id")
     phases = api.get_challenge_phases_by_challenge_pk(challenge_pk)
     extract_challenge_data(challenge, phases)
@@ -81,7 +80,6 @@ def extract_challenge_data(challenge, phases):
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
         challenge_id=challenge.get("id")
     )
-    evaluation_script_url = challenge.get("evaluation_script")
     w_u.create_dir_as_python_package(challenge_data_directory)
 
     # set entry in map
@@ -91,6 +89,8 @@ def extract_challenge_data(challenge, phases):
         challenge_data_directory,
         "challenge_{}.zip".format(challenge.get("id")),
     )
+
+    evaluation_script_url = challenge.get("evaluation_script")
     w_u.download_and_extract_zip_file(
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
