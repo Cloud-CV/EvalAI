@@ -28,6 +28,7 @@ from scripts.workers.submission_worker import (
 
 from scripts.workers.worker_utils import FileHandler
 
+
 class BaseAPITestClass(APITestCase):
     def setUp(self):
 
