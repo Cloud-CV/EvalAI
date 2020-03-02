@@ -8,8 +8,6 @@ import traceback
 from os.path import join
 import zipfile
 
-AUTH_TOKEN = os.environ.get("AUTH_TOKEN")
-
 logger = logging.getLogger(__name__)
 
 
@@ -71,68 +69,17 @@ class EvalAI_Interface:
 
     def make_request(self, url, method, data=None):
         headers = self.get_request_headers()
-        if method == "GET":
-            try:
-                response = requests.get(url=url, headers=headers)
-                response.raise_for_status()
-            except requests.exceptions.RequestException:
-                logger.info(
-                    "The worker is not able to establish connection with EvalAI"
-                )
-                raise
-            return response.json()
-
-        elif method == "PUT":
-            try:
-                response = requests.put(url=url, headers=headers, data=data)
-                response.raise_for_status()
-            except requests.exceptions.RequestException:
-                logger.exception(
-                    "The worker is not able to establish connection with EvalAI due to {}"
-                    % (response.json())
-                )
-                raise
-            except requests.exceptions.HTTPError:
-                logger.exception(
-                    "The request to URL {} is failed due to {}"
-                    % (url, response.json())
-                )
-                raise
-            return response.json()
-
-        elif method == "PATCH":
-            try:
-                response = requests.patch(url=url, headers=headers, data=data)
-                response.raise_for_status()
-            except requests.exceptions.RequestException:
-                logger.info(
-                    "The worker is not able to establish connection with EvalAI"
-                )
-                raise
-            except requests.exceptions.HTTPError:
-                logger.info(
-                    "The request to URL {} is failed due to {}"
-                    % (url, response.json())
-                )
-                raise
-            return response.json()
-
-        elif method == "POST":
-            try:
-                response = requests.post(url=url, headers=headers, data=data)
-                response.raise_for_status()
-            except requests.exceptions.RequestException:
-                logger.info(
-                    "The worker is not able to establish connection with EvalAI"
-                )
-                raise
-            except requests.exceptions.HTTPError:
-                logger.info(
-                    "The request to URL {} is failed due to {}"
-                    % (url, response.json())
-                )
-                raise
-            return response.json()
+        try:
+            response = requests.request(
+                method=method, url=url, headers=headers, data=data
+            )
+            response.raise_for_status()
+        except requests.exceptions.RequestException:
+            logger.info(
+                "The worker is not able to establish connection with EvalAI"
+            )
+            raise
+        return response.json()
 
     def return_url_per_environment(self, url):
         base_url = "{0}".format(self.EVALAI_API_SERVER)
@@ -193,91 +140,87 @@ class EvalAI_Interface:
         return response
 
 
-def download_and_extract_file(url, download_location):
-    """
-        * Function to extract download a file.
-        * `download_location` should include name of file as well.
-    """
-    try:
-        response = requests.get(url, stream=True)
-    except Exception as e:
-        logger.error("Failed to fetch file from {}, error {}".format(url, e))
-        traceback.print_exc()
-        response = None
+class FileHandler:
+    def download_and_extract_file(self, url, download_location):
+        """
+            * Function to extract download a file.
+            * `download_location` should include name of file as well.
+        """
+        try:
+            response = requests.get(url, stream=True)
+        except Exception as e:
+            logger.error("Failed to fetch file from {}, error {}".format(url, e))
+            traceback.print_exc()
+            response = None
 
-    if response and response.status_code == 200:
-        with open(download_location, "wb") as f:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
+        if response and response.status_code == 200:
+            with open(download_location, "wb") as f:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
 
+    def extract_zip_file(self, download_location, extract_location):
+        """
+        Helper function to extract zip file
+        Params:
+            * `download_location`: Location of zip file
+            * `extract_location`: Location of directory for extracted file
+        """
+        zip_ref = zipfile.ZipFile(download_location, "r")
+        zip_ref.extractall(extract_location)
+        zip_ref.close()
 
-def extract_zip_file(download_location, extract_location):
-    """
-    Helper function to extract zip file
-    Params:
-        * `download_location`: Location of zip file
-        * `extract_location`: Location of directory for extracted file
-    """
-    zip_ref = zipfile.ZipFile(download_location, "r")
-    zip_ref.extractall(extract_location)
-    zip_ref.close()
-
-
-def delete_zip_file(download_location):
-    """
-    Helper function to remove zip file from location `download_location`
-    Params:
-        * `download_location`: Location of file to be removed.
-    """
-    try:
-        os.remove(download_location)
-    except Exception as e:
-        logger.error(
-            "Failed to remove zip file {}, error {}".format(
-                download_location, e
+    def delete_zip_file(self, download_location):
+        """
+        Helper function to remove zip file from location `download_location`
+        Params:
+            * `download_location`: Location of file to be removed.
+        """
+        try:
+            os.remove(download_location)
+        except Exception as e:
+            logger.error(
+                "Failed to remove zip file {}, error {}".format(
+                    download_location, e
+                )
             )
-        )
-        traceback.print_exc()
+            traceback.print_exc()
 
+    def download_and_extract_zip_file(self, url, download_location, extract_location):
+        """
+            * Function to extract download a zip file, extract it and then removes the zip file.
+            * `download_location` should include name of file as well.
+        """
+        try:
+            response = requests.get(url, stream=True)
+        except Exception as e:
+            logger.error("Failed to fetch file from {}, error {}".format(url, e))
+            response = None
 
-def download_and_extract_zip_file(url, download_location, extract_location):
-    """
-        * Function to extract download a zip file, extract it and then removes the zip file.
-        * `download_location` should include name of file as well.
-    """
-    try:
-        response = requests.get(url, stream=True)
-    except Exception as e:
-        logger.error("Failed to fetch file from {}, error {}".format(url, e))
-        response = None
+        if response and response.status_code == 200:
+            with open(download_location, "wb") as f:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
+            # extract zip file
+            self.extract_zip_file(download_location, extract_location)
+            # delete zip file
+            self.delete_zip_file(download_location)
 
-    if response and response.status_code == 200:
-        with open(download_location, "wb") as f:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-        # extract zip file
-        extract_zip_file(download_location, extract_location)
-        # delete zip file
-        delete_zip_file(download_location)
+    def create_dir(self, directory):
+        """
+            Creates a directory if it does not exists
+        """
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
-
-def create_dir(directory):
-    """
-        Creates a directory if it does not exists
-    """
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-
-def create_dir_as_python_package(directory):
-    """
-        Create a directory and then makes it a python
-        package by creating `__init__.py` file.
-    """
-    create_dir(directory)
-    init_file_path = join(directory, "__init__.py")
-    with open(init_file_path, "w") as init_file:  # noqa
-        # to create empty file
-        pass
+    def create_dir_as_python_package(self, directory):
+        """
+            Create a directory and then makes it a python
+            package by creating `__init__.py` file.
+        """
+        self.create_dir(directory)
+        init_file_path = join(directory, "__init__.py")
+        with open(init_file_path, "w") as init_file:  # noqa
+            # to create empty file
+            pass

@@ -1,15 +1,16 @@
-import logging
 import os
 
 import scripts.workers.worker_utils as w_u
-from scripts.workers.worker_utils import EvalAI_Interface, GracefulKiller
+from scripts.workers.worker_utils import (
+    EvalAI_Interface,
+    GracefulKiller
+)
 
 from kubernetes import client, config
 
 # TODO: Add exception in all the commands
 # from kubernetes.client.rest import ApiException
 
-logger = logging.getLogger(__name__)
 config.load_kube_config()
 batch_v1 = client.BatchV1Api()
 
@@ -119,7 +120,7 @@ def process_submission_callback(body, evalai):
         evalai {[EvalAI class object]} -- EvalAI class object imported from worker_utils
     """
     try:
-        logger.info("[x] Received submission message %s" % body)
+        w_u.logger.info("[x] Received submission message %s" % body)
         job = create_job_object(body)
         response = create_job(batch_v1, job)
         submission_data = {
@@ -129,7 +130,7 @@ def process_submission_callback(body, evalai):
         }
         evalai.update_submission_status(submission_data, body["challenge_pk"])
     except Exception as e:
-        logger.exception(
+        w_u.logger.exception(
             "Exception while receiving message from submission queue with error {}".format(
                 e
             )

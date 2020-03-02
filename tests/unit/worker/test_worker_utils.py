@@ -8,15 +8,7 @@ from os.path import join
 from unittest import TestCase
 import zipfile
 
-from scripts.workers.worker_utils import EvalAI_Interface
-from scripts.workers.worker_utils import (
-    create_dir_as_python_package,
-    create_dir,
-    download_and_extract_file,
-    download_and_extract_zip_file,
-    extract_zip_file,
-    delete_zip_file
-)
+from scripts.workers.worker_utils import EvalAI_Interface, FileHandler
 
 
 class BaseTestClass(TestCase):
@@ -64,24 +56,24 @@ class MakeRequestTestClass(BaseTestClass):
         self.api = EvalAI_Interface(AUTH_TOKEN, EVALAI_API_SERVER, QUEUE_NAME)
 
     def test_make_request_get(self, mock_make_request):
-        self.api.make_request(self.url, "GET")
-        mock_make_request.get.assert_called_with(url=self.url, headers=self.headers)
+        self.api.make_request(self.url, "GET", data=None)
+        mock_make_request.request.assert_called_with(method="GET", url=self.url, headers=self.headers, data=None)
 
     def test_make_request_put(self, mock_make_request):
         self.api.make_request(self.url, "PUT", data=self.data)
-        mock_make_request.put.assert_called_with(url=self.url, headers=self.headers, data=self.data)
+        mock_make_request.request.assert_called_with(method="PUT", url=self.url, headers=self.headers, data=self.data)
 
     def test_make_request_patch(self, mock_make_request):
         self.api.make_request(self.url, "PATCH", data=self.data)
-        mock_make_request.patch.assert_called_with(url=self.url, headers=self.headers, data=self.data)
+        mock_make_request.request.assert_called_with(method="PATCH", url=self.url, headers=self.headers, data=self.data)
 
     def test_make_request_post(self, mock_make_request):
         self.api.make_request(self.url, "POST", data=self.data)
-        mock_make_request.post.assert_called_with(url=self.url, headers=self.headers, data=self.data)
+        mock_make_request.request.assert_called_with(method="POST", url=self.url, headers=self.headers, data=self.data)
 
 
-@mock.patch("scripts.workers.worker_utils.EvalAI_Interface.return_url_per_environment")
-@mock.patch("scripts.workers.worker_utils.EvalAI_Interface.make_request")
+@mock.patch.object(EvalAI_Interface, "return_url_per_environment")
+@mock.patch.object(EvalAI_Interface, "make_request")
 class APICallsTestClass(BaseTestClass):
     def setUp(self):
         super(APICallsTestClass, self).setUp()
@@ -170,9 +162,10 @@ class CreateDirAsPythonPackageTest(BaseTestClass):
 
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
         self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
+        self.file_handle = FileHandler()
 
     def test_create_dir_as_python_package(self):
-        create_dir_as_python_package(self.temp_directory)
+        self.file_handle.create_dir_as_python_package(self.temp_directory)
         self.assertTrue(os.path.isfile(join(self.temp_directory, "__init__.py")))
 
         with open(join(self.temp_directory, "__init__.py")) as f:
@@ -185,6 +178,7 @@ class CreateDirAsPythonPackageTest(BaseTestClass):
 class DownloadAndExtractFileTest(BaseTestClass):
     def setUp(self):
         super(DownloadAndExtractFileTest, self).setUp()
+        self.file_handle = FileHandler()
         self.req_url = "{}{}".format(self.testserver, self.make_request_url())
         self.file_content = b'file content'
 
@@ -202,7 +196,7 @@ class DownloadAndExtractFileTest(BaseTestClass):
                       content_type='application/octet-stream',
                       status=200)
 
-        download_and_extract_file(self.req_url, self.download_location)
+        self.file_handle.download_and_extract_file(self.req_url, self.download_location)
 
         self.assertTrue(os.path.exists(self.download_location))
         with open(self.download_location, "rb") as f:
@@ -215,7 +209,7 @@ class DownloadAndExtractFileTest(BaseTestClass):
         responses.add(responses.GET, self.req_url, body=Exception(error))
         expected = "Failed to fetch file from {}, error {}".format(self.req_url, error)
 
-        download_and_extract_file(self.req_url, self.download_location)
+        self.file_handle.download_and_extract_file(self.req_url, self.download_location)
 
         mock_logger.assert_called_with(expected)
         self.assertFalse(os.path.exists(self.download_location))
@@ -233,7 +227,8 @@ class DownloadAndExtractZipFileTest(BaseTestClass):
         self.req_url = "{}/{}".format(self.testserver, self.zip_name)
         self.extract_location = join(self.BASE_TEMP_DIR, "test-dir")
         self.download_location = join(self.extract_location, "{}.zip".format(self.zip_name))
-        create_dir(self.extract_location)
+        self.file_handle = FileHandler()
+        self.file_handle.create_dir(self.extract_location)
 
         self.file_name = "test_file.txt"
         self.file_content = b"file_content"
@@ -247,15 +242,15 @@ class DownloadAndExtractZipFileTest(BaseTestClass):
             shutil.rmtree(self.extract_location)
 
     @responses.activate
-    @mock.patch("scripts.workers.worker_utils.delete_zip_file")
-    @mock.patch("scripts.workers.worker_utils.extract_zip_file")
+    @mock.patch.object(FileHandler, "delete_zip_file")
+    @mock.patch.object(FileHandler, "extract_zip_file")
     def test_download_and_extract_zip_file_success(self, mock_extract_zip, mock_delete_zip):
         responses.add(
             responses.GET, self.req_url,
             content_type="application/zip",
             body=self.zip_file.getvalue(), status=200)
 
-        download_and_extract_zip_file(self.req_url, self.download_location, self.extract_location)
+        self.file_handle.download_and_extract_zip_file(self.req_url, self.download_location, self.extract_location)
 
         with open(self.download_location, "rb") as downloaded:
             self.assertEqual(downloaded.read(), self.zip_file.getvalue())
@@ -271,7 +266,7 @@ class DownloadAndExtractZipFileTest(BaseTestClass):
             body=Exception(e))
         error_message = "Failed to fetch file from {}, error {}".format(self.req_url, e)
 
-        download_and_extract_zip_file(self.req_url, self.download_location, self.extract_location)
+        self.file_handle.download_and_extract_zip_file(self.req_url, self.download_location, self.extract_location)
 
         mock_logger.assert_called_with(error_message)
 
@@ -279,7 +274,7 @@ class DownloadAndExtractZipFileTest(BaseTestClass):
         with open(self.download_location, "wb") as zf:
             zf.write(self.zip_file.getvalue())
 
-        extract_zip_file(self.download_location, self.extract_location)
+        self.file_handle.extract_zip_file(self.download_location, self.extract_location)
         extracted_path = join(self.extract_location, self.file_name)
         self.assertTrue(os.path.exists(extracted_path))
         with open(extracted_path, "rb") as extracted:
@@ -289,7 +284,7 @@ class DownloadAndExtractZipFileTest(BaseTestClass):
         with open(self.download_location, "wb") as zf:
             zf.write(self.zip_file.getvalue())
 
-        delete_zip_file(self.download_location)
+        self.file_handle.delete_zip_file(self.download_location)
 
         self.assertFalse(os.path.exists(self.download_location))
 
@@ -300,7 +295,7 @@ class DownloadAndExtractZipFileTest(BaseTestClass):
         mock_remove.side_effect = Exception(e)
         error_message = "Failed to remove zip file {}, error {}".format(self.download_location, e)
 
-        delete_zip_file(self.download_location)
+        self.file_handle.delete_zip_file(self.download_location)
         mock_logger.assert_called_with(error_message)
 
 
@@ -309,17 +304,18 @@ class CreateDirectoryTests(BaseTestClass):
         super(CreateDirectoryTests, self).setUp()
         self.BASE_TEMP_DIR = tempfile.mkdtemp()
         self.temp_directory = join(self.BASE_TEMP_DIR, "temp_dir")
+        self.file_handle = FileHandler()
 
     def tearDown(self):
         if os.path.exists(self.temp_directory):
             shutil.rmtree(self.temp_directory)
 
     def test_create_dir(self):
-        create_dir(self.temp_directory)
+        self.file_handle.create_dir(self.temp_directory)
         self.assertTrue(os.path.isdir(self.temp_directory))
         shutil.rmtree(self.temp_directory)
 
     def test_create_dir_as_python_package(self):
-        create_dir_as_python_package(self.temp_directory)
+        self.file_handle.create_dir_as_python_package(self.temp_directory)
         self.assertTrue(os.path.isfile(join(self.temp_directory, "__init__.py")))
         shutil.rmtree(self.temp_directory)

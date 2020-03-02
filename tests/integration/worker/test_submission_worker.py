@@ -29,6 +29,7 @@ from hosts.models import ChallengeHostTeam
 from jobs.models import Submission
 
 import scripts.workers.submission_worker as submission_worker
+from scripts.workers.worker_utils import FileHandler
 
 
 class BaseTestClass(APITestCase):
@@ -213,9 +214,9 @@ class ExtractSubmissionDataTestClass(BaseTestClass):
 
     @mock.patch("scripts.workers.submission_worker.SUBMISSION_DATA_DIR", "mocked/dir/submission_{submission_id}")
     @mock.patch("scripts.workers.submission_worker.SUBMISSION_INPUT_FILE_PATH", "mocked/dir/submission_{submission_id}/{input_file}")
-    @mock.patch("scripts.workers.worker_utils.download_and_extract_file")
-    @mock.patch("scripts.workers.worker_utils.create_dir_as_python_package")
-    def test_extract_submission_data_succesfully(self, mock_createdir, mock_down_ext):
+    @mock.patch.object(FileHandler, "create_dir_as_python_package")
+    @mock.patch.object(FileHandler, "download_and_extract_file")
+    def test_extract_submission_data_succesfully(self, mock_def, mock_cdapp):
         with mock.patch("scripts.workers.submission_worker.return_file_url_per_environment") as mock_url:
             submission_worker.extract_submission_data(self.submission.pk)
 
@@ -223,14 +224,14 @@ class ExtractSubmissionDataTestClass(BaseTestClass):
             mock_url.assert_called_with(submission_input_file)
 
             submission_data_directory = "mocked/dir/submission_{}".format(self.submission.pk)
-            mock_createdir.assert_called_with(submission_data_directory)
+            mock_cdapp.assert_called_with(submission_data_directory)
 
         submission_worker.extract_submission_data(self.submission.pk)
 
         name = os.path.basename(self.submission.input_file.name)
         submission_input_file_url = "http://testserver{}".format(self.submission.input_file.url)
         submission_input_file_path = "mocked/dir/submission_{}/{}".format(self.submission.pk, name)
-        mock_down_ext.assert_called_with(submission_input_file_url, submission_input_file_path)
+        mock_def.assert_called_with(submission_input_file_url, submission_input_file_path)
 
 
 class ExtractChallengeDataTestClass(BaseTestClass):
@@ -255,7 +256,7 @@ class ExtractChallengeDataTestClass(BaseTestClass):
 @mock.patch("scripts.workers.submission_worker.timezone")
 @mock.patch("scripts.workers.submission_worker.shutil")
 @mock.patch("scripts.workers.submission_worker.LeaderboardData.objects.bulk_create")
-@mock.patch("scripts.workers.worker_utils.create_dir")
+@mock.patch.object(FileHandler, "create_dir")
 @mock.patch("scripts.workers.submission_worker.EVALUATION_SCRIPTS")
 @mock.patch("scripts.workers.submission_worker.PHASE_ANNOTATION_FILE_NAME_MAP")
 class RunSubmissionTestClass(BaseTestClass):
@@ -286,7 +287,7 @@ class RunSubmissionTestClass(BaseTestClass):
         )
 
     def test_run_submission_when_result_key_is_not_present_in_output(self, mock_map, mock_script_dict,
-                                                                     mock_createdir, mock_lb,
+                                                                     mock_cd, mock_lb,
                                                                      mock_shutil, mock_timezone,
                                                                      mock_open, mock_cf):
         challenge_pk = self.challenge.pk
@@ -316,7 +317,7 @@ class RunSubmissionTestClass(BaseTestClass):
         annotation_file_path = "mocked/dir/challenge_data/challenge_{}/phase_data/phase_{}/test_annotation_file.txt".format(
             challenge_pk, phase_pk)
 
-        mock_createdir.assert_called_with(temp_run_dir)
+        mock_cd.assert_called_with(temp_run_dir)
 
         mock_script_dict[challenge_pk].evaluate.assert_called_with(
             annotation_file_path,
@@ -334,7 +335,7 @@ class RunSubmissionTestClass(BaseTestClass):
         mock_shutil.rmtree.assert_called_with(temp_run_dir)
 
     def test_run_submission_when_challenge_phase_split_does_not_exist(self, mock_map, mock_script_dict,
-                                                                      mock_createdir, mock_lb,
+                                                                      mock_cd, mock_lb,
                                                                       mock_shutil, mock_timezone,
                                                                       mock_open, mock_cf):
         challenge_pk = self.challenge.pk
@@ -367,7 +368,7 @@ class RunSubmissionTestClass(BaseTestClass):
         annotation_file_path = "mocked/dir/challenge_data/challenge_{}/phase_data/phase_{}/test_annotation_file.txt".format(
             challenge_pk, phase_pk)
 
-        mock_createdir.assert_called_with(temp_run_dir)
+        mock_cd.assert_called_with(temp_run_dir)
 
         mock_script_dict[challenge_pk].evaluate.assert_called_with(
             annotation_file_path,

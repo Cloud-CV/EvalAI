@@ -12,11 +12,16 @@ import tempfile
 import time
 import traceback
 
+from scripts.workers.worker_utils import (
+    EvalAI_Interface,
+    GracefulKiller,
+    FileHandler
+)
 import scripts.workers.worker_utils as w_u
-from scripts.workers.worker_utils import EvalAI_Interface, GracefulKiller
 
 from os.path import join
 
+file_handle = FileHandler()
 # all challenge and submission will be stored in temp directory
 BASE_TEMP_DIR = tempfile.mkdtemp()
 COMPUTE_DIRECTORY_PATH = join(BASE_TEMP_DIR, "compute")
@@ -60,7 +65,7 @@ def load_challenge(api):
         Creates python package for a challenge and extracts relevant data
     """
     # make sure that the challenge base directory exists
-    w_u.create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
+    file_handle.create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
     challenge = api.get_challenge_by_queue_name()
     if not challenge:
         w_u.logger.critical(
@@ -80,7 +85,7 @@ def extract_challenge_data(challenge, phases):
     challenge_data_directory = CHALLENGE_DATA_DIR.format(
         challenge_id=challenge.get("id")
     )
-    w_u.create_dir_as_python_package(challenge_data_directory)
+    file_handle.create_dir_as_python_package(challenge_data_directory)
 
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")] = {}
@@ -91,21 +96,21 @@ def extract_challenge_data(challenge, phases):
     )
 
     evaluation_script_url = challenge.get("evaluation_script")
-    w_u.download_and_extract_zip_file(
+    file_handle.download_and_extract_zip_file(
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
 
     phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
         challenge_id=challenge.get("id")
     )
-    w_u.create_dir(phase_data_base_directory)
+    file_handle.create_dir(phase_data_base_directory)
 
     for phase in phases:
         phase_data_directory = PHASE_DATA_DIR.format(
             challenge_id=challenge.get("id"), phase_id=phase.get("id")
         )
         # create phase directory
-        w_u.create_dir(phase_data_directory)
+        file_handle.create_dir(phase_data_directory)
         annotation_file_url = phase.get("test_annotation")
         annotation_file_name = os.path.basename(phase.get("test_annotation"))
         PHASE_ANNOTATION_FILE_NAME_MAP[challenge.get("id")][
@@ -116,7 +121,7 @@ def extract_challenge_data(challenge, phases):
             phase_id=phase.get("id"),
             annotation_file=annotation_file_name,
         )
-        w_u.download_and_extract_file(annotation_file_url, annotation_file_path)
+        file_handle.download_and_extract_file(annotation_file_url, annotation_file_path)
     try:
         # import the challenge after everything is finished
         challenge_module = importlib.import_module(
@@ -205,8 +210,8 @@ def extract_submission_data(submission_pk, api):
         submission_id=submission.get("id"),
         input_file=submission_input_file_name,
     )
-    w_u.create_dir_as_python_package(submission_data_directory)
-    w_u.download_and_extract_file(
+    file_handle.create_dir_as_python_package(submission_data_directory)
+    file_handle.download_and_extract_file(
         submission_input_file, submission_input_file_path
     )
     return submission
@@ -265,7 +270,7 @@ def run_submission(
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, "run")
-    w_u.create_dir(temp_run_dir)
+    file_handle.create_dir(temp_run_dir)
 
     stdout_file = join(temp_run_dir, "temp_stdout.txt")
     stderr_file = join(temp_run_dir, "temp_stderr.txt")
@@ -346,11 +351,11 @@ def main():
     w_u.logger.info(
         "Using {0} as temp directory to store data".format(BASE_TEMP_DIR)
     )
-    w_u.create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
+    file_handle.create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     # create submission base data directory
-    w_u.create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
+    file_handle.create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     load_challenge(api)
 
     while True:

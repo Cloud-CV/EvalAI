@@ -16,8 +16,8 @@ import time
 import traceback
 import yaml
 
+from scripts.workers.worker_utils import GracefulKiller, FileHandler
 import scripts.workers.worker_utils as w_u
-from scripts.workers.worker_utils import GracefulKiller
 
 from os.path import join
 
@@ -49,7 +49,7 @@ from challenges.models import (
 from jobs.models import Submission  # noqa
 from jobs.serializers import SubmissionSerializer  # noqa
 
-
+file_handle = FileHandler()
 CHALLENGE_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, "challenge_data")
 SUBMISSION_DATA_BASE_DIR = join(COMPUTE_DIRECTORY_PATH, "submission_files")
 CHALLENGE_DATA_DIR = join(CHALLENGE_DATA_BASE_DIR, "challenge_{challenge_id}")
@@ -98,7 +98,7 @@ def extract_challenge_data(challenge, phases):
         evaluation_script_url
     )
     # create challenge directory as package
-    w_u.create_dir_as_python_package(challenge_data_directory)
+    file_handle.create_dir_as_python_package(challenge_data_directory)
 
     # set entry in map
     PHASE_ANNOTATION_FILE_NAME_MAP[challenge.id] = {}
@@ -106,21 +106,21 @@ def extract_challenge_data(challenge, phases):
     challenge_zip_file = join(
         challenge_data_directory, "challenge_{}.zip".format(challenge.id)
     )
-    w_u.download_and_extract_zip_file(
+    file_handle.download_and_extract_zip_file(
         evaluation_script_url, challenge_zip_file, challenge_data_directory
     )
 
     phase_data_base_directory = PHASE_DATA_BASE_DIR.format(
         challenge_id=challenge.id
     )
-    w_u.create_dir(phase_data_base_directory)
+    file_handle.create_dir(phase_data_base_directory)
 
     for phase in phases:
         phase_data_directory = PHASE_DATA_DIR.format(
             challenge_id=challenge.id, phase_id=phase.id
         )
         # create phase directory
-        w_u.create_dir(phase_data_directory)
+        file_handle.create_dir(phase_data_directory)
         annotation_file_url = phase.test_annotation.url
         annotation_file_url = return_file_url_per_environment(
             annotation_file_url
@@ -134,7 +134,7 @@ def extract_challenge_data(challenge, phases):
             phase_id=phase.id,
             annotation_file=annotation_file_name,
         )
-        w_u.download_and_extract_file(annotation_file_url, annotation_file_path)
+        file_handle.download_and_extract_file(annotation_file_url, annotation_file_path)
 
     try:
         # import the challenge after everything is finished
@@ -156,7 +156,7 @@ def load_challenge(challenge):
         Creates python package for a challenge and extracts relevant data
     """
     # make sure that the challenge base directory exists
-    w_u.create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
+    file_handle.create_dir_as_python_package(CHALLENGE_DATA_BASE_DIR)
     phases = challenge.challengephase_set.all()
     extract_challenge_data(challenge, phases)
 
@@ -165,7 +165,6 @@ def extract_submission_data(submission_id):
     """
         * Expects submission id and extracts input file for it.
     """
-
     try:
         submission = Submission.objects.get(id=submission_id)
     except Submission.DoesNotExist:
@@ -190,9 +189,10 @@ def extract_submission_data(submission_id):
         submission_id=submission.id, input_file=submission_input_file_name
     )
     # create submission directory
-    w_u.create_dir_as_python_package(submission_data_directory)
+    print(submission_data_directory)
+    file_handle.create_dir_as_python_package(submission_data_directory)
 
-    w_u.download_and_extract_file(
+    file_handle.download_and_extract_file(
         submission_input_file, submission_input_file_path
     )
 
@@ -234,7 +234,7 @@ def run_submission(
     # create a temporary run directory under submission directory, so that
     # main directory does not gets polluted
     temp_run_dir = join(submission_data_dir, "run")
-    w_u.create_dir(temp_run_dir)
+    file_handle.create_dir(temp_run_dir)
 
     stdout_file = join(temp_run_dir, "temp_stdout.txt")
     stderr_file = join(temp_run_dir, "temp_stderr.txt")
@@ -554,7 +554,7 @@ def main():
     w_u.logger.info(
         "Using {0} as temp directory to store data".format(BASE_TEMP_DIR)
     )
-    w_u.create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
+    file_handle.create_dir_as_python_package(COMPUTE_DIRECTORY_PATH)
     sys.path.append(COMPUTE_DIRECTORY_PATH)
 
     q_params = {"approved_by_admin": True}
@@ -585,7 +585,7 @@ def main():
         )
 
     # create submission base data directory
-    w_u.create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
+    file_handle.create_dir_as_python_package(SUBMISSION_DATA_BASE_DIR)
     queue_name = os.environ.get("CHALLENGE_QUEUE", "evalai_submission_queue")
     queue = get_or_create_sqs_queue(queue_name)
     while True:
