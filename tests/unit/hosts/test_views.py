@@ -335,7 +335,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
             "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
-                "challenge_host_pk": self.challenge_host.pk,
+                "pk": self.challenge_host.pk,
             },
         )
 
@@ -356,7 +356,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
             "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
-                "challenge_host_pk": self.challenge_host.pk + 1,
+                "pk": self.challenge_host.pk + 1,
             },
         )
         expected = {"error": "ChallengeHost does not exist"}
@@ -371,7 +371,7 @@ class GetParticularChallengeHost(BaseAPITestClass):
             "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk + 1,
-                "challenge_host_pk": self.challenge_host.pk,
+                "pk": self.challenge_host.pk,
             },
         )
         expected = {"error": "ChallengeHostTeam does not exist"}
@@ -387,7 +387,7 @@ class UpdateParticularChallengeHost(BaseAPITestClass):
             "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
-                "challenge_host_pk": self.challenge_host.pk,
+                "pk": self.challenge_host.pk,
             },
         )
         self.data = {
@@ -433,7 +433,7 @@ class DeleteParticularChallengeHost(BaseAPITestClass):
             "hosts:get_challenge_host_details",
             kwargs={
                 "challenge_host_team_pk": self.challenge_host_team.pk,
-                "challenge_host_pk": self.challenge_host.pk,
+                "pk": self.challenge_host.pk,
             },
         )
 
