@@ -167,10 +167,12 @@ def challenge_host_get_update_delete(request, challenge_host_team_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge_host = get_challenge_host_model(pk)
-    except ChallengeHost.DoesNotExist:
-        response_data = {"error": "ChallengeHost does not exist"}
-        return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
+        challenge_host = get_challenge_host_model.objects.get(pk=pk)
+        return challenge_host
+    except get_challenge_host_model.DoesNotExist:
+        raise NotFound(
+            "{} {} does not exist".format(get_challenge_host_model.__name__, pk)
+        )
 
     if request.method == "GET":
         serializer = ChallengeHostSerializer(challenge_host)
