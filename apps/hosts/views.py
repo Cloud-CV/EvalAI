@@ -14,7 +14,10 @@ from rest_framework_expiring_authtoken.authentication import (
 from rest_framework.throttling import UserRateThrottle
 
 from accounts.permissions import HasVerifiedEmail
-from base.utils import paginated_queryset
+from base.utils import (
+    paginated_queryset,
+    get_model_object
+)
 from .models import ChallengeHost, ChallengeHostTeam
 from .serializers import (
     ChallengeHostSerializer,
@@ -24,6 +27,7 @@ from .serializers import (
 )
 from .utils import is_user_part_of_host_team
 
+get_challenge_host_model = get_model_object(ChallengeHost)
 
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
@@ -162,7 +166,8 @@ def challenge_host_get_update_delete(request, challenge_host_team_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge_host = ChallengeHost.objects.get(pk=pk)
+        challenge_host_pk = get_challenge_host_model(pk)
+        challenge_host = ChallengeHost.objects.get(pk=challenge_host_pk)
     except ChallengeHost.DoesNotExist:
         response_data = {"error": "ChallengeHost does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
