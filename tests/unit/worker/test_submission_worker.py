@@ -26,6 +26,7 @@ from scripts.workers.submission_worker import (
     get_or_create_sqs_queue
 )
 
+from scripts.workers.worker_utils import FileHandler
 
 class BaseAPITestClass(APITestCase):
     def setUp(self):
@@ -130,8 +131,8 @@ class BaseAPITestClass(APITestCase):
             input_file=input_file_name,
         )
 
-    @mock.patch("scripts.workers.worker_utils.create_dir_as_python_package")
-    @mock.patch("scripts.workers.worker_utils.download_and_extract_file")
+    @mock.patch.object(FileHandler, "create_dir_as_python_package")
+    @mock.patch.object(FileHandler, "download_and_extract_file")
     def test_extract_submission_data_success(
             self,
             mock_download_and_extract_file,

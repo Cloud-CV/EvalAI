@@ -7,7 +7,7 @@ from unittest import TestCase
 
 from tests.data import challenge_response, submission_response
 
-from scripts.workers.worker_utils import EvalAI_Interface
+from scripts.workers.worker_utils import EvalAI_Interface, FileHandler
 import scripts.workers.remote_submission_worker as remote_submission_worker
 
 
@@ -41,10 +41,10 @@ class ChallengeDataTestClass(BaseTestClass):
         self.challenge = json.loads(challenge_response.challenge_details)
         self.phases = json.loads(challenge_response.challenge_phase_list).get("results")
 
-    @mock.patch("scripts.workers.worker_utils.download_and_extract_file")
-    @mock.patch("scripts.workers.worker_utils.create_dir_as_python_package")
-    @mock.patch("scripts.workers.worker_utils.download_and_extract_zip_file")
-    @mock.patch("scripts.workers.worker_utils.create_dir")
+    @mock.patch.object(FileHandler, "download_and_extract_file")
+    @mock.patch.object(FileHandler, "create_dir_as_python_package")
+    @mock.patch.object(FileHandler, "download_and_extract_zip_file")
+    @mock.patch.object(FileHandler, "create_dir")
     @mock.patch("scripts.workers.remote_submission_worker.importlib.import_module")
     def test_extract_challenge_data_successfully(self, mock_import, mock_cd, mock_dezf, mock_cdapp, mock_def):
         remote_submission_worker.extract_challenge_data(self.challenge, self.phases)
@@ -73,7 +73,7 @@ class ChallengeDataTestClass(BaseTestClass):
         mock_import.assert_called_with(import_string)
 
     @responses.activate
-    @mock.patch("scripts.workers.worker_utils.create_dir_as_python_package")
+    @mock.patch.object(FileHandler, "create_dir_as_python_package")
     @mock.patch("scripts.workers.remote_submission_worker.extract_challenge_data")
     def test_load_challenge_data_successfully(self, mock_ecd, mock_cdapp):
         responses.add(
@@ -124,8 +124,8 @@ class SubmissionDataTestClass(BaseTestClass):
         self.submission = json.loads(submission_response.submission_result)
 
     @responses.activate
-    @mock.patch("scripts.workers.worker_utils.download_and_extract_file")
-    @mock.patch("scripts.workers.worker_utils.create_dir_as_python_package")
+    @mock.patch.object(FileHandler, "download_and_extract_file")
+    @mock.patch.object(FileHandler, "create_dir_as_python_package")
     def test_extract_submission_data_successfully(self, mock_cdpp, mock_def):
         responses.add(
             responses.GET,
