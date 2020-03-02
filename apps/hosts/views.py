@@ -29,6 +29,7 @@ from .utils import is_user_part_of_host_team
 
 get_challenge_host_model = get_model_object(ChallengeHost)
 
+
 @api_view(["GET", "POST"])
 @throttle_classes([UserRateThrottle])
 @permission_classes((permissions.IsAuthenticated, HasVerifiedEmail))
@@ -167,7 +168,6 @@ def challenge_host_get_update_delete(request, challenge_host_team_pk, pk):
 
     try:
         challenge_host = get_challenge_host_model(pk)
-        # challenge_host = ChallengeHost.objects.get(pk=challenge_host.pk)
     except ChallengeHost.DoesNotExist:
         response_data = {"error": "ChallengeHost does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
