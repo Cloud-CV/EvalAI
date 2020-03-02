@@ -166,8 +166,8 @@ def challenge_host_get_update_delete(request, challenge_host_team_pk, pk):
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     try:
-        challenge_host_pk = get_challenge_host_model(pk)
-        challenge_host = ChallengeHost.objects.get(pk=challenge_host_pk)
+        challenge_host = get_challenge_host_model(pk)
+        # challenge_host = ChallengeHost.objects.get(pk=challenge_host.pk)
     except ChallengeHost.DoesNotExist:
         response_data = {"error": "ChallengeHost does not exist"}
         return Response(response_data, status=status.HTTP_406_NOT_ACCEPTABLE)
