@@ -110,4 +110,4 @@ class SubmissionAdmin(ImportExportTimeStampedAdmin):
             submission.is_public = False
             submission.save()
 
-    make_submission_public.short_description = "Make submission private"
+    make_submission_private.short_description = "Make submission private"
