@@ -12,6 +12,9 @@
     function DashCtrl(utilities, $state, $rootScope) {
         var vm = this;
 
+        // User has verified email or not
+        vm.isPrivileged = true;
+
         vm.challengeCount = 0;
         vm.hostTeamCount = 0;
         vm.hostTeamExist = false;
@@ -40,9 +43,7 @@
                 if (status == 403) {
                     vm.error = error;
                     utilities.storeData('emailError', error.detail);
-
-                    // navigate to permissions denied page
-                    $state.go('web.permission-denied');
+                    vm.isPrivileged = false;
                 } else if (status == 401) {
                     alert("Timeout, Please login again to continue!");
                     utilities.resetStorage();
@@ -76,9 +77,7 @@
                 var error = response.data;
                 if (status == 403) {
                     vm.error = error;
-
-                    // navigate to permissions denied page
-                    $state.go('web.permission-denied');
+                    vm.isPrivileged = false;
                 } else if (status == 401) {
                     alert("Timeout, Please login again to continue!");
                     utilities.resetStorage();
@@ -108,9 +107,7 @@
                 var error = response.data;
                 if (status == 403) {
                     vm.error = error;
-
-                    // navigate to permissions denied page
-                    $state.go('web.permission-denied');
+                    vm.isPrivileged = false;
                 } else if (status == 401) {
                     alert("Timeout, Please login again to continue!");
                     utilities.resetStorage();
@@ -140,9 +137,7 @@
                 var error = response.data;
                 if (status == 403) {
                     vm.error = error;
-
-                    // navigate to permissions denied page
-                    $state.go('web.permission-denied');
+                    vm.isPrivileged = false;
                 } else if (status == 401) {
                     alert("Timeout, Please login again to continue!");
                     utilities.resetStorage();
