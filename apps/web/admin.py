@@ -4,8 +4,6 @@ from base.admin import ImportExportTimeStampedAdmin
 
 from .models import Contact, Subscribers, Team, Organization
 
-
-
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
     list_display = (
@@ -33,9 +31,9 @@ class TeamAdmin(ImportExportTimeStampedAdmin):
     list_display = ("position", "name", "email", "team_type")
     search_fields = ("email", "name")
 
-
+    
 @admin.register(Organization)
 class OrganizationAdmin(ImportExportTimeStampedAdmin):
     list_filter = ("name",)
-    list_display = ("name", "logo")
-    search_fields = ["name"]
+    list_display = ("name",)
+    search_fields = ("name",)
