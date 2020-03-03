@@ -2,7 +2,8 @@ from django.contrib import admin
 
 from base.admin import ImportExportTimeStampedAdmin
 
-from .models import Contact, Subscribers, Team
+from .models import Contact, Subscribers, Team, Organization
+
 
 
 @admin.register(Contact)
@@ -31,3 +32,10 @@ class TeamAdmin(ImportExportTimeStampedAdmin):
     list_filter = ("team_type",)
     list_display = ("position", "name", "email", "team_type")
     search_fields = ("email", "name")
+
+
+@admin.register(Organization)
+class OrganizationAdmin(ImportExportTimeStampedAdmin):
+    list_filter = ("name",)
+    list_display = ("name", "logo")
+    search_fields = ["name"]

@@ -70,3 +70,11 @@ class Team(models.Model):
     class Meta:
         app_label = "web"
         db_table = "teams"
+
+
+class Organization(models.Model):
+    name = models.CharField(max_length=100)
+    logo = models.ImageField(
+        upload_to="organization-logos", null=True, blank=True
+    )
+    is_active = models.BooleanField(default=True)
